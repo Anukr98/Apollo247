@@ -1,4 +1,5 @@
-import { gql, ApolloServer } from 'apollo-server';
+import { ApolloServer } from 'apollo-server';
+import gql from 'graphql-tag';
 
 // This is a (sample) collection of books we'll be able to query
 // the GraphQL server for.  A more complete example might fetch
