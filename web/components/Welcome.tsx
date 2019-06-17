@@ -10,7 +10,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: 'blue',
     },
     booksLink: {
-      color: 'red',
+      color: theme.palette.primary.main,
       textDecoration: 'underline',
     },
   };

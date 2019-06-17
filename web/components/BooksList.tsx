@@ -12,6 +12,9 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       flexDirection: 'column',
     },
+    book: {
+      padding: theme.spacing(2),
+    },
   };
 });
 
@@ -26,7 +29,7 @@ export const BooksList: React.FC<BooksListProps> = (props) => {
     return (
       <div className={classes.booksList}>
         {data.books.map((b) => (
-          <div key={b.id}>
+          <div key={b.id} className={classes.book}>
             <LibraryBooks />
             {b.title} by {b.author}
           </div>

@@ -13,6 +13,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory';
 import { createHttpLink } from 'apollo-link-http';
 import ApolloClient from 'apollo-client';
 import { BooksList } from 'components/BooksList';
+import { red } from '@material-ui/core/colors';
 
 const apolloClient = new ApolloClient({
   link: createHttpLink({
@@ -21,7 +22,13 @@ const apolloClient = new ApolloClient({
   cache: new InMemoryCache(),
 });
 
-const muiTheme = createMuiTheme({});
+const muiTheme = createMuiTheme({
+  palette: {
+    primary: {
+      main: red.A100,
+    },
+  },
+});
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
