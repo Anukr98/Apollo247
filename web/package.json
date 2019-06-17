@@ -1,7 +1,7 @@
 {
-  "name": "apollo",
+  "name": "apollo-web",
   "version": "0.0.1",
-  "description": "Apollo",
+  "description": "Apollo Web",
   "main": "index.js",
   "sideEffects": false,
   "private": true,
