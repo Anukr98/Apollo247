@@ -6,8 +6,22 @@ import React from 'react';
 import { BrowserRouter, Route } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Welcome } from 'components/Welcome';
+import { apiRoutes } from 'helpers/apiRoutes';
+import { ApolloProvider } from 'react-apollo';
+import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { createHttpLink } from 'apollo-link-http';
+import ApolloClient from 'apollo-client';
+import { BooksList } from 'components/BooksList';
 
-const theme = createMuiTheme({});
+const apolloClient = new ApolloClient({
+  link: createHttpLink({
+    uri: apiRoutes.graphql(),
+  }),
+  cache: new InMemoryCache(),
+});
+
+const muiTheme = createMuiTheme({});
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -24,6 +38,7 @@ const App: React.FC = () => {
   return (
     <div className={classes.app}>
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
+      <Route exact path={clientRoutes.books()} component={BooksList} />
     </div>
   );
 };
@@ -31,11 +46,15 @@ const App: React.FC = () => {
 const AppContainer: React.FC = () => {
   return (
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <CssBaseline>
-          <App />
-        </CssBaseline>
-      </ThemeProvider>
+      <ApolloProvider client={apolloClient}>
+        <ApolloHooksProvider client={apolloClient}>
+          <ThemeProvider theme={muiTheme}>
+            <CssBaseline>
+              <App />
+            </CssBaseline>
+          </ThemeProvider>
+        </ApolloHooksProvider>
+      </ApolloProvider>
     </BrowserRouter>
   );
 };

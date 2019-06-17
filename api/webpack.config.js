@@ -1,6 +1,7 @@
 const path = require('path');
 const process = require('process');
 const nodeExternals = require('webpack-node-externals')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const webpack = require('webpack');
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -9,6 +10,7 @@ const distDir = path.resolve(__dirname, 'dist');
 const nodeModulesDir = path.join(__dirname, 'node_modules');
 
 const plugins = [
+  new CleanWebpackPlugin(),
   new webpack.DefinePlugin({
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
     'process.env.CLIENT_PORT': JSON.stringify(process.env.CLIENT_PORT),

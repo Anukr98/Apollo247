@@ -13,6 +13,7 @@ let plugins = [
   new webpack.DefinePlugin({
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
     'process.env.CLIENT_PORT': JSON.stringify(process.env.CLIENT_PORT),
+    'process.env.API_PORT': JSON.stringify(process.env.API_PORT),
   }),
   new HtmlWebpackPlugin({
     filename: 'index.html',
