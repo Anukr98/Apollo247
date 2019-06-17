@@ -1,0 +1,13 @@
+{
+    "folders": [
+        {
+            "path": "web"
+        },
+        {
+            "path": "mobile"
+        },
+        {
+            "path": "api"
+        },
+    ]
+}

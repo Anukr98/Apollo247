@@ -1,0 +1,26 @@
+version: '3.4'
+
+services:
+  web:
+    image: node:11.11.0-alpine
+    working_dir: /web
+    command: sh -c "npm install --production=false && npm run start:dev"
+    environment:
+      NODE_ENV: development
+      CLIENT_PORT: 3000
+    ports:
+      - 3000:3000
+    volumes:
+      - ./web:/web:cached
+  # api:
+  #   image: node:11.11.0
+  #   working_dir: /api
+  #   command: sh -c "npm install --production=false && npm run start:dev"
+  #   environment:
+  #     NODE_ENV: development
+  #     CLIENT_PORT: 3001
+  #   ports:
+  #     - 3001:3001
+  #   volumes:
+  #     - ./api:/api:cached
+  #     - ./shared:/shared:cached
