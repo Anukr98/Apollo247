@@ -3,15 +3,15 @@ const process = require('process');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
-const isDevelopment = process.env.NODE_ENV === 'development';
-const isProduction = process.env.NODE_ENV === 'production';
+const isDevelopment = process.env.NODE_ENV.trim() === 'development';
+const isProduction = process.env.NODE_ENV.trim() === 'production';
 
 const distDir = path.resolve(__dirname, 'dist');
 const nodeModulesDir = path.join(__dirname, 'node_modules');
 
 let plugins = [
   new webpack.DefinePlugin({
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV.trim()),
     'process.env.CLIENT_PORT': JSON.stringify(process.env.CLIENT_PORT),
     'process.env.API_PORT': JSON.stringify(process.env.API_PORT),
   }),
