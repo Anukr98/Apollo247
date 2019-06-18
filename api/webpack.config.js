@@ -33,7 +33,10 @@ module.exports = {
 
   context: path.resolve(__dirname),
 
-  entry: { api: ['api.ts'] },
+  entry: {
+    api: 'api.ts',
+    doctors: 'services/doctors/doctors.ts',
+  },
 
   output: {
     path: distDir,

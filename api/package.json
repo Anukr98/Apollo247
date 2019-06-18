@@ -6,7 +6,7 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
-    "start:dev": "webpack && node dist/api.bundle.js",
+    "start:dev": "webpack && (node dist/doctors.bundle.js &) && sleep 5 && node dist/api.bundle.js",
     "start:dev:windows": "set NODE_ENV=development && set CLIENT_PORT=3000 && set API_PORT=3001 && webpack && node dist/api.bundle.js",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
@@ -28,6 +28,8 @@
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
+    "@apollo/federation": "^0.6.4",
+    "@apollo/gateway": "^0.6.6",
     "apollo-server": "^2.6.3",
     "graphql": "~14.2.1",
     "graphql-tag": "^2.10.1",
