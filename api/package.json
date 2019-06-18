@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "start:dev": "webpack && node dist/api.bundle.js",
-    "start:dev:windows": "set CLIENT_PORT=3000 && set API_PORT=3001 && webpack && node dist/api.bundle.js",
+    "start:dev:windows": "set NODE_ENV=development && set CLIENT_PORT=3000 && set API_PORT=3001 && webpack && node dist/api.bundle.js",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx"
