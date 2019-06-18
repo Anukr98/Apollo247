@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "start:dev": "npm run apollo:download & npm run apollo:codegen & npm run lint && webpack-dev-server",
-    "start:dev:windows": "set CLIENT_PORT=3000 && API_PORT=3001 && npm run apollo:download:windows & npm run apollo:codegen & npm run lint && webpack-dev-server",
+    "start:dev:windows": "set CLIENT_PORT=3000 && set API_PORT=3001 && npm run apollo:download:windows & npm run apollo:codegen & npm run lint && webpack-dev-server",
     "build:prod": "webpack",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
