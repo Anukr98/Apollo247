@@ -5,15 +5,15 @@ import { ThemeProvider, makeStyles } from '@material-ui/styles';
 import React from 'react';
 import { BrowserRouter, Route } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Welcome } from 'components/Welcome';
+import { Header } from 'components/Header';
+import { HeroBanner } from 'components/HeroBanner';
+import { ServiceList } from 'components/ServiceList';
 import { apiRoutes } from 'helpers/apiRoutes';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { createHttpLink } from 'apollo-link-http';
 import ApolloClient from 'apollo-client';
-import { BooksList } from 'components/BooksList';
-import { red } from '@material-ui/core/colors';
 
 const apolloClient = new ApolloClient({
   link: createHttpLink({
@@ -25,7 +25,46 @@ const apolloClient = new ApolloClient({
 const muiTheme = createMuiTheme({
   palette: {
     primary: {
-      main: red.A100,
+      main: '#fcb716',
+    },
+  },
+  typography: { 
+    body2: {
+      fontFamily: [
+        'IBM Plex Sans',
+        'sans-serif',
+      ].join(','),
+      fontSize: '12px',
+      lineHeight: '18px',
+      fontWeight: 400,
+      letterSpacing: 'normal',
+      backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
+    },
+    h1: {
+      fontFamily: [
+        'IBM Plex Sans',
+        'sans-serif',
+      ].join(','),
+      fontSize: '56px',
+      fontWeight: 600,
+      color: '#02475b',
+    },
+    h5: {
+      fontFamily: [
+        'IBM Plex Sans',
+        'sans-serif',
+      ].join(','),
+      fontSize: '14px',
+      fontWeight: 500,
+      color: '#02475b',
+    },
+    button: {
+      fontSize: '13px',
+      fontWeight: 'bold',
+      fontStyle: 'normal',
+      lineHeight: '1.85',
+      letterSpacing: 'normal',
+      color: '#ffffff',
     },
   },
 });
@@ -33,10 +72,12 @@ const muiTheme = createMuiTheme({
 const useStyles = makeStyles((theme: Theme) => {
   return {
     app: {
-      display: 'flex',
-      flexDirection: 'column',
       minHeight: '100vh',
     },
+    container: {
+      maxWidth: '1064px',
+      margin: 'auto',
+    }
   };
 });
 
@@ -44,8 +85,11 @@ const App: React.FC = () => {
   const classes = useStyles();
   return (
     <div className={classes.app}>
-      <Route exact path={clientRoutes.welcome()} component={Welcome} />
-      <Route exact path={clientRoutes.books()} component={BooksList} />
+      <div className={classes.container}>
+        <Route exact component={Header} />
+        <Route exact component={HeroBanner} />
+        <Route exact component={ServiceList} />
+      </div>
     </div>
   );
 };
