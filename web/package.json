@@ -7,14 +7,15 @@
   "private": true,
   "scripts": {
     "start:dev": "npm run apollo:download & npm run apollo:codegen & npm run lint && webpack-dev-server",
-    "start:dev:windows": "set NODE_ENV=development && set CLIENT_PORT=3000 && set API_PORT=4000 && npm run apollo:download:windows & npm run apollo:codegen & npm run lint && webpack-dev-server",
+    "start:dev:windows": "set NODE_ENV=development && set CLIENT_PORT=3000 && set API_PORT=4000 && npm run apollo:download:windows & npm run apollo:codegen:windows & npm run lint && webpack-dev-server",
     "build:prod": "webpack",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "apollo:download": "apollo schema:download ./graphql/schema.json --endpoint=http://api:${API_PORT}/graphql",
     "apollo:download:windows": "apollo schema:download ./graphql/schema.json --endpoint=http://localhost:4000/graphql",
-    "apollo:codegen": "apollo codegen:generate ./graphql/types/ --outputFlat --addTypename --localSchemaFile=./graphql/schema.json --target=typescript --queries=./graphql/**.ts"
+    "apollo:codegen": "apollo codegen:generate ./graphql/types/ --outputFlat --addTypename --localSchemaFile=./graphql/schema.json --target=typescript --queries=./graphql/**.ts --watch",
+    "apollo:codegen:windows": "apollo codegen:generate ./graphql/types/ --outputFlat --addTypename --localSchemaFile=./graphql/schema.json --target=typescript --queries=./graphql/**.ts"
   },
   "devDependencies": {
     "@babel/core": "^7.4.5",
