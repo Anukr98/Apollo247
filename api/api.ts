@@ -3,7 +3,7 @@ import { ApolloGateway } from '@apollo/gateway';
 import { GraphQLExecutor } from 'apollo-server-core';
 
 const gateway = new ApolloGateway({
-  serviceList: [{ name: 'doctors', url: 'http://api:4001/graphql' }],
+  serviceList: [{ name: 'doctors', url: 'http://localhost:4001/graphql' }],
 });
 
 (async () => {
