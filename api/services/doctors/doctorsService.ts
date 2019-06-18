@@ -1,18 +1,12 @@
 import { ApolloServer, gql } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
+import { models } from 'services/doctors/models/models';
 
-const doctors = [
-  {
-    id: 1,
-    name: 'Ada Lovelace',
-    birthDate: '1815-12-10',
-  },
-  {
-    id: 2,
-    name: 'Alan Turing',
-    birthDate: '1912-06-23',
-  },
-];
+type Resolver<Parent = any, Args = any, Context = { models: typeof models }> = (
+  parent: Parent,
+  args: Args,
+  context: Context
+) => any;
 
 const typeDefs = gql`
   type Doctor @key(fields: "id") {
@@ -26,13 +20,16 @@ const typeDefs = gql`
   }
 `;
 
+const doctors: Resolver = (parent, args, { models }) => models.Doctor.findAll();
+
 const resolvers = {
   Query: {
-    doctors: () => doctors,
+    doctors,
   },
 };
 
 const server = new ApolloServer({
+  context: () => ({ models }),
   schema: buildFederatedSchema([
     {
       typeDefs,
@@ -42,5 +39,5 @@ const server = new ApolloServer({
 });
 
 server.listen({ port: 4001 }).then(({ url }) => {
-  console.log(`🚀 doctors microservice ready at ${url}`);
+  console.log(`🚀 doctorsService ready at ${url}`);
 });

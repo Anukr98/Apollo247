@@ -35,7 +35,7 @@ module.exports = {
 
   entry: {
     api: 'api.ts',
-    doctors: 'services/doctors/doctors.ts',
+    doctorsService: 'services/doctors/doctorsService.ts',
   },
 
   output: {
