@@ -75,7 +75,7 @@
             "deprecationReason": null
           },
           {
-            "name": "authorName",
+            "name": "author",
             "description": "",
             "args": [],
             "type": {

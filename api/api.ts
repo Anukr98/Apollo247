@@ -25,7 +25,7 @@ export const typeDefs = gql`
   type Book {
     id: Int!
     title: String!
-    authorName: String!
+    author: String!
   }
 
   # The "Query" type is the root of all GraphQL queries.

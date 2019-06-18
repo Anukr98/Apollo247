@@ -9,8 +9,8 @@
 export interface GetBooks_books {
   __typename: "Book";
   id: number;
-  title: string | null;
-  author: string | null;
+  title: string;
+  author: string;
 }
 
 export interface GetBooks {
