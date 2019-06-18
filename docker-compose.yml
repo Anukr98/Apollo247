@@ -8,7 +8,7 @@ services:
     environment:
       NODE_ENV: development
       CLIENT_PORT: 3000
-      API_PORT: 3001
+      API_PORT: 4000
       NPM_CONFIG_CACHE: /web/.npm-cache
     ports:
       - 3000:3000
@@ -22,10 +22,10 @@ services:
     environment:
       NODE_ENV: development
       CLIENT_PORT: 3000
-      API_PORT: 3001
+      API_PORT: 4000
       NPM_CONFIG_CACHE: /api/.npm-cache
     ports:
-      - 3001:3001
+      - 4000:4000
     volumes:
       - ./api:/api:cached
     depends_on:
