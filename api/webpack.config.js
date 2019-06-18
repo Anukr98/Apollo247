@@ -1,11 +1,15 @@
 const path = require('path');
 const process = require('process');
-const nodeExternals = require('webpack-node-externals')
+const nodeExternals = require('webpack-node-externals');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const webpack = require('webpack');
 
-const isDevelopment = process.env.NODE_ENV.trim() === 'development';
-const isProduction = process.env.NODE_ENV.trim() === 'production';
+// const API_PORT = process.env.API_PORT.trim();
+const CLIENT_PORT = process.env.CLIENT_PORT.trim();
+const NODE_ENV = process.env.NODE_ENV.trim();
+
+// const isDevelopment = NODE_ENV === 'development';
+const isProduction = NODE_ENV === 'production';
 
 const distDir = path.resolve(__dirname, 'dist');
 const nodeModulesDir = path.join(__dirname, 'node_modules');
@@ -13,8 +17,8 @@ const nodeModulesDir = path.join(__dirname, 'node_modules');
 const plugins = [
   new CleanWebpackPlugin(),
   new webpack.DefinePlugin({
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV.trim()),
-    'process.env.CLIENT_PORT': JSON.stringify(process.env.CLIENT_PORT),
+    'process.env.NODE_ENV': JSON.stringify(NODE_ENV),
+    'process.env.CLIENT_PORT': JSON.stringify(CLIENT_PORT),
   }),
 ];
 
