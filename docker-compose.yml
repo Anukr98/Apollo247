@@ -28,3 +28,11 @@ services:
       - 3001:3001
     volumes:
       - ./api:/api:cached
+    depends_on:
+      - doctors-db
+
+  doctors-db:
+    image: mysql:8.0.16
+    command: mysqld --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: doctors
