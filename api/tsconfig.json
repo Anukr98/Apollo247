@@ -12,6 +12,7 @@
     "traceResolution": false,
     "allowUnreachableCode": true,
     "strictNullChecks": true,
+    "resolveJsonModule": true,
     "lib": ["es5", "es6"]
   },
   "exclude": ["node_modules"]
