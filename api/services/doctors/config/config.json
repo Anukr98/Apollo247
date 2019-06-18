@@ -2,21 +2,21 @@
   "development": {
     "username": "root",
     "password": "doctors",
-    "database": "database_development",
+    "database": "doctors_development",
     "host": "doctors-db",
     "dialect": "mysql"
   },
   "test": {
     "username": "root",
     "password": "doctors",
-    "database": "database_test",
+    "database": "doctors_test",
     "host": "doctors-db",
     "dialect": "mysql"
   },
   "production": {
     "username": "root",
     "password": "doctors",
-    "database": "database_production",
+    "database": "doctors_production",
     "host": "doctors-db",
     "dialect": "mysql"
   }

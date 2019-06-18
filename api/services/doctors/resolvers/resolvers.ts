@@ -10,8 +10,9 @@ type Resolver<Parent = any, Args = any, Context = { models: typeof models }> = (
 export const typeDefs = gql`
   type Doctor @key(fields: "id") {
     id: Int!
-    name: String
-    birthDate: String
+    firstName: String
+    lastName: String
+    email: String
   }
 
   extend type Query {

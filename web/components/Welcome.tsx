@@ -24,7 +24,7 @@ export const Welcome: React.FC<WelcomeProps> = (props) => {
     <div className={classes.welcome}>
       Welcome <img src={require('images/apollo.jpg')} />
       <div className={classes.booksLink}>
-        <Link to={clientRoutes.books()}>Check out the books!</Link>
+        <Link to={clientRoutes.doctors()}>Check out the doctors!</Link>
       </div>
     </div>
   );

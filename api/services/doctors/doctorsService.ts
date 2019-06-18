@@ -14,5 +14,5 @@ const server = new ApolloServer({
 });
 
 server.listen({ port: 4001 }).then(({ url }) => {
-  console.log(`🚀 doctorsService ready at ${url}`);
+  console.log(`🚀 doctors service ready at ${url}`);
 });

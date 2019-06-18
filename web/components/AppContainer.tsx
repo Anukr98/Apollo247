@@ -14,6 +14,8 @@ import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { createHttpLink } from 'apollo-link-http';
 import ApolloClient from 'apollo-client';
+import { DoctorsList } from 'components/DoctorsList';
+import { Welcome } from 'components/Welcome';
 
 const apolloClient = new ApolloClient({
   link: createHttpLink({
@@ -28,12 +30,9 @@ const muiTheme = createMuiTheme({
       main: '#fcb716',
     },
   },
-  typography: { 
+  typography: {
     body2: {
-      fontFamily: [
-        'IBM Plex Sans',
-        'sans-serif',
-      ].join(','),
+      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
       fontSize: '12px',
       lineHeight: '18px',
       fontWeight: 400,
@@ -41,19 +40,13 @@ const muiTheme = createMuiTheme({
       backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
     },
     h1: {
-      fontFamily: [
-        'IBM Plex Sans',
-        'sans-serif',
-      ].join(','),
+      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
       fontSize: '56px',
       fontWeight: 600,
       color: '#02475b',
     },
     h5: {
-      fontFamily: [
-        'IBM Plex Sans',
-        'sans-serif',
-      ].join(','),
+      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
       fontSize: '14px',
       fontWeight: 500,
       color: '#02475b',
@@ -77,7 +70,7 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: '1064px',
       margin: 'auto',
-    }
+    },
   };
 });
 
@@ -90,6 +83,8 @@ const App: React.FC = () => {
         <Route exact component={HeroBanner} />
         <Route exact component={ServiceList} />
       </div>
+      <Route exact path={clientRoutes.welcome()} component={Welcome} />
+      <Route exact path={clientRoutes.doctors()} component={DoctorsList} />
     </div>
   );
 };

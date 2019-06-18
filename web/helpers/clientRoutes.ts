@@ -1,4 +1,4 @@
 export const clientRoutes = {
   welcome: () => '/',
-  books: () => '/books',
+  doctors: () => '/doctors',
 };
