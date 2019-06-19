@@ -52,16 +52,15 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+export interface SignInProps {}
+
 export const Header: React.FC = (props) => {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
-  function handleClick(event) {
-    setAnchorEl(anchorEl ? null : event.currentTarget);
-  }
-
+  const [signedIn, setSignedIn] = React.useState<boolean>(false);
+  const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popper' : undefined;
+
   return (
     <header className={classes.header}>
       <div className={classes.logo}>
@@ -70,14 +69,19 @@ export const Header: React.FC = (props) => {
         </Link>
       </div>
       <div className={classes.userAccount}>
-        <div className={classes.userCircle} aria-describedby={id} onClick={handleClick}>
+        <div className={classes.userCircle} aria-describedby={id} onClick={(e) => setAnchorEl(anchorEl ? null : e.currentTarget)}>
           <img src={require('images/ic_account.svg')} />
         </div>
         <Popper id={id} open={open} anchorEl={anchorEl} transition>
           {({ TransitionProps }) => (
             <Fade {...TransitionProps} timeout={350}>
               <Paper className={classes.loginForm}>
-                <Otp />
+                {
+                  signedIn ? 
+                  <Otp />
+                  :
+                  <SignIn onSignIn={(val) => setSignedIn(val)} />
+                }
               </Paper>
             </Fade>
           )}

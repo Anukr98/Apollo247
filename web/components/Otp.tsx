@@ -71,6 +71,21 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const Otp: React.FC = (props) => {
   const classes = useStyles();
+  /*
+  const focusInputField = (input:any) => {
+    input.focus();
+  }
+  */
+  const validateNumber = (e:any) => {
+    const number = e.target.value;
+    if(number>=0 && number<=9) {
+      return true;
+    } else {
+      e.target.value = '';
+      return false;
+    }
+  }
+
   return (
     <div className={classes.loginFormWrap}>
       <Typography variant="h2">hi</Typography>
@@ -81,6 +96,8 @@ export const Otp: React.FC = (props) => {
             <Input
               id="adornment-amount"
               defaultValue=""
+              inputProps={{ maxLength: 1 }}
+              onChange={(e) => validateNumber(e)}
             />
           </FormControl>
         </Grid>
@@ -89,6 +106,7 @@ export const Otp: React.FC = (props) => {
             <Input
               id="adornment-amount"
               defaultValue=""
+              inputProps={{ maxLength: 1 }}
             />
           </FormControl>
         </Grid>
@@ -97,6 +115,7 @@ export const Otp: React.FC = (props) => {
             <Input
               id="adornment-amount"
               defaultValue=""
+              inputProps={{ maxLength: 1 }}
             />
           </FormControl>
         </Grid>
@@ -105,6 +124,7 @@ export const Otp: React.FC = (props) => {
             <Input
               id="adornment-amount"
               defaultValue=""
+              inputProps={{ maxLength: 1 }}
             />
           </FormControl>
         </Grid>

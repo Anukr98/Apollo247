@@ -54,8 +54,17 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const SignIn: React.FC = (props) => {
+export interface SignInProps {
+ onSignIn: (signedIn:boolean) => void; 
+}
+
+const isMobileNumberValid = (number:string) => {
+  return (/^\d{10}$/.test(number)) ? true : false;
+}
+
+export const SignIn: React.FC<SignInProps> = (props) => {
   const classes = useStyles();
+  const { onSignIn } = props;
   return (
     <div className={classes.loginFormWrap}>
       <Typography variant="h2">hi</Typography>
@@ -64,6 +73,9 @@ export const SignIn: React.FC = (props) => {
         <Input
           id="adornment-amount"
           defaultValue=""
+          type="number"
+          inputProps={{ maxLength: 10 }}
+          onChange={(e) => onSignIn(isMobileNumberValid(e.currentTarget.value))}
           startAdornment={<InputAdornment className={classes.inputAdornment} position="start">+91</InputAdornment>}
         />
         <div className={classes.helpText}>
