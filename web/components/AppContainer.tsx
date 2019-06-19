@@ -12,7 +12,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory';
 import { createHttpLink } from 'apollo-link-http';
 import ApolloClient from 'apollo-client';
 import { Welcome } from 'components/Welcome';
-import { DoctorsList } from './DoctorsList';
+import { SignUp } from 'components/SignUp';
 
 const apolloClient = new ApolloClient({
   link: createHttpLink({
@@ -47,7 +47,8 @@ const muiTheme = createMuiTheme({
       fontSize: '36px',
       fontWeight: 600,
       color: '#02475b',
-    },
+      lineHeight: 1.22,
+    },    
     h5: {
       fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
       fontSize: '14px',
@@ -69,7 +70,28 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     app: {
       minHeight: '100vh',
-    },
+
+      '& label.Mui-focused': {
+        color: '#02475b',
+      },
+      '& .MuiInputBase-root:before': {
+        borderBottomColor: '#00b38e',
+      },
+      '& .MuiInput-underline:after': {
+        borderBottomColor: '#00b38e',
+      },
+      '& .MuiOutlinedInput-root': {
+        '& fieldset': {
+          borderColor: 'red',
+        },
+        '&:hover fieldset': {
+          borderColor: 'yellow',
+        },
+        '&.Mui-focused fieldset': {
+          borderColor: 'green',
+        },
+      },
+    },    
     container: {
       maxWidth: '1064px',
       margin: 'auto',
@@ -85,6 +107,7 @@ const App: React.FC = () => {
         <Route exact path={clientRoutes.welcome()} component={Welcome} />
         <Route exact path={clientRoutes.doctors()} component={DoctorsList} />
       </div>
+      <Route exact component={SignUp} />
     </div>
   );
 };
