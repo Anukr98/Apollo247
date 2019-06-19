@@ -9,6 +9,9 @@
         {
             "path": "api"
         },
+        {
+            "path": "nginx"
+        }
     ],
     "settings": {
         "typescript.tsdk": "web/node_modules/typescript/lib"
