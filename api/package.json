@@ -8,7 +8,7 @@
   "scripts": {
     "init:doctors": "cd services/doctors && sequelize db:create && sequelize db:migrate",
     "start:dev": "webpack && (node dist/doctorsService.bundle.js &) && sleep 5 && node dist/api.bundle.js",
-    "start:dev:windows": "set NODE_ENV=development && set CLIENT_PORT=3000 && set API_PORT=4000 && webpack && node dist/api.bundle.js",
+    "start:dev:windows": "set NODE_ENV=development && set CLIENT_PORT=3000 && set API_PORT=4000 && webpack && (node dist/doctorsService.bundle.js &) && sleep 5 && node dist/api.bundle.js",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx"
