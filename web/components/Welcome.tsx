@@ -1,8 +1,10 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
+import { Header } from 'components/Header';
+import { HeroBanner } from 'components/HeroBanner';
+import { ServiceList } from 'components/ServiceList';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -22,10 +24,9 @@ export const Welcome: React.FC<WelcomeProps> = (props) => {
   const classes = useStyles();
   return (
     <div className={classes.welcome}>
-      Welcome <img src={require('images/apollo.jpg')} />
-      <div className={classes.booksLink}>
-        <Link to={clientRoutes.doctors()}>Check out the doctors!</Link>
-      </div>
+      <Route exact component={Header} />
+      <Route exact component={HeroBanner} />
+      <Route exact component={ServiceList} />
     </div>
   );
 };

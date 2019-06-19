@@ -5,16 +5,12 @@ import { ThemeProvider, makeStyles } from '@material-ui/styles';
 import React from 'react';
 import { BrowserRouter, Route } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Header } from 'components/Header';
-import { HeroBanner } from 'components/HeroBanner';
-import { ServiceList } from 'components/ServiceList';
 import { apiRoutes } from 'helpers/apiRoutes';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { createHttpLink } from 'apollo-link-http';
 import ApolloClient from 'apollo-client';
-import { DoctorsList } from 'components/DoctorsList';
 import { Welcome } from 'components/Welcome';
 
 const apolloClient = new ApolloClient({
@@ -37,7 +33,7 @@ const muiTheme = createMuiTheme({
       lineHeight: '18px',
       fontWeight: 400,
       letterSpacing: 'normal',
-      backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
+/*      backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',*/
     },
     h1: {
       fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
@@ -79,12 +75,8 @@ const App: React.FC = () => {
   return (
     <div className={classes.app}>
       <div className={classes.container}>
-        <Route exact component={Header} />
-        <Route exact component={HeroBanner} />
-        <Route exact component={ServiceList} />
+        <Route exact path={clientRoutes.welcome()} component={Welcome} />
       </div>
-      <Route exact path={clientRoutes.welcome()} component={Welcome} />
-      <Route exact path={clientRoutes.doctors()} component={DoctorsList} />
     </div>
   );
 };
