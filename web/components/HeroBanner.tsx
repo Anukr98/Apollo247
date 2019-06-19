@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: '-190px',
       textAlign: 'right',
       '& img': {
-        marginTop: '-20px',
+        marginTop: '-15px',
       }
     },
     button: {

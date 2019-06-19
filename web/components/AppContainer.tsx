@@ -33,7 +33,7 @@ const muiTheme = createMuiTheme({
       lineHeight: '18px',
       fontWeight: 400,
       letterSpacing: 'normal',
-/*      backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',*/
+      backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
     },
     h1: {
       fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
@@ -41,10 +41,16 @@ const muiTheme = createMuiTheme({
       fontWeight: 600,
       color: '#02475b',
     },
+    h2: {
+      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
+      fontSize: '36px',
+      fontWeight: 600,
+      color: '#02475b',
+    },    
     h5: {
       fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
       fontSize: '14px',
-      fontWeight: 500,
+      fontWeight: 600,
       color: '#02475b',
     },
     button: {
