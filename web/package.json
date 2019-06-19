@@ -14,7 +14,7 @@
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "apollo:download": "apollo schema:download ./graphql/schema.json --endpoint=http://api:${API_PORT}/graphql",
     "apollo:download:windows": "apollo schema:download ./graphql/schema.json --endpoint=http://localhost:4000/graphql",
-    "apollo:codegen": "apollo codegen:generate ./graphql/types/ --outputFlat --addTypename --localSchemaFile=./graphql/schema.json --target=typescript --queries=./graphql/**.ts --watch",
+    "apollo:codegen": "apollo codegen:generate ./graphql/types/ --outputFlat --addTypename --localSchemaFile=./graphql/schema.json --target=typescript --queries=./graphql/**.ts",
     "apollo:codegen:windows": "apollo codegen:generate ./graphql/types/ --outputFlat --addTypename --localSchemaFile=./graphql/schema.json --target=typescript --queries=./graphql/**.ts"
   },
   "devDependencies": {
