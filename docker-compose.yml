@@ -15,6 +15,18 @@ services:
     volumes:
       - ./web:/web:cached
 
+  nginx:
+    image: nginx:1.14.2-alpine
+    tty: true
+    command: sh -c "nginx -t && nginx -g 'daemon off;'"
+    ports:
+      - 3000:3000
+      - 4000:4000
+    volumes:
+      - ./nginx/log/:/var/log/nginx
+      - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
+      - ./web/dist/:/usr/share/nginx/html/:ro 
+
   api:
     image: node:11.11.0
     working_dir: /api
