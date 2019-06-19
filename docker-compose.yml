@@ -1,20 +1,6 @@
 version: '3.4'
 
 services:
-  web:
-    image: node:11.11.0-alpine
-    working_dir: /web
-    command: sh -c "npm install --production=false && npm dedupe && npm run start:dev"
-    environment:
-      NODE_ENV: development
-      CLIENT_PORT: 3000
-      API_PORT: 4000
-      NPM_CONFIG_CACHE: /web/.npm-cache
-    ports:
-      - 3000:3000
-    volumes:
-      - ./web:/web:cached
-
   nginx:
     image: nginx:1.14.2-alpine
     tty: true
@@ -27,6 +13,20 @@ services:
       - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
       - ./web/dist/:/usr/share/nginx/html/:ro 
 
+  web:
+    image: node:11.11.0-alpine
+    working_dir: /web
+    command: sh -c "npm install --production=false && npm dedupe && npm run start:dev"
+    environment:
+      NODE_ENV: development
+      CLIENT_PORT: 3000
+      API_PORT: 4000
+      NPM_CONFIG_CACHE: /web/.npm-cache
+    volumes:
+      - ./web:/web:cached
+    depends_on:
+      - nginx
+
   api:
     image: node:11.11.0
     working_dir: /api
@@ -36,12 +36,11 @@ services:
       CLIENT_PORT: 3000
       API_PORT: 4000
       NPM_CONFIG_CACHE: /api/.npm-cache
-    ports:
-      - 4000:4000
     volumes:
       - ./api:/api:cached
     depends_on:
       - doctors-db
+      - nginx
 
   doctors-db:
     image: mysql:8.0.16
