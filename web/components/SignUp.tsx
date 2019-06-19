@@ -54,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: '20px',
 
       '& label': {
+        fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
         fontSize: '14px',
         fontWeight: 500,
         color: '#02475b',
@@ -84,6 +85,13 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '9px 13px',
       fontSize: '13px',
       fontWeight: 'bold',
+    },
+    btnGroup: {
+      marginTop: '5px',
+      '& button': {
+        width: '100%',
+        color: '#00b38e',
+      }
     },
   };
 });
@@ -126,6 +134,26 @@ export const SignUp: React.FC = (props) => {
               shrink: true,
             }}
           />
+          <div className={classes.formControl}>
+            <label>Gender</label>
+            <Grid container spacing={3} className={classes.btnGroup}>
+              <Grid item xs={6} sm={4}>
+                <Button variant="contained" className={classes.laterBtn}>
+                  Male
+                </Button>
+              </Grid>
+              <Grid item xs={6} sm={4}>
+                <Button variant="contained" className={classes.laterBtn}>
+                  Female
+                </Button>
+              </Grid>
+              <Grid item xs={6} sm={4}>
+                <Button variant="contained" className={classes.laterBtn}>
+                  Other
+                </Button>
+              </Grid>
+            </Grid>
+          </div>
           <TextField
             className={classes.formControl}
             label="Email Address (Optional)"
