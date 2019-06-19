@@ -12,6 +12,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory';
 import { createHttpLink } from 'apollo-link-http';
 import ApolloClient from 'apollo-client';
 import { Welcome } from 'components/Welcome';
+import { DoctorsList } from './DoctorsList';
 
 const apolloClient = new ApolloClient({
   link: createHttpLink({
@@ -46,7 +47,7 @@ const muiTheme = createMuiTheme({
       fontSize: '36px',
       fontWeight: 600,
       color: '#02475b',
-    },    
+    },
     h5: {
       fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
       fontSize: '14px',
@@ -82,6 +83,7 @@ const App: React.FC = () => {
     <div className={classes.app}>
       <div className={classes.container}>
         <Route exact path={clientRoutes.welcome()} component={Welcome} />
+        <Route exact path={clientRoutes.doctors()} component={DoctorsList} />
       </div>
     </div>
   );
