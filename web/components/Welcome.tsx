@@ -5,6 +5,7 @@ import { Header } from 'components/Header';
 import { HeroBanner } from 'components/HeroBanner';
 import { ServiceList } from 'components/ServiceList';
 import { Route } from 'react-router-dom';
+import { SignUp } from 'components/SignUp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -27,6 +28,7 @@ export const Welcome: React.FC<WelcomeProps> = (props) => {
       <Route exact component={Header} />
       <Route exact component={HeroBanner} />
       <Route exact component={ServiceList} />
+      <Route exact component={SignUp} />
     </div>
   );
 };
