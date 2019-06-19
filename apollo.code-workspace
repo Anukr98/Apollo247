@@ -1,7 +1,7 @@
 {
     "folders": [
         {
-            "path": "web"
+            "path": "web",
         },
         {
             "path": "mobile"
@@ -9,5 +9,8 @@
         {
             "path": "api"
         },
-    ]
+    ],
+    "settings": {
+        "typescript.tsdk": "web/node_modules/typescript/lib"
+    }
 }
