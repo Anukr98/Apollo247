@@ -1,23 +1,23 @@
 {
   "development": {
-    "username": "root",
-    "password": "doctors",
+    "username": "postgres",
+    "password": "postgres",
     "database": "doctors_development",
     "host": "doctors-db",
-    "dialect": "mysql"
+    "dialect": "postgres"
   },
   "test": {
-    "username": "root",
-    "password": "doctors",
+    "username": "postgres",
+    "password": "postgres",
     "database": "doctors_test",
     "host": "doctors-db",
-    "dialect": "mysql"
+    "dialect": "postgres"
   },
   "production": {
-    "username": "root",
-    "password": "doctors",
+    "username": "postgres",
+    "password": "postgres",
     "database": "doctors_production",
     "host": "doctors-db",
-    "dialect": "mysql"
+    "dialect": "postgres"
   }
 }

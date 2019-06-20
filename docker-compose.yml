@@ -42,16 +42,14 @@ services:
       - doctors-db
       - nginx
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin:4.8
-    environment:
-      PMA_ARBITRARY: 1
-    depends_on:
-      - doctors-db
+  doctors-pgweb:
+    image: sosedoff/pgweb:0.11.2
     ports:
-      - 8080:80
+      - 8001:8081
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@doctors-db:5432/postgres?sslmode=disable
 
   doctors-db:
-    image: mysql:5.7.24
+    image: postgres:10.8-alpine
     environment:
       MYSQL_ROOT_PASSWORD: doctors
