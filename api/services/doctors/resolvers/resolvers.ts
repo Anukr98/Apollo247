@@ -18,12 +18,24 @@ export const typeDefs = gql`
   extend type Query {
     doctors: [Doctor!]
   }
+
+  extend type Mutation {
+    createDoctor(firstName: String, lastName: String, email: String): Doctor!
+  }
 `;
 
 const doctors: Resolver = (parent, args, { models }) => models.Doctor.findAll();
+const createDoctor: Resolver<any, { firstName: string; lastName: string; email: string }> = (
+  parent,
+  args,
+  { models }
+) => models.Doctor.create({ ...args });
 
 export const resolvers = {
   Query: {
     doctors,
+  },
+  Mutation: {
+    createDoctor,
   },
 };

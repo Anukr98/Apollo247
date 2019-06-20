@@ -3,7 +3,7 @@
     "outDir": "./dist/",
     "baseUrl": "./",
     "module": "es6",
-    "target": "es5",
+    "target": "es6",
     "moduleResolution": "node",
     "allowJs": true,
     "sourceMap": true,
