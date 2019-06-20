@@ -13,7 +13,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '0 0 10px 10px',
       boxShadow: '0 0 5px 0 rgba(128, 128, 128, 0.2)',
       backgroundColor: '#ffffff',
-      padding: '40px 40px 20px 40px',
+      padding: '40px 40px 25px 40px',
     },
     bannerInfo: {
       width: '50%',
@@ -23,7 +23,12 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: '1.47',
         fontWeight: 500,
         color: '#0087ba',
-      }
+        marginTop: '16px',
+        marginBottom: '20px',
+      },
+      '& h1': {
+        lineHeight: '72px',
+      },
     },
     bannerImg: {
       width: '50%',
@@ -35,16 +40,13 @@ const useStyles = makeStyles((theme: Theme) => {
       }
     },
     button: {
-      fontFamily: [
-        'IBM Plex Sans',
-        'sans-serif',
-      ].join(','),
+      fontFamily: ['IBM Plex Sans', 'sans-serif',].join(','),
       color: '#fff',
-      fontSize: '12px',
+      fontSize: '13px',
+      fontWeight: 'bold',
       minWidth: '200px',
-      padding: '9px 15px',
+      padding: '8px 15px',
       borderRadius: '5px',
-      lineHeight: 1.85,
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
     },
   };

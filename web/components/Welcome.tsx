@@ -16,6 +16,10 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.primary.main,
       textDecoration: 'underline',
     },
+    container: {
+      maxWidth: '1064px',
+      margin: 'auto',
+    },
   };
 });
 
@@ -25,10 +29,11 @@ export const Welcome: React.FC<WelcomeProps> = (props) => {
   const classes = useStyles();
   return (
     <div className={classes.welcome}>
-      <Route exact component={Header} />
-      <Route exact component={HeroBanner} />
-      <Route exact component={ServiceList} />
-      <Route exact component={SignUp} />
+      <div className={classes.container}>
+        <Route exact component={Header} />
+        <Route exact component={HeroBanner} />
+        <Route exact component={ServiceList} />
+      </div>
     </div>
   );
 };
