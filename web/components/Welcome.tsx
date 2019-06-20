@@ -23,12 +23,13 @@ export interface WelcomeProps {}
 
 export const Welcome: React.FC<WelcomeProps> = (props) => {
   const classes = useStyles();
+  const [showSignUp, handleSignUpCard] = React.useState<boolean>(false);
   return (
     <div className={classes.welcome}>
       <Route exact component={Header} />
       <Route exact component={HeroBanner} />
       <Route exact component={ServiceList} />
-      <Route exact component={SignUp} />
+      {showSignUp ? <Route exact component={SignUp} /> : null}
     </div>
   );
 };

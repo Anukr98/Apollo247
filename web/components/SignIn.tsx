@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: '16px',
         fontWeight: 600,
         color: '#02475b',
-      }
+      },
     },
     inputAdornment: {
       color: '#02475b',
@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#02475b',
         fontSize: '16px',
         fontWeight: 600,
-      }
+      },
     },
     helpText: {
       fontSize: '12px',
@@ -49,22 +49,34 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: 'auto',
         marginRight: '-40px',
         backgroundColor: '#FED984',
-      }
-    }
+      },
+    },
   };
 });
 
-export interface SignInProps {
- onSignIn: (signedIn:boolean) => void; 
-}
+export interface SignInProps {}
 
-const isMobileNumberValid = (number:string) => {
-  return (/^\d{10}$/.test(number)) ? true : false;
+export interface SignInProps {
+  onSignIn: (signedIn: boolean) => void;
 }
 
 export const SignIn: React.FC<SignInProps> = (props) => {
   const classes = useStyles();
+  const [showSignInArrow, updateSignInArrowView] = React.useState<boolean>(false);
+  const signInArrowImage = <img src={require('images/ic_arrow_forward.svg')} alt="" />;
   const { onSignIn } = props;
+
+  const validateMobileNumber = (event: any) => {
+    const number = event.target.value;
+    if (/^\d+$/.test(number)) {
+      const validationStatus = /^\d{10}$/.test(number) ? true : false;
+      updateSignInArrowView(validationStatus);
+    } else {
+      event.target.value = number.replace(/\D/g, '');
+      return false;
+    }
+  };
+
   return (
     <div className={classes.loginFormWrap}>
       <Typography variant="h2">hi</Typography>
@@ -73,19 +85,26 @@ export const SignIn: React.FC<SignInProps> = (props) => {
         <Input
           id="adornment-amount"
           defaultValue=""
-          type="number"
           inputProps={{ maxLength: 10 }}
-          onChange={(e) => onSignIn(isMobileNumberValid(e.currentTarget.value))}
-          startAdornment={<InputAdornment className={classes.inputAdornment} position="start">+91</InputAdornment>}
+          onChange={(e) => validateMobileNumber(e)}
+          startAdornment={
+            <InputAdornment className={classes.inputAdornment} position="start">
+              +91
+            </InputAdornment>
+          }
         />
-        <div className={classes.helpText}>
-          OTP will be sent to this number
-        </div>
+        <div className={classes.helpText}>OTP will be sent to this number</div>
       </FormControl>
       <div className={classes.action}>
-        <Fab color="primary" aria-label="Add">
-          <img src={require('images/ic_arrow_forward.svg')} alt="" />
-        </Fab>
+        {showSignInArrow ? (
+          <Fab color="primary" aria-label="Add" onClick={(e) => onSignIn(true)}>
+            {signInArrowImage}
+          </Fab>
+        ) : (
+          <Fab color="primary" aria-label="Add" disabled>
+            {signInArrowImage}
+          </Fab>
+        )}
       </div>
     </div>
   );

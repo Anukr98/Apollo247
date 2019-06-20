@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         color: '#02475b',
         textAlign: 'center',
-      }
+      },
     },
     inputAdornment: {
       color: '#02475b',
@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#02475b',
         fontSize: '16px',
         fontWeight: 600,
-      }
+      },
     },
     helpText: {
       fontSize: '12px',
@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: '16px',
         fontWeight: 500,
         color: '#fff',
-      }
+      },
     },
     resendBtn: {
       padding: 0,
@@ -64,27 +64,22 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: '10px',
       '&:hover': {
         backgroundColor: 'transparent',
-      }
+      },
     },
   };
 });
 
 export const Otp: React.FC = (props) => {
   const classes = useStyles();
-  /*
-  const focusInputField = (input:any) => {
-    input.focus();
-  }
-  */
-  const validateNumber = (e:any) => {
+  const validateNumber = (e: any) => {
     const number = e.target.value;
-    if(number>=0 && number<=9) {
+    if (number >= 0 && number <= 9) {
       return true;
     } else {
       e.target.value = '';
       return false;
     }
-  }
+  };
 
   return (
     <div className={classes.loginFormWrap}>
@@ -103,29 +98,17 @@ export const Otp: React.FC = (props) => {
         </Grid>
         <Grid item xs={6} sm={3}>
           <FormControl fullWidth>
-            <Input
-              id="adornment-amount"
-              defaultValue=""
-              inputProps={{ maxLength: 1 }}
-            />
+            <Input id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
           </FormControl>
         </Grid>
         <Grid item xs={6} sm={3}>
           <FormControl fullWidth>
-            <Input
-              id="adornment-amount"
-              defaultValue=""
-              inputProps={{ maxLength: 1 }}
-            />
+            <Input id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
           </FormControl>
         </Grid>
         <Grid item xs={6} sm={3}>
           <FormControl fullWidth>
-            <Input
-              id="adornment-amount"
-              defaultValue=""
-              inputProps={{ maxLength: 1 }}
-            />
+            <Input id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
           </FormControl>
         </Grid>
       </Grid>

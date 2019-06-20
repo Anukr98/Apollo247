@@ -10,6 +10,7 @@ import Fade from '@material-ui/core/Fade';
 import Paper from '@material-ui/core/Paper';
 import { SignIn } from 'components/SignIn';
 import { Otp } from 'components/Otp';
+import * as AuthZero from 'auth0-js';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -48,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '10px',
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: '#ffffff',
-    },   
+    },
   };
 });
 
@@ -61,6 +62,18 @@ export const Header: React.FC = (props) => {
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popper' : undefined;
 
+  if (signedIn) {
+    const authService = new AuthZero.WebAuth({
+      domain: 'dev-7fta5h39.auth0.com',
+      clientID: 'qoSVdCWJlPU0gwD7ES3p34V7aRGgdM6C',
+      redirectUri: 'http://localhost:3000/auth0-callback',
+      responseType: 'token id_token',
+      scope: 'openid',
+    });
+
+    authService.authorize();
+  }
+
   return (
     <header className={classes.header}>
       <div className={classes.logo}>
@@ -69,19 +82,18 @@ export const Header: React.FC = (props) => {
         </Link>
       </div>
       <div className={classes.userAccount}>
-        <div className={classes.userCircle} aria-describedby={id} onClick={(e) => setAnchorEl(anchorEl ? null : e.currentTarget)}>
+        <div
+          className={classes.userCircle}
+          aria-describedby={id}
+          onClick={(e) => setAnchorEl(anchorEl ? null : e.currentTarget)}
+        >
           <img src={require('images/ic_account.svg')} />
         </div>
         <Popper id={id} open={open} anchorEl={anchorEl} transition>
           {({ TransitionProps }) => (
             <Fade {...TransitionProps} timeout={350}>
               <Paper className={classes.loginForm}>
-                {
-                  signedIn ? 
-                  <Otp />
-                  :
-                  <SignIn onSignIn={(val) => setSignedIn(val)} />
-                }
+                {signedIn ? <Otp /> : <SignIn onSignIn={(val) => setSignedIn(val)} />}
               </Paper>
             </Fade>
           )}

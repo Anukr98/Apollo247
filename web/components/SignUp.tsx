@@ -91,7 +91,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& button': {
         width: '100%',
         color: '#00b38e',
-      }
+      },
     },
   };
 });
@@ -104,7 +104,10 @@ export const SignUp: React.FC = (props) => {
         <img src={require('images/ic_mascot.png')} alt="" />
       </div>
       <div className={classes.signUpPop}>
-        <Typography variant="h2">welcome<br/> to apollo 24/7</Typography>
+        <Typography variant="h2">
+          welcome
+          <br /> to apollo 24/7
+        </Typography>
         <p>Let us quickly get to know you so that we can get you the best help :)</p>
         <form>
           <TextField
