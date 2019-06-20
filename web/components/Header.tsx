@@ -3,7 +3,7 @@ import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import Popper from '@material-ui/core/Popper';
+import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Fade from '@material-ui/core/Fade';
@@ -64,7 +64,15 @@ const useStyles = makeStyles((theme: Theme) => {
       '& .MuiInput-underline:after': {
         borderBottomColor: '#00b38e',
       },      
-    },   
+    },
+    topPopover: {
+      overflow: 'initial',
+      '& .MuiPopover-paper': {
+        overflow: 'initial',
+        backgroundColor: 'none',
+        boxShadow: 'none',
+      },
+    },
   };
 });
 
@@ -77,6 +85,10 @@ export const Header: React.FC = (props) => {
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popper' : undefined;
 
+  function handleClose() {
+    setAnchorEl(null);
+  }
+
   return (
     <header className={classes.header}>
       <div className={classes.logo}>
@@ -88,20 +100,30 @@ export const Header: React.FC = (props) => {
         <div className={classes.userCircle} aria-describedby={id} onClick={(e) => setAnchorEl(anchorEl ? null : e.currentTarget)}>
           <img src={require('images/ic_account.svg')} />
         </div>
-        <Popper id={id} open={open} anchorEl={anchorEl} transition>
-          {({ TransitionProps }) => (
-            <Fade {...TransitionProps} timeout={350}>
-              <Paper className={classes.loginForm}>
-                {
-                  signedIn ? 
-                  <Otp />
-                  :
-                  <SignIn onSignIn={(val) => setSignedIn(val)} />
-                }
-              </Paper>
-            </Fade>
-          )}
-        </Popper>
+        <Popover
+          id={id}
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          className={classes.topPopover}
+        >
+          <Paper className={classes.loginForm}>
+            {
+              signedIn ? 
+              <Otp />
+              :
+              <SignIn onSignIn={(val) => setSignedIn(val)} />
+            }
+          </Paper>
+        </Popover>
       </div>
     </header>
   );

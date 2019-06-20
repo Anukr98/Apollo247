@@ -34,6 +34,7 @@ export const Welcome: React.FC<WelcomeProps> = (props) => {
         <Route exact component={HeroBanner} />
         <Route exact component={ServiceList} />
       </div>
+      <Route exact component={SignUp} />
     </div>
   );
 };

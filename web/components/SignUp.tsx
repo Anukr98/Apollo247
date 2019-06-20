@@ -22,7 +22,6 @@ const useStyles = makeStyles((theme: Theme) => {
       cursor: 'pointer',
       paddingRight: '15px',
       paddingBottom: '10px',
-      display: 'none',
 
       '& img': {
         maxWidth: '72px',
@@ -30,6 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     signUpPop: {
+      display: 'none',
       width: '368px',
       padding: '20px',
       borderRadius: '10px',
