@@ -12,27 +12,33 @@ const useStyles = makeStyles((theme: Theme) => {
     serviceList: {
       paddingTop: '145px',
       paddingBottom: '40px',
+
+      '& .MuiGrid-container': {
+        paddingLeft: '20px',
+        paddingRight: '20px',
+      },
     },
     serviceItem: {
-      padding: '20px 65px 20px 20px',
+      padding: '20px 60px 20px 20px',
       borderRadius: '10px',
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: '#f7f8f5',
       position: 'relative',
       '& p': {
-        height: '36px',
-        opacity: 0.5,
         fontSize: '12px',
         fontWeight: 'normal',
         lineHeight: 1.5,
         letterSpacing: 'normal',
-        color: '#000000',
+        color: 'rgba(0,0,0,0.5)',
+        marginTop: '5px',
+        marginBottom: '5px',
       }
     },
     action: {
       fontSize: '13px',
       fontWeight: 'bold',
       color: '#fc9916',
+      lineHeight: 1.85,
       textTransform: 'uppercase',
     },
     serviceImg: {
@@ -43,6 +49,10 @@ const useStyles = makeStyles((theme: Theme) => {
       top: '-15px',
       right: '-15px',
       backgroundColor: '#afc3c9',
+
+      '& img': {
+        maxWidth: '100%',
+      },
     },
   };
 });
@@ -51,10 +61,11 @@ export const ServiceList: React.FC = (props) => {
   const classes = useStyles();
   return (
     <div className={classes.serviceList}>
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
         <Grid item xs={3}>
           <Paper className={classes.serviceItem}>
             <div className={classes.serviceImg}>
+              <img src={require('images/ic_placeholder.png')} />
             </div>
             <Typography variant="h5">You know which doctor you are looking for?</Typography>
             <p>Let’s get you connected with them.</p>
@@ -66,6 +77,7 @@ export const ServiceList: React.FC = (props) => {
         <Grid item xs={3}>
           <Paper className={classes.serviceItem}>
             <div className={classes.serviceImg}>
+              <img src={require('images/ic_placeholder.png')} />
             </div>
             <Typography variant="h5">Just want to buy medicines? It’s easy!</Typography>
             <p>You can search by name or prescription.</p>
@@ -77,6 +89,7 @@ export const ServiceList: React.FC = (props) => {
         <Grid item xs={3}>
           <Paper className={classes.serviceItem}>
             <div className={classes.serviceImg}>
+              <img src={require('images/ic_placeholder.png')} />
             </div>
             <Typography variant="h5">Do you want to get some tests done?</Typography>
             <p>Get your tests/diagnostics booked here.</p>
@@ -88,6 +101,7 @@ export const ServiceList: React.FC = (props) => {
         <Grid item xs={3}>
           <Paper className={classes.serviceItem}>
             <div className={classes.serviceImg}>
+              <img src={require('images/ic_placeholder.png')} />
             </div>
             <Typography variant="h5">Want to know how we have the best?</Typography>
             <p>Learn about our Star Doctors Program.</p>

@@ -20,13 +20,19 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         lineHeight: 1.41,
         color: '#0087ba',
+        marginTop: '5px',
+        marginBottom: '30px',
       },
       '& input': {
         fontSize: '16px',
         fontWeight: 600,
         color: '#02475b',
+<<<<<<< HEAD
         textAlign: 'center',
       },
+=======
+      }
+>>>>>>> origin/development
     },
     inputAdornment: {
       color: '#02475b',
@@ -40,10 +46,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: '12px',
       fontWeight: 500,
       color: '#02475b',
-      margin: '10px 0',
+      marginTop: '10px',
+      lineHeight: 2,
     },
     action: {
-      paddingTop: '10px',
       display: 'flex',
 
       '& button': {
@@ -88,7 +94,7 @@ export const Otp: React.FC = (props) => {
       <Grid container spacing={2}>
         <Grid item xs={6} sm={3}>
           <FormControl fullWidth>
-            <Input
+            <TextField
               id="adornment-amount"
               defaultValue=""
               inputProps={{ maxLength: 1 }}
@@ -98,17 +104,41 @@ export const Otp: React.FC = (props) => {
         </Grid>
         <Grid item xs={6} sm={3}>
           <FormControl fullWidth>
+<<<<<<< HEAD
             <Input id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
+=======
+            <TextField
+              id="adornment-amount"
+              defaultValue=""
+              inputProps={{ maxLength: 1 }}
+            />
+>>>>>>> origin/development
           </FormControl>
         </Grid>
         <Grid item xs={6} sm={3}>
           <FormControl fullWidth>
+<<<<<<< HEAD
             <Input id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
+=======
+            <TextField
+              id="adornment-amount"
+              defaultValue=""
+              inputProps={{ maxLength: 1 }}
+            />
+>>>>>>> origin/development
           </FormControl>
         </Grid>
         <Grid item xs={6} sm={3}>
           <FormControl fullWidth>
+<<<<<<< HEAD
             <Input id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
+=======
+            <TextField
+              id="adornment-amount"
+              defaultValue=""
+              inputProps={{ maxLength: 1 }}
+            />
+>>>>>>> origin/development
           </FormControl>
         </Grid>
       </Grid>

@@ -22,12 +22,16 @@ const apolloClient = new ApolloClient({
 });
 
 const muiTheme = createMuiTheme({
+  spacing: 10,
   palette: {
     primary: {
       main: '#fcb716',
     },
   },
   typography: {
+    body1: {
+      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
+    },
     body2: {
       fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
       fontSize: '12px',
@@ -41,19 +45,21 @@ const muiTheme = createMuiTheme({
       fontSize: '56px',
       fontWeight: 600,
       color: '#02475b',
+      letterSpacing: 'normal',
     },
     h2: {
       fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
       fontSize: '36px',
       fontWeight: 600,
       color: '#02475b',
-      lineHeight: 1.22,
+      lineHeight: 1.32,
     },
     h5: {
       fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
       fontSize: '14px',
-      fontWeight: 600,
+      fontWeight: 500,
       color: '#02475b',
+      lineHeight: 1.45,
     },
     button: {
       fontSize: '13px',
@@ -70,31 +76,19 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     app: {
       minHeight: '100vh',
-
       '& label.Mui-focused': {
         color: '#02475b',
       },
+      '& .MuiInputBase-root': {
+        fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
+      },
       '& .MuiInputBase-root:before': {
         borderBottomColor: '#00b38e',
+        borderWidth: '2px',
       },
       '& .MuiInput-underline:after': {
         borderBottomColor: '#00b38e',
       },
-      '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-          borderColor: 'red',
-        },
-        '&:hover fieldset': {
-          borderColor: 'yellow',
-        },
-        '&.Mui-focused fieldset': {
-          borderColor: 'green',
-        },
-      },
-    },
-    container: {
-      maxWidth: '1064px',
-      margin: 'auto',
     },
   };
 });
@@ -103,10 +97,8 @@ const App: React.FC = () => {
   const classes = useStyles();
   return (
     <div className={classes.app}>
-      <div className={classes.container}>
-        <Route exact path={clientRoutes.welcome()} component={Welcome} />
-        <Route exact path={clientRoutes.doctors()} component={DoctorsList} />
-      </div>
+      <Route exact path={clientRoutes.welcome()} component={Welcome} />
+      <Route exact path={clientRoutes.doctors()} component={DoctorsList} />
     </div>
   );
 };

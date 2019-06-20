@@ -3,7 +3,7 @@ import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import Popper from '@material-ui/core/Popper';
+import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Fade from '@material-ui/core/Fade';
@@ -18,14 +18,14 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       boxShadow: '0 0 5px 0 rgba(128, 128, 128, 0.2)',
       backgroundColor: '#ffffff',
-      padding: '20px 20px 3px 20px',
+      padding: '20px 20px 4px 20px',
     },
     logo: {
       '& a': {
         display: 'block',
       },
       '& img': {
-        maxWidth: '80px',
+        maxWidth: '77px',
       },
     },
     userAccount: {
@@ -49,6 +49,33 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '10px',
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: '#ffffff',
+<<<<<<< HEAD
+=======
+      '& label.Mui-focused': {
+        color: '#02475b',
+      },
+      '& .MuiInputBase-root': {
+        fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
+      },
+      '& .MuiInputBase-root:before': {
+        borderBottomColor: '#00b38e',
+        borderWidth: '2px',
+      },
+      '& .MuiInputBase-root:hover:before': {
+        borderBottomColor: 'rgba(0, 0, 0, 0.5)',
+      },
+      '& .MuiInput-underline:after': {
+        borderBottomColor: '#00b38e',
+      },      
+    },
+    topPopover: {
+      overflow: 'initial',
+      '& .MuiPopover-paper': {
+        overflow: 'initial',
+        backgroundColor: 'none',
+        boxShadow: 'none',
+      },
+>>>>>>> origin/development
     },
   };
 });
@@ -62,6 +89,7 @@ export const Header: React.FC = (props) => {
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popper' : undefined;
 
+<<<<<<< HEAD
   if (signedIn) {
     const authService = new AuthZero.WebAuth({
       domain: 'dev-7fta5h39.auth0.com',
@@ -72,13 +100,17 @@ export const Header: React.FC = (props) => {
     });
 
     authService.authorize();
+=======
+  function handleClose() {
+    setAnchorEl(null);
+>>>>>>> origin/development
   }
 
   return (
     <header className={classes.header}>
       <div className={classes.logo}>
         <Link to="/">
-          <img src={require('images/ic_logo.svg')} />
+          <img src={require('images/ic_logo.png')} />
         </Link>
       </div>
       <div className={classes.userAccount}>
@@ -89,6 +121,7 @@ export const Header: React.FC = (props) => {
         >
           <img src={require('images/ic_account.svg')} />
         </div>
+<<<<<<< HEAD
         <Popper id={id} open={open} anchorEl={anchorEl} transition>
           {({ TransitionProps }) => (
             <Fade {...TransitionProps} timeout={350}>
@@ -98,6 +131,32 @@ export const Header: React.FC = (props) => {
             </Fade>
           )}
         </Popper>
+=======
+        <Popover
+          id={id}
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          className={classes.topPopover}
+        >
+          <Paper className={classes.loginForm}>
+            {
+              signedIn ? 
+              <Otp />
+              :
+              <SignIn onSignIn={(val) => setSignedIn(val)} />
+            }
+          </Paper>
+        </Popover>
+>>>>>>> origin/development
       </div>
     </header>
   );
