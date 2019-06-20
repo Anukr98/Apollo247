@@ -70,17 +70,6 @@ export const SignIn: React.FC<SignInProps> = (props) => {
   const signInArrowImage = <img src={require('images/ic_arrow_forward.svg')} alt="" />;
   const { onSignIn } = props;
 
-  const validateMobileNumber = (event: any) => {
-    const number = event.target.value;
-    if (/^\d+$/.test(number)) {
-      const validationStatus = /^\d{10}$/.test(number) ? true : false;
-      updateSignInArrowView(validationStatus);
-    } else {
-      event.target.value = number.replace(/\D/g, '');
-      return false;
-    }
-  };
-
   return (
     <div className={classes.loginFormWrap}>
       <Typography variant="h2">hi</Typography>
@@ -90,7 +79,16 @@ export const SignIn: React.FC<SignInProps> = (props) => {
           id="adornment-amount"
           defaultValue=""
           inputProps={{ maxLength: 10 }}
-          onChange={(e) => validateMobileNumber(e)}
+          onChange={(event) => {
+            const number = event.currentTarget.value;
+            if (/^\d+$/.test(number)) {
+              const validationStatus = /^\d{10}$/.test(number) ? true : false;
+              updateSignInArrowView(validationStatus);
+            } else {
+              event.target.value = number.replace(/\D/g, '');
+              return false;
+            }
+          }}
           startAdornment={
             <InputAdornment className={classes.inputAdornment} position="start">
               +91

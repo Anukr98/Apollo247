@@ -76,15 +76,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const Otp: React.FC = (props) => {
   const classes = useStyles();
-  const validateNumber = (e: any) => {
-    const number = e.target.value;
-    if (number >= 0 && number <= 9) {
-      return true;
-    } else {
-      e.target.value = '';
-      return false;
-    }
-  };
 
   return (
     <div className={classes.loginFormWrap}>
@@ -97,7 +88,15 @@ export const Otp: React.FC = (props) => {
               id="adornment-amount"
               defaultValue=""
               inputProps={{ maxLength: 1 }}
-              onChange={(e) => validateNumber(e)}
+              onChange={(e) => {
+                const number = parseInt(e.currentTarget.value, 10);
+                if (number >= 0 && number <= 9) {
+                  return true;
+                } else {
+                  e.target.value = '';
+                  return false;
+                }
+              }}
             />
           </FormControl>
         </Grid>
@@ -118,13 +117,9 @@ export const Otp: React.FC = (props) => {
         </Grid>
         <Grid item>
           <FormControl fullWidth>
-            <TextField
-              id="adornment-amount"
-              defaultValue=""
-              inputProps={{ maxLength: 1 }}
-            />
+            <TextField id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
           </FormControl>
-        </Grid>        
+        </Grid>
       </Grid>
       <Button className={classes.resendBtn}>Resend OTP</Button>
       <div className={classes.action}>
