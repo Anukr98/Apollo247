@@ -27,12 +27,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: '16px',
         fontWeight: 600,
         color: '#02475b',
-<<<<<<< HEAD
-        textAlign: 'center',
       },
-=======
-      }
->>>>>>> origin/development
     },
     inputAdornment: {
       color: '#02475b',
@@ -104,41 +99,17 @@ export const Otp: React.FC = (props) => {
         </Grid>
         <Grid item xs={6} sm={3}>
           <FormControl fullWidth>
-<<<<<<< HEAD
-            <Input id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
-=======
-            <TextField
-              id="adornment-amount"
-              defaultValue=""
-              inputProps={{ maxLength: 1 }}
-            />
->>>>>>> origin/development
+            <TextField id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
           </FormControl>
         </Grid>
         <Grid item xs={6} sm={3}>
           <FormControl fullWidth>
-<<<<<<< HEAD
-            <Input id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
-=======
-            <TextField
-              id="adornment-amount"
-              defaultValue=""
-              inputProps={{ maxLength: 1 }}
-            />
->>>>>>> origin/development
+            <TextField id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
           </FormControl>
         </Grid>
         <Grid item xs={6} sm={3}>
           <FormControl fullWidth>
-<<<<<<< HEAD
-            <Input id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
-=======
-            <TextField
-              id="adornment-amount"
-              defaultValue=""
-              inputProps={{ maxLength: 1 }}
-            />
->>>>>>> origin/development
+            <TextField id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
           </FormControl>
         </Grid>
       </Grid>

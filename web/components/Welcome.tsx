@@ -30,19 +30,12 @@ export const Welcome: React.FC<WelcomeProps> = (props) => {
   const [showSignUp, handleSignUpCard] = React.useState<boolean>(false);
   return (
     <div className={classes.welcome}>
-<<<<<<< HEAD
-      <Route exact component={Header} />
-      <Route exact component={HeroBanner} />
-      <Route exact component={ServiceList} />
-      {showSignUp ? <Route exact component={SignUp} /> : null}
-=======
       <div className={classes.container}>
         <Route exact component={Header} />
         <Route exact component={HeroBanner} />
         <Route exact component={ServiceList} />
       </div>
-      <Route exact component={SignUp} />
->>>>>>> origin/development
+      {showSignUp ? <Route exact component={SignUp} /> : null}
     </div>
   );
 };

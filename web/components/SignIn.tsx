@@ -35,12 +35,8 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#02475b',
         fontSize: '16px',
         fontWeight: 600,
-<<<<<<< HEAD
-      },
-=======
         marginBottom: '7px',
-      }
->>>>>>> origin/development
+      },
     },
     helpText: {
       fontSize: '12px',

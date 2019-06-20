@@ -49,8 +49,6 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '10px',
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: '#ffffff',
-<<<<<<< HEAD
-=======
       '& label.Mui-focused': {
         color: '#02475b',
       },
@@ -66,7 +64,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& .MuiInput-underline:after': {
         borderBottomColor: '#00b38e',
-      },      
+      },
     },
     topPopover: {
       overflow: 'initial',
@@ -75,7 +73,6 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'none',
         boxShadow: 'none',
       },
->>>>>>> origin/development
     },
   };
 });
@@ -89,7 +86,6 @@ export const Header: React.FC = (props) => {
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popper' : undefined;
 
-<<<<<<< HEAD
   if (signedIn) {
     const authService = new AuthZero.WebAuth({
       domain: 'dev-7fta5h39.auth0.com',
@@ -98,12 +94,11 @@ export const Header: React.FC = (props) => {
       responseType: 'token id_token',
       scope: 'openid',
     });
-
     authService.authorize();
-=======
+  }
+
   function handleClose() {
     setAnchorEl(null);
->>>>>>> origin/development
   }
 
   return (
@@ -121,17 +116,6 @@ export const Header: React.FC = (props) => {
         >
           <img src={require('images/ic_account.svg')} />
         </div>
-<<<<<<< HEAD
-        <Popper id={id} open={open} anchorEl={anchorEl} transition>
-          {({ TransitionProps }) => (
-            <Fade {...TransitionProps} timeout={350}>
-              <Paper className={classes.loginForm}>
-                {signedIn ? <Otp /> : <SignIn onSignIn={(val) => setSignedIn(val)} />}
-              </Paper>
-            </Fade>
-          )}
-        </Popper>
-=======
         <Popover
           id={id}
           open={open}
@@ -148,15 +132,9 @@ export const Header: React.FC = (props) => {
           className={classes.topPopover}
         >
           <Paper className={classes.loginForm}>
-            {
-              signedIn ? 
-              <Otp />
-              :
-              <SignIn onSignIn={(val) => setSignedIn(val)} />
-            }
+            {signedIn ? <Otp /> : <SignIn onSignIn={(val) => setSignedIn(val)} />}
           </Paper>
         </Popover>
->>>>>>> origin/development
       </div>
     </header>
   );
