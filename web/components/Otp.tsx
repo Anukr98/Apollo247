@@ -27,6 +27,10 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: '16px',
         fontWeight: 600,
         color: '#02475b',
+        textAlign: 'center',
+      },
+      '& .MuiGrid-container': {
+        flexWrap: 'nowrap',
       },
     },
     inputAdornment: {
@@ -86,8 +90,8 @@ export const Otp: React.FC = (props) => {
     <div className={classes.loginFormWrap}>
       <Typography variant="h2">hi</Typography>
       <p>Type in the OTP sent to you, to authenticate</p>
-      <Grid container spacing={2}>
-        <Grid item xs={6} sm={3}>
+      <Grid container spacing={1}>
+        <Grid item>
           <FormControl fullWidth>
             <TextField
               id="adornment-amount"
@@ -97,21 +101,30 @@ export const Otp: React.FC = (props) => {
             />
           </FormControl>
         </Grid>
-        <Grid item xs={6} sm={3}>
+        <Grid item>
           <FormControl fullWidth>
             <TextField id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
           </FormControl>
         </Grid>
-        <Grid item xs={6} sm={3}>
+        <Grid item>
           <FormControl fullWidth>
             <TextField id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
           </FormControl>
         </Grid>
-        <Grid item xs={6} sm={3}>
+        <Grid item>
           <FormControl fullWidth>
             <TextField id="adornment-amount" defaultValue="" inputProps={{ maxLength: 1 }} />
           </FormControl>
         </Grid>
+        <Grid item>
+          <FormControl fullWidth>
+            <TextField
+              id="adornment-amount"
+              defaultValue=""
+              inputProps={{ maxLength: 1 }}
+            />
+          </FormControl>
+        </Grid>        
       </Grid>
       <Button className={classes.resendBtn}>Resend OTP</Button>
       <div className={classes.action}>

@@ -52,7 +52,7 @@ const muiTheme = createMuiTheme({
       fontSize: '36px',
       fontWeight: 600,
       color: '#02475b',
-      lineHeight: 1.32,
+      lineHeight: 1.22,
     },
     h5: {
       fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),

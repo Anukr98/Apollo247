@@ -46,8 +46,8 @@ const useStyles = makeStyles((theme: Theme) => {
       height: '70px',
       borderRadius: '50%',
       position: 'absolute',
-      top: '-15px',
-      right: '-15px',
+      top: '-10px',
+      right: '-10px',
       backgroundColor: '#afc3c9',
 
       '& img': {

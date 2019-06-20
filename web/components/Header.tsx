@@ -67,7 +67,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     topPopover: {
-      overflow: 'initial',
       '& .MuiPopover-paper': {
         overflow: 'initial',
         backgroundColor: 'none',
