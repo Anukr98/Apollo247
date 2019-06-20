@@ -1,4 +1,4 @@
-import { makeStyles } from '@material-ui/styles';
+import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -13,7 +13,7 @@ import Fab from '@material-ui/core/Fab';
 import Grid from '@material-ui/core/Grid';
 
 const useStyles = makeStyles((theme: Theme) => {
-  return {
+  return createStyles({
     signUpBar: {
       display: 'flex',
     },
@@ -61,7 +61,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& form': {
         paddingTop: '30px',
-      }
+      },
     },
     formControl: {
       marginBottom: '20px',
@@ -112,7 +112,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#00b38e',
         backgroundColor: '#fff',
         fontSize: '16px',
-        fontWeight: '500',
+        fontWeight: 500,
         fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
         letterSpacing: '-0.36px',
         textTransform: 'none',
@@ -127,7 +127,7 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#ffffff',
       },
     },
-  };
+  });
 });
 
 export const SignUp: React.FC = (props) => {
@@ -166,7 +166,10 @@ export const SignUp: React.FC = (props) => {
         }}
       >
         <div className={classes.signUpPop}>
-          <Typography variant="h2">welcome<br/> to apollo 24/7</Typography>
+          <Typography variant="h2">
+            welcome
+            <br /> to apollo 24/7
+          </Typography>
           <p>Let us quickly get to know you so that we can get you the best help :)</p>
           <form>
             <TextField
@@ -200,19 +203,13 @@ export const SignUp: React.FC = (props) => {
               <label>Gender</label>
               <Grid container spacing={2} className={classes.btnGroup}>
                 <Grid item xs={6} sm={4}>
-                  <Button variant="contained">
-                    Male
-                  </Button>
+                  <Button variant="contained">Male</Button>
                 </Grid>
                 <Grid item xs={6} sm={4}>
-                  <Button variant="contained">
-                    Female
-                  </Button>
+                  <Button variant="contained">Female</Button>
                 </Grid>
                 <Grid item xs={6} sm={4}>
-                  <Button variant="contained">
-                    Other
-                  </Button>
+                  <Button variant="contained">Other</Button>
                 </Grid>
               </Grid>
             </div>
