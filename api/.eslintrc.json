@@ -11,8 +11,9 @@
   "extends": [],
   "plugins": ["import", "@typescript-eslint"],
   "rules": {
-    "import/no-default-export": "warn",
     "@typescript-eslint/no-unused-vars": ["warn", { "args": "none" }],
+    "import/no-default-export": "warn",
+    "no-var": "warn",
     "prefer-const": "warn"
   }
 }
