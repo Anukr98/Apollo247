@@ -1,16 +1,12 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, Button, Grid, TextField } from '@material-ui/core';
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
-import Popper from '@material-ui/core/Popper';
 import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import FormControl from '@material-ui/core/FormControl';
 import Input from '@material-ui/core/Input';
-import TextField from '@material-ui/core/TextField';
 import Fab from '@material-ui/core/Fab';
+import { useSignIn, useSendOtp, useVerifyOtp, useCurrentUser } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -60,35 +56,44 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export interface SignInProps {}
 
-export interface SignInProps {
-  onSignIn: (signedIn: boolean) => void;
-}
+export interface SignInProps {}
+
+const recaptchaContainerId = 'recaptcha-container';
+
+const isMobileNumberValid = (number: string) => /^\d{10}$/.test(number);
 
 export const SignIn: React.FC<SignInProps> = (props) => {
   const classes = useStyles();
-  const [showSignInArrow, updateSignInArrowView] = React.useState<boolean>(false);
+  const [mobileNumber, setMobileNumber] = React.useState<string>('');
+  const [displayOtpInput, setDisplayOtpInput] = React.useState<boolean>(false);
+  const [otp, setOtp] = React.useState<string>('');
+  const sendOtp = useSendOtp();
+  const verifyOtp = useVerifyOtp();
   const signInArrowImage = <img src={require('images/ic_arrow_forward.svg')} alt="" />;
-  const { onSignIn } = props;
+  // const currentUser = useCurrentUser();
 
-  return (
+  return displayOtpInput ? (
+    <div className={classes.loginFormWrap}>
+      <Typography variant="h2">hi</Typography>
+      <p>Type in the OTP sent to you, to authenticate</p>
+      <TextField value={otp} onChange={(e) => setOtp(e.currentTarget.value)} />
+      <div className={classes.action}>
+        <Fab color="primary" onClick={(e) => verifyOtp(otp)}>
+          OK
+        </Fab>
+      </div>
+    </div>
+  ) : (
     <div className={classes.loginFormWrap}>
       <Typography variant="h2">hi</Typography>
       <p>Please enter your mobile number to login</p>
+
       <FormControl fullWidth>
         <Input
-          id="adornment-amount"
-          defaultValue=""
-          inputProps={{ maxLength: 10 }}
-          onChange={(event) => {
-            const number = event.currentTarget.value;
-            if (/^\d+$/.test(number)) {
-              const validationStatus = /^\d{10}$/.test(number) ? true : false;
-              updateSignInArrowView(validationStatus);
-            } else {
-              event.target.value = number.replace(/\D/g, '');
-              return false;
-            }
-          }}
+          inputProps={{ type: 'number', maxLength: 10 }}
+          value={mobileNumber}
+          onChange={(event) => setMobileNumber(event.currentTarget.value)}
+          error={!isMobileNumberValid(mobileNumber)}
           startAdornment={
             <InputAdornment className={classes.inputAdornment} position="start">
               +91
@@ -97,17 +102,21 @@ export const SignIn: React.FC<SignInProps> = (props) => {
         />
         <div className={classes.helpText}>OTP will be sent to this number</div>
       </FormControl>
+
       <div className={classes.action}>
-        {showSignInArrow ? (
-          <Fab color="primary" aria-label="Add" onClick={(e) => onSignIn(true)}>
-            {signInArrowImage}
-          </Fab>
-        ) : (
-          <Fab color="primary" aria-label="Add" disabled>
-            {signInArrowImage}
-          </Fab>
-        )}
+        <Fab
+          color="primary"
+          aria-label="Sign in"
+          // disabled={!isMobileNumberValid(mobileNumber)}
+          onClick={(e) =>
+            sendOtp(mobileNumber, recaptchaContainerId).then(() => setDisplayOtpInput(true))
+          }
+        >
+          {signInArrowImage}
+        </Fab>
       </div>
+
+      <div id={recaptchaContainerId}></div>
     </div>
   );
 };

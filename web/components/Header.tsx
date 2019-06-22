@@ -130,9 +130,7 @@ export const Header: React.FC = (props) => {
           }}
           className={classes.topPopover}
         >
-          <Paper className={classes.loginForm}>
-            {signedIn ? <Otp /> : <SignIn onSignIn={(val) => setSignedIn(val)} />}
-          </Paper>
+          <Paper className={classes.loginForm}>{signedIn ? <Otp /> : <SignIn />}</Paper>
         </Popover>
       </div>
     </header>

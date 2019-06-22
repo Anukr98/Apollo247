@@ -13,6 +13,7 @@ import { createHttpLink } from 'apollo-link-http';
 import ApolloClient from 'apollo-client';
 import { Welcome } from 'components/Welcome';
 import { DoctorsList } from 'components/DoctorsList';
+import { AuthProvider } from 'components/AuthProvider';
 
 const apolloClient = new ApolloClient({
   link: createHttpLink({
@@ -106,15 +107,13 @@ const App: React.FC = () => {
 const AppContainer: React.FC = () => {
   return (
     <BrowserRouter>
-      <ApolloProvider client={apolloClient}>
-        <ApolloHooksProvider client={apolloClient}>
-          <ThemeProvider theme={muiTheme}>
-            <CssBaseline>
-              <App />
-            </CssBaseline>
-          </ThemeProvider>
-        </ApolloHooksProvider>
-      </ApolloProvider>
+      <AuthProvider>
+        <ThemeProvider theme={muiTheme}>
+          <CssBaseline>
+            <App />
+          </CssBaseline>
+        </ThemeProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 };

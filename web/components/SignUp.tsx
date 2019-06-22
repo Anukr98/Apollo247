@@ -132,7 +132,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const SignUp: React.FC = (props) => {
   const classes = useStyles();
-  const [signedIn, setSignedIn] = React.useState<boolean>(false);
   const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popper' : undefined;
