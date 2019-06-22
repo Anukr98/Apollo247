@@ -7,28 +7,36 @@ import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloClient } from 'apollo-client';
 import { createHttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
-import jsCookie from 'js-cookie';
 
 import { apiRoutes } from 'helpers/apiRoutes';
 
 export interface AuthProviderProps {
   currentUser: any | null;
-  signIn: (() => Promise<void>) | null;
-  signOut: (() => any) | null;
   authenticating: boolean;
-  sendOtp:
-    | ((mobileNumber: string, recaptchaContainerId: HTMLElement['id']) => Promise<void>)
+  buildCaptchaVerifier:
+    | ((recaptchaContainerId: HTMLElement['id']) => firebase.auth.RecaptchaVerifier_Instance)
     | null;
-  verifyOtp: ((otp: string) => void) | null;
+  verifyPhoneNumber:
+    | ((
+        mobileNumber: string,
+        captchaVerifier: firebase.auth.RecaptchaVerifier_Instance | null
+      ) => ReturnType<firebase.auth.PhoneAuthProvider_Instance['verifyPhoneNumber']>)
+    | null;
+  verifyOtp:
+    | ((phoneNumberVerificationToken: string, otp: string) => Promise<firebase.auth.AuthCredential>)
+    | null;
+  signIn: ((otpVerificationToken: firebase.auth.AuthCredential) => Promise<void>) | null;
+  signOut: (() => any) | null;
 }
 
 export const AuthContext = React.createContext<AuthProviderProps>({
   currentUser: null,
+  authenticating: true,
+  buildCaptchaVerifier: null,
+  verifyPhoneNumber: null,
+  verifyOtp: null,
   signIn: null,
   signOut: null,
-  authenticating: true,
-  sendOtp: null,
-  verifyOtp: null,
 });
 
 const userIsValid = (user: firebase.User | null) => user && user.phoneNumber;
@@ -49,68 +57,65 @@ const buildApolloClient = (authToken: string) => {
   return new ApolloClient({ link, cache });
 };
 
-let verificationId;
-
 export const AuthProvider: React.FC = (props) => {
   const [currentUser, setCurrentUser] = useState<AuthProviderProps['currentUser']>(null);
+  const [authenticating, setAuthenticating] = useState<AuthProviderProps['authenticating']>(true);
+  const [buildCaptchaVerifier, setBuildCaptchaVerifier] = useState<
+    AuthProviderProps['buildCaptchaVerifier']
+  >(null);
+  const [verifyPhoneNumber, setVerifyPhoneNumber] = useState<
+    AuthProviderProps['verifyPhoneNumber']
+  >(null);
+  const [verifyOtp, setVerifyOtp] = useState<AuthProviderProps['verifyOtp']>(null);
   const [signIn, setSignIn] = useState<AuthProviderProps['signIn']>(null);
   const [signOut, setSignOut] = useState<AuthProviderProps['signOut']>(null);
-  const [sendOtp, setSendOtp] = useState<AuthProviderProps['sendOtp']>(null);
-  const [verifyOtp, setVerifyOtp] = useState<AuthProviderProps['verifyOtp']>(null);
-  const [authenticating, setAuthenticating] = useState<AuthProviderProps['authenticating']>(true);
 
   const [authToken, setAuthToken] = useState<string>('');
   apolloClient = buildApolloClient(authToken);
 
-  // var applicationVerifier = new firebase.auth.RecaptchaVerifier(
-  //     'recaptcha-container');
-  // var provider = new firebase.auth.PhoneAuthProvider();
-  // provider.verifyPhoneNumber('+16505550101', applicationVerifier)
-  //     .then(function(verificationId) {
-  //       var verificationCode = window.prompt('Please enter the verification code that was sent to your mobile device.');
-  //       return firebase.auth.PhoneAuthProvider.credential(verificationId, verificationCode)
-  //     })
-  //     .then(function(phoneCredential) {
-  //       return firebase.auth().signInWithCredential(phoneCredential);
-  //     });
-
   useEffect(() => {
     const app = firebase.initializeApp({
       apiKey: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+      appId: '1:537093214409:web:4eec27a7bc6bc1c8',
       authDomain: 'apollo-patient-interface.firebaseapp.com',
       databaseURL: 'https://apollo-patient-interface.firebaseio.com',
+      messagingSenderId: '537093214409',
       projectId: 'apollo-patient-interface',
       storageBucket: '',
-      messagingSenderId: '537093214409',
-      appId: '1:537093214409:web:4eec27a7bc6bc1c8',
     });
     const auth = app.auth();
-    // const firebaseProvider = new firebase.auth.PhoneAuthProvider();
 
-    const sendOtpFunc = () => (mobileNumber: string, recaptchaContainerId: HTMLElement['id']) => {
-      const applicationVerifier = new firebase.auth.RecaptchaVerifier(recaptchaContainerId);
-      return applicationVerifier.verify().then((x) => {
-        const provider = new firebase.auth.PhoneAuthProvider();
-        return provider
-          .verifyPhoneNumber('+17155290756', applicationVerifier)
-          .then((res) => (verificationId = res))
-          .then(() => {});
-      });
+    const buildCaptchaVerifierFunc = () => (recaptchaContainerId: HTMLElement['id']) => {
+      return new firebase.auth.RecaptchaVerifier(recaptchaContainerId);
     };
-    setSendOtp(sendOtpFunc);
+    setBuildCaptchaVerifier(buildCaptchaVerifierFunc);
 
-    const verifyOtpFunc = () => (otp: string) => {
-      console.log('verifying', verificationId, otp);
-      const phoneCredential = firebase.auth.PhoneAuthProvider.credential(verificationId, otp);
-      console.log('verify result', phoneCredential);
-      return firebase.auth().signInWithCredential(phoneCredential);
+    const verifyPhoneNumberFunc = () => (
+      mobileNumber: string,
+      captchaVerifier: firebase.auth.RecaptchaVerifier_Instance
+    ) => {
+      const provider = new firebase.auth.PhoneAuthProvider();
+      return provider.verifyPhoneNumber(mobileNumber, captchaVerifier);
+    };
+    setVerifyPhoneNumber(verifyPhoneNumberFunc);
+
+    const verifyOtpFunc = () => (phoneNumberVerificationToken: string, otp: string) => {
+      const otpVerificationToken = firebase.auth.PhoneAuthProvider.credential(
+        phoneNumberVerificationToken,
+        otp
+      );
+      return Promise.resolve(otpVerificationToken);
     };
     setVerifyOtp(verifyOtpFunc);
 
-    // const signInFunc = () => (phoneCredential) => {
-    //   return firebase.auth().signInWithCredential(phoneCredential);
-    // };
-    // setSignIn(signInFunc);
+    const signInFunc = () => (otpVerificationToken: firebase.auth.AuthCredential) => {
+      setAuthenticating(true);
+      return firebase
+        .auth()
+        .signInWithCredential(otpVerificationToken)
+        .then(() => {});
+    };
+    setSignIn(signInFunc);
 
     const signOutFunc = () => () => auth.signOut();
     setSignOut(signOutFunc);
@@ -127,6 +132,7 @@ export const AuthProvider: React.FC = (props) => {
       }
       return updatedUser!.getIdToken().then((updatedToken) => {
         setAuthToken(updatedToken);
+        setAuthenticating(false);
         console.log('auth token is', updatedToken);
         // return apolloClient.mutate<UserSignIn, UserSignInVariables>({
         //   mutation: USER_SIGN_IN,
@@ -155,7 +161,15 @@ export const AuthProvider: React.FC = (props) => {
     <ApolloProvider client={apolloClient}>
       <ApolloHooksProvider client={apolloClient}>
         <AuthContext.Provider
-          value={{ authenticating, sendOtp, verifyOtp, signIn, signOut, currentUser }}
+          value={{
+            currentUser,
+            authenticating,
+            buildCaptchaVerifier,
+            verifyPhoneNumber,
+            verifyOtp,
+            signIn,
+            signOut,
+          }}
         >
           {props.children}
         </AuthContext.Provider>
