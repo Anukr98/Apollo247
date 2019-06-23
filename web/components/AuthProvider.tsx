@@ -58,6 +58,9 @@ const buildApolloClient = (authToken: string) => {
 };
 
 export const AuthProvider: React.FC = (props) => {
+  const [authToken, setAuthToken] = useState<string>('');
+  apolloClient = buildApolloClient(authToken);
+
   const [currentUser, setCurrentUser] = useState<AuthProviderProps['currentUser']>(null);
   const [authenticating, setAuthenticating] = useState<AuthProviderProps['authenticating']>(true);
   const [buildCaptchaVerifier, setBuildCaptchaVerifier] = useState<
@@ -69,9 +72,6 @@ export const AuthProvider: React.FC = (props) => {
   const [verifyOtp, setVerifyOtp] = useState<AuthProviderProps['verifyOtp']>(null);
   const [signIn, setSignIn] = useState<AuthProviderProps['signIn']>(null);
   const [signOut, setSignOut] = useState<AuthProviderProps['signOut']>(null);
-
-  const [authToken, setAuthToken] = useState<string>('');
-  apolloClient = buildApolloClient(authToken);
 
   useEffect(() => {
     const app = firebase.initializeApp({

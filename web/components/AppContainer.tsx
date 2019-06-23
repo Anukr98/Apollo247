@@ -10,22 +10,9 @@ import {
 import React from 'react';
 import { BrowserRouter, Route } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { apiRoutes } from 'helpers/apiRoutes';
-import { ApolloProvider } from 'react-apollo';
-import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
-import { InMemoryCache } from 'apollo-cache-inmemory';
-import { createHttpLink } from 'apollo-link-http';
-import ApolloClient from 'apollo-client';
 import { Welcome } from 'components/Welcome';
 import { DoctorsList } from 'components/DoctorsList';
 import { AuthProvider } from 'components/AuthProvider';
-
-const apolloClient = new ApolloClient({
-  link: createHttpLink({
-    uri: apiRoutes.graphql(),
-  }),
-  cache: new InMemoryCache(),
-});
 
 const muiTheme = createMuiTheme({
   spacing: 10,
@@ -118,11 +105,11 @@ const AppContainer: React.FC = () => {
     <BrowserRouter>
       <AuthProvider>
         <StylesProvider generateClassName={generator}>
-        <ThemeProvider theme={muiTheme}>
-          <CssBaseline>
-            <App />
-          </CssBaseline>
-        </ThemeProvider>
+          <ThemeProvider theme={muiTheme}>
+            <CssBaseline>
+              <App />
+            </CssBaseline>
+          </ThemeProvider>
         </StylesProvider>
       </AuthProvider>
     </BrowserRouter>
