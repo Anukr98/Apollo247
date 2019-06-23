@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -11,6 +11,7 @@ import Paper from '@material-ui/core/Paper';
 import { SignIn } from 'components/SignIn';
 import { Otp } from 'components/Otp';
 import * as AuthZero from 'auth0-js';
+import { useAuthenticating } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -80,25 +81,8 @@ export interface SignInProps {}
 
 export const Header: React.FC = (props) => {
   const classes = useStyles();
-  const [signedIn, setSignedIn] = React.useState<boolean>(false);
   const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
-  const open = Boolean(anchorEl);
-  const id = open ? 'simple-popper' : undefined;
-
-  if (signedIn) {
-    const authService = new AuthZero.WebAuth({
-      domain: 'dev-7fta5h39.auth0.com',
-      clientID: 'qoSVdCWJlPU0gwD7ES3p34V7aRGgdM6C',
-      redirectUri: 'http://localhost:3000/auth0-callback',
-      responseType: 'token id_token',
-      scope: 'openid',
-    });
-    authService.authorize();
-  }
-
-  function handleClose() {
-    setAnchorEl(null);
-  }
+  const authenticating = useAuthenticating();
 
   return (
     <header className={classes.header}>
@@ -110,16 +94,14 @@ export const Header: React.FC = (props) => {
       <div className={classes.userAccount}>
         <div
           className={classes.userCircle}
-          aria-describedby={id}
           onClick={(e) => setAnchorEl(anchorEl ? null : e.currentTarget)}
         >
-          <img src={require('images/ic_account.svg')} />
+          {authenticating ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
         </div>
         <Popover
-          id={id}
-          open={open}
+          open={Boolean(anchorEl)}
           anchorEl={anchorEl}
-          onClose={handleClose}
+          onClose={() => setAnchorEl(null)}
           anchorOrigin={{
             vertical: 'top',
             horizontal: 'right',
@@ -130,7 +112,9 @@ export const Header: React.FC = (props) => {
           }}
           className={classes.topPopover}
         >
-          <Paper className={classes.loginForm}>{signedIn ? <Otp /> : <SignIn />}</Paper>
+          <Paper className={classes.loginForm}>
+            <SignIn />
+          </Paper>
         </Popover>
       </div>
     </header>

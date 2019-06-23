@@ -5,6 +5,7 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloClient } from 'apollo-client';
+import { ErrorResponse, onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
 
@@ -45,16 +46,22 @@ const userIsValid = (user: firebase.User | null) => user && user.phoneNumber;
 
 let apolloClient: ApolloClient<any>;
 const buildApolloClient = (authToken: string) => {
+  const errorLink = onError(({ networkError, operation, forward }: ErrorResponse) => {
+    // // There's a bug in the apollo typedefs and `statusCode` is not recognized, but it's there
+    // if (networkError && (networkError as any).statusCode === 401) {
+    //   window.location.reload();
+    // }
+    console.log(networkError, operation);
+    return forward(operation);
+  });
   const authLink = setContext((_, { headers }) => ({
     headers: {
       ...headers,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
       Authorization: authToken,
     },
   }));
   const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
-  const link = authLink.concat(httpLink);
+  const link = errorLink.concat(authLink).concat(httpLink);
   const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
   return new ApolloClient({ link, cache });
 };
@@ -74,6 +81,12 @@ export const AuthProvider: React.FC = (props) => {
   const [verifyOtp, setVerifyOtp] = useState<AuthProviderProps['verifyOtp']>(null);
   const [signIn, setSignIn] = useState<AuthProviderProps['signIn']>(null);
   const [signOut, setSignOut] = useState<AuthProviderProps['signOut']>(null);
+
+  useEffect(() => {
+    console.log('--------------- signed in as -------------');
+    console.log(currentUser);
+    console.log('------------------------------------------');
+  }, [currentUser]);
 
   useEffect(() => {
     const projectId = process.env.FIREBASE_PROJECT_ID;
@@ -123,7 +136,7 @@ export const AuthProvider: React.FC = (props) => {
     const signOutFunc = () => () => auth.signOut();
     setSignOut(signOutFunc);
 
-    auth.onAuthStateChanged((updatedUser) => {
+    auth.onAuthStateChanged(async (updatedUser) => {
       // There is no hook to know when firebase is loading, but we know this fires when it has attempted
       // (whether automated from an existing cache or from an actual user-initiated sign in click)
       // Set the default `authenticating` value to true, and clear it out in all cases here
@@ -133,26 +146,24 @@ export const AuthProvider: React.FC = (props) => {
         setAuthenticating(false);
         return;
       }
-      return updatedUser!
-        .getIdToken()
-        .then((updatedToken) => {
-          setAuthToken(updatedToken);
-          setAuthenticating(false);
-          return apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
-            mutation: PATIENT_SIGN_IN,
-            variables: { jwt: updatedToken },
-          });
-        })
-        .then((patientSignInResult) => {
-          if (patientSignInResult.data) {
-            const patient = patientSignInResult.data.patientSignIn.patients[0];
-            setCurrentUser(patient);
-            setAuthenticating(false);
-          } else {
-            setCurrentUser(null);
-            setAuthenticating(false);
-          }
-        });
+
+      const updatedToken = await updatedUser!.getIdToken();
+      setAuthToken(updatedToken);
+      setAuthenticating(false);
+
+      const patientSignInResult = await apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
+        mutation: PATIENT_SIGN_IN,
+        variables: { jwt: updatedToken },
+      });
+
+      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients[0]) {
+        const patient = patientSignInResult.data.patientSignIn.patients[0];
+        setCurrentUser(patient);
+        setAuthenticating(false);
+      } else {
+        setCurrentUser(null);
+        setAuthenticating(false);
+      }
     });
   }, []);
 

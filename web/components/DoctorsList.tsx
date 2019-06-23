@@ -3,7 +3,7 @@ import { Theme, CircularProgress, Typography, Divider } from '@material-ui/core'
 import React from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import { GetDoctors } from 'graphql/types/GetDoctors';
-import { GET_DOCTORS } from 'graphql/doctors';
+import { GET_DOCTORS } from 'graphql/profiles';
 import { LocalHospital } from '@material-ui/icons';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { apiRoutes } from 'helpers/apiRoutes';
