@@ -4,7 +4,7 @@ services:
   nginx:
     image: nginx:1.14.2-alpine
     tty: true
-    command: sh -c "nginx -t && nginx -g 'daemon off;'"
+    command: ash -c "nginx -t && nginx -g 'daemon off;'"
     ports:
       - 3000:3000
       - 4000:4000
@@ -13,43 +13,58 @@ services:
       - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
       - ./web/dist/:/usr/share/nginx/html/:ro 
 
+  pgweb:
+    image: sosedoff/pgweb:0.11.2
+    ports:
+      - 8081:8081
+
   web:
     image: node:11.11.0-alpine
     working_dir: /web
-    command: sh -c "npm install --production=false && npm dedupe && npm run start:dev"
+    command: ash -c "npm install --production=false && npm run start:dev"
     environment:
       NODE_ENV: development
-      CLIENT_PORT: 3000
-      API_PORT: 4000
+      WEB_CLIENT_PORT: 3000
+      API_GATEWAY_PORT: 4000
       NPM_CONFIG_CACHE: /web/.npm-cache
     volumes:
       - ./web:/web:cached
     depends_on:
       - nginx
 
-  api:
+  api-gateway:
     image: node:11.11.0
-    working_dir: /api
-    command: sh -c "npm install --production=false && npm dedupe && npm run start:dev"
+    working_dir: /api/gateway
+    command: >
+      bash -c "npm install --production=false && 
+               while ! curl -s http://profiles-service/graphql > /dev/null; 
+                 do echo waiting for profiles-service...; 
+                 sleep 5; 
+               done; 
+               npm run start:api-gateway"
     environment:
       NODE_ENV: development
-      CLIENT_PORT: 3000
-      API_PORT: 4000
+      WEB_CLIENT_PORT: 3000
+      API_GATEWAY_PORT: 4000
       NPM_CONFIG_CACHE: /api/.npm-cache
     volumes:
       - ./api:/api:cached
     depends_on:
-      - doctors-db
+      - profiles-service
       - nginx
 
-  doctors-pgweb:
-    image: sosedoff/pgweb:0.11.2
-    ports:
-      - 8001:8081
+  profiles-service:
+    image: node:11.11.0
+    working_dir: /api/services/profiles
+    command: bash -c "npm install --production=false && npm dedupe && npm run start:profiles-service"
     environment:
-      - DATABASE_URL=postgres://postgres:postgres@doctors-db:5432/postgres?sslmode=disable
+      NODE_ENV: development
+      NPM_CONFIG_CACHE: /api/.npm-cache
+    volumes:
+      - ./api:/api:cached
+    depends_on:
+      - profiles-db
 
-  doctors-db:
+  profiles-db:
     image: postgres:10.8-alpine
-    environment:
-      MYSQL_ROOT_PASSWORD: doctors
+

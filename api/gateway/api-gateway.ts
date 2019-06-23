@@ -3,7 +3,7 @@ import { ApolloGateway } from '@apollo/gateway';
 import { GraphQLExecutor } from 'apollo-server-core';
 
 const gateway = new ApolloGateway({
-  serviceList: [{ name: 'doctors', url: 'http://localhost:4001/graphql' }],
+  serviceList: [{ name: 'profiles', url: 'http://profiles-service/graphql' }],
 });
 
 (async () => {
@@ -11,7 +11,7 @@ const gateway = new ApolloGateway({
   const schema = config.schema;
   const executor = config.executor as GraphQLExecutor;
   const server = new ApolloServer({ schema, executor });
-  server.listen(process.env.API_PORT).then(({ url }) => {
+  server.listen(process.env.API_GATEWAY_PORT).then(({ url }) => {
     console.log(`🚀 api gateway ready at ${url}`);
   });
 })();

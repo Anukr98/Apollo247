@@ -4,9 +4,9 @@ const nodeExternals = require('webpack-node-externals');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const webpack = require('webpack');
 
-// const API_PORT = process.env.API_PORT.trim();
-const CLIENT_PORT = process.env.CLIENT_PORT.trim();
-const NODE_ENV = process.env.NODE_ENV.trim();
+const API_GATEWAY_PORT = (process.env.API_GATEWAY_PORT || '').trim();
+const WEB_CLIENT_PORT = (process.env.WEB_CLIENT_PORT || '').trim();
+const NODE_ENV = (process.env.NODE_ENV || '').trim();
 
 // const isDevelopment = NODE_ENV === 'development';
 const isProduction = NODE_ENV === 'production';
@@ -18,7 +18,8 @@ const plugins = [
   new CleanWebpackPlugin(),
   new webpack.DefinePlugin({
     'process.env.NODE_ENV': JSON.stringify(NODE_ENV),
-    'process.env.CLIENT_PORT': JSON.stringify(CLIENT_PORT),
+    'process.env.API_GATEWAY_PORT': JSON.stringify(API_GATEWAY_PORT),
+    'process.env.WEB_CLIENT_PORT': JSON.stringify(WEB_CLIENT_PORT),
   }),
 ];
 
@@ -34,8 +35,8 @@ module.exports = {
   context: path.resolve(__dirname),
 
   entry: {
-    api: 'api.ts',
-    doctorsService: 'services/doctors/doctorsService.ts',
+    'api-gateway': 'gateway/api-gateway.ts',
+    'profiles-service': 'services/profiles/profiles-service.ts',
   },
 
   output: {

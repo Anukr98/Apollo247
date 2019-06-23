@@ -6,17 +6,19 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
-    "start:dev": "npm run apollo:download & npm run apollo:codegen & npm run lint && webpack-dev-server",
+    "start:dev": "npm run apollo:download & npm run apollo:codegen & npm run lint & npm run format:check & webpack-dev-server",
     "build:prod": "webpack",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "apollo:download": "apollo schema:download ./graphql/schema.json --endpoint=http://api:${API_PORT}/graphql",
-    "apollo:codegen": "apollo codegen:generate ./graphql/types/ --outputFlat --addTypename --localSchemaFile=./graphql/schema.json --target=typescript --queries=./graphql/**.ts"
+    "apollo:download": "apollo schema:download ./graphql/schema.json --endpoint=http://api-gateway:${API_GATEWAY_PORT}/graphql",
+    "apollo:codegen": "apollo codegen:generate ./graphql/types/ --outputFlat --addTypename --localSchemaFile=./graphql/schema.json --target=typescript --queries=./graphql/**.ts",
+    "apollo:codegen:watch": "apollo codegen:generate ./graphql/types/ --outputFlat --addTypename --localSchemaFile=./graphql/schema.json --target=typescript --queries=./graphql/**.ts --watch"
   },
   "devDependencies": {
     "@babel/core": "7.4.5",
     "@types/auth0-js": "^9.10.2",
+    "@types/graphql": "^14.2.1",
     "@types/lodash": "^4.14.134",
     "@types/react": "^16.8.19",
     "@types/react-dom": "^16.8.4",

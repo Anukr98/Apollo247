@@ -1,5 +1,4 @@
-package-lock.json
-.npm-cache
-node_modules
 dist
-aws-exports.js
+node_modules
+.npm-cache
+package-lock.json

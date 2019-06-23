@@ -6,8 +6,9 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
-    "init:doctors": "cd services/doctors && sequelize db:create && sequelize db:migrate",
-    "start:dev": "webpack && (node dist/doctorsService.bundle.js &) && sleep 5 && node dist/api.bundle.js",
+    "init:profiles-service": "cd services/profiles && sequelize db:create && sequelize db:migrate",
+    "start:profiles-service": "webpack && node dist/profiles-service.bundle.js",
+    "start:api-gateway": "npm run lint & npm run format:check & webpack && node dist/api-gateway.bundle.js",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx"

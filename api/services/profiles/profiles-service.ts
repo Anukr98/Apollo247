@@ -1,7 +1,7 @@
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
-import { models } from 'services/doctors/models/models';
-import { resolvers, typeDefs } from 'services/doctors/resolvers/resolvers';
+import { models } from 'services/profiles/models/models';
+import { resolvers, typeDefs } from 'services/profiles/resolvers/resolvers';
 
 const server = new ApolloServer({
   context: () => ({ models }),
@@ -13,6 +13,6 @@ const server = new ApolloServer({
   ]),
 });
 
-server.listen({ port: 4001 }).then(({ url }) => {
-  console.log(`🚀 doctors service ready at ${url}`);
+server.listen({ port: 80 }).then(({ url }) => {
+  console.log(`🚀 profiles-service ready at ${url}`);
 });

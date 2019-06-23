@@ -1,5 +1,6 @@
-package-lock.json
-.npm-cache
 node_modules
-android/build
+.npm-cache
+package-lock.json
+android/app/build
 android/.gradle
+ios/build

@@ -2,22 +2,22 @@
   "development": {
     "username": "postgres",
     "password": "postgres",
-    "database": "doctors_development",
-    "host": "doctors-db",
+    "database": "profiles_development",
+    "host": "profiles-db",
     "dialect": "postgres"
   },
   "test": {
     "username": "postgres",
     "password": "postgres",
-    "database": "doctors_test",
-    "host": "doctors-db",
+    "database": "profiles_test",
+    "host": "profiles-db",
     "dialect": "postgres"
   },
   "production": {
     "username": "postgres",
     "password": "postgres",
-    "database": "doctors_production",
-    "host": "doctors-db",
+    "database": "profiles_production",
+    "host": "profiles-db",
     "dialect": "postgres"
   }
 }
