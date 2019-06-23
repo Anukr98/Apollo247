@@ -21,6 +21,7 @@
   "rules": {
     "@typescript-eslint/no-unused-vars": ["warn", { "args": "none" }],
     "import/no-default-export": "warn",
+    "import/no-relative-parent-imports": "warn",
     "no-var": "warn",
     "prefer-arrow-callback": "warn",
     "prefer-const": "warn",
