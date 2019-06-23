@@ -2,7 +2,7 @@ import { Sequelize, Model, DataTypes } from 'sequelize';
 
 // See: http://docs.sequelizejs.com/manual/typescript.html
 class DoctorModel extends Model {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   email: string;

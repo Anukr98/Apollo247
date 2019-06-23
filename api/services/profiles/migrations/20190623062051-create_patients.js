@@ -3,11 +3,15 @@ module.exports = {
     return queryInterface.createTable('patients', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
       },
-      firstNamej: {
+      firebaseId: {
+        allowNull: false,
+        primaryKey: true,
+        type: Sequelize.STRING,
+      },
+      firstName: {
         type: Sequelize.STRING,
         allowNull: false,
       },
