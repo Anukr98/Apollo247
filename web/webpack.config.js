@@ -3,22 +3,22 @@ const process = require('process');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
-const NODE_ENV = process.env.NODE_ENV.trim();
-const API_GATEWAY_PORT = process.env.API_GATEWAY_PORT.trim();
-const WEB_CLIENT_PORT = process.env.WEB_CLIENT_PORT.trim();
-
-const isDevelopment = NODE_ENV === 'development';
-const isProduction = NODE_ENV === 'production';
+const isDevelopment = process.env.NODE_ENV === 'development';
+const isProduction = process.env.NODE_ENV === 'production';
 
 const distDir = path.resolve(__dirname, 'dist');
 const nodeModulesDir = path.join(__dirname, 'node_modules');
 
 let plugins = [
-  new webpack.DefinePlugin({
-    'process.env.NODE_ENV': JSON.stringify(NODE_ENV),
-    'process.env.WEB_CLIENT_PORT': JSON.stringify(WEB_CLIENT_PORT),
-    'process.env.API_GATEWAY_PORT': JSON.stringify(API_GATEWAY_PORT),
-  }),
+  new webpack.DefinePlugin(
+    ['NODE_ENV', 'WEB_CLIENT_PORT', 'API_GATEWAY_PORT', 'FIREBASE_PROJECT_NAME'].reduce(
+      (result, VAR) => ({
+        ...result,
+        [`process.env.${VAR}`]: JSON.stringify(process.env[VAR] || '').trim(),
+      }),
+      {}
+    )
+  ),
   new HtmlWebpackPlugin({
     filename: 'index.html',
     chunks: ['index'],
@@ -95,7 +95,7 @@ module.exports = {
         publicPath: '/', // URL path where the webpack files are served from
         contentBase: distDir, // A directory to serve files non-webpack files from (Absolute path)
         host: '0.0.0.0',
-        port: WEB_CLIENT_PORT,
+        port: process.env.WEB_CLIENT_PORT,
         disableHostCheck: true,
         hot: true,
         inline: true,

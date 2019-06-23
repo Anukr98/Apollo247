@@ -9,6 +9,8 @@ import { createHttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
 
 import { apiRoutes } from 'helpers/apiRoutes';
+import { PatientSignIn, PatientSignInVariables } from 'graphql/types/PatientSignIn';
+import { PATIENT_SIGN_IN } from 'graphql/profiles';
 
 export interface AuthProviderProps {
   currentUser: any | null;
@@ -74,13 +76,14 @@ export const AuthProvider: React.FC = (props) => {
   const [signOut, setSignOut] = useState<AuthProviderProps['signOut']>(null);
 
   useEffect(() => {
+    const projectId = process.env.FIREBASE_PROJECT_ID;
     const app = firebase.initializeApp({
+      projectId,
       apiKey: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
       appId: '1:537093214409:web:4eec27a7bc6bc1c8',
-      authDomain: 'apollo-patient-interface.firebaseapp.com',
-      databaseURL: 'https://apollo-patient-interface.firebaseio.com',
+      authDomain: `${projectId}.firebaseapp.com`,
+      databaseURL: `https://${projectId}.firebaseio.com`,
       messagingSenderId: '537093214409',
-      projectId: 'apollo-patient-interface',
       storageBucket: '',
     });
     const auth = app.auth();
@@ -130,30 +133,26 @@ export const AuthProvider: React.FC = (props) => {
         setAuthenticating(false);
         return;
       }
-      return updatedUser!.getIdToken().then((updatedToken) => {
-        setAuthToken(updatedToken);
-        setAuthenticating(false);
-        console.log('auth token is', updatedToken);
-        // return apolloClient.mutate<UserSignIn, UserSignInVariables>({
-        //   mutation: USER_SIGN_IN,
-        //   variables: { token: updatedToken },
-        // });
-      });
-      // .then((userSignInResult) => {
-      //   if (
-      //     userSignInResult &&
-      //     userSignInResult.data &&
-      //     userSignInResult.data.userSignIn &&
-      //     userSignInResult.data.userSignIn.user
-      //   ) {
-      //     const user = userSignInResult.data.userSignIn.user;
-      //     setCurrentUser(user);
-      //     setAuthenticating(false);
-      //   } else {
-      //     setCurrentUser(null);
-      //     setAuthenticating(false);
-      //   }
-      // });
+      return updatedUser!
+        .getIdToken()
+        .then((updatedToken) => {
+          setAuthToken(updatedToken);
+          setAuthenticating(false);
+          return apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
+            mutation: PATIENT_SIGN_IN,
+            variables: { jwt: updatedToken },
+          });
+        })
+        .then((patientSignInResult) => {
+          if (patientSignInResult.data) {
+            const patient = patientSignInResult.data.patientSignIn.patients[0];
+            setCurrentUser(patient);
+            setAuthenticating(false);
+          } else {
+            setCurrentUser(null);
+            setAuthenticating(false);
+          }
+        });
     });
   }, []);
 

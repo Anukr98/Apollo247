@@ -4,23 +4,29 @@ const nodeExternals = require('webpack-node-externals');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const webpack = require('webpack');
 
-const API_GATEWAY_PORT = (process.env.API_GATEWAY_PORT || '').trim();
-const WEB_CLIENT_PORT = (process.env.WEB_CLIENT_PORT || '').trim();
-const NODE_ENV = (process.env.NODE_ENV || '').trim();
-
-// const isDevelopment = NODE_ENV === 'development';
-const isProduction = NODE_ENV === 'production';
+// const isDevelopment = process.env.NODE_ENV === 'development';
+const isProduction = process.env.NODE_ENV === 'production';
 
 const distDir = path.resolve(__dirname, 'dist');
 const nodeModulesDir = path.join(__dirname, 'node_modules');
 
 const plugins = [
   new CleanWebpackPlugin(),
-  new webpack.DefinePlugin({
-    'process.env.NODE_ENV': JSON.stringify(NODE_ENV),
-    'process.env.API_GATEWAY_PORT': JSON.stringify(API_GATEWAY_PORT),
-    'process.env.WEB_CLIENT_PORT': JSON.stringify(WEB_CLIENT_PORT),
-  }),
+  new webpack.DefinePlugin(
+    [
+      'NODE_ENV',
+      'WEB_CLIENT_PORT',
+      'API_GATEWAY_PORT',
+      'FIREBASE_PROJECT_NAME',
+      'GOOGLE_APPLICATION_CREDENTIALS',
+    ].reduce(
+      (result, VAR) => ({
+        ...result,
+        [`process.env.${VAR}`]: JSON.stringify(process.env[VAR] || '').trim(),
+      }),
+      {}
+    )
+  ),
 ];
 
 const tsLoader = { loader: 'ts-loader' };

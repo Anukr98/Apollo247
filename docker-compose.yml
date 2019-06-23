@@ -23,10 +23,11 @@ services:
     working_dir: /web
     command: ash -c "npm install --production=false && npm run start:dev"
     environment:
+      NPM_CONFIG_CACHE: /web/.npm-cache
       NODE_ENV: development
       WEB_CLIENT_PORT: 3000
       API_GATEWAY_PORT: 4000
-      NPM_CONFIG_CACHE: /web/.npm-cache
+      FIREBASE_PROJECT_NAME: apollo-patient-interface
     volumes:
       - ./web:/web:cached
     depends_on:
@@ -43,10 +44,10 @@ services:
                done; 
                npm run start:api-gateway"
     environment:
+      NPM_CONFIG_CACHE: /api/.npm-cache
       NODE_ENV: development
       WEB_CLIENT_PORT: 3000
       API_GATEWAY_PORT: 4000
-      NPM_CONFIG_CACHE: /api/.npm-cache
     volumes:
       - ./api:/api:cached
     depends_on:
@@ -58,8 +59,10 @@ services:
     working_dir: /api/services/profiles
     command: bash -c "npm install --production=false && npm dedupe && npm run start:profiles-service"
     environment:
-      NODE_ENV: development
       NPM_CONFIG_CACHE: /api/.npm-cache
+      NODE_ENV: development
+      GOOGLE_APPLICATION_CREDENTIALS: /api/services/profiles/config/firebase-secrets.json
+      FIREBASE_PROJECT_NAME: apollo-patient-interface
     volumes:
       - ./api:/api:cached
     depends_on:
