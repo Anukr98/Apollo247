@@ -1,7 +1,12 @@
 import { setConfig, Config } from 'react-hot-loader';
 import { hot } from 'react-hot-loader/root';
 import { createMuiTheme, CssBaseline, Theme } from '@material-ui/core';
-import { ThemeProvider, makeStyles } from '@material-ui/styles';
+import {
+  ThemeProvider,
+  makeStyles,
+  StylesProvider,
+  createGenerateClassName,
+} from '@material-ui/styles';
 import React from 'react';
 import { BrowserRouter, Route } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -104,15 +109,21 @@ const App: React.FC = () => {
   );
 };
 
+const generator = createGenerateClassName({
+  seed: `${Math.floor(Math.random() * 1000)}`,
+});
+
 const AppContainer: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <StylesProvider generateClassName={generator}>
         <ThemeProvider theme={muiTheme}>
           <CssBaseline>
             <App />
           </CssBaseline>
         </ThemeProvider>
+        </StylesProvider>
       </AuthProvider>
     </BrowserRouter>
   );
