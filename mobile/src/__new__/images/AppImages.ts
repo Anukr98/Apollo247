@@ -3,7 +3,7 @@ const { width, height } = Dimensions.get('window');
 
 const background = {
   homeBg: {
-    source: require('./congratBg.png'),
+    source: '', // require('./congratBg.png'),
     style: { width: '100%', height: '100%' },
   },
 };
