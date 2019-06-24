@@ -2,7 +2,6 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
@@ -109,7 +108,7 @@ export const ServiceList: React.FC = (props) => {
               Who are star doctors
             </Link>
           </Paper>
-        </Grid>                        
+        </Grid>
       </Grid>
     </div>
   );
