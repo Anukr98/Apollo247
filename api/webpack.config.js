@@ -63,6 +63,10 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
     modules: [path.join(__dirname, ''), nodeModulesDir],
+    alias: {
+      // Make sure to keep these in sync with tsconfig's paths setting
+      profiles: path.resolve(__dirname, 'services/profiles'),
+    },
   },
 
   plugins,

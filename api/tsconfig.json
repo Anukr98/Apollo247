@@ -13,7 +13,12 @@
     "allowUnreachableCode": true,
     "strictNullChecks": true,
     "resolveJsonModule": true,
-    "lib": ["es5", "es6"]
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "lib": ["es5", "es6"],
+    "paths": {
+      "profiles/*": ["./services/profiles/*"]
+    }
   },
   "exclude": ["node_modules"]
 }

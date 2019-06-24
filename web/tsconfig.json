@@ -13,6 +13,8 @@
     "traceResolution": false,
     "allowUnreachableCode": true,
     "strictNullChecks": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "lib": ["dom", "dom.iterable", "es5", "es6", "scripthost"]
   },
   "exclude": ["node_modules"]

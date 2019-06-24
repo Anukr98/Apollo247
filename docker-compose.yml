@@ -61,7 +61,7 @@ services:
     environment:
       NPM_CONFIG_CACHE: /api/.npm-cache
       NODE_ENV: development
-      GOOGLE_APPLICATION_CREDENTIALS: /api/services/profiles/config/firebase-secrets.json
+      GOOGLE_APPLICATION_CREDENTIALS: /api/services/profiles/firebase-secrets.json
       FIREBASE_PROJECT_NAME: apollo-patient-interface
     volumes:
       - ./api:/api:cached

@@ -10,7 +10,7 @@ import { Sex } from "./globalTypes";
 
 export interface PatientSignIn_patientSignIn_patients {
   __typename: "Patient";
-  id: number;
+  id: string;
   mobileNumber: string | null;
   firstName: string | null;
   lastName: string | null;

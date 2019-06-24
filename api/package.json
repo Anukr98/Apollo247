@@ -6,7 +6,6 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
-    "init:profiles-service": "cd services/profiles && sequelize db:create && sequelize db:migrate",
     "start:profiles-service": "webpack && node dist/profiles-service.bundle.js",
     "start:api-gateway": "webpack && node dist/api-gateway.bundle.js",
     "start:api-gateway-with-checks": "npm run lint & npm run format:check & webpack && node dist/api-gateway.bundle.js",
@@ -41,6 +40,8 @@
     "mysql2": "^1.6.5",
     "pg": "^7.11.0",
     "pg-hstore": "^2.3.3",
-    "sequelize": "^5.8.10"
+    "reflect-metadata": "^0.1.13",
+    "sequelize": "^5.8.10",
+    "typeorm": "^0.2.18"
   }
 }

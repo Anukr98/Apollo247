@@ -8,7 +8,7 @@
 
 export interface GetDoctors_doctors {
   __typename: "Doctor";
-  id: number;
+  id: string;
   firstName: string | null;
   lastName: string | null;
   email: string | null;
