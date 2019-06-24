@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import { theme } from 'app/src/__new__/theme/theme';
+import { RouteChildrenProps } from 'react-router';
+import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
 
 const styles = StyleSheet.create({
   container: {
@@ -78,6 +80,7 @@ type Slide = {
   backgroundColor: string;
   index: number;
 };
+
 const slides: Slide[] = [
   {
     key: 'somethun',
@@ -114,19 +117,10 @@ const slides: Slide[] = [
   },
 ];
 
-export interface OnboardingProps {}
+export interface OnboardingProps extends RouteChildrenProps {}
 export const Onboarding: React.FC<OnboardingProps> = (props) => {
+  const { history } = props;
   const appIntroSliderRef = React.useRef<any>(null);
-
-  const onNextPress = (slideValue: any) => {
-    const value = parseInt(slideValue);
-    if (value == 4) {
-      this.navigate('LoginScene');
-    } else {
-      appIntroSliderRef.current.goToSlide(value);
-    }
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.mainView}>
@@ -140,7 +134,15 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
                 <Image source={item.image} style={styles.imageStyle} resizeMode="cover" />
                 <Text style={styles.titleStyle}>{item.title}</Text>
                 <Text style={styles.descptionText}>{item.text}</Text>
-                <TouchableOpacity onPress={() => onNextPress(item.index)}>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (item.index === slides.length) {
+                      history.push(appRoutes.login());
+                    } else {
+                      appIntroSliderRef.current.goToSlide(item.index);
+                    }
+                  }}
+                >
                   <Image source={require('app/src/__new__/images/common/arrowButton.png')} />
                 </TouchableOpacity>
               </View>
@@ -150,7 +152,7 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
       </View>
 
       <View style={styles.skipView}>
-        <Text style={styles.skipTextStyle} onPress={() => {}}>
+        <Text style={styles.skipTextStyle} onPress={() => history.push(appRoutes.login())}>
           SKIP
         </Text>
       </View>
