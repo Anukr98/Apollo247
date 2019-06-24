@@ -45,7 +45,7 @@ export const Welcome: React.FC<WelcomeProps> = (props) => {
         <Route exact component={HeroBanner} />
         <Route exact component={ServiceList} />
       </div>
-      {showSignUp ? <Route exact component={SignUp} /> : null}
+      <SignUp />
     </div>
   );
 };

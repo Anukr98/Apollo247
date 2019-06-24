@@ -21,37 +21,35 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
       '& img': {
-        maxWidth: '77px',
+        maxWidth: 77,
       },
     },
     userAccount: {
       marginLeft: 'auto',
       '& img': {
-        marginTop: '10px',
+        marginTop: 10,
       },
     },
     userCircle: {
       display: 'block',
-      width: '48px',
-      height: '48px',
+      width: 48,
+      height: 48,
       backgroundColor: '#afc3c9',
       borderRadius: '50%',
       textAlign: 'center',
       cursor: 'pointer',
     },
     loginForm: {
-      width: '280px',
-      padding: '20px',
-      borderRadius: '10px',
+      width: 280,
+      padding: 20,
+      borderRadius: 10,
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: '#ffffff',
     },
     topPopover: {
-      '& .MuiPopover-paper': {
-        overflow: 'initial',
-        backgroundColor: 'none',
-        boxShadow: 'none',
-      },
+      overflow: 'initial',
+      backgroundColor: 'none',
+      boxShadow: 'none',
     },
   };
 });
@@ -89,7 +87,7 @@ export const Header: React.FC = (props) => {
             vertical: 'top',
             horizontal: 'right',
           }}
-          className={classes.topPopover}
+          classes={{ paper: classes.topPopover }}
         >
           <Paper className={classes.loginForm}>
             <SignIn />

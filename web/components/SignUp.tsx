@@ -1,15 +1,10 @@
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
 import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
-import FormControl from '@material-ui/core/FormControl';
-import Input from '@material-ui/core/Input';
 import TextField from '@material-ui/core/TextField';
-import Fab from '@material-ui/core/Fab';
 import Grid from '@material-ui/core/Grid';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -21,111 +16,88 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       cursor: 'pointer',
       position: 'fixed',
-      bottom: '10px',
-      right: '15px',
+      bottom: 10,
+      right: 15,
 
       '& img': {
-        maxWidth: '72px',
-        maxHeight: '72px',
+        maxWidth: 72,
+        maxHeight: 72,
       },
     },
     signUpPop: {
-      paddingTop: '15px',
+      width: 368,
+      padding: 20,
+      borderRadius: 10,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: '#ffffff',
       '& p': {
-        fontSize: '17px',
+        fontSize: 17,
         fontWeight: 500,
         lineHeight: 1.41,
         color: '#0087ba',
-        marginTop: '20px',
-      },
-      '& input': {
-        fontSize: '16px',
-        fontWeight: 600,
-        color: '#02475b',
-      },
-      '& label.Mui-focused': {
-        color: '#02475b',
-      },
-      '& .MuiInputBase-root': {
-        fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
-      },
-      '& .MuiInputBase-root:before': {
-        borderBottomColor: '#00b38e',
-        borderWidth: '2px',
-      },
-      '& .MuiInputBase-root:hover:before': {
-        borderBottomColor: 'rgba(0, 0, 0, 0.5)',
-      },
-      '& .MuiInput-underline:after': {
-        borderBottomColor: '#00b38e',
+        marginTop: 20,
       },
       '& form': {
-        paddingTop: '30px',
+        paddingTop: 30,
       },
     },
     formControl: {
-      marginBottom: '20px',
-
+      marginBottom: 20,
       '& label': {
-        fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
-        fontSize: '12px',
+        fontSize: 12,
         fontWeight: 500,
         color: '#02475b',
-      },
-      '& .MuiInputLabel-shrink': {
         transform: 'translate(0, 1.5px) scale(1)',
       },
+    },
+    inputRoot: {
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #02475b',
+      },
       '& input': {
-        fontSize: '16px',
+        fontSize: 16,
         fontWeight: 500,
         color: '#01475b',
-        paddingTop: '9px',
+        paddingTop: 9,
+      },
+    },
+    inputFocused: {
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
       },
     },
     actions: {
       display: 'flex',
-      paddingTop: '10px',
+      paddingTop: 10,
     },
     laterBtn: {
-      marginRight: '10px',
+      marginRight: 10,
       width: '50%',
-      padding: '8px 13px',
-      color: '#fc9916',
-      fontSize: '13px',
-      fontWeight: 'bold',
-      backgroundColor: '#fff',
-      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
     },
     submitBtn: {
-      marginLeft: '10px',
+      marginLeft: 10,
       width: '50%',
-      color: '#fff',
-      padding: '8px 13px',
-      fontSize: '13px',
-      fontWeight: 'bold',
-      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
     },
     btnGroup: {
-      paddingTop: '7px',
+      paddingTop: 7,
       '& button': {
         width: '100%',
         color: '#00b38e',
         backgroundColor: '#fff',
         fontSize: '16px',
         fontWeight: 500,
-        fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
-        letterSpacing: '-0.36px',
-        textTransform: 'none',
       },
     },
     bottomPopover: {
-      '& .MuiPopover-paper': {
-        width: '368px',
-        padding: '20px',
-        borderRadius: '10px',
-        boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
-        backgroundColor: '#ffffff',
-      },
+      overflow: 'initial',
+      backgroundColor: 'none',
+      boxShadow: 'none',
     },
   });
 });
@@ -163,6 +135,7 @@ export const SignUp: React.FC = (props) => {
           vertical: 'top',
           horizontal: 'center',
         }}
+        classes={{ paper: classes.bottomPopover }}
       >
         <div className={classes.signUpPop}>
           <Typography variant="h2">
@@ -178,7 +151,9 @@ export const SignUp: React.FC = (props) => {
               fullWidth
               InputLabelProps={{
                 shrink: true,
+                focused: false,
               }}
+              InputProps={{ classes: { root: classes.inputRoot, focused: classes.inputFocused } }}
             />
             <TextField
               className={classes.formControl}
@@ -187,7 +162,9 @@ export const SignUp: React.FC = (props) => {
               fullWidth
               InputLabelProps={{
                 shrink: true,
+                focused: false,
               }}
+              InputProps={{ classes: { root: classes.inputRoot, focused: classes.inputFocused } }}
             />
             <TextField
               className={classes.formControl}
@@ -196,7 +173,9 @@ export const SignUp: React.FC = (props) => {
               fullWidth
               InputLabelProps={{
                 shrink: true,
+                focused: false,
               }}
+              InputProps={{ classes: { root: classes.inputRoot, focused: classes.inputFocused } }}
             />
             <div className={classes.formControl}>
               <label>Gender</label>
@@ -219,7 +198,9 @@ export const SignUp: React.FC = (props) => {
               fullWidth
               InputLabelProps={{
                 shrink: true,
+                focused: false,
               }}
+              InputProps={{ classes: { root: classes.inputRoot, focused: classes.inputFocused } }}
             />
             <div className={classes.actions}>
               <Button variant="contained" className={classes.laterBtn}>

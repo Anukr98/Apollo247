@@ -19,15 +19,15 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     loginFormWrap: {
       '& p': {
-        fontSize: '17px',
+        fontSize: 17,
         fontWeight: 500,
         lineHeight: 1.41,
         color: '#0087ba',
-        marginTop: '5px',
-        marginBottom: '30px',
+        marginTop: 5,
+        marginBottom: 30,
       },
       '& input': {
-        fontSize: '16px',
+        fontSize: 16,
         fontWeight: 600,
         color: '#02475b',
       },
@@ -36,43 +36,41 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       '& p': {
         color: '#02475b',
-        fontSize: '16px',
+        fontSize: 16,
         fontWeight: 600,
-        marginBottom: '7px',
+        marginBottom: 7,
       },
     },
     helpText: {
-      fontSize: '12px',
+      fontSize: 12,
       fontWeight: 500,
       color: '#02475b',
-      marginTop: '10px',
+      marginTop: 10,
       lineHeight: 2,
     },
     action: {
       paddingTop: 0,
       display: 'flex',
-
       '& button': {
         marginLeft: 'auto',
-        marginRight: '-40px',
-        backgroundColor: '#FED984',
+        marginRight: -40,
       },
     },
     captcha: {
       transform: 'scale(0.8)',
       transformOrigin: 'top left',
-      marginTop: 30,
+      marginTop: 10,
     },
   };
 });
 
-export interface SignInProps {}
+export interface SignInProps { }
 
-export interface SignInProps {}
+export interface SignInProps { }
 
 const recaptchaContainerId = 'recaptcha-container';
 const isMobileNumberValid = (number: string) => number.length === 10;
-const mobileNumberPrefix = '+1';
+const mobileNumberPrefix = '+91';
 
 export const SignIn: React.FC<SignInProps> = (props) => {
   const classes = useStyles();
@@ -130,52 +128,48 @@ export const SignIn: React.FC<SignInProps> = (props) => {
       </div>
     </div>
   ) : (
-    <div className={classes.loginFormWrap}>
-      <Typography variant="h2">hi</Typography>
-      <p>Please enter your mobile number to login</p>
-
-      <FormControl fullWidth>
-        <Input
-          inputProps={{ type: 'number', maxLength: 10 }}
-          value={mobileNumber}
-          onChange={(event) => setMobileNumber(event.currentTarget.value)}
-          error={!isMobileNumberValid(mobileNumber)}
-          startAdornment={
-            <InputAdornment className={classes.inputAdornment} position="start">
-              {mobileNumberPrefix}
-            </InputAdornment>
-          }
-        />
-        <div className={classes.helpText}>OTP will be sent to this number</div>
-      </FormControl>
-
-      <div className={classes.action}>
-        <Fab
-          color="primary"
-          aria-label="Sign in"
-          disabled={!(isMobileNumberValid(mobileNumber) && captchaVerified)}
-          onClick={(e) => {
-            setVerifyingPhoneNumber(true);
-            verifyPhoneNumber(`${mobileNumberPrefix}${mobileNumber}`, captchaVerifier).then(
-              (phoneNumberVerificationToken) => {
-                setPhoneNumberVerificationToken(phoneNumberVerificationToken);
-                setVerifyingPhoneNumber(false);
-                setDisplayOtpInput(true);
-              }
-            );
-          }}
-        >
-          {verifyingPhoneNumber ? (
-            <CircularProgress />
-          ) : (
-            <img src={require('images/ic_arrow_forward.svg')} />
-          )}
-        </Fab>
+      <div className={classes.loginFormWrap}>
+        <Typography variant="h2">hi</Typography>
+        <p>Please enter your mobile number to login</p>
+        <FormControl fullWidth>
+          <Input
+            inputProps={{ type: 'number', maxLength: 10 }}
+            value={mobileNumber}
+            onChange={(event) => setMobileNumber(event.currentTarget.value)}
+            error={!isMobileNumberValid(mobileNumber)}
+            startAdornment={
+              <InputAdornment className={classes.inputAdornment} position="start">
+                {mobileNumberPrefix}
+              </InputAdornment>
+            }
+          />
+          <div className={classes.helpText}>OTP will be sent to this number</div>
+        </FormControl>
+        <div id={recaptchaContainerId} className={classes.captcha} />
+        <div className={classes.action}>
+          <Fab
+            color="primary"
+            aria-label="Sign in"
+            disabled={!(isMobileNumberValid(mobileNumber) && captchaVerified)}
+            onClick={(e) => {
+              setVerifyingPhoneNumber(true);
+              verifyPhoneNumber(`${mobileNumberPrefix}${mobileNumber}`, captchaVerifier).then(
+                (phoneNumberVerificationToken) => {
+                  setPhoneNumberVerificationToken(phoneNumberVerificationToken);
+                  setVerifyingPhoneNumber(false);
+                  setDisplayOtpInput(true);
+                }
+              );
+            }}
+          >
+            {verifyingPhoneNumber ? (
+              <CircularProgress />
+            ) : (
+                <img src={require('images/ic_arrow_forward.svg')} />
+              )}
+          </Fab>
+        </div>
+        {!captchaLoaded && <CircularProgress />}
       </div>
-
-      {!captchaLoaded && <CircularProgress />}
-
-      <div id={recaptchaContainerId} className={classes.captcha} />
-    </div>
-  );
+    );
 };
