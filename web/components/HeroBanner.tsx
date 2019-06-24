@@ -35,10 +35,10 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'right',
       '& img': {
         marginTop: '-15px',
-      }
+      },
     },
     button: {
-      fontFamily: ['IBM Plex Sans', 'sans-serif',].join(','),
+      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
       color: '#fff',
       fontSize: '13px',
       fontWeight: 'bold',
@@ -57,7 +57,7 @@ export const HeroBanner: React.FC = (props) => {
       <div className={classes.bannerInfo}>
         <Typography variant="h1">hello!</Typography>
         <p>Not feeling well today? Don’t worry. We will help you find the right doctor :)</p>
-        <Button variant="contained" color="primary" className={classes.button} >
+        <Button variant="contained" color="primary" className={classes.button}>
           Consult a doctor
         </Button>
       </div>

@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: 'rgba(0,0,0,0.5)',
         marginTop: '5px',
         marginBottom: '5px',
-      }
+      },
     },
     action: {
       fontSize: '13px',

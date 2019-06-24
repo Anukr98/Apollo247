@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface WelcomeProps { }
+export interface WelcomeProps {}
 
 export const Welcome: React.FC<WelcomeProps> = (props) => {
   const classes = useStyles();

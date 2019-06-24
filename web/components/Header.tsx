@@ -71,7 +71,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface SignInProps { }
+export interface SignInProps {}
 
 export const Header: React.FC = (props) => {
   const classes = useStyles();
