@@ -19,20 +19,22 @@ export const patientTypeDefs = gql`
     sex: Sex
   }
 
+  type GetPatientsResult {
+    patients: [Patient!]!
+  }
+  extend type Query {
+    getPatients: GetPatientsResult
+  }
+
   type PatientSignInResult {
     patients: [Patient!]!
   }
-
-  extend type Query {
-    getPatients: [Patient!]!
-  }
-
   extend type Mutation {
     patientSignIn(jwt: String): PatientSignInResult!
   }
 `;
 
-const getPatients = () => [];
+const getPatients = () => ({ patients: [] });
 
 const patientSignIn: Resolver<any, { jwt: string }> = async (parent, args, { firebase }) => {
   const idToken = await firebase.auth().verifyIdToken(args.jwt);

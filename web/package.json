@@ -6,7 +6,7 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
-    "start:dev": "npm run apollo:download & npm run apollo:codegen & npm run lint & npm run format:check & webpack-dev-server",
+    "start:dev": "npm run apollo:download & npm run apollo:codegen:watch & npm run lint & npm run format:check & webpack-dev-server",
     "build:prod": "webpack",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",

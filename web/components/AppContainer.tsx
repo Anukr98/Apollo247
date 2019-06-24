@@ -11,7 +11,7 @@ import React from 'react';
 import { BrowserRouter, Route } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Welcome } from 'components/Welcome';
-import { DoctorsList } from 'components/DoctorsList';
+import { PatientsList } from 'components/PatientsList';
 import { AuthProvider } from 'components/AuthProvider';
 
 const muiTheme = createMuiTheme({
@@ -91,7 +91,7 @@ const App: React.FC = () => {
   return (
     <div className={classes.app}>
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
-      <Route exact path={clientRoutes.doctors()} component={DoctorsList} />
+      <Route exact path={clientRoutes.patients()} component={PatientsList} />
     </div>
   );
 };

@@ -18,6 +18,29 @@
             "description": null,
             "args": [],
             "type": {
+              "kind": "OBJECT",
+              "name": "GetPatientsResult",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "GetPatientsResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "patients",
+            "description": null,
+            "args": [],
+            "type": {
               "kind": "NON_NULL",
               "name": null,
               "ofType": {
