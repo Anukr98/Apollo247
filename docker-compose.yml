@@ -70,4 +70,6 @@ services:
 
   profiles-db:
     image: postgres:10.8-alpine
+    volumes:
+      - ./api/services/profiles/init-profiles-db.sql:/docker-entrypoint-initdb.d/init.sql
 
