@@ -4,12 +4,8 @@ import {
   Text,
   View,
   Image,
-  SafeAreaView,
   TouchableOpacity,
   StyleProp,
-  ImageStyle,
-  TextStyle,
-  ImageSourcePropType,
   ViewStyle,
 } from 'react-native';
 import { theme } from 'app/src/__new__/theme/theme';
@@ -46,17 +42,17 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface cardProps {
+export interface CardProps {
   cardContainer: StyleProp<ViewStyle>;
   heading: StyleProp<ViewStyle>;
   descriptionTextStyle: StyleProp<ViewStyle>;
-  description: String;
-  disableButton: Number;
-  buttonIcon: String;
+  description: string;
+  disableButton: boolean;
+  buttonIcon: 'arrow_yellow' | 'arrow_disabled';
   onClickButton: () => null;
 }
 
-export const Card: React.FC<cardProps> = (props) => {
+export const Card: React.FC<CardProps> = (props) => {
   return (
     <View style={[styles.cardContainer, props.cardContainer]}>
       <Text style={styles.headingText}>{props.heading}</Text>
