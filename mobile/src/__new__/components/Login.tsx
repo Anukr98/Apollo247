@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Text, View, StyleSheet, TextInput } from 'react-native';
 import { theme } from 'app/src/__new__/theme/theme';
-import { string } from '../strings/string';
+import { string } from 'app/src/__new__/strings/string';
 import { Card } from 'app/src/UI/common';
+import { RouteChildrenProps } from 'react-router';
+import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
 
 const styles = StyleSheet.create({
   container: {
@@ -53,7 +55,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface LoginSceneProps {}
+export interface LoginProps extends RouteChildrenProps {}
 
 const isPhoneNumberValid = (number: string) => {
   const isValidNumber =
@@ -61,10 +63,10 @@ const isPhoneNumberValid = (number: string) => {
   return isValidNumber;
 };
 
-export const LoginScene: React.FC<LoginSceneProps> = (props) => {
+export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const phoneNumberIsValid = isPhoneNumberValid(phoneNumber);
-
+  const { history } = props;
   return (
     <View style={styles.container}>
       <Card
@@ -72,10 +74,10 @@ export const LoginScene: React.FC<LoginSceneProps> = (props) => {
         description={string.LocalStrings.please_enter_no}
         buttonIcon={
           phoneNumberIsValid && phoneNumber.replace(/^0+/, '').length === 10
-            ? 'arrow_yellow'
+            ? 'arro_yellow'
             : 'arrow_disabled'
         }
-        onClickButton={() => this.navigate('OTPVerification')}
+        onClickButton={() => history.push(appRoutes.otpVerification())}
         disableButton={phoneNumberIsValid ? false : true}
       >
         <View style={phoneNumberIsValid ? styles.inputValidView : styles.inputView}>
