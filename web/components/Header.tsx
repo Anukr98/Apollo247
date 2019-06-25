@@ -1,16 +1,10 @@
+import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
-import React from 'react';
 import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
 import Popover from '@material-ui/core/Popover';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import Fade from '@material-ui/core/Fade';
 import Paper from '@material-ui/core/Paper';
 import { SignIn } from 'components/SignIn';
-import { Otp } from 'components/Otp';
-import * as AuthZero from 'auth0-js';
 import { useAuthenticating } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {

@@ -27,7 +27,7 @@ export interface WelcomeProps {}
 
 export const Welcome: React.FC<WelcomeProps> = (props) => {
   const classes = useStyles();
-  const [showSignUp, handleSignUpCard] = React.useState<boolean>(false);
+  const [showSignUp] = React.useState<boolean>(false);
   return (
     <div className={classes.welcome}>
       <div className={classes.container}>
