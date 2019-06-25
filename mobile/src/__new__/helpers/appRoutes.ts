@@ -3,4 +3,5 @@ export const appRoutes = {
   login: () => '/login',
   otpVerification: () => '/otpVerification',
   consultRoom: () => '/consultRoom',
+  tabBar: () => '/tabBar',
 };

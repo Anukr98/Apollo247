@@ -15,6 +15,7 @@ import AppIntroSlider from 'react-native-app-intro-slider';
 import { theme } from 'app/src/__new__/theme/theme';
 import { RouteChildrenProps } from 'react-router';
 import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
+import { AppImages } from 'app/src/__new__/images/AppImages';
 
 const styles = StyleSheet.create({
   container: {
@@ -79,6 +80,7 @@ type Slide = {
   titleStyle?: StyleProp<TextStyle>;
   backgroundColor: string;
   index: number;
+  icon: string;
 };
 
 const slides: Slide[] = [
@@ -90,6 +92,7 @@ const slides: Slide[] = [
     titleStyle: styles.titleStyle,
     backgroundColor: '"FBFCFD"',
     index: 1,
+    icon: 'ic_arrowStep1',
   },
   {
     key: 'somethun-dos',
@@ -98,6 +101,7 @@ const slides: Slide[] = [
     image: require('app/src/__new__/images/common/onBoard.png'),
     backgroundColor: '#FBFCFD',
     index: 2,
+    icon: 'ic_arrowStep2',
   },
   {
     key: 'somethun1',
@@ -106,6 +110,7 @@ const slides: Slide[] = [
     image: require('app/src/__new__/images/common/onBoard.png'),
     backgroundColor: '#FBFCFD',
     index: 3,
+    icon: 'ic_arrowStep3',
   },
   {
     key: 'somethun2',
@@ -114,6 +119,7 @@ const slides: Slide[] = [
     image: require('app/src/__new__/images/common/onBoard.png'),
     backgroundColor: '#FBFCFD',
     index: 4,
+    icon: 'ic_arrowFull',
   },
 ];
 
@@ -143,7 +149,7 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
                     }
                   }}
                 >
-                  <Image source={require('app/src/__new__/images/common/arrowButton.png')} />
+                  <Image {...AppImages[item.icon]} />
                 </TouchableOpacity>
               </View>
             )}

@@ -6,6 +6,7 @@ import { Login } from './Login';
 import { ConsultRoom } from 'app/src/__new__/components/ConsultRoom';
 import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
 import { View } from 'react-native';
+import { TabBar } from 'app/src/__new__/helpers/TabBar';
 
 const enMessages = {
   welcome: 'Welome! :)',
@@ -13,12 +14,13 @@ const enMessages = {
 
 const App: React.FC = () => {
   return (
-    <View>
+    <>
       <Route exact path="/" component={Onboarding} />
       <Route path={appRoutes.onboarding()} component={Onboarding} />
       <Route path={appRoutes.login()} component={Login} />
       <Route path={appRoutes.consultRoom()} component={ConsultRoom} />
-    </View>
+      <Route path={appRoutes.tabBar()} component={TabBar} />
+    </>
   );
 };
 

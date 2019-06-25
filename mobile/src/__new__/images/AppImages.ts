@@ -1,12 +1,7 @@
 import { Dimensions } from 'react-native';
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-const background = {
-  homeBg: {
-    source: '', // require('./congratBg.png'),
-    style: { width: '100%', height: '100%' },
-  },
-};
+const background = {};
 const fabStyle = { style: { width: 64, height: 64 } };
 const login = {
   arrow_disabled: {
@@ -29,12 +24,36 @@ const login = {
     source: require('./login/ic_mascot.png'),
     ...fabStyle,
   },
+  ic_more: {
+    source: require('./login/ic_more.png'),
+    style: { width: 24, height: 24 },
+  },
+  ic_dropdown_green: {
+    source: require('./login/ic_dropdown_green.png'),
+    style: { width: 24, height: 24 },
+  },
+  ic_arrowFull: {
+    source: require('./login/ic_arrowFull.png'),
+    style: { width: 56, height: 56 },
+  },
+  ic_arrowStep1: {
+    source: require('./login/ic_arrowStep1.png'),
+    style: { width: 56, height: 56 },
+  },
+  ic_arrowStep2: {
+    source: require('./login/ic_arrowStep2.png'),
+    style: { width: 56, height: 56 },
+  },
+  ic_arrowStep3: {
+    source: require('./login/ic_arrowStep3.png'),
+    style: { width: 56, height: 56 },
+  },
 };
 
 const common = {
   nextButton: {
     source: require('./common/arrowButton.png'),
-    style: { top: 50 },
+    style: { width: 54, height: 54 },
   },
   appLogo: {
     source: require('./common/ic_logo.png'),
@@ -46,7 +65,7 @@ const common = {
   },
   doctorImage: {
     source: require('./common/doctor.png'),
-    style: { position: 'absolute' },
+    style: { right: 20, top: 177, position: 'absolute' },
   },
   placeHolderImage: {
     source: require('./common/img_illustration_placeholder.png'),
@@ -60,10 +79,14 @@ const common = {
     source: require('./login/ic_mascot.png'),
     style: { height: 90, width: 90, marginTop: 40 },
   },
+  starDoctor: {
+    source: require('./common/ic_star.png'),
+    style: { height: 28, width: 28 },
+  },
 };
 
 const TabIconStyle = { style: { height: 24, width: 24 } };
-const TabIcons = {
+const tab = {
   ConsultRoomAct: {
     source: require('./tab/ic_consultroom.png'),
     ...TabIconStyle,
@@ -98,7 +121,7 @@ const TabIcons = {
   },
 };
 
-const searchIcon = {
+const search = {
   GeneralPhysician: {
     source: require('./search/ic_general_physician.png'),
   },
@@ -121,7 +144,23 @@ const searchIcon = {
   },
   backArrow: {
     source: require('./search/backArrow.png'),
-    style: { height: 16, width: 25, marginTop: 16, marginLeft: 20 },
+    style: { height: 16, width: 25 },
+  },
+  ic_cross: {
+    source: require('./search/ic_cross.png'),
+    style: { height: 24, width: 24 },
+  },
+  ic_reset: {
+    source: require('./search/ic_reset.png'),
+    style: { height: 24, width: 24 },
+  },
+  sort_decreasing: {
+    source: require('./search/ic_sort_decreasing.png'),
+    style: { height: 18, width: 18 },
+  },
+  sort_increasing: {
+    source: require('./search/ic_sort_increasing.png'),
+    style: { height: 18, width: 18 },
   },
 };
 
@@ -132,13 +171,22 @@ const doctor = {
   narayanRao: {
     source: require('./doctor/narayanRao.png'),
   },
+  rakhiSharma: {
+    source: require('./doctor/rakhi.png'),
+  },
+  rahul: {
+    source: require('./doctor/rahul.png'),
+  },
+  rajan: {
+    source: require('./doctor/rajan.png'),
+  },
 };
 
 export const AppImages = {
   ...background,
   ...login,
   ...common,
-  TabIcons,
-  ...searchIcon,
+  tab,
+  ...search,
   ...doctor,
 };

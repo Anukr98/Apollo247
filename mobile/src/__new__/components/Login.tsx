@@ -77,7 +77,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             ? 'arro_yellow'
             : 'arrow_disabled'
         }
-        onClickButton={() => history.push(appRoutes.otpVerification())}
+        onClickButton={() => history.push(appRoutes.tabBar())}
         disableButton={phoneNumberIsValid ? false : true}
       >
         <View style={phoneNumberIsValid ? styles.inputValidView : styles.inputView}>
