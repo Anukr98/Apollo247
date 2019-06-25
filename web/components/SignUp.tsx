@@ -3,9 +3,9 @@ import { Theme } from '@material-ui/core';
 import React from 'react';
 import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
+import { AppTextField } from 'components/ui/AppTextField';
+import { AppButton } from 'components/ui/AppButton';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -144,71 +144,27 @@ export const SignUp: React.FC = (props) => {
           </Typography>
           <p>Let us quickly get to know you so that we can get you the best help :)</p>
           <form>
-            <TextField
-              className={classes.formControl}
-              label="First Name"
-              placeholder="Example, Jonathan"
-              fullWidth
-              InputLabelProps={{
-                shrink: true,
-                focused: false,
-              }}
-              InputProps={{ classes: { root: classes.inputRoot, focused: classes.inputFocused } }}
-            />
-            <TextField
-              className={classes.formControl}
-              label="Last Name"
-              placeholder="Example, Donut"
-              fullWidth
-              InputLabelProps={{
-                shrink: true,
-                focused: false,
-              }}
-              InputProps={{ classes: { root: classes.inputRoot, focused: classes.inputFocused } }}
-            />
-            <TextField
-              className={classes.formControl}
-              label="Date Of Birth"
-              placeholder="mm/dd/yyyy"
-              fullWidth
-              InputLabelProps={{
-                shrink: true,
-                focused: false,
-              }}
-              InputProps={{ classes: { root: classes.inputRoot, focused: classes.inputFocused } }}
-            />
+            <AppTextField label="First Name" placeholder="Example, Jonathan" />
+            <AppTextField label="Last Name" placeholder="Example, Donut" />
+            <AppTextField label="Date Of Birth" placeholder="mm/dd/yyyy" />
             <div className={classes.formControl}>
               <label>Gender</label>
               <Grid container spacing={2} className={classes.btnGroup}>
                 <Grid item xs={6} sm={4}>
-                  <Button variant="contained">Male</Button>
+                  <AppButton variant="contained">Male</AppButton>
                 </Grid>
                 <Grid item xs={6} sm={4}>
-                  <Button variant="contained">Female</Button>
+                  <AppButton variant="contained">Female</AppButton>
                 </Grid>
                 <Grid item xs={6} sm={4}>
-                  <Button variant="contained">Other</Button>
+                  <AppButton variant="contained">Other</AppButton>
                 </Grid>
               </Grid>
             </div>
-            <TextField
-              className={classes.formControl}
-              label="Email Address (Optional)"
-              placeholder="name@email.com"
-              fullWidth
-              InputLabelProps={{
-                shrink: true,
-                focused: false,
-              }}
-              InputProps={{ classes: { root: classes.inputRoot, focused: classes.inputFocused } }}
-            />
+            <AppTextField label="Email Address (Optional)" placeholder="name@email.com" />
             <div className={classes.actions}>
-              <Button variant="contained" className={classes.laterBtn}>
-                Fill Later
-              </Button>
-              <Button variant="contained" color="primary" className={classes.submitBtn}>
-                Submit
-              </Button>
+              <AppButton>Fill Later</AppButton>
+              <AppButton color="primary">Submit</AppButton>
             </div>
           </form>
         </div>
