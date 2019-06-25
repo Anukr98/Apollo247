@@ -44,9 +44,9 @@ const styles = StyleSheet.create({
 });
 
 export interface CardProps {
-  cardContainer: StyleProp<ViewStyle>;
-  heading: StyleProp<ViewStyle>;
-  descriptionTextStyle: StyleProp<ViewStyle>;
+  cardContainer?: StyleProp<ViewStyle>;
+  heading: string;
+  descriptionTextStyle?: StyleProp<ViewStyle>;
   description: string;
   disableButton: boolean;
   buttonIcon: 'arrow_yellow' | 'arrow_disabled';
