@@ -2,6 +2,7 @@
 
 const common = {
   add: 'Add',
+  availableNow: 'AVAILABLE NOW',
 };
 
 const login = {

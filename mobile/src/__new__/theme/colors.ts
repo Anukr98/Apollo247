@@ -68,6 +68,7 @@ const TextInput = {
   INPUT_SUCCESS_TEXT: '#02475b',
   INPUT_FAILURE_TEXT: '#890000',
   INPUT_INFO: '#fc9916',
+  placeholderTextColor: 'rgba(1,48,91, 0.3)',
 };
 
 const Search = {
