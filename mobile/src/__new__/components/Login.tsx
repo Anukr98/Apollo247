@@ -76,7 +76,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             ? 'arrow_yellow'
             : 'arrow_disabled'
         }
-        onClickButton={() => props.navigation.navigate(appRoutes.tabBar())}
+        onClickButton={() => props.navigation.navigate(appRoutes.OTPVerification())}
         disableButton={phoneNumberIsValid ? false : true}
       >
         <View style={phoneNumberIsValid ? styles.inputValidView : styles.inputView}>

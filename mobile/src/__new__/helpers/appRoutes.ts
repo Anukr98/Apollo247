@@ -5,4 +5,7 @@ export const appRoutes = {
   consultRoom: () => 'consultRoom',
   tabBar: () => 'tabBar',
   doctorSearch: () => 'doctorSearch',
+  signUp: () => 'signUp',
+  multiSignup: () => 'multiSignup',
+  OTPVerification: () => 'OTPVerification',
 };

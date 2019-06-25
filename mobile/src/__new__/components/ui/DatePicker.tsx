@@ -3,8 +3,8 @@ import DateTimePicker from 'react-native-modal-datetime-picker';
 
 export interface datePickerProps {
   isDateTimePickerVisible: boolean;
-  handleDatePicked: () => null;
-  hideDateTimePicker: () => null;
+  handleDatePicked: () => void;
+  hideDateTimePicker: () => void;
 }
 
 export const DatePicker: React.FC<datePickerProps> = (props) => {

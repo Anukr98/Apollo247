@@ -7,9 +7,11 @@ import {
   TouchableOpacity,
   StyleProp,
   ViewStyle,
+  TextStyle,
 } from 'react-native';
 import { theme } from 'app/src/__new__/theme/theme';
 import { AppImages } from '../../images/AppImages';
+// import { AppImages } from 'app/src/__new__/images/AppImages';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -45,12 +47,12 @@ const styles = StyleSheet.create({
 
 export interface CardProps {
   cardContainer: StyleProp<ViewStyle>;
-  heading: StyleProp<ViewStyle>;
-  descriptionTextStyle: StyleProp<ViewStyle>;
+  heading: string;
+  descriptionTextStyle: StyleProp<TextStyle>;
   description: string;
   disableButton: boolean;
-  buttonIcon: 'arrow_yellow' | 'arrow_disabled';
-  onClickButton: any;
+  buttonIcon: string;
+  onClickButton: () => null;
 }
 
 export const Card: React.FC<CardProps> = (props) => {
@@ -63,11 +65,7 @@ export const Card: React.FC<CardProps> = (props) => {
         onPress={props.onClickButton}
         activeOpacity={props.disableButton ? 1 : 0.5}
       >
-        <Image
-          {...(props.buttonIcon === 'arrow_yellow'
-            ? AppImages.arrow_yellow
-            : AppImages.arrow_disabled)}
-        />
+        <Image {...AppImages[props.buttonIcon]} />
       </TouchableOpacity>
       {props.children}
     </View>
