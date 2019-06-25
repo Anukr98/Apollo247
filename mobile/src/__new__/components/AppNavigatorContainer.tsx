@@ -16,7 +16,9 @@ export enum AppRoutes {
   MyHealth = 'MyHealth',
 }
 
-const routeConfigMap: Partial<Record<keyof typeof AppRoutes, NavigationRouteConfig>> = {
+export type AppRoute = keyof typeof AppRoutes;
+
+const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.Onboarding]: {
     screen: Onboarding,
     navigationOptions: {
