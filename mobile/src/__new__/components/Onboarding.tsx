@@ -13,9 +13,14 @@ import {
 } from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import { theme } from 'app/src/__new__/theme/theme';
-import { RouteChildrenProps } from 'react-router';
 import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
 import { AppImages } from 'app/src/__new__/images/AppImages';
+import {
+  NavigationProp,
+  NavigationComponent,
+  NavigationScreenComponent,
+  NavigationScreenProps,
+} from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {
@@ -123,9 +128,8 @@ const slides: Slide[] = [
   },
 ];
 
-export interface OnboardingProps extends RouteChildrenProps {}
+export interface OnboardingProps extends NavigationScreenProps {}
 export const Onboarding: React.FC<OnboardingProps> = (props) => {
-  const { history } = props;
   const appIntroSliderRef = React.useRef<any>(null);
   return (
     <SafeAreaView style={styles.container}>
@@ -143,13 +147,13 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     if (item.index === slides.length) {
-                      history.push(appRoutes.login());
+                      props.navigation.navigate(appRoutes.login());
                     } else {
                       appIntroSliderRef.current.goToSlide(item.index);
                     }
                   }}
                 >
-                  <Image {...AppImages[item.icon]} />
+                  {/* <Image {...AppImages[item.icon]} /> */}
                 </TouchableOpacity>
               </View>
             )}
@@ -158,7 +162,10 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
       </View>
 
       <View style={styles.skipView}>
-        <Text style={styles.skipTextStyle} onPress={() => history.push(appRoutes.login())}>
+        <Text
+          style={styles.skipTextStyle}
+          onPress={() => props.navigation.navigate(appRoutes.login())}
+        >
           SKIP
         </Text>
       </View>

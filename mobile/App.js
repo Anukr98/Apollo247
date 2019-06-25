@@ -17,6 +17,7 @@ const instructions = Platform.select({
 });
 
 type Props = {};
+// eslint-disable-next-line
 export default class App extends BaseScene {
   constructor(props) {
     super(props);

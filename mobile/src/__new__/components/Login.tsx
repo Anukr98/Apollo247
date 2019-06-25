@@ -3,8 +3,8 @@ import { Text, View, StyleSheet, TextInput } from 'react-native';
 import { theme } from 'app/src/__new__/theme/theme';
 import { string } from 'app/src/__new__/strings/string';
 import { Card } from 'app/src/UI/common';
-import { RouteChildrenProps } from 'react-router';
 import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface LoginProps extends RouteChildrenProps {}
+export interface LoginProps extends NavigationScreenProps {}
 
 const isPhoneNumberValid = (number: string) => {
   const isValidNumber =
@@ -66,7 +66,6 @@ const isPhoneNumberValid = (number: string) => {
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const phoneNumberIsValid = isPhoneNumberValid(phoneNumber);
-  const { history } = props;
   return (
     <View style={styles.container}>
       <Card
@@ -77,7 +76,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             ? 'arro_yellow'
             : 'arrow_disabled'
         }
-        onClickButton={() => history.push(appRoutes.tabBar())}
+        onClickButton={() => props.navigation.navigate(appRoutes.tabBar())}
         disableButton={phoneNumberIsValid ? false : true}
       >
         <View style={phoneNumberIsValid ? styles.inputValidView : styles.inputView}>

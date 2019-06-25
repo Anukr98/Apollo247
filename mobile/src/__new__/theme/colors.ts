@@ -10,6 +10,11 @@ const darkColor = 'rgb(115, 118, 131)';
 const app_green = '#00b38e';
 const APP_Sherpa_Blue = '#01475b';
 
+const TabBar = {
+  TAB_BAR_ACTIVE_TINT_COLOR: '#02475b',
+  TAB_BAR_INACTIVE_TINT_COLOR: '#02475b',
+};
+
 const Buttons = {
   BUTTON_BG: '#fcb716',
   BUTTON_TEXT: white,
@@ -88,4 +93,5 @@ export const colors = {
   ...Texts,
   ...TextInput,
   ...Search,
+  ...TabBar,
 };

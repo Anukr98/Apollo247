@@ -1,6 +1,14 @@
 import { Dimensions } from 'react-native';
 const { width } = Dimensions.get('window');
 
+// export const ArrowYellow: React.FC<Partial<ImageProps>> = (props) => (
+//   <Image
+//     style={{ width: '100%', height: '100%"' }}
+//     {...props}
+//     source={require('app/src/__new__/images/login/ic_arrow_yellow.png')}
+//   />
+// );
+
 const background = {};
 const fabStyle = { style: { width: 64, height: 64 } };
 const login = {
