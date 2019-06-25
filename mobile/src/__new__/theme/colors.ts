@@ -9,6 +9,7 @@ const darkColor = 'rgb(115, 118, 131)';
 
 const app_green = '#00b38e';
 const APP_Sherpa_Blue = '#01475b';
+const tangerine_yellow = '#fc9916';
 
 const TabBar = {
   TAB_BAR_ACTIVE_TINT_COLOR: '#02475b',
@@ -25,6 +26,7 @@ const Card = {
   CARD_BG: 'white',
   CARD_HEADER: '#02475b',
   CARD_DESCRIPTION: '#0087ba',
+  FILTER_CARD_LABEL: '#02475b',
 };
 
 const Common = {
@@ -35,6 +37,7 @@ const Common = {
   WHITE: white,
   SHERPA_BLUE: APP_Sherpa_Blue,
   APP_YELLOW_COLOR: '#fcb716',
+  APP_YELLOW: tangerine_yellow,
 };
 
 const Header = {

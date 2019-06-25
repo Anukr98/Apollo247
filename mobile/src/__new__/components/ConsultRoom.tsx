@@ -1,9 +1,11 @@
 import { Button } from 'app/src/UI/common';
 import { AppImages } from 'app/src/__new__/images/AppImages';
 import { theme } from 'app/src/__new__/theme/theme';
-import React from 'react';
+import React, { useState } from 'react';
 import { Dimensions, Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
+import { NavigationScreenProps } from 'react-navigation';
+import { appRoutes } from '../helpers/appRoutes';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -173,10 +175,10 @@ const arrayDoctor: ArrayDoctor[] = [
   },
 ];
 
-export interface ConsultRoomProps {}
+export interface ConsultRoomProps extends NavigationScreenProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
-  const appIntroSliderRef = React.useRef<any>(null);
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
+  const [showPopUp, setshowPopUp] = useState<boolean>(true);
 
   return (
     <View style={{ flex: 1 }}>
@@ -200,10 +202,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Button
                 title="CONSULT A DOCTOR"
                 style={styles.buttonStyles}
-                // onPress={() => this.consultDoctorBtnClicked()}
+                onPress={() => props.navigation.navigate(appRoutes.doctorSearch())}
               />
             </View>
-            {/* <Image {...AppImages.doctorImage} /> */}
+            <Image {...AppImages.doctorImage} />
           </View>
           <View>
             {arrayTest.map((serviceTitle, i) => (
@@ -418,8 +420,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </View>
         </ScrollView>
       </SafeAreaView>
-      {
-        // showPopUp && (
+      {showPopUp && (
         <View style={styles.showPopUp}>
           <View style={styles.subViewPopup}>
             <Text style={styles.congratulationsTextStyle}>Congratulations! :)</Text>
@@ -431,7 +432,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               title="OK, GOT IT"
               style={styles.gotItStyles}
               titleTextStyle={styles.gotItTextStyles}
-              // onPress={() => this.GotItBtnClicked()}
+              onPress={() => {
+                setshowPopUp(false);
+              }}
             />
             <Image
               {...AppImages.ic_mascot}
@@ -439,8 +442,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             />
           </View>
         </View>
-        // )
-      }
+      )}
     </View>
   );
 };

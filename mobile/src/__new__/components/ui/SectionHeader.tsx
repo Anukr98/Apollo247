@@ -1,3 +1,4 @@
+import React from 'react';
 import { View, StyleProp, ViewStyle, StyleSheet } from 'react-native';
 import { Text } from 'react-native-elements';
 import { theme } from '../../theme/theme';

@@ -9,6 +9,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { theme } from 'app/src/__new__/theme/theme';
+import { AppImages } from '../../images/AppImages';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -49,7 +50,7 @@ export interface CardProps {
   description: string;
   disableButton: boolean;
   buttonIcon: 'arrow_yellow' | 'arrow_disabled';
-  onClickButton: () => null;
+  onClickButton: any;
 }
 
 export const Card: React.FC<CardProps> = (props) => {
@@ -63,11 +64,9 @@ export const Card: React.FC<CardProps> = (props) => {
         activeOpacity={props.disableButton ? 1 : 0.5}
       >
         <Image
-          source={
-            props.buttonIcon === 'arrow_yellow'
-              ? require('app/src/__new__/images/Login/ic_arrow_yellow.png')
-              : require('app/src/__new__/images/Login/ic_arrow_disabled.png')
-          }
+          {...(props.buttonIcon === 'arrow_yellow'
+            ? AppImages.arrow_yellow
+            : AppImages.arrow_disabled)}
         />
       </TouchableOpacity>
       {props.children}

@@ -153,7 +153,7 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
                     }
                   }}
                 >
-                  {/* <Image {...AppImages[item.icon]} /> */}
+                  <Image {...AppImages[item.icon]} />
                 </TouchableOpacity>
               </View>
             )}

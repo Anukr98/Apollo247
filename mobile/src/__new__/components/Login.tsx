@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Text, View, StyleSheet, TextInput } from 'react-native';
 import { theme } from 'app/src/__new__/theme/theme';
 import { string } from 'app/src/__new__/strings/string';
-import { Card } from 'app/src/UI/common';
 import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
 import { NavigationScreenProps } from 'react-navigation';
+import { Card } from 'app/src/__new__/components/ui/Card';
 
 const styles = StyleSheet.create({
   container: {
@@ -73,7 +73,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         description={string.LocalStrings.please_enter_no}
         buttonIcon={
           phoneNumberIsValid && phoneNumber.replace(/^0+/, '').length === 10
-            ? 'arro_yellow'
+            ? 'arrow_yellow'
             : 'arrow_disabled'
         }
         onClickButton={() => props.navigation.navigate(appRoutes.tabBar())}

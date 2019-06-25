@@ -4,6 +4,7 @@ import { Login } from 'app/src/__new__/components/Login';
 import { Onboarding } from 'app/src/__new__/components/Onboarding';
 import { TabBar } from 'app/src/__new__/components/TabBar';
 import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
+import { DoctorSearch } from 'app/src/__new__/components/DoctorSearch';
 
 const AppNavigator = createStackNavigator(
   {
@@ -22,6 +23,12 @@ const AppNavigator = createStackNavigator(
     [appRoutes.login()]: {
       screen: Login,
     },
+    [appRoutes.doctorSearch()]: {
+      screen: DoctorSearch,
+      navigationOptions: {
+        header: null,
+      },
+    },
     // [appRoutes.otpVerification()]: {
     //   screen: OTPVerification,
     // },
@@ -34,12 +41,7 @@ const AppNavigator = createStackNavigator(
     // SignUp: {
     //   screen: SignUp,
     // },
-    // SearchScene: {
-    //   screen: SearchScene,
-    //   navigationOptions: {
-    //     header: null,
-    //   },
-    // },
+
     // DoctorSearchListing: {
     //   screen: DoctorSearchListing,
     //   navigationOptions: {

@@ -4,4 +4,5 @@ export const appRoutes = {
   otpVerification: () => 'otpVerification',
   consultRoom: () => 'consultRoom',
   tabBar: () => 'tabBar',
+  doctorSearch: () => 'doctorSearch',
 };

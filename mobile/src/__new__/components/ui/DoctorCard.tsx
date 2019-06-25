@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   View,
   Text,
@@ -113,7 +114,6 @@ type rowData = {
   imageStyle?: StyleProp<ImageStyle>;
   titleStyle?: StyleProp<TextStyle>;
   experience: string;
-  index: number;
   education: string;
   location: string;
   time: string;

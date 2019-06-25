@@ -1,4 +1,14 @@
-import { View, Text, TextInput, StyleSheet, Platform, StyleProp, ViewStyle } from 'react-native';
+import React from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Platform,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
 import { theme } from '../../theme/theme';
 
 const styles = StyleSheet.create({
@@ -31,7 +41,9 @@ const styles = StyleSheet.create({
   textview: {
     flexDirection: 'row',
   },
-  placeholderTextColor: theme.colors.placeholderTextColor,
+  placeholderTextColor: {
+    color: theme.colors.placeholderTextColor,
+  },
 });
 
 export interface textInputComponentProps {
@@ -43,9 +55,9 @@ export interface textInputComponentProps {
   inputStyle: StyleProp<ViewStyle>;
   multiline: boolean;
   numberOfLines: number;
-  placeholderTextColor: string;
-  onFocus: () => null;
-  onChangeText: () => null;
+  placeholderTextColor: StyleProp<TextStyle>;
+  onFocus: () => void;
+  onChangeText: any;
   underlineColorAndroid: string;
   autoCorrect: boolean;
   width: number;
