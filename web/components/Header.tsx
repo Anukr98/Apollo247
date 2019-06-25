@@ -11,9 +11,10 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     header: {
       display: 'flex',
-      boxShadow: '0 0 5px 0 rgba(128, 128, 128, 0.2)',
+      boxShadow: '0 -5px 5px 0 rgba(128, 128, 128, 0.2)',
       backgroundColor: '#ffffff',
       padding: '20px 20px 4px 20px',
+      borderBottom: 'solid 1px #f0f1ec',
     },
     logo: {
       '& a': {
@@ -44,22 +45,6 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '10px',
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: '#ffffff',
-      '& label.Mui-focused': {
-        color: '#02475b',
-      },
-      '& .MuiInputBase-root': {
-        fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
-      },
-      '& .MuiInputBase-root:before': {
-        borderBottomColor: '#00b38e',
-        borderWidth: '2px',
-      },
-      '& .MuiInputBase-root:hover:before': {
-        borderBottomColor: 'rgba(0, 0, 0, 0.5)',
-      },
-      '& .MuiInput-underline:after': {
-        borderBottomColor: '#00b38e',
-      },
     },
     topPopover: {
       '& .MuiPopover-paper': {
@@ -71,7 +56,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface SignInProps {}
+export interface SignInProps { }
 
 export const Header: React.FC = (props) => {
   const classes = useStyles();

@@ -19,49 +19,75 @@ const muiTheme = createMuiTheme({
   palette: {
     primary: {
       main: '#fcb716',
+      light: '#fed984',
+      contrastText: '#fff',
+    },
+    secondary: {
+      main: '#0087ba',
+      light: '#02475b',
+      dark: '#02475b',
+      contrastText: '#fff',
+    },
+    error: {
+      main: '#e50000',
+      dark: '#890000',
+      contrastText: '#fff',
+    },
+    text: {
+      primary: '#f7f8f5',
+    },
+    background: {
+      default: '#dcdfce',
+    },
+    action: {
+      active: '#fff',
+      hover: '#fff',
+      hoverOpacity: 0.08,
+      selected: '#fcb716',
+      disabled: '#fff',
+      disabledBackground: '#fed984',
     },
   },
   typography: {
-    body1: {
-      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
-    },
-    body2: {
-      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
-      fontSize: '12px',
-      lineHeight: '18px',
-      fontWeight: 400,
-      letterSpacing: 'normal',
-      backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
-    },
+    htmlFontSize: 16,
+    fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
+    fontSize: 14,
+    fontWeightLight: 300,
+    fontWeightRegular: 400,
+    fontWeightMedium: 500,
+    fontWeightBold: 700,
     h1: {
-      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
-      fontSize: '56px',
+      fontSize: 56,
       fontWeight: 600,
       color: '#02475b',
-      letterSpacing: 'normal',
     },
     h2: {
-      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
-      fontSize: '36px',
+      fontSize: 36,
       fontWeight: 600,
       color: '#02475b',
-      lineHeight: 1.22,
+    },
+    h3: {
+      fontSize: 26,
+      fontWeight: 600,
+      color: '#02475b',
+    },
+    h4: {
+      fontSize: 18,
+      fontWeight: 600,
+      color: '#02475b',
     },
     h5: {
-      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
-      fontSize: '14px',
+      fontSize: 14,
       fontWeight: 500,
       color: '#02475b',
-      lineHeight: 1.45,
     },
     button: {
-      fontSize: '13px',
+      fontSize: 13,
       fontWeight: 'bold',
-      fontStyle: 'normal',
-      lineHeight: '1.85',
-      letterSpacing: 'normal',
-      color: '#ffffff',
     },
+  },
+  shape: {
+    borderRadius: 10,
   },
 });
 
@@ -69,19 +95,7 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     app: {
       minHeight: '100vh',
-      '& label.Mui-focused': {
-        color: '#02475b',
-      },
-      '& .MuiInputBase-root': {
-        fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
-      },
-      '& .MuiInputBase-root:before': {
-        borderBottomColor: '#00b38e',
-        borderWidth: '2px',
-      },
-      '& .MuiInput-underline:after': {
-        borderBottomColor: '#00b38e',
-      },
+      backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
     },
   };
 });
