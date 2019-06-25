@@ -1,14 +1,14 @@
 import React from 'react';
 import { Image } from 'react-native';
 import { createBottomTabNavigator } from 'react-navigation';
-import { AppImages } from 'app/src/__new__/images/AppImages';
 import { ConsultRoom } from 'app/src/__new__/components/ConsultRoom';
 import { theme } from 'app/src/__new__/theme/theme';
-import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
 import { ConsultationRoom } from 'app/src/__new__/components/ui/Icons';
+import { AppRoutes } from 'app/src/__new__/components/AppNavigatorContainer';
 
-const routeToIcon = {
-  [appRoutes.consultRoom()]: <ConsultationRoom />,
+const routeToIcon: Partial<Record<keyof typeof AppRoutes, any>> = {
+  [AppRoutes.ConsultRoom]: <ConsultationRoom />,
+  [AppRoutes.ConsultRoom]: <ConsultationRoom />,
 };
 
 export const TabBar = createBottomTabNavigator(

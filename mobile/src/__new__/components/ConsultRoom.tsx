@@ -6,6 +6,7 @@ import { Dimensions, Image, SafeAreaView, StyleSheet, Text, View } from 'react-n
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { appRoutes } from '../helpers/appRoutes';
+import { AppRoutes } from 'app/src/__new__/components/AppNavigatorContainer';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -202,7 +203,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Button
                 title="CONSULT A DOCTOR"
                 style={styles.buttonStyles}
-                onPress={() => props.navigation.navigate(appRoutes.doctorSearch())}
+                onPress={() => props.navigation.navigate(AppRoutes.DoctorSearch)}
               />
             </View>
             <Image {...AppImages.doctorImage} />

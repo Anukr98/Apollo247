@@ -5,6 +5,7 @@ import { string } from 'app/src/__new__/strings/string';
 import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
 import { NavigationScreenProps } from 'react-navigation';
 import { Card } from 'app/src/__new__/components/ui/Card';
+import { AppRoutes } from 'app/src/__new__/components/AppNavigatorContainer';
 
 const styles = StyleSheet.create({
   container: {
@@ -76,7 +77,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             ? 'arrow_yellow'
             : 'arrow_disabled'
         }
-        onClickButton={() => props.navigation.navigate(appRoutes.tabBar())}
+        onClickButton={() => props.navigation.navigate(AppRoutes.TabBar)}
         disableButton={phoneNumberIsValid ? false : true}
       >
         <View style={phoneNumberIsValid ? styles.inputValidView : styles.inputView}>

@@ -21,6 +21,7 @@ import {
   NavigationScreenComponent,
   NavigationScreenProps,
 } from 'react-navigation';
+import { AppRoutes } from 'app/src/__new__/components/AppNavigatorContainer';
 
 const styles = StyleSheet.create({
   container: {
@@ -147,7 +148,7 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     if (item.index === slides.length) {
-                      props.navigation.navigate(appRoutes.login());
+                      props.navigation.navigate(AppRoutes.Login);
                     } else {
                       appIntroSliderRef.current.goToSlide(item.index);
                     }
@@ -164,7 +165,7 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
       <View style={styles.skipView}>
         <Text
           style={styles.skipTextStyle}
-          onPress={() => props.navigation.navigate(appRoutes.login())}
+          onPress={() => props.navigation.navigate(AppRoutes.Login)}
         >
           SKIP
         </Text>

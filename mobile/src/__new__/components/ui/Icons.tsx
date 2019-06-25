@@ -8,11 +8,11 @@ const getIconStyle = (size?: IconProps['size']) => {
 };
 
 interface IconProps extends Partial<ImageProps> {
-  size: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 export interface IconBaseProps extends ImageProps {
-  size: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 export const IconBase: React.FC<IconBaseProps> = ({ size, style, ...props }) => (

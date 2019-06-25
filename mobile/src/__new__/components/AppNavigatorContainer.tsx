@@ -1,66 +1,58 @@
-import { createStackNavigator, createAppContainer } from 'react-navigation';
+import { createStackNavigator, createAppContainer, StackNavigatorConfig } from 'react-navigation';
 
 import { Login } from 'app/src/__new__/components/Login';
 import { Onboarding } from 'app/src/__new__/components/Onboarding';
 import { TabBar } from 'app/src/__new__/components/TabBar';
-import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
 import { DoctorSearch } from 'app/src/__new__/components/DoctorSearch';
+import { NavigationRouteConfig } from 'react-navigation';
 
-const AppNavigator = createStackNavigator(
-  {
-    [appRoutes.onboarding()]: {
-      screen: Onboarding,
-      navigationOptions: {
-        header: null,
-      },
-    },
-    [appRoutes.tabBar()]: {
-      screen: TabBar,
-      navigationOptions: {
-        header: null,
-      },
-    },
-    [appRoutes.login()]: {
-      screen: Login,
-    },
-    [appRoutes.doctorSearch()]: {
-      screen: DoctorSearch,
-      navigationOptions: {
-        header: null,
-      },
-    },
-    // [appRoutes.otpVerification()]: {
-    //   screen: OTPVerification,
-    // },
-    // Home: {
-    //   screen: Home,
-    // },
-    // AddTodo: {
-    //   screen: AddTodo,
-    // },
-    // SignUp: {
-    //   screen: SignUp,
-    // },
+export enum AppRoutes {
+  Onboarding = 'Onboarding',
+  Login = 'Login',
+  OtpVerification = 'OtpVerification',
+  ConsultRoom = 'ConsultRoom',
+  TabBar = 'TabBar',
+  DoctorSearch = 'DoctorSearch',
+  MyHealth = 'MyHealth',
+}
 
-    // DoctorSearchListing: {
-    //   screen: DoctorSearchListing,
-    //   navigationOptions: {
-    //     header: null,
-    //   },
-    // },
+const routeConfigMap: Partial<Record<keyof typeof AppRoutes, NavigationRouteConfig>> = {
+  [AppRoutes.Onboarding]: {
+    screen: Onboarding,
+    navigationOptions: {
+      header: null,
+    },
   },
-  {
-    initialRouteName: appRoutes.onboarding(),
-    headerMode: 'none',
-    cardStyle: { backgroundColor: 'transparent' },
-    transitionConfig: () => {
-      return {
-        transitionSpec: {
-          duration: 0,
-        },
-      };
+  [AppRoutes.TabBar]: {
+    screen: TabBar,
+    navigationOptions: {
+      header: null,
     },
-  }
-);
+  },
+  [AppRoutes.Login]: {
+    screen: Login,
+  },
+  [AppRoutes.DoctorSearch]: {
+    screen: DoctorSearch,
+    navigationOptions: {
+      header: null,
+    },
+  },
+};
+
+const stackConfig: StackNavigatorConfig = {
+  initialRouteName: AppRoutes.Onboarding,
+  headerMode: 'none',
+  cardStyle: { backgroundColor: 'transparent' },
+  transitionConfig: () => {
+    return {
+      transitionSpec: {
+        duration: 0,
+      },
+    };
+  },
+};
+
+const AppNavigator = createStackNavigator(routeConfigMap, stackConfig);
 
 export const AppNavigatorContainer = createAppContainer(AppNavigator);
