@@ -4,7 +4,6 @@ import React from 'react';
 import { Header } from 'components/Header';
 import { HeroBanner } from 'components/HeroBanner';
 import { ServiceList } from 'components/ServiceList';
-import { Route } from 'react-router-dom';
 import { SignUp } from 'components/SignUp';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -38,14 +37,14 @@ export const Welcome: React.FC<WelcomeProps> = (props) => {
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
         <div className={classes.container}>
-          <Route exact component={Header} />
+          <Header />
         </div>
       </div>
       <div className={classes.container}>
-        <Route exact component={HeroBanner} />
-        <Route exact component={ServiceList} />
+        <HeroBanner />
+        <ServiceList />
       </div>
-      {showSignUp ? <Route exact component={SignUp} /> : null}
+      {showSignUp ? <SignUp /> : null}
     </div>
   );
 };
