@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, TextField, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import React, { useState, useEffect } from 'react';
 import Typography from '@material-ui/core/Typography';
 import InputAdornment from '@material-ui/core/InputAdornment';
@@ -14,6 +14,8 @@ import {
   useVerifyPhoneNumber,
   useAuthenticating,
 } from 'hooks/authHooks';
+import { AppTextField } from 'components/ui/AppTextField';
+import { AppInputField } from 'components/ui/AppInputField';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -22,29 +24,24 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 17,
         fontWeight: 500,
         lineHeight: 1.41,
-        color: '#0087ba',
+        color: theme.palette.secondary.main,
         marginTop: 5,
         marginBottom: 30,
       },
-      '& input': {
-        fontSize: 16,
-        fontWeight: 600,
-        color: '#02475b',
-      },
     },
     inputAdornment: {
-      color: '#02475b',
+      color: theme.palette.secondary.dark,
       '& p': {
-        color: '#02475b',
+        color: theme.palette.secondary.dark,
         fontSize: 16,
         fontWeight: 600,
-        marginBottom: 7,
+        marginBottom: 3,
       },
     },
     helpText: {
       fontSize: 12,
       fontWeight: 500,
-      color: '#02475b',
+      color: theme.palette.secondary.dark,
       marginTop: 10,
       lineHeight: 2,
     },
@@ -113,7 +110,11 @@ export const SignIn: React.FC<SignInProps> = (props) => {
     <div className={classes.loginFormWrap}>
       <Typography variant="h2">hi</Typography>
       <p>Type in the OTP sent to you, to authenticate</p>
-      <TextField value={otp} label="Enter OTP" onChange={(e) => setOtp(e.currentTarget.value)} />
+      <AppTextField
+        value={otp}
+        label="Enter OTP"
+        onChange={(e) => setOtp(e.currentTarget.value)}
+      />
       <div className={classes.action}>
         <Fab
           color="primary"
@@ -132,7 +133,7 @@ export const SignIn: React.FC<SignInProps> = (props) => {
         <Typography variant="h2">hi</Typography>
         <p>Please enter your mobile number to login</p>
         <FormControl fullWidth>
-          <Input
+          <AppInputField
             inputProps={{ type: 'number', maxLength: 10 }}
             value={mobileNumber}
             onChange={(event) => setMobileNumber(event.currentTarget.value)}

@@ -11,16 +11,14 @@ const useStyles = makeStyles((theme: Theme) => {
     serviceList: {
       paddingTop: 145,
       paddingBottom: 40,
-      '& .MuiGrid-container': {
-        paddingLeft: 20,
-        paddingRight: 20,
-      },
+      paddingLeft: 20,
+      paddingRight: 20,
     },
     serviceItem: {
       padding: '20px 60px 20px 20px',
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-      backgroundColor: '#f7f8f5',
+      backgroundColor: theme.palette.common.white,
       position: 'relative',
       '& p': {
         fontSize: 12,
@@ -35,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
     action: {
       fontSize: 13,
       fontWeight: 'bold',
-      color: '#fc9916',
+      color: theme.palette.action.selected,
       lineHeight: 1.85,
       textTransform: 'uppercase',
     },
