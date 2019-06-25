@@ -10,7 +10,7 @@ import { SignUp } from 'components/SignUp';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
-      paddingTop: '85px',
+      paddingTop: 85,
     },
     booksLink: {
       color: theme.palette.primary.main,
@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 0,
     },
     container: {
-      maxWidth: '1064px',
+      maxWidth: 1064,
       margin: 'auto',
     },
   };

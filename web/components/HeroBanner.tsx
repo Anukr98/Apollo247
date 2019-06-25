@@ -17,36 +17,31 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     bannerInfo: {
       width: '50%',
-
       '& p': {
-        fontSize: '17px',
-        lineHeight: '1.47',
+        fontSize: 17,
+        lineHeight: 1.47,
         fontWeight: 500,
         color: '#0087ba',
-        marginTop: '16px',
-        marginBottom: '20px',
+        marginTop: 16,
+        marginBottom: 20,
       },
       '& h1': {
-        lineHeight: '72px',
+        lineHeight: 72,
       },
     },
     bannerImg: {
       width: '50%',
       marginLeft: 'auto',
-      marginBottom: '-190px',
+      marginBottom: -190,
       textAlign: 'right',
       '& img': {
-        marginTop: '-15px',
+        marginTop: -15,
       }
     },
     button: {
-      fontFamily: ['IBM Plex Sans', 'sans-serif',].join(','),
-      color: '#fff',
-      fontSize: '13px',
-      fontWeight: 'bold',
-      minWidth: '200px',
+      minWidth: 200,
       padding: '8px 15px',
-      borderRadius: '5px',
+      borderRadius: 5,
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
     },
   };

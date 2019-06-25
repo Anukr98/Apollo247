@@ -18,7 +18,6 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'fixed',
       bottom: 10,
       right: 15,
-
       '& img': {
         maxWidth: 72,
         maxHeight: 72,

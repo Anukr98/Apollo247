@@ -1,13 +1,9 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
-import Popper from '@material-ui/core/Popper';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
-import Input from '@material-ui/core/Input';
 import TextField from '@material-ui/core/TextField';
 import Fab from '@material-ui/core/Fab';
 import Grid from '@material-ui/core/Grid';
@@ -16,15 +12,15 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     loginFormWrap: {
       '& p': {
-        fontSize: '17px',
+        fontSize: 17,
         fontWeight: 500,
         lineHeight: 1.41,
         color: '#0087ba',
-        marginTop: '5px',
-        marginBottom: '30px',
+        marginTop: 5,
+        marginBottom: 30,
       },
       '& input': {
-        fontSize: '16px',
+        fontSize: 16,
         fontWeight: 600,
         color: '#02475b',
         textAlign: 'center',
@@ -37,36 +33,34 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       '& p': {
         color: '#02475b',
-        fontSize: '16px',
+        fontSize: 16,
         fontWeight: 600,
       },
     },
     helpText: {
-      fontSize: '12px',
+      fontSize: 12,
       fontWeight: 500,
       color: '#02475b',
-      marginTop: '10px',
+      marginTop: 10,
       lineHeight: 2,
     },
     action: {
       display: 'flex',
-
       '& button': {
         marginLeft: 'auto',
-        marginRight: '-40px',
+        marginRight: -40,
         backgroundColor: '#FED984',
-        fontSize: '16px',
+        fontSize: 16,
         fontWeight: 500,
-        color: '#fff',
       },
     },
     resendBtn: {
       padding: 0,
       color: '#fc9916',
-      fontSize: '12px',
+      fontSize: 12,
       fontWeight: 600,
       textTransform: 'uppercase',
-      marginTop: '10px',
+      marginTop: 10,
       '&:hover': {
         backgroundColor: 'transparent',
       },
