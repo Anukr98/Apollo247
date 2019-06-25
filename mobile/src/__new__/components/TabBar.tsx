@@ -5,6 +5,11 @@ import { AppImages } from 'app/src/__new__/images/AppImages';
 import { ConsultRoom } from 'app/src/__new__/components/ConsultRoom';
 import { theme } from 'app/src/__new__/theme/theme';
 import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
+import { ConsultationRoom } from 'app/src/__new__/components/ui/Icons';
+
+const routeToIcon = {
+  [appRoutes.consultRoom()]: <ConsultationRoom />,
+};
 
 export const TabBar = createBottomTabNavigator(
   {
@@ -13,6 +18,15 @@ export const TabBar = createBottomTabNavigator(
   {
     defaultNavigationOptions: ({ navigation }) => ({
       tabBarIcon: ({ focused, horizontal, tintColor }) => {
+        if (routeName === 'ConsultRoom') {
+          iconName = `ConsultRoom${focused ? 'Act' : ''}`;
+        } else if (routeName === 'MyHealth') {
+          iconName = `MyHealth${focused ? 'Act' : ''}`;
+        } else if (routeName === 'Orders') {
+          iconName = `Orders${focused ? 'Act' : ''}`;
+        } else if (routeName === 'Account') {
+          iconName = `Account${focused ? 'Act' : ''}`;
+        }
         return <Image source={require('app/src/__new__/images/tab/ic_consultroom.png')} />;
         // const { routeName } = navigation.state;
         // let iconName;

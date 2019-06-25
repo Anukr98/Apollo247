@@ -1,17 +1,21 @@
 import React from 'react';
 import { ImageProps, Image } from 'react-native';
 
-export interface IconProps extends Partial<ImageProps> {
-  size?: 'sm' | 'md' | 'lg';
-}
-
 const getIconStyle = (size?: IconProps['size']) => {
   if (size === 'sm') return { width: 24, height: 24 };
   if (size === 'lg') return { width: 64, height: 64 };
   return { width: 48, height: 48 };
 };
 
-export const IconBase: React.FC<IconProps> = ({ size, style, ...props }) => (
+interface IconProps extends Partial<ImageProps> {
+  size: 'sm' | 'md' | 'lg';
+}
+
+export interface IconBaseProps extends ImageProps {
+  size: 'sm' | 'md' | 'lg';
+}
+
+export const IconBase: React.FC<IconBaseProps> = ({ size, style, ...props }) => (
   <Image style={[getIconStyle(size), style]} {...props} />
 );
 
