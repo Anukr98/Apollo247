@@ -29,11 +29,10 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface WelcomeProps { }
+export interface WelcomeProps {}
 
 export const Welcome: React.FC<WelcomeProps> = (props) => {
   const classes = useStyles();
-  const [showSignUp, handleSignUpCard] = React.useState<boolean>(false);
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
