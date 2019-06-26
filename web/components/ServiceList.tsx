@@ -9,46 +9,42 @@ import Paper from '@material-ui/core/Paper';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     serviceList: {
-      paddingTop: '145px',
-      paddingBottom: '40px',
-
-      '& .MuiGrid-container': {
-        paddingLeft: '20px',
-        paddingRight: '20px',
-      },
+      paddingTop: 145,
+      paddingBottom: 40,
+      paddingLeft: 20,
+      paddingRight: 20,
     },
     serviceItem: {
       padding: '20px 60px 20px 20px',
-      borderRadius: '10px',
+      borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-      backgroundColor: '#f7f8f5',
+      backgroundColor: theme.palette.common.white,
       position: 'relative',
       '& p': {
-        fontSize: '12px',
+        fontSize: 12,
         fontWeight: 'normal',
         lineHeight: 1.5,
         letterSpacing: 'normal',
         color: 'rgba(0,0,0,0.5)',
-        marginTop: '5px',
-        marginBottom: '5px',
-      },
+        marginTop: 5,
+        marginBottom: 5,
+      }
     },
     action: {
-      fontSize: '13px',
+      fontSize: 13,
       fontWeight: 'bold',
-      color: '#fc9916',
+      color: theme.palette.action.selected,
       lineHeight: 1.85,
       textTransform: 'uppercase',
     },
     serviceImg: {
-      width: '70px',
-      height: '70px',
+      width: 70,
+      height: 70,
       borderRadius: '50%',
       position: 'absolute',
-      top: '-10px',
-      right: '-10px',
+      top: -10,
+      right: -10,
       backgroundColor: '#afc3c9',
-
       '& img': {
         maxWidth: '100%',
       },

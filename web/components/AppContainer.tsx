@@ -43,7 +43,7 @@ const muiTheme = createMuiTheme({
       active: '#fff',
       hover: '#fff',
       hoverOpacity: 0.08,
-      selected: '#fcb716',
+      selected: '#fc9916',
       disabled: '#fff',
       disabledBackground: '#fed984',
     },

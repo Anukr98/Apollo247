@@ -12,15 +12,15 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     loginFormWrap: {
       '& p': {
-        fontSize: '17px',
+        fontSize: 17,
         fontWeight: 500,
         lineHeight: 1.41,
         color: '#0087ba',
-        marginTop: '5px',
-        marginBottom: '30px',
+        marginTop: 5,
+        marginBottom: 30,
       },
       '& input': {
-        fontSize: '16px',
+        fontSize: 16,
         fontWeight: 600,
         color: '#02475b',
         textAlign: 'center',
@@ -33,36 +33,34 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       '& p': {
         color: '#02475b',
-        fontSize: '16px',
+        fontSize: 16,
         fontWeight: 600,
       },
     },
     helpText: {
-      fontSize: '12px',
+      fontSize: 12,
       fontWeight: 500,
       color: '#02475b',
-      marginTop: '10px',
+      marginTop: 10,
       lineHeight: 2,
     },
     action: {
       display: 'flex',
-
       '& button': {
         marginLeft: 'auto',
-        marginRight: '-40px',
+        marginRight: -40,
         backgroundColor: '#FED984',
-        fontSize: '16px',
+        fontSize: 16,
         fontWeight: 500,
-        color: '#fff',
       },
     },
     resendBtn: {
       padding: 0,
       color: '#fc9916',
-      fontSize: '12px',
+      fontSize: 12,
       fontWeight: 600,
       textTransform: 'uppercase',
-      marginTop: '10px',
+      marginTop: 10,
       '&:hover': {
         backgroundColor: 'transparent',
       },
