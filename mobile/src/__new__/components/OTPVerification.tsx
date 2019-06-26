@@ -4,7 +4,7 @@ import SmsListener from 'react-native-android-sms-listener';
 import CodeInput from 'react-native-confirmation-code-input';
 import { theme } from 'app/src/__new__/theme/theme';
 import { string } from 'app/src/__new__/strings/string';
-import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
+import { AppRoutes } from 'app/src/__new__/components/AppNavigatorContainer';
 import { NavigationScreenProps } from 'react-navigation';
 import { Card } from 'app/src/__new__/components/ui/Card';
 import { number } from 'prop-types';
@@ -117,7 +117,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           heading={string.LocalStrings.oops}
           description={string.LocalStrings.incorrect_otp_message}
           buttonIcon={isValidOTP ? 'ic_ok' : 'ok_disabled'}
-          onClickButton={() => props.navigation.navigate(appRoutes.signUp())}
+          onClickButton={() => props.navigation.navigate(AppRoutes.SignUp)}
           disableButton={isValidOTP ? false : true}
           descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 7 : 30 }}
         >
@@ -149,7 +149,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           heading={string.LocalStrings.great}
           description={string.LocalStrings.type_otp_text}
           buttonIcon={isValidOTP ? 'ic_ok' : 'ok_disabled'}
-          onClickButton={() => props.navigation.navigate(appRoutes.signUp())}
+          onClickButton={() => props.navigation.navigate(AppRoutes.SignUp)}
           disableButton={isValidOTP ? false : true}
           descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 7 : 30 }}
         >

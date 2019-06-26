@@ -10,8 +10,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { AppImages } from '../../images/AppImages';
 import { theme } from '../../theme/theme';
+import { BackArrow } from 'app/src/__new__/components/ui/Icons';
 
 const textStyle = {
   color: theme.colors.SHERPA_BLUE,
@@ -76,7 +76,8 @@ export const Header: React.FC<headerProps> = (props) => {
       <View style={{ flex: 1, alignItems: 'flex-start' }}>
         {leftText && (
           <View style={{ flexDirection: 'row' }}>
-            <Image {...AppImages.navBack} />
+            <BackArrow />
+            {/* <Image {...AppImages.navBack} /> */}
             <Text
               style={styles.leftTextStyle}
               onPress={leftText.isBack ? props.navigation.goBack() : leftText.onPress}
@@ -87,7 +88,8 @@ export const Header: React.FC<headerProps> = (props) => {
         )}
         {leftIcon && (
           <TouchableOpacity onPress={props.onPress}>
-            <Image {...AppImages[leftIcon]} />
+            {/* //td
+            <Image {...AppImages[leftIcon]} /> */}
           </TouchableOpacity>
         )}
       </View>
@@ -98,7 +100,7 @@ export const Header: React.FC<headerProps> = (props) => {
             {rightText.title}
           </Text>
         )}
-        {rightIcon && <Image {...AppImages[rightIcon]} />}
+        {/* {rightIcon && <Image {...AppImages[rightIcon]} />} */}
         {props.rightComponent && props.rightComponent()}
       </View>
     </View>

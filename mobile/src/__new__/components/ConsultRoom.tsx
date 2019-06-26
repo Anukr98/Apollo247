@@ -1,11 +1,12 @@
 import { Button } from 'app/src/UI/common';
-import { AppImages } from 'app/src/__new__/images/AppImages';
 import { theme } from 'app/src/__new__/theme/theme';
 import React, { useState } from 'react';
 import { Dimensions, Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { appRoutes } from '../helpers/appRoutes';
+import { AppRoutes } from 'app/src/__new__/components/AppNavigatorContainer';
+import { DropdownGreen, Mascot } from 'app/src/__new__/components/ui/Icons';
+import { ApolloLogo } from 'app/src/__new__/components/ApolloLogo';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -186,7 +187,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <ScrollView style={{ flex: 1 }}>
           <View style={{ width: '100%', height: 427 }}>
             <View style={styles.viewName}>
-              <Image {...AppImages.appLogo} />
+              <ApolloLogo />
+              {/* <Image {...AppImages.appLogo} /> */}
               <View
                 style={{
                   flexDirection: 'row',
@@ -195,17 +197,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }}
               >
                 <Text style={styles.nameTextStyle}>hi surj!</Text>
-                <Image {...AppImages.dropDown} />
+                <DropdownGreen />
+                {/* <Image {...AppImages.dropDown} /> */}
               </View>
               <View style={styles.seperatorStyle} />
               <Text style={styles.descriptionTextStyle}>Are you not feeling well today?</Text>
               <Button
                 title="CONSULT A DOCTOR"
                 style={styles.buttonStyles}
-                onPress={() => props.navigation.navigate(appRoutes.doctorSearch())}
+                onPress={() => props.navigation.navigate(AppRoutes.DoctorSearch)}
               />
             </View>
-            <Image {...AppImages.doctorImage} />
+            {/* //td
+            <Image {...AppImages.doctorImage} /> */}
           </View>
           <View>
             {arrayTest.map((serviceTitle, i) => (
@@ -253,7 +257,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       </Text>
                     </View>
                     <View>
-                      <Image {...AppImages.placeHolderImage} />
+                      {/* //td
+                      <Image {...AppImages.placeHolderImage} /> */}
                     </View>
                   </View>
                 </TouchableHighlight>
@@ -326,7 +331,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                           AVAILABLE
                         </Text>
                       </View>
-                      <Image {...AppImages.placeHolderDoctorImage} />
+                      {/* //td
+                      <Image {...AppImages.placeHolderDoctorImage} /> */}
                       <Text
                         style={{
                           ...theme.fonts.IBMPlexSansMedium(18),
@@ -411,7 +417,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </View>
 
           <View style={styles.helpView}>
-            <Image {...AppImages.ic_mascot} style={{ width: 80, height: 80 }} />
+            <Mascot />
+            {/* <Image {...AppImages.ic_mascot} style={{ width: 80, height: 80 }} /> */}
             <Button
               title="Need Help?"
               style={styles.needhelpbuttonStyles}
@@ -436,10 +443,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 setshowPopUp(false);
               }}
             />
-            <Image
+            <Mascot />
+            {/* <Image
               {...AppImages.ic_mascot}
               style={{ position: 'absolute', height: 80, width: 80, top: -40, right: 20 }}
-            />
+            /> */}
           </View>
         </View>
       )}

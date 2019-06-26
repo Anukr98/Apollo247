@@ -15,8 +15,14 @@ import { Header } from 'app/src/__new__/components/ui/Header';
 import { TextInputComponent } from 'app/src/__new__/components/ui/TextInputComponent';
 import { NavigationScreenProps } from 'react-navigation';
 import { SectionHeaderComponent } from 'app/src/__new__/components/ui/SectionHeader';
-import { AppImages } from '../images/AppImages';
 import { DoctorCard } from './ui/DoctorCard';
+import {
+  GeneralPhysician,
+  Paedatrician,
+  Urologist,
+  Neurologist,
+  Mascot,
+} from 'app/src/__new__/components/ui/Icons';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -148,27 +154,27 @@ type Specialities = {
 
 const Specialities: Specialities[] = [
   {
-    image: { ...AppImages.GeneralPhysician },
+    image: <GeneralPhysician />,
     name: 'General Physician',
   },
   {
-    image: { ...AppImages.Peadatrician },
+    image: <Paedatrician />,
     name: 'Paediatrician',
   },
   {
-    image: { ...AppImages.Urologist },
+    image: <Urologist />,
     name: 'Urologist',
   },
   {
-    image: { ...AppImages.Neurology },
+    image: <Neurologist />,
     name: 'Neurologist',
   },
   {
-    image: { ...AppImages.Urologist },
+    image: <Urologist />,
     name: 'Urologist',
   },
   {
-    image: { ...AppImages.Neurology },
+    image: <Neurologist />,
     name: 'Neurologist',
   },
 ];
@@ -192,7 +198,8 @@ const doctorsList: doctorsList[] = [
     title: 'Matching Doctors',
     data: [
       {
-        image: { ...AppImages.simran },
+        image: <Neurologist />,
+        // image: { ...AppImages.simran },
         doctorName: 'Dr. Simran Rai',
         starDoctor: true,
         specialization: 'GENERAL PHYSICIAN',
@@ -208,7 +215,8 @@ const doctorsList: doctorsList[] = [
     title: 'Other Suggested Doctors',
     data: [
       {
-        image: { ...AppImages.narayanRao },
+        image: <Neurologist />,
+        // image: { ...AppImages.narayanRao },
         doctorName: 'Dr. Jayanth Reddy',
         starDoctor: true,
         specialization: 'GENERAL PHYSICIAN',
@@ -219,7 +227,8 @@ const doctorsList: doctorsList[] = [
         available: false,
       },
       {
-        image: { ...AppImages.rakhiSharma },
+        image: <Neurologist />,
+        // image: { ...AppImages.rakhiSharma },
         doctorName: 'Dr. Rakhi Sharma',
         starDoctor: false,
         specialization: 'GENERAL PHYSICIAN',
@@ -343,7 +352,8 @@ export const DoctorSearch: React.FC<doctorSearchProps> = (props) => {
         activeOpacity={1}
       >
         <View style={styles.listSpecialistView}>
-          <Image {...rowData.image} style={{ marginTop: 10 }} />
+          {rowData.image}
+          {/* <Image {...rowData.image} style={{ marginTop: 10 }} /> */}
           <Text style={styles.rowSpecialistStyles}>{rowData.name.toUpperCase()}</Text>
         </View>
       </TouchableOpacity>
@@ -358,7 +368,8 @@ export const DoctorSearch: React.FC<doctorSearchProps> = (props) => {
     if (needHelp) {
       return (
         <View style={styles.helpView}>
-          <Image {...AppImages.ic_mascot} style={{ height: 80, width: 80 }} />
+          <Mascot />
+          {/* <Image {...AppImages.ic_mascot} style={{ height: 80, width: 80 }} /> */}
           {/* <Button
             title="Need Help?"
             style={styles.needhelpbuttonStyles}

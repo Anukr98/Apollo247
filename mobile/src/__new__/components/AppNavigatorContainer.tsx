@@ -1,79 +1,91 @@
-import { createStackNavigator, createAppContainer } from 'react-navigation';
+import { createStackNavigator, createAppContainer, StackNavigatorConfig } from 'react-navigation';
 
 import { Login } from 'app/src/__new__/components/Login';
 import { Onboarding } from 'app/src/__new__/components/Onboarding';
 import { TabBar } from 'app/src/__new__/components/TabBar';
-import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
 import { DoctorSearch } from 'app/src/__new__/components/DoctorSearch';
 import { SignUp } from 'app/src/__new__/components/SignUp';
 import { MultiSignup } from 'app/src/__new__/components/MultiSignup';
 import { OTPVerification } from 'app/src/__new__/components/OTPVerification';
+import { NavigationRouteConfig } from 'react-navigation';
+import { ConsultRoom } from 'app/src/__new__/components/ConsultRoom';
 
-const AppNavigator = createStackNavigator(
-  {
-    [appRoutes.onboarding()]: {
-      screen: Onboarding,
-      navigationOptions: {
-        header: null,
-      },
-    },
-    [appRoutes.tabBar()]: {
-      screen: TabBar,
-      navigationOptions: {
-        header: null,
-      },
-    },
-    [appRoutes.login()]: {
-      screen: Login,
-    },
-    [appRoutes.doctorSearch()]: {
-      screen: DoctorSearch,
-      navigationOptions: {
-        header: null,
-      },
-    },
-    [appRoutes.signUp()]: {
-      screen: SignUp,
-    },
-    [appRoutes.multiSignup()]: {
-      screen: MultiSignup,
-    },
-    [appRoutes.OTPVerification()]: {
-      screen: OTPVerification,
-    },
+export enum AppRoutes {
+  Onboarding = 'Onboarding',
+  Login = 'Login',
+  ConsultRoom = 'ConsultRoom',
+  TabBar = 'TabBar',
+  DoctorSearch = 'DoctorSearch',
+  SignUp = 'SignUp',
+  MultiSignup = 'MultiSignup',
+  OTPVerification = 'OTPVerification',
+}
 
-    // [appRoutes.otpVerification()]: {
-    //   screen: OTPVerification,
-    // },
-    // Home: {
-    //   screen: Home,
-    // },
-    // AddTodo: {
-    //   screen: AddTodo,
-    // },
-    // SignUp: {
-    //   screen: SignUp,
-    // },
+export type AppRoute = keyof typeof AppRoutes;
 
-    // DoctorSearchListing: {
-    //   screen: DoctorSearchListing,
-    //   navigationOptions: {
-    //     header: null,
-    //   },
-    // },
+const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
+  [AppRoutes.Onboarding]: {
+    screen: Onboarding,
+    navigationOptions: {
+      header: null,
+    },
   },
-  {
-    initialRouteName: appRoutes.onboarding(),
-    headerMode: 'none',
-    cardStyle: { backgroundColor: 'transparent' },
-    transitionConfig: () => {
-      return {
-        transitionSpec: {
-          duration: 0,
-        },
-      };
+  [AppRoutes.TabBar]: {
+    screen: TabBar,
+    navigationOptions: {
+      header: null,
     },
-  }
-);
+  },
+  [AppRoutes.Login]: {
+    screen: Login,
+  },
+  [AppRoutes.DoctorSearch]: {
+    screen: DoctorSearch,
+    navigationOptions: {
+      header: null,
+    },
+  },
+
+  [AppRoutes.SignUp]: {
+    screen: SignUp,
+  },
+  [AppRoutes.MultiSignup]: {
+    screen: MultiSignup,
+  },
+  [AppRoutes.OTPVerification]: {
+    screen: OTPVerification,
+  },
+  [AppRoutes.ConsultRoom]: {
+    screen: ConsultRoom,
+  },
+
+  // [appRoutes.otpVerification()]: {
+  //   screen: OTPVerification,
+  // },
+  // Home: {
+  //   screen: Home,
+  // },
+  // AddTodo: {
+  //   screen: AddTodo,
+  // },
+  // SignUp: {
+  //   screen: SignUp,
+  // },
+};
+
+const stackConfig: StackNavigatorConfig = {
+  initialRouteName: AppRoutes.Onboarding,
+  headerMode: 'none',
+  cardStyle: { backgroundColor: 'transparent' },
+  transitionConfig: () => {
+    return {
+      transitionSpec: {
+        duration: 0,
+      },
+    };
+  },
+};
+
+const AppNavigator = createStackNavigator(routeConfigMap, stackConfig);
 
 export const AppNavigatorContainer = createAppContainer(AppNavigator);

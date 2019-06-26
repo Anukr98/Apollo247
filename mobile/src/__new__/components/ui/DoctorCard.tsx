@@ -10,8 +10,8 @@ import {
   Image,
 } from 'react-native';
 import { theme } from '../../theme/theme';
-import { AppImages } from '../../images/AppImages';
 import { string } from '../../strings/string';
+import { Star } from 'app/src/__new__/components/ui/Icons';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -135,13 +135,15 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
             </View>
           ) : null}
           <View style={styles.imageView}>
-            <Image {...rowData.image} />
+            {rowData.image}
+            {/* <Image {...rowData.image} /> */}
             {rowData.available ? (
-              <Image
-                {...AppImages.starDoctor}
-                style={{ position: 'absolute', bottom: -10, left: 30 }}
-              />
-            ) : null}
+              <Star />
+            ) : // <Image
+            //   {...AppImages.starDoctor}
+            //   style={{ position: 'absolute', bottom: -10, left: 30 }}
+            // />
+            null}
           </View>
           <View>
             <Text style={styles.doctorNameStyles}>{rowData.doctorName}</Text>

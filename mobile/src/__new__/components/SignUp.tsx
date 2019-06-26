@@ -17,12 +17,13 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 
 import { theme } from 'app/src/__new__/theme/theme';
 import { RouteChildrenProps } from 'react-router';
-import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
-import { AppImages } from 'app/src/__new__/images/AppImages';
+import { AppRoutes } from 'app/src/__new__/components/AppNavigatorContainer';
 import { string } from 'app/src/__new__/strings/string';
 import { StickyBottomComponent } from 'app/src/__new__/components/ui/StickyBottomComponent';
 import { Button, TextInputComponent, Card } from 'app/src/UI/common';
 import { DatePicker } from 'app/src/__new__/components/ui/DatePicker';
+import { Mascot } from 'app/src/__new__/components/ui/Icons';
+import { ApolloLogo } from 'app/src/__new__/components/ApolloLogo';
 
 const styles = StyleSheet.create({
   container: {
@@ -115,10 +116,12 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
     <View style={{ flex: 1 }}>
       <KeyboardAwareScrollView style={styles.container} extraScrollHeight={100}>
         <View style={styles.mascotStyle}>
-          <Image {...AppImages.ic_mascot} />
+          <Mascot />
+          {/* <Image {...AppImages.ic_mascot} /> */}
         </View>
         <View style={{ height: 100, justifyContent: 'center' }}>
-          <Image {...AppImages.appLogo} style={{ left: 20, top: 20 }} />
+          <ApolloLogo />
+          {/* <Image {...AppImages.appLogo} style={{ left: 20, top: 20 }} /> */}
         </View>
         <Card
           cardContainer={{ marginHorizontal: 0, marginTop: 20 }}
@@ -177,7 +180,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
         <Button
           title={'SUBMIT'}
           style={{ width: '47%' }}
-          onPress={() => props.navigation.navigate(appRoutes.multiSignup())}
+          onPress={() => props.navigation.navigate(AppRoutes.MultiSignup)}
         />
       </StickyBottomComponent>
     </View>

@@ -18,13 +18,14 @@ import { MenuProvider } from 'react-native-popup-menu';
 
 import { theme } from 'app/src/__new__/theme/theme';
 import { RouteChildrenProps } from 'react-router';
-import { appRoutes } from 'app/src/__new__/helpers/appRoutes';
-import { AppImages } from 'app/src/__new__/images/AppImages';
+import { AppRoutes } from 'app/src/__new__/components/AppNavigatorContainer';
 import { string } from 'app/src/__new__/strings/string';
 import { StickyBottomComponent } from 'app/src/__new__/components/ui/StickyBottomComponent';
 import { Button, TextInputComponent, Card } from 'app/src/UI/common';
 import { DatePicker } from 'app/src/__new__/components/ui/DatePicker';
 import { DropDownComponent } from 'app/src/__new__/components/ui/DropDownComponent';
+import { Mascot, More } from 'app/src/__new__/components/ui/Icons';
+import { ApolloLogo } from 'app/src/__new__/components/ApolloLogo';
 
 const styles = StyleSheet.create({
   container: {
@@ -138,7 +139,8 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         <View style={{ flex: 9 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={styles.idTextStyle}>APD1.0010783329</Text>
-            <Image {...AppImages.ic_more} />
+            <More />
+            {/* <Image {...AppImages.ic_more} /> */}
           </View>
           <TextInputComponent placeholder={'First Name'} />
           <TextInputComponent placeholder={'Last Name'} />
@@ -187,7 +189,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         <Button
           style={{ width: '47%' }}
           title={'SUBMIT'}
-          onPress={() => props.navigation.navigate(appRoutes.tabBar())}
+          onPress={() => props.navigation.navigate(AppRoutes.TabBar)}
         />
       </StickyBottomComponent>
     );
@@ -198,11 +200,13 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
       <MenuProvider menuProviderWrapper={{ flex: 1 }}>
         <KeyboardAwareScrollView style={styles.container}>
           <View style={styles.mascotStyle}>
-            <Image {...AppImages.ic_mascot} />
+            <Mascot />
+            {/* <Image {...AppImages.ic_mascot} /> */}
           </View>
 
           <View style={{ height: 100, justifyContent: 'center' }}>
-            <Image {...AppImages.appLogo} style={{ left: 20, top: 20 }} />
+            <ApolloLogo />
+            {/* <Image {...AppImages.appLogo} style={{ left: 20, top: 20 }} /> */}
           </View>
 
           <Card

@@ -8,11 +8,11 @@ const getIconStyle = (size?: IconProps['size']) => {
 };
 
 interface IconProps extends Partial<ImageProps> {
-  size: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 export interface IconBaseProps extends ImageProps {
-  size: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 export const IconBase: React.FC<IconBaseProps> = ({ size, style, ...props }) => (
@@ -64,65 +64,65 @@ export const ArrowStep3: React.FC<IconProps> = (props) => (
 );
 
 export const Remove: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./search/ic_cross.png')} />
+  <IconBase {...props} source={require('./icons/ic_cross.png')} />
 );
 
 export const Reload: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./search/ic_reset.png')} />
+  <IconBase {...props} source={require('./icons/ic_reset.png')} />
 );
 
 export const SortDecreasing: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./search/ic_sort_decreasing.png')} />
+  <IconBase {...props} source={require('./icons/ic_sort_decreasing.png')} />
 );
 
 export const Star: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./common/ic_star.png')} />
+  <IconBase {...props} source={require('./icons/ic_star.png')} />
 );
 
 export const ConsultationRoom: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./tab/ic_consultroom.png')} />
+  <IconBase {...props} source={require('./icons/ic_consultroom.png')} />
 );
 
 export const MyHealth: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./tab/ic_myhealth.png')} />
+  <IconBase {...props} source={require('./icons/ic_myhealth.png')} />
 );
 
 export const ShoppingCart: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./tab/ic_orders.png')} />
+  <IconBase {...props} source={require('./icons/ic_orders.png')} />
 );
 
 export const Person: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./tab/ic_account.png')} />
+  <IconBase {...props} source={require('./icons/ic_account.png')} />
 );
 
 export const GeneralPhysician: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./search/ic_general_physician.png')} />
+  <IconBase {...props} source={require('./icons/ic_general_physician.png')} />
 );
 
 export const Neurologist: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./search/ic_neurologist.png')} />
+  <IconBase {...props} source={require('./icons/ic_neurologist.png')} />
 );
 
 export const Paedatrician: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./search/ic_paedatrician.png')} />
+  <IconBase {...props} source={require('./icons/ic_paedatrician.png')} />
 );
 
 export const Urologist: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./search/ic_urologist.png')} />
+  <IconBase {...props} source={require('./icons/ic_urologist.png')} />
 );
 
 export const LocationOff: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./search/ic_location_off.png')} />
+  <IconBase {...props} source={require('./icons/ic_location_off.png')} />
 );
 
 export const Filter: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./search/ic_filter.png')} />
+  <IconBase {...props} source={require('./icons/ic_filter.png')} />
 );
 
 export const BackArrow: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./search/backArrow.png')} />
+  <IconBase {...props} source={require('./icons/backArrow.png')} />
 );
 
 export const NextButton: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./common/arrowButton.png')} />
+  <IconBase {...props} source={require('./icons/arrowButton.png')} />
 );

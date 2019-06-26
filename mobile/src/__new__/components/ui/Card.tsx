@@ -10,7 +10,6 @@ import {
   TextStyle,
 } from 'react-native';
 import { theme } from 'app/src/__new__/theme/theme';
-import { AppImages } from '../../images/AppImages';
 // import { AppImages } from 'app/src/__new__/images/AppImages';
 
 const styles = StyleSheet.create({
@@ -46,9 +45,9 @@ const styles = StyleSheet.create({
 });
 
 export interface CardProps {
-  cardContainer: StyleProp<ViewStyle>;
+  cardContainer?: StyleProp<ViewStyle>;
   heading: string;
-  descriptionTextStyle: StyleProp<TextStyle>;
+  descriptionTextStyle?: StyleProp<ViewStyle>;
   description: string;
   disableButton: boolean;
   buttonIcon: string;
@@ -65,7 +64,8 @@ export const Card: React.FC<CardProps> = (props) => {
         onPress={props.onClickButton}
         activeOpacity={props.disableButton ? 1 : 0.5}
       >
-        <Image {...AppImages[props.buttonIcon]} />
+        {/* //td
+        <Image {...AppImages[props.buttonIcon]} /> */}
       </TouchableOpacity>
       {props.children}
     </View>

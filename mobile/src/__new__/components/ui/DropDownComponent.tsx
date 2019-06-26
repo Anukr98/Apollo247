@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
 import { theme } from 'app/src/__new__/theme/theme';
-import { AppImages } from 'app/src/__new__/images/AppImages';
+import { DropdownGreen } from 'app/src/__new__/components/ui/Icons';
 
 const styles = StyleSheet.create({
   textStyle: {
@@ -96,7 +96,8 @@ export const DropDownComponent: React.FC<DropDownComponentProps> = (props) => {
             >
               {relation}
             </Text>
-            <Image {...AppImages.ic_dropdown_green} />
+            <DropdownGreen />
+            {/* <Image {...AppImages.ic_dropdown_green} /> */}
           </View>
         </MenuTrigger>
         <MenuOptions
