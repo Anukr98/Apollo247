@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, TextInput } from 'react-native';
 import { theme } from 'app/src/__new__/theme/theme';
 import { string } from 'app/src/__new__/strings/string';
 import { NavigationScreenProps } from 'react-navigation';
 import { Card } from 'app/src/__new__/components/ui/Card';
 import { AppRoutes } from 'app/src/__new__/components/AppNavigatorContainer';
+import firebase from 'react-native-firebase';
 
 const styles = StyleSheet.create({
   container: {
@@ -66,6 +67,11 @@ const isPhoneNumberValid = (number: string) => {
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const phoneNumberIsValid = isPhoneNumberValid(phoneNumber);
+
+  useEffect(() => {
+    firebase.analytics().setCurrentScreen('Login');
+  });
+
   return (
     <View style={styles.container}>
       <Card

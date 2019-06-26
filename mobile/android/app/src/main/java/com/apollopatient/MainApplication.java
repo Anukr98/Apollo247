@@ -3,6 +3,8 @@ package com.apollopatient;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import io.invertase.firebase.RNFirebasePackage;
+import io.invertase.firebase.analytics.RNFirebaseAnalyticsPackage; // <-- Add this line
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import com.centaurwarchief.smslistener.SmsListenerPackage;
 import com.facebook.react.ReactNativeHost;
@@ -25,8 +27,10 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RNFirebasePackage(),
             new RNGestureHandlerPackage(),
-            new SmsListenerPackage()
+            new SmsListenerPackage(),
+            new RNFirebaseAnalyticsPackage() // <-- Add this line
       );
     }
 

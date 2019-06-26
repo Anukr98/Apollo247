@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -23,6 +23,7 @@ import { StickyBottomComponent } from 'app/src/__new__/components/ui/StickyBotto
 import { Button, TextInputComponent, Card } from 'app/src/UI/common';
 import { DatePicker } from 'app/src/__new__/components/ui/DatePicker';
 import { SortDecreasing, Filter } from 'app/src/__new__/components/ui/Icons';
+import firebase from 'react-native-firebase';
 
 const styles = StyleSheet.create({
   container: {
@@ -171,10 +172,16 @@ const DoctorsList: doctorsList[] = [
 ];
 
 export interface DoctorSearchListingProps extends RouteChildrenProps {}
+
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
   const [gender, setGender] = useState<string>('');
   const [date, setDate] = useState<string>('');
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
+
+  useEffect(() => {
+    firebase.analytics().setCurrentScreen('DoctorSearchListing');
+  });
+
   const RightHeader = ({ images, styles, navigate }) => {
     console.log(images, 'images');
     return (
@@ -187,6 +194,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       </View>
     );
   };
+
   const renderTopView = (styles: any) => {
     return (
       <View>

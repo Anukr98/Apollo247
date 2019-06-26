@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -23,6 +23,7 @@ import {
   Neurologist,
   Mascot,
 } from 'app/src/__new__/components/ui/Icons';
+import firebase from 'react-native-firebase';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -251,6 +252,10 @@ export const DoctorSearch: React.FC<doctorSearchProps> = (props) => {
   const [pastSearch, setPastSearch] = useState<boolean>(true);
   const [needHelp, setNeedHelp] = useState<boolean>(true);
   const [speialistList, setSpeialistList] = useState<boolean>(true);
+
+  useEffect(() => {
+    firebase.analytics().setCurrentScreen('DoctorSearch');
+  });
 
   const renderSearch = (styles: any) => {
     return (

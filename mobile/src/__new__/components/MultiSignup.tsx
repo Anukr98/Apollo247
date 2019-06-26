@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -26,6 +26,7 @@ import { DatePicker } from 'app/src/__new__/components/ui/DatePicker';
 import { DropDownComponent } from 'app/src/__new__/components/ui/DropDownComponent';
 import { Mascot, More } from 'app/src/__new__/components/ui/Icons';
 import { ApolloLogo } from 'app/src/__new__/components/ApolloLogo';
+import firebase from 'react-native-firebase';
 
 const styles = StyleSheet.create({
   container: {
@@ -108,10 +109,15 @@ const GenderOptions: genderOptions[] = [
 ];
 
 export interface MultiSignupProps extends RouteChildrenProps {}
+
 export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [gender, setGender] = useState<string>('');
   const [date, setDate] = useState<string>('');
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
+
+  useEffect(() => {
+    firebase.analytics().setCurrentScreen('MultiSignup');
+  });
 
   const renderGenderButtons = (styles: any) => {
     return GenderOptions.map((option) => (

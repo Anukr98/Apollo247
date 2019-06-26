@@ -1,12 +1,13 @@
 import { Button } from 'app/src/UI/common';
 import { theme } from 'app/src/__new__/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dimensions, Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from 'app/src/__new__/components/AppNavigatorContainer';
 import { DropdownGreen, Mascot } from 'app/src/__new__/components/ui/Icons';
 import { ApolloLogo } from 'app/src/__new__/components/ApolloLogo';
+import firebase from 'react-native-firebase';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -180,6 +181,10 @@ export interface ConsultRoomProps extends NavigationScreenProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
   const [showPopUp, setshowPopUp] = useState<boolean>(true);
+
+  useEffect(() => {
+    firebase.analytics().setCurrentScreen('ConsultRoom');
+  });
 
   return (
     <View style={{ flex: 1 }}>

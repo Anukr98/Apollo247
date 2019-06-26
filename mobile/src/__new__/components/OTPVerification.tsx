@@ -9,6 +9,8 @@ import { NavigationScreenProps } from 'react-navigation';
 import { Card } from 'app/src/__new__/components/ui/Card';
 import { number } from 'prop-types';
 import OTPTextView from 'react-native-otp-textinput';
+import firebase from 'react-native-firebase';
+
 const styles = StyleSheet.create({
   container: {
     ...theme.viewStyles.container,
@@ -109,6 +111,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   }, [timer, intervalId]);
   const minutes = Math.floor(timer / 60);
   const seconds = timer - minutes * 60;
+
+  useEffect(() => {
+    firebase.analytics().setCurrentScreen('OTPVerification');
+  });
 
   return (
     <View style={styles.container}>

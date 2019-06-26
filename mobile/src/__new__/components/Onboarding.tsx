@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -15,13 +15,9 @@ import AppIntroSlider from 'react-native-app-intro-slider';
 import { theme } from 'app/src/__new__/theme/theme';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from 'app/src/__new__/components/AppNavigatorContainer';
-import {
-  ArrowStep1,
-  ArrowStep2,
-  ArrowStep3,
-  ArrowFull,
-  Reload,
-} from 'app/src/__new__/components/ui/Icons';
+import { ArrowStep1, ArrowStep2, ArrowStep3, ArrowFull } from 'app/src/__new__/components/ui/Icons';
+
+import firebase from 'react-native-firebase';
 
 const styles = StyleSheet.create({
   container: {
@@ -132,6 +128,11 @@ const slides: Slide[] = [
 export interface OnboardingProps extends NavigationScreenProps {}
 export const Onboarding: React.FC<OnboardingProps> = (props) => {
   const appIntroSliderRef = React.useRef<any>(null);
+
+  useEffect(() => {
+    firebase.analytics().setCurrentScreen('Onboarding');
+  });
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.mainView}>
