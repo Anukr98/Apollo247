@@ -36,6 +36,14 @@ const useStyles = makeStyles((theme: Theme) => {
         borderBottom: '2px solid #00b38e',
       },
     },
+    selectRoot: {
+      fontSize: 16,
+      fontWeight: 500,
+      color: '#01475b',
+      '& svg': {
+        color: '#00b38e',
+      }
+    },
   });
 });
 
@@ -50,6 +58,7 @@ export const AppTextField: React.FC<TextFieldProps> = (props) => {
         focused: false,
       }}
       InputProps={{ classes: { root: classes.inputRoot, focused: classes.inputFocused } }}
+      SelectProps={{ classes: { root: classes.selectRoot } }}
       {...props}
     />
   );
