@@ -2,3 +2,5 @@ dist
 node_modules
 .npm-cache
 package-lock.json
+graphql/types
+graphql/schema.json

@@ -8,7 +8,6 @@ import Fab from '@material-ui/core/Fab';
 import {
   useSignIn,
   useVerifyOtp,
-  useCurrentUser,
   useBuildCaptchaVerifier,
   useVerifyPhoneNumber,
   useAuthenticating,
@@ -61,10 +60,11 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export interface SignInProps {}
-
 const recaptchaContainerId = 'recaptcha-container';
 const isMobileNumberValid = (number: string) => number.length === 10;
 const mobileNumberPrefix = '+91';
+
+export interface SignInProps {}
 
 export const SignIn: React.FC<SignInProps> = (props) => {
   const classes = useStyles();
