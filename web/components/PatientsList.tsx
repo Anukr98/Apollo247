@@ -11,6 +11,7 @@ const useStyles = makeStyles((theme: Theme) => {
     patientsList: {
       display: 'flex',
       flexDirection: 'column',
+      color: 'black',
     },
     patient: {
       padding: theme.spacing(2),
