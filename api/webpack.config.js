@@ -40,10 +40,11 @@ module.exports = {
 
   context: path.resolve(__dirname),
 
-  entry: {
-    'api-gateway': 'gateway/api-gateway.ts',
-    'profiles-service': 'services/profiles/profiles-service.ts',
-  },
+  // Specify via command line
+  // entry: {
+  //   'api-gateway': 'gateway/api-gateway.ts',
+  //   'profiles-service': 'services/profiles/profiles-service.ts',
+  // },
 
   output: {
     path: distDir,
@@ -67,6 +68,13 @@ module.exports = {
       // Make sure to keep these in sync with tsconfig's paths setting
       profiles: path.resolve(__dirname, 'services/profiles'),
     },
+  },
+
+  watch: false, // Turn on via --watch from the command line
+  watchOptions: {
+    aggregateTimeout: 300,
+    poll: 1000,
+    ignored: [nodeModulesDir],
   },
 
   plugins,
