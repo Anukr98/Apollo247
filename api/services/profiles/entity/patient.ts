@@ -27,4 +27,7 @@ export class Patient extends BaseEntity {
 
   @Column()
   mobileNumber: string;
+
+  @Column({ nullable: true })
+  uhid: string;
 }

@@ -1,0 +1,3 @@
+interface FirebaseError {
+  code: number;
+}
