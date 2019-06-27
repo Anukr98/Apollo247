@@ -80,20 +80,8 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const HeroBanner: React.FC = (props) => {
   const classes = useStyles();
-
-  const [values, setValues] = React.useState({
-    age: '',
-    name: 'hai',
-  });
-
+  const [userName, setUserName] = React.useState(10);
   const inputLabel = React.useRef<HTMLLabelElement>(null);
-
-  function handleChange(event: React.ChangeEvent<{ name?: string; value: unknown }>) {
-    setValues(oldValues => ({
-      ...oldValues,
-      [event.target.name as string]: event.target.value,
-    }));
-  }
 
   return (
     <div className={classes.heroBanner}>
@@ -101,9 +89,10 @@ export const HeroBanner: React.FC = (props) => {
         <Typography variant="h1">
           <span>hello</span>
           <AppSelectField
-            value={values.age}
-            onChange={handleChange}
-            name="age"
+            value={userName}
+            onChange={(e: any) => {
+              setUserName(e.currentTarget.value)
+            }}
             classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
           >
             <MenuItem selected value={10} classes={{ selected: classes.menuSelected }}>Surj</MenuItem>
