@@ -41,6 +41,9 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       cursor: 'pointer',
     },
+    userActive: {
+      backgroundColor: theme.palette.secondary.dark,
+    },
     loginForm: {
       width: 280,
       padding: 20,
@@ -75,7 +78,7 @@ export const Header: React.FC = (props) => {
       <Navigation />
       <div className={classes.userAccount}>
         <div
-          className={classes.userCircle}
+          className={`${classes.userCircle} ${classes.userActive}`}
           onClick={(e) => setAnchorEl(anchorEl ? null : e.currentTarget)}
         >
           {authenticating ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
