@@ -129,19 +129,8 @@ export const ExistingProfile: React.FC = (props) => {
   function handleClose() {
     setAnchorEl(null);
   }
-  const [values, setValues] = React.useState({
-    age: '',
-    name: 'hai',
-  });
-
+  const [userRelation, setUserRelation] = React.useState(5);
   const inputLabel = React.useRef<HTMLLabelElement>(null);
-
-  function handleChange(event: React.ChangeEvent<{ name?: string; value: unknown }>) {
-    setValues(oldValues => ({
-      ...oldValues,
-      [event.target.name as string]: event.target.value,
-    }));
-  }
 
   return (
     <div className={classes.signUpBar}>
@@ -192,11 +181,12 @@ us who is who? :)</p>
                     <div className={classes.userName}>Surj Gupta</div>
                     <div className={classes.userInfo}>Male  |  01 January 1987</div>
                     <AppSelectField
-                      value={values.age}
-                      onChange={handleChange}
-                      name="age"
+                      value={userRelation}
+                      onChange={(e: any) => {
+                        setUserRelation(e.currentTarget.value)
+                      }}
                     >
-                      <MenuItem value="" classes={{ selected: classes.menuSelected }}>
+                      <MenuItem value={5} classes={{ selected: classes.menuSelected }}>
                         Relation
                       </MenuItem>
                       <MenuItem value={10} classes={{ selected: classes.menuSelected }}>Me</MenuItem>
@@ -221,11 +211,12 @@ us who is who? :)</p>
                     <div className={classes.userName}>Preeti Gupta</div>
                     <div className={classes.userInfo}>Female  |  02 January 1987</div>
                     <AppSelectField
-                      value={values.age}
-                      onChange={handleChange}
-                      name="age"
+                      value={userRelation}
+                      onChange={(e: any) => {
+                        setUserRelation(e.currentTarget.value)
+                      }}
                     >
-                      <MenuItem value="" classes={{ selected: classes.menuSelected }}>
+                      <MenuItem value={5} classes={{ selected: classes.menuSelected }}>
                         Relation
                       </MenuItem>
                       <MenuItem value={10} classes={{ selected: classes.menuSelected }}>Me</MenuItem>
