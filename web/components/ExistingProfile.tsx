@@ -123,12 +123,8 @@ const useStyles = makeStyles((theme: Theme) => {
 export const ExistingProfile: React.FC = (props) => {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
-  const open = Boolean(anchorEl);
-  const id = open ? 'simple-popper' : undefined;
-
-  function handleClose() {
-    setAnchorEl(null);
-  }
+  const avatarRef = React.useRef(null);
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [userRelation, setUserRelation] = React.useState(5);
   const inputLabel = React.useRef<HTMLLabelElement>(null);
 
@@ -136,16 +132,15 @@ export const ExistingProfile: React.FC = (props) => {
     <div className={classes.signUpBar}>
       <div
         className={classes.mascotCircle}
-        aria-describedby={id}
-        onClick={(e) => setAnchorEl(anchorEl ? null : e.currentTarget)}
+        ref={avatarRef}
+        onClick={() => setIsPopoverOpen(true)}
       >
         <img src={require('images/ic_mascot.png')} alt="" />
       </div>
       <Popover
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
+        open={isPopoverOpen}
+        anchorEl={avatarRef.current}
+        onClose={() => setIsPopoverOpen(false)}
         className={classes.bottomPopover}
         anchorOrigin={{
           vertical: 'bottom',
