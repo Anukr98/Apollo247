@@ -2,4 +2,3 @@ dist
 node_modules
 .npm-cache
 .Trash*
-.DS_Store
