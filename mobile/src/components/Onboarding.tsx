@@ -1,4 +1,4 @@
-import { AppRoutes } from 'app/src/components/AppNavigatorContainer';
+import { AppRoutes } from 'app/src/components/NavigatorContainer';
 import { ArrowFull, ArrowStep1, ArrowStep2, ArrowStep3 } from 'app/src/components/ui/Icons';
 import { theme } from 'app/src/theme/theme';
 import React from 'react';

@@ -1,4 +1,4 @@
-import { AppRoute, AppRoutes } from 'app/src/components/AppNavigatorContainer';
+import { AppRoute, AppRoutes } from 'app/src/components/NavigatorContainer';
 import { ConsultRoom } from 'app/src/components/ConsultRoom';
 import { ConsultationRoom } from 'app/src/components/ui/Icons';
 import { theme } from 'app/src/theme/theme';

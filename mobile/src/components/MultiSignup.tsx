@@ -1,5 +1,5 @@
 import { ApolloLogo } from 'app/src/components/ApolloLogo';
-import { AppRoutes } from 'app/src/components/AppNavigatorContainer';
+import { AppRoutes } from 'app/src/components/NavigatorContainer';
 import { Button } from 'app/src/components/ui/Button';
 import { Card } from 'app/src/components/ui/Card';
 import { DropDownComponent } from 'app/src/components/ui/DropDownComponent';

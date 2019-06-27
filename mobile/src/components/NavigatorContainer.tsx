@@ -78,6 +78,6 @@ const stackConfig: StackNavigatorConfig = {
   },
 };
 
-const AppNavigator = createStackNavigator(routeConfigMap, stackConfig);
+const Navigator = createStackNavigator(routeConfigMap, stackConfig);
 
-export const AppNavigatorContainer = createAppContainer(AppNavigator);
+export const NavigatorContainer = createAppContainer(Navigator);

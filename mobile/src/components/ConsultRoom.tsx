@@ -1,5 +1,5 @@
 import { ApolloLogo } from 'app/src/components/ApolloLogo';
-import { AppRoutes } from 'app/src/components/AppNavigatorContainer';
+import { AppRoutes } from 'app/src/components/NavigatorContainer';
 import { Button } from 'app/src/components/ui/Button';
 import { DoctorImage, DoctorPlaceholder, DropdownGreen, Mascot } from 'app/src/components/ui/Icons';
 import { theme } from 'app/src/theme/theme';

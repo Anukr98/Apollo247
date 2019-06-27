@@ -1,4 +1,4 @@
-import { AppRoutes } from 'app/src/components/AppNavigatorContainer';
+import { AppRoutes } from 'app/src/components/NavigatorContainer';
 import { Card } from 'app/src/components/ui/Card';
 import { BackArrow, OkText, OkTextDisabled } from 'app/src/components/ui/Icons';
 import { string } from 'app/src/strings/string';

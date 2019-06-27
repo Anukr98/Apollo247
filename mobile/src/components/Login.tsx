@@ -4,7 +4,7 @@ import { theme } from 'app/src/theme/theme';
 import { string } from 'app/src/strings/string';
 import { NavigationScreenProps } from 'react-navigation';
 import { Card } from 'app/src/components/ui/Card';
-import { AppRoutes } from 'app/src/components/AppNavigatorContainer';
+import { AppRoutes } from 'app/src/components/NavigatorContainer';
 // import firebase from 'react-native-firebase';
 import { ArrowYellow, ArrowDisabled } from 'app/src/components/ui/Icons';
 
