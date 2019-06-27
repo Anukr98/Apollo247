@@ -4,7 +4,7 @@ import React from 'react';
 import { Header } from 'components/Header';
 import { HeroBanner } from 'components/HeroBanner';
 import { ServiceList } from 'components/ServiceList';
-import { ExistingProfile } from 'components/existingProfile';
+import { ProfileSuccess } from 'components/ProfileSuccess';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -43,7 +43,7 @@ export const Welcome: React.FC<WelcomeProps> = (props) => {
         <HeroBanner />
         <ServiceList />
       </div>
-      <ExistingProfile />
+      <ProfileSuccess />
     </div>
   );
 };
