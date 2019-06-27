@@ -5,16 +5,19 @@
   "scripts": {
     "build:android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "build:ios": "rm -rf ios/bundle/; mkdir ios/bundle; react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/bundle/main.jsbundle --assets-dest ios/bundle",
-    "start:dev": "node node_modules/react-native/local-cli/cli.js start",
+    "start:dev": "npm run apollo:download & npm run apollo:codegen:watch & npm run lint & npm run format:check & react-native start",
     "start:ios": "node_modules/.bin/react-native run-ios",
     "test": "jest",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix"
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "apollo:download": "apollo schema:download ./src/graphql/schema.json --endpoint=http://localhost:4000/graphql",
+    "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./src/graphql/schema.json --target=typescript --queries=./src/graphql/**.ts",
+    "apollo:codegen:watch": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./src/graphql/schema.json --target=typescript --queries=./src/graphql/**.ts --watch"
   },
   "devDependencies": {
-    "@types/auth0-js": "^9.10.2",
+    "@types/graphql": "^14.2.1",
     "@types/lodash": "^4.14.134",
     "@types/react": "^16.8.19",
     "@types/react-intl": "^2.3.18",
@@ -36,7 +39,11 @@
     "typescript": "^3.5.2"
   },
   "dependencies": {
-    "auth0-js": "^9.10.4",
+    "apollo": "^2.13.1",
+    "apollo-cache-inmemory": "^1.6.2",
+    "apollo-client": "^2.6.2",
+    "apollo-link-error": "^1.1.11",
+    "apollo-link-http": "^1.5.15",
     "graphql": "~14.2.1",
     "graphql-tag": "^2.10.1",
     "lodash": "^4.17.11",

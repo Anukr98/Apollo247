@@ -1,20 +1,23 @@
 import { AppNavigatorContainer } from 'app/src/components/AppNavigatorContainer';
 import React from 'react';
-import { addLocaleData } from 'react-intl';
-import en from 'react-intl/locale-data/en';
+import { ApolloProvider } from 'react-apollo';
+import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { ApolloClient } from 'apollo-client';
+import { createHttpLink } from 'apollo-link-http';
+import { apiRoutes } from 'app/src/helpers/apiRoutes';
 
-addLocaleData(en);
-
-// const enMessages = {
-//   welcome: 'Welome! :)',
-// };
+const apolloClient = new ApolloClient({
+  link: createHttpLink({ uri: apiRoutes.graphql() }),
+  cache: new InMemoryCache(),
+});
 
 export const AppContainer: React.FC = () => {
   return (
-    // <IntlProvider locale="en" messages={enMessages}>
-    <>
-      <AppNavigatorContainer />
-    </>
-    // </IntlProvider>
+    <ApolloProvider client={apolloClient}>
+      <ApolloHooksProvider client={apolloClient}>
+        <AppNavigatorContainer />
+      </ApolloHooksProvider>
+    </ApolloProvider>
   );
 };
