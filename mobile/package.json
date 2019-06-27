@@ -10,7 +10,8 @@
     "test": "jest",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
-    "lint": "eslint . --ext .ts,.tsx,.js,.jsx"
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix"
   },
   "devDependencies": {
     "@types/auth0-js": "^9.10.2",
@@ -48,7 +49,6 @@
     "react-native-app-intro-slider": "^2.0.1",
     "react-native-confirmation-code-input": "^1.0.4",
     "react-native-elements": "^1.1.0",
-    "react-native-firebase": "^5.5.3",
     "react-native-gesture-handler": "^1.3.0",
     "react-native-keyboard-aware-scroll-view": "^0.8.0",
     "react-native-modal-datetime-picker": "^7.4.2",

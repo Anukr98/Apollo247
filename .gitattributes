@@ -3,4 +3,12 @@
 
 * text eol=lf
 
+*.eot     -text diff
+*.woff    -text diff
+*.otf    -text diff
+*.ttf    -text diff
+
 *.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
