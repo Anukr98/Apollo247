@@ -11,6 +11,7 @@
     "start:api-gateway-with-checks": "npm run lint & npm run format:check & webpack && node dist/api-gateway.bundle.js",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx"
   },
   "devDependencies": {
