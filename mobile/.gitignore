@@ -2,7 +2,5 @@ node_modules
 .npm-cache
 android/app/build
 android/.gradle
-android/local.properties
 ios/build
 .Trash*
-.DS_Store
