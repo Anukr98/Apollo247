@@ -10,24 +10,23 @@ import { createHttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
 
 import { apiRoutes } from 'helpers/apiRoutes';
-import { PatientSignIn, PatientSignInVariables } from 'graphql/types/PatientSignIn';
-import { PATIENT_SIGN_IN } from 'graphql/profiles';
+import { PatientSignIn, PatientSignInVariables } from 'graphql/types/PatientSignIn'; import { PATIENT_SIGN_IN } from 'graphql/profiles';
 
 export interface AuthProviderProps {
   currentUser: any | null;
   authenticating: boolean;
   buildCaptchaVerifier:
-    | ((recaptchaContainerId: HTMLElement['id']) => firebase.auth.RecaptchaVerifier_Instance)
-    | null;
+  | ((recaptchaContainerId: HTMLElement['id']) => firebase.auth.RecaptchaVerifier_Instance)
+  | null;
   verifyPhoneNumber:
-    | ((
-        mobileNumber: string,
-        captchaVerifier: firebase.auth.RecaptchaVerifier_Instance | null
-      ) => ReturnType<firebase.auth.PhoneAuthProvider_Instance['verifyPhoneNumber']>)
-    | null;
+  | ((
+    mobileNumber: string,
+    captchaVerifier: firebase.auth.RecaptchaVerifier_Instance | null
+  ) => ReturnType<firebase.auth.PhoneAuthProvider_Instance['verifyPhoneNumber']>)
+  | null;
   verifyOtp:
-    | ((phoneNumberVerificationToken: string, otp: string) => Promise<firebase.auth.AuthCredential>)
-    | null;
+  | ((phoneNumberVerificationToken: string, otp: string) => Promise<firebase.auth.AuthCredential>)
+  | null;
   signIn: ((otpVerificationToken: firebase.auth.AuthCredential) => Promise<void>) | null;
   signOut: (() => any) | null;
 }
@@ -129,7 +128,7 @@ export const AuthProvider: React.FC = (props) => {
       return firebase
         .auth()
         .signInWithCredential(otpVerificationToken)
-        .then(() => {});
+        .then(() => { });
     };
     setSignIn(signInFunc);
 

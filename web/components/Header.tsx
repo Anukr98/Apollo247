@@ -1,59 +1,83 @@
-import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 import Popover from '@material-ui/core/Popover';
+import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+import Fade from '@material-ui/core/Fade';
 import Paper from '@material-ui/core/Paper';
 import { SignIn } from 'components/SignIn';
+import { Otp } from 'components/Otp';
+import * as AuthZero from 'auth0-js';
 import { useAuthenticating } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     header: {
       display: 'flex',
-      boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
-      backgroundColor: theme.palette.common.white,
-      padding: '20px 20px 7px 20px',
+      boxShadow: '0 0 5px 0 rgba(128, 128, 128, 0.2)',
+      backgroundColor: '#ffffff',
+      padding: '20px 20px 4px 20px',
     },
     logo: {
       '& a': {
         display: 'block',
       },
       '& img': {
-        maxWidth: 77,
+        maxWidth: '77px',
       },
     },
     userAccount: {
       marginLeft: 'auto',
       '& img': {
-        marginTop: 10,
+        marginTop: '10px',
       },
     },
     userCircle: {
       display: 'block',
-      width: 48,
-      height: 48,
+      width: '48px',
+      height: '48px',
       backgroundColor: '#afc3c9',
       borderRadius: '50%',
       textAlign: 'center',
       cursor: 'pointer',
     },
     loginForm: {
-      width: 280,
-      padding: 20,
-      borderRadius: 10,
+      width: '280px',
+      padding: '20px',
+      borderRadius: '10px',
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
-      backgroundColor: theme.palette.common.white,
+      backgroundColor: '#ffffff',
+      '& label.Mui-focused': {
+        color: '#02475b',
+      },
+      '& .MuiInputBase-root': {
+        fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
+      },
+      '& .MuiInputBase-root:before': {
+        borderBottomColor: '#00b38e',
+        borderWidth: '2px',
+      },
+      '& .MuiInputBase-root:hover:before': {
+        borderBottomColor: 'rgba(0, 0, 0, 0.5)',
+      },
+      '& .MuiInput-underline:after': {
+        borderBottomColor: '#00b38e',
+      },
     },
     topPopover: {
-      overflow: 'initial',
-      backgroundColor: 'none',
-      boxShadow: 'none',
+      '& .MuiPopover-paper': {
+        overflow: 'initial',
+        backgroundColor: 'none',
+        boxShadow: 'none',
+      },
     },
   };
 });
 
-export interface SignInProps { }
+export interface SignInProps {}
 
 export const Header: React.FC = (props) => {
   const classes = useStyles();
@@ -86,7 +110,7 @@ export const Header: React.FC = (props) => {
             vertical: 'top',
             horizontal: 'right',
           }}
-          classes={{ paper: classes.topPopover }}
+          className={classes.topPopover}
         >
           <Paper className={classes.loginForm}>
             <SignIn />

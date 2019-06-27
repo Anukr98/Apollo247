@@ -1,65 +1,131 @@
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+import FormControl from '@material-ui/core/FormControl';
+import Input from '@material-ui/core/Input';
+import TextField from '@material-ui/core/TextField';
+import Fab from '@material-ui/core/Fab';
 import Grid from '@material-ui/core/Grid';
-import { AppTextField } from 'components/ui/AppTextField';
-import { AppButton } from 'components/ui/AppButton';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     signUpBar: {
       display: 'flex',
     },
-    formControl: {
-      marginBottom: 20,
-    },
     mascotCircle: {
       marginLeft: 'auto',
       cursor: 'pointer',
       position: 'fixed',
-      bottom: 10,
-      right: 15,
+      bottom: '10px',
+      right: '15px',
+
       '& img': {
-        maxWidth: 72,
-        maxHeight: 72,
+        maxWidth: '72px',
+        maxHeight: '72px',
       },
     },
     signUpPop: {
-      width: 368,
-      padding: 20,
-      borderRadius: 10,
-      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
-      backgroundColor: theme.palette.common.white,
+      paddingTop: '15px',
       '& p': {
-        fontSize: 17,
+        fontSize: '17px',
         fontWeight: 500,
         lineHeight: 1.41,
-        color: theme.palette.secondary.main,
-        marginTop: 20,
+        color: '#0087ba',
+        marginTop: '20px',
+      },
+      '& input': {
+        fontSize: '16px',
+        fontWeight: 600,
+        color: '#02475b',
+      },
+      '& label.Mui-focused': {
+        color: '#02475b',
+      },
+      '& .MuiInputBase-root': {
+        fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
+      },
+      '& .MuiInputBase-root:before': {
+        borderBottomColor: '#00b38e',
+        borderWidth: '2px',
+      },
+      '& .MuiInputBase-root:hover:before': {
+        borderBottomColor: 'rgba(0, 0, 0, 0.5)',
+      },
+      '& .MuiInput-underline:after': {
+        borderBottomColor: '#00b38e',
       },
       '& form': {
-        paddingTop: 30,
+        paddingTop: '30px',
+      },
+    },
+    formControl: {
+      marginBottom: '20px',
+
+      '& label': {
+        fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
+        fontSize: '12px',
+        fontWeight: 500,
+        color: '#02475b',
+      },
+      '& .MuiInputLabel-shrink': {
+        transform: 'translate(0, 1.5px) scale(1)',
+      },
+      '& input': {
+        fontSize: '16px',
+        fontWeight: 500,
+        color: '#01475b',
+        paddingTop: '9px',
       },
     },
     actions: {
-      paddingTop: 10,
+      display: 'flex',
+      paddingTop: '10px',
+    },
+    laterBtn: {
+      marginRight: '10px',
+      width: '50%',
+      padding: '8px 13px',
+      color: '#fc9916',
+      fontSize: '13px',
+      fontWeight: 'bold',
+      backgroundColor: '#fff',
+      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
+    },
+    submitBtn: {
+      marginLeft: '10px',
+      width: '50%',
+      color: '#fff',
+      padding: '8px 13px',
+      fontSize: '13px',
+      fontWeight: 'bold',
+      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
     },
     btnGroup: {
-      paddingTop: 7,
+      paddingTop: '7px',
       '& button': {
         width: '100%',
         color: '#00b38e',
-        backgroundColor: theme.palette.common.white,
-        fontSize: 16,
+        backgroundColor: '#fff',
+        fontSize: '16px',
         fontWeight: 500,
+        fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
+        letterSpacing: '-0.36px',
+        textTransform: 'none',
       },
     },
     bottomPopover: {
-      overflow: 'initial',
-      backgroundColor: 'none',
-      boxShadow: 'none',
+      '& .MuiPopover-paper': {
+        width: '368px',
+        padding: '20px',
+        borderRadius: '10px',
+        boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+        backgroundColor: '#ffffff',
+      },
     },
   });
 });
@@ -97,7 +163,6 @@ export const SignUp: React.FC = (props) => {
           vertical: 'top',
           horizontal: 'center',
         }}
-        classes={{ paper: classes.bottomPopover }}
       >
         <div className={classes.signUpPop}>
           <Typography variant="h2">
@@ -106,32 +171,63 @@ export const SignUp: React.FC = (props) => {
           </Typography>
           <p>Let us quickly get to know you so that we can get you the best help :)</p>
           <form>
-            <AppTextField label="First Name" placeholder="Example, Jonathan" />
-            <AppTextField label="Last Name" placeholder="Example, Donut" />
-            <AppTextField label="Date Of Birth" placeholder="mm/dd/yyyy" />
+            <TextField
+              className={classes.formControl}
+              label="First Name"
+              placeholder="Example, Jonathan"
+              fullWidth
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+            <TextField
+              className={classes.formControl}
+              label="Last Name"
+              placeholder="Example, Donut"
+              fullWidth
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+            <TextField
+              className={classes.formControl}
+              label="Date Of Birth"
+              placeholder="mm/dd/yyyy"
+              fullWidth
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
             <div className={classes.formControl}>
               <label>Gender</label>
               <Grid container spacing={2} className={classes.btnGroup}>
                 <Grid item xs={6} sm={4}>
-                  <AppButton variant="contained">Male</AppButton>
+                  <Button variant="contained">Male</Button>
                 </Grid>
                 <Grid item xs={6} sm={4}>
-                  <AppButton variant="contained">Female</AppButton>
+                  <Button variant="contained">Female</Button>
                 </Grid>
                 <Grid item xs={6} sm={4}>
-                  <AppButton variant="contained">Other</AppButton>
+                  <Button variant="contained">Other</Button>
                 </Grid>
               </Grid>
             </div>
-            <AppTextField label="Email Address (Optional)" placeholder="name@email.com" />
+            <TextField
+              className={classes.formControl}
+              label="Email Address (Optional)"
+              placeholder="name@email.com"
+              fullWidth
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
             <div className={classes.actions}>
-              <AppButton
-                fullWidth
-                variant="contained"
-                color="primary"
-              >
+              <Button variant="contained" className={classes.laterBtn}>
+                Fill Later
+              </Button>
+              <Button variant="contained" color="primary" className={classes.submitBtn}>
                 Submit
-              </AppButton>
+              </Button>
             </div>
           </form>
         </div>

@@ -2,6 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
@@ -9,42 +10,46 @@ import Paper from '@material-ui/core/Paper';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     serviceList: {
-      paddingTop: 145,
-      paddingBottom: 40,
-      paddingLeft: 20,
-      paddingRight: 20,
+      paddingTop: '145px',
+      paddingBottom: '40px',
+
+      '& .MuiGrid-container': {
+        paddingLeft: '20px',
+        paddingRight: '20px',
+      },
     },
     serviceItem: {
       padding: '20px 60px 20px 20px',
-      borderRadius: 10,
+      borderRadius: '10px',
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-      backgroundColor: theme.palette.common.white,
+      backgroundColor: '#f7f8f5',
       position: 'relative',
       '& p': {
-        fontSize: 12,
+        fontSize: '12px',
         fontWeight: 'normal',
         lineHeight: 1.5,
         letterSpacing: 'normal',
         color: 'rgba(0,0,0,0.5)',
-        marginTop: 5,
-        marginBottom: 5,
+        marginTop: '5px',
+        marginBottom: '5px',
       }
     },
     action: {
-      fontSize: 13,
+      fontSize: '13px',
       fontWeight: 'bold',
-      color: theme.palette.action.selected,
+      color: '#fc9916',
       lineHeight: 1.85,
       textTransform: 'uppercase',
     },
     serviceImg: {
-      width: 70,
-      height: 70,
+      width: '70px',
+      height: '70px',
       borderRadius: '50%',
       position: 'absolute',
-      top: -10,
-      right: -10,
+      top: '-10px',
+      right: '-10px',
       backgroundColor: '#afc3c9',
+
       '& img': {
         maxWidth: '100%',
       },
@@ -104,7 +109,7 @@ export const ServiceList: React.FC = (props) => {
               Who are star doctors
             </Link>
           </Paper>
-        </Grid>
+        </Grid>                        
       </Grid>
     </div>
   );
