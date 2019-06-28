@@ -11,6 +11,7 @@ const useStyles = makeStyles((theme: Theme) => {
     patientsList: {
       display: 'flex',
       flexDirection: 'column',
+      color: 'black',
     },
     patient: {
       padding: theme.spacing(2),
@@ -27,7 +28,7 @@ export const PatientsList: React.FC<PatientsListProps> = (props) => {
   if (error) return <div>Error loading patients :(</div>;
   if (data && data.getPatients)
     return (
-      <div className={classes.patientsList}>
+      <div className={classes.patientsList} data-cypress="PatientsList">
         <Typography variant="h3">Patients List</Typography>
         {data.getPatients.patients.map((pat) => (
           <div key={pat.id} className={classes.patient}>

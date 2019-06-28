@@ -23,11 +23,15 @@ services:
     working_dir: /web
     command: ash -c "npm install --production=false && npm run start:dev"
     environment:
+      # Make sure to keep these env vars synced with the following files:
+      # cypress.json, webpack.config, and cypress/plugins/webpack-preprocessor
+      # We should probably refactor this to a .env file...
       NPM_CONFIG_CACHE: /web/.npm-cache
       NODE_ENV: development
       WEB_CLIENT_PORT: 3000
       API_GATEWAY_PORT: 4000
       FIREBASE_PROJECT_NAME: apollo-patient-interface
+      CYPRESS_INSTALL_BINARY: 0
     volumes:
       - ./web:/web:cached
     depends_on:
