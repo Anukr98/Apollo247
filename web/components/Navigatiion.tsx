@@ -2,6 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -22,20 +23,11 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const Navigation: React.FC = (props) => {
   const classes = useStyles();
-  // This resolves to nothing and doesn't affect browser history
-  const dudUrl = 'javascript:;';
-
   return (
     <div className={classes.appNavigation}>
-      <Link to={dudUrl}>
-        Consult Room
-    </Link>
-      <Link to={dudUrl}>
-        Health Records
-    </Link>
-      <Link to={dudUrl}>
-        Tests &amp; Medicines
-    </Link>
+      <Link to={clientRoutes.consultRoom()}>Consult Room</Link>
+      <Link to={clientRoutes.healthRecords()}>Health Records</Link>
+      <Link to={clientRoutes.testsAndMedicine()}>Tests &amp; Medicines</Link>
     </div>
   );
 };
