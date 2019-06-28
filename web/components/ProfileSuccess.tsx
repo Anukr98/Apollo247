@@ -1,6 +1,6 @@
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
 import { AppButton } from 'components/ui/AppButton';
@@ -75,18 +75,18 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const ProfileSuccess: React.FC = (props) => {
   const classes = useStyles();
-  const [popoverIsOpen, setPopoverIsOpen] = useState(false);
-  const mascotRef = useRef(null);
+  const mascotRef = React.useRef(null);
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   return (
     <div className={classes.signUpBar}>
-      <div className={classes.mascotCircle} onClick={() => setPopoverIsOpen(true)}>
+      <div className={classes.mascotCircle} ref={mascotRef} onClick={() => setIsPopoverOpen(true)}>
         <img src={require('images/ic_mascot.png')} alt="" />
       </div>
       <Popover
-        open={popoverIsOpen}
+        open={isPopoverOpen}
         anchorEl={mascotRef.current}
-        onClose={() => setPopoverIsOpen(false)}
+        onClose={() => setIsPopoverOpen(false)}
         className={classes.bottomPopover}
         anchorOrigin={{
           vertical: 'bottom',
