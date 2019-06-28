@@ -19,6 +19,10 @@ import AppIntroSlider from 'react-native-app-intro-slider';
 import { NavigationScreenProps } from 'react-navigation';
 const { height } = Dimensions.get('window');
 
+import { useQuery } from 'react-apollo-hooks';
+import { GetPatients } from 'app/src/graphql/types/GetPatients';
+import { GET_PATIENTS } from 'app/src/graphql/profiles';
+
 const styles = StyleSheet.create({
   container: {
     ...theme.viewStyles.container,
@@ -127,6 +131,11 @@ const slides: Slide[] = [
 export interface OnboardingProps extends NavigationScreenProps {}
 export const Onboarding: React.FC<OnboardingProps> = (props) => {
   const appIntroSliderRef = React.useRef<any>(null);
+
+  const { data, error, loading } = useQuery<GetPatients>(GET_PATIENTS);
+  console.log('data', data);
+  console.log('error', error);
+  console.log('loading', loading);
 
   return (
     <SafeAreaView style={styles.container}>

@@ -64,6 +64,23 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     };
   }, [subscriptionId]);
 
+  const onClickOk = () => {
+    // console.log('_onFulfill', isValid, code, this.state.phoneNumber)
+
+    // console.log('props', props.navigation.state.params.confirmResult);
+
+    // props.navigation.state.params.confirmResult
+    //   .confirm(otp)
+    //   .then((user) => {
+    //     console.log('user', user);
+    //   })
+    //   .catch((error) => {
+    //     console.log('error', error);
+    //   });
+
+    props.navigation.navigate(AppRoutes.SignUp);
+  };
+
   useEffect(() => {
     if (timer === 0) {
       setTimer(900);
@@ -92,7 +109,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           heading={string.LocalStrings.oops}
           description={string.LocalStrings.incorrect_otp_message}
           buttonIcon={isValidOTP ? <OkText /> : <OkTextDisabled />}
-          onClickButton={() => props.navigation.navigate(AppRoutes.SignUp)}
+          onClickButton={onClickOk}
           disableButton={isValidOTP ? false : true}
           descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 7 : 30 }}
         >
@@ -117,7 +134,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           heading={string.LocalStrings.great}
           description={string.LocalStrings.type_otp_text}
           buttonIcon={isValidOTP ? <OkText /> : <OkTextDisabled />}
-          onClickButton={() => props.navigation.navigate(AppRoutes.SignUp)}
+          onClickButton={onClickOk}
           disableButton={isValidOTP ? false : true}
           descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 0 : 30 }}
         >

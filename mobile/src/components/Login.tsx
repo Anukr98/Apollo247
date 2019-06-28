@@ -5,13 +5,12 @@ import { string } from 'app/src/strings/string';
 import { NavigationScreenProps } from 'react-navigation';
 import { Card } from 'app/src/components/ui/Card';
 import { AppRoutes } from 'app/src/components/NavigatorContainer';
-// import firebase from 'react-native-firebase';
+import firebase from 'react-native-firebase';
 import { ArrowYellow, ArrowDisabled } from 'app/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   container: {
     ...theme.viewStyles.container,
-    // paddingTop: 2,
   },
   inputTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -22,7 +21,6 @@ const styles = StyleSheet.create({
   },
   inputStyle: {
     ...theme.fonts.IBMPlexSansMedium(18),
-    // height: 28,
     width: '80%',
     color: theme.colors.INPUT_TEXT,
     paddingBottom: 4,
@@ -48,7 +46,6 @@ const styles = StyleSheet.create({
     color: theme.colors.INPUT_FAILURE_TEXT,
     opacity: 0.6,
     paddingVertical: 8,
-    // paddingBottom: 42,
     ...theme.fonts.IBMPlexSansMedium(12),
   },
   bottomValidDescription: {
@@ -56,7 +53,6 @@ const styles = StyleSheet.create({
     color: theme.colors.INPUT_SUCCESS_TEXT,
     opacity: 0.6,
     paddingVertical: 10,
-    // paddingBottom: 42,
     ...theme.fonts.IBMPlexSansMedium(12),
   },
 });
@@ -77,6 +73,40 @@ export const Login: React.FC<LoginProps> = (props) => {
     // firebase.analytics().setCurrentScreen('Login');
   });
 
+  const onClickOk = () => {
+    // props.navigation.navigate(AppRoutes.OTPVerification);
+    firebase
+      .auth()
+      .signInWithPhoneNumber('+918328610737')
+      .then((confirmResult) => {
+        props.navigation.navigate(AppRoutes.OTPVerification, { confirmResult: confirmResult });
+      }) // save confirm result to use with the manual verification code)
+      .catch((error) => {
+        console.log(error);
+      });
+    // firebase
+    //   .auth()
+    //   .verifyPhoneNumber('+91' + phoneNumber)
+    //   .on(
+    //     'state_changed',
+    //     (phoneAuthSnapshot) => {
+    //       switch (phoneAuthSnapshot.state) {
+    //         case firebase.auth.PhoneAuthState.CODE_SENT:
+    //           console.log('code sent', phoneAuthSnapshot);
+    //           props.navigation.navigate(AppRoutes.OTPVerification);
+    //           break;
+    //         case firebase.auth.PhoneAuthState.ERROR:
+    //           console.log('verification error');
+    //           console.log(phoneAuthSnapshot.error);
+    //           break;
+    //       }
+    //     },
+    //     (error) => {
+    //       console.log(error);
+    //     }
+    //   );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={{ height: 56 }} />
@@ -89,9 +119,9 @@ export const Login: React.FC<LoginProps> = (props) => {
             <ArrowYellow />
           ) : (
             <ArrowDisabled />
-          ) //'arrow_disabled'
+          )
         }
-        onClickButton={() => props.navigation.navigate(AppRoutes.OTPVerification)}
+        onClickButton={onClickOk}
         disableButton={phoneNumberIsValid ? false : true}
       >
         <View
