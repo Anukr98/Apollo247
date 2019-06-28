@@ -19,7 +19,7 @@ export interface PatientSignIn_patientSignIn_patients {
 
 export interface PatientSignIn_patientSignIn {
   __typename: "PatientSignInResult";
-  patients: PatientSignIn_patientSignIn_patients[];
+  patients: PatientSignIn_patientSignIn_patients[] | null;
 }
 
 export interface PatientSignIn {
