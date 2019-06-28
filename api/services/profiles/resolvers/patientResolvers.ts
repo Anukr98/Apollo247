@@ -29,7 +29,7 @@ export const patientTypeDefs = gql`
   }
 
   type Error {
-    messages: [String!]
+    messages: [String!]!
   }
 
   type GetPatientsResult {
@@ -70,7 +70,7 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
 
   if (firebaseIdTokenError) {
     return {
-      patients: [],
+      patients: null,
       errors: { messages: [`${firebaseIdTokenError.code}`] },
     };
   }
