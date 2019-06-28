@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   },
   skipView: {
     height: 40,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     backgroundColor: 'transparent',
   },
   imageStyle: {

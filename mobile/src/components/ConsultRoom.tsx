@@ -75,6 +75,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   buttonStyles: {
+    flex: 1,
     backgroundColor: '#fcb716',
     height: 40,
     width: 160,
@@ -179,7 +180,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         <ScrollView style={{ flex: 1 }}>
-          <View style={{ width: '100%', height: 427 }}>
+          <Image
+            source={require('app/src/images/doctor/doctor.png')}
+            style={{
+              right: 20,
+              top: 207,
+              position: 'absolute',
+              zIndex: 2,
+            }}
+          />
+          <View style={{ top: 200, position: 'absolute', zIndex: 3 }}>
+            <Button
+              title="CONSULT A DOCTOR"
+              style={styles.buttonStyles}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.DoctorSearch);
+              }}
+            />
+          </View>
+          <View style={{ width: '100%', height: 456 }}>
             <View style={styles.viewName}>
               <View style={{ alignItems: 'flex-end', marginTop: 20 }}>
                 <ApolloLogo style={{ right: 20 }} />
@@ -196,18 +215,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </View>
               <View style={styles.seperatorStyle} />
               <Text style={styles.descriptionTextStyle}>Are you not feeling well today?</Text>
-              <Button
-                title="CONSULT A DOCTOR"
-                style={styles.buttonStyles}
-                onPress={() => {
-                  props.navigation.navigate(AppRoutes.DoctorSearch);
-                }}
-              />
             </View>
-            <Image
-              source={require('app/src/images/doctor/doctor.png')}
-              style={{ right: 20, top: 177, position: 'absolute' }}
-            />
           </View>
           <View>
             {arrayTest.map((serviceTitle, i) => (

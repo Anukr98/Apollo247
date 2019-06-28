@@ -16,6 +16,7 @@ import { NavigationScreenProps } from 'react-navigation';
 const styles = StyleSheet.create({
   container: {
     ...theme.viewStyles.container,
+    backgroundColor: theme.colors.WHITE,
     paddingTop: 2,
   },
   mascotStyle: {
@@ -99,7 +100,12 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
           </View>
 
           <Card
-            cardContainer={{ marginHorizontal: 0, marginTop: 20 }}
+            cardContainer={{
+              marginHorizontal: 0,
+              marginTop: 20,
+              shadowOffset: { width: 0, height: -10 },
+              shadowOpacity: 0.4,
+            }}
             heading={string.LocalStrings.welcome_text}
             description={string.LocalStrings.multi_signup_desc}
           >
