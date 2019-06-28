@@ -1,11 +1,11 @@
-import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React from 'react';
+import MenuItem from '@material-ui/core/MenuItem';
 import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
+import { createStyles, makeStyles } from '@material-ui/styles';
 import { AppButton } from 'components/ui/AppButton';
-import MenuItem from '@material-ui/core/MenuItem';
 import { AppSelectField } from 'components/ui/AppSelectField';
+import React from 'react';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -122,24 +122,18 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const ExistingProfile: React.FC = (props) => {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
-  const avatarRef = React.useRef(null);
+  const mascotRef = React.useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [userRelation, setUserRelation] = React.useState(5);
-  const inputLabel = React.useRef<HTMLLabelElement>(null);
 
   return (
     <div className={classes.signUpBar}>
-      <div
-        className={classes.mascotCircle}
-        ref={avatarRef}
-        onClick={() => setIsPopoverOpen(true)}
-      >
+      <div className={classes.mascotCircle} ref={mascotRef} onClick={() => setIsPopoverOpen(true)}>
         <img src={require('images/ic_mascot.png')} alt="" />
       </div>
       <Popover
         open={isPopoverOpen}
-        anchorEl={avatarRef.current}
+        anchorEl={mascotRef.current}
         onClose={() => setIsPopoverOpen(false)}
         className={classes.bottomPopover}
         anchorOrigin={{
@@ -162,66 +156,96 @@ export const ExistingProfile: React.FC = (props) => {
                 welcome
                 <br /> to apollo 24/7
               </Typography>
-              <p>We have found 2 accounts registered with this mobile number. Please tell
-us who is who? :)</p>
+              <p>
+                We have found 2 accounts registered with this mobile number. Please tell us who is
+                who? :)
+              </p>
               <div className={classes.formGroup}>
                 <div className={classes.profileBox}>
                   <div className={classes.boxHeader}>
                     <div>1.</div>
-                    <div className={classes.userId}>
-                      APD1.0010783329
-                    </div>
+                    <div className={classes.userId}>APD1.0010783329</div>
                   </div>
                   <div className={classes.boxContent}>
                     <div className={classes.userName}>Surj Gupta</div>
-                    <div className={classes.userInfo}>Male  |  01 January 1987</div>
+                    <div className={classes.userInfo}>Male | 01 January 1987</div>
                     <AppSelectField
                       value={userRelation}
                       onChange={(e: any) => {
-                        setUserRelation(e.currentTarget.value)
+                        setUserRelation(e.currentTarget.value);
                       }}
                     >
                       <MenuItem value={5} classes={{ selected: classes.menuSelected }}>
                         Relation
                       </MenuItem>
-                      <MenuItem value={10} classes={{ selected: classes.menuSelected }}>Me</MenuItem>
-                      <MenuItem value={20} classes={{ selected: classes.menuSelected }}>Mother</MenuItem>
-                      <MenuItem value={30} classes={{ selected: classes.menuSelected }}>Father</MenuItem>
-                      <MenuItem value={40} classes={{ selected: classes.menuSelected }}>Sister</MenuItem>
-                      <MenuItem value={50} classes={{ selected: classes.menuSelected }}>Brother</MenuItem>
-                      <MenuItem value={60} classes={{ selected: classes.menuSelected }}>Cousin</MenuItem>
-                      <MenuItem value={70} classes={{ selected: classes.menuSelected }}>Wife</MenuItem>
-                      <MenuItem value={80} classes={{ selected: classes.menuSelected }}>Husband</MenuItem>
+                      <MenuItem value={10} classes={{ selected: classes.menuSelected }}>
+                        Me
+                      </MenuItem>
+                      <MenuItem value={20} classes={{ selected: classes.menuSelected }}>
+                        Mother
+                      </MenuItem>
+                      <MenuItem value={30} classes={{ selected: classes.menuSelected }}>
+                        Father
+                      </MenuItem>
+                      <MenuItem value={40} classes={{ selected: classes.menuSelected }}>
+                        Sister
+                      </MenuItem>
+                      <MenuItem value={50} classes={{ selected: classes.menuSelected }}>
+                        Brother
+                      </MenuItem>
+                      <MenuItem value={60} classes={{ selected: classes.menuSelected }}>
+                        Cousin
+                      </MenuItem>
+                      <MenuItem value={70} classes={{ selected: classes.menuSelected }}>
+                        Wife
+                      </MenuItem>
+                      <MenuItem value={80} classes={{ selected: classes.menuSelected }}>
+                        Husband
+                      </MenuItem>
                     </AppSelectField>
                   </div>
                 </div>
                 <div className={classes.profileBox}>
                   <div className={classes.boxHeader}>
                     <div>2.</div>
-                    <div className={classes.userId}>
-                      APJ1.0002284253
-                    </div>
+                    <div className={classes.userId}>APJ1.0002284253</div>
                   </div>
                   <div className={classes.boxContent}>
                     <div className={classes.userName}>Preeti Gupta</div>
-                    <div className={classes.userInfo}>Female  |  02 January 1987</div>
+                    <div className={classes.userInfo}>Female | 02 January 1987</div>
                     <AppSelectField
                       value={userRelation}
                       onChange={(e: any) => {
-                        setUserRelation(e.currentTarget.value)
+                        setUserRelation(e.currentTarget.value);
                       }}
                     >
                       <MenuItem value={5} classes={{ selected: classes.menuSelected }}>
                         Relation
                       </MenuItem>
-                      <MenuItem value={10} classes={{ selected: classes.menuSelected }}>Me</MenuItem>
-                      <MenuItem value={20} classes={{ selected: classes.menuSelected }}>Mother</MenuItem>
-                      <MenuItem value={30} classes={{ selected: classes.menuSelected }}>Father</MenuItem>
-                      <MenuItem value={40} classes={{ selected: classes.menuSelected }}>Sister</MenuItem>
-                      <MenuItem value={50} classes={{ selected: classes.menuSelected }}>Brother</MenuItem>
-                      <MenuItem value={60} classes={{ selected: classes.menuSelected }}>Cousin</MenuItem>
-                      <MenuItem value={70} classes={{ selected: classes.menuSelected }}>Wife</MenuItem>
-                      <MenuItem value={80} classes={{ selected: classes.menuSelected }}>Husband</MenuItem>
+                      <MenuItem value={10} classes={{ selected: classes.menuSelected }}>
+                        Me
+                      </MenuItem>
+                      <MenuItem value={20} classes={{ selected: classes.menuSelected }}>
+                        Mother
+                      </MenuItem>
+                      <MenuItem value={30} classes={{ selected: classes.menuSelected }}>
+                        Father
+                      </MenuItem>
+                      <MenuItem value={40} classes={{ selected: classes.menuSelected }}>
+                        Sister
+                      </MenuItem>
+                      <MenuItem value={50} classes={{ selected: classes.menuSelected }}>
+                        Brother
+                      </MenuItem>
+                      <MenuItem value={60} classes={{ selected: classes.menuSelected }}>
+                        Cousin
+                      </MenuItem>
+                      <MenuItem value={70} classes={{ selected: classes.menuSelected }}>
+                        Wife
+                      </MenuItem>
+                      <MenuItem value={80} classes={{ selected: classes.menuSelected }}>
+                        Husband
+                      </MenuItem>
                     </AppSelectField>
                   </div>
                 </div>
@@ -229,17 +253,12 @@ us who is who? :)</p>
             </div>
           </div>
           <div className={classes.actions}>
-            <AppButton
-              fullWidth
-              disabled
-              variant="contained"
-              color="primary"
-            >
+            <AppButton fullWidth disabled variant="contained" color="primary">
               Submit
             </AppButton>
           </div>
         </div>
       </Popover>
-    </div >
+    </div>
   );
 };
