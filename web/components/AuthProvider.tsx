@@ -12,24 +12,27 @@ import { setContext } from 'apollo-link-context';
 import { apiRoutes } from 'helpers/apiRoutes';
 import { PatientSignIn, PatientSignInVariables } from 'graphql/types/PatientSignIn';
 import { PATIENT_SIGN_IN } from 'graphql/profiles';
+import { useCurrentUser } from 'hooks/authHooks';
 
 export interface AuthProviderProps {
   currentUser: any | null;
   authenticating: boolean;
   buildCaptchaVerifier:
-    | ((recaptchaContainerId: HTMLElement['id']) => firebase.auth.RecaptchaVerifier_Instance)
+    | ((recaptchaContainerId: HTMLElement['id']) => firebase.auth.RecaptchaVerifier_Instance) // eslint-disable-line camelcase
     | null;
   verifyPhoneNumber:
     | ((
         mobileNumber: string,
-        captchaVerifier: firebase.auth.RecaptchaVerifier_Instance | null
-      ) => ReturnType<firebase.auth.PhoneAuthProvider_Instance['verifyPhoneNumber']>)
+        captchaVerifier: firebase.auth.RecaptchaVerifier_Instance | null // eslint-disable-line camelcase
+      ) => ReturnType<firebase.auth.PhoneAuthProvider_Instance['verifyPhoneNumber']>) // eslint-disable-line camelcase
     | null;
   verifyOtp:
     | ((phoneNumberVerificationToken: string, otp: string) => Promise<firebase.auth.AuthCredential>)
     | null;
   signIn: ((otpVerificationToken: firebase.auth.AuthCredential) => Promise<void>) | null;
   signOut: (() => any) | null;
+  loginPopupVisible: boolean;
+  setLoginPopupVisible: (loginPopupVisible: boolean) => any;
 }
 
 export const AuthContext = React.createContext<AuthProviderProps>({
@@ -40,6 +43,8 @@ export const AuthContext = React.createContext<AuthProviderProps>({
   verifyOtp: null,
   signIn: null,
   signOut: null,
+  loginPopupVisible: false,
+  setLoginPopupVisible: () => {},
 });
 
 const userIsValid = (user: firebase.User | null) => user && user.phoneNumber;
@@ -81,12 +86,13 @@ export const AuthProvider: React.FC = (props) => {
   const [verifyOtp, setVerifyOtp] = useState<AuthProviderProps['verifyOtp']>(null);
   const [signIn, setSignIn] = useState<AuthProviderProps['signIn']>(null);
   const [signOut, setSignOut] = useState<AuthProviderProps['signOut']>(null);
+  const [loginPopupVisible, setLoginPopupVisible] = useState<
+    AuthProviderProps['loginPopupVisible']
+  >(false);
 
-  useEffect(() => {
-    console.log('--------------- signed in as -------------');
-    console.log(currentUser);
-    console.log('------------------------------------------');
-  }, [currentUser]);
+  console.log(useCurrentUser());
+
+  useEffect(() => setLoginPopupVisible(currentUser != null), [currentUser]);
 
   useEffect(() => {
     const projectId = process.env.FIREBASE_PROJECT_ID;
@@ -156,7 +162,7 @@ export const AuthProvider: React.FC = (props) => {
         variables: { jwt: updatedToken },
       });
 
-      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients[0]) {
+      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
         const patient = patientSignInResult.data.patientSignIn.patients[0];
         setCurrentUser(patient);
         setAuthenticating(false);
@@ -179,6 +185,8 @@ export const AuthProvider: React.FC = (props) => {
             verifyOtp,
             signIn,
             signOut,
+            loginPopupVisible,
+            setLoginPopupVisible,
           }}
         >
           {props.children}

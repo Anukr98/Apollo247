@@ -8,3 +8,5 @@ export const useVerifyPhoneNumber = () => React.useContext(AuthContext).verifyPh
 export const useVerifyOtp = () => React.useContext(AuthContext).verifyOtp!;
 export const useSignIn = () => React.useContext(AuthContext).signIn!;
 export const useSignOut = () => React.useContext(AuthContext).signOut!;
+export const useLoginPopupVisible = () => React.useContext(AuthContext).loginPopupVisible;
+export const useSetLoginPopupVisible = () => React.useContext(AuthContext).setLoginPopupVisible;
