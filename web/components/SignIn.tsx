@@ -59,17 +59,15 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface SignInProps {}
+export interface SignInProps { }
 const recaptchaContainerId = 'recaptcha-container';
 const isMobileNumberValid = (number: string) => number.length === 10;
 const mobileNumberPrefix = '+91';
 
-export interface SignInProps {}
+export interface SignInProps { }
 
 export const SignIn: React.FC<SignInProps> = (props) => {
   const classes = useStyles();
-  const currentUser = useCurrentUser();
-  console.log(currentUser); // need to remove this.
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const [otp, setOtp] = useState<string>('');
   const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
@@ -123,48 +121,48 @@ export const SignIn: React.FC<SignInProps> = (props) => {
       </div>
     </div>
   ) : (
-    <div className={classes.loginFormWrap}>
-      <Typography variant="h2">hi</Typography>
-      <p>Please enter your mobile number to login</p>
-      <FormControl fullWidth>
-        <AppInputField
-          inputProps={{ type: 'number', maxLength: 10 }}
-          value={mobileNumber}
-          onChange={(event) => setMobileNumber(event.currentTarget.value)}
-          error={!isMobileNumberValid(mobileNumber)}
-          startAdornment={
-            <InputAdornment className={classes.inputAdornment} position="start">
-              {mobileNumberPrefix}
-            </InputAdornment>
-          }
-        />
-        <div className={classes.helpText}>OTP will be sent to this number</div>
-      </FormControl>
-      <div id={recaptchaContainerId} className={classes.captcha} />
-      <div className={classes.action}>
-        <Fab
-          color="primary"
-          aria-label="Sign in"
-          disabled={!(isMobileNumberValid(mobileNumber) && captchaVerified)}
-          onClick={(e) => {
-            setVerifyingPhoneNumber(true);
-            verifyPhoneNumber(`${mobileNumberPrefix}${mobileNumber}`, captchaVerifier).then(
-              (phoneNumberVerificationToken) => {
-                setPhoneNumberVerificationToken(phoneNumberVerificationToken);
-                setVerifyingPhoneNumber(false);
-                setDisplayOtpInput(true);
-              }
-            );
-          }}
-        >
-          {verifyingPhoneNumber ? (
-            <CircularProgress />
-          ) : (
-            <img src={require('images/ic_arrow_forward.svg')} />
-          )}
-        </Fab>
+      <div className={classes.loginFormWrap}>
+        <Typography variant="h2">hi</Typography>
+        <p>Please enter your mobile number to login</p>
+        <FormControl fullWidth>
+          <AppInputField
+            inputProps={{ type: 'number', maxLength: 10 }}
+            value={mobileNumber}
+            onChange={(event) => setMobileNumber(event.currentTarget.value)}
+            error={!isMobileNumberValid(mobileNumber)}
+            startAdornment={
+              <InputAdornment className={classes.inputAdornment} position="start">
+                {mobileNumberPrefix}
+              </InputAdornment>
+            }
+          />
+          <div className={classes.helpText}>OTP will be sent to this number</div>
+        </FormControl>
+        <div id={recaptchaContainerId} className={classes.captcha} />
+        <div className={classes.action}>
+          <Fab
+            color="primary"
+            aria-label="Sign in"
+            disabled={!(isMobileNumberValid(mobileNumber) && captchaVerified)}
+            onClick={(e) => {
+              setVerifyingPhoneNumber(true);
+              verifyPhoneNumber(`${mobileNumberPrefix}${mobileNumber}`, captchaVerifier).then(
+                (phoneNumberVerificationToken) => {
+                  setPhoneNumberVerificationToken(phoneNumberVerificationToken);
+                  setVerifyingPhoneNumber(false);
+                  setDisplayOtpInput(true);
+                }
+              );
+            }}
+          >
+            {verifyingPhoneNumber ? (
+              <CircularProgress />
+            ) : (
+                <img src={require('images/ic_arrow_forward.svg')} />
+              )}
+          </Fab>
+        </div>
+        {!captchaLoaded && <CircularProgress />}
       </div>
-      {!captchaLoaded && <CircularProgress />}
-    </div>
-  );
+    );
 };

@@ -14,6 +14,11 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     formControl: {
       marginBottom: 20,
+      '& label': {
+        fontSize: 12,
+        fontWeight: 500,
+        color: theme.palette.secondary.dark,
+      },
     },
     mascotCircle: {
       marginLeft: 'auto',
@@ -28,8 +33,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     signUpPop: {
       width: 368,
-      padding: 20,
       borderRadius: 10,
+      paddingTop: 36,
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: theme.palette.common.white,
       '& p': {
@@ -39,12 +44,9 @@ const useStyles = makeStyles((theme: Theme) => {
         color: theme.palette.secondary.main,
         marginTop: 20,
       },
-      '& form': {
-        paddingTop: 30,
-      },
     },
     actions: {
-      paddingTop: 10,
+      padding: 20,
     },
     btnGroup: {
       paddingTop: 7,
@@ -60,6 +62,26 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'initial',
       backgroundColor: 'none',
       boxShadow: 'none',
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
+    customScrollBar: {
+      height: '70vh',
+      overflow: 'auto',
+    },
+    signinGroup: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+    },
+    formGroup: {
+      paddingTop: 30,
     },
   });
 });
@@ -100,42 +122,50 @@ export const SignUp: React.FC = (props) => {
         classes={{ paper: classes.bottomPopover }}
       >
         <div className={classes.signUpPop}>
-          <Typography variant="h2">
-            welcome
-            <br /> to apollo 24/7
-          </Typography>
-          <p>Let us quickly get to know you so that we can get you the best help :)</p>
-          <form>
-            <AppTextField label="First Name" placeholder="Example, Jonathan" />
-            <AppTextField label="Last Name" placeholder="Example, Donut" />
-            <AppTextField label="Date Of Birth" placeholder="mm/dd/yyyy" />
-            <div className={classes.formControl}>
-              <label>Gender</label>
-              <Grid container spacing={2} className={classes.btnGroup}>
-                <Grid item xs={6} sm={4}>
-                  <AppButton variant="contained">Male</AppButton>
-                </Grid>
-                <Grid item xs={6} sm={4}>
-                  <AppButton variant="contained">Female</AppButton>
-                </Grid>
-                <Grid item xs={6} sm={4}>
-                  <AppButton variant="contained">Other</AppButton>
-                </Grid>
-              </Grid>
+          <div className={classes.mascotIcon}>
+            <img src={require('images/ic_mascot.png')} alt="" />
+          </div>
+          <div className={classes.customScrollBar}>
+            <div className={classes.signinGroup}>
+              <Typography variant="h2">
+                welcome
+                <br /> to apollo 24/7
+              </Typography>
+              <p>Let us quickly get to know you so that we can get you the best help :)</p>
+              <div className={classes.formGroup}>
+                <AppTextField label="First Name" placeholder="Example, Jonathan" />
+                <AppTextField label="Last Name" placeholder="Example, Donut" />
+                <AppTextField label="Date Of Birth" placeholder="mm/dd/yyyy" />
+                <div className={classes.formControl}>
+                  <label>Gender</label>
+                  <Grid container spacing={2} className={classes.btnGroup}>
+                    <Grid item xs={6} sm={4}>
+                      <AppButton variant="contained">Male</AppButton>
+                    </Grid>
+                    <Grid item xs={6} sm={4}>
+                      <AppButton variant="contained">Female</AppButton>
+                    </Grid>
+                    <Grid item xs={6} sm={4}>
+                      <AppButton variant="contained">Other</AppButton>
+                    </Grid>
+                  </Grid>
+                </div>
+                <AppTextField label="Email Address (Optional)" placeholder="name@email.com" />
+              </div>
             </div>
-            <AppTextField label="Email Address (Optional)" placeholder="name@email.com" />
-            <div className={classes.actions}>
-              <AppButton
-                fullWidth
-                variant="contained"
-                color="primary"
-              >
-                Submit
-              </AppButton>
-            </div>
-          </form>
+          </div>
+          <div className={classes.actions}>
+            <AppButton
+              fullWidth
+              disabled
+              variant="contained"
+              color="primary"
+            >
+              Submit
+            </AppButton>
+          </div>
         </div>
       </Popover>
-    </div>
+    </div >
   );
 };
