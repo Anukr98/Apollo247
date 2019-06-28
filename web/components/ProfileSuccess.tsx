@@ -4,6 +4,7 @@ import React from 'react';
 import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
 import { AppButton } from 'components/ui/AppButton';
+import { useSetLoginPopupVisible, useCurrentUser } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -77,10 +78,19 @@ export const ProfileSuccess: React.FC = (props) => {
   const classes = useStyles();
   const mascotRef = React.useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const isUserLoggedIn = useCurrentUser() ? true : false;
+  const setLoginPopupVisible = useSetLoginPopupVisible();
 
   return (
     <div className={classes.signUpBar}>
-      <div className={classes.mascotCircle} ref={mascotRef} onClick={() => setIsPopoverOpen(true)}>
+      <div
+        className={classes.mascotCircle}
+        ref={mascotRef}
+        onClick={() => {
+          if (isUserLoggedIn) setIsPopoverOpen(true);
+          else setLoginPopupVisible(true);
+        }}
+      >
         <img src={require('images/ic_mascot.png')} alt="" />
       </div>
       <Popover
