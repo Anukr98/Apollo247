@@ -68,8 +68,8 @@ export interface SignInProps {}
 
 export const SignIn: React.FC<SignInProps> = (props) => {
   const classes = useStyles();
-  // const currentUser = useCurrentUser();
-  // console.log(currentUser); // need to remove this.
+  const currentUser = useCurrentUser();
+  console.log(currentUser); // need to remove this.
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const [otp, setOtp] = useState<string>('');
   const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
