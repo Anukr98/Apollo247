@@ -4,6 +4,7 @@
     "target": "es6",
     "moduleResolution": "node",
     "jsx": "react-native",
+    "baseUrl": "./",
     "noEmit": true,
     "allowJs": true,
     "sourceMap": true,
@@ -15,7 +16,10 @@
     "resolveJsonModule": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "lib": ["es5", "es6"]
+    "lib": ["es5", "es6"],
+    "paths": {
+      "app/*": ["./*"]
+    }
   },
   "exclude": ["node_modules", "babel.config.js", "metro.config.js", "jest.config.js"]
 }
