@@ -25,6 +25,11 @@ export const patientTypeDefs = gql`
     lastName: String
     mobileNumber: String
     sex: Sex
+    uhid: String
+  }
+
+  type Error {
+    messages: [String!]
   }
 
   type GetPatientsResult {
@@ -35,7 +40,8 @@ export const patientTypeDefs = gql`
   }
 
   type PatientSignInResult {
-    patients: [Patient!]!
+    patients: [Patient!]
+    errors: Error
   }
   extend type Mutation {
     patientSignIn(jwt: String): PatientSignInResult!
@@ -61,9 +67,10 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
   const [firebaseIdToken, firebaseIdTokenError] = await wait<auth.DecodedIdToken, FirebaseError>(
     firebase.auth().verifyIdToken(args.jwt)
   );
+
   if (firebaseIdTokenError) {
     return {
-      patients: null,
+      patients: [],
       errors: { messages: [`${firebaseIdTokenError.code}`] },
     };
   }
@@ -72,7 +79,7 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
   const [firebaseUser, firebaseUserError] = await wait(firebase.auth().getUser(firebaseUid));
   if (firebaseUserError) {
     return {
-      patients: null,
+      patients: [],
       errors: { messages: [firebaseUserError] },
     };
   }
@@ -114,7 +121,9 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
   ): Promise<Patient> => {
     return Patient.findOne({
       where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber },
-    }).then((existingPatient) => existingPatient || Patient.create(createOptions).save());
+    }).then((existingPatient) => {
+      return existingPatient || Patient.create(createOptions).save();
+    });
   };
 
   const isPatientInPrism = uhids.response && uhids.response.signUpUserData;
@@ -135,7 +144,7 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
       })
     : [
         findOrCreatePatient(
-          { mobileNumber },
+          { uhid: '', mobileNumber },
           {
             firebaseId: firebaseUid,
             firstName: '',
