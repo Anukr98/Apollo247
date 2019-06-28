@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     borderRadius: 10,
     shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.5,
     shadowRadius: 10,
     elevation: 2,

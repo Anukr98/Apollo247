@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, TextInput, SafeAreaView } from 'react-native';
+import { Text, View, StyleSheet, TextInput, SafeAreaView, Platform } from 'react-native';
 import { theme } from 'app/src/theme/theme';
 import { string } from 'app/src/strings/string';
 import { NavigationScreenProps } from 'react-navigation';
@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
     color: theme.colors.INPUT_TEXT,
     paddingRight: 6,
     lineHeight: 28,
-    paddingBottom: 5,
+    paddingBottom: Platform.OS === 'ios' ? 5 : 0,
   },
   inputStyle: {
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: theme.colors.INPUT_FAILURE_TEXT,
     opacity: 0.6,
-    paddingVertical: 8,
+    paddingVertical: 10,
     ...theme.fonts.IBMPlexSansMedium(12),
   },
   bottomValidDescription: {
@@ -74,9 +74,11 @@ export const Login: React.FC<LoginProps> = (props) => {
   });
 
   const onClickOk = () => {
+    console.log('onClickOk');
     // props.navigation.navigate(AppRoutes.OTPVerification);
     firebase
       .auth()
+      // .signInWithPhoneNumber('+91' + phoneNumber)
       .signInWithPhoneNumber('+918328610737')
       .then((confirmResult) => {
         props.navigation.navigate(AppRoutes.OTPVerification, { confirmResult: confirmResult });
@@ -125,7 +127,10 @@ export const Login: React.FC<LoginProps> = (props) => {
         disableButton={phoneNumberIsValid ? false : true}
       >
         <View
-          style={[{ height: 56 }, phoneNumberIsValid ? styles.inputValidView : styles.inputView]}
+          style={[
+            { height: 56, paddingTop: 20 },
+            phoneNumberIsValid ? styles.inputValidView : styles.inputView,
+          ]}
         >
           <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
           <TextInput

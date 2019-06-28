@@ -108,6 +108,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             }}
             heading={string.LocalStrings.welcome_text}
             description={string.LocalStrings.multi_signup_desc}
+            descriptionTextStyle={{ paddingBottom: 50 }}
           >
             <View style={styles.mascotStyle}>
               <Mascot />

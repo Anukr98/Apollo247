@@ -19,9 +19,9 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     shadowColor: '#808080',
     shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 2,
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 16,
   },
   headingText: {
     paddingBottom: 8,
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
   },
   buttonStyle: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 7,
     right: -25,
     height: 64,
     width: 64,
@@ -59,7 +59,7 @@ export const Card: React.FC<CardProps> = (props) => {
       <Text style={[styles.descriptionText, props.descriptionTextStyle]}>{props.description}</Text>
       <TouchableOpacity
         style={styles.buttonStyle}
-        onPress={props.onClickButton}
+        onPress={props.disableButton ? () => {} : props.onClickButton}
         activeOpacity={props.disableButton ? 1 : 0.5}
       >
         {props.buttonIcon}

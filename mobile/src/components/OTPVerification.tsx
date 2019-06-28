@@ -8,6 +8,7 @@ import { Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from
 import SmsListener from 'react-native-android-sms-listener';
 import OTPTextView from 'react-native-otp-textinput';
 import { NavigationScreenProps } from 'react-navigation';
+import console = require('console');
 const styles = StyleSheet.create({
   container: {
     ...theme.viewStyles.container,
@@ -15,9 +16,10 @@ const styles = StyleSheet.create({
   inputView: {
     flexDirection: 'row',
     justifyContent: 'center',
-    width: '100%',
+    // width: '100%',
     height: 56,
     marginBottom: 8,
+    paddingTop: 2,
   },
   errorText: {
     lineHeight: 24,
@@ -32,37 +34,25 @@ const styles = StyleSheet.create({
   },
   codeInputStyle: {
     borderBottomWidth: 2,
-    width: '15%',
+    width: '14%',
+    margin: 0,
     height: 48,
-    shadowColor: 'rgba(96, 125, 139, 0.25)',
-    shadowRadius: 5,
-    shadowOpacity: 2,
-    shadowOffset: { width: 0, height: 2 },
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
     ...theme.fonts.IBMPlexSansMedium(18),
   },
 });
 
+let timer = 5;
 export interface OTPVerificationProps extends NavigationScreenProps {}
 
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<any>();
-  const [isValidOTP] = useState<boolean>(false);
+  const [isValidOTP, setIsValidOTP] = useState<boolean>(true);
   const [invalidOtpCount, setInvalidOtpCount] = useState<number>(0);
-  const [showErrorMsg, setShowErrorMsg] = useState<boolean>(true);
-  const [timer, setTimer] = useState<number>(900);
-  const [intervalId] = useState<number>(0);
+  const [showErrorMsg, setShowErrorMsg] = useState<boolean>(false);
+  const [remainingTime, setRemainingTime] = useState<number>(900);
+  const [intervalId, setIntervalId] = useState<any>();
   const [otp, setOtp] = useState<string>('');
-  useEffect(() => {
-    const subscriptionId = SmsListener.addListener((message: any) => {});
-    setSubscriptionId(subscriptionId);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      subscriptionId && subscriptionId.remove();
-    };
-  }, [subscriptionId]);
 
   const onClickOk = () => {
     // console.log('_onFulfill', isValid, code, this.state.phoneNumber)
@@ -73,25 +63,78 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     //   .confirm(otp)
     //   .then((user) => {
     //     console.log('user', user);
+    //     props.navigation.navigate(AppRoutes.SignUp);
     //   })
     //   .catch((error) => {
     //     console.log('error', error);
+    //     setInvalidOtpCount(invalidOtpCount + 1);
+    //     console.log(invalidOtpCount);
     //   });
+    console.log(invalidOtpCount);
 
-    props.navigation.navigate(AppRoutes.SignUp);
+    //need to remove
+    if (invalidOtpCount + 1 === 3) {
+      setShowErrorMsg(true);
+      setIsValidOTP(false);
+      setOtp('');
+      textInputRef.current.inputs && textInputRef.current.inputs[5].blur();
+      const intervalId = setInterval(() => {
+        // console.log('descriptionTextStyle', remainingTime);
+        timer = timer - 1;
+        setRemainingTime(timer);
+        console.log('descriptionTextStyle', timer);
+      }, 1000);
+      setIntervalId(intervalId);
+    } else {
+      setShowErrorMsg(true);
+      setIsValidOTP(true);
+    }
+    setInvalidOtpCount(invalidOtpCount + 1);
+    console.log(invalidOtpCount);
+    setOtp('');
+    for (let i = 0; i < 6; i++) {
+      textInputRef.current.inputs && textInputRef.current.onTextChange('', i);
+    }
+    textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
   };
 
+  const minutes = Math.floor(remainingTime / 60);
+  const seconds = remainingTime - minutes * 60;
+  const textInputRef = React.useRef<any>(null);
+  useEffect(() => {
+    const subscriptionId = SmsListener.addListener((message: any) => {});
+    setSubscriptionId(subscriptionId);
+    textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
+    console.log('useeffect', textInputRef);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      subscriptionId && subscriptionId.remove();
+    };
+  }, [subscriptionId]);
   useEffect(() => {
     if (timer === 0) {
-      setTimer(900);
+      console.log('timer', 'wedfrtgy5u676755ertyuiojkhgfghjkgf');
+      timer = 900;
+      setRemainingTime(900);
       setShowErrorMsg(false);
       setInvalidOtpCount(0);
-
+      setIsValidOTP(true);
       clearInterval(intervalId);
+      setTimeout(() => textInputRef.current.inputs && textInputRef.current.inputs[0].focus(), 1000);
     }
   }, [timer, intervalId]);
-  const minutes = Math.floor(timer / 60);
-  const seconds = timer - minutes * 60;
+
+  const verifyOtp = (otp: any) => {
+    setOtp(otp);
+    console.log(otp, 'ooottppppp');
+    if (otp.length === 6) {
+      setIsValidOTP(true);
+    } else {
+      setIsValidOTP(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -105,23 +148,26 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       </View>
       {invalidOtpCount === 3 && !isValidOTP ? (
         <Card
+          key={1}
           cardContainer={{ marginTop: 0, height: 270 }}
           heading={string.LocalStrings.oops}
           description={string.LocalStrings.incorrect_otp_message}
-          buttonIcon={isValidOTP ? <OkText /> : <OkTextDisabled />}
-          onClickButton={onClickOk}
+          // buttonIcon={isValidOTP ? <OkText /> : <OkTextDisabled />}
+          // onClickButton={onClickOk}
           disableButton={isValidOTP ? false : true}
-          descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 7 : 30 }}
+          descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 0 : 30 }}
         >
           <View style={styles.inputView}>
             <OTPTextView
               handleTextChange={(otp: string) => setOtp(otp)}
-              inputCount={5}
+              inputCount={6}
               keyboardType="numeric"
               defaultValue={otp}
               textInputStyle={styles.codeInputStyle}
-              tintColor={theme.colors.INPUT_BORDER_SUCCESS}
-              offTintColor={theme.colors.INPUT_BORDER_SUCCESS}
+              tintColor={'rgba(0, 179, 142, 0.4)'}
+              offTintColor={'rgba(0, 179, 142, 0.4)'}
+              containerStyle={{ flex: 1 }}
+              editable={false}
             />
           </View>
           <Text style={[styles.errorText]}>
@@ -130,23 +176,34 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         </Card>
       ) : (
         <Card
+          key={2}
           cardContainer={{ marginTop: 0, height: 270 }}
           heading={string.LocalStrings.great}
           description={string.LocalStrings.type_otp_text}
-          buttonIcon={isValidOTP ? <OkText /> : <OkTextDisabled />}
+          buttonIcon={isValidOTP && otp.length === 6 ? <OkText /> : <OkTextDisabled />}
           onClickButton={onClickOk}
-          disableButton={isValidOTP ? false : true}
+          disableButton={isValidOTP && otp.length === 6 ? false : true}
           descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 0 : 30 }}
         >
           <View style={styles.inputView}>
             <OTPTextView
-              handleTextChange={(otp: any) => setOtp(otp)}
-              inputCount={5}
+              ref={textInputRef}
+              handleTextChange={verifyOtp}
+              inputCount={6}
               keyboardType="numeric"
               defaultValue={otp}
               textInputStyle={styles.codeInputStyle}
-              tintColor={theme.colors.INPUT_BORDER_SUCCESS}
-              offTintColor={theme.colors.INPUT_BORDER_SUCCESS}
+              tintColor={
+                isValidOTP && otp.length === 0
+                  ? theme.colors.INPUT_BORDER_SUCCESS
+                  : theme.colors.INPUT_BORDER_FAILURE
+              }
+              offTintColor={
+                isValidOTP && otp.length === 0
+                  ? theme.colors.INPUT_BORDER_SUCCESS
+                  : theme.colors.INPUT_BORDER_FAILURE
+              }
+              containerStyle={{ flex: 1 }}
             />
           </View>
           {showErrorMsg && (
@@ -155,7 +212,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             </Text>
           )}
           {
-            <Text style={styles.bottomDescription} onPress={() => {}}>
+            <Text style={styles.bottomDescription} onPress={onClickOk}>
               {!isValidOTP ? string.LocalStrings.resend_opt : ' '}
             </Text>
           }

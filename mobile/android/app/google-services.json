@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "477516860783-ojclbispkqq8mflck3gpfbojjuokb9dh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.apollo.patient",
+            "certificate_hash": "0e450044f692828d7ffae5a310c854153ca44871"
+          }
+        },
+        {
           "client_id": "477516860783-e81r08hkb4e3t8o9tfjsjcj3rh3tj9fv.apps.googleusercontent.com",
           "client_type": 3
         }

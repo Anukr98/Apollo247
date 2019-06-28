@@ -77,10 +77,12 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             marginHorizontal: 0,
             marginTop: 20,
             shadowOffset: { width: 0, height: -10 },
-            shadowOpacity: 0.4,
+            shadowOpacity: 0.35,
+            shadowRadius: 20,
           }}
           heading={string.LocalStrings.welcome_text}
           description={string.LocalStrings.welcome_desc}
+          descriptionTextStyle={{ paddingBottom: 45 }}
         >
           <View style={styles.mascotStyle}>
             <Mascot />

@@ -5,6 +5,7 @@ import android.app.Application;
 import com.facebook.react.ReactApplication;
 import com.oblador.vectoricons.VectorIconsPackage;
 import io.invertase.firebase.analytics.RNFirebaseAnalyticsPackage; // <-- Add this line
+import io.invertase.firebase.auth.RNFirebaseAuthPackage; 
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import com.centaurwarchief.smslistener.SmsListenerPackage;
 import com.facebook.react.ReactNativeHost;
@@ -30,7 +31,8 @@ public class MainApplication extends Application implements ReactApplication {
             new VectorIconsPackage(),
             new RNGestureHandlerPackage(),
             new SmsListenerPackage(),
-            new RNFirebaseAnalyticsPackage() // <-- Add this line
+            new RNFirebaseAnalyticsPackage(), // <-- Add this line
+            new RNFirebaseAuthPackage()
       );
     }
 
