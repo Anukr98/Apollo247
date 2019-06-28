@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -59,14 +59,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface SignInProps { }
+export interface SignInProps {}
 
 export const Header: React.FC = (props) => {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
+  const [popoverIsOpen, setPopoverIsOpen] = useState(false);
+  const avatarRef = useRef(null);
   const authenticating = useAuthenticating();
-  // This resolves to nothing and doesn't affect browser history
-  const dudUrl = 'javascript:;';
 
   return (
     <header className={classes.header}>
@@ -77,16 +76,13 @@ export const Header: React.FC = (props) => {
       </div>
       <Navigation />
       <div className={classes.userAccount}>
-        <div
-          className={`${classes.userCircle} ${classes.userActive}`}
-          onClick={(e) => setAnchorEl(anchorEl ? null : e.currentTarget)}
-        >
+        <div ref={avatarRef} className={`${classes.userCircle} ${classes.userActive}`}>
           {authenticating ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
         </div>
         <Popover
-          open={Boolean(anchorEl)}
-          anchorEl={anchorEl}
-          onClose={() => setAnchorEl(null)}
+          open={popoverIsOpen}
+          anchorEl={avatarRef.current}
+          onClose={() => setPopoverIsOpen(false)}
           anchorOrigin={{
             vertical: 'top',
             horizontal: 'right',
