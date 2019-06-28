@@ -88,7 +88,7 @@ export const Otp: React.FC = (props) => {
                   return true;
                 } else {
                   e.target.value = '';
-                  return false;    
+                  return false;
                 }
               }}
             />

@@ -17,5 +17,5 @@
     "experimentalDecorators": true,
     "lib": ["dom", "dom.iterable", "es5", "es6", "scripthost"]
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "cypress"]
 }
