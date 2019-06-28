@@ -81,7 +81,6 @@ const useStyles = makeStyles((theme: Theme) => {
 export const HeroBanner: React.FC = (props) => {
   const classes = useStyles();
   const [userName, setUserName] = React.useState(10);
-  const inputLabel = React.useRef<HTMLLabelElement>(null);
 
   return (
     <div className={classes.heroBanner}>
@@ -90,29 +89,24 @@ export const HeroBanner: React.FC = (props) => {
           <span>hello</span>
           <AppSelectField
             value={userName}
-            onChange={(e: any) => {
-              setUserName(e.currentTarget.value)
-            }}
+            onChange={(e) => setUserName(parseInt(e.currentTarget.value as string))}
             classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
           >
-            <MenuItem selected value={10} classes={{ selected: classes.menuSelected }}>Surj</MenuItem>
-            <MenuItem value={20} classes={{ selected: classes.menuSelected }}>Preeti</MenuItem>
+            <MenuItem selected value={10} classes={{ selected: classes.menuSelected }}>
+              Surj
+            </MenuItem>
+            <MenuItem value={20} classes={{ selected: classes.menuSelected }}>
+              Preeti
+            </MenuItem>
             <MenuItem classes={{ selected: classes.menuSelected }}>
-              <AppButton
-                color="primary"
-                classes={{ root: classes.addMemberBtn }}
-              >
+              <AppButton color="primary" classes={{ root: classes.addMemberBtn }}>
                 Add Member
               </AppButton>
             </MenuItem>
           </AppSelectField>
         </Typography>
         <p>Not feeling well today? Don’t worry. We will help you find the right doctor :)</p>
-        <AppButton
-          variant="contained"
-          color="primary"
-          classes={{ root: classes.button }}
-        >
+        <AppButton variant="contained" color="primary" classes={{ root: classes.button }}>
           Consult a doctor
         </AppButton>
       </div>
