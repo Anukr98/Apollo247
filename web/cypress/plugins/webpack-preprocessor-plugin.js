@@ -16,13 +16,6 @@ module.exports = (cypressConfig) => {
     optimization: webpackConfig.optimization,
     resolve: webpackConfig.resolve,
     plugins: webpackConfig.plugins,
-    // plugins: [
-    //   new webpack.DefinePlugin({
-    //     'process.env.NODE_ENV': JSON.stringify(cypressConfig.env.NODE_ENV),
-    //     'process.env.WEB_CLIENT_PORT': JSON.stringify(cypressConfig.env.WEB_CLIENT_PORT),
-    //     'process.env.API_CLIENT_PORT': JSON.stringify(cypressConfig.env.API_CLIENT_PORT),
-    //   }),
-    // ],
   };
 
   return webpackPreprocessor({ webpackOptions });
