@@ -1,6 +1,6 @@
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
 import { AppButton } from 'components/ui/AppButton';
@@ -75,28 +75,18 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const ProfileSuccess: React.FC = (props) => {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
-  const open = Boolean(anchorEl);
-  const id = open ? 'simple-popper' : undefined;
-
-  function handleClose() {
-    setAnchorEl(null);
-  }
+  const [popoverIsOpen, setPopoverIsOpen] = useState(false);
+  const mascotRef = useRef(null);
 
   return (
     <div className={classes.signUpBar}>
-      <div
-        className={classes.mascotCircle}
-        aria-describedby={id}
-        onClick={(e) => setAnchorEl(anchorEl ? null : e.currentTarget)}
-      >
+      <div className={classes.mascotCircle} onClick={() => setPopoverIsOpen(true)}>
         <img src={require('images/ic_mascot.png')} alt="" />
       </div>
       <Popover
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
+        open={popoverIsOpen}
+        anchorEl={mascotRef.current}
+        onClose={() => setPopoverIsOpen(false)}
         className={classes.bottomPopover}
         anchorOrigin={{
           vertical: 'bottom',
@@ -113,21 +103,19 @@ export const ProfileSuccess: React.FC = (props) => {
             <img src={require('images/ic_mascot.png')} alt="" />
           </div>
           <div className={classes.signinGroup}>
-            <Typography variant="h2">
-              Congratulations!
-              </Typography>
-            <p>Welcome to the Apollo family. You can add more family members any time from ‘My Account’.</p>
+            <Typography variant="h2">Congratulations!</Typography>
+            <p>
+              Welcome to the Apollo family. You can add more family members any time from ‘My
+              Account’.
+            </p>
           </div>
           <div className={classes.actions}>
-            <AppButton
-              color="primary"
-              classes={{ root: classes.button }}
-            >
+            <AppButton color="primary" classes={{ root: classes.button }}>
               Ok, Got it
             </AppButton>
           </div>
         </div>
       </Popover>
-    </div >
+    </div>
   );
 };
