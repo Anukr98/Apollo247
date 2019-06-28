@@ -1,11 +1,12 @@
-import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React from 'react';
+import Grid from '@material-ui/core/Grid';
 import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-import { AppTextField } from 'components/ui/AppTextField';
+import { createStyles, makeStyles } from '@material-ui/styles';
 import { AppButton } from 'components/ui/AppButton';
+import { AppTextField } from 'components/ui/AppTextField';
+import { useLoginPopupVisible, useSetLoginPopupVisible } from 'hooks/authHooks';
+import React, { useRef } from 'react';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -88,28 +89,23 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const SignUp: React.FC = (props) => {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
-  const open = Boolean(anchorEl);
-  const id = open ? 'simple-popper' : undefined;
-
-  function handleClose() {
-    setAnchorEl(null);
-  }
+  const mascotRef = useRef(null);
+  const loginPopupVisible = useLoginPopupVisible();
+  const setLoginPopupVisible = useSetLoginPopupVisible();
 
   return (
     <div className={classes.signUpBar}>
       <div
         className={classes.mascotCircle}
-        aria-describedby={id}
-        onClick={(e) => setAnchorEl(anchorEl ? null : e.currentTarget)}
+        ref={mascotRef}
+        onClick={(e) => setLoginPopupVisible(true)}
       >
         <img src={require('images/ic_mascot.png')} alt="" />
       </div>
       <Popover
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
+        open={loginPopupVisible}
+        anchorEl={mascotRef.current}
+        onClose={() => setLoginPopupVisible(false)}
         className={classes.bottomPopover}
         anchorOrigin={{
           vertical: 'bottom',
@@ -155,17 +151,12 @@ export const SignUp: React.FC = (props) => {
             </div>
           </div>
           <div className={classes.actions}>
-            <AppButton
-              fullWidth
-              disabled
-              variant="contained"
-              color="primary"
-            >
+            <AppButton fullWidth disabled variant="contained" color="primary">
               Submit
             </AppButton>
           </div>
         </div>
       </Popover>
-    </div >
+    </div>
   );
 };

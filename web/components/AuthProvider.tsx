@@ -90,8 +90,6 @@ export const AuthProvider: React.FC = (props) => {
     AuthProviderProps['loginPopupVisible']
   >(false);
 
-  console.log(useCurrentUser());
-
   useEffect(() => setLoginPopupVisible(currentUser != null), [currentUser]);
 
   useEffect(() => {

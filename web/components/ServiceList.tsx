@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
+import { useSetLoginPopupVisible, useCurrentUser } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -28,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: 'rgba(0,0,0,0.5)',
         marginTop: 5,
         marginBottom: 5,
-      }
+      },
     },
     action: {
       fontSize: 13,
@@ -54,6 +55,8 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const ServiceList: React.FC = (props) => {
   const classes = useStyles();
+  const isUserLoggedIn = useCurrentUser() ? true : false;
+  const setLoginPopupVisible = useSetLoginPopupVisible();
   return (
     <div className={classes.serviceList}>
       <Grid container spacing={2}>
@@ -64,7 +67,13 @@ export const ServiceList: React.FC = (props) => {
             </div>
             <Typography variant="h5">You know which doctor you are looking for?</Typography>
             <p>Let’s get you connected with them.</p>
-            <Link className={classes.action} to="/">
+            <Link
+              className={classes.action}
+              to="/"
+              onClick={() => {
+                if (!isUserLoggedIn) setLoginPopupVisible(true);
+              }}
+            >
               Find specialist
             </Link>
           </Paper>
@@ -76,7 +85,13 @@ export const ServiceList: React.FC = (props) => {
             </div>
             <Typography variant="h5">Just want to buy medicines? It’s easy!</Typography>
             <p>You can search by name or prescription.</p>
-            <Link className={classes.action} to="/">
+            <Link
+              className={classes.action}
+              to="/"
+              onClick={() => {
+                if (!isUserLoggedIn) setLoginPopupVisible(true);
+              }}
+            >
               Search Medicine
             </Link>
           </Paper>
@@ -88,7 +103,11 @@ export const ServiceList: React.FC = (props) => {
             </div>
             <Typography variant="h5">Do you want to get some tests done?</Typography>
             <p>Get your tests/diagnostics booked here.</p>
-            <Link className={classes.action} to="/">
+            <Link
+              className={classes.action}
+              to="/"
+              onClick={(e) => setLoginPopupVisible(!isUserLoggedIn)}
+            >
               Book a test
             </Link>
           </Paper>
@@ -100,7 +119,11 @@ export const ServiceList: React.FC = (props) => {
             </div>
             <Typography variant="h5">Want to know how we have the best?</Typography>
             <p>Learn about our Star Doctors Program.</p>
-            <Link className={classes.action} to="/">
+            <Link
+              className={classes.action}
+              to="/"
+              onClick={(e) => setLoginPopupVisible(!isUserLoggedIn)}
+            >
               Who are star doctors
             </Link>
           </Paper>

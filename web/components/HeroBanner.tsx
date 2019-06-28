@@ -5,6 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import { AppButton } from 'components/ui/AppButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import { AppSelectField } from 'components/ui/AppSelectField';
+import { useSetLoginPopupVisible, useCurrentUser } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -81,7 +82,8 @@ const useStyles = makeStyles((theme: Theme) => {
 export const HeroBanner: React.FC = (props) => {
   const classes = useStyles();
   const [userName, setUserName] = React.useState(10);
-
+  const isUserLoggedIn = useCurrentUser() ? true : false;
+  const setLoginPopupVisible = useSetLoginPopupVisible();
   return (
     <div className={classes.heroBanner}>
       <div className={classes.bannerInfo}>
@@ -106,7 +108,14 @@ export const HeroBanner: React.FC = (props) => {
           </AppSelectField>
         </Typography>
         <p>Not feeling well today? Don’t worry. We will help you find the right doctor :)</p>
-        <AppButton variant="contained" color="primary" classes={{ root: classes.button }}>
+        <AppButton
+          variant="contained"
+          color="primary"
+          classes={{ root: classes.button }}
+          onClick={() => {
+            if (!isUserLoggedIn) setLoginPopupVisible(true);
+          }}
+        >
           Consult a doctor
         </AppButton>
       </div>
