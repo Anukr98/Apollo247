@@ -4,7 +4,16 @@ import { ArrowDisabled, ArrowYellow } from 'app/src/components/ui/Icons';
 import { string } from 'app/src/strings/string';
 import { theme } from 'app/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { Platform, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  ActivityIndicator,
+  Keyboard,
+} from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 
@@ -74,50 +83,75 @@ export const Login: React.FC<LoginProps> = (props) => {
   useEffect(() => analytics.setCurrentScreen(AppRoutes.Login), []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={{ height: 56 }} />
-      <Card
-        cardContainer={{ marginTop: 0, height: 270 }}
-        heading={string.LocalStrings.hello}
-        description={string.LocalStrings.please_enter_no}
-        buttonIcon={
-          phoneNumberIsValid && phoneNumber.replace(/^0+/, '').length === 10 ? (
-            <ArrowYellow />
-          ) : (
-            <ArrowDisabled />
-          )
-        }
-        onClickButton={() => {
-          setVerifyingPhonenNumber(true);
-          verifyPhoneNumber('+91' + phoneNumber).then((phoneNumberVerificationCredential) => {
-            setVerifyingPhonenNumber(false);
-            props.navigation.navigate(AppRoutes.OTPVerification, {
-              phoneNumberVerificationCredential,
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={styles.container}>
+        <View style={{ height: 56 }} />
+        <Card
+          cardContainer={{ marginTop: 0, height: 270 }}
+          heading={string.LocalStrings.hello}
+          description={string.LocalStrings.please_enter_no}
+          buttonIcon={
+            phoneNumberIsValid && phoneNumber.replace(/^0+/, '').length === 10 ? (
+              <ArrowYellow />
+            ) : (
+              <ArrowDisabled />
+            )
+          }
+          onClickButton={() => {
+            Keyboard.dismiss();
+            setVerifyingPhonenNumber(true);
+            verifyPhoneNumber('+91' + phoneNumber).then((phoneNumberVerificationCredential) => {
+              setVerifyingPhonenNumber(false);
+              props.navigation.navigate(AppRoutes.OTPVerification, {
+                phoneNumberVerificationCredential,
+              });
             });
-          });
-        }}
-        disableButton={phoneNumberIsValid ? false : true}
-      >
-        <View
-          style={[
-            { height: 56, paddingTop: 20 },
-            phoneNumberIsValid ? styles.inputValidView : styles.inputView,
-          ]}
+          }}
+          disableButton={phoneNumberIsValid ? false : true}
         >
-          <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
-          <TextInput
-            autoFocus
-            style={styles.inputStyle}
-            keyboardType="numeric"
-            maxLength={10}
-            value={phoneNumber}
-            onChangeText={(value) => setPhoneNumber(value)}
-          />
+          <View
+            style={[
+              { height: 56, paddingTop: 20 },
+              phoneNumberIsValid ? styles.inputValidView : styles.inputView,
+            ]}
+          >
+            <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
+            <TextInput
+              autoFocus
+              style={styles.inputStyle}
+              keyboardType="numeric"
+              maxLength={10}
+              value={phoneNumber}
+              onChangeText={(value) => setPhoneNumber(value)}
+            />
+          </View>
+          <Text
+            style={phoneNumberIsValid ? styles.bottomValidDescription : styles.bottomDescription}
+          >
+            {phoneNumberIsValid
+              ? string.LocalStrings.otp_sent_to
+              : string.LocalStrings.wrong_number}
+          </Text>
+        </Card>
+      </SafeAreaView>
+      {verifyingPhoneNumber ? (
+        <View
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0, 0.2)',
+            alignSelf: 'center',
+            justifyContent: 'center',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        >
+          <ActivityIndicator animating={verifyingPhoneNumber} size="large" color="green" />
         </View>
-        <Text style={phoneNumberIsValid ? styles.bottomValidDescription : styles.bottomDescription}>
-          {phoneNumberIsValid ? string.LocalStrings.otp_sent_to : string.LocalStrings.wrong_number}
-        </Text>
-      </Card>
-    </SafeAreaView>
+      ) : null}
+    </View>
   );
 };
