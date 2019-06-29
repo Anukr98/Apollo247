@@ -81,7 +81,7 @@ export const AuthProvider: React.FC = (props) => {
   const [analytics, setAnalytics] = useState<AuthProviderProps['analytics']>(null);
 
   useEffect(() => {
-    setAnalytics(firebase.analytics);
+    setAnalytics(firebase.analytics());
 
     const auth = firebase.auth();
 

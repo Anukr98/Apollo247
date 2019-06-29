@@ -71,7 +71,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
   const { verifyPhoneNumber, analytics } = useAuth();
 
-  useEffect(() => analytics().setCurrentScreen('Login'), []);
+  useEffect(() => analytics.setCurrentScreen(AppRoutes.Login), []);
 
   return (
     <SafeAreaView style={styles.container}>
