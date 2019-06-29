@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import { useSetLoginPopupVisible, useCurrentUser } from 'hooks/authHooks';
+import { useCurrentUser, useLoginPopupState } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -56,7 +56,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const ServiceList: React.FC = (props) => {
   const classes = useStyles();
   const isUserLoggedIn = useCurrentUser() ? true : false;
-  const setLoginPopupVisible = useSetLoginPopupVisible();
+  const { setLoginPopupVisible } = useLoginPopupState();
   return (
     <div className={classes.serviceList}>
       <Grid container spacing={2}>

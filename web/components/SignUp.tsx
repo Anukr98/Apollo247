@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AppButton } from 'components/ui/AppButton';
 import { AppTextField } from 'components/ui/AppTextField';
-import { useLoginPopupVisible, useSetLoginPopupVisible } from 'hooks/authHooks';
+import { useLoginPopupState } from 'hooks/authHooks';
 import React, { useRef } from 'react';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -90,8 +90,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const SignUp: React.FC = (props) => {
   const classes = useStyles();
   const mascotRef = useRef(null);
-  const loginPopupVisible = useLoginPopupVisible();
-  const setLoginPopupVisible = useSetLoginPopupVisible();
+  const { loginPopupVisible, setLoginPopupVisible } = useLoginPopupState();
 
   return (
     <div className={classes.signUpBar}>

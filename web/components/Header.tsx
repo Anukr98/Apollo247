@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -6,12 +6,7 @@ import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import { SignIn } from 'components/SignIn';
 import { Navigation } from 'components/Navigatiion';
-import {
-  useAuthenticating,
-  useLoginPopupVisible,
-  useSetLoginPopupVisible,
-  useCurrentUser,
-} from 'hooks/authHooks';
+import { useIsLoggedIn, useAuth, useLoginPopupState } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -69,10 +64,9 @@ export interface SignInProps {}
 export const Header: React.FC = (props) => {
   const classes = useStyles();
   const avatarRef = useRef(null);
-  const authenticating = useAuthenticating();
-  const loginPopupVisible = useLoginPopupVisible();
-  const setLoginPopupVisible = useSetLoginPopupVisible();
-  const isUserLoggedIn = useCurrentUser() ? true : false;
+  const isLoggedIn = useIsLoggedIn();
+  const { authenticating } = useAuth();
+  const { loginPopupVisible, setLoginPopupVisible } = useLoginPopupState();
 
   return (
     <header className={classes.header}>
@@ -90,7 +84,7 @@ export const Header: React.FC = (props) => {
         >
           {authenticating ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
         </div>
-        {isUserLoggedIn ? null : (
+        {isLoggedIn ? null : (
           <Popover
             open={loginPopupVisible}
             anchorEl={avatarRef.current}

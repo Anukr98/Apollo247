@@ -5,13 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import FormControl from '@material-ui/core/FormControl';
 import Fab from '@material-ui/core/Fab';
-import {
-  useSignIn,
-  useVerifyOtp,
-  useBuildCaptchaVerifier,
-  useVerifyPhoneNumber,
-  useAuthenticating,
-} from 'hooks/authHooks';
+import { useAuth } from 'hooks/authHooks';
 import { AppTextField } from 'components/ui/AppTextField';
 import { AppInputField } from 'components/ui/AppInputField';
 
@@ -59,12 +53,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface SignInProps { }
 const recaptchaContainerId = 'recaptcha-container';
 const isMobileNumberValid = (number: string) => number.length === 10;
 const mobileNumberPrefix = '+91';
 
-export interface SignInProps { }
+export interface SignInProps {}
 
 export const SignIn: React.FC<SignInProps> = (props) => {
   const classes = useStyles();
@@ -74,17 +67,13 @@ export const SignIn: React.FC<SignInProps> = (props) => {
   const [
     captchaVerifier,
     setCaptchaVerifier,
-  ] = useState<firebase.auth.RecaptchaVerifier_Instance | null>(null);
+  ] = useState<firebase.auth.RecaptchaVerifier_Instance | null>(null); // eslint-disable-line camelcase
   const [phoneNumberVerificationToken, setPhoneNumberVerificationToken] = useState<string>('');
   const [captchaVerified, setCaptchaVerified] = useState<boolean>(false);
   const [captchaLoaded, setCaptchaLoaded] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
 
-  const buildCaptchaVerifier = useBuildCaptchaVerifier();
-  const verifyPhoneNumber = useVerifyPhoneNumber();
-  const verifyOtp = useVerifyOtp();
-  const signIn = useSignIn();
-  const authenticating = useAuthenticating();
+  const { buildCaptchaVerifier, verifyPhoneNumber, verifyOtp, signIn, authenticating } = useAuth();
 
   useEffect(() => {
     const captchaVerifier = buildCaptchaVerifier(recaptchaContainerId);
@@ -121,48 +110,48 @@ export const SignIn: React.FC<SignInProps> = (props) => {
       </div>
     </div>
   ) : (
-      <div className={classes.loginFormWrap}>
-        <Typography variant="h2">hi</Typography>
-        <p>Please enter your mobile number to login</p>
-        <FormControl fullWidth>
-          <AppInputField
-            inputProps={{ type: 'number', maxLength: 10 }}
-            value={mobileNumber}
-            onChange={(event) => setMobileNumber(event.currentTarget.value)}
-            error={!isMobileNumberValid(mobileNumber)}
-            startAdornment={
-              <InputAdornment className={classes.inputAdornment} position="start">
-                {mobileNumberPrefix}
-              </InputAdornment>
-            }
-          />
-          <div className={classes.helpText}>OTP will be sent to this number</div>
-        </FormControl>
-        <div id={recaptchaContainerId} className={classes.captcha} />
-        <div className={classes.action}>
-          <Fab
-            color="primary"
-            aria-label="Sign in"
-            disabled={!(isMobileNumberValid(mobileNumber) && captchaVerified)}
-            onClick={(e) => {
-              setVerifyingPhoneNumber(true);
-              verifyPhoneNumber(`${mobileNumberPrefix}${mobileNumber}`, captchaVerifier).then(
-                (phoneNumberVerificationToken) => {
-                  setPhoneNumberVerificationToken(phoneNumberVerificationToken);
-                  setVerifyingPhoneNumber(false);
-                  setDisplayOtpInput(true);
-                }
-              );
-            }}
-          >
-            {verifyingPhoneNumber ? (
-              <CircularProgress />
-            ) : (
-                <img src={require('images/ic_arrow_forward.svg')} />
-              )}
-          </Fab>
-        </div>
-        {!captchaLoaded && <CircularProgress />}
+    <div className={classes.loginFormWrap}>
+      <Typography variant="h2">hi</Typography>
+      <p>Please enter your mobile number to login</p>
+      <FormControl fullWidth>
+        <AppInputField
+          inputProps={{ type: 'number', maxLength: 10 }}
+          value={mobileNumber}
+          onChange={(event) => setMobileNumber(event.currentTarget.value)}
+          error={!isMobileNumberValid(mobileNumber)}
+          startAdornment={
+            <InputAdornment className={classes.inputAdornment} position="start">
+              {mobileNumberPrefix}
+            </InputAdornment>
+          }
+        />
+        <div className={classes.helpText}>OTP will be sent to this number</div>
+      </FormControl>
+      <div id={recaptchaContainerId} className={classes.captcha} />
+      <div className={classes.action}>
+        <Fab
+          color="primary"
+          aria-label="Sign in"
+          disabled={!(isMobileNumberValid(mobileNumber) && captchaVerified)}
+          onClick={(e) => {
+            setVerifyingPhoneNumber(true);
+            verifyPhoneNumber(`${mobileNumberPrefix}${mobileNumber}`, captchaVerifier).then(
+              (phoneNumberVerificationToken) => {
+                setPhoneNumberVerificationToken(phoneNumberVerificationToken);
+                setVerifyingPhoneNumber(false);
+                setDisplayOtpInput(true);
+              }
+            );
+          }}
+        >
+          {verifyingPhoneNumber ? (
+            <CircularProgress />
+          ) : (
+            <img src={require('images/ic_arrow_forward.svg')} />
+          )}
+        </Fab>
       </div>
-    );
+      {!captchaLoaded && <CircularProgress />}
+    </div>
+  );
 };

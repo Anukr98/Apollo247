@@ -1,18 +1,16 @@
-import * as firebase from 'firebase/app';
-import 'firebase/auth';
-import React, { useState, useEffect } from 'react';
-import { ApolloProvider } from 'react-apollo';
-import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloClient } from 'apollo-client';
+import { setContext } from 'apollo-link-context';
 import { ErrorResponse, onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
-import { setContext } from 'apollo-link-context';
-
-import { apiRoutes } from 'helpers/apiRoutes';
-import { PatientSignIn, PatientSignInVariables } from 'graphql/types/PatientSignIn';
+import * as firebase from 'firebase/app';
+import 'firebase/auth';
 import { PATIENT_SIGN_IN } from 'graphql/profiles';
-import { useCurrentUser } from 'hooks/authHooks';
+import { PatientSignIn, PatientSignInVariables } from 'graphql/types/PatientSignIn';
+import { apiRoutes } from 'helpers/apiRoutes';
+import React, { useEffect, useState } from 'react';
+import { ApolloProvider } from 'react-apollo';
+import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 
 export interface AuthProviderProps {
   currentUser: any | null;
@@ -32,7 +30,7 @@ export interface AuthProviderProps {
   signIn: ((otpVerificationToken: firebase.auth.AuthCredential) => Promise<void>) | null;
   signOut: (() => any) | null;
   loginPopupVisible: boolean;
-  setLoginPopupVisible: (loginPopupVisible: boolean) => any;
+  setLoginPopupVisible: ((loginPopupVisible: boolean) => any) | null;
 }
 
 export const AuthContext = React.createContext<AuthProviderProps>({
@@ -44,7 +42,7 @@ export const AuthContext = React.createContext<AuthProviderProps>({
   signIn: null,
   signOut: null,
   loginPopupVisible: false,
-  setLoginPopupVisible: () => {},
+  setLoginPopupVisible: null,
 });
 
 const userIsValid = (user: firebase.User | null) => user && user.phoneNumber;
@@ -90,8 +88,6 @@ export const AuthProvider: React.FC = (props) => {
     AuthProviderProps['loginPopupVisible']
   >(false);
 
-  useEffect(() => setLoginPopupVisible(currentUser != null), [currentUser]);
-
   useEffect(() => {
     const projectId = process.env.FIREBASE_PROJECT_ID;
     const app = firebase.initializeApp({
@@ -112,7 +108,7 @@ export const AuthProvider: React.FC = (props) => {
 
     const verifyPhoneNumberFunc = () => (
       mobileNumber: string,
-      captchaVerifier: firebase.auth.RecaptchaVerifier_Instance
+      captchaVerifier: firebase.auth.RecaptchaVerifier_Instance // eslint-disable-line camelcase
     ) => {
       const provider = new firebase.auth.PhoneAuthProvider();
       return provider.verifyPhoneNumber(mobileNumber, captchaVerifier);
