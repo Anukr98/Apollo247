@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import { AppButton } from 'components/ui/AppButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import { AppSelectField } from 'components/ui/AppSelectField';
-import { useIsLoggedIn, useLoginPopupState } from 'hooks/authHooks';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -82,8 +82,6 @@ const useStyles = makeStyles((theme: Theme) => {
 export const HeroBanner: React.FC = (props) => {
   const classes = useStyles();
   const [userName, setUserName] = React.useState(10);
-  const isLoggedIn = useIsLoggedIn();
-  const { setLoginPopupVisible } = useLoginPopupState();
 
   return (
     <div className={classes.heroBanner}>
@@ -109,16 +107,18 @@ export const HeroBanner: React.FC = (props) => {
           </AppSelectField>
         </Typography>
         <p>Not feeling well today? Don’t worry. We will help you find the right doctor :)</p>
-        <AppButton
-          variant="contained"
-          color="primary"
-          classes={{ root: classes.button }}
-          onClick={() => {
-            if (!isLoggedIn) setLoginPopupVisible(true);
-          }}
-        >
-          Consult a doctor
-        </AppButton>
+        <ProtectedWithLoginPopup>
+          {({ protectWithLoginPopup }) => (
+            <AppButton
+              variant="contained"
+              color="primary"
+              classes={{ root: classes.button }}
+              onClick={() => protectWithLoginPopup()}
+            >
+              Consult a doctor
+            </AppButton>
+          )}
+        </ProtectedWithLoginPopup>
       </div>
       <div className={classes.bannerImg}>
         <img src={require('images/ic_doctor.svg')} alt="" />

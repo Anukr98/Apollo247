@@ -6,7 +6,7 @@ import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import { SignIn } from 'components/SignIn';
 import { Navigation } from 'components/Navigatiion';
-import { useIsLoggedIn, useAuth, useLoginPopupState } from 'hooks/authHooks';
+import { useAuth, useLoginPopupState } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -64,7 +64,6 @@ export interface SignInProps {}
 export const Header: React.FC = (props) => {
   const classes = useStyles();
   const avatarRef = useRef(null);
-  const isLoggedIn = useIsLoggedIn();
   const { authenticating } = useAuth();
   const { loginPopupVisible, setLoginPopupVisible } = useLoginPopupState();
 
@@ -84,26 +83,24 @@ export const Header: React.FC = (props) => {
         >
           {authenticating ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
         </div>
-        {isLoggedIn ? null : (
-          <Popover
-            open={loginPopupVisible}
-            anchorEl={avatarRef.current}
-            onClose={() => setLoginPopupVisible(false)}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            classes={{ paper: classes.topPopover }}
-          >
-            <Paper className={classes.loginForm}>
-              <SignIn />
-            </Paper>
-          </Popover>
-        )}
+        <Popover
+          open={loginPopupVisible}
+          anchorEl={avatarRef.current}
+          onClose={() => setLoginPopupVisible(false)}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          classes={{ paper: classes.topPopover }}
+        >
+          <Paper className={classes.loginForm}>
+            <SignIn />
+          </Paper>
+        </Popover>
       </div>
     </header>
   );
