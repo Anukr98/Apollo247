@@ -5,6 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import { AppButton } from 'components/ui/AppButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import { AppSelectField } from 'components/ui/AppSelectField';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -106,9 +107,18 @@ export const HeroBanner: React.FC = (props) => {
           </AppSelectField>
         </Typography>
         <p>Not feeling well today? Don’t worry. We will help you find the right doctor :)</p>
-        <AppButton variant="contained" color="primary" classes={{ root: classes.button }}>
-          Consult a doctor
-        </AppButton>
+        <ProtectedWithLoginPopup>
+          {({ protectWithLoginPopup }) => (
+            <AppButton
+              variant="contained"
+              color="primary"
+              classes={{ root: classes.button }}
+              onClick={() => protectWithLoginPopup()}
+            >
+              Consult a doctor
+            </AppButton>
+          )}
+        </ProtectedWithLoginPopup>
       </div>
       <div className={classes.bannerImg}>
         <img src={require('images/ic_doctor.svg')} alt="" />

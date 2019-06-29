@@ -1,12 +1,12 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import { SignIn } from 'components/SignIn';
-import { useAuthenticating } from 'hooks/authHooks';
 import { Navigation } from 'components/Navigatiion';
+import { useAuth, useLoginPopupState, useIsAuthenticating } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -63,9 +63,9 @@ export interface SignInProps {}
 
 export const Header: React.FC = (props) => {
   const classes = useStyles();
-  const [popoverIsOpen, setPopoverIsOpen] = useState(false);
   const avatarRef = useRef(null);
-  const authenticating = useAuthenticating();
+  const isAuthenticating = useIsAuthenticating();
+  const { loginPopupVisible, setLoginPopupVisible } = useLoginPopupState();
 
   return (
     <header className={classes.header}>
@@ -76,13 +76,17 @@ export const Header: React.FC = (props) => {
       </div>
       <Navigation />
       <div className={classes.userAccount}>
-        <div ref={avatarRef} className={`${classes.userCircle} ${classes.userActive}`}>
-          {authenticating ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
+        <div
+          className={`${classes.userCircle} ${classes.userActive}`}
+          onClick={() => setLoginPopupVisible(true)}
+          ref={avatarRef}
+        >
+          {isAuthenticating ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
         </div>
         <Popover
-          open={popoverIsOpen}
+          open={loginPopupVisible}
           anchorEl={avatarRef.current}
-          onClose={() => setPopoverIsOpen(false)}
+          onClose={() => setLoginPopupVisible(false)}
           anchorOrigin={{
             vertical: 'top',
             horizontal: 'right',
