@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import { useCurrentUser, useLoginPopupState } from 'hooks/authHooks';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -53,81 +53,80 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+type ServiceItem = {
+  title: string;
+  content: string;
+  action: {
+    link: string;
+    content: string;
+  };
+};
+
+interface ServiceItemProps {
+  item: ServiceItem;
+}
+
+const ServiceItem: React.FC<ServiceItemProps> = (props) => {
+  const classes = useStyles();
+  const { title, content, action } = props.item;
+  return (
+    <ProtectedWithLoginPopup>
+      {({ protectWithLoginPopup, isProtected }) => (
+        <Grid item xs={3}>
+          <Paper className={classes.serviceItem}>
+            <div className={classes.serviceImg}>
+              <img src={require('images/ic_placeholder.png')} />
+            </div>
+            <Typography variant="h5">{title}</Typography>
+            <p>{content}</p>
+            <Link
+              className={classes.action}
+              to={action.link}
+              onClick={(e) => {
+                protectWithLoginPopup();
+                if (isProtected) e.preventDefault();
+              }}
+            >
+              {action.content}
+            </Link>
+          </Paper>
+        </Grid>
+      )}
+    </ProtectedWithLoginPopup>
+  );
+};
+
 export const ServiceList: React.FC = (props) => {
   const classes = useStyles();
-  const isUserLoggedIn = useCurrentUser() ? true : false;
-  const { setLoginPopupVisible } = useLoginPopupState();
+  const serviceItems: ServiceItem[] = [
+    {
+      title: 'You know which doctor you are looking for?',
+      content: `Let's get you connected with them.`,
+      action: { link: '', content: 'Find specialist' },
+    },
+    {
+      title: `Just want to buy medicines? It’s easy!`,
+      content: 'You can search by name or prescription.',
+      action: { link: '', content: 'Search Medicine' },
+    },
+    {
+      title: 'Do you want to get some tests done?',
+      content: 'Get your tests/diagnostics booked here.',
+      action: { link: '', content: 'Book a test' },
+    },
+    {
+      title: 'Want to know how we have the best?',
+      content: 'Learn about our Start Doctors Program.',
+      action: { link: '', content: 'Who are star doctors' },
+    },
+  ];
+
   return (
     <div className={classes.serviceList}>
       <Grid container spacing={2}>
-        <Grid item xs={3}>
-          <Paper className={classes.serviceItem}>
-            <div className={classes.serviceImg}>
-              <img src={require('images/ic_placeholder.png')} />
-            </div>
-            <Typography variant="h5">You know which doctor you are looking for?</Typography>
-            <p>Let’s get you connected with them.</p>
-            <Link
-              className={classes.action}
-              to="/"
-              onClick={() => {
-                if (!isUserLoggedIn) setLoginPopupVisible(true);
-              }}
-            >
-              Find specialist
-            </Link>
-          </Paper>
-        </Grid>
-        <Grid item xs={3}>
-          <Paper className={classes.serviceItem}>
-            <div className={classes.serviceImg}>
-              <img src={require('images/ic_placeholder.png')} />
-            </div>
-            <Typography variant="h5">Just want to buy medicines? It’s easy!</Typography>
-            <p>You can search by name or prescription.</p>
-            <Link
-              className={classes.action}
-              to="/"
-              onClick={() => {
-                if (!isUserLoggedIn) setLoginPopupVisible(true);
-              }}
-            >
-              Search Medicine
-            </Link>
-          </Paper>
-        </Grid>
-        <Grid item xs={3}>
-          <Paper className={classes.serviceItem}>
-            <div className={classes.serviceImg}>
-              <img src={require('images/ic_placeholder.png')} />
-            </div>
-            <Typography variant="h5">Do you want to get some tests done?</Typography>
-            <p>Get your tests/diagnostics booked here.</p>
-            <Link
-              className={classes.action}
-              to="/"
-              onClick={(e) => setLoginPopupVisible(!isUserLoggedIn)}
-            >
-              Book a test
-            </Link>
-          </Paper>
-        </Grid>
-        <Grid item xs={3}>
-          <Paper className={classes.serviceItem}>
-            <div className={classes.serviceImg}>
-              <img src={require('images/ic_placeholder.png')} />
-            </div>
-            <Typography variant="h5">Want to know how we have the best?</Typography>
-            <p>Learn about our Star Doctors Program.</p>
-            <Link
-              className={classes.action}
-              to="/"
-              onClick={(e) => setLoginPopupVisible(!isUserLoggedIn)}
-            >
-              Who are star doctors
-            </Link>
-          </Paper>
-        </Grid>
+        {serviceItems.map((item, i) => (
+          <ServiceItem item={item} key={i} />
+        ))}
       </Grid>
     </div>
   );
