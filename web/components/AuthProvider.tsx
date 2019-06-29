@@ -14,7 +14,7 @@ import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 
 export interface AuthProviderProps {
   currentUser: any | null;
-  authenticating: boolean;
+  isAuthenticating: boolean;
   buildCaptchaVerifier:
     | ((recaptchaContainerId: HTMLElement['id']) => firebase.auth.RecaptchaVerifier_Instance) // eslint-disable-line camelcase
     | null;
@@ -35,7 +35,7 @@ export interface AuthProviderProps {
 
 export const AuthContext = React.createContext<AuthProviderProps>({
   currentUser: null,
-  authenticating: true,
+  isAuthenticating: true,
   buildCaptchaVerifier: null,
   verifyPhoneNumber: null,
   verifyOtp: null,
@@ -74,7 +74,9 @@ export const AuthProvider: React.FC = (props) => {
   apolloClient = buildApolloClient(authToken);
 
   const [currentUser, setCurrentUser] = useState<AuthProviderProps['currentUser']>(null);
-  const [authenticating, setAuthenticating] = useState<AuthProviderProps['authenticating']>(true);
+  const [isAuthenticating, setIsAuthenticating] = useState<AuthProviderProps['isAuthenticating']>(
+    true
+  );
   const [buildCaptchaVerifier, setBuildCaptchaVerifier] = useState<
     AuthProviderProps['buildCaptchaVerifier']
   >(null);
@@ -125,7 +127,7 @@ export const AuthProvider: React.FC = (props) => {
     setVerifyOtp(verifyOtpFunc);
 
     const signInFunc = () => (otpVerificationToken: firebase.auth.AuthCredential) => {
-      setAuthenticating(true);
+      setIsAuthenticating(true);
       return firebase
         .auth()
         .signInWithCredential(otpVerificationToken)
@@ -143,13 +145,13 @@ export const AuthProvider: React.FC = (props) => {
       // (but not until all the async requests here are finished )
       if (!userIsValid(updatedUser)) {
         setCurrentUser(null);
-        setAuthenticating(false);
+        setIsAuthenticating(false);
         return;
       }
 
       const updatedToken = await updatedUser!.getIdToken();
       setAuthToken(updatedToken);
-      setAuthenticating(false);
+      setIsAuthenticating(false);
 
       const patientSignInResult = await apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
         mutation: PATIENT_SIGN_IN,
@@ -159,10 +161,10 @@ export const AuthProvider: React.FC = (props) => {
       if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
         const patient = patientSignInResult.data.patientSignIn.patients[0];
         setCurrentUser(patient);
-        setAuthenticating(false);
+        setIsAuthenticating(false);
       } else {
         setCurrentUser(null);
-        setAuthenticating(false);
+        setIsAuthenticating(false);
       }
     });
   }, []);
@@ -173,7 +175,7 @@ export const AuthProvider: React.FC = (props) => {
         <AuthContext.Provider
           value={{
             currentUser,
-            authenticating,
+            isAuthenticating,
             buildCaptchaVerifier,
             verifyPhoneNumber,
             verifyOtp,

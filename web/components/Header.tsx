@@ -6,7 +6,7 @@ import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import { SignIn } from 'components/SignIn';
 import { Navigation } from 'components/Navigatiion';
-import { useAuth, useLoginPopupState } from 'hooks/authHooks';
+import { useAuth, useLoginPopupState, useIsAuthenticating } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -64,7 +64,7 @@ export interface SignInProps {}
 export const Header: React.FC = (props) => {
   const classes = useStyles();
   const avatarRef = useRef(null);
-  const { authenticating } = useAuth();
+  const isAuthenticating = useIsAuthenticating();
   const { loginPopupVisible, setLoginPopupVisible } = useLoginPopupState();
 
   return (
@@ -81,7 +81,7 @@ export const Header: React.FC = (props) => {
           onClick={() => setLoginPopupVisible(true)}
           ref={avatarRef}
         >
-          {authenticating ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
+          {isAuthenticating ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
         </div>
         <Popover
           open={loginPopupVisible}

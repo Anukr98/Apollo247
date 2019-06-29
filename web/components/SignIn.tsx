@@ -73,7 +73,13 @@ export const SignIn: React.FC<SignInProps> = (props) => {
   const [captchaLoaded, setCaptchaLoaded] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
 
-  const { buildCaptchaVerifier, verifyPhoneNumber, verifyOtp, signIn, authenticating } = useAuth();
+  const {
+    buildCaptchaVerifier,
+    verifyPhoneNumber,
+    verifyOtp,
+    signIn,
+    isAuthenticating,
+  } = useAuth();
 
   useEffect(() => {
     const captchaVerifier = buildCaptchaVerifier(recaptchaContainerId);
@@ -105,7 +111,7 @@ export const SignIn: React.FC<SignInProps> = (props) => {
             })
           }
         >
-          {authenticating ? <CircularProgress /> : 'OK'}
+          {isAuthenticating ? <CircularProgress /> : 'OK'}
         </Fab>
       </div>
     </div>
