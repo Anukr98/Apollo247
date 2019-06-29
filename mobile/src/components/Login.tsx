@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { Platform, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import { NavigationScreenProps } from 'react-navigation';
+import { useAuth } from '../hooks/authHooks';
 
 const styles = StyleSheet.create({
   container: {
@@ -68,38 +69,10 @@ const isPhoneNumberValid = (number: string) => {
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const phoneNumberIsValid = isPhoneNumberValid(phoneNumber);
+  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
+  const { verifyPhoneNumber } = useAuth();
 
-  useEffect(() => {
-    firebase.analytics().setCurrentScreen('Login');
-  });
-
-  const onClickOk = () => {
-    console.log('onClickOk');
-
-    firebase
-      .auth()
-      .verifyPhoneNumber('+91' + phoneNumber)
-      .on(
-        'state_changed',
-        (phoneAuthSnapshot) => {
-          switch (phoneAuthSnapshot.state) {
-            case firebase.auth.PhoneAuthState.CODE_SENT:
-              console.log('code sent', phoneAuthSnapshot);
-              props.navigation.navigate(AppRoutes.OTPVerification, {
-                confirmResult: phoneAuthSnapshot.verificationId,
-              });
-              break;
-            case firebase.auth.PhoneAuthState.ERROR:
-              console.log('verification error');
-              console.log(phoneAuthSnapshot.error);
-              break;
-          }
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
-  };
+  useEffect(() => firebase.analytics().setCurrentScreen('Login'), []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -115,7 +88,15 @@ export const Login: React.FC<LoginProps> = (props) => {
             <ArrowDisabled />
           )
         }
-        onClickButton={onClickOk}
+        onClickButton={() => {
+          setVerifyingPhonenNumber(true);
+          verifyPhoneNumber(phoneNumber).then((phoneNumberVerificationCredential) => {
+            setVerifyingPhonenNumber(false);
+            props.navigation.navigate(AppRoutes.OTPVerification, {
+              phoneNumberVerificationCredential,
+            });
+          });
+        }}
         disableButton={phoneNumberIsValid ? false : true}
       >
         <View

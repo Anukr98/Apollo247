@@ -1,11 +1,11 @@
 import React from 'react';
 import { NavigatorContainer } from 'app/src/components/NavigatorContainer';
-import { ApiProvider } from 'app/src/components/ApiProvider';
+import { AuthProvider } from './AuthProvider';
 
 export const AppContainer: React.FC = () => {
   return (
-    <ApiProvider>
+    <AuthProvider>
       <NavigatorContainer />
-    </ApiProvider>
+    </AuthProvider>
   );
 };

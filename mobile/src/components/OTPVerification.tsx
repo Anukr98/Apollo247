@@ -1,16 +1,16 @@
 import { AppRoutes } from 'app/src/components/NavigatorContainer';
 import { Card } from 'app/src/components/ui/Card';
 import { BackArrow, OkText, OkTextDisabled } from 'app/src/components/ui/Icons';
-import { PATIENT_SIGN_IN } from 'app/src/graphql/profiles';
 import { string } from 'app/src/strings/string';
 import { theme } from 'app/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { useMutation } from 'react-apollo-hooks';
 import { Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import SmsListener from 'react-native-android-sms-listener';
-import firebase from 'react-native-firebase';
 import OTPTextView from 'react-native-otp-textinput';
 import { NavigationScreenProps } from 'react-navigation';
+import { useAuth } from '../hooks/authHooks';
+import { PhoneNumberVerificationCredential } from './AuthProvider';
+
 const styles = StyleSheet.create({
   container: {
     ...theme.viewStyles.container,
@@ -43,8 +43,11 @@ const styles = StyleSheet.create({
   },
 });
 
-let timer = 900;
-export interface OTPVerificationProps extends NavigationScreenProps {}
+let timer = 5;
+export interface OTPVerificationProps
+  extends NavigationScreenProps<{
+    phoneNumberVerificationCredential: PhoneNumberVerificationCredential;
+  }> {}
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<any>();
   const [isValidOTP, setIsValidOTP] = useState<boolean>(true);
@@ -53,34 +56,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const [intervalId, setIntervalId] = useState<any>();
   const [otp, setOtp] = useState<string>('');
-  const [IdToken, setIdToken] = useState<string>('');
+  const { isAuthenticating, currentUser, signIn, verifyOtp } = useAuth();
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
 
-  const patientSignIn = useMutation(PATIENT_SIGN_IN, {
-    variables: {
-      jwt: IdToken,
-    },
-  });
-
-  const onClickOk = async () => {
-    const verificationId = props.navigation.state.params.confirmResult;
-    console.log('verificationId', verificationId);
-
-    const credential = await firebase.auth.PhoneAuthProvider.credential(verificationId, otp);
-    firebase.auth().signInWithCredential(credential);
-    firebase.auth().onAuthStateChanged(async (updatedUser) => {
-      if (updatedUser) {
-        const result = await updatedUser!.getIdTokenResult();
-        console.log('await IdToken', IdToken);
-
-        if (result) {
-          setIdToken(result.token);
-
-          const { data, error, loading } = patientSignIn();
-          console.log('data', data);
-          console.log('error', error);
-          console.log('loading', loading);
-        }
-      }
+  const onClickOk = () => {
+    const { phoneNumberVerificationCredential } = props.navigation.state.params!;
+    setVerifyingOtp(true);
+    verifyOtp(phoneNumberVerificationCredential, otp).then((otpVerificationCredential) => {
+      setVerifyingOtp(false);
+      signIn(otpVerificationCredential).then;
     });
 
     //need to remove
@@ -139,7 +123,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   }, [timer, intervalId]);
 
-  const verifyOtp = (otp: any) => {
+  const isOtpValid = (otp: any) => {
     setOtp(otp);
     console.log(otp, 'ooottppppp');
     if (otp.length === 6) {
@@ -199,7 +183,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           <View style={styles.inputView}>
             <OTPTextView
               ref={textInputRef}
-              handleTextChange={verifyOtp}
+              handleTextChange={isOtpValid}
               inputCount={6}
               keyboardType="numeric"
               defaultValue={otp}
