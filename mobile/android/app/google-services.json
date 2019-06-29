@@ -1,46 +1,46 @@
 {
   "project_info": {
-    "project_number": "477516860783",
-    "firebase_url": "https://apollopatient-95c45.firebaseio.com",
-    "project_id": "apollopatient-95c45",
-    "storage_bucket": "apollopatient-95c45.appspot.com"
+    "project_number": "537093214409",
+    "firebase_url": "https://apollo-patient-interface.firebaseio.com",
+    "project_id": "apollo-patient-interface",
+    "storage_bucket": "apollo-patient-interface.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:477516860783:android:674e91e5f97a31d8",
+        "mobilesdk_app_id": "1:537093214409:android:a44353c700b2ba47",
         "android_client_info": {
-          "package_name": "com.apollo.patient"
+          "package_name": "com.apollo.patientapp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "477516860783-ojclbispkqq8mflck3gpfbojjuokb9dh.apps.googleusercontent.com",
+          "client_id": "537093214409-h54k2danl1u3dodqlvsijhnt5tr2u8r1.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.apollo.patient",
+            "package_name": "com.apollo.patientapp",
             "certificate_hash": "0e450044f692828d7ffae5a310c854153ca44871"
           }
         },
         {
-          "client_id": "477516860783-e81r08hkb4e3t8o9tfjsjcj3rh3tj9fv.apps.googleusercontent.com",
+          "client_id": "537093214409-du8q6a6na0nohlka9f52c5j4rti3l2tn.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDCHR7_6I2uOh1kWTwq2nxL1FSG9UILDmg"
+          "current_key": "AIzaSyDlBQzwaulsc2nfqC1zinNckLSHrWc3lcw"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "477516860783-e81r08hkb4e3t8o9tfjsjcj3rh3tj9fv.apps.googleusercontent.com",
+              "client_id": "537093214409-du8q6a6na0nohlka9f52c5j4rti3l2tn.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "477516860783-l6r0u7nt37t6h5uk4srpprsh36uv8ahu.apps.googleusercontent.com",
+              "client_id": "537093214409-l1ffk0sjcbcf3jur708tvchlkd66gbp6.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "com.apollo.patient"

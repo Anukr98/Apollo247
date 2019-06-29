@@ -15,6 +15,7 @@ export interface GetPatients_getPatients_patients {
   firstName: string | null;
   lastName: string | null;
   sex: Sex | null;
+  uhid: string | null;
 }
 
 export interface GetPatients_getPatients {

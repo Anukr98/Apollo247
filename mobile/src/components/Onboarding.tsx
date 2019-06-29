@@ -1,7 +1,10 @@
 import { AppRoutes } from 'app/src/components/NavigatorContainer';
 import { ArrowFull, ArrowStep1, ArrowStep2, ArrowStep3 } from 'app/src/components/ui/Icons';
+import { GET_PATIENTS } from 'app/src/graphql/profiles';
+import { GetPatients } from 'app/src/graphql/types/GetPatients';
 import { theme } from 'app/src/theme/theme';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useQuery } from 'react-apollo-hooks';
 import {
   Dimensions,
   Image,
@@ -16,12 +19,9 @@ import {
   View,
 } from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
+import firebase from 'react-native-firebase';
 import { NavigationScreenProps } from 'react-navigation';
 const { height } = Dimensions.get('window');
-
-import { useQuery } from 'react-apollo-hooks';
-import { GetPatients } from 'app/src/graphql/types/GetPatients';
-import { GET_PATIENTS } from 'app/src/graphql/profiles';
 
 const styles = StyleSheet.create({
   container: {
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     borderRadius: 10,
     shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.5,
     shadowRadius: 10,
     elevation: 2,
@@ -136,6 +136,10 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
   console.log('data', data);
   console.log('error', error);
   console.log('loading', loading);
+
+  useEffect(() => {
+    firebase.analytics().setCurrentScreen('Onboarding');
+  });
 
   return (
     <SafeAreaView style={styles.container}>

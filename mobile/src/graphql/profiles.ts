@@ -9,6 +9,7 @@ export const GET_PATIENTS = gql`
         firstName
         lastName
         sex
+        uhid
       }
     }
   }
@@ -19,10 +20,14 @@ export const PATIENT_SIGN_IN = gql`
     patientSignIn(jwt: $jwt) {
       patients {
         id
-        mobileNumber
         firstName
         lastName
+        uhid
         sex
+        mobileNumber
+      }
+      errors {
+        messages
       }
     }
   }

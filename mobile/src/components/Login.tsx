@@ -70,43 +70,35 @@ export const Login: React.FC<LoginProps> = (props) => {
   const phoneNumberIsValid = isPhoneNumberValid(phoneNumber);
 
   useEffect(() => {
-    // firebase.analytics().setCurrentScreen('Login');
+    firebase.analytics().setCurrentScreen('Login');
   });
 
   const onClickOk = () => {
     console.log('onClickOk');
-    // props.navigation.navigate(AppRoutes.OTPVerification);
+
     firebase
       .auth()
-      // .signInWithPhoneNumber('+91' + phoneNumber)
-      .signInWithPhoneNumber('+918328610737')
-      .then((confirmResult) => {
-        props.navigation.navigate(AppRoutes.OTPVerification, { confirmResult: confirmResult });
-      }) // save confirm result to use with the manual verification code)
-      .catch((error) => {
-        console.log(error);
-      });
-    // firebase
-    //   .auth()
-    //   .verifyPhoneNumber('+91' + phoneNumber)
-    //   .on(
-    //     'state_changed',
-    //     (phoneAuthSnapshot) => {
-    //       switch (phoneAuthSnapshot.state) {
-    //         case firebase.auth.PhoneAuthState.CODE_SENT:
-    //           console.log('code sent', phoneAuthSnapshot);
-    //           props.navigation.navigate(AppRoutes.OTPVerification);
-    //           break;
-    //         case firebase.auth.PhoneAuthState.ERROR:
-    //           console.log('verification error');
-    //           console.log(phoneAuthSnapshot.error);
-    //           break;
-    //       }
-    //     },
-    //     (error) => {
-    //       console.log(error);
-    //     }
-    //   );
+      .verifyPhoneNumber('+91' + phoneNumber)
+      .on(
+        'state_changed',
+        (phoneAuthSnapshot) => {
+          switch (phoneAuthSnapshot.state) {
+            case firebase.auth.PhoneAuthState.CODE_SENT:
+              console.log('code sent', phoneAuthSnapshot);
+              props.navigation.navigate(AppRoutes.OTPVerification, {
+                confirmResult: phoneAuthSnapshot.verificationId,
+              });
+              break;
+            case firebase.auth.PhoneAuthState.ERROR:
+              console.log('verification error');
+              console.log(phoneAuthSnapshot.error);
+              break;
+          }
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
   };
 
   return (

@@ -8,7 +8,10 @@ import { Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from
 import SmsListener from 'react-native-android-sms-listener';
 import OTPTextView from 'react-native-otp-textinput';
 import { NavigationScreenProps } from 'react-navigation';
-import console = require('console');
+import firebase from 'react-native-firebase';
+import { PATIENT_SIGN_IN } from 'app/src/graphql/profiles';
+import { useMutation } from 'react-apollo-hooks';
+
 const styles = StyleSheet.create({
   container: {
     ...theme.viewStyles.container,
@@ -44,7 +47,6 @@ const styles = StyleSheet.create({
 
 let timer = 5;
 export interface OTPVerificationProps extends NavigationScreenProps {}
-
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<any>();
   const [isValidOTP, setIsValidOTP] = useState<boolean>(true);
@@ -53,56 +55,44 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const [intervalId, setIntervalId] = useState<any>();
   const [otp, setOtp] = useState<string>('');
+  const [IdToken, setIdToken] = useState<string>('');
 
-  const onClickOk = () => {
-    // console.log('_onFulfill', isValid, code, this.state.phoneNumber)
+  const patientSignIn = useMutation(PATIENT_SIGN_IN, {
+    variables: {
+      jwt: IdToken,
+    },
+  });
 
-    // console.log('props', props.navigation.state.params.confirmResult);
+  const onClickOk = async () => {
+    const verificationId = props.navigation.state.params.confirmResult;
+    console.log('verificationId', verificationId);
 
-    // props.navigation.state.params.confirmResult
-    //   .confirm(otp)
-    //   .then((user) => {
-    //     console.log('user', user);
-    //     props.navigation.navigate(AppRoutes.SignUp);
-    //   })
-    //   .catch((error) => {
-    //     console.log('error', error);
-    //     setInvalidOtpCount(invalidOtpCount + 1);
-    //     console.log(invalidOtpCount);
-    //   });
-    console.log(invalidOtpCount);
+    const credential = await firebase.auth.PhoneAuthProvider.credential(verificationId, otp);
+    firebase.auth().signInWithCredential(credential);
+    firebase.auth().onAuthStateChanged(async (updatedUser) => {
+      if (updatedUser) {
+        const result = await updatedUser!.getIdTokenResult();
+        console.log('await IdToken', IdToken);
 
-    //need to remove
-    if (invalidOtpCount + 1 === 3) {
-      setShowErrorMsg(true);
-      setIsValidOTP(false);
-      setOtp('');
-      textInputRef.current.inputs && textInputRef.current.inputs[5].blur();
-      const intervalId = setInterval(() => {
-        // console.log('descriptionTextStyle', remainingTime);
-        timer = timer - 1;
-        setRemainingTime(timer);
-        console.log('descriptionTextStyle', timer);
-      }, 1000);
-      setIntervalId(intervalId);
-    } else {
-      setShowErrorMsg(true);
-      setIsValidOTP(true);
-    }
-    setInvalidOtpCount(invalidOtpCount + 1);
-    console.log(invalidOtpCount);
-    setOtp('');
-    for (let i = 0; i < 6; i++) {
-      textInputRef.current.inputs && textInputRef.current.onTextChange('', i);
-    }
-    textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
+        if (result) {
+          setIdToken(result.token);
+
+          const { data, error, loading } = patientSignIn();
+          console.log('data', data);
+          console.log('error', error);
+          console.log('loading', loading);
+        }
+      }
+    });
   };
 
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
   const textInputRef = React.useRef<any>(null);
   useEffect(() => {
-    const subscriptionId = SmsListener.addListener((message: any) => {});
+    const subscriptionId = SmsListener.addListener((message) => {
+      console.log('message', message);
+    });
     setSubscriptionId(subscriptionId);
     textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
     console.log('useeffect', textInputRef);
