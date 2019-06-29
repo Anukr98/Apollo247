@@ -72,7 +72,7 @@ const stackConfig: StackNavigatorConfig = {
   transitionConfig: () => {
     return {
       transitionSpec: {
-        duration: 0,
+        // duration: 100,
       },
     };
   },

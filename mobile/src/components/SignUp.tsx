@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import { Keyboard, SafeAreaView, StyleSheet, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
+import Moment from 'moment';
 
 const styles = StyleSheet.create({
   container: {
@@ -100,8 +101,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
           />
           <DatePicker
             isDateTimePickerVisible={isDateTimePickerVisible}
-            handleDatePicked={() => {
-              setDate(date);
+            handleDatePicked={(date) => {
+              const formatDate = Moment(date).format('DD/MM/YYYY');
+              setDate(formatDate);
               setIsDateTimePickerVisible(false);
             }}
             hideDateTimePicker={() => {

@@ -65,6 +65,13 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     verifyOtp(phoneNumberVerificationCredential, otp).then((otpVerificationCredential) => {
       setVerifyingOtp(false);
       signIn(otpVerificationCredential).then;
+      console.log('currentUser', currentUser);
+
+      if (currentUser.uhid) {
+        props.navigation.navigate(AppRoutes.MultiSignup);
+      } else {
+        props.navigation.navigate(AppRoutes.SignUp);
+      }
     });
 
     //need to remove
@@ -138,7 +145,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       <View style={{ height: 56, justifyContent: 'center', paddingLeft: 20 }}>
         <TouchableOpacity
           style={{ height: 25, width: 25, justifyContent: 'center' }}
-          onPress={() => props.navigation.navigate(AppRoutes.Login)}
+          onPress={() => props.navigation.goBack()}
         >
           <BackArrow />
         </TouchableOpacity>
@@ -150,7 +157,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           heading={string.LocalStrings.oops}
           description={string.LocalStrings.incorrect_otp_message}
           disableButton={isValidOTP ? false : true}
-          descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 0 : 30 }}
+          descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 0 : 1 }}
         >
           <View style={styles.inputView}>
             <OTPTextView
@@ -178,7 +185,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           buttonIcon={isValidOTP && otp.length === 6 ? <OkText /> : <OkTextDisabled />}
           onClickButton={onClickOk}
           disableButton={isValidOTP && otp.length === 6 ? false : true}
-          descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 0 : 30 }}
+          descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 0 : 1 }}
         >
           <View style={styles.inputView}>
             <OTPTextView

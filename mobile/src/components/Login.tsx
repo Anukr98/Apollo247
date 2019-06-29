@@ -89,7 +89,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         }
         onClickButton={() => {
           setVerifyingPhonenNumber(true);
-          verifyPhoneNumber(phoneNumber).then((phoneNumberVerificationCredential) => {
+          verifyPhoneNumber('+91' + phoneNumber).then((phoneNumberVerificationCredential) => {
             setVerifyingPhonenNumber(false);
             props.navigation.navigate(AppRoutes.OTPVerification, {
               phoneNumberVerificationCredential,
