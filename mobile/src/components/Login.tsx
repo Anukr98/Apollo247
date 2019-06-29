@@ -5,7 +5,6 @@ import { string } from 'app/src/strings/string';
 import { theme } from 'app/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { Platform, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
-import firebase from 'react-native-firebase';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 
@@ -70,9 +69,9 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const phoneNumberIsValid = isPhoneNumberValid(phoneNumber);
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const { verifyPhoneNumber } = useAuth();
+  const { verifyPhoneNumber, analytics } = useAuth();
 
-  useEffect(() => firebase.analytics().setCurrentScreen('Login'), []);
+  useEffect(() => analytics().setCurrentScreen('Login'), []);
 
   return (
     <SafeAreaView style={styles.container}>

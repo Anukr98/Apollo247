@@ -20,6 +20,7 @@ export type PhoneNumberVerificationCredential = RNFirebase.PhoneAuthSnapshot['ve
 export type OtpVerificationCredential = AuthCredential;
 
 export interface AuthProviderProps {
+  analytics: RNFirebase.Analytics | null;
   currentUser: PatientSignIn_patientSignIn_patients | null;
   isAuthenticating: boolean;
   verifyPhoneNumber: ((mobileNumber: string) => Promise<PhoneNumberVerificationCredential>) | null;
@@ -42,6 +43,7 @@ export const AuthContext = React.createContext<AuthProviderProps>({
   verifyOtp: null,
   signIn: null,
   signOut: null,
+  analytics: null,
 });
 
 let apolloClient: ApolloClient<any>;
@@ -76,8 +78,11 @@ export const AuthProvider: React.FC = (props) => {
   const [verifyOtp, setVerifyOtp] = useState<AuthProviderProps['verifyOtp']>(null);
   const [signIn, setSignIn] = useState<AuthProviderProps['signIn']>(null);
   const [signOut, setSignOut] = useState<AuthProviderProps['signOut']>(null);
+  const [analytics, setAnalytics] = useState<AuthProviderProps['analytics']>(null);
 
   useEffect(() => {
+    setAnalytics(firebase.analytics);
+
     const auth = firebase.auth();
 
     const verifyPhoneNumberFunc = () => async (mobileNumber: string) => {
@@ -141,6 +146,7 @@ export const AuthProvider: React.FC = (props) => {
       <ApolloHooksProvider client={apolloClient}>
         <AuthContext.Provider
           value={{
+            analytics,
             currentUser,
             isAuthenticating,
             verifyPhoneNumber,
