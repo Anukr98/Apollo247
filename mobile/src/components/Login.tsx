@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, TextInput, SafeAreaView, Platform } from 'react-native';
-import { theme } from 'app/src/theme/theme';
-import { string } from 'app/src/strings/string';
-import { NavigationScreenProps } from 'react-navigation';
-import { Card } from 'app/src/components/ui/Card';
 import { AppRoutes } from 'app/src/components/NavigatorContainer';
+import { Card } from 'app/src/components/ui/Card';
+import { ArrowDisabled, ArrowYellow } from 'app/src/components/ui/Icons';
+import { string } from 'app/src/strings/string';
+import { theme } from 'app/src/theme/theme';
+import React, { useEffect, useState } from 'react';
+import { Platform, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
 import firebase from 'react-native-firebase';
-import { ArrowYellow, ArrowDisabled } from 'app/src/components/ui/Icons';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {

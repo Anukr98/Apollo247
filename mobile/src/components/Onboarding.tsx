@@ -1,10 +1,7 @@
 import { AppRoutes } from 'app/src/components/NavigatorContainer';
 import { ArrowFull, ArrowStep1, ArrowStep2, ArrowStep3 } from 'app/src/components/ui/Icons';
-import { GET_PATIENTS } from 'app/src/graphql/profiles';
-import { GetPatients } from 'app/src/graphql/types/GetPatients';
 import { theme } from 'app/src/theme/theme';
 import React, { useEffect } from 'react';
-import { useQuery } from 'react-apollo-hooks';
 import {
   Dimensions,
   Image,
@@ -39,10 +36,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     borderRadius: 10,
     shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.5,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
     shadowRadius: 10,
-    elevation: 2,
+    elevation: 8,
   },
   descptionText: {
     marginTop: 10,
@@ -131,11 +128,6 @@ const slides: Slide[] = [
 export interface OnboardingProps extends NavigationScreenProps {}
 export const Onboarding: React.FC<OnboardingProps> = (props) => {
   const appIntroSliderRef = React.useRef<any>(null);
-
-  const { data, error, loading } = useQuery<GetPatients>(GET_PATIENTS);
-  console.log('data', data);
-  console.log('error', error);
-  console.log('loading', loading);
 
   useEffect(() => {
     firebase.analytics().setCurrentScreen('Onboarding');

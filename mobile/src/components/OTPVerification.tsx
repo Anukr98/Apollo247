@@ -1,17 +1,16 @@
 import { AppRoutes } from 'app/src/components/NavigatorContainer';
 import { Card } from 'app/src/components/ui/Card';
 import { BackArrow, OkText, OkTextDisabled } from 'app/src/components/ui/Icons';
+import { PATIENT_SIGN_IN } from 'app/src/graphql/profiles';
 import { string } from 'app/src/strings/string';
 import { theme } from 'app/src/theme/theme';
 import React, { useEffect, useState } from 'react';
+import { useMutation } from 'react-apollo-hooks';
 import { Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import SmsListener from 'react-native-android-sms-listener';
+import firebase from 'react-native-firebase';
 import OTPTextView from 'react-native-otp-textinput';
 import { NavigationScreenProps } from 'react-navigation';
-import firebase from 'react-native-firebase';
-import { PATIENT_SIGN_IN } from 'app/src/graphql/profiles';
-import { useMutation } from 'react-apollo-hooks';
-
 const styles = StyleSheet.create({
   container: {
     ...theme.viewStyles.container,
@@ -19,7 +18,6 @@ const styles = StyleSheet.create({
   inputView: {
     flexDirection: 'row',
     justifyContent: 'center',
-    // width: '100%',
     height: 56,
     marginBottom: 8,
     paddingTop: 2,
@@ -45,7 +43,7 @@ const styles = StyleSheet.create({
   },
 });
 
-let timer = 5;
+let timer = 900;
 export interface OTPVerificationProps extends NavigationScreenProps {}
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<any>();
@@ -84,6 +82,31 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         }
       }
     });
+
+    //need to remove
+    // if (invalidOtpCount + 1 === 3) {
+    //   setShowErrorMsg(true);
+    //   setIsValidOTP(false);
+    //   setOtp('');
+    //   textInputRef.current.inputs && textInputRef.current.inputs[5].blur();
+    //   const intervalId = setInterval(() => {
+    //     // console.log('descriptionTextStyle', remainingTime);
+    //     timer = timer - 1;
+    //     setRemainingTime(timer);
+    //     console.log('descriptionTextStyle', timer);
+    //   }, 1000);
+    //   setIntervalId(intervalId);
+    // } else {
+    //   setShowErrorMsg(true);
+    //   setIsValidOTP(true);
+    // }
+    // setInvalidOtpCount(invalidOtpCount + 1);
+    // console.log(invalidOtpCount);
+    // setOtp('');
+    // for (let i = 0; i < 6; i++) {
+    //   textInputRef.current.inputs && textInputRef.current.onTextChange('', i);
+    // }
+    // textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
   };
 
   const minutes = Math.floor(remainingTime / 60);
@@ -142,8 +165,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           cardContainer={{ marginTop: 0, height: 270 }}
           heading={string.LocalStrings.oops}
           description={string.LocalStrings.incorrect_otp_message}
-          // buttonIcon={isValidOTP ? <OkText /> : <OkTextDisabled />}
-          // onClickButton={onClickOk}
           disableButton={isValidOTP ? false : true}
           descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 0 : 30 }}
         >

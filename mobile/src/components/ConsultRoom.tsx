@@ -4,10 +4,18 @@ import { Button } from 'app/src/components/ui/Button';
 import { DoctorImage, DoctorPlaceholder, DropdownGreen, Mascot } from 'app/src/components/ui/Icons';
 import { theme } from 'app/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import {
+  Dimensions,
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+} from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   viewName: {
@@ -17,14 +25,12 @@ const styles = StyleSheet.create({
     height: 294,
   },
   gotItStyles: {
-    marginTop: 16,
+    height: 60,
     paddingRight: 25,
-    width: 120,
-    flex: 1,
     backgroundColor: 'transparent',
-    justifyContent: 'flex-end',
   },
   gotItTextStyles: {
+    paddingTop: 16,
     ...theme.fonts.IBMPlexSansBold(13),
     lineHeight: 24,
     color: '#fc9916',
@@ -40,7 +46,13 @@ const styles = StyleSheet.create({
   subViewPopup: {
     backgroundColor: 'white',
     width: '100%',
-    borderRadius: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 15,
   },
   congratulationsTextStyle: {
     marginHorizontal: 24,
@@ -88,6 +100,8 @@ const styles = StyleSheet.create({
     height: 50,
     width: 120,
     marginTop: 5,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 15,
   },
   titleBtnStyles: {
     color: '#0087ba',
@@ -99,7 +113,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.5,
     shadowRadius: 10,
-    elevation: 1,
+    elevation: 8,
     backgroundColor: 'white',
   },
   doctorStyle: {
@@ -114,6 +128,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  textStyle: {
+    color: '#01475b',
+    ...theme.fonts.IBMPlexSansMedium(18),
+    paddingVertical: 8,
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  textViewStyle: {
+    borderBottomWidth: 1,
+    borderColor: '#dddddd',
+    marginHorizontal: 16,
   },
 });
 
@@ -173,12 +199,72 @@ export interface ConsultRoomProps extends NavigationScreenProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
   const [showPopUp, setshowPopUp] = useState<boolean>(true);
+  const [showMenu, setShowMenu] = useState<boolean>(false);
 
   useEffect(() => {});
+  const Popup = () => (
+    <TouchableOpacity
+      style={{
+        paddingVertical: 9,
+        position: 'absolute',
+        width: width,
+        height: height,
+        flex: 1,
+        alignItems: 'flex-end',
+        zIndex: 3,
+        backgroundColor: 'transparent',
+      }}
+      onPress={() => setShowMenu(false)}
+    >
+      <View
+        style={{
+          width: 160,
+          borderRadius: 10,
+          backgroundColor: 'white',
+          marginRight: 56,
+          shadowColor: '#808080',
+          shadowOffset: { width: 0, height: 5 },
+          shadowOpacity: 0.8,
+          shadowRadius: 10,
+          elevation: 5,
+          paddingTop: 8,
+          paddingBottom: 16,
+          marginTop: 124,
+        }}
+      >
+        {['Surj'].map((name) => (
+          <View style={styles.textViewStyle}>
+            <Text
+              style={styles.textStyle}
+              onPress={() => {
+                setShowMenu(false);
+              }}
+            >
+              {name}
+            </Text>
+          </View>
+        ))}
+
+        <Text
+          style={{
+            paddingTop: 20,
+            paddingBottom: 4,
+            paddingRight: 16,
+            textAlign: 'right',
+            ...theme.fonts.IBMPlexSansBold(13),
+            color: theme.colors.APP_YELLOW,
+          }}
+        >
+          ADD MEMBER
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
+        {showMenu && Popup()}
         <ScrollView style={{ flex: 1 }}>
           <Image
             source={require('app/src/images/doctor/doctor.png')}
@@ -203,7 +289,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={{ alignItems: 'flex-end', marginTop: 20 }}>
                 <ApolloLogo style={{ right: 20 }} />
               </View>
-              <View
+              <TouchableOpacity
+                onPress={() => setShowMenu(true)}
+                activeOpacity={1}
                 style={{
                   flexDirection: 'row',
                   marginTop: 18,
@@ -212,7 +300,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               >
                 <Text style={styles.nameTextStyle}>hi surj!</Text>
                 <DropdownGreen />
-              </View>
+              </TouchableOpacity>
               <View style={styles.seperatorStyle} />
               <Text style={styles.descriptionTextStyle}>Are you not feeling well today?</Text>
             </View>
@@ -229,12 +317,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       backgroundColor: '#f7f8f5',
                       flexDirection: 'row',
                       marginHorizontal: 20,
-                      marginBottom: 16,
+                      marginTop: i === 0 ? 0 : 8,
+                      marginBottom: arrayTest.length === i + 1 ? 16 : 8,
                       shadowColor: '#808080',
                       shadowOffset: { width: 0, height: 1 },
-                      shadowOpacity: 0.5,
+                      shadowOpacity: 0.4,
                       shadowRadius: 10,
-                      elevation: 21,
+                      elevation: 5,
                     }}
                     key={i}
                   >
@@ -274,10 +363,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <ScrollView
               style={{ backgroundColor: 'transparent' }}
               contentContainerStyle={{
-                marginLeft: 8,
-                marginRight: 8,
                 flexDirection: 'row',
-                paddingHorizontal: 3,
                 width: scrollViewWidth,
               }}
               horizontal={true}
@@ -291,17 +377,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     <View
                       style={{
                         marginTop: 20,
-                        marginLeft: 8,
-                        marginRight: 8,
+                        marginLeft: i === 0 ? 20 : 8,
+                        marginRight: arrayDoctor.length === i + 1 ? 20 : 8,
                         marginBottom: 16,
                         width: 244,
                         height: 207,
                         backgroundColor: 'white',
                         shadowColor: '#808080',
-                        shadowOffset: { width: 0, height: 1 },
+                        shadowOffset: { width: 0, height: 2 },
                         shadowOpacity: 0.5,
                         shadowRadius: 5,
-                        elevation: 21,
+                        elevation: 4,
                         borderRadius: 5,
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -438,20 +524,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               Account’.
             </Text>
             <View style={{ height: 60, alignItems: 'flex-end' }}>
-              <Button
-                title="OK, GOT IT"
+              <TouchableOpacity
                 style={styles.gotItStyles}
-                titleTextStyle={styles.gotItTextStyles}
                 onPress={() => {
                   setshowPopUp(false);
                 }}
-              />
+              >
+                <Text style={styles.gotItTextStyles}>OK, GOT IT</Text>
+              </TouchableOpacity>
             </View>
             <Mascot style={{ position: 'absolute', top: -32, right: 20 }} />
-            {/* <Image
-              {...AppImages.ic_mascot}
-              style={{ position: 'absolute', height: 80, width: 80, top: -40, right: 20 }}
-            /> */}
           </View>
         </View>
       )}
