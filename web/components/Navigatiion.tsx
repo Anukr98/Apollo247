@@ -9,6 +9,9 @@ const useStyles = makeStyles((theme: Theme) => {
     appNavigation: {
       marginLeft: 'auto',
       marginBottom: 10,
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
       '& a': {
         fontSize: 13,
         fontWeight: 'bold',
