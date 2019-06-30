@@ -1,12 +1,10 @@
 import { Theme } from '@material-ui/core';
-import Grid from '@material-ui/core/Grid';
 import Popover from '@material-ui/core/Popover';
-import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
-import { AppButton } from 'components/ui/AppButton';
-import { AppTextField } from 'components/ui/AppTextField';
-import { useLoginPopupState } from 'hooks/authHooks';
-import React, { useRef } from 'react';
+import { useLoginPopupState, useCurrentUser } from 'hooks/authHooks';
+import { NewProfile } from 'components/NewProfile';
+import { ExistingProfile } from 'components/ExistingProfile';
+import React, { useRef, useEffect } from 'react';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -100,24 +98,45 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const SignUp: React.FC = (props) => {
+export const ManageProfile: React.FC = (props) => {
   const classes = useStyles();
   const mascotRef = useRef(null);
-  const { loginPopupVisible, setLoginPopupVisible } = useLoginPopupState();
+  const userDetails = useCurrentUser();
+
+  const { setLoginPopupVisible } = useLoginPopupState();
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [uhidsAvailable, setUhidsAvailable] = React.useState<boolean>(false);
+
+  useEffect(() => {
+    if (userDetails) {
+      setIsPopoverOpen(true);
+      // loop through the object and find if any uhid is available.
+      const uhids = userDetails.find((profileInfo: any) => profileInfo.uhid !== '');
+      if (uhids) {
+        setUhidsAvailable(true);
+      }
+    } else {
+      setIsPopoverOpen(false);
+    }
+  }, [userDetails]);
 
   return (
     <div className={classes.signUpBar}>
       <div
         className={classes.mascotCircle}
         ref={mascotRef}
-        onClick={(e) => setLoginPopupVisible(true)}
+        onClick={(e) => {
+          userDetails ? setIsPopoverOpen(true) : setLoginPopupVisible(true);
+        }}
       >
         <img src={require('images/ic_mascot.png')} alt="" />
       </div>
       <Popover
-        open={loginPopupVisible}
+        open={isPopoverOpen}
         anchorEl={mascotRef.current}
-        onClose={() => setLoginPopupVisible(false)}
+        onClose={() => {
+          userDetails ? setIsPopoverOpen(false) : setLoginPopupVisible(false);
+        }}
         className={classes.bottomPopover}
         anchorOrigin={{
           vertical: 'bottom',
@@ -129,45 +148,7 @@ export const SignUp: React.FC = (props) => {
         }}
         classes={{ paper: classes.bottomPopover }}
       >
-        <div className={classes.signUpPop}>
-          <div className={classes.mascotIcon}>
-            <img src={require('images/ic_mascot.png')} alt="" />
-          </div>
-          <div className={classes.customScrollBar}>
-            <div className={classes.signinGroup}>
-              <Typography variant="h2">
-                welcome
-                <br /> to apollo 24/7
-              </Typography>
-              <p>Let us quickly get to know you so that we can get you the best help :)</p>
-              <div className={classes.formGroup}>
-                <AppTextField label="First Name" placeholder="Example, Jonathan" />
-                <AppTextField label="Last Name" placeholder="Example, Donut" />
-                <AppTextField label="Date Of Birth" placeholder="mm/dd/yyyy" />
-                <div className={classes.formControl}>
-                  <label>Gender</label>
-                  <Grid container spacing={2} className={classes.btnGroup}>
-                    <Grid item xs={4} sm={4}>
-                      <AppButton variant="contained">Male</AppButton>
-                    </Grid>
-                    <Grid item xs={4} sm={4}>
-                      <AppButton variant="contained">Female</AppButton>
-                    </Grid>
-                    <Grid item xs={4} sm={4}>
-                      <AppButton variant="contained">Other</AppButton>
-                    </Grid>
-                  </Grid>
-                </div>
-                <AppTextField label="Email Address (Optional)" placeholder="name@email.com" />
-              </div>
-            </div>
-          </div>
-          <div className={classes.actions}>
-            <AppButton fullWidth disabled variant="contained" color="primary">
-              Submit
-            </AppButton>
-          </div>
-        </div>
+        {uhidsAvailable ? <ExistingProfile userDetails={userDetails} /> : <NewProfile />}
       </Popover>
     </div>
   );

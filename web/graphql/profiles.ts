@@ -23,6 +23,7 @@ export const PATIENT_SIGN_IN = gql`
         firstName
         lastName
         sex
+        uhid
       }
     }
   }

@@ -1,6 +1,5 @@
 import { Theme } from '@material-ui/core';
 import MenuItem from '@material-ui/core/MenuItem';
-import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AppButton } from 'components/ui/AppButton';
@@ -133,61 +132,56 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const ExistingProfile: React.FC = (props) => {
+export interface ExistingProfileProps {
+  userDetails: [
+    {
+      firstName: string;
+      id: string;
+      lastName: string;
+      mobileNuber: string;
+      sex: string;
+      uhid: string;
+    }
+  ];
+}
+
+export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const classes = useStyles();
-  const mascotRef = React.useRef(null);
-  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-  const [userRelation, setUserRelation] = React.useState(5);
+  const [userRelation, setUserRelation] = React.useState('5');
+
+  const { userDetails } = props;
+
+  const assignRelation = (event: React.ChangeEvent<{ value: string }>) => {
+    setUserRelation(event.target.value as string);
+  };
 
   return (
     <div className={classes.signUpBar}>
-      <div className={classes.mascotCircle} ref={mascotRef} onClick={() => setIsPopoverOpen(true)}>
-        <img src={require('images/ic_mascot.png')} alt="" />
-      </div>
-      <Popover
-        open={isPopoverOpen}
-        anchorEl={mascotRef.current}
-        onClose={() => setIsPopoverOpen(false)}
-        className={classes.bottomPopover}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.signUpPop}>
-          <div className={classes.mascotIcon}>
-            <img src={require('images/ic_mascot.png')} alt="" />
-          </div>
-          <div className={classes.customScrollBar}>
-            <div className={classes.signinGroup}>
-              <Typography variant="h2">
-                welcome
-                <br /> to apollo 24/7
-              </Typography>
-              <p>
-                We have found 2 accounts registered with this mobile number. Please tell us who is
-                who? :)
-              </p>
-              <div className={classes.formGroup}>
-                <div className={classes.profileBox}>
+      <div className={classes.signUpPop}>
+        <div className={classes.mascotIcon}>
+          <img src={require('images/ic_mascot.png')} alt="" />
+        </div>
+        <div className={classes.customScrollBar}>
+          <div className={classes.signinGroup}>
+            <Typography variant="h2">
+              welcome
+              <br /> to apollo 24/7
+            </Typography>
+            <p>
+              We have found {userDetails.length} accounts registered with this mobile number. Please
+              tell us who is who? :)
+            </p>
+            <div className={classes.formGroup}>
+              {userDetails.map((uhidInfo) => (
+                <div className={classes.profileBox} key={uhidInfo.uhid}>
                   <div className={classes.boxHeader}>
                     <div>1.</div>
-                    <div className={classes.userId}>APD1.0010783329</div>
+                    <div className={classes.userId}>{uhidInfo.uhid}</div>
                   </div>
                   <div className={classes.boxContent}>
-                    <div className={classes.userName}>Surj Gupta</div>
+                    <div className={classes.userName}>{uhidInfo.firstName}</div>
                     <div className={classes.userInfo}>Male | 01 January 1987</div>
-                    <AppSelectField
-                      value={userRelation}
-                      onChange={(e: any) => {
-                        setUserRelation(e.currentTarget.value);
-                      }}
-                    >
+                    <AppSelectField value={userRelation} onChange={assignRelation}>
                       <MenuItem value={5} classes={{ selected: classes.menuSelected }}>
                         Relation
                       </MenuItem>
@@ -218,60 +212,16 @@ export const ExistingProfile: React.FC = (props) => {
                     </AppSelectField>
                   </div>
                 </div>
-                <div className={classes.profileBox}>
-                  <div className={classes.boxHeader}>
-                    <div>2.</div>
-                    <div className={classes.userId}>APJ1.0002284253</div>
-                  </div>
-                  <div className={classes.boxContent}>
-                    <div className={classes.userName}>Preeti Gupta</div>
-                    <div className={classes.userInfo}>Female | 02 January 1987</div>
-                    <AppSelectField
-                      value={userRelation}
-                      onChange={(e: any) => {
-                        setUserRelation(e.currentTarget.value);
-                      }}
-                    >
-                      <MenuItem value={5} classes={{ selected: classes.menuSelected }}>
-                        Relation
-                      </MenuItem>
-                      <MenuItem value={10} classes={{ selected: classes.menuSelected }}>
-                        Me
-                      </MenuItem>
-                      <MenuItem value={20} classes={{ selected: classes.menuSelected }}>
-                        Mother
-                      </MenuItem>
-                      <MenuItem value={30} classes={{ selected: classes.menuSelected }}>
-                        Father
-                      </MenuItem>
-                      <MenuItem value={40} classes={{ selected: classes.menuSelected }}>
-                        Sister
-                      </MenuItem>
-                      <MenuItem value={50} classes={{ selected: classes.menuSelected }}>
-                        Brother
-                      </MenuItem>
-                      <MenuItem value={60} classes={{ selected: classes.menuSelected }}>
-                        Cousin
-                      </MenuItem>
-                      <MenuItem value={70} classes={{ selected: classes.menuSelected }}>
-                        Wife
-                      </MenuItem>
-                      <MenuItem value={80} classes={{ selected: classes.menuSelected }}>
-                        Husband
-                      </MenuItem>
-                    </AppSelectField>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
-          <div className={classes.actions}>
-            <AppButton fullWidth disabled variant="contained" color="primary">
-              Submit
-            </AppButton>
-          </div>
         </div>
-      </Popover>
+        <div className={classes.actions}>
+          <AppButton fullWidth disabled variant="contained" color="primary">
+            Submit
+          </AppButton>
+        </div>
+      </div>
     </div>
   );
 };

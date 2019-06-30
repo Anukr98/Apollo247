@@ -1,11 +1,12 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Typography from '@material-ui/core/Typography';
 import { AppButton } from 'components/ui/AppButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import { AppSelectField } from 'components/ui/AppSelectField';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { useCurrentUser } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -116,32 +117,82 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+function capitalizeFirstLetter(sentense: string) {
+  const words = sentense.split(' ');
+  if (words.length > 0) {
+    const newWords = words.map((word: string, index) => {
+      if (word.trim().length > 0) {
+        return word.charAt(0).toUpperCase() + words[index].substr(1).toLowerCase();
+      }
+    });
+    return newWords.join(' ');
+  } else {
+    return sentense;
+  }
+}
+
 export const HeroBanner: React.FC = (props) => {
   const classes = useStyles();
-  const [userName, setUserName] = React.useState(10);
+  const [userName, setUserName] = React.useState('');
+  const [uhidsAvailable, setUhidsAvailable] = React.useState<boolean>(false);
+  const userDetails = useCurrentUser();
+
+  useEffect(() => {
+    if (userDetails && userDetails[0].uhid !== '') {
+      setUserName(userDetails[0].uhid);
+      setUhidsAvailable(true);
+    }
+  }, [userDetails]);
+
+  const handleUserNameChange = (event: React.ChangeEvent<{ value: string }>) => {
+    setUserName(event.target.value as string);
+  };
+
+  interface uhidInfoObject {
+    firstName: string;
+    id: string;
+    lastName: string;
+    mobileNuber: string;
+    sex: string;
+    uhid: string;
+  }
+
+  const welcomeText = () => {
+    if (uhidsAvailable) {
+      return (
+        <AppSelectField
+          value={userName}
+          onChange={handleUserNameChange}
+          classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
+        >
+          {userDetails.map((uhidInfo: uhidInfoObject) => (
+            <MenuItem
+              selected
+              value={uhidInfo.uhid}
+              classes={{ selected: classes.menuSelected }}
+              key={uhidInfo.uhid}
+            >
+              {capitalizeFirstLetter(uhidInfo.firstName)}
+            </MenuItem>
+          ))}
+          <MenuItem classes={{ selected: classes.menuSelected }}>
+            <AppButton color="primary" classes={{ root: classes.addMemberBtn }}>
+              Add Member
+            </AppButton>
+          </MenuItem>
+        </AppSelectField>
+      );
+    } else {
+      return null;
+    }
+  };
 
   return (
     <div className={classes.heroBanner}>
       <div className={classes.bannerInfo}>
         <Typography variant="h1">
-          <span>hello</span>
-          <AppSelectField
-            value={userName}
-            onChange={(e) => setUserName(parseInt(e.currentTarget.value as string))}
-            classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
-          >
-            <MenuItem selected value={10} classes={{ selected: classes.menuSelected }}>
-              Surj
-            </MenuItem>
-            <MenuItem value={20} classes={{ selected: classes.menuSelected }}>
-              Preeti
-            </MenuItem>
-            <MenuItem classes={{ selected: classes.menuSelected }}>
-              <AppButton color="primary" classes={{ root: classes.addMemberBtn }}>
-                Add Member
-              </AppButton>
-            </MenuItem>
-          </AppSelectField>
+          <span>{uhidsAvailable ? 'hello' : 'hello there!'}</span>
+          {welcomeText()}
         </Typography>
         <p>Not feeling well today? Don’t worry. We will help you find the right doctor :)</p>
         <ProtectedWithLoginPopup>

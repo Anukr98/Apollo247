@@ -159,7 +159,7 @@ export const AuthProvider: React.FC = (props) => {
       });
 
       if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
-        const patient = patientSignInResult.data.patientSignIn.patients[0];
+        const patient = patientSignInResult.data.patientSignIn.patients;
         setCurrentUser(patient);
         setIsAuthenticating(false);
       } else {

@@ -15,6 +15,7 @@ export interface PatientSignIn_patientSignIn_patients {
   firstName: string | null;
   lastName: string | null;
   sex: Sex | null;
+  uhid: string | null;
 }
 
 export interface PatientSignIn_patientSignIn {

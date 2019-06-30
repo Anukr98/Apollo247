@@ -4,7 +4,8 @@ import React from 'react';
 import { Header } from 'components/Header';
 import { HeroBanner } from 'components/HeroBanner';
 import { ServiceList } from 'components/ServiceList';
-import { ProfileSuccess } from 'components/ProfileSuccess';
+import { ManageProfile } from 'components/ManageProfile';
+import { useIsLoggedIn } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -31,10 +32,9 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface WelcomeProps { }
-
-export const Welcome: React.FC<WelcomeProps> = (props) => {
+export const Welcome: React.FC = (props) => {
   const classes = useStyles();
+  const isUserLoggedIn = useIsLoggedIn();
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
@@ -46,7 +46,7 @@ export const Welcome: React.FC<WelcomeProps> = (props) => {
         <HeroBanner />
         <ServiceList />
       </div>
-      <ProfileSuccess />
+      <ManageProfile />
     </div>
   );
 };
