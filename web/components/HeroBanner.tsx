@@ -7,6 +7,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 import { AppSelectField } from 'components/ui/AppSelectField';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useCurrentUser } from 'hooks/authHooks';
+import { startCase, toLower } from 'lodash';
+import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -117,20 +119,6 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-function capitalizeFirstLetter(sentense: string) {
-  const words = sentense.split(' ');
-  if (words.length > 0) {
-    const newWords = words.map((word: string, index) => {
-      if (word.trim().length > 0) {
-        return word.charAt(0).toUpperCase() + words[index].substr(1).toLowerCase();
-      }
-    });
-    return newWords.join(' ');
-  } else {
-    return sentense;
-  }
-}
-
 export const HeroBanner: React.FC = (props) => {
   const classes = useStyles();
   const [userName, setUserName] = React.useState('');
@@ -144,35 +132,25 @@ export const HeroBanner: React.FC = (props) => {
     }
   }, [userDetails]);
 
-  const handleUserNameChange = (event: React.ChangeEvent<{ value: string }>) => {
-    setUserName(event.target.value as string);
-  };
-
-  interface uhidInfoObject {
-    firstName: string;
-    id: string;
-    lastName: string;
-    mobileNuber: string;
-    sex: string;
-    uhid: string;
-  }
-
   const welcomeText = () => {
     if (uhidsAvailable) {
       return (
         <AppSelectField
           value={userName}
-          onChange={handleUserNameChange}
+          onChange={(event) => setUserName(event.target.value as string)}
           classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
         >
-          {userDetails.map((uhidInfo: uhidInfoObject) => (
+          {userDetails.map((
+            uhidInfo: PatientSignIn_patientSignIn_patients, // eslint-disable-line camelcase
+            index: number
+          ) => (
             <MenuItem
               selected
-              value={uhidInfo.uhid}
+              value={uhidInfo.uhid ? uhidInfo.uhid : ''}
               classes={{ selected: classes.menuSelected }}
-              key={uhidInfo.uhid}
+              key={uhidInfo.uhid ? uhidInfo.uhid : index}
             >
-              {capitalizeFirstLetter(uhidInfo.firstName)}
+              {uhidInfo.firstName ? startCase(toLower(uhidInfo.firstName)) : ''}
             </MenuItem>
           ))}
           <MenuItem classes={{ selected: classes.menuSelected }}>

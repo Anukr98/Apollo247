@@ -1,10 +1,12 @@
+import React from 'react';
 import { Theme } from '@material-ui/core';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AppButton } from 'components/ui/AppButton';
 import { AppSelectField } from 'components/ui/AppSelectField';
-import React from 'react';
+import { PatientSignIn_patientSignIn } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
+import { random } from 'lodash';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -132,27 +134,61 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export interface ExistingProfileProps {
-  userDetails: [
-    {
-      firstName: string;
-      id: string;
-      lastName: string;
-      mobileNuber: string;
-      sex: string;
-      uhid: string;
-    }
-  ];
-}
-
-export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
+export const ExistingProfile: React.FC<PatientSignIn_patientSignIn> = (props) => {
   const classes = useStyles();
   const [userRelation, setUserRelation] = React.useState('5');
 
-  const { userDetails } = props;
+  const { patients } = props;
 
-  const assignRelation = (event: React.ChangeEvent<{ value: string }>) => {
-    setUserRelation(event.target.value as string);
+  const patientCards = () => {
+    if (patients) {
+      return patients.map((uhidInfo) => (
+        <div className={classes.profileBox} key={uhidInfo.uhid ? uhidInfo.uhid : random()}>
+          <div className={classes.boxHeader}>
+            <div>1.</div>
+            <div className={classes.userId}>{uhidInfo.uhid}</div>
+          </div>
+          <div className={classes.boxContent}>
+            <div className={classes.userName}>{uhidInfo.firstName}</div>
+            <div className={classes.userInfo}>Male | 01 January 1987</div>
+            <AppSelectField
+              value={userRelation}
+              onChange={(event) => setUserRelation(event.target.value as string)}
+            >
+              <MenuItem value={5} classes={{ selected: classes.menuSelected }}>
+                Relation
+              </MenuItem>
+              <MenuItem value={10} classes={{ selected: classes.menuSelected }}>
+                Me
+              </MenuItem>
+              <MenuItem value={20} classes={{ selected: classes.menuSelected }}>
+                Mother
+              </MenuItem>
+              <MenuItem value={30} classes={{ selected: classes.menuSelected }}>
+                Father
+              </MenuItem>
+              <MenuItem value={40} classes={{ selected: classes.menuSelected }}>
+                Sister
+              </MenuItem>
+              <MenuItem value={50} classes={{ selected: classes.menuSelected }}>
+                Brother
+              </MenuItem>
+              <MenuItem value={60} classes={{ selected: classes.menuSelected }}>
+                Cousin
+              </MenuItem>
+              <MenuItem value={70} classes={{ selected: classes.menuSelected }}>
+                Wife
+              </MenuItem>
+              <MenuItem value={80} classes={{ selected: classes.menuSelected }}>
+                Husband
+              </MenuItem>
+            </AppSelectField>
+          </div>
+        </div>
+      ));
+    } else {
+      return null;
+    }
   };
 
   return (
@@ -168,52 +204,10 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
               <br /> to apollo 24/7
             </Typography>
             <p>
-              We have found {userDetails.length} accounts registered with this mobile number. Please
-              tell us who is who? :)
+              We have found {patients ? patients.length : 0} accounts registered with this mobile
+              number. Please tell us who is who? :)
             </p>
-            <div className={classes.formGroup}>
-              {userDetails.map((uhidInfo) => (
-                <div className={classes.profileBox} key={uhidInfo.uhid}>
-                  <div className={classes.boxHeader}>
-                    <div>1.</div>
-                    <div className={classes.userId}>{uhidInfo.uhid}</div>
-                  </div>
-                  <div className={classes.boxContent}>
-                    <div className={classes.userName}>{uhidInfo.firstName}</div>
-                    <div className={classes.userInfo}>Male | 01 January 1987</div>
-                    <AppSelectField value={userRelation} onChange={assignRelation}>
-                      <MenuItem value={5} classes={{ selected: classes.menuSelected }}>
-                        Relation
-                      </MenuItem>
-                      <MenuItem value={10} classes={{ selected: classes.menuSelected }}>
-                        Me
-                      </MenuItem>
-                      <MenuItem value={20} classes={{ selected: classes.menuSelected }}>
-                        Mother
-                      </MenuItem>
-                      <MenuItem value={30} classes={{ selected: classes.menuSelected }}>
-                        Father
-                      </MenuItem>
-                      <MenuItem value={40} classes={{ selected: classes.menuSelected }}>
-                        Sister
-                      </MenuItem>
-                      <MenuItem value={50} classes={{ selected: classes.menuSelected }}>
-                        Brother
-                      </MenuItem>
-                      <MenuItem value={60} classes={{ selected: classes.menuSelected }}>
-                        Cousin
-                      </MenuItem>
-                      <MenuItem value={70} classes={{ selected: classes.menuSelected }}>
-                        Wife
-                      </MenuItem>
-                      <MenuItem value={80} classes={{ selected: classes.menuSelected }}>
-                        Husband
-                      </MenuItem>
-                    </AppSelectField>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className={classes.formGroup}>{patientCards()}</div>
           </div>
         </div>
         <div className={classes.actions}>
