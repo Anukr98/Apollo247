@@ -1,10 +1,12 @@
 import { Theme } from '@material-ui/core';
 import Popover from '@material-ui/core/Popover';
 import { createStyles, makeStyles } from '@material-ui/styles';
-import { useLoginPopupState, useCurrentUser } from 'hooks/authHooks';
+import { useCurrentUser } from 'hooks/authHooks';
 import { NewProfile } from 'components/NewProfile';
 import { ExistingProfile } from 'components/ExistingProfile';
-import React, { useRef, useEffect } from 'react';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import React, { useRef } from 'react';
+import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -102,58 +104,52 @@ export const ManageProfile: React.FC = (props) => {
   const classes = useStyles();
   const mascotRef = useRef(null);
   const userDetails = useCurrentUser();
-
-  const { setLoginPopupVisible } = useLoginPopupState();
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-  const [uhidsAvailable, setUhidsAvailable] = React.useState<boolean>(false);
-
-  useEffect(() => {
-    if (userDetails) {
-      setIsPopoverOpen(true);
-      // loop through the object and find if any uhid is available.
-      const uhids = userDetails.find((profileInfo: any) => profileInfo.uhid !== '');
-      if (uhids) {
-        setUhidsAvailable(true);
-      }
-    } else {
-      setIsPopoverOpen(false);
-    }
-  }, [userDetails]);
+  const uhidsAvailable = userDetails
+    ? userDetails.find(
+        (profileInfo: PatientSignIn_patientSignIn_patients) => profileInfo.uhid !== '' // eslint-disable-line camelcase
+      )
+    : null;
 
   return (
-    <div className={classes.signUpBar}>
-      <div
-        className={classes.mascotCircle}
-        ref={mascotRef}
-        onClick={(e) => {
-          userDetails ? setIsPopoverOpen(true) : setLoginPopupVisible(true);
-        }}
-      >
-        <img src={require('images/ic_mascot.png')} alt="" />
-      </div>
-      <Popover
-        open={isPopoverOpen}
-        anchorEl={mascotRef.current}
-        onClose={() => {
-          userDetails ? setIsPopoverOpen(false) : setLoginPopupVisible(false);
-        }}
-        className={classes.bottomPopover}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        {uhidsAvailable ? (
-          <ExistingProfile patients={userDetails} __typename="PatientSignInResult" />
-        ) : (
-          <NewProfile />
-        )}
-      </Popover>
-    </div>
+    <ProtectedWithLoginPopup>
+      {({ protectWithLoginPopup, isProtected }) => (
+        <div className={classes.signUpBar}>
+          <div
+            className={classes.mascotCircle}
+            ref={mascotRef}
+            onClick={(e) => {
+              protectWithLoginPopup();
+              if (isProtected) {
+                e.preventDefault();
+              } else {
+                setIsPopoverOpen(true);
+              }
+            }}
+          >
+            <img src={require('images/ic_mascot.png')} alt="" />
+          </div>
+          <Popover
+            open={isPopoverOpen}
+            anchorEl={mascotRef.current}
+            onClose={() => {
+              setIsPopoverOpen(false);
+            }}
+            className={classes.bottomPopover}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'center',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'center',
+            }}
+            classes={{ paper: classes.bottomPopover }}
+          >
+            {uhidsAvailable ? <ExistingProfile patients={userDetails} /> : <NewProfile />}
+          </Popover>
+        </div>
+      )}
+    </ProtectedWithLoginPopup>
   );
 };

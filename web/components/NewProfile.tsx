@@ -4,6 +4,7 @@ import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AppButton } from 'components/ui/AppButton';
 import { AppTextField } from 'components/ui/AppTextField';
+import { Sex as GENDER } from 'graphql/types/globalTypes';
 import React from 'react';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -87,6 +88,16 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const NewProfile: React.FC = (props) => {
   const classes = useStyles();
+  const genders = Object.values(GENDER).filter((g) => g != 'NOT_APPLICABLE' && g != 'NOT_KNOWN');
+  const gendersMarkup = () =>
+    genders.map((gender) => {
+      return (
+        <Grid item xs={6} sm={4} key={gender}>
+          <AppButton variant="contained">{gender}</AppButton>
+        </Grid>
+      );
+    });
+
   return (
     <div className={classes.signUpPop}>
       <div className={classes.mascotIcon}>
@@ -106,15 +117,7 @@ export const NewProfile: React.FC = (props) => {
             <div className={classes.formControl}>
               <label>Gender</label>
               <Grid container spacing={2} className={classes.btnGroup}>
-                <Grid item xs={6} sm={4}>
-                  <AppButton variant="contained">Male</AppButton>
-                </Grid>
-                <Grid item xs={6} sm={4}>
-                  <AppButton variant="contained">Female</AppButton>
-                </Grid>
-                <Grid item xs={6} sm={4}>
-                  <AppButton variant="contained">Other</AppButton>
-                </Grid>
+                {gendersMarkup()}
               </Grid>
             </div>
             <AppTextField label="Email Address (Optional)" placeholder="name@email.com" />

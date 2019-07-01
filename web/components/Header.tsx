@@ -93,10 +93,10 @@ export const Header: React.FC = (props) => {
           <img src={require('images/ic_logo.png')} />
         </Link>
       </div>
-      {isUserLoggedIn ? <Navigation /> : null}
-      <div className={`${classes.userAccount} ${isUserLoggedIn ? null : classes.userAccountLogin}`}>
+      {isUserLoggedIn && <Navigation />}
+      <div className={`${classes.userAccount} ${isUserLoggedIn ? '' : classes.userAccountLogin}`}>
         <div
-          className={`${classes.userCircle} ${isUserLoggedIn ? classes.userActive : null}`}
+          className={`${classes.userCircle} ${isUserLoggedIn ? classes.userActive : ''}`}
           onClick={() => {
             if (isUserLoggedIn) {
               setDisplayAlert(true);
@@ -110,17 +110,10 @@ export const Header: React.FC = (props) => {
         </div>
         {/* The below dialog must be removed when the functionality is defined with Logged in User */}
         {isUserLoggedIn ? (
-          <Dialog
-            open={displayAlert}
-            onClose={() => setDisplayAlert(false)}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <DialogTitle id="alert-dialog-title">Logged In</DialogTitle>
+          <Dialog open={displayAlert} onClose={() => setDisplayAlert(false)}>
+            <DialogTitle>Logged In</DialogTitle>
             <DialogContent>
-              <DialogContentText id="alert-dialog-description">
-                You are successfully Logged in with Apollo 24x7
-              </DialogContentText>
+              <DialogContentText>You are successfully Logged in with Apollo 24x7</DialogContentText>
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setDisplayAlert(false)} color="primary" autoFocus>

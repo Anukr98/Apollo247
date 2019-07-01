@@ -134,7 +134,11 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const ExistingProfile: React.FC<PatientSignIn_patientSignIn> = (props) => {
+export interface ExistingProfileProps {
+  patients: PatientSignIn_patientSignIn['patients']; // eslint-disable-line camelcase
+}
+
+export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const classes = useStyles();
   const [userRelation, setUserRelation] = React.useState('5');
 
