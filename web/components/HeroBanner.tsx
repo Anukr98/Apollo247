@@ -10,13 +10,24 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     heroBanner: {
-      display: 'flex',
       borderRadius: '0 0 10px 10px',
       backgroundColor: theme.palette.text.primary,
       padding: 40,
+      position: 'relative',
+      [theme.breakpoints.up('lg')]: {
+        display: 'flex',
+      },
+      [theme.breakpoints.down('xs')]: {
+        padding: '40px 20px',
+      },
+      [theme.breakpoints.between('sm', 'md')]: {
+        paddingTop: 60,
+      },
     },
     bannerInfo: {
-      width: '50%',
+      [theme.breakpoints.up('lg')]: {
+        width: '50%',
+      },
       '& p': {
         fontSize: 17,
         lineHeight: 1.47,
@@ -24,9 +35,15 @@ const useStyles = makeStyles((theme: Theme) => {
         color: theme.palette.secondary.main,
         marginTop: 16,
         marginBottom: 20,
+        [theme.breakpoints.between('sm', 'md')]: {
+          paddingRight: 400,
+        },
       },
       '& h1': {
         display: 'flex',
+        [theme.breakpoints.down('xs')]: {
+          fontSize: 36,
+        },
         '& >div': {
           marginLeft: 10,
           paddingTop: 0,
@@ -36,16 +53,32 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     bannerImg: {
-      width: '50%',
-      marginLeft: 'auto',
       marginBottom: -190,
       textAlign: 'right',
+      [theme.breakpoints.up('lg')]: {
+        width: '50%',
+        marginLeft: 'auto',
+      },
+      [theme.breakpoints.between('sm', 'md')]: {
+        width: 400,
+        position: 'absolute',
+        right: 40,
+        bottom: 0,
+        marginBottom: -150,
+      },
       '& img': {
         marginTop: -15,
+        maxWidth: '100%',
+        [theme.breakpoints.down('xs')]: {
+          maxWidth: 281,
+          marginTop: -50,
+        },
       },
     },
     button: {
-      minWidth: 200,
+      [theme.breakpoints.up('sm')]: {
+        minWidth: 200,
+      },
     },
     menuSelected: {
       backgroundColor: 'transparent !important',
@@ -62,6 +95,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 56,
       fontWeight: 600,
       lineHeight: '66px',
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 36,
+        lineHeight: '46px',
+      },
       backgroundColor: 'transparent',
       '&:focus': {
         backgroundColor: 'transparent',

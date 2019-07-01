@@ -10,6 +10,9 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
       paddingTop: 85,
+      [theme.breakpoints.down('xs')]: {
+        paddingTop: 78,
+      },
     },
     booksLink: {
       color: theme.palette.primary.main,

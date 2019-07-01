@@ -29,6 +29,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 36,
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: theme.palette.common.white,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
       '& p': {
         fontSize: 17,
         fontWeight: 500,
@@ -46,6 +49,11 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'initial',
       backgroundColor: 'none',
       boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+      },
     },
     mascotIcon: {
       position: 'absolute',

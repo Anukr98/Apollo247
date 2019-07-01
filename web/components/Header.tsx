@@ -16,6 +16,9 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: theme.palette.common.white,
       padding: '20px 20px 7px 20px',
+      [theme.breakpoints.down('xs')]: {
+        padding: '15px 20px 5px 20px',
+      },
     },
     logo: {
       '& a': {
@@ -23,11 +26,17 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& img': {
         maxWidth: 77,
+        [theme.breakpoints.down('xs')]: {
+          maxWidth: 67,
+        },
       },
     },
     userAccount: {
       marginBottom: 10,
       marginLeft: 20,
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 'auto',
+      },
       '& img': {
         marginTop: 10,
       },

@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
+import Avatar from '@material-ui/core/Avatar';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -16,11 +17,20 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 20,
     },
     serviceItem: {
-      padding: '20px 60px 20px 20px',
+      padding: 20,
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: theme.palette.common.white,
       position: 'relative',
+      height: '100%',
+      [theme.breakpoints.down('xs')]: {
+        display: 'flex',
+      },
+      '& h5': {
+        [theme.breakpoints.up('sm')]: {
+          paddingRight: 40,
+        },
+      },
       '& p': {
         fontSize: 12,
         fontWeight: 'normal',
@@ -31,24 +41,31 @@ const useStyles = makeStyles((theme: Theme) => {
         marginBottom: 5,
       },
     },
+    serviceInfo: {
+      paddingRight: 20,
+      [theme.breakpoints.up('sm')]: {
+        paddingRight: 0,
+      },
+    },
+    avatarBlock: {
+      marginLeft: 'auto',
+      [theme.breakpoints.up('sm')]: {
+        position: 'absolute',
+        top: -10,
+        right: -10,
+      },
+    },
+    bigAvatar: {
+      width: 70,
+      height: 70,
+      backgroundColor: '#afc3c9',
+    },
     action: {
       fontSize: 13,
       fontWeight: 'bold',
       color: theme.palette.action.selected,
       lineHeight: 1.85,
       textTransform: 'uppercase',
-    },
-    serviceImg: {
-      width: 70,
-      height: 70,
-      borderRadius: '50%',
-      position: 'absolute',
-      top: -10,
-      right: -10,
-      backgroundColor: '#afc3c9',
-      '& img': {
-        maxWidth: '100%',
-      },
     },
   };
 });
@@ -72,23 +89,29 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
   return (
     <ProtectedWithLoginPopup>
       {({ protectWithLoginPopup, isProtected }) => (
-        <Grid item xs={3}>
+        <Grid item lg={3} sm={6} xs={12}>
           <Paper className={classes.serviceItem}>
-            <div className={classes.serviceImg}>
-              <img src={require('images/ic_placeholder.png')} />
+            <div className={classes.serviceInfo}>
+              <Typography variant="h5">{title}</Typography>
+              <p>{content}</p>
+              <Link
+                className={classes.action}
+                to={action.link}
+                onClick={(e) => {
+                  protectWithLoginPopup();
+                  if (isProtected) e.preventDefault();
+                }}
+              >
+                {action.content}
+              </Link>
             </div>
-            <Typography variant="h5">{title}</Typography>
-            <p>{content}</p>
-            <Link
-              className={classes.action}
-              to={action.link}
-              onClick={(e) => {
-                protectWithLoginPopup();
-                if (isProtected) e.preventDefault();
-              }}
-            >
-              {action.content}
-            </Link>
+            <div className={classes.avatarBlock}>
+              <Avatar
+                alt=""
+                src={require('images/ic_placeholder.png')}
+                className={classes.bigAvatar}
+              />
+            </div>
           </Paper>
         </Grid>
       )}

@@ -29,6 +29,10 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 36,
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: theme.palette.common.white,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        borderRadius: 0,
+      },
       '& p': {
         fontSize: 17,
         fontWeight: 500,
@@ -62,6 +66,12 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'initial',
       backgroundColor: 'none',
       boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
     },
     mascotIcon: {
       position: 'absolute',
@@ -72,8 +82,11 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     customScrollBar: {
-      height: '70vh',
+      height: '65vh',
       overflow: 'auto',
+      [theme.breakpoints.down('xs')]: {
+        height: '75vh',
+      },
     },
     signinGroup: {
       padding: 20,

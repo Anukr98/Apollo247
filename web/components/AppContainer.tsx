@@ -89,6 +89,15 @@ const muiTheme = createMuiTheme({
   shape: {
     borderRadius: 10,
   },
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 768,
+      md: 900,
+      lg: 1024,
+      xl: 1200,
+    },
+  },
 });
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -96,6 +105,7 @@ const useStyles = makeStyles((theme: Theme) => {
     app: {
       minHeight: '100vh',
       backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
+      paddingBottom: 70,
     },
   };
 });
