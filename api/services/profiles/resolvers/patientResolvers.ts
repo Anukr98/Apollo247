@@ -98,7 +98,7 @@ function wait<R, E>(promise: Promise<R>): [R, E] {
 async function updateEntity<E extends BaseEntity>(
   Entity: typeof BaseEntity,
   id: string,
-  attrs: Partial<Omit<E, keyof BaseEntity>>
+  attrs: Partial<Pick<E, Exclude<keyof BaseEntity, E>>>
 ): Promise<E> {
   let entity: E;
   try {
