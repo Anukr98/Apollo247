@@ -94,7 +94,6 @@ function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
 }
 
-//Update helper function
 async function updateEntity<E extends BaseEntity>(
   Entity: typeof BaseEntity,
   id: string,
@@ -104,6 +103,7 @@ async function updateEntity<E extends BaseEntity>(
   try {
     entity = await Entity.findOneOrFail<E>(id);
     await Entity.update(id, attrs);
+    await entity.reload();
   } catch (e) {
     throw e;
   }
@@ -112,7 +112,6 @@ async function updateEntity<E extends BaseEntity>(
 
 const getPatients = () => ({ patients: [] });
 
-//patient signIn resolver
 const patientSignIn: Resolver<any, { jwt: string }> = async (
   parent,
   args,
@@ -214,7 +213,6 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
   return { patients, errors: null };
 };
 
-//update patient resolver
 const updatePatient: Resolver<any, Partial<Patient> & { id: Patient['id'] }> = async (
   parent,
   args
