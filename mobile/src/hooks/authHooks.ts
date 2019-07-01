@@ -14,6 +14,8 @@ export const useAuth = () => {
   const verifyOtp = useContext(AuthContext).verifyOtp!;
   const signIn = useContext(AuthContext).signIn!;
   const signOut = useContext(AuthContext).signOut!;
+  const currentProfiles = useContext(AuthContext).currentProfiles!;
+  const clearCurrentUser = useContext(AuthContext).clearCurrentUser!;
   return {
     analytics,
     isAuthenticating,
@@ -23,5 +25,7 @@ export const useAuth = () => {
     verifyOtp,
     signIn,
     signOut,
+    currentProfiles,
+    clearCurrentUser,
   };
 };

@@ -6,12 +6,12 @@ const common = {
 };
 
 const login = {
-  hello: 'hello',
+  hello: 'hello!',
   please_enter_no: 'Please enter your mobile number to login',
   otp_sent_to: 'OTP will be sent to this number',
   wrong_number: 'This seems like a wrong number',
   numberPrefix: '+91',
-  great: 'great',
+  great: 'great!',
   type_otp_text: 'Type in the OTP sent to you, to authenticate',
   resend_opt: 'RESEND OTP',
   enter_correct_opt: 'Please enter the correct OTP',

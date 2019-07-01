@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
+import { useAuth } from 'app/src/hooks/authHooks';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -67,17 +68,21 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
-  nameTextStyle: {
+  hiTextStyle: {
     marginLeft: 20,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  nameTextStyle: {
+    marginLeft: 5,
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
   seperatorStyle: {
     height: 2,
-    width: 108,
     backgroundColor: '#00b38e',
-    marginLeft: 60,
     marginTop: 5,
+    marginHorizontal: 5,
   },
   descriptionTextStyle: {
     marginLeft: 20,
@@ -195,11 +200,40 @@ const arrayDoctor: ArrayDoctor[] = [
   },
 ];
 
+type currentProfiles = {
+  firstName: string;
+  id: string;
+  lastName: string;
+  mobileNumber: string;
+  sex: string;
+  uhid: string;
+};
+
 export interface ConsultRoomProps extends NavigationScreenProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
   const [showPopUp, setshowPopUp] = useState<boolean>(true);
   const [showMenu, setShowMenu] = useState<boolean>(false);
+  const [userName, setuserName] = useState<string>('');
+  const { currentUser, analytics, currentProfiles, signOut } = useAuth();
+
+  useEffect(() => {
+    analytics.setCurrentScreen(AppRoutes.ConsultRoom);
+    // const userName = currentUser.firstName + ' ' + currentUser.lastName;
+    let userName =
+      currentUser && currentUser.firstName ? currentUser.firstName.split(' ')[0] : 'there';
+    userName = userName.toLowerCase();
+    setuserName(userName);
+  }, [currentUser, currentProfiles, analytics, userName]);
+
+  // useEffect(() => {
+  //   if (currentUser) {
+  //     // signOut();
+  //   }
+  //   return () => {
+  //     console.log('signout');
+  //   };
+  // }, []);
 
   useEffect(() => {});
   const Popup = () => (
@@ -232,7 +266,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           marginTop: 124,
         }}
       >
-        {['Surj'].map((name) => (
+        {/* {[userName].map((firstName) => (
           <View style={styles.textViewStyle}>
             <Text
               style={styles.textStyle}
@@ -240,7 +274,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 setShowMenu(false);
               }}
             >
-              {name}
+              {firstName}
+            </Text>
+          </View>
+        ))} */}
+        {currentProfiles.map((profile: currentProfiles) => (
+          <View style={styles.textViewStyle}>
+            <Text
+              style={styles.textStyle}
+              onPress={() => {
+                setShowMenu(false);
+              }}
+            >
+              {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : 'Hi there'}
             </Text>
           </View>
         ))}
@@ -298,10 +344,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   alignItems: 'center',
                 }}
               >
-                <Text style={styles.nameTextStyle}>hi surj!</Text>
-                <DropdownGreen />
+                <View style={{ flexDirection: 'row' }}>
+                  <Text style={styles.hiTextStyle}>hi</Text>
+                  <View>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Text style={styles.nameTextStyle}>{userName}</Text>
+                      <DropdownGreen style={{ marginTop: 8 }} />
+                    </View>
+                    <View style={styles.seperatorStyle} />
+                  </View>
+                </View>
               </TouchableOpacity>
-              <View style={styles.seperatorStyle} />
               <Text style={styles.descriptionTextStyle}>Are you not feeling well today?</Text>
             </View>
           </View>

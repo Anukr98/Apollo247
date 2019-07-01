@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
+import SmsListener from 'react-native-android-sms-listener';
 
 const styles = StyleSheet.create({
   container: {
@@ -73,14 +74,38 @@ const isPhoneNumberValid = (number: string) => {
     number.replace(/^0+/, '').length !== 10 && number.length !== 0 ? false : true;
   return isValidNumber;
 };
-
+let otpString = '';
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const phoneNumberIsValid = isPhoneNumberValid(phoneNumber);
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const { verifyPhoneNumber, analytics } = useAuth();
+  const { verifyPhoneNumber, analytics, currentUser, clearCurrentUser } = useAuth();
+  const [subscriptionId, setSubscriptionId] = useState<any>();
 
-  useEffect(() => analytics.setCurrentScreen(AppRoutes.Login), []);
+  useEffect(() => {
+    analytics.setCurrentScreen(AppRoutes.Login);
+    console.log('Login currentUser', currentUser);
+    setVerifyingPhonenNumber(false);
+    if (currentUser) {
+      clearCurrentUser();
+    }
+  }, [analytics]);
+
+  useEffect(() => {
+    const subscriptionId = SmsListener.addListener((message) => {
+      console.log('Login message', message);
+      var newOtp = message.body.match(/-*[0-9]+/);
+      console.log(newOtp[0], 'wertyuio');
+      otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
+    });
+    setSubscriptionId(subscriptionId);
+  }, [subscriptionId]);
+
+  useEffect(() => {
+    return () => {
+      subscriptionId && subscriptionId.remove();
+    };
+  }, [subscriptionId]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -104,10 +129,12 @@ export const Login: React.FC<LoginProps> = (props) => {
               setVerifyingPhonenNumber(false);
               props.navigation.navigate(AppRoutes.OTPVerification, {
                 phoneNumberVerificationCredential,
+                otpString,
+                phoneNumber,
               });
             });
           }}
-          disableButton={phoneNumberIsValid ? false : true}
+          disableButton={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
         >
           <View
             style={[

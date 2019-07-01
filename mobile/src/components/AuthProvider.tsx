@@ -22,6 +22,7 @@ export type OtpVerificationCredential = AuthCredential;
 export interface AuthProviderProps {
   analytics: RNFirebase.Analytics | null;
   currentUser: PatientSignIn_patientSignIn_patients | null;
+  currentProfiles: object | null;
   isAuthenticating: boolean;
   verifyPhoneNumber: ((mobileNumber: string) => Promise<PhoneNumberVerificationCredential>) | null;
   verifyOtp:
@@ -32,6 +33,7 @@ export interface AuthProviderProps {
     | null;
   signIn: ((token: OtpVerificationCredential) => Promise<void>) | null;
   signOut: (() => any) | null;
+  clearCurrentUser: (() => any) | null;
 }
 
 const userIsValid = (user: RNFirebase.User | null) => user && user.phoneNumber;
@@ -44,6 +46,8 @@ export const AuthContext = React.createContext<AuthProviderProps>({
   signIn: null,
   signOut: null,
   analytics: null,
+  currentProfiles: null,
+  clearCurrentUser: null,
 });
 
 let apolloClient: ApolloClient<any>;
@@ -69,6 +73,9 @@ export const AuthProvider: React.FC = (props) => {
   apolloClient = buildApolloClient(authToken);
 
   const [currentUser, setCurrentUser] = useState<AuthProviderProps['currentUser']>(null);
+  const [currentProfiles, setcurrentProfiles] = useState<AuthProviderProps['currentProfiles']>(
+    null
+  );
   const [isAuthenticating, setIsAuthenticating] = useState<AuthProviderProps['isAuthenticating']>(
     true
   );
@@ -79,6 +86,9 @@ export const AuthProvider: React.FC = (props) => {
   const [signIn, setSignIn] = useState<AuthProviderProps['signIn']>(null);
   const [signOut, setSignOut] = useState<AuthProviderProps['signOut']>(null);
   const [analytics, setAnalytics] = useState<AuthProviderProps['analytics']>(null);
+  const [clearCurrentUser, setClearCurrentUser] = useState<AuthProviderProps['clearCurrentUser']>(
+    null
+  );
 
   useEffect(() => {
     setAnalytics(firebase.analytics());
@@ -107,8 +117,15 @@ export const AuthProvider: React.FC = (props) => {
     };
     setSignIn(signInFunc);
 
-    const signOutFunc = () => () => auth.signOut();
+    const signOutFunc = () => () => {
+      auth.signOut();
+    };
     setSignOut(signOutFunc);
+
+    const clearCurrentUserFunc = () => () => {
+      setCurrentUser(null);
+    };
+    setClearCurrentUser(clearCurrentUserFunc);
 
     auth.onAuthStateChanged(async (updatedUser) => {
       // There is no hook to know when firebase is loading, but we know this fires when it has attempted
@@ -117,6 +134,7 @@ export const AuthProvider: React.FC = (props) => {
       // (but not until all the async requests here are finished )
       if (!userIsValid(updatedUser)) {
         setCurrentUser(null);
+        setcurrentProfiles(null);
         setIsAuthenticating(false);
         return;
       }
@@ -132,10 +150,13 @@ export const AuthProvider: React.FC = (props) => {
 
       if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
         const patient = patientSignInResult.data.patientSignIn.patients[0];
+        const patientProfiles = patientSignInResult.data.patientSignIn.patients;
         setCurrentUser(patient);
+        setcurrentProfiles(patientProfiles);
         setIsAuthenticating(false);
       } else {
         setCurrentUser(null);
+        setcurrentProfiles(null);
         setIsAuthenticating(false);
       }
     });
@@ -153,6 +174,8 @@ export const AuthProvider: React.FC = (props) => {
             verifyOtp,
             signIn,
             signOut,
+            currentProfiles,
+            clearCurrentUser,
           }}
         >
           {props.children}

@@ -10,6 +10,9 @@ import { OTPVerification } from 'app/src/components/OTPVerification';
 import { NavigationRouteConfig } from 'react-navigation';
 import { ConsultRoom } from 'app/src/components/ConsultRoom';
 import { DoctorSearchListing } from 'app/src/components/DoctorSearchListing';
+import { HealthRecords } from 'app/src/components/HealthRecords';
+import { Medicine } from 'app/src/components/Medicine';
+import { MyAccount } from 'app/src/components/MyAccount';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -21,6 +24,9 @@ export enum AppRoutes {
   MultiSignup = 'MultiSignup',
   OTPVerification = 'OTPVerification',
   DoctorSearchListing = 'DoctorSearchListing',
+  HealthRecords = 'HealthRecords',
+  Medicine = 'Medicine',
+  MyAccount = 'MyAccount',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -62,6 +68,15 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.DoctorSearchListing]: {
     screen: DoctorSearchListing,
+  },
+  [AppRoutes.HealthRecords]: {
+    screen: HealthRecords,
+  },
+  [AppRoutes.Medicine]: {
+    screen: Medicine,
+  },
+  [AppRoutes.MyAccount]: {
+    screen: MyAccount,
   },
 };
 

@@ -7,12 +7,13 @@ import { Mascot, DropdownGreen } from 'app/src/components/ui/Icons';
 import { StickyBottomComponent } from 'app/src/components/ui/StickyBottomComponent';
 import { string } from 'app/src/strings/string';
 import { theme } from 'app/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MenuProvider } from 'react-native-popup-menu';
 import { NavigationScreenProps } from 'react-navigation';
 const { width, height } = Dimensions.get('window');
+import { useAuth } from '../hooks/authHooks';
 
 const styles = StyleSheet.create({
   container: {
@@ -69,12 +70,32 @@ const styles = StyleSheet.create({
   },
 });
 
+type currentProfiles = {
+  firstName: string;
+  id: string;
+  lastName: string;
+  mobileNumber: string;
+  sex: string;
+  uhid: string;
+};
+
 export interface MultiSignupProps extends NavigationScreenProps {}
 
 export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [relation, setRelation] = useState<string>('Relations');
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const renderUserForm = (styles: any) => {
+  const [user, setUser] = useState<object>([]);
+  const { currentUser, analytics, currentProfiles } = useAuth();
+
+  useEffect(() => {
+    analytics.setCurrentScreen(AppRoutes.MultiSignup);
+    console.log('currentUser', currentUser);
+    setUser(currentUser);
+    console.log('user', user);
+    console.log('currentProfiles', currentProfiles);
+  }, [currentUser, currentProfiles, analytics, user]);
+
+  const renderUserForm = (styles: any, currentProfiles: currentProfiles, i: number) => {
     return (
       <View>
         <View
@@ -96,12 +117,13 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               paddingBottom: 8,
             }}
           >
-            <Text style={styles.idTextStyle}>1.</Text>
-
-            <Text style={styles.idTextStyle}>APD1.0010783329</Text>
+            <Text style={styles.idTextStyle}>{i + 1}.</Text>
+            <Text style={styles.idTextStyle}>{currentProfiles.uhid}</Text>
           </View>
-          <Text style={styles.nameTextStyle}>Surj Gupta</Text>
-          <Text style={styles.idTextStyle}>Male | 01 January 1987</Text>
+          <Text style={styles.nameTextStyle}>
+            {currentProfiles.firstName} {currentProfiles.lastName}
+          </Text>
+          <Text style={styles.idTextStyle}>{currentProfiles.sex} | 01 January 1987</Text>
           <View style={{ marginTop: 10 }}>
             <View style={{ paddingTop: 5, paddingBottom: 10 }}>
               <TouchableOpacity
@@ -248,8 +270,9 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             <View style={styles.mascotStyle}>
               <Mascot />
             </View>
-            {renderUserForm(styles)}
-            {renderUserForm(styles)}
+            {currentProfiles.map((currentProfiles: currentProfiles, i: number) => (
+              <View key={i}>{renderUserForm(styles, currentProfiles, i)}</View>
+            ))}
             <View style={{ height: 80 }} />
           </Card>
         </KeyboardAwareScrollView>

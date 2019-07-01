@@ -135,7 +135,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
         <Button
           title={'SUBMIT'}
           style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
-          onPress={() => props.navigation.navigate(AppRoutes.MultiSignup)}
+          onPress={() => props.navigation.navigate(AppRoutes.TabBar)}
         />
       </StickyBottomComponent>
     </SafeAreaView>
