@@ -112,6 +112,7 @@ async function updateEntity<E extends BaseEntity>(
 
 const getPatients = () => ({ patients: [] });
 
+//patient signIn resolver
 const patientSignIn: Resolver<any, { jwt: string }> = async (
   parent,
   args,
