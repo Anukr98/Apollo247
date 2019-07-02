@@ -1,11 +1,17 @@
-import { Theme } from '@material-ui/core';
+import React, { useState } from 'react';
+import { Theme, CircularProgress } from '@material-ui/core';
 import MenuItem from '@material-ui/core/MenuItem';
-import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AppButton } from 'components/ui/AppButton';
 import { AppSelectField } from 'components/ui/AppSelectField';
-import React from 'react';
+import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
+import _camelCase from 'lodash/camelCase';
+import { Relation } from 'graphql/types/globalTypes';
+import { useLoggedInPatients } from 'hooks/authHooks';
+import { Mutation } from 'react-apollo';
+import { updatePatientVariables, updatePatient } from 'graphql/types/updatePatient';
+import { UPDATE_PATIENT } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -133,145 +139,129 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const ExistingProfile: React.FC = (props) => {
+interface PatientProfileProps {
+  patient: PatientSignIn_patientSignIn_patients;
+  number: number;
+  onUpdatePatient: (patient: PatientSignIn_patientSignIn_patients) => void;
+}
+const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   const classes = useStyles();
-  const mascotRef = React.useRef(null);
-  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-  const [userRelation, setUserRelation] = React.useState(5);
+  const { patient, number } = props;
+  const [selectedRelation, setSelectedRelation] = React.useState<Relation | ''>(
+    patient.relation || ''
+  );
+  return (
+    <div className={classes.profileBox}>
+      <div className={classes.boxHeader}>
+        <div>{number}.</div>
+        <div className={classes.userId}>{patient.uhid}</div>
+      </div>
+      <div className={classes.boxContent}>
+        <div className={classes.userName}>{patient.firstName}</div>
+        <div className={classes.userInfo}>
+          {_camelCase(patient.sex || '')}
+          {_camelCase(patient.dateOfBirth || '')}
+        </div>
+        <AppSelectField
+          value={selectedRelation}
+          onChange={(e) => {
+            const updatedRelation = e.target.value as Relation;
+            setSelectedRelation(updatedRelation);
+            const updatedPatient = { ...patient, relation: updatedRelation };
+            props.onUpdatePatient(updatedPatient);
+          }}
+        >
+          {Object.values(Relation).map((relationOption: Relation) => (
+            <MenuItem
+              selected={relationOption === selectedRelation}
+              value={relationOption}
+              classes={{ selected: classes.menuSelected }}
+              key={relationOption}
+            >
+              {relationOption}
+            </MenuItem>
+          ))}
+        </AppSelectField>
+      </div>
+    </div>
+  );
+};
+
+const isPatientInvalid = (patient: PatientSignIn_patientSignIn_patients) =>
+  patient.relation == null;
+
+export interface ExistingProfileProps {}
+export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
+  const classes = useStyles();
+  const [patients, setPatients] = useState(useLoggedInPatients());
+  if (!patients) return null;
+  const disabled = patients.some(isPatientInvalid);
 
   return (
     <div className={classes.signUpBar}>
-      <div className={classes.mascotCircle} ref={mascotRef} onClick={() => setIsPopoverOpen(true)}>
-        <img src={require('images/ic_mascot.png')} alt="" />
-      </div>
-      <Popover
-        open={isPopoverOpen}
-        anchorEl={mascotRef.current}
-        onClose={() => setIsPopoverOpen(false)}
-        className={classes.bottomPopover}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.signUpPop}>
-          <div className={classes.mascotIcon}>
-            <img src={require('images/ic_mascot.png')} alt="" />
-          </div>
-          <div className={classes.customScrollBar}>
-            <div className={classes.signinGroup}>
-              <Typography variant="h2">
-                welcome
-                <br /> to apollo 24/7
-              </Typography>
+      <div className={classes.signUpPop}>
+        <div className={classes.mascotIcon}>
+          <img src={require('images/ic_mascot.png')} alt="" />
+        </div>
+        <div className={classes.customScrollBar}>
+          <div className={classes.signinGroup}>
+            <Typography variant="h2">
+              welcome
+              <br /> to apollo 24/7
+            </Typography>
+            {patients.length > 1 ? (
               <p>
-                We have found 2 accounts registered with this mobile number. Please tell us who is
-                who? :)
+                We have found {patients.length} accounts registered with this mobile number. Please
+                tell us who is who? :)
               </p>
-              <div className={classes.formGroup}>
-                <div className={classes.profileBox}>
-                  <div className={classes.boxHeader}>
-                    <div>1.</div>
-                    <div className={classes.userId}>APD1.0010783329</div>
-                  </div>
-                  <div className={classes.boxContent}>
-                    <div className={classes.userName}>Surj Gupta</div>
-                    <div className={classes.userInfo}>Male | 01 January 1987</div>
-                    <AppSelectField
-                      value={userRelation}
-                      onChange={(e: any) => {
-                        setUserRelation(e.currentTarget.value);
-                      }}
-                    >
-                      <MenuItem value={5} classes={{ selected: classes.menuSelected }}>
-                        Relation
-                      </MenuItem>
-                      <MenuItem value={10} classes={{ selected: classes.menuSelected }}>
-                        Me
-                      </MenuItem>
-                      <MenuItem value={20} classes={{ selected: classes.menuSelected }}>
-                        Mother
-                      </MenuItem>
-                      <MenuItem value={30} classes={{ selected: classes.menuSelected }}>
-                        Father
-                      </MenuItem>
-                      <MenuItem value={40} classes={{ selected: classes.menuSelected }}>
-                        Sister
-                      </MenuItem>
-                      <MenuItem value={50} classes={{ selected: classes.menuSelected }}>
-                        Brother
-                      </MenuItem>
-                      <MenuItem value={60} classes={{ selected: classes.menuSelected }}>
-                        Cousin
-                      </MenuItem>
-                      <MenuItem value={70} classes={{ selected: classes.menuSelected }}>
-                        Wife
-                      </MenuItem>
-                      <MenuItem value={80} classes={{ selected: classes.menuSelected }}>
-                        Husband
-                      </MenuItem>
-                    </AppSelectField>
-                  </div>
-                </div>
-                <div className={classes.profileBox}>
-                  <div className={classes.boxHeader}>
-                    <div>2.</div>
-                    <div className={classes.userId}>APJ1.0002284253</div>
-                  </div>
-                  <div className={classes.boxContent}>
-                    <div className={classes.userName}>Preeti Gupta</div>
-                    <div className={classes.userInfo}>Female | 02 January 1987</div>
-                    <AppSelectField
-                      value={userRelation}
-                      onChange={(e: any) => {
-                        setUserRelation(e.currentTarget.value);
-                      }}
-                    >
-                      <MenuItem value={5} classes={{ selected: classes.menuSelected }}>
-                        Relation
-                      </MenuItem>
-                      <MenuItem value={10} classes={{ selected: classes.menuSelected }}>
-                        Me
-                      </MenuItem>
-                      <MenuItem value={20} classes={{ selected: classes.menuSelected }}>
-                        Mother
-                      </MenuItem>
-                      <MenuItem value={30} classes={{ selected: classes.menuSelected }}>
-                        Father
-                      </MenuItem>
-                      <MenuItem value={40} classes={{ selected: classes.menuSelected }}>
-                        Sister
-                      </MenuItem>
-                      <MenuItem value={50} classes={{ selected: classes.menuSelected }}>
-                        Brother
-                      </MenuItem>
-                      <MenuItem value={60} classes={{ selected: classes.menuSelected }}>
-                        Cousin
-                      </MenuItem>
-                      <MenuItem value={70} classes={{ selected: classes.menuSelected }}>
-                        Wife
-                      </MenuItem>
-                      <MenuItem value={80} classes={{ selected: classes.menuSelected }}>
-                        Husband
-                      </MenuItem>
-                    </AppSelectField>
-                  </div>
-                </div>
-              </div>
+            ) : null}
+            <div className={classes.formGroup}>
+              {patients &&
+                patients.map((p, i) => (
+                  <PatientProfile
+                    key={p.id}
+                    patient={p}
+                    number={i + 1}
+                    onUpdatePatient={(updatedPatient) => {
+                      const newPatients = patients.map((patient) =>
+                        patient.id === updatedPatient.id ? updatedPatient : patient
+                      );
+                      setPatients(newPatients);
+                    }}
+                  />
+                ))}
             </div>
           </div>
-          <div className={classes.actions}>
-            <AppButton fullWidth disabled variant="contained" color="primary">
-              Submit
-            </AppButton>
-          </div>
         </div>
-      </Popover>
+        <div className={classes.actions}>
+          <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
+            {(mutate, { loading }) => (
+              <AppButton
+                type="submit"
+                onClick={() => {
+                  // WE DONT NEED TO IMPLEMENT THIS UNTIL THE NEXT SPRINT
+                  // patients.forEach((patient) => {
+                  //   mutate({
+                  //     variables: {
+                  //       patientInput: {
+                  //         id: patient.id,
+                  //         relation: patient.relation,
+                  //       },
+                  //     },
+                  //   });
+                  // });
+                }}
+                disabled={disabled}
+                fullWidth
+                variant="contained"
+                color="primary"
+              >
+                {loading ? <CircularProgress /> : 'Submit'}
+              </AppButton>
+            )}
+          </Mutation>
+        </div>
+      </div>
     </div>
   );
 };

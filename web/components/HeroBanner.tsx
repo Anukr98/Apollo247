@@ -6,6 +6,10 @@ import { AppButton } from 'components/ui/AppButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import { AppSelectField } from 'components/ui/AppSelectField';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
+import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -116,33 +120,46 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const HeroBanner: React.FC = (props) => {
+export const HeroBanner: React.FC = () => {
   const classes = useStyles();
-  const [userName, setUserName] = React.useState(10);
+  const { loggedInPatients, currentPatient, setCurrentPatient } = useAuth();
 
   return (
     <div className={classes.heroBanner}>
       <div className={classes.bannerInfo}>
-        <Typography variant="h1">
-          <span>hello</span>
-          <AppSelectField
-            value={userName}
-            onChange={(e) => setUserName(parseInt(e.currentTarget.value as string))}
-            classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
-          >
-            <MenuItem selected value={10} classes={{ selected: classes.menuSelected }}>
-              Surj
-            </MenuItem>
-            <MenuItem value={20} classes={{ selected: classes.menuSelected }}>
-              Preeti
-            </MenuItem>
-            <MenuItem classes={{ selected: classes.menuSelected }}>
-              <AppButton color="primary" classes={{ root: classes.addMemberBtn }}>
-                Add Member
-              </AppButton>
-            </MenuItem>
-          </AppSelectField>
-        </Typography>
+        {currentPatient && loggedInPatients ? (
+          <Typography variant="h1">
+            <span>hello</span>
+            <AppSelectField
+              value={currentPatient.id}
+              onChange={(e) => {
+                const newId = e.target.value as PatientSignIn_patientSignIn_patients['id'];
+                const newCurrentPatient = loggedInPatients.find((p) => p.id === newId);
+                if (newCurrentPatient) setCurrentPatient(newCurrentPatient);
+              }}
+              classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
+            >
+              {loggedInPatients.map((patient) => (
+                <MenuItem
+                  selected={patient.id === currentPatient.id}
+                  value={patient.id}
+                  classes={{ selected: classes.menuSelected }}
+                  key={patient.id}
+                >
+                  {patient.firstName}
+                </MenuItem>
+              ))}
+              <MenuItem classes={{ selected: classes.menuSelected }}>
+                <AppButton color="primary" classes={{ root: classes.addMemberBtn }}>
+                  Add Member
+                </AppButton>
+              </MenuItem>
+            </AppSelectField>
+          </Typography>
+        ) : (
+          <Typography variant="h1">hello there!</Typography>
+        )}
+
         <p>Not feeling well today? Don’t worry. We will help you find the right doctor :)</p>
         <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup }) => (

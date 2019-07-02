@@ -1,22 +1,28 @@
 import { useContext } from 'react';
 import { AuthContext, AuthProviderProps } from 'components/AuthProvider';
+import { Relation } from 'graphql/types/globalTypes';
 
-export const useIsLoggedIn = () => useCurrentUser() != null;
+export const useCurrentPatient = () => useContext(AuthContext).currentPatient;
+export const useIsLoggedIn = () => useLoggedInPatients() != null;
 export const useIsAuthenticating = () => useContext(AuthContext).isAuthenticating;
-export const useCurrentUser = () => useContext(AuthContext).currentUser!;
+export const useLoggedInPatients = () => useContext(AuthContext).loggedInPatients;
 export const useAuth = () => {
+  const currentPatient = useCurrentPatient();
+  const setCurrentPatient = useContext(AuthContext).setCurrentPatient!;
   const isLoggedIn = useIsLoggedIn();
   const isAuthenticating = useIsAuthenticating();
-  const currentUser = useContext(AuthContext).currentUser!;
+  const loggedInPatients = useContext(AuthContext).loggedInPatients;
   const buildCaptchaVerifier = useContext(AuthContext).buildCaptchaVerifier!;
   const verifyPhoneNumber = useContext(AuthContext).verifyPhoneNumber!;
   const verifyOtp = useContext(AuthContext).verifyOtp!;
   const signIn = useContext(AuthContext).signIn!;
   const signOut = useContext(AuthContext).signOut!;
   return {
+    currentPatient,
+    setCurrentPatient,
     isAuthenticating,
     isLoggedIn,
-    currentUser,
+    loggedInPatients,
     buildCaptchaVerifier,
     verifyPhoneNumber,
     verifyOtp,

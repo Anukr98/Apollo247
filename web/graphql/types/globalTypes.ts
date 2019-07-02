@@ -6,12 +6,36 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum Relation {
+  BROTHER = "BROTHER",
+  COUSIN = "COUSIN",
+  FATHER = "FATHER",
+  HUSBAND = "HUSBAND",
+  ME = "ME",
+  MOTHER = "MOTHER",
+  OTHER = "OTHER",
+  SISTER = "SISTER",
+  WIFE = "WIFE",
+}
+
 export enum Sex {
   FEMALE = "FEMALE",
   MALE = "MALE",
   NOT_APPLICABLE = "NOT_APPLICABLE",
   NOT_KNOWN = "NOT_KNOWN",
   OTHER = "OTHER",
+}
+
+export interface UpdatePatientInput {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  mobileNumber?: string | null;
+  sex?: Sex | null;
+  uhid?: string | null;
+  emailAddress?: string | null;
+  dateOfBirth?: string | null;
+  relation?: Relation | null;
 }
 
 //==============================================================

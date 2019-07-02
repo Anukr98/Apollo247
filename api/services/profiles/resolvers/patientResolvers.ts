@@ -61,6 +61,18 @@ export const patientTypeDefs = gql`
     errors: Error
   }
 
+  input UpdatePatientInput {
+    id: ID!
+    firstName: String
+    lastName: String
+    mobileNumber: String
+    sex: Sex
+    uhid: String
+    emailAddress: String
+    dateOfBirth: String
+    relation: Relation
+  }
+
   type UpdatePatientResult {
     patient: Patient
     errors: Error
@@ -68,15 +80,7 @@ export const patientTypeDefs = gql`
 
   extend type Mutation {
     patientSignIn(jwt: String): PatientSignInResult!
-    updatePatient(
-      id: ID!
-      firstName: String
-      lastName: String
-      sex: Sex
-      emailAddress: String
-      dateOfBirth: String
-      relation: Relation
-    ): UpdatePatientResult
+    updatePatient(patientInput: UpdatePatientInput): UpdatePatientResult!
   }
 `;
 
@@ -112,6 +116,7 @@ async function updateEntity<E extends BaseEntity>(
 
 const getPatients = () => ({ patients: [] });
 
+//patient signIn resolver
 const patientSignIn: Resolver<any, { jwt: string }> = async (
   parent,
   args,
@@ -213,11 +218,12 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
   return { patients, errors: null };
 };
 
-const updatePatient: Resolver<any, Partial<Patient> & { id: Patient['id'] }> = async (
+type UpdatePatientInput = { patientInput: Partial<Patient> & { id: Patient['id'] } };
+const updatePatient: Resolver<any, UpdatePatientInput> = async (
   parent,
-  args
+  { patientInput }
 ): Promise<UpdatePatientResult> => {
-  const { id, ...updateAttrs } = args;
+  const { id, ...updateAttrs } = patientInput;
   const [updatedPatient, updateError] = await wait<Patient, QueryFailedError>(
     updateEntity<Patient>(Patient, id, updateAttrs)
   );
