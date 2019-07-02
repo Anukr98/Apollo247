@@ -74,7 +74,7 @@ module.exports = {
   watchOptions: {
     aggregateTimeout: 300,
     poll: 1000,
-    ignored: [nodeModulesDir],
+    ignored: [/node_modules/],
   },
 
   plugins,
