@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Relation, Sex } from "./globalTypes";
+import { Relation, Sex, ErrorMsgs } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: PatientSignIn
@@ -20,9 +20,15 @@ export interface PatientSignIn_patientSignIn_patients {
   dateOfBirth: string | null;
 }
 
+export interface PatientSignIn_patientSignIn_errors {
+  __typename: "Error";
+  messages: ErrorMsgs[];
+}
+
 export interface PatientSignIn_patientSignIn {
   __typename: "PatientSignInResult";
   patients: PatientSignIn_patientSignIn_patients[] | null;
+  errors: PatientSignIn_patientSignIn_errors | null;
 }
 
 export interface PatientSignIn {

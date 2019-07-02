@@ -168,6 +168,10 @@ export const AuthProvider: React.FC = (props) => {
         variables: { jwt: updatedToken },
       });
 
+      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.errors) {
+        const errMsg = patientSignInResult.data.patientSignIn.errors.messages[0];
+        console.log(errMsg);
+      }
       if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
         const patients = patientSignInResult.data.patientSignIn.patients;
         const me = patients.find((p) => p.relation === Relation.ME) || patients[0];
