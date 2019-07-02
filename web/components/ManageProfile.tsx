@@ -1,11 +1,12 @@
 import { Theme } from '@material-ui/core';
 import Popover from '@material-ui/core/Popover';
 import { createStyles, makeStyles } from '@material-ui/styles';
-import { useCurrentPatient } from 'hooks/authHooks';
+import { useCurrentPatient, useLoggedInPatients } from 'hooks/authHooks';
 import { NewProfile } from 'components/NewProfile';
 import { ExistingProfile } from 'components/ExistingProfile';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
+import _isEmpty from 'lodash/isEmpty';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -103,7 +104,15 @@ export const ManageProfile: React.FC = (props) => {
   const classes = useStyles();
   const mascotRef = useRef(null);
   const currentPatient = useCurrentPatient();
+  const loggedInPatients = useLoggedInPatients();
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+
+  useEffect(() => {
+    if (loggedInPatients) {
+      const isSomePatientMissingRelation = loggedInPatients.some((p) => _isEmpty(p.relation));
+      if (isSomePatientMissingRelation) setIsPopoverOpen(true);
+    }
+  }, [loggedInPatients]);
 
   return (
     <ProtectedWithLoginPopup>
