@@ -157,7 +157,6 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
       res
         .json()
         .then((resp) => {
-          console.log(resp);
           return resp;
         })
         .catch((e) => {
