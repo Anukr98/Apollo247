@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress, Grid } from '@material-ui/core';
 import React, { useState, useEffect } from 'react';
 import Typography from '@material-ui/core/Typography';
 import InputAdornment from '@material-ui/core/InputAdornment';
@@ -45,10 +45,30 @@ const useStyles = makeStyles((theme: Theme) => {
         marginRight: -40,
       },
     },
+    otpAction: {
+      display: 'flex',
+      '& button': {
+        marginLeft: 'auto',
+        marginRight: -40,
+        backgroundColor: '#FED984',
+        fontSize: 16,
+        fontWeight: 500,
+      },
+      '& >div': {
+        height: 0,
+        opacity: 0,
+        width: 0,
+      },
+    },
     captcha: {
       transform: 'scale(0.8)',
       transformOrigin: 'top left',
       marginTop: 10,
+    },
+    otpFormWrap: {
+      '& input': {
+        textAlign: 'center',
+      },
     },
   };
 });
@@ -98,11 +118,30 @@ export const SignIn: React.FC<SignInProps> = (props) => {
   }, [captchaVerifier]);
 
   return displayOtpInput ? (
-    <div className={classes.loginFormWrap}>
+    <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">hi</Typography>
       <p>Type in the OTP sent to you, to authenticate</p>
-      <AppTextField value={otp} label="Enter OTP" onChange={(e) => setOtp(e.currentTarget.value)} />
-      <div className={classes.action}>
+      <Grid container spacing={1}>
+        <Grid item xs={2}>
+          <AppTextField value={otp} onChange={(e) => setOtp(e.currentTarget.value)} />
+        </Grid>
+        <Grid item xs={2}>
+          <AppTextField value={otp} onChange={(e) => setOtp(e.currentTarget.value)} />
+        </Grid>
+        <Grid item xs={2}>
+          <AppTextField value={otp} onChange={(e) => setOtp(e.currentTarget.value)} />
+        </Grid>
+        <Grid item xs={2}>
+          <AppTextField value={otp} onChange={(e) => setOtp(e.currentTarget.value)} />
+        </Grid>
+        <Grid item xs={2}>
+          <AppTextField value={otp} onChange={(e) => setOtp(e.currentTarget.value)} />
+        </Grid>
+        <Grid item xs={2}>
+          <AppTextField value={otp} onChange={(e) => setOtp(e.currentTarget.value)} />
+        </Grid>
+      </Grid>
+      <div className={classes.otpAction}>
         <Fab
           color="primary"
           onClick={(e) =>
