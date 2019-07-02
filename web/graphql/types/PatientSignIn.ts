@@ -15,11 +15,18 @@ export interface PatientSignIn_patientSignIn_patients {
   firstName: string | null;
   lastName: string | null;
   sex: Sex | null;
+  uhid: string | null;
+}
+
+export interface PatientSignIn_patientSignIn_errors {
+  __typename: "Error";
+  messages: string[];
 }
 
 export interface PatientSignIn_patientSignIn {
   __typename: "PatientSignInResult";
   patients: PatientSignIn_patientSignIn_patients[] | null;
+  errors: PatientSignIn_patientSignIn_errors | null;
 }
 
 export interface PatientSignIn {

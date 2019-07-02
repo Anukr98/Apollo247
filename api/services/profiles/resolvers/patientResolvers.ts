@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'profiles/profiles-service';
-import { Patient, Sex } from 'profiles/entity/patient';
+import { Patient, Sex, Relation, ErrorMsgs } from 'profiles/entity/patient';
 import fetch from 'node-fetch';
 import { auth } from 'firebase-admin';
 import { BaseEntity, QueryFailedError } from 'typeorm';
@@ -31,6 +31,15 @@ export const patientTypeDefs = gql`
     WIFE
     HUSBAND
     OTHER
+  }
+
+  enum ErrorMsgs {
+    INVALID_TOKEN
+    INVALID_MOBILE_NUMBER
+    PRISM_AUTH_TOKEN_ERROR
+    PRISM_GET_USERS_ERROR
+    UPDATE_PROFILE_ERROR
+    PRISM_NO_DATA
   }
 
   type Patient @key(fields: "id") {
@@ -124,7 +133,7 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
   if (firebaseIdTokenError) {
     return {
       patients: null,
-      errors: { messages: [`${firebaseIdTokenError.code}`] },
+      errors: { messages: [`${ErrorMsgs.INVALID_TOKEN}`] },
     };
   }
 
@@ -133,7 +142,7 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
   if (firebaseUserError) {
     return {
       patients: [],
-      errors: { messages: [firebaseUserError] },
+      errors: { messages: [ErrorMsgs.INVALID_MOBILE_NUMBER] },
     };
   }
   const mobileNumber = firebaseUser.phoneNumber!;
@@ -145,13 +154,24 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
     PrismGetAuthTokenError
   >(
     fetch(`${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`, prismHeaders).then((res) =>
-      res.json()
+      res
+        .json()
+        .then((resp) => {
+          console.log(resp);
+          return resp;
+        })
+        .catch((e) => {
+          return {
+            patients: [],
+            errors: { messages: [ErrorMsgs.PRISM_NO_DATA] },
+          };
+        })
     )
   );
   if (prismAuthTokenError) {
     return {
       patients: null,
-      errors: { messages: [prismAuthTokenError.errorMsg] },
+      errors: { messages: [ErrorMsgs.PRISM_AUTH_TOKEN_ERROR] },
     };
   }
 
@@ -159,12 +179,24 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
     fetch(
       `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`,
       prismHeaders
-    ).then((res) => res.json())
+    ).then((res) =>
+      res
+        .json()
+        .then((resp) => {
+          return resp;
+        })
+        .catch((e) => {
+          return {
+            patients: [],
+            errors: { messages: [ErrorMsgs.PRISM_NO_DATA] },
+          };
+        })
+    )
   );
   if (uhidsError) {
     return {
       patients: null,
-      errors: { messages: [uhidsError.errorMsg] },
+      errors: { messages: [ErrorMsgs.PRISM_GET_USERS_ERROR] },
     };
   }
 
@@ -222,7 +254,7 @@ const updatePatient: Resolver<any, Partial<Patient> & { id: Patient['id'] }> = a
     updateEntity<Patient>(Patient, id, updateAttrs)
   );
 
-  if (updateError) return { patient: null, errors: { messages: [updateError.message] } };
+  if (updateError) return { patient: null, errors: { messages: [ErrorMsgs.UPDATE_PROFILE_ERROR] } };
   return { patient: updatedPatient, errors: null };
 };
 

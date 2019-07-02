@@ -165,6 +165,10 @@ export const AuthProvider: React.FC = (props) => {
       } else {
         setCurrentUser(null);
         setIsAuthenticating(false);
+        if (patientSignInResult.data && patientSignInResult.data.patientSignIn.errors) {
+          const errMsg = patientSignInResult.data.patientSignIn.errors.messages[0];
+          console.log(errMsg);
+        }
       }
     });
   }, []);
