@@ -8,7 +8,10 @@ export const GET_PATIENTS = gql`
         mobileNumber
         firstName
         lastName
+        relation
         sex
+        uhid
+        dateOfBirth
       }
     }
   }
@@ -22,8 +25,10 @@ export const PATIENT_SIGN_IN = gql`
         mobileNumber
         firstName
         lastName
+        relation
         sex
         uhid
+        dateOfBirth
       }
     }
   }

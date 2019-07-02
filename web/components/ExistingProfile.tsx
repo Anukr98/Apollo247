@@ -6,7 +6,8 @@ import { createStyles, makeStyles } from '@material-ui/styles';
 import { AppButton } from 'components/ui/AppButton';
 import { AppSelectField } from 'components/ui/AppSelectField';
 import { PatientSignIn_patientSignIn } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
-import { random } from 'lodash';
+import { random, camelCase } from 'lodash';
+import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -140,9 +141,16 @@ export interface ExistingProfileProps {
 
 export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const classes = useStyles();
-  const [userRelation, setUserRelation] = React.useState('5');
-
+  const [userRelation, setUserRelation] = React.useState('ME');
+  const [updateRelationBtnStatus, setUpdateRelationBtnStatus] = React.useState(true);
   const { patients } = props;
+
+  const relationships = () =>
+    Object.values(Relation).map((relation) => (
+      <MenuItem value={relation} classes={{ selected: classes.menuSelected }} key={relation}>
+        {relation}
+      </MenuItem>
+    ));
 
   const patientCards = () => {
     if (patients) {
@@ -154,38 +162,18 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
           </div>
           <div className={classes.boxContent}>
             <div className={classes.userName}>{uhidInfo.firstName}</div>
-            <div className={classes.userInfo}>Male | 01 January 1987</div>
+            <div className={classes.userInfo}>
+              {uhidInfo.sex ? camelCase(uhidInfo.sex) : ''} |{' '}
+              {uhidInfo.dateOfBirth ? camelCase(uhidInfo.dateOfBirth) : ''}
+            </div>
             <AppSelectField
               value={userRelation}
-              onChange={(event) => setUserRelation(event.target.value as string)}
+              onChange={(event) => {
+                setUserRelation(event.target.value as string);
+                setUpdateRelationBtnStatus(true);
+              }}
             >
-              <MenuItem value={5} classes={{ selected: classes.menuSelected }}>
-                Relation
-              </MenuItem>
-              <MenuItem value={10} classes={{ selected: classes.menuSelected }}>
-                Me
-              </MenuItem>
-              <MenuItem value={20} classes={{ selected: classes.menuSelected }}>
-                Mother
-              </MenuItem>
-              <MenuItem value={30} classes={{ selected: classes.menuSelected }}>
-                Father
-              </MenuItem>
-              <MenuItem value={40} classes={{ selected: classes.menuSelected }}>
-                Sister
-              </MenuItem>
-              <MenuItem value={50} classes={{ selected: classes.menuSelected }}>
-                Brother
-              </MenuItem>
-              <MenuItem value={60} classes={{ selected: classes.menuSelected }}>
-                Cousin
-              </MenuItem>
-              <MenuItem value={70} classes={{ selected: classes.menuSelected }}>
-                Wife
-              </MenuItem>
-              <MenuItem value={80} classes={{ selected: classes.menuSelected }}>
-                Husband
-              </MenuItem>
+              {relationships()}
             </AppSelectField>
           </div>
         </div>
@@ -207,15 +195,22 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
               welcome
               <br /> to apollo 24/7
             </Typography>
-            <p>
-              We have found {patients ? patients.length : 0} accounts registered with this mobile
-              number. Please tell us who is who? :)
-            </p>
+            {patients && patients.length > 1 ? (
+              <p>
+                We have found {patients ? patients.length : 0} accounts registered with this mobile
+                number. Please tell us who is who? :)
+              </p>
+            ) : null}
             <div className={classes.formGroup}>{patientCards()}</div>
           </div>
         </div>
         <div className={classes.actions}>
-          <AppButton fullWidth disabled variant="contained" color="primary">
+          <AppButton
+            fullWidth
+            disabled={updateRelationBtnStatus}
+            variant="contained"
+            color="primary"
+          >
             Submit
           </AppButton>
         </div>

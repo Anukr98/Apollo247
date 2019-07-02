@@ -122,13 +122,12 @@ const useStyles = makeStyles((theme: Theme) => {
 export const HeroBanner: React.FC = (props) => {
   const classes = useStyles();
   const [userName, setUserName] = React.useState('');
-  const [uhidsAvailable, setUhidsAvailable] = React.useState<boolean>(false);
   const userDetails = useCurrentUser();
+  const uhidsAvailable = userDetails && userDetails.find((u) => u.uhid !== '');
 
   useEffect(() => {
     if (userDetails && userDetails[0].uhid !== '') {
       setUserName(userDetails[0].uhid);
-      setUhidsAvailable(true);
     }
   }, [userDetails]);
 

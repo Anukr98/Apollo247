@@ -6,6 +6,18 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum Relation {
+  BROTHER = "BROTHER",
+  COUSIN = "COUSIN",
+  FATHER = "FATHER",
+  HUSBAND = "HUSBAND",
+  ME = "ME",
+  MOTHER = "MOTHER",
+  OTHER = "OTHER",
+  SISTER = "SISTER",
+  WIFE = "WIFE",
+}
+
 export enum Sex {
   FEMALE = "FEMALE",
   MALE = "MALE",

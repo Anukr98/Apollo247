@@ -111,6 +111,12 @@ export const ManageProfile: React.FC = (props) => {
       )
     : null;
 
+  React.useEffect(() => {
+    if (userDetails) {
+      setIsPopoverOpen(true);
+    }
+  }, [userDetails]);
+
   return (
     <ProtectedWithLoginPopup>
       {({ protectWithLoginPopup, isProtected }) => (
@@ -118,14 +124,7 @@ export const ManageProfile: React.FC = (props) => {
           <div
             className={classes.mascotCircle}
             ref={mascotRef}
-            onClick={(e) => {
-              protectWithLoginPopup();
-              if (isProtected) {
-                e.preventDefault();
-              } else {
-                setIsPopoverOpen(true);
-              }
-            }}
+            onClick={() => (isProtected ? protectWithLoginPopup() : setIsPopoverOpen(true))}
           >
             <img src={require('images/ic_mascot.png')} alt="" />
           </div>

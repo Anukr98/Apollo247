@@ -12,6 +12,8 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import { SignIn } from 'components/SignIn';
 import { Navigation } from 'components/Navigatiion';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+
 import { useIsLoggedIn, useLoginPopupState, useIsAuthenticating } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -82,7 +84,7 @@ export const Header: React.FC = (props) => {
   const avatarRef = useRef(null);
   const isAuthenticating = useIsAuthenticating();
   const { loginPopupVisible, setLoginPopupVisible } = useLoginPopupState();
-  const [displayAlert, setDisplayAlert] = React.useState(false);
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   const isUserLoggedIn = useIsLoggedIn();
 
@@ -95,28 +97,30 @@ export const Header: React.FC = (props) => {
       </div>
       {isUserLoggedIn && <Navigation />}
       <div className={`${classes.userAccount} ${isUserLoggedIn ? '' : classes.userAccountLogin}`}>
-        <div
-          className={`${classes.userCircle} ${isUserLoggedIn ? classes.userActive : ''}`}
-          onClick={() => {
-            if (isUserLoggedIn) {
-              setDisplayAlert(true);
-            } else {
-              setLoginPopupVisible(true);
-            }
-          }}
-          ref={avatarRef}
-        >
-          {isAuthenticating ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
-        </div>
+        <ProtectedWithLoginPopup>
+          {({ protectWithLoginPopup, isProtected }) => (
+            <div
+              className={`${classes.userCircle} ${isUserLoggedIn ? classes.userActive : ''}`}
+              onClick={() => (isUserLoggedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
+              ref={avatarRef}
+            >
+              {isAuthenticating ? (
+                <CircularProgress />
+              ) : (
+                <img src={require('images/ic_account.svg')} />
+              )}
+            </div>
+          )}
+        </ProtectedWithLoginPopup>
         {/* The below dialog must be removed when the functionality is defined with Logged in User */}
         {isUserLoggedIn ? (
-          <Dialog open={displayAlert} onClose={() => setDisplayAlert(false)}>
+          <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
             <DialogTitle>Logged In</DialogTitle>
             <DialogContent>
               <DialogContentText>You are successfully Logged in with Apollo 24x7</DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setDisplayAlert(false)} color="primary" autoFocus>
+              <Button onClick={() => setIsDialogOpen(false)} color="primary" autoFocus>
                 Close
               </Button>
             </DialogActions>
