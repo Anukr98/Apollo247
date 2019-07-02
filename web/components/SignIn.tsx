@@ -6,8 +6,10 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import FormControl from '@material-ui/core/FormControl';
 import Fab from '@material-ui/core/Fab';
 import { useAuth } from 'hooks/authHooks';
-import { AppTextField } from 'components/ui/AppTextField';
 import { AppInputField } from 'components/ui/AppInputField';
+import _times from 'lodash/times';
+import _isNumber from 'lodash/isNumber';
+import { AppTextField } from './ui/AppTextField';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -76,13 +78,14 @@ const useStyles = makeStyles((theme: Theme) => {
 const recaptchaContainerId = 'recaptcha-container';
 const isMobileNumberValid = (number: string) => number.length === 10;
 const mobileNumberPrefix = '+91';
+const numOtpDigits = 6;
 
 export interface SignInProps {}
 
 export const SignIn: React.FC<SignInProps> = (props) => {
   const classes = useStyles();
   const [mobileNumber, setMobileNumber] = useState<string>('');
-  const [otp, setOtp] = useState<string>('');
+  const [otp, setOtp] = useState<number[]>([]);
   const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
   const [
     captchaVerifier,
@@ -117,35 +120,39 @@ export const SignIn: React.FC<SignInProps> = (props) => {
     }
   }, [captchaVerifier]);
 
+  const captchaEl = (
+    <div
+      id={recaptchaContainerId}
+      className={classes.captcha}
+      style={captchaVerified ? { opacity: 0, position: 'absolute', top: 0, left: 0 } : undefined}
+    />
+  );
+
   return displayOtpInput ? (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">hi</Typography>
       <p>Type in the OTP sent to you, to authenticate</p>
       <Grid container spacing={1}>
-        <Grid item xs={2}>
-          <AppTextField value={otp} onChange={(e) => setOtp(e.currentTarget.value)} />
-        </Grid>
-        <Grid item xs={2}>
-          <AppTextField value={otp} onChange={(e) => setOtp(e.currentTarget.value)} />
-        </Grid>
-        <Grid item xs={2}>
-          <AppTextField value={otp} onChange={(e) => setOtp(e.currentTarget.value)} />
-        </Grid>
-        <Grid item xs={2}>
-          <AppTextField value={otp} onChange={(e) => setOtp(e.currentTarget.value)} />
-        </Grid>
-        <Grid item xs={2}>
-          <AppTextField value={otp} onChange={(e) => setOtp(e.currentTarget.value)} />
-        </Grid>
-        <Grid item xs={2}>
-          <AppTextField value={otp} onChange={(e) => setOtp(e.currentTarget.value)} />
-        </Grid>
+        {_times(numOtpDigits, (index) => (
+          <Grid item xs={2} key={index}>
+            <AppTextField
+              value={_isNumber(otp[index]) ? otp[index] : ''}
+              inputProps={{ maxLength: 1 }}
+              onChange={(e) => {
+                const newOtp = [...otp];
+                newOtp[index] = parseInt(e.currentTarget.value, 10);
+                setOtp(newOtp);
+              }}
+            />
+          </Grid>
+        ))}
       </Grid>
+      {captchaEl}
       <div className={classes.otpAction}>
         <Fab
           color="primary"
           onClick={(e) =>
-            verifyOtp(phoneNumberVerificationToken, otp).then((otpVerificationToken) => {
+            verifyOtp(phoneNumberVerificationToken, otp.join('')).then((otpVerificationToken) => {
               signIn(otpVerificationToken);
             })
           }
@@ -172,7 +179,7 @@ export const SignIn: React.FC<SignInProps> = (props) => {
         />
         <div className={classes.helpText}>OTP will be sent to this number</div>
       </FormControl>
-      <div id={recaptchaContainerId} className={classes.captcha} />
+      {captchaEl}
       <div className={classes.action}>
         <Fab
           color="primary"
