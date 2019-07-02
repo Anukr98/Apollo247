@@ -144,7 +144,9 @@ interface PatientProfileProps {
 const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   const classes = useStyles();
   const { patient, number } = props;
-  const [patientRelation, setPatientRelation] = React.useState<Relation | null>(patient.relation);
+  const [selectedRelation, setSelectedRelation] = React.useState<Relation | ''>(
+    patient.relation || ''
+  );
   return (
     <div className={classes.profileBox}>
       <div className={classes.boxHeader}>
@@ -158,17 +160,22 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
           {_camelCase(patient.dateOfBirth || '')}
         </div>
         <AppSelectField
-          value={patientRelation}
+          value={selectedRelation}
           onChange={(e) => {
-            const updatedRelation = e.currentTarget.value as Relation;
-            setPatientRelation(updatedRelation);
+            const updatedRelation = e.target.value as Relation;
+            setSelectedRelation(updatedRelation);
             const updatedPatient = { ...patient, relation: updatedRelation };
             props.onUpdatePatient(updatedPatient);
           }}
         >
-          {Object.values(Relation).map((relation) => (
-            <MenuItem value={relation} classes={{ selected: classes.menuSelected }} key={relation}>
-              {relation}
+          {Object.values(Relation).map((relationOption: Relation) => (
+            <MenuItem
+              selected={relationOption === selectedRelation}
+              value={relationOption}
+              classes={{ selected: classes.menuSelected }}
+              key={relationOption}
+            >
+              {relationOption}
             </MenuItem>
           ))}
         </AppSelectField>
@@ -208,6 +215,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
               {patients &&
                 patients.map((p, i) => (
                   <PatientProfile
+                    key={p.id}
                     patient={p}
                     number={i + 1}
                     onUpdatePatient={(updatedPatient) => {
