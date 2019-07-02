@@ -3,6 +3,8 @@ import { Resolver } from 'profiles/profiles-service';
 import { Patient, Sex } from 'profiles/entity/patient';
 import fetch from 'node-fetch';
 import { auth } from 'firebase-admin';
+import { BaseEntity, QueryFailedError } from 'typeorm';
+
 import {
   PrismGetAuthTokenResponse,
   PrismGetAuthTokenError,
@@ -19,6 +21,18 @@ export const patientTypeDefs = gql`
     NOT_APPLICABLE
   }
 
+  enum Relation {
+    ME
+    MOTHER
+    FATHER
+    SISTER
+    BROTHER
+    COUSIN
+    WIFE
+    HUSBAND
+    OTHER
+  }
+
   type Patient @key(fields: "id") {
     id: ID!
     firstName: String
@@ -26,6 +40,9 @@ export const patientTypeDefs = gql`
     mobileNumber: String
     sex: Sex
     uhid: String
+    emailAddress: String
+    dateOfBirth: String
+    relation: Relation
   }
 
   type Error {
@@ -43,8 +60,23 @@ export const patientTypeDefs = gql`
     patients: [Patient!]
     errors: Error
   }
+
+  type UpdatePatientResult {
+    patient: Patient
+    errors: Error
+  }
+
   extend type Mutation {
     patientSignIn(jwt: String): PatientSignInResult!
+    updatePatient(
+      id: ID!
+      firstName: String
+      lastName: String
+      sex: Sex
+      emailAddress: String
+      dateOfBirth: String
+      relation: Relation
+    ): UpdatePatientResult
   }
 `;
 
@@ -53,8 +85,29 @@ type PatientSignInResult = {
   errors: { messages: string[] } | null;
 };
 
+type UpdatePatientResult = {
+  patient: Patient | null;
+  errors: { messages: string[] } | null;
+};
+
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
+}
+
+async function updateEntity<E extends BaseEntity>(
+  Entity: typeof BaseEntity,
+  id: string,
+  attrs: Partial<Omit<E, keyof BaseEntity>>
+): Promise<E> {
+  let entity: E;
+  try {
+    entity = await Entity.findOneOrFail<E>(id);
+    await Entity.update(id, attrs);
+    await entity.reload();
+  } catch (e) {
+    throw e;
+  }
+  return entity;
 }
 
 const getPatients = () => ({ patients: [] });
@@ -160,11 +213,25 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
   return { patients, errors: null };
 };
 
+const updatePatient: Resolver<any, Partial<Patient> & { id: Patient['id'] }> = async (
+  parent,
+  args
+): Promise<UpdatePatientResult> => {
+  const { id, ...updateAttrs } = args;
+  const [updatedPatient, updateError] = await wait<Patient, QueryFailedError>(
+    updateEntity<Patient>(Patient, id, updateAttrs)
+  );
+
+  if (updateError) return { patient: null, errors: { messages: [updateError.message] } };
+  return { patient: updatedPatient, errors: null };
+};
+
 export const patientResolvers = {
   Query: {
     getPatients,
   },
   Mutation: {
     patientSignIn,
+    updatePatient,
   },
 };

@@ -3,17 +3,31 @@ import { Theme } from '@material-ui/core';
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import { AppButton } from 'components/ui/AppButton';
+import MenuItem from '@material-ui/core/MenuItem';
+import { AppSelectField } from 'components/ui/AppSelectField';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     heroBanner: {
-      display: 'flex',
       borderRadius: '0 0 10px 10px',
       backgroundColor: theme.palette.text.primary,
-      padding: '40px 40px 20px 40px',
+      padding: 40,
+      position: 'relative',
+      [theme.breakpoints.up('lg')]: {
+        display: 'flex',
+      },
+      [theme.breakpoints.down('xs')]: {
+        padding: '40px 20px',
+      },
+      [theme.breakpoints.between('sm', 'md')]: {
+        paddingTop: 60,
+      },
     },
     bannerInfo: {
-      width: '50%',
+      [theme.breakpoints.up('lg')]: {
+        width: '50%',
+      },
       '& p': {
         fontSize: 17,
         lineHeight: 1.47,
@@ -21,37 +35,127 @@ const useStyles = makeStyles((theme: Theme) => {
         color: theme.palette.secondary.main,
         marginTop: 16,
         marginBottom: 20,
+        [theme.breakpoints.between('sm', 'md')]: {
+          paddingRight: 400,
+        },
+      },
+      '& h1': {
+        display: 'flex',
+        [theme.breakpoints.down('xs')]: {
+          fontSize: 36,
+        },
+        '& >div': {
+          marginLeft: 10,
+          paddingTop: 0,
+          marginTop: -10,
+          width: 'auto',
+        },
       },
     },
     bannerImg: {
-      width: '50%',
-      marginLeft: 'auto',
       marginBottom: -190,
       textAlign: 'right',
+      [theme.breakpoints.up('lg')]: {
+        width: '50%',
+        marginLeft: 'auto',
+      },
+      [theme.breakpoints.between('sm', 'md')]: {
+        width: 400,
+        position: 'absolute',
+        right: 40,
+        bottom: 0,
+        marginBottom: -150,
+      },
       '& img': {
         marginTop: -15,
+        maxWidth: '100%',
+        [theme.breakpoints.down('xs')]: {
+          maxWidth: 281,
+          marginTop: -50,
+        },
       },
     },
     button: {
-      minWidth: 200,
+      [theme.breakpoints.up('sm')]: {
+        minWidth: 200,
+      },
+    },
+    menuSelected: {
+      backgroundColor: 'transparent !important',
+      color: '#00b38e !important',
+    },
+    selectMenuRoot: {
+      '& svg': {
+        color: '#00b38e',
+        fontSize: 30,
+      },
+    },
+    selectMenuItem: {
+      color: theme.palette.secondary.dark,
+      fontSize: 56,
+      fontWeight: 600,
+      lineHeight: '66px',
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 36,
+        lineHeight: '46px',
+      },
+      backgroundColor: 'transparent',
+      '&:focus': {
+        backgroundColor: 'transparent',
+      },
+    },
+    addMemberBtn: {
+      boxShadow: 'none',
+      backgroundColor: 'transparent',
+      minWidth: 100,
+      marginLeft: 30,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
     },
   };
 });
 
 export const HeroBanner: React.FC = (props) => {
   const classes = useStyles();
+  const [userName, setUserName] = React.useState(10);
+
   return (
     <div className={classes.heroBanner}>
       <div className={classes.bannerInfo}>
-        <Typography variant="h1">hello there!</Typography>
+        <Typography variant="h1">
+          <span>hello</span>
+          <AppSelectField
+            value={userName}
+            onChange={(e) => setUserName(parseInt(e.currentTarget.value as string))}
+            classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
+          >
+            <MenuItem selected value={10} classes={{ selected: classes.menuSelected }}>
+              Surj
+            </MenuItem>
+            <MenuItem value={20} classes={{ selected: classes.menuSelected }}>
+              Preeti
+            </MenuItem>
+            <MenuItem classes={{ selected: classes.menuSelected }}>
+              <AppButton color="primary" classes={{ root: classes.addMemberBtn }}>
+                Add Member
+              </AppButton>
+            </MenuItem>
+          </AppSelectField>
+        </Typography>
         <p>Not feeling well today? Don’t worry. We will help you find the right doctor :)</p>
-        <AppButton
-          variant="contained"
-          color="primary"
-          classes={{ root: classes.button }}
-        >
-          Consult a doctor
-        </AppButton>
+        <ProtectedWithLoginPopup>
+          {({ protectWithLoginPopup }) => (
+            <AppButton
+              variant="contained"
+              color="primary"
+              classes={{ root: classes.button }}
+              onClick={() => protectWithLoginPopup()}
+            >
+              Consult a doctor
+            </AppButton>
+          )}
+        </ProtectedWithLoginPopup>
       </div>
       <div className={classes.bannerImg}>
         <img src={require('images/ic_doctor.svg')} alt="" />

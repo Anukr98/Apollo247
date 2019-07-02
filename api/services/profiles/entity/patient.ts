@@ -8,6 +8,18 @@ export enum Sex {
   NOT_APPLICABLE = 'NOT_APPLICABLE',
 }
 
+export enum Relation {
+  ME = 'ME',
+  MOTHER = 'MOTHER',
+  FATHER = 'FATHER',
+  SISTER = 'SISTER',
+  BROTHER = 'BROTHER',
+  COUSIN = 'COUSIN',
+  WIFE = 'WIFE',
+  HUSBAND = 'HUSBAND',
+  OTHER = 'OTHER',
+}
+
 @Entity()
 export class Patient extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -30,4 +42,13 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true })
   uhid: string;
+
+  @Column({ nullable: true })
+  emailAddress: string;
+
+  @Column({ nullable: true })
+  relation: Relation;
+
+  @Column({ nullable: true })
+  dateOfBirth: Date;
 }

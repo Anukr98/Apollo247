@@ -1,45 +1,48 @@
-import * as firebase from 'firebase/app';
-import 'firebase/auth';
-import React, { useState, useEffect } from 'react';
-import { ApolloProvider } from 'react-apollo';
-import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloClient } from 'apollo-client';
+import { setContext } from 'apollo-link-context';
 import { ErrorResponse, onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
-import { setContext } from 'apollo-link-context';
-
-import { apiRoutes } from 'helpers/apiRoutes';
-import { PatientSignIn, PatientSignInVariables } from 'graphql/types/PatientSignIn';
+import * as firebase from 'firebase/app';
+import 'firebase/auth';
 import { PATIENT_SIGN_IN } from 'graphql/profiles';
+import { PatientSignIn, PatientSignInVariables } from 'graphql/types/PatientSignIn';
+import { apiRoutes } from 'helpers/apiRoutes';
+import React, { useEffect, useState } from 'react';
+import { ApolloProvider } from 'react-apollo';
+import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 
 export interface AuthProviderProps {
   currentUser: any | null;
-  authenticating: boolean;
+  isAuthenticating: boolean;
   buildCaptchaVerifier:
-    | ((recaptchaContainerId: HTMLElement['id']) => firebase.auth.RecaptchaVerifier_Instance)
+    | ((recaptchaContainerId: HTMLElement['id']) => firebase.auth.RecaptchaVerifier_Instance) // eslint-disable-line camelcase
     | null;
   verifyPhoneNumber:
     | ((
         mobileNumber: string,
-        captchaVerifier: firebase.auth.RecaptchaVerifier_Instance | null
-      ) => ReturnType<firebase.auth.PhoneAuthProvider_Instance['verifyPhoneNumber']>)
+        captchaVerifier: firebase.auth.RecaptchaVerifier_Instance | null // eslint-disable-line camelcase
+      ) => ReturnType<firebase.auth.PhoneAuthProvider_Instance['verifyPhoneNumber']>) // eslint-disable-line camelcase
     | null;
   verifyOtp:
     | ((phoneNumberVerificationToken: string, otp: string) => Promise<firebase.auth.AuthCredential>)
     | null;
   signIn: ((otpVerificationToken: firebase.auth.AuthCredential) => Promise<void>) | null;
   signOut: (() => any) | null;
+  loginPopupVisible: boolean;
+  setLoginPopupVisible: ((loginPopupVisible: boolean) => any) | null;
 }
 
 export const AuthContext = React.createContext<AuthProviderProps>({
   currentUser: null,
-  authenticating: true,
+  isAuthenticating: true,
   buildCaptchaVerifier: null,
   verifyPhoneNumber: null,
   verifyOtp: null,
   signIn: null,
   signOut: null,
+  loginPopupVisible: false,
+  setLoginPopupVisible: null,
 });
 
 const userIsValid = (user: firebase.User | null) => user && user.phoneNumber;
@@ -71,7 +74,9 @@ export const AuthProvider: React.FC = (props) => {
   apolloClient = buildApolloClient(authToken);
 
   const [currentUser, setCurrentUser] = useState<AuthProviderProps['currentUser']>(null);
-  const [authenticating, setAuthenticating] = useState<AuthProviderProps['authenticating']>(true);
+  const [isAuthenticating, setIsAuthenticating] = useState<AuthProviderProps['isAuthenticating']>(
+    true
+  );
   const [buildCaptchaVerifier, setBuildCaptchaVerifier] = useState<
     AuthProviderProps['buildCaptchaVerifier']
   >(null);
@@ -81,12 +86,9 @@ export const AuthProvider: React.FC = (props) => {
   const [verifyOtp, setVerifyOtp] = useState<AuthProviderProps['verifyOtp']>(null);
   const [signIn, setSignIn] = useState<AuthProviderProps['signIn']>(null);
   const [signOut, setSignOut] = useState<AuthProviderProps['signOut']>(null);
-
-  useEffect(() => {
-    console.log('--------------- signed in as -------------');
-    console.log(currentUser);
-    console.log('------------------------------------------');
-  }, [currentUser]);
+  const [loginPopupVisible, setLoginPopupVisible] = useState<
+    AuthProviderProps['loginPopupVisible']
+  >(false);
 
   useEffect(() => {
     const projectId = process.env.FIREBASE_PROJECT_ID;
@@ -108,7 +110,7 @@ export const AuthProvider: React.FC = (props) => {
 
     const verifyPhoneNumberFunc = () => (
       mobileNumber: string,
-      captchaVerifier: firebase.auth.RecaptchaVerifier_Instance
+      captchaVerifier: firebase.auth.RecaptchaVerifier_Instance // eslint-disable-line camelcase
     ) => {
       const provider = new firebase.auth.PhoneAuthProvider();
       return provider.verifyPhoneNumber(mobileNumber, captchaVerifier);
@@ -125,7 +127,7 @@ export const AuthProvider: React.FC = (props) => {
     setVerifyOtp(verifyOtpFunc);
 
     const signInFunc = () => (otpVerificationToken: firebase.auth.AuthCredential) => {
-      setAuthenticating(true);
+      setIsAuthenticating(true);
       return firebase
         .auth()
         .signInWithCredential(otpVerificationToken)
@@ -143,26 +145,26 @@ export const AuthProvider: React.FC = (props) => {
       // (but not until all the async requests here are finished )
       if (!userIsValid(updatedUser)) {
         setCurrentUser(null);
-        setAuthenticating(false);
+        setIsAuthenticating(false);
         return;
       }
 
       const updatedToken = await updatedUser!.getIdToken();
       setAuthToken(updatedToken);
-      setAuthenticating(false);
+      setIsAuthenticating(false);
 
       const patientSignInResult = await apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
         mutation: PATIENT_SIGN_IN,
         variables: { jwt: updatedToken },
       });
 
-      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients[0]) {
+      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
         const patient = patientSignInResult.data.patientSignIn.patients[0];
         setCurrentUser(patient);
-        setAuthenticating(false);
+        setIsAuthenticating(false);
       } else {
         setCurrentUser(null);
-        setAuthenticating(false);
+        setIsAuthenticating(false);
       }
     });
   }, []);
@@ -173,12 +175,14 @@ export const AuthProvider: React.FC = (props) => {
         <AuthContext.Provider
           value={{
             currentUser,
-            authenticating,
+            isAuthenticating,
             buildCaptchaVerifier,
             verifyPhoneNumber,
             verifyOtp,
             signIn,
             signOut,
+            loginPopupVisible,
+            setLoginPopupVisible,
           }}
         >
           {props.children}

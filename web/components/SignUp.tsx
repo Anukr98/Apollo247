@@ -1,11 +1,12 @@
-import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React from 'react';
+import Grid from '@material-ui/core/Grid';
 import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-import { AppTextField } from 'components/ui/AppTextField';
+import { createStyles, makeStyles } from '@material-ui/styles';
 import { AppButton } from 'components/ui/AppButton';
+import { AppTextField } from 'components/ui/AppTextField';
+import { useLoginPopupState } from 'hooks/authHooks';
+import React, { useRef } from 'react';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -14,6 +15,11 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     formControl: {
       marginBottom: 20,
+      '& label': {
+        fontSize: 12,
+        fontWeight: 500,
+        color: theme.palette.secondary.dark,
+      },
     },
     mascotCircle: {
       marginLeft: 'auto',
@@ -28,10 +34,14 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     signUpPop: {
       width: 368,
-      padding: 20,
       borderRadius: 10,
+      paddingTop: 36,
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: theme.palette.common.white,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        borderRadius: 0,
+      },
       '& p': {
         fontSize: 17,
         fontWeight: 500,
@@ -39,12 +49,9 @@ const useStyles = makeStyles((theme: Theme) => {
         color: theme.palette.secondary.main,
         marginTop: 20,
       },
-      '& form': {
-        paddingTop: 30,
-      },
     },
     actions: {
-      paddingTop: 10,
+      padding: 20,
     },
     btnGroup: {
       paddingTop: 7,
@@ -60,34 +67,57 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'initial',
       backgroundColor: 'none',
       boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
+    customScrollBar: {
+      height: '70vh',
+      overflow: 'auto',
+      [theme.breakpoints.down('xs')]: {
+        height: '75vh',
+      },
+    },
+    signinGroup: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+    },
+    formGroup: {
+      paddingTop: 30,
     },
   });
 });
 
 export const SignUp: React.FC = (props) => {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
-  const open = Boolean(anchorEl);
-  const id = open ? 'simple-popper' : undefined;
-
-  function handleClose() {
-    setAnchorEl(null);
-  }
+  const mascotRef = useRef(null);
+  const { loginPopupVisible, setLoginPopupVisible } = useLoginPopupState();
 
   return (
     <div className={classes.signUpBar}>
       <div
         className={classes.mascotCircle}
-        aria-describedby={id}
-        onClick={(e) => setAnchorEl(anchorEl ? null : e.currentTarget)}
+        ref={mascotRef}
+        onClick={(e) => setLoginPopupVisible(true)}
       >
         <img src={require('images/ic_mascot.png')} alt="" />
       </div>
       <Popover
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
+        open={loginPopupVisible}
+        anchorEl={mascotRef.current}
+        onClose={() => setLoginPopupVisible(false)}
         className={classes.bottomPopover}
         anchorOrigin={{
           vertical: 'bottom',
@@ -100,40 +130,43 @@ export const SignUp: React.FC = (props) => {
         classes={{ paper: classes.bottomPopover }}
       >
         <div className={classes.signUpPop}>
-          <Typography variant="h2">
-            welcome
-            <br /> to apollo 24/7
-          </Typography>
-          <p>Let us quickly get to know you so that we can get you the best help :)</p>
-          <form>
-            <AppTextField label="First Name" placeholder="Example, Jonathan" />
-            <AppTextField label="Last Name" placeholder="Example, Donut" />
-            <AppTextField label="Date Of Birth" placeholder="mm/dd/yyyy" />
-            <div className={classes.formControl}>
-              <label>Gender</label>
-              <Grid container spacing={2} className={classes.btnGroup}>
-                <Grid item xs={6} sm={4}>
-                  <AppButton variant="contained">Male</AppButton>
-                </Grid>
-                <Grid item xs={6} sm={4}>
-                  <AppButton variant="contained">Female</AppButton>
-                </Grid>
-                <Grid item xs={6} sm={4}>
-                  <AppButton variant="contained">Other</AppButton>
-                </Grid>
-              </Grid>
+          <div className={classes.mascotIcon}>
+            <img src={require('images/ic_mascot.png')} alt="" />
+          </div>
+          <div className={classes.customScrollBar}>
+            <div className={classes.signinGroup}>
+              <Typography variant="h2">
+                welcome
+                <br /> to apollo 24/7
+              </Typography>
+              <p>Let us quickly get to know you so that we can get you the best help :)</p>
+              <div className={classes.formGroup}>
+                <AppTextField label="First Name" placeholder="Example, Jonathan" />
+                <AppTextField label="Last Name" placeholder="Example, Donut" />
+                <AppTextField label="Date Of Birth" placeholder="mm/dd/yyyy" />
+                <div className={classes.formControl}>
+                  <label>Gender</label>
+                  <Grid container spacing={2} className={classes.btnGroup}>
+                    <Grid item xs={4} sm={4}>
+                      <AppButton variant="contained">Male</AppButton>
+                    </Grid>
+                    <Grid item xs={4} sm={4}>
+                      <AppButton variant="contained">Female</AppButton>
+                    </Grid>
+                    <Grid item xs={4} sm={4}>
+                      <AppButton variant="contained">Other</AppButton>
+                    </Grid>
+                  </Grid>
+                </div>
+                <AppTextField label="Email Address (Optional)" placeholder="name@email.com" />
+              </div>
             </div>
-            <AppTextField label="Email Address (Optional)" placeholder="name@email.com" />
-            <div className={classes.actions}>
-              <AppButton
-                fullWidth
-                variant="contained"
-                color="primary"
-              >
-                Submit
-              </AppButton>
-            </div>
-          </form>
+          </div>
+          <div className={classes.actions}>
+            <AppButton fullWidth disabled variant="contained" color="primary">
+              Submit
+            </AppButton>
+          </div>
         </div>
       </Popover>
     </div>

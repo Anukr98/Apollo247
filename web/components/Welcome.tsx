@@ -4,12 +4,15 @@ import React from 'react';
 import { Header } from 'components/Header';
 import { HeroBanner } from 'components/HeroBanner';
 import { ServiceList } from 'components/ServiceList';
-import { SignUp } from 'components/SignUp';
+import { ProfileSuccess } from 'components/ProfileSuccess';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
       paddingTop: 85,
+      [theme.breakpoints.down('xs')]: {
+        paddingTop: 78,
+      },
     },
     booksLink: {
       color: theme.palette.primary.main,
@@ -43,7 +46,7 @@ export const Welcome: React.FC<WelcomeProps> = (props) => {
         <HeroBanner />
         <ServiceList />
       </div>
-      <SignUp />
+      <ProfileSuccess />
     </div>
   );
 };

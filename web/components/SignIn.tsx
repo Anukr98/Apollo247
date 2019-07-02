@@ -5,13 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import FormControl from '@material-ui/core/FormControl';
 import Fab from '@material-ui/core/Fab';
-import {
-  useSignIn,
-  useVerifyOtp,
-  useBuildCaptchaVerifier,
-  useVerifyPhoneNumber,
-  useAuthenticating,
-} from 'hooks/authHooks';
+import { useAuth } from 'hooks/authHooks';
 import { AppTextField } from 'components/ui/AppTextField';
 import { AppInputField } from 'components/ui/AppInputField';
 
@@ -59,7 +53,6 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface SignInProps {}
 const recaptchaContainerId = 'recaptcha-container';
 const isMobileNumberValid = (number: string) => number.length === 10;
 const mobileNumberPrefix = '+91';
@@ -68,25 +61,25 @@ export interface SignInProps {}
 
 export const SignIn: React.FC<SignInProps> = (props) => {
   const classes = useStyles();
-  const currentUser = useCurrentUser();
-  console.log(currentUser); // need to remove this.
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const [otp, setOtp] = useState<string>('');
   const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
   const [
     captchaVerifier,
     setCaptchaVerifier,
-  ] = useState<firebase.auth.RecaptchaVerifier_Instance | null>(null);
+  ] = useState<firebase.auth.RecaptchaVerifier_Instance | null>(null); // eslint-disable-line camelcase
   const [phoneNumberVerificationToken, setPhoneNumberVerificationToken] = useState<string>('');
   const [captchaVerified, setCaptchaVerified] = useState<boolean>(false);
   const [captchaLoaded, setCaptchaLoaded] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
 
-  const buildCaptchaVerifier = useBuildCaptchaVerifier();
-  const verifyPhoneNumber = useVerifyPhoneNumber();
-  const verifyOtp = useVerifyOtp();
-  const signIn = useSignIn();
-  const authenticating = useAuthenticating();
+  const {
+    buildCaptchaVerifier,
+    verifyPhoneNumber,
+    verifyOtp,
+    signIn,
+    isAuthenticating,
+  } = useAuth();
 
   useEffect(() => {
     const captchaVerifier = buildCaptchaVerifier(recaptchaContainerId);
@@ -118,7 +111,7 @@ export const SignIn: React.FC<SignInProps> = (props) => {
             })
           }
         >
-          {authenticating ? <CircularProgress /> : 'OK'}
+          {isAuthenticating ? <CircularProgress /> : 'OK'}
         </Fab>
       </div>
     </div>

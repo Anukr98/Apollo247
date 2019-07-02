@@ -1,19 +1,24 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import { SignIn } from 'components/SignIn';
-import { useAuthenticating } from 'hooks/authHooks';
+import { Navigation } from 'components/Navigatiion';
+import { useAuth, useLoginPopupState, useIsAuthenticating } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     header: {
       display: 'flex',
+      alignItems: 'center',
       boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: theme.palette.common.white,
       padding: '20px 20px 7px 20px',
+      [theme.breakpoints.down('xs')]: {
+        padding: '15px 20px 5px 20px',
+      },
     },
     logo: {
       '& a': {
@@ -21,10 +26,17 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& img': {
         maxWidth: 77,
+        [theme.breakpoints.down('xs')]: {
+          maxWidth: 67,
+        },
       },
     },
     userAccount: {
-      marginLeft: 'auto',
+      marginBottom: 10,
+      marginLeft: 20,
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 'auto',
+      },
       '& img': {
         marginTop: 10,
       },
@@ -37,6 +49,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '50%',
       textAlign: 'center',
       cursor: 'pointer',
+    },
+    userActive: {
+      backgroundColor: theme.palette.secondary.dark,
     },
     loginForm: {
       width: 280,
@@ -53,12 +68,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface SignInProps { }
+export interface SignInProps {}
 
 export const Header: React.FC = (props) => {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
-  const authenticating = useAuthenticating();
+  const avatarRef = useRef(null);
+  const isAuthenticating = useIsAuthenticating();
+  const { loginPopupVisible, setLoginPopupVisible } = useLoginPopupState();
 
   return (
     <header className={classes.header}>
@@ -67,17 +83,19 @@ export const Header: React.FC = (props) => {
           <img src={require('images/ic_logo.png')} />
         </Link>
       </div>
+      <Navigation />
       <div className={classes.userAccount}>
         <div
-          className={classes.userCircle}
-          onClick={(e) => setAnchorEl(anchorEl ? null : e.currentTarget)}
+          className={`${classes.userCircle} ${classes.userActive}`}
+          onClick={() => setLoginPopupVisible(true)}
+          ref={avatarRef}
         >
-          {authenticating ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
+          {isAuthenticating ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
         </div>
         <Popover
-          open={Boolean(anchorEl)}
-          anchorEl={anchorEl}
-          onClose={() => setAnchorEl(null)}
+          open={loginPopupVisible}
+          anchorEl={avatarRef.current}
+          onClose={() => setLoginPopupVisible(false)}
           anchorOrigin={{
             vertical: 'top',
             horizontal: 'right',
