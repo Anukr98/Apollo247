@@ -26,6 +26,18 @@ export enum Sex {
   OTHER = "OTHER",
 }
 
+export interface UpdatePatientInput {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  mobileNumber?: string | null;
+  sex?: Sex | null;
+  uhid?: string | null;
+  emailAddress?: string | null;
+  dateOfBirth?: string | null;
+  relation?: Relation | null;
+}
+
 //==============================================================
 // END Enums and Input Objects
 //==============================================================

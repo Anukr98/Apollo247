@@ -33,3 +33,20 @@ export const PATIENT_SIGN_IN = gql`
     }
   }
 `;
+
+export const UPDATE_PATIENT = gql`
+  mutation updatePatient($patientInput: UpdatePatientInput!) {
+    updatePatient(patientInput: $patientInput) {
+      patient {
+        id
+        mobileNumber
+        firstName
+        lastName
+        relation
+        sex
+        uhid
+        dateOfBirth
+      }
+    }
+  }
+`;

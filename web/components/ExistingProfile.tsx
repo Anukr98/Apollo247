@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Theme } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
@@ -9,6 +9,9 @@ import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignI
 import _camelCase from 'lodash/camelCase';
 import { Relation } from 'graphql/types/globalTypes';
 import { useLoggedInPatients } from 'hooks/authHooks';
+import { Mutation } from 'react-apollo';
+import { updatePatientVariables, updatePatient } from 'graphql/types/updatePatient';
+import { UPDATE_PATIENT } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -191,7 +194,8 @@ export interface ExistingProfileProps {}
 export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const classes = useStyles();
   const [patients, setPatients] = useState(useLoggedInPatients());
-  const disabled = !!(patients && patients.some(isPatientInvalid));
+  if (!patients) return null;
+  const disabled = patients.some(isPatientInvalid);
 
   return (
     <div className={classes.signUpBar}>
@@ -205,10 +209,10 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
               welcome
               <br /> to apollo 24/7
             </Typography>
-            {patients && patients.length > 1 ? (
+            {patients.length > 1 ? (
               <p>
-                We have found {patients ? patients.length : 0} accounts registered with this mobile
-                number. Please tell us who is who? :)
+                We have found {patients.length} accounts registered with this mobile number. Please
+                tell us who is who? :)
               </p>
             ) : null}
             <div className={classes.formGroup}>
@@ -230,9 +234,31 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
           </div>
         </div>
         <div className={classes.actions}>
-          <AppButton disabled={disabled} fullWidth variant="contained" color="primary">
-            Submit
-          </AppButton>
+          <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
+            {(mutate, { loading }) => (
+              <AppButton
+                type="submit"
+                onClick={() => {
+                  patients.forEach((patient) => {
+                    mutate({
+                      variables: {
+                        patientInput: {
+                          id: patient.id,
+                          relation: patient.relation,
+                        },
+                      },
+                    });
+                  });
+                }}
+                disabled={disabled}
+                fullWidth
+                variant="contained"
+                color="primary"
+              >
+                {loading ? <CircularProgress /> : 'Submit'}
+              </AppButton>
+            )}
+          </Mutation>
         </div>
       </div>
     </div>
