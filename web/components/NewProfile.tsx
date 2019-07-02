@@ -89,14 +89,6 @@ const useStyles = makeStyles((theme: Theme) => {
 export const NewProfile: React.FC = (props) => {
   const classes = useStyles();
   const genders = Object.values(GENDER).filter((g) => g != 'NOT_APPLICABLE' && g != 'NOT_KNOWN');
-  const gendersMarkup = () =>
-    genders.map((gender) => {
-      return (
-        <Grid item xs={6} sm={4} key={gender}>
-          <AppButton variant="contained">{gender}</AppButton>
-        </Grid>
-      );
-    });
 
   return (
     <div className={classes.signUpPop}>
@@ -117,7 +109,11 @@ export const NewProfile: React.FC = (props) => {
             <div className={classes.formControl}>
               <label>Gender</label>
               <Grid container spacing={2} className={classes.btnGroup}>
-                {gendersMarkup()}
+                {genders.map((gender) => (
+                  <Grid item xs={6} sm={4} key={gender}>
+                    <AppButton variant="contained">{gender}</AppButton>
+                  </Grid>
+                ))}
               </Grid>
             </div>
             <AppTextField label="Email Address (Optional)" placeholder="name@email.com" />
