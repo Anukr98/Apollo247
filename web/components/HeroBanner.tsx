@@ -129,11 +129,11 @@ export const HeroBanner: React.FC = () => {
       <div className={classes.bannerInfo}>
         {currentPatient && loggedInPatients ? (
           <Typography variant="h1">
-            <span>hello there!</span>
+            <span>hello</span>
             <AppSelectField
               value={currentPatient.id}
               onChange={(e) => {
-                const newId = e.currentTarget.value as PatientSignIn_patientSignIn_patients['id'];
+                const newId = e.target.value as PatientSignIn_patientSignIn_patients['id'];
                 const newCurrentPatient = loggedInPatients.find((p) => p.id === newId);
                 if (newCurrentPatient) setCurrentPatient(newCurrentPatient);
               }}
@@ -157,7 +157,7 @@ export const HeroBanner: React.FC = () => {
             </AppSelectField>
           </Typography>
         ) : (
-          <Typography variant="h1">hello</Typography>
+          <Typography variant="h1">hello there!</Typography>
         )}
 
         <p>Not feeling well today? Don’t worry. We will help you find the right doctor :)</p>
