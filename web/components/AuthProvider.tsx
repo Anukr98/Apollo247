@@ -6,14 +6,21 @@ import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import { PATIENT_SIGN_IN } from 'graphql/profiles';
-import { PatientSignIn, PatientSignInVariables } from 'graphql/types/PatientSignIn';
+import {
+  PatientSignIn,
+  PatientSignInVariables,
+  PatientSignIn_patientSignIn_patients,
+} from 'graphql/types/PatientSignIn';
 import { apiRoutes } from 'helpers/apiRoutes';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
+import { Relation } from 'graphql/types/globalTypes';
 
 export interface AuthProviderProps {
-  currentUser: any | null;
+  currentPatient: PatientSignIn_patientSignIn_patients | null;
+  setCurrentPatient: ((newCurrentPatient: PatientSignIn_patientSignIn_patients) => void) | null;
+  loggedInPatients: PatientSignIn_patientSignIn_patients[] | null;
   isAuthenticating: boolean;
   buildCaptchaVerifier:
     | ((recaptchaContainerId: HTMLElement['id']) => firebase.auth.RecaptchaVerifier_Instance) // eslint-disable-line camelcase
@@ -34,7 +41,9 @@ export interface AuthProviderProps {
 }
 
 export const AuthContext = React.createContext<AuthProviderProps>({
-  currentUser: null,
+  currentPatient: null,
+  setCurrentPatient: null,
+  loggedInPatients: null,
   isAuthenticating: true,
   buildCaptchaVerifier: null,
   verifyPhoneNumber: null,
@@ -73,7 +82,10 @@ export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
   apolloClient = buildApolloClient(authToken);
 
-  const [currentUser, setCurrentUser] = useState<AuthProviderProps['currentUser']>(null);
+  const [loggedInPatients, setLoggedInPatients] = useState<AuthProviderProps['loggedInPatients']>(
+    null
+  );
+  const [currentPatient, setCurrentPatient] = useState<AuthProviderProps['currentPatient']>(null);
   const [isAuthenticating, setIsAuthenticating] = useState<AuthProviderProps['isAuthenticating']>(
     true
   );
@@ -131,7 +143,7 @@ export const AuthProvider: React.FC = (props) => {
       return firebase
         .auth()
         .signInWithCredential(otpVerificationToken)
-        .then(() => {});
+        .then(() => {}); // Never expose the raw firebase user object
     };
     setSignIn(signInFunc);
 
@@ -142,33 +154,32 @@ export const AuthProvider: React.FC = (props) => {
       // There is no hook to know when firebase is loading, but we know this fires when it has attempted
       // (whether automated from an existing cache or from an actual user-initiated sign in click)
       // Set the default `authenticating` value to true, and clear it out in all cases here
-      // (but not until all the async requests here are finished )
       if (!userIsValid(updatedUser)) {
-        setCurrentUser(null);
+        setLoggedInPatients(null);
         setIsAuthenticating(false);
         return;
       }
 
       const updatedToken = await updatedUser!.getIdToken();
       setAuthToken(updatedToken);
-      setIsAuthenticating(false);
 
       const patientSignInResult = await apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
         mutation: PATIENT_SIGN_IN,
         variables: { jwt: updatedToken },
       });
 
-      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
-        const patient = patientSignInResult.data.patientSignIn.patients[0];
-        setCurrentUser(patient);
-        setIsAuthenticating(false);
-      } else {
-        setCurrentUser(null);
-        setIsAuthenticating(false);
-        if (patientSignInResult.data && patientSignInResult.data.patientSignIn.errors) {
-          const errMsg = patientSignInResult.data.patientSignIn.errors.messages[0];
-        }
+      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.errors) {
+        const errMsg = patientSignInResult.data.patientSignIn.errors.messages[0];
+        console.log(errMsg);
       }
+      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
+        const patients = patientSignInResult.data.patientSignIn.patients;
+        const me = patients.find((p) => p.relation === Relation.ME) || patients[0];
+        setLoggedInPatients(patients);
+        setCurrentPatient(me);
+      }
+
+      setIsAuthenticating(false);
     });
   }, []);
 
@@ -177,7 +188,9 @@ export const AuthProvider: React.FC = (props) => {
       <ApolloHooksProvider client={apolloClient}>
         <AuthContext.Provider
           value={{
-            currentUser,
+            currentPatient,
+            setCurrentPatient,
+            loggedInPatients,
             isAuthenticating,
             buildCaptchaVerifier,
             verifyPhoneNumber,

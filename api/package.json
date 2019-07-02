@@ -5,7 +5,7 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
-    "start:profiles-service": "webpack profiles-service=services/profiles/profiles-service.ts --watch & nodemon dist/profiles-service.bundle.js --watch dist/profiles-service.bundle.js",
+    "start:profiles-service": "webpack profiles-service=services/profiles/profiles-service.ts --watch & (sleep 15 && nodemon dist/profiles-service.bundle.js --watch dist/profiles-service.bundle.js)",
     "start:api-gateway": "webpack api-gateway=gateway/api-gateway.ts && node dist/api-gateway.bundle.js",
     "start:api-gateway-with-checks": "npm run lint & npm run format:check & webpack && node dist/api-gateway.bundle.js",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",

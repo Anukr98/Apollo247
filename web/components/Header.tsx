@@ -4,9 +4,17 @@ import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@material-ui/core/Button';
 import { SignIn } from 'components/SignIn';
 import { Navigation } from 'components/Navigatiion';
-import { useAuth, useLoginPopupState, useIsAuthenticating } from 'hooks/authHooks';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+
+import { useIsLoggedIn, useLoginPopupState, useIsAuthenticating } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -41,6 +49,9 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 10,
       },
     },
+    userAccountLogin: {
+      marginLeft: 'auto',
+    },
     userCircle: {
       display: 'block',
       width: 48,
@@ -68,13 +79,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface SignInProps {}
-
 export const Header: React.FC = (props) => {
   const classes = useStyles();
   const avatarRef = useRef(null);
   const isAuthenticating = useIsAuthenticating();
   const { loginPopupVisible, setLoginPopupVisible } = useLoginPopupState();
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const isLoggedIn = useIsLoggedIn();
 
   return (
     <header className={classes.header}>
@@ -83,33 +94,56 @@ export const Header: React.FC = (props) => {
           <img src={require('images/ic_logo.png')} />
         </Link>
       </div>
-      <Navigation />
-      <div className={classes.userAccount}>
-        <div
-          className={`${classes.userCircle} ${classes.userActive}`}
-          onClick={() => setLoginPopupVisible(true)}
-          ref={avatarRef}
-        >
-          {isAuthenticating ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
-        </div>
-        <Popover
-          open={loginPopupVisible}
-          anchorEl={avatarRef.current}
-          onClose={() => setLoginPopupVisible(false)}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          classes={{ paper: classes.topPopover }}
-        >
-          <Paper className={classes.loginForm}>
-            <SignIn />
-          </Paper>
-        </Popover>
+      {isLoggedIn && <Navigation />}
+      <div className={`${classes.userAccount} ${isLoggedIn ? '' : classes.userAccountLogin}`}>
+        <ProtectedWithLoginPopup>
+          {({ protectWithLoginPopup, isProtected }) => (
+            <div
+              className={`${classes.userCircle} ${isLoggedIn ? classes.userActive : ''}`}
+              onClick={() => (isLoggedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
+              ref={avatarRef}
+            >
+              {isAuthenticating ? (
+                <CircularProgress />
+              ) : (
+                <img src={require('images/ic_account.svg')} />
+              )}
+            </div>
+          )}
+        </ProtectedWithLoginPopup>
+        {/* The below dialog must be removed when the functionality is defined with Logged in User */}
+        {isLoggedIn ? (
+          <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+            <DialogTitle>Logged In</DialogTitle>
+            <DialogContent>
+              <DialogContentText>You are successfully Logged in with Apollo 24x7</DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setIsDialogOpen(false)} color="primary" autoFocus>
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+        ) : (
+          <Popover
+            open={loginPopupVisible}
+            anchorEl={avatarRef.current}
+            onClose={() => setLoginPopupVisible(false)}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            classes={{ paper: classes.topPopover }}
+          >
+            <Paper className={classes.loginForm}>
+              <SignIn />
+            </Paper>
+          </Popover>
+        )}
       </div>
     </header>
   );

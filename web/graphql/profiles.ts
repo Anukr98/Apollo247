@@ -8,7 +8,10 @@ export const GET_PATIENTS = gql`
         mobileNumber
         firstName
         lastName
+        relation
         sex
+        uhid
+        dateOfBirth
       }
     }
   }
@@ -22,11 +25,29 @@ export const PATIENT_SIGN_IN = gql`
         mobileNumber
         firstName
         lastName
+        relation
         sex
         uhid
       }
       errors {
         messages
+      }
+    }
+  }
+`;
+
+export const UPDATE_PATIENT = gql`
+  mutation updatePatient($patientInput: UpdatePatientInput!) {
+    updatePatient(patientInput: $patientInput) {
+      patient {
+        id
+        mobileNumber
+        firstName
+        lastName
+        relation
+        sex
+        uhid
+        dateOfBirth
       }
     }
   }
