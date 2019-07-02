@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Theme } from '@material-ui/core';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AppButton } from 'components/ui/AppButton';
 import { AppSelectField } from 'components/ui/AppSelectField';
-import { PatientSignIn_patientSignIn } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
-import { random, camelCase } from 'lodash';
+import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
+import _camelCase from 'lodash/camelCase';
 import { Relation } from 'graphql/types/globalTypes';
+import { useLoggedInPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -135,53 +136,55 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export interface ExistingProfileProps {
-  patients: PatientSignIn_patientSignIn['patients']; // eslint-disable-line camelcase
+interface PatientProfileProps {
+  patient: PatientSignIn_patientSignIn_patients;
+  number: number;
+  onUpdatePatient: (patient: PatientSignIn_patientSignIn_patients) => void;
 }
+const PatientProfile: React.FC<PatientProfileProps> = (props) => {
+  const classes = useStyles();
+  const { patient, number } = props;
+  const [patientRelation, setPatientRelation] = React.useState<Relation | null>(patient.relation);
+  return (
+    <div className={classes.profileBox}>
+      <div className={classes.boxHeader}>
+        <div>{number}.</div>
+        <div className={classes.userId}>{patient.uhid}</div>
+      </div>
+      <div className={classes.boxContent}>
+        <div className={classes.userName}>{patient.firstName}</div>
+        <div className={classes.userInfo}>
+          {_camelCase(patient.sex || '')}
+          {_camelCase(patient.dateOfBirth || '')}
+        </div>
+        <AppSelectField
+          value={patientRelation}
+          onChange={(e) => {
+            const updatedRelation = e.currentTarget.value as Relation;
+            setPatientRelation(updatedRelation);
+            const updatedPatient = { ...patient, relation: updatedRelation };
+            props.onUpdatePatient(updatedPatient);
+          }}
+        >
+          {Object.values(Relation).map((relation) => (
+            <MenuItem value={relation} classes={{ selected: classes.menuSelected }} key={relation}>
+              {relation}
+            </MenuItem>
+          ))}
+        </AppSelectField>
+      </div>
+    </div>
+  );
+};
 
+const isPatientInvalid = (patient: PatientSignIn_patientSignIn_patients) =>
+  patient.relation == null;
+
+export interface ExistingProfileProps {}
 export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const classes = useStyles();
-  const [userRelation, setUserRelation] = React.useState('ME');
-  const [updateRelationBtnStatus, setUpdateRelationBtnStatus] = React.useState(true);
-  const { patients } = props;
-
-  const relationships = () =>
-    Object.values(Relation).map((relation) => (
-      <MenuItem value={relation} classes={{ selected: classes.menuSelected }} key={relation}>
-        {relation}
-      </MenuItem>
-    ));
-
-  const patientCards = () => {
-    if (patients) {
-      return patients.map((uhidInfo) => (
-        <div className={classes.profileBox} key={uhidInfo.uhid ? uhidInfo.uhid : random()}>
-          <div className={classes.boxHeader}>
-            <div>1.</div>
-            <div className={classes.userId}>{uhidInfo.uhid}</div>
-          </div>
-          <div className={classes.boxContent}>
-            <div className={classes.userName}>{uhidInfo.firstName}</div>
-            <div className={classes.userInfo}>
-              {uhidInfo.sex ? camelCase(uhidInfo.sex) : ''} |{' '}
-              {uhidInfo.dateOfBirth ? camelCase(uhidInfo.dateOfBirth) : ''}
-            </div>
-            <AppSelectField
-              value={userRelation}
-              onChange={(event) => {
-                setUserRelation(event.target.value as string);
-                setUpdateRelationBtnStatus(true);
-              }}
-            >
-              {relationships()}
-            </AppSelectField>
-          </div>
-        </div>
-      ));
-    } else {
-      return null;
-    }
-  };
+  const [patients, setPatients] = useState(useLoggedInPatients());
+  const disabled = !!(patients && patients.some(isPatientInvalid));
 
   return (
     <div className={classes.signUpBar}>
@@ -201,16 +204,25 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
                 number. Please tell us who is who? :)
               </p>
             ) : null}
-            <div className={classes.formGroup}>{patientCards()}</div>
+            <div className={classes.formGroup}>
+              {patients &&
+                patients.map((p, i) => (
+                  <PatientProfile
+                    patient={p}
+                    number={i + 1}
+                    onUpdatePatient={(updatedPatient) => {
+                      const newPatients = patients.map((patient) =>
+                        patient.id === updatedPatient.id ? updatedPatient : patient
+                      );
+                      setPatients(newPatients);
+                    }}
+                  />
+                ))}
+            </div>
           </div>
         </div>
         <div className={classes.actions}>
-          <AppButton
-            fullWidth
-            disabled={updateRelationBtnStatus}
-            variant="contained"
-            color="primary"
-          >
+          <AppButton disabled={disabled} fullWidth variant="contained" color="primary">
             Submit
           </AppButton>
         </div>
