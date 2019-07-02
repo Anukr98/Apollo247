@@ -85,8 +85,7 @@ export const Header: React.FC = (props) => {
   const isAuthenticating = useIsAuthenticating();
   const { loginPopupVisible, setLoginPopupVisible } = useLoginPopupState();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-
-  const isUserLoggedIn = useIsLoggedIn();
+  const isLoggedIn = useIsLoggedIn();
 
   return (
     <header className={classes.header}>
@@ -95,13 +94,13 @@ export const Header: React.FC = (props) => {
           <img src={require('images/ic_logo.png')} />
         </Link>
       </div>
-      {isUserLoggedIn && <Navigation />}
-      <div className={`${classes.userAccount} ${isUserLoggedIn ? '' : classes.userAccountLogin}`}>
+      {isLoggedIn && <Navigation />}
+      <div className={`${classes.userAccount} ${isLoggedIn ? '' : classes.userAccountLogin}`}>
         <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup, isProtected }) => (
             <div
-              className={`${classes.userCircle} ${isUserLoggedIn ? classes.userActive : ''}`}
-              onClick={() => (isUserLoggedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
+              className={`${classes.userCircle} ${isLoggedIn ? classes.userActive : ''}`}
+              onClick={() => (isLoggedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
               ref={avatarRef}
             >
               {isAuthenticating ? (
@@ -113,7 +112,7 @@ export const Header: React.FC = (props) => {
           )}
         </ProtectedWithLoginPopup>
         {/* The below dialog must be removed when the functionality is defined with Logged in User */}
-        {isUserLoggedIn ? (
+        {isLoggedIn ? (
           <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
             <DialogTitle>Logged In</DialogTitle>
             <DialogContent>
