@@ -55,7 +55,7 @@ export const patientTypeDefs = gql`
   }
 
   type Error {
-    messages: [String!]!
+    messages: [ErrorMsgs!]!
   }
 
   type GetPatientsResult {

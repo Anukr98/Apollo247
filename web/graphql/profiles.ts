@@ -28,6 +28,7 @@ export const PATIENT_SIGN_IN = gql`
         relation
         sex
         uhid
+        dateOfBirth
       }
       errors {
         messages
