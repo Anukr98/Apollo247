@@ -1,14 +1,15 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React, { useEffect } from 'react';
+import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import { AppButton } from 'components/ui/AppButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import { AppSelectField } from 'components/ui/AppSelectField';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
-import { useCurrentUser } from 'hooks/authHooks';
-import { startCase, toLower } from 'lodash';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
 import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -119,58 +120,46 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const HeroBanner: React.FC = (props) => {
+export const HeroBanner: React.FC = () => {
   const classes = useStyles();
-  const [userName, setUserName] = React.useState('');
-  const userDetails = useCurrentUser();
-  const uhidsAvailable = userDetails && userDetails.find((u) => u.uhid !== '');
-
-  useEffect(() => {
-    if (userDetails && userDetails[0].uhid !== '') {
-      setUserName(userDetails[0].uhid);
-    }
-  }, [userDetails]);
-
-  const welcomeText = () => {
-    if (uhidsAvailable) {
-      return (
-        <AppSelectField
-          value={userName}
-          onChange={(event) => setUserName(event.target.value as string)}
-          classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
-        >
-          {userDetails.map((
-            uhidInfo: PatientSignIn_patientSignIn_patients, // eslint-disable-line camelcase
-            index: number
-          ) => (
-            <MenuItem
-              selected
-              value={uhidInfo.uhid ? uhidInfo.uhid : ''}
-              classes={{ selected: classes.menuSelected }}
-              key={uhidInfo.uhid ? uhidInfo.uhid : index}
-            >
-              {uhidInfo.firstName ? startCase(toLower(uhidInfo.firstName)) : ''}
-            </MenuItem>
-          ))}
-          <MenuItem classes={{ selected: classes.menuSelected }}>
-            <AppButton color="primary" classes={{ root: classes.addMemberBtn }}>
-              Add Member
-            </AppButton>
-          </MenuItem>
-        </AppSelectField>
-      );
-    } else {
-      return null;
-    }
-  };
+  const { loggedInPatients, currentPatient, setCurrentPatient } = useAuth();
 
   return (
     <div className={classes.heroBanner}>
       <div className={classes.bannerInfo}>
-        <Typography variant="h1">
-          <span>{uhidsAvailable ? 'hello' : 'hello there!'}</span>
-          {welcomeText()}
-        </Typography>
+        {currentPatient && loggedInPatients ? (
+          <Typography variant="h1">
+            <span>hello there!</span>
+            <AppSelectField
+              value={currentPatient.id}
+              onChange={(e) => {
+                const newId = e.currentTarget.value as PatientSignIn_patientSignIn_patients['id'];
+                const newCurrentPatient = loggedInPatients.find((p) => p.id === newId);
+                if (newCurrentPatient) setCurrentPatient(newCurrentPatient);
+              }}
+              classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
+            >
+              {loggedInPatients.map((patient) => (
+                <MenuItem
+                  selected={patient.id === currentPatient.id}
+                  value={patient.id}
+                  classes={{ selected: classes.menuSelected }}
+                  key={patient.id}
+                >
+                  {patient.firstName}
+                </MenuItem>
+              ))}
+              <MenuItem classes={{ selected: classes.menuSelected }}>
+                <AppButton color="primary" classes={{ root: classes.addMemberBtn }}>
+                  Add Member
+                </AppButton>
+              </MenuItem>
+            </AppSelectField>
+          </Typography>
+        ) : (
+          <Typography variant="h1">hello</Typography>
+        )}
+
         <p>Not feeling well today? Don’t worry. We will help you find the right doctor :)</p>
         <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup }) => (
