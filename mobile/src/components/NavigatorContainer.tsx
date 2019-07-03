@@ -42,6 +42,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
     screen: TabBar,
     navigationOptions: {
       header: null,
+      gesturesEnabled: false,
     },
   },
   [AppRoutes.Login]: {
@@ -56,9 +57,15 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
 
   [AppRoutes.SignUp]: {
     screen: SignUp,
+    navigationOptions: {
+      gesturesEnabled: false,
+    },
   },
   [AppRoutes.MultiSignup]: {
     screen: MultiSignup,
+    navigationOptions: {
+      gesturesEnabled: false,
+    },
   },
   [AppRoutes.OTPVerification]: {
     screen: OTPVerification,

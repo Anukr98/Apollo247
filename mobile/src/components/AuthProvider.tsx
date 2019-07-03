@@ -14,14 +14,19 @@ import {
   PatientSignInVariables,
   PatientSignIn_patientSignIn_patients,
 } from 'app/src/graphql/types/PatientSignIn';
-import { PATIENT_SIGN_IN } from 'app/src/graphql/profiles';
+import { PATIENT_SIGN_IN, UPDATE_PATIENT } from 'app/src/graphql/profiles';
+import {
+  updatePatient_updatePatient_patient,
+  updatePatient,
+  updatePatientVariables,
+} from 'app/src/graphql/types/updatePatient';
 
 export type PhoneNumberVerificationCredential = RNFirebase.PhoneAuthSnapshot['verificationId'];
 export type OtpVerificationCredential = AuthCredential;
 
 export interface AuthProviderProps {
   analytics: RNFirebase.Analytics | null;
-  currentUser: PatientSignIn_patientSignIn_patients | null;
+  currentUser: PatientSignIn_patientSignIn_patients | updatePatient_updatePatient_patient | null;
   currentProfiles: object | null;
   isAuthenticating: boolean;
   callApiWithToken: ((updatedToken: string) => Promise<any>) | null;
@@ -35,6 +40,7 @@ export interface AuthProviderProps {
   signIn: ((token: OtpVerificationCredential) => Promise<void>) | null;
   signOut: (() => any) | null;
   clearCurrentUser: (() => any) | null;
+  callUpdatePatient: ((patientDetails: updatePatient_updatePatient_patient) => Promise<any>) | null;
 }
 
 const userIsValid = (user: RNFirebase.User | null) => user && user.phoneNumber;
@@ -50,6 +56,7 @@ export const AuthContext = React.createContext<AuthProviderProps>({
   currentProfiles: null,
   clearCurrentUser: null,
   callApiWithToken: null,
+  callUpdatePatient: null,
 });
 
 let apolloClient: ApolloClient<any>;
@@ -94,6 +101,9 @@ export const AuthProvider: React.FC = (props) => {
   const [callApiWithToken, setCallApiWithToken] = useState<AuthProviderProps['callApiWithToken']>(
     null
   );
+  const [callUpdatePatient, setCallUpdatePatient] = useState<
+    AuthProviderProps['callUpdatePatient']
+  >(null);
   useEffect(() => {
     setAnalytics(firebase.analytics());
 
@@ -137,8 +147,6 @@ export const AuthProvider: React.FC = (props) => {
         variables: { jwt: updatedToken },
       });
 
-      console.log('patientSignInResult', patientSignInResult);
-
       if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
         const patient = patientSignInResult.data.patientSignIn.patients[0];
         const patientProfiles = patientSignInResult.data.patientSignIn.patients;
@@ -155,6 +163,31 @@ export const AuthProvider: React.FC = (props) => {
       return patientSignInResult;
     };
     setCallApiWithToken(callAPIFunc);
+
+    const callUpdatePatientFunc = () => async (
+      patientDetails: updatePatient_updatePatient_patient
+    ) => {
+      const patientUpdateResult = await apolloClient.mutate<updatePatient, updatePatientVariables>({
+        mutation: UPDATE_PATIENT,
+        variables: { patientInput: patientDetails },
+      });
+
+      // if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
+      //   const patient = patientSignInResult.data.patientSignIn.patients[0];
+      //   const patientProfiles = patientSignInResult.data.patientSignIn.patients;
+
+      //   setCurrentUser(patient);
+      //   setcurrentProfiles(patientProfiles);
+      //   setIsAuthenticating(false);
+      // } else {
+      //   setCurrentUser(null);
+      //   setcurrentProfiles(null);
+      //   setIsAuthenticating(false);
+      // }
+
+      return patientUpdateResult;
+    };
+    setCallUpdatePatient(callUpdatePatientFunc);
 
     // auth.onAuthStateChanged(async (updatedUser) => {
     //   // There is no hook to know when firebase is loading, but we know this fires when it has attempted
@@ -206,6 +239,7 @@ export const AuthProvider: React.FC = (props) => {
             currentProfiles,
             clearCurrentUser,
             callApiWithToken,
+            callUpdatePatient,
           }}
         >
           {props.children}

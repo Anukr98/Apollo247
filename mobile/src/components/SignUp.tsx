@@ -13,6 +13,8 @@ import { Keyboard, SafeAreaView, StyleSheet, View, Alert } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
 import Moment from 'moment';
+import { useAuth } from '../hooks/authHooks';
+import { updatePatient_updatePatient_patient } from 'app/src/graphql/types/updatePatient';
 
 const styles = StyleSheet.create({
   container: {
@@ -71,6 +73,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
   const [firstNameValidation, setfirstNameValidation] = useState<boolean>(false);
   const [lastNameValidation, setLastNameValidation] = useState<boolean>(false);
+  const { callUpdatePatient } = useAuth();
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' ' ? false : value == '' || /^[a-zA-Z ]+$/.test(value) ? true : false;
@@ -195,7 +198,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
         <Button
           title={'SUBMIT'}
           style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
-          onPress={() => {
+          onPress={async () => {
             let validationMessage = '';
             if (!firstName) {
               validationMessage = 'Enter valid first name';
@@ -203,14 +206,29 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
               validationMessage = 'Enter valid last name';
             } else if (!date) {
               validationMessage = 'Enter valid date of birth';
-            } else if (!email || !emailValidation) {
-              validationMessage = 'Enter valid email';
+            } else if (email) {
+              if (!emailValidation) {
+                validationMessage = 'Enter valid email';
+              }
             } else if (!gender) {
               validationMessage = 'Please select gender';
             }
             if (validationMessage) {
               Alert.alert('Error', validationMessage);
             } else {
+              // const patientsDetails: updatePatient_updatePatient_patient = {
+              // id =;
+              // mobileNumber: string | null;
+              // firstName: string | null;
+              // lastName: string | null;
+              // relation: Relation | null;
+              // sex: Sex | null;
+              // uhid: string | null;
+              // dateOfBirth: string | null;
+              // };
+
+              // const patientUpdateDetails = await callUpdatePatient(patientsDetails);
+
               props.navigation.navigate(AppRoutes.TabBar);
             }
           }}

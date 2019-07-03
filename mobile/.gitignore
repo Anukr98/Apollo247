@@ -6,3 +6,14 @@ android/local.properties
 ios/build
 .Trash*
 .DS_Store
+
+# Ignore Xcode user-related files
+xcuserdata/
+
+# Ignore AppCode user-related files
+.idea/
+
+# Ignore CocoaPods installed files
+Pods/
+Crashlytics.framework/
+Fabric.framework/

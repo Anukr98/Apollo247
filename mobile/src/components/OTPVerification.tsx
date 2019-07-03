@@ -13,6 +13,7 @@ import {
   View,
   ActivityIndicator,
   Keyboard,
+  Alert,
 } from 'react-native';
 import SmsListener from 'react-native-android-sms-listener';
 import OTPTextView from 'react-native-otp-textinput';
@@ -53,7 +54,7 @@ const styles = StyleSheet.create({
   },
 });
 
-let timer = 5;
+let timer = 60;
 export interface OTPVerificationProps
   extends NavigationScreenProps<{
     phoneNumberVerificationCredential: PhoneNumberVerificationCredential;
@@ -97,12 +98,20 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             const token = await updatedUser!.getIdToken();
             const patientSign = await callApiWithToken(token);
             const patient = patientSign.data.patientSignIn.patients[0];
+            const errMsg =
+              patientSign.data.patientSignIn.errors &&
+              patientSign.data.patientSignIn.errors.messages[0];
             setVerifyingOtp(false);
             console.log('patient', patient);
-            if (patient.uhid && patient.uhid !== '') {
-              props.navigation.navigate(AppRoutes.MultiSignup);
+
+            if (errMsg) {
+              Alert.alert('Error', errMsg);
             } else {
-              props.navigation.navigate(AppRoutes.SignUp);
+              if (patient && patient.uhid && patient.uhid !== '') {
+                props.navigation.navigate(AppRoutes.MultiSignup);
+              } else {
+                props.navigation.navigate(AppRoutes.SignUp);
+              }
             }
           } else {
             console.log('no new user');

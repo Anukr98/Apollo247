@@ -84,13 +84,14 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const { analytics } = useAuth();
+  const { analytics, currentUser } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<any>();
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
     setVerifyingPhonenNumber(false);
-  }, [analytics, verifyingPhoneNumber]);
+    console.log('login currentUser', currentUser);
+  }, [analytics, verifyingPhoneNumber, currentUser]);
 
   useEffect(() => {
     const subscriptionId = SmsListener.addListener((message: any) => {

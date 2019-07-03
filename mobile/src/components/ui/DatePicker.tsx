@@ -13,6 +13,7 @@ export const DatePicker: React.FC<datePickerProps> = (props) => {
       isVisible={props.isDateTimePickerVisible}
       onConfirm={props.handleDatePicked}
       onCancel={props.hideDateTimePicker}
+      maximumDate={new Date()}
     />
   );
 };
