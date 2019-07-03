@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Grid } from '@material-ui/core';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, RefObject, createRef } from 'react';
 import Typography from '@material-ui/core/Typography';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import FormControl from '@material-ui/core/FormControl';
@@ -80,6 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
 const recaptchaContainerId = 'recaptcha-container';
 const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
+const otpInputRefs: RefObject<HTMLInputElement>[] = [];
 
 export const SignIn: React.FC = (props) => {
   const classes = useStyles();
@@ -124,6 +125,15 @@ export const SignIn: React.FC = (props) => {
     }
   }, [captchaVerifier]);
 
+  useEffect(() => {
+    _times(numOtpDigits, (index) => {
+      const inputRef = createRef<HTMLInputElement>();
+      otpInputRefs[index] = inputRef;
+    });
+  }, []);
+
+  console.log(otpInputRefs);
+
   const captchaEl = (
     <div
       id={recaptchaContainerId}
@@ -132,7 +142,7 @@ export const SignIn: React.FC = (props) => {
     />
   );
 
-  return displayOtpInput ? (
+  return true || displayOtpInput ? (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">hi</Typography>
       <p>Type in the OTP sent to you, to authenticate</p>
@@ -140,13 +150,21 @@ export const SignIn: React.FC = (props) => {
         {_times(numOtpDigits, (index) => (
           <Grid item xs={2} key={index}>
             <AppTextField
+              inputRef={otpInputRefs[index]}
               value={_isNumber(otp[index]) ? otp[index] : ''}
               inputProps={{ maxLength: 1 }}
               onChange={(e) => {
                 const newOtp = [...otp];
                 const num = parseInt(e.currentTarget.value, 10);
-                if (isNaN(num)) delete newOtp[index];
-                else newOtp[index] = num;
+                if (isNaN(num)) {
+                  delete newOtp[index];
+                } else {
+                  newOtp[index] = num;
+                  const nextInput = otpInputRefs[index + 1];
+                  if (nextInput && nextInput.current) {
+                    nextInput.current.focus();
+                  }
+                }
                 setOtp(newOtp);
               }}
             />
