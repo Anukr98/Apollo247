@@ -101,17 +101,13 @@ export const NewProfile: React.FC = (props) => {
   const [showLastNameError, setShowLastNameError] = useState<boolean>(false);
   const [showDobError, setDobError] = useState<boolean>(false);
   const [showEmailIdError, setShowEmailIdError] = useState<boolean>(false);
-  const [submitBtnStatus, setSubmitBtnStatus] = useState<boolean>(true);
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [dateOfBirth, setDateOfBirth] = useState<string>('');
   const [emailAddress, setEmailAddress] = useState<string>('');
 
-  const manageSubmitBtnStatus = () => {
-    !showFirstNameError && !showLastNameError && !showDobError
-      ? setSubmitBtnStatus(false)
-      : setSubmitBtnStatus(true);
-  };
+  const submitDisabled =
+    firstName.length > 2 && lastName.length > 2 && dateOfBirth.length === 10 ? false : true;
 
   return (
     <div className={classes.signUpPop}>
@@ -139,7 +135,6 @@ export const NewProfile: React.FC = (props) => {
                   } else {
                     setShowFirstNameError(false);
                   }
-                  manageSubmitBtnStatus();
                 }}
               />
               <FormHelperText
@@ -163,7 +158,6 @@ export const NewProfile: React.FC = (props) => {
                   } else {
                     setShowLastNameError(false);
                   }
-                  manageSubmitBtnStatus();
                 }}
               />
               <FormHelperText
@@ -177,7 +171,7 @@ export const NewProfile: React.FC = (props) => {
             <FormControl className={classes.formControl} fullWidth>
               <AppTextField
                 label="Date Of Birth"
-                placeholder="mm/dd/yyyy"
+                placeholder="dd/mm/yyyy"
                 value={dateOfBirth}
                 error={dateOfBirth ? !isDobValid(dateOfBirth) : false}
                 onChange={(e) => {
@@ -187,7 +181,6 @@ export const NewProfile: React.FC = (props) => {
                   } else {
                     setDobError(false);
                   }
-                  manageSubmitBtnStatus();
                 }}
                 inputProps={{ type: 'date' }}
               />
@@ -222,7 +215,6 @@ export const NewProfile: React.FC = (props) => {
                   } else {
                     setShowEmailIdError(false);
                   }
-                  manageSubmitBtnStatus();
                 }}
               />
               <FormHelperText
@@ -237,7 +229,7 @@ export const NewProfile: React.FC = (props) => {
         </div>
       </div>
       <div className={classes.actions}>
-        <AppButton fullWidth disabled={submitBtnStatus} variant="contained" color="primary">
+        <AppButton fullWidth disabled={submitDisabled} variant="contained" color="primary">
           Submit
         </AppButton>
       </div>
