@@ -84,7 +84,7 @@ export const Header: React.FC<headerProps> = (props) => {
           </Text>
         )}
         {rightIcon && rightIcon}
-        {props.rightComponent}
+        {props.rightComponent && props.rightComponent()}
       </View>
     </View>
   );

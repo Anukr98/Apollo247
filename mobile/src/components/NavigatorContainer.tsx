@@ -10,6 +10,9 @@ import { OTPVerification } from 'app/src/components/OTPVerification';
 import { NavigationRouteConfig } from 'react-navigation';
 import { ConsultRoom } from 'app/src/components/ConsultRoom';
 import { DoctorSearchListing } from 'app/src/components/DoctorSearchListing';
+import { HealthRecords } from 'app/src/components/HealthRecords';
+import { Medicine } from 'app/src/components/Medicine';
+import { MyAccount } from 'app/src/components/MyAccount';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -21,6 +24,9 @@ export enum AppRoutes {
   MultiSignup = 'MultiSignup',
   OTPVerification = 'OTPVerification',
   DoctorSearchListing = 'DoctorSearchListing',
+  HealthRecords = 'HealthRecords',
+  Medicine = 'Medicine',
+  MyAccount = 'MyAccount',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -36,6 +42,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
     screen: TabBar,
     navigationOptions: {
       header: null,
+      gesturesEnabled: false,
     },
   },
   [AppRoutes.Login]: {
@@ -50,18 +57,36 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
 
   [AppRoutes.SignUp]: {
     screen: SignUp,
+    navigationOptions: {
+      gesturesEnabled: false,
+    },
   },
   [AppRoutes.MultiSignup]: {
     screen: MultiSignup,
+    navigationOptions: {
+      gesturesEnabled: false,
+    },
   },
   [AppRoutes.OTPVerification]: {
     screen: OTPVerification,
+    navigationOptions: {
+      gesturesEnabled: false,
+    },
   },
   [AppRoutes.ConsultRoom]: {
     screen: ConsultRoom,
   },
   [AppRoutes.DoctorSearchListing]: {
     screen: DoctorSearchListing,
+  },
+  [AppRoutes.HealthRecords]: {
+    screen: HealthRecords,
+  },
+  [AppRoutes.Medicine]: {
+    screen: Medicine,
+  },
+  [AppRoutes.MyAccount]: {
+    screen: MyAccount,
   },
 };
 
@@ -72,12 +97,12 @@ const stackConfig: StackNavigatorConfig = {
   transitionConfig: () => {
     return {
       transitionSpec: {
-        duration: 0,
+        // duration: 100,
       },
     };
   },
 };
 
-const AppNavigator = createStackNavigator(routeConfigMap, stackConfig);
+const Navigator = createStackNavigator(routeConfigMap, stackConfig);
 
-export const AppNavigatorContainer = createAppContainer(AppNavigator);
+export const NavigatorContainer = createAppContainer(Navigator);

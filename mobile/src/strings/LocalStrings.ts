@@ -6,19 +6,19 @@ const common = {
 };
 
 const login = {
-  hello: 'hello',
+  hello: 'hello!',
   please_enter_no: 'Please enter your mobile number to login',
   otp_sent_to: 'OTP will be sent to this number',
   wrong_number: 'This seems like a wrong number',
   numberPrefix: '+91',
-  great: 'great',
+  great: 'great!',
   type_otp_text: 'Type in the OTP sent to you, to authenticate',
   resend_opt: 'RESEND OTP',
   enter_correct_opt: 'Please enter the correct OTP',
   welcome_text: 'welcome\nto apollo 24/7',
   welcome_desc: 'Let us quickly get to know you so that we can get you the best help :)',
   multi_signup_desc:
-    'We have found 2 accounts registered with this mobile number. Please tell\nus who is who? :)',
+    'We have found 1 account registered with this mobile number. Please tell\nus who is who? :)',
   oops: 'oops!',
   incorrect_otp_message: 'You seem to have entered an incorrect OTP 3 times.',
   try_again: 'Try again after  —  {0}',

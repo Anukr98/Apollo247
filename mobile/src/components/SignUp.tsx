@@ -1,5 +1,5 @@
 import { ApolloLogo } from 'app/src/components/ApolloLogo';
-import { AppRoutes } from 'app/src/components/AppNavigatorContainer';
+import { AppRoutes } from 'app/src/components/NavigatorContainer';
 import { Button } from 'app/src/components/ui/Button';
 import { Card } from 'app/src/components/ui/Card';
 import { DatePicker } from 'app/src/components/ui/DatePicker';
@@ -9,9 +9,12 @@ import { TextInputComponent } from 'app/src/components/ui/TextInputComponent';
 import { string } from 'app/src/strings/string';
 import { theme } from 'app/src/theme/theme';
 import React, { useState } from 'react';
-import { Keyboard, SafeAreaView, StyleSheet, View } from 'react-native';
+import { Keyboard, SafeAreaView, StyleSheet, View, Alert } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
+import Moment from 'moment';
+import { useAuth } from '../hooks/authHooks';
+import { updatePatient_updatePatient_patient } from 'app/src/graphql/types/updatePatient';
 
 const styles = StyleSheet.create({
   container: {
@@ -64,7 +67,42 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const [gender, setGender] = useState<string>('');
   const [date, setDate] = useState<string>('');
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [emailValidation, setEmailValidation] = useState<boolean>(false);
+  const [firstNameValidation, setfirstNameValidation] = useState<boolean>(false);
+  const [lastNameValidation, setLastNameValidation] = useState<boolean>(false);
+  const { callUpdatePatient } = useAuth();
 
+  const isSatisfyingNameRegex = (value: string) =>
+    value == ' ' ? false : value == '' || /^[a-zA-Z ]+$/.test(value) ? true : false;
+  const isSatisfyingEmailRegex = (value: string) =>
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+      value
+    );
+
+  const _setEmail = (value: string) => {
+    setEmail(value);
+    setEmailValidation(isSatisfyingEmailRegex(value));
+  };
+
+  const _setFirstName = (value: string) => {
+    if (isSatisfyingNameRegex(value)) {
+      setfirstNameValidation(isSatisfyingNameRegex(value));
+      setFirstName(value);
+    } else {
+      return false;
+    }
+  };
+  const _setlastName = (value: string) => {
+    if (isSatisfyingNameRegex(value)) {
+      setLastNameValidation(isSatisfyingNameRegex(value));
+      setLastName(value);
+    } else {
+      return false;
+    }
+  };
   console.log(isDateTimePickerVisible, 'isDateTimePickerVisible');
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -77,16 +115,35 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             marginHorizontal: 0,
             marginTop: 20,
             shadowOffset: { width: 0, height: -10 },
-            shadowOpacity: 0.4,
+            shadowOpacity: 0.35,
+            shadowRadius: 20,
           }}
           heading={string.LocalStrings.welcome_text}
           description={string.LocalStrings.welcome_desc}
+          descriptionTextStyle={{ paddingBottom: 45 }}
         >
           <View style={styles.mascotStyle}>
             <Mascot />
           </View>
-          <TextInputComponent label={'Full Name'} placeholder={'First Name'} />
-          <TextInputComponent placeholder={'Last Name'} />
+          <TextInputComponent
+            label={'Full Name'}
+            placeholder={'First Name'}
+            onChangeText={(text: string) => _setFirstName(text)}
+            value={firstName}
+            autoCorrect={false}
+            textInputprops={{
+              maxLength: 50,
+            }}
+          />
+          <TextInputComponent
+            placeholder={'Last Name'}
+            onChangeText={(text: string) => _setlastName(text)}
+            value={lastName}
+            autoCorrect={false}
+            textInputprops={{
+              maxLength: 50,
+            }}
+          />
           <TextInputComponent
             label={'Date Of Birth'}
             value={date}
@@ -98,8 +155,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
           />
           <DatePicker
             isDateTimePickerVisible={isDateTimePickerVisible}
-            handleDatePicked={() => {
-              setDate(date);
+            handleDatePicked={(date) => {
+              const formatDate = Moment(date).format('DD/MM/YYYY');
+              setDate(formatDate);
               setIsDateTimePickerVisible(false);
             }}
             hideDateTimePicker={() => {
@@ -123,7 +181,16 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
               />
             ))}
           </View>
-          <TextInputComponent label={'Email Address (Optional)'} placeholder={'name@email.com'} />
+          <TextInputComponent
+            label={'Email Address (Optional)'}
+            placeholder={'name@email.com'}
+            onChangeText={(text: string) => _setEmail(text)}
+            value={email}
+            autoCorrect={false}
+            textInputprops={{
+              autoCapitalize: 'none',
+            }}
+          />
           <View style={{ height: 80 }} />
         </Card>
       </KeyboardAwareScrollView>
@@ -131,7 +198,40 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
         <Button
           title={'SUBMIT'}
           style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
-          onPress={() => props.navigation.navigate(AppRoutes.MultiSignup)}
+          onPress={async () => {
+            let validationMessage = '';
+            if (!firstName) {
+              validationMessage = 'Enter valid first name';
+            } else if (!lastName) {
+              validationMessage = 'Enter valid last name';
+            } else if (!date) {
+              validationMessage = 'Enter valid date of birth';
+            } else if (email) {
+              if (!emailValidation) {
+                validationMessage = 'Enter valid email';
+              }
+            } else if (!gender) {
+              validationMessage = 'Please select gender';
+            }
+            if (validationMessage) {
+              Alert.alert('Error', validationMessage);
+            } else {
+              // const patientsDetails: updatePatient_updatePatient_patient = {
+              // id =;
+              // mobileNumber: string | null;
+              // firstName: string | null;
+              // lastName: string | null;
+              // relation: Relation | null;
+              // sex: Sex | null;
+              // uhid: string | null;
+              // dateOfBirth: string | null;
+              // };
+
+              // const patientUpdateDetails = await callUpdatePatient(patientsDetails);
+
+              props.navigation.navigate(AppRoutes.TabBar);
+            }
+          }}
         />
       </StickyBottomComponent>
     </SafeAreaView>

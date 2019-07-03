@@ -24,6 +24,7 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../theme/theme';
 import { DoctorCard, doctorCardProps } from './ui/DoctorCard';
+import { Button } from './ui/Button';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -42,10 +43,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     backgroundColor: 'white',
     shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 5,
-    elevation: 5,
+    elevation: 6,
     borderRadius: 10,
     marginLeft: 20,
     marginTop: 8,
@@ -59,10 +60,10 @@ const styles = StyleSheet.create({
   listSpecialistView: {
     borderRadius: 10,
     shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 5,
-    elevation: 5,
+    elevation: 6,
     backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
@@ -86,6 +87,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  needhelpbuttonStyles: {
+    backgroundColor: 'white',
+    height: 50,
+    width: 120,
+    marginTop: 5,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 15,
+  },
+  titleBtnStyles: {
+    color: '#0087ba',
   },
 });
 
@@ -325,12 +337,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       return (
         <View style={styles.helpView}>
           <Mascot style={{ height: 72, width: 72 }} />
-          {/* <Image {...AppImages.ic_mascot} style={{ height: 80, width: 80 }} /> */}
-          {/* <Button
+          <Button
             title="Need Help?"
             style={styles.needhelpbuttonStyles}
             titleTextStyle={styles.titleBtnStyles}
-          /> */}
+          />
         </View>
       );
     }

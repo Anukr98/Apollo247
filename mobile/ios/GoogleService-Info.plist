@@ -3,21 +3,23 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>477516860783-l6r0u7nt37t6h5uk4srpprsh36uv8ahu.apps.googleusercontent.com</string>
+	<string>537093214409-l1ffk0sjcbcf3jur708tvchlkd66gbp6.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.477516860783-l6r0u7nt37t6h5uk4srpprsh36uv8ahu</string>
+	<string>com.googleusercontent.apps.537093214409-l1ffk0sjcbcf3jur708tvchlkd66gbp6</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>537093214409-h54k2danl1u3dodqlvsijhnt5tr2u8r1.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
-	<string>AIzaSyDx4FuRnOrz1PyZjQlvU0rBg8Cs1y4WZR4</string>
+	<string>AIzaSyAhI55jmjc9ifCH4yWSJRIj97TzdYAffww</string>
 	<key>GCM_SENDER_ID</key>
-	<string>477516860783</string>
+	<string>537093214409</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.apollo.patient</string>
 	<key>PROJECT_ID</key>
-	<string>apollopatient-95c45</string>
+	<string>apollo-patient-interface</string>
 	<key>STORAGE_BUCKET</key>
-	<string>apollopatient-95c45.appspot.com</string>
+	<string>apollo-patient-interface.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,8 +31,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:477516860783:ios:674e91e5f97a31d8</string>
+	<string>1:537093214409:ios:674e91e5f97a31d8</string>
 	<key>DATABASE_URL</key>
-	<string>https://apollopatient-95c45.firebaseio.com</string>
+	<string>https://apollo-patient-interface.firebaseio.com</string>
 </dict>
 </plist>

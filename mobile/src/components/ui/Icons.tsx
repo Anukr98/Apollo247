@@ -105,7 +105,7 @@ export const Person: React.FC<IconProps> = (props) => (
 
 export const GeneralPhysician: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ height: 47, width: 44 }}
+    style={{ height: 47, width: 42 }}
     {...props}
     source={require('./icons/ic_general_physician.png')}
   />
@@ -113,7 +113,7 @@ export const GeneralPhysician: React.FC<IconProps> = (props) => (
 
 export const Neurologist: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ height: 47, width: 44 }}
+    style={{ height: 47, width: 42 }}
     {...props}
     source={require('./icons/ic_neurologist.png')}
   />
@@ -121,7 +121,7 @@ export const Neurologist: React.FC<IconProps> = (props) => (
 
 export const Paedatrician: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ height: 47, width: 44 }}
+    style={{ height: 47, width: 36 }}
     {...props}
     source={require('./icons/ic_paedatrician.png')}
   />
@@ -129,7 +129,7 @@ export const Paedatrician: React.FC<IconProps> = (props) => (
 
 export const Urologist: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ height: 47, width: 44 }}
+    style={{ height: 47, width: 48 }}
     {...props}
     source={require('./icons/ic_urologist.png')}
   />
