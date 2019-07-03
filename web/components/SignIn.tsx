@@ -9,7 +9,9 @@ import { useAuth } from 'hooks/authHooks';
 import { AppInputField } from 'components/ui/AppInputField';
 import _times from 'lodash/times';
 import _isNumber from 'lodash/isNumber';
+import { isMobileNumberValid, isDigit } from 'utils/FormValidationUtils';
 import { AppTextField } from './ui/AppTextField';
+import FormHelperText from '@material-ui/core/FormHelperText';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -76,14 +78,14 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 const recaptchaContainerId = 'recaptcha-container';
-const isMobileNumberValid = (number: string) => number.length === 10;
 const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
 
-export interface SignInProps {}
-
-export const SignIn: React.FC<SignInProps> = (props) => {
+export const SignIn: React.FC = (props) => {
   const classes = useStyles();
+  const validPhoneMessage = 'OTP will be sent to this number';
+  const invalidPhoneMessage = 'This seems like a wrong number';
+
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const [otp, setOtp] = useState<number[]>([]);
   const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
@@ -95,6 +97,8 @@ export const SignIn: React.FC<SignInProps> = (props) => {
   const [captchaVerified, setCaptchaVerified] = useState<boolean>(false);
   const [captchaLoaded, setCaptchaLoaded] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
+  const [phoneMessage, setPhoneMessage] = useState<string>(validPhoneMessage);
+  const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
 
   const {
     buildCaptchaVerifier,
@@ -167,17 +171,38 @@ export const SignIn: React.FC<SignInProps> = (props) => {
       <p>Please enter your mobile number to login</p>
       <FormControl fullWidth>
         <AppInputField
-          inputProps={{ type: 'number', maxLength: 10 }}
+          inputProps={{ type: 'text', maxLength: 10 }}
           value={mobileNumber}
-          onChange={(event) => setMobileNumber(event.currentTarget.value)}
-          error={!isMobileNumberValid(mobileNumber)}
+          onChange={(event) => {
+            setMobileNumber(event.currentTarget.value);
+            if (event.currentTarget.value !== '') {
+              if (isMobileNumberValid(event.currentTarget.value)) {
+                setPhoneMessage(validPhoneMessage);
+                setShowErrorMessage(false);
+              } else {
+                setPhoneMessage(invalidPhoneMessage);
+                setShowErrorMessage(true);
+              }
+            } else {
+              setPhoneMessage(validPhoneMessage);
+              setShowErrorMessage(false);
+            }
+          }}
+          error={mobileNumber ? !isMobileNumberValid(mobileNumber) : false}
+          onKeyPress={(e) => {
+            if (!isDigit(e.key)) {
+              e.preventDefault();
+            }
+          }}
           startAdornment={
             <InputAdornment className={classes.inputAdornment} position="start">
               {mobileNumberPrefix}
             </InputAdornment>
           }
         />
-        <div className={classes.helpText}>OTP will be sent to this number</div>
+        <FormHelperText className={classes.helpText} error={showErrorMessage}>
+          {phoneMessage}
+        </FormHelperText>
       </FormControl>
       {captchaEl}
       <div className={classes.action}>
