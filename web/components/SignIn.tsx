@@ -150,6 +150,7 @@ export const SignIn: React.FC = (props) => {
         {_times(numOtpDigits, (index) => (
           <Grid item xs={2} key={index}>
             <AppTextField
+              autoFocus={index === 0}
               inputRef={otpInputRefs[index]}
               value={_isNumber(otp[index]) ? otp[index] : ''}
               inputProps={{ maxLength: 1 }}
