@@ -215,7 +215,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(true);
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [userName, setuserName] = useState<string>('');
-  const { currentUser, analytics, currentProfiles, signOut } = useAuth();
+  const { currentUser, analytics, currentProfiles } = useAuth();
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.ConsultRoom);
@@ -225,15 +225,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     userName = userName.toLowerCase();
     setuserName(userName);
   }, [currentUser, currentProfiles, analytics, userName]);
-
-  // useEffect(() => {
-  //   if (currentUser) {
-  //     // signOut();
-  //   }
-  //   return () => {
-  //     console.log('signout');
-  //   };
-  // }, []);
 
   useEffect(() => {});
   const Popup = () => (

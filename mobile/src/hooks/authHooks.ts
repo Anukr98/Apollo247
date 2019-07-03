@@ -16,6 +16,7 @@ export const useAuth = () => {
   const signOut = useContext(AuthContext).signOut!;
   const currentProfiles = useContext(AuthContext).currentProfiles!;
   const clearCurrentUser = useContext(AuthContext).clearCurrentUser!;
+  const callApiWithToken = useContext(AuthContext).callApiWithToken;
   return {
     analytics,
     isAuthenticating,
@@ -27,5 +28,6 @@ export const useAuth = () => {
     signOut,
     currentProfiles,
     clearCurrentUser,
+    callApiWithToken,
   };
 };

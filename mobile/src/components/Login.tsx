@@ -17,6 +17,7 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 import SmsListener from 'react-native-android-sms-listener';
+import firebase from 'react-native-firebase';
 
 const styles = StyleSheet.create({
   container: {
@@ -71,30 +72,29 @@ export interface LoginProps extends NavigationScreenProps {}
 
 const isPhoneNumberValid = (number: string) => {
   const isValidNumber =
-    number.replace(/^0+/, '').length !== 10 && number.length !== 0 ? false : true;
+    (number.replace(/^0+/, '').length !== 10 && number.length !== 0) ||
+    !/^[6-9]{1}\d{9}$/.test(number)
+      ? false
+      : true;
   return isValidNumber;
 };
+
 let otpString = '';
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
-  const phoneNumberIsValid = isPhoneNumberValid(phoneNumber);
+  const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const { verifyPhoneNumber, analytics, currentUser, clearCurrentUser } = useAuth();
+  const { analytics } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<any>();
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
-    console.log('Login currentUser', currentUser);
     setVerifyingPhonenNumber(false);
-    if (currentUser) {
-      clearCurrentUser();
-    }
-  }, [analytics]);
+  }, [analytics, verifyingPhoneNumber]);
 
   useEffect(() => {
-    const subscriptionId = SmsListener.addListener((message) => {
-      console.log('Login message', message);
-      var newOtp = message.body.match(/-*[0-9]+/);
+    const subscriptionId = SmsListener.addListener((message: any) => {
+      const newOtp = message.body.match(/-*[0-9]+/);
       console.log(newOtp[0], 'wertyuio');
       otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
     });
@@ -106,6 +106,17 @@ export const Login: React.FC<LoginProps> = (props) => {
       subscriptionId && subscriptionId.remove();
     };
   }, [subscriptionId]);
+
+  const validateAndSetPhoneNumber = (number: string) => {
+    if (/^\d+$/.test(number) || number == '') {
+      setPhoneNumber(number);
+      if (number.length == 10) {
+        setPhoneNumberIsValid(isPhoneNumberValid(number));
+      }
+    } else {
+      return false;
+    }
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -124,22 +135,46 @@ export const Login: React.FC<LoginProps> = (props) => {
           }
           onClickButton={() => {
             Keyboard.dismiss();
-            setVerifyingPhonenNumber(true);
-            verifyPhoneNumber('+91' + phoneNumber).then((phoneNumberVerificationCredential) => {
-              setVerifyingPhonenNumber(false);
-              props.navigation.navigate(AppRoutes.OTPVerification, {
-                phoneNumberVerificationCredential,
-                otpString,
-                phoneNumber,
-              });
-            });
+            if (!(phoneNumber.length == 10 && phoneNumberIsValid)) {
+              null;
+            } else {
+              setVerifyingPhonenNumber(true);
+              firebase
+                .auth()
+                .signInWithPhoneNumber('+91' + phoneNumber)
+                .then((confirmResult) => {
+                  setVerifyingPhonenNumber(false);
+                  props.navigation.navigate(AppRoutes.OTPVerification, {
+                    phoneNumberVerificationCredential: confirmResult.verificationId,
+                    confirmResult,
+                    otpString,
+                    phoneNumber: '+91' + phoneNumber,
+                  });
+                  console.log(confirmResult, 'confirmResult');
+                })
+                .catch((error) => {
+                  console.log(error, 'error');
+                  setVerifyingPhonenNumber(false);
+                });
+            }
+            // setVerifyingPhonenNumber(true);
+            // verifyPhoneNumber('+91' + phoneNumber).then((phoneNumberVerificationCredential) => {
+            //   setVerifyingPhonenNumber(false);
+            //   props.navigation.navigate(AppRoutes.OTPVerification, {
+            //     phoneNumberVerificationCredential,
+            //     otpString,
+            //     phoneNumber: '+91' + phoneNumber,
+            //   });
+            // });
           }}
           disableButton={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
         >
           <View
             style={[
               { height: 56, paddingTop: 20 },
-              phoneNumberIsValid ? styles.inputValidView : styles.inputView,
+              phoneNumber == '' || phoneNumber.length < 10 || phoneNumberIsValid
+                ? styles.inputValidView
+                : styles.inputView,
             ]}
           >
             <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
@@ -149,13 +184,17 @@ export const Login: React.FC<LoginProps> = (props) => {
               keyboardType="numeric"
               maxLength={10}
               value={phoneNumber}
-              onChangeText={(value) => setPhoneNumber(value)}
+              onChangeText={(value) => validateAndSetPhoneNumber(value)}
             />
           </View>
           <Text
-            style={phoneNumberIsValid ? styles.bottomValidDescription : styles.bottomDescription}
+            style={
+              phoneNumber == '' || phoneNumber.length < 10 || phoneNumberIsValid
+                ? styles.bottomValidDescription
+                : styles.bottomDescription
+            }
           >
-            {phoneNumberIsValid
+            {phoneNumber == '' || phoneNumber.length < 10 || phoneNumberIsValid
               ? string.LocalStrings.otp_sent_to
               : string.LocalStrings.wrong_number}
           </Text>

@@ -2,7 +2,6 @@ import { ApolloLogo } from 'app/src/components/ApolloLogo';
 import { AppRoutes } from 'app/src/components/NavigatorContainer';
 import { Button } from 'app/src/components/ui/Button';
 import { Card } from 'app/src/components/ui/Card';
-import { DropDownComponent } from 'app/src/components/ui/DropDownComponent';
 import { Mascot, DropdownGreen } from 'app/src/components/ui/Icons';
 import { StickyBottomComponent } from 'app/src/components/ui/StickyBottomComponent';
 import { string } from 'app/src/strings/string';
@@ -86,14 +85,31 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [user, setUser] = useState<object>([]);
   const { currentUser, analytics, currentProfiles } = useAuth();
+  const [profilesLength, setProfilesLength] = useState<any>({});
+  const [discriptionText, setDiscriptionText] = useState<string>('');
+  const [showText, setShowText] = useState<boolean>(false);
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.MultiSignup);
-    console.log('currentUser', currentUser);
     setUser(currentUser);
-    console.log('user', user);
-    console.log('currentProfiles', currentProfiles);
-  }, [currentUser, currentProfiles, analytics, user]);
+    setProfilesLength(currentProfiles);
+    const length =
+      profilesLength &&
+      (profilesLength.length == 1
+        ? profilesLength.length + ' account'
+        : profilesLength.length + ' accounts');
+    const baseString =
+      'We have found ' +
+      length +
+      ' registered with this mobile number.Please tell\nus who is who ? :)';
+    setDiscriptionText(baseString);
+
+    if (length !== 'undefined accounts') {
+      setShowText(true);
+      console.log('length', length);
+    }
+    console.log('discriptionText', discriptionText);
+  }, [currentUser, currentProfiles, analytics, user, profilesLength, discriptionText, showText]);
 
   const renderUserForm = (styles: any, currentProfiles: currentProfiles, i: number) => {
     return (
@@ -187,16 +203,11 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const Popup = () => (
     <TouchableOpacity
       style={{
-        // width: 160,
         paddingVertical: 9,
         position: 'absolute',
         width: width,
         height: height,
         flex: 1,
-        // top: 0,
-        // left: 0,
-        // right: 0,
-        // bottom: 0,
         alignItems: 'flex-end',
         justifyContent: 'center',
         zIndex: 3,
@@ -264,7 +275,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               shadowOpacity: 0.4,
             }}
             heading={string.LocalStrings.welcome_text}
-            description={string.LocalStrings.multi_signup_desc}
+            description={showText ? discriptionText : string.LocalStrings.multi_signup_desc}
             descriptionTextStyle={{ paddingBottom: 50 }}
           >
             <View style={styles.mascotStyle}>

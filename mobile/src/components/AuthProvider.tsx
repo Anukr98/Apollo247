@@ -24,6 +24,7 @@ export interface AuthProviderProps {
   currentUser: PatientSignIn_patientSignIn_patients | null;
   currentProfiles: object | null;
   isAuthenticating: boolean;
+  callApiWithToken: ((updatedToken: string) => Promise<any>) | null;
   verifyPhoneNumber: ((mobileNumber: string) => Promise<PhoneNumberVerificationCredential>) | null;
   verifyOtp:
     | ((
@@ -48,6 +49,7 @@ export const AuthContext = React.createContext<AuthProviderProps>({
   analytics: null,
   currentProfiles: null,
   clearCurrentUser: null,
+  callApiWithToken: null,
 });
 
 let apolloClient: ApolloClient<any>;
@@ -89,7 +91,9 @@ export const AuthProvider: React.FC = (props) => {
   const [clearCurrentUser, setClearCurrentUser] = useState<AuthProviderProps['clearCurrentUser']>(
     null
   );
-
+  const [callApiWithToken, setCallApiWithToken] = useState<AuthProviderProps['callApiWithToken']>(
+    null
+  );
   useEffect(() => {
     setAnalytics(firebase.analytics());
 
@@ -127,30 +131,18 @@ export const AuthProvider: React.FC = (props) => {
     };
     setClearCurrentUser(clearCurrentUserFunc);
 
-    auth.onAuthStateChanged(async (updatedUser) => {
-      // There is no hook to know when firebase is loading, but we know this fires when it has attempted
-      // (whether automated from an existing cache or from an actual user-initiated sign in click)
-      // Set the default `authenticating` value to true, and clear it out in all cases here
-      // (but not until all the async requests here are finished )
-      if (!userIsValid(updatedUser)) {
-        setCurrentUser(null);
-        setcurrentProfiles(null);
-        setIsAuthenticating(false);
-        return;
-      }
-
-      const updatedToken = await updatedUser!.getIdToken();
-      setAuthToken(updatedToken);
-      setIsAuthenticating(false);
-
+    const callAPIFunc = () => async (updatedToken: string) => {
       const patientSignInResult = await apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
         mutation: PATIENT_SIGN_IN,
         variables: { jwt: updatedToken },
       });
 
+      console.log('patientSignInResult', patientSignInResult);
+
       if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
         const patient = patientSignInResult.data.patientSignIn.patients[0];
         const patientProfiles = patientSignInResult.data.patientSignIn.patients;
+
         setCurrentUser(patient);
         setcurrentProfiles(patientProfiles);
         setIsAuthenticating(false);
@@ -159,7 +151,44 @@ export const AuthProvider: React.FC = (props) => {
         setcurrentProfiles(null);
         setIsAuthenticating(false);
       }
-    });
+
+      return patientSignInResult;
+    };
+    setCallApiWithToken(callAPIFunc);
+
+    // auth.onAuthStateChanged(async (updatedUser) => {
+    //   // There is no hook to know when firebase is loading, but we know this fires when it has attempted
+    //   // (whether automated from an existing cache or from an actual user-initiated sign in click)
+    //   // Set the default `authenticating` value to true, and clear it out in all cases here
+    //   // (but not until all the async requests here are finished )
+    //   if (!userIsValid(updatedUser)) {
+    //     setCurrentUser(null);
+    //     setcurrentProfiles(null);
+    //     setIsAuthenticating(false);
+    //     return;
+    //   }
+
+    //   const updatedToken = await updatedUser!.getIdToken();
+    //   setAuthToken(updatedToken);
+    //   setIsAuthenticating(false);
+
+    //   const patientSignInResult = await apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
+    //     mutation: PATIENT_SIGN_IN,
+    //     variables: { jwt: updatedToken },
+    //   });
+
+    //   if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
+    //     const patient = patientSignInResult.data.patientSignIn.patients[0];
+    //     const patientProfiles = patientSignInResult.data.patientSignIn.patients;
+    //     setCurrentUser(patient);
+    //     setcurrentProfiles(patientProfiles);
+    //     setIsAuthenticating(false);
+    //   } else {
+    //     setCurrentUser(null);
+    //     setcurrentProfiles(null);
+    //     setIsAuthenticating(false);
+    //   }
+    // });
   }, []);
 
   return (
@@ -176,6 +205,7 @@ export const AuthProvider: React.FC = (props) => {
             signOut,
             currentProfiles,
             clearCurrentUser,
+            callApiWithToken,
           }}
         >
           {props.children}

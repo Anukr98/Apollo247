@@ -51,6 +51,7 @@ export interface textInputComponentProps {
   underlineColorAndroid?: string;
   autoCorrect?: boolean;
   width?: number;
+  textInputprops?: TextInputProps;
 }
 
 export const TextInputComponent: React.FC<textInputComponentProps> = (props) => {
@@ -73,6 +74,7 @@ export const TextInputComponent: React.FC<textInputComponentProps> = (props) => 
           onChangeText={props.onChangeText}
           underlineColorAndroid={props.underlineColorAndroid}
           autoCorrect={props.autoCorrect}
+          {...props.textInputprops}
         />
       )}
     </View>
