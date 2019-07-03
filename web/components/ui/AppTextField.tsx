@@ -6,7 +6,6 @@ import TextField, { TextFieldProps } from '@material-ui/core/TextField';
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     formControl: {
-      marginBottom: 20,
       '& label': {
         fontSize: 12,
         fontWeight: 500,
@@ -42,7 +41,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
       '& svg': {
         color: '#00b38e',
-      }
+      },
     },
   });
 });

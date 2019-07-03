@@ -200,7 +200,7 @@ export const SignIn: React.FC = (props) => {
             </InputAdornment>
           }
         />
-        <FormHelperText className={classes.helpText} error={showErrorMessage}>
+        <FormHelperText component="div" className={classes.helpText} error={showErrorMessage}>
           {phoneMessage}
         </FormHelperText>
       </FormControl>
