@@ -11,7 +11,7 @@ const gateway = new ApolloGateway({
   const schema = config.schema;
   const executor = config.executor as GraphQLExecutor;
   const server = new ApolloServer({
-    cors: { origin: 'http://patients-web.aph.popcornapps.com/' },
+    cors: { origin: 'http://patients-web.aph.popcornapps.com' },
     schema,
     executor,
   });
