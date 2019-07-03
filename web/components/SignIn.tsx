@@ -144,7 +144,9 @@ export const SignIn: React.FC = (props) => {
               inputProps={{ maxLength: 1 }}
               onChange={(e) => {
                 const newOtp = [...otp];
-                newOtp[index] = parseInt(e.currentTarget.value, 10);
+                const num = parseInt(e.currentTarget.value, 10);
+                if (isNaN(num)) delete newOtp[index];
+                else newOtp[index] = num;
                 setOtp(newOtp);
               }}
             />
