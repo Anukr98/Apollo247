@@ -15,20 +15,6 @@ import { UPDATE_PATIENT } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
-    signUpBar: {
-      display: 'flex',
-    },
-    mascotCircle: {
-      marginLeft: 'auto',
-      cursor: 'pointer',
-      position: 'fixed',
-      bottom: 10,
-      right: 15,
-      '& img': {
-        maxWidth: 72,
-        maxHeight: 72,
-      },
-    },
     signUpPop: {
       width: 368,
       borderRadius: 10,
@@ -66,17 +52,6 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: theme.palette.common.white,
         fontSize: 16,
         fontWeight: 500,
-      },
-    },
-    bottomPopover: {
-      overflow: 'initial',
-      backgroundColor: 'none',
-      boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
-        maxWidth: '100%',
-        width: '100%',
-        top: '38px !important',
       },
     },
     mascotIcon: {
@@ -198,69 +173,67 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const disabled = patients.some(isPatientInvalid);
 
   return (
-    <div className={classes.signUpBar}>
-      <div className={classes.signUpPop}>
-        <div className={classes.mascotIcon}>
-          <img src={require('images/ic_mascot.png')} alt="" />
-        </div>
-        <div className={classes.customScrollBar}>
-          <div className={classes.signinGroup}>
-            <Typography variant="h2">
-              welcome
-              <br /> to apollo 24/7
-            </Typography>
-            {patients.length > 1 ? (
-              <p>
-                We have found {patients.length} accounts registered with this mobile number. Please
-                tell us who is who? :)
-              </p>
-            ) : null}
-            <div className={classes.formGroup}>
-              {patients &&
-                patients.map((p, i) => (
-                  <PatientProfile
-                    key={p.id}
-                    patient={p}
-                    number={i + 1}
-                    onUpdatePatient={(updatedPatient) => {
-                      const newPatients = patients.map((patient) =>
-                        patient.id === updatedPatient.id ? updatedPatient : patient
-                      );
-                      setPatients(newPatients);
-                    }}
-                  />
-                ))}
-            </div>
+    <div className={classes.signUpPop}>
+      <div className={classes.mascotIcon}>
+        <img src={require('images/ic_mascot.png')} alt="" />
+      </div>
+      <div className={classes.customScrollBar}>
+        <div className={classes.signinGroup}>
+          <Typography variant="h2">
+            welcome
+            <br /> to apollo 24/7
+          </Typography>
+          {patients.length > 1 ? (
+            <p>
+              We have found {patients.length} accounts registered with this mobile number. Please
+              tell us who is who? :)
+            </p>
+          ) : null}
+          <div className={classes.formGroup}>
+            {patients &&
+              patients.map((p, i) => (
+                <PatientProfile
+                  key={p.id}
+                  patient={p}
+                  number={i + 1}
+                  onUpdatePatient={(updatedPatient) => {
+                    const newPatients = patients.map((patient) =>
+                      patient.id === updatedPatient.id ? updatedPatient : patient
+                    );
+                    setPatients(newPatients);
+                  }}
+                />
+              ))}
           </div>
         </div>
-        <div className={classes.actions}>
-          <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
-            {(mutate, { loading }) => (
-              <AppButton
-                type="submit"
-                onClick={() => {
-                  // WE DONT NEED TO IMPLEMENT THIS UNTIL THE NEXT SPRINT
-                  // patients.forEach((patient) => {
-                  //   mutate({
-                  //     variables: {
-                  //       patientInput: {
-                  //         id: patient.id,
-                  //         relation: patient.relation,
-                  //       },
-                  //     },
-                  //   });
-                  // });
-                }}
-                disabled={disabled}
-                fullWidth
-                variant="contained"
-                color="primary"
-              >
-                {loading ? <CircularProgress /> : 'Submit'}
-              </AppButton>
-            )}
-          </Mutation>
-        </div>
+      </div>
+      <div className={classes.actions}>
+        <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
+          {(mutate, { loading }) => (
+            <AppButton
+              type="submit"
+              onClick={() => {
+                // WE DONT NEED TO IMPLEMENT THIS UNTIL THE NEXT SPRINT
+                // patients.forEach((patient) => {
+                //   mutate({
+                //     variables: {
+                //       patientInput: {
+                //         id: patient.id,
+                //         relation: patient.relation,
+                //       },
+                //     },
+                //   });
+                // });
+              }}
+              disabled={disabled}
+              fullWidth
+              variant="contained"
+              color="primary"
+            >
+              {loading ? <CircularProgress /> : 'Submit'}
+            </AppButton>
+          )}
+        </Mutation>
       </div>
     </div>
   );

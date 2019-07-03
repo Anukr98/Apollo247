@@ -11,13 +11,18 @@ const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     signUpBar: {
       display: 'flex',
+      [theme.breakpoints.down('xs')]: {
+        justifyContent: 'center',
+      },
     },
     mascotCircle: {
-      marginLeft: 'auto',
-      cursor: 'pointer',
-      position: 'fixed',
-      bottom: 10,
-      right: 15,
+      [theme.breakpoints.up('sm')]: {
+        marginLeft: 'auto',
+        cursor: 'pointer',
+        position: 'fixed',
+        bottom: 10,
+        right: 15,
+      },
       '& img': {
         maxWidth: 72,
         maxHeight: 72,

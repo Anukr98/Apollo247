@@ -107,6 +107,9 @@ const useStyles = makeStyles((theme: Theme) => {
       minHeight: '100vh',
       backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
       paddingBottom: 70,
+      [theme.breakpoints.down('xs')]: {
+        paddingBottom: 90,
+      },
     },
   };
 });

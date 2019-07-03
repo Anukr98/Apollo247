@@ -12,55 +12,21 @@ const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     signUpBar: {
       display: 'flex',
-    },
-    formControl: {
-      marginBottom: 20,
-      '& label': {
-        fontSize: 12,
-        fontWeight: 500,
-        color: theme.palette.secondary.dark,
+      [theme.breakpoints.down('xs')]: {
+        justifyContent: 'center',
       },
     },
     mascotCircle: {
-      marginLeft: 'auto',
       cursor: 'pointer',
-      position: 'fixed',
-      bottom: 10,
-      right: 15,
+      [theme.breakpoints.up('sm')]: {
+        marginLeft: 'auto',
+        position: 'fixed',
+        bottom: 10,
+        right: 15,
+      },
       '& img': {
         maxWidth: 72,
         maxHeight: 72,
-      },
-    },
-    signUpPop: {
-      width: 368,
-      borderRadius: 10,
-      paddingTop: 36,
-      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
-      backgroundColor: theme.palette.common.white,
-      [theme.breakpoints.down('xs')]: {
-        width: '100%',
-        borderRadius: 0,
-      },
-      '& p': {
-        fontSize: 17,
-        fontWeight: 500,
-        lineHeight: 1.41,
-        color: theme.palette.secondary.main,
-        marginTop: 20,
-      },
-    },
-    actions: {
-      padding: 20,
-    },
-    btnGroup: {
-      paddingTop: 7,
-      '& button': {
-        width: '100%',
-        color: '#00b38e',
-        backgroundColor: theme.palette.common.white,
-        fontSize: 16,
-        fontWeight: 500,
       },
     },
     bottomPopover: {
@@ -73,29 +39,6 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
         top: '38px !important',
       },
-    },
-    mascotIcon: {
-      position: 'absolute',
-      right: 12,
-      top: -40,
-      '& img': {
-        maxWidth: 80,
-      },
-    },
-    customScrollBar: {
-      height: '70vh',
-      overflow: 'auto',
-      [theme.breakpoints.down('xs')]: {
-        height: '75vh',
-      },
-    },
-    signinGroup: {
-      padding: 20,
-      paddingTop: 0,
-      paddingBottom: 0,
-    },
-    formGroup: {
-      paddingTop: 30,
     },
   });
 });
