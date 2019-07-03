@@ -62,7 +62,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const Welcome: React.FC = (props) => {
   const classes = useStyles();
   const isUserLoggedIn = useIsLoggedIn();
-  const [value, setValue] = React.useState(0);
+
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
@@ -74,14 +74,7 @@ export const Welcome: React.FC = (props) => {
         <HeroBanner />
         <ServiceList />
       </div>
-      <BottomNavigation
-        value={value}
-        onChange={(event, newValue) => {
-          setValue(newValue);
-        }}
-        showLabels
-        className={classes.bottomMenuRoot}
-      >
+      <BottomNavigation showLabels className={classes.bottomMenuRoot}>
         <BottomNavigationAction
           label="Consult Room"
           icon={<img src={require('images/ic_consultroom.svg')} />}
