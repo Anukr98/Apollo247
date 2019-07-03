@@ -11,9 +11,6 @@ import { isNameValid, isEmailValid, isDobValid } from 'utils/FormValidationUtils
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
-    signUpBar: {
-      display: 'flex',
-    },
     formControl: {
       marginBottom: 20,
       '& label': {
@@ -22,23 +19,16 @@ const useStyles = makeStyles((theme: Theme) => {
         color: theme.palette.secondary.dark,
       },
     },
-    mascotCircle: {
-      marginLeft: 'auto',
-      cursor: 'pointer',
-      position: 'fixed',
-      bottom: 10,
-      right: 15,
-      '& img': {
-        maxWidth: 72,
-        maxHeight: 72,
-      },
-    },
     signUpPop: {
       width: 368,
       borderRadius: 10,
       paddingTop: 36,
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: theme.palette.common.white,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        borderRadius: 0,
+      },
       '& p': {
         fontSize: 17,
         fontWeight: 500,
@@ -60,11 +50,6 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
       },
     },
-    bottomPopover: {
-      overflow: 'initial',
-      backgroundColor: 'none',
-      boxShadow: 'none',
-    },
     mascotIcon: {
       position: 'absolute',
       right: 12,
@@ -76,6 +61,9 @@ const useStyles = makeStyles((theme: Theme) => {
     customScrollBar: {
       height: '70vh',
       overflow: 'auto',
+      [theme.breakpoints.down('xs')]: {
+        height: '75vh',
+      },
     },
     signinGroup: {
       padding: 20,
@@ -196,7 +184,7 @@ export const NewProfile: React.FC = (props) => {
               <label>Gender</label>
               <Grid container spacing={2} className={classes.btnGroup}>
                 {genders.map((gender) => (
-                  <Grid item xs={6} sm={4} key={gender}>
+                  <Grid item xs={4} sm={4} key={gender}>
                     <AppButton variant="contained">{gender}</AppButton>
                   </Grid>
                 ))}
