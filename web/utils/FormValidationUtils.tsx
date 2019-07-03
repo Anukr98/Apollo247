@@ -18,3 +18,14 @@ export const isDigit = (char: string) => {
 export const isNameValid = (name: string) => {
   return /^[a-zA-Z ]*$/.test(name);
 };
+
+export const isDobValid = (dob: string) => {
+  if (/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/.test(dob)) {
+    const dbString = new Date(dob);
+  }
+  return false;
+};
+
+export const isEmailValid = (email: string) => {
+  return /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/.test(email);
+};

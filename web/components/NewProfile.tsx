@@ -7,7 +7,7 @@ import { AppTextField } from 'components/ui/AppTextField';
 import { Sex as GENDER } from 'graphql/types/globalTypes';
 import React, { useState } from 'react';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import { isNameValid } from 'utils/FormValidationUtils';
+import { isNameValid, isEmailValid, isDobValid } from 'utils/FormValidationUtils';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -101,6 +101,13 @@ export const NewProfile: React.FC = (props) => {
   const [showLastNameError, setShowLastNameError] = useState<boolean>(false);
   const [showDobError, setDobError] = useState<boolean>(false);
   const [showEmailIdError, setShowEmailIdError] = useState<boolean>(false);
+  const [submitBtnStatus, setSubmitBtnStatus] = useState<boolean>(true);
+
+  const manageSubmitBtnStatus = () => {
+    !showFirstNameError && !showLastNameError && !showDobError
+      ? setSubmitBtnStatus(false)
+      : setSubmitBtnStatus(true);
+  };
 
   return (
     <div className={classes.signUpPop}>
@@ -120,13 +127,12 @@ export const NewProfile: React.FC = (props) => {
                 label="First Name"
                 placeholder="Example, Jonathan"
                 onChange={(e) => {
-                  if (isNameValid(e.target.value)) {
+                  if (!isNameValid(e.target.value)) {
                     setShowFirstNameError(true);
-                    return true;
                   } else {
                     setShowFirstNameError(false);
-                    return false;
                   }
+                  manageSubmitBtnStatus();
                 }}
               />
               <FormHelperText
@@ -142,13 +148,12 @@ export const NewProfile: React.FC = (props) => {
                 label="Last Name"
                 placeholder="Example, Donut"
                 onChange={(e) => {
-                  if (isNameValid(e.target.value)) {
+                  if (!isNameValid(e.target.value)) {
                     setShowLastNameError(true);
-                    return true;
                   } else {
                     setShowLastNameError(false);
-                    return false;
                   }
+                  manageSubmitBtnStatus();
                 }}
               />
               <FormHelperText
@@ -164,13 +169,12 @@ export const NewProfile: React.FC = (props) => {
                 label="Date Of Birth"
                 placeholder="mm/dd/yyyy"
                 onChange={(e) => {
-                  if (isNameValid(e.target.value)) {
+                  if (!isDobValid(e.target.value)) {
                     setDobError(true);
-                    return true;
                   } else {
                     setDobError(false);
-                    return false;
                   }
+                  manageSubmitBtnStatus();
                 }}
               />
               <FormHelperText
@@ -196,13 +200,12 @@ export const NewProfile: React.FC = (props) => {
                 label="Email Address (Optional)"
                 placeholder="name@email.com"
                 onChange={(e) => {
-                  if (isNameValid(e.target.value)) {
+                  if (e.target.value !== '' && !isEmailValid(e.target.value)) {
                     setShowEmailIdError(true);
-                    return true;
                   } else {
                     setShowEmailIdError(false);
-                    return false;
                   }
+                  manageSubmitBtnStatus();
                 }}
               />
               <FormHelperText
@@ -217,7 +220,7 @@ export const NewProfile: React.FC = (props) => {
         </div>
       </div>
       <div className={classes.actions}>
-        <AppButton fullWidth disabled variant="contained" color="primary">
+        <AppButton fullWidth disabled={submitBtnStatus} variant="contained" color="primary">
           Submit
         </AppButton>
       </div>
