@@ -102,6 +102,10 @@ export const NewProfile: React.FC = (props) => {
   const [showDobError, setDobError] = useState<boolean>(false);
   const [showEmailIdError, setShowEmailIdError] = useState<boolean>(false);
   const [submitBtnStatus, setSubmitBtnStatus] = useState<boolean>(true);
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [dateOfBirth, setDateOfBirth] = useState<string>('');
+  const [emailAddress, setEmailAddress] = useState<string>('');
 
   const manageSubmitBtnStatus = () => {
     !showFirstNameError && !showLastNameError && !showDobError
@@ -126,7 +130,10 @@ export const NewProfile: React.FC = (props) => {
               <AppTextField
                 label="First Name"
                 placeholder="Example, Jonathan"
+                value={firstName}
+                error={firstName ? !isNameValid(firstName) : false}
                 onChange={(e) => {
+                  setFirstName(e.target.value);
                   if (!isNameValid(e.target.value)) {
                     setShowFirstNameError(true);
                   } else {
@@ -147,7 +154,10 @@ export const NewProfile: React.FC = (props) => {
               <AppTextField
                 label="Last Name"
                 placeholder="Example, Donut"
+                value={lastName}
+                error={lastName ? !isNameValid(lastName) : false}
                 onChange={(e) => {
+                  setLastName(e.target.value);
                   if (!isNameValid(e.target.value)) {
                     setShowLastNameError(true);
                   } else {
@@ -168,7 +178,10 @@ export const NewProfile: React.FC = (props) => {
               <AppTextField
                 label="Date Of Birth"
                 placeholder="mm/dd/yyyy"
+                value={dateOfBirth}
+                error={dateOfBirth ? !isDobValid(dateOfBirth) : false}
                 onChange={(e) => {
+                  setDateOfBirth(e.target.value);
                   if (!isDobValid(e.target.value)) {
                     setDobError(true);
                   } else {
@@ -176,6 +189,7 @@ export const NewProfile: React.FC = (props) => {
                   }
                   manageSubmitBtnStatus();
                 }}
+                inputProps={{ type: 'date' }}
               />
               <FormHelperText
                 className={showDobError ? classes.showMessage : classes.hideMessage}
@@ -199,7 +213,10 @@ export const NewProfile: React.FC = (props) => {
               <AppTextField
                 label="Email Address (Optional)"
                 placeholder="name@email.com"
+                value={emailAddress}
+                error={emailAddress ? !isEmailValid(emailAddress) : false}
                 onChange={(e) => {
+                  setEmailAddress(e.target.value);
                   if (e.target.value !== '' && !isEmailValid(e.target.value)) {
                     setShowEmailIdError(true);
                   } else {

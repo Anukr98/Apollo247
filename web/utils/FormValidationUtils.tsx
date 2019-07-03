@@ -16,14 +16,15 @@ export const isDigit = (char: string) => {
 };
 
 export const isNameValid = (name: string) => {
-  return /^[a-zA-Z ]*$/.test(name);
+  if (/^[a-zA-Z ]*$/.test(name) && name.length > 2) {
+    return true;
+  } else {
+    return false;
+  }
 };
 
 export const isDobValid = (dob: string) => {
-  if (/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/.test(dob)) {
-    const dbString = new Date(dob);
-  }
-  return false;
+  return /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/.test(dob);
 };
 
 export const isEmailValid = (email: string) => {
