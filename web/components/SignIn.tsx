@@ -151,7 +151,7 @@ export const SignIn: React.FC = (props) => {
               autoFocus={index === 0}
               inputRef={otpInputRefs[index]}
               value={_isNumber(otp[index]) ? otp[index] : ''}
-              inputProps={{ maxLength: 1 }}
+              inputProps={{ type: 'number', maxLength: 1 }}
               onChange={(e) => {
                 const newOtp = [...otp];
                 const num = parseInt(e.currentTarget.value, 10);
@@ -203,7 +203,7 @@ export const SignIn: React.FC = (props) => {
       <p>Please enter your mobile number to login</p>
       <FormControl fullWidth>
         <AppInputField
-          inputProps={{ type: 'text', maxLength: 10 }}
+          inputProps={{ type: 'number', maxLength: 10 }}
           value={mobileNumber}
           onChange={(event) => {
             setMobileNumber(event.currentTarget.value);
@@ -222,7 +222,7 @@ export const SignIn: React.FC = (props) => {
           }}
           error={mobileNumber ? !isMobileNumberValid(mobileNumber) : false}
           onKeyPress={(e) => {
-            if (!isDigit(e.key)) {
+            if (isNaN(parseInt(e.key, 10))) {
               e.preventDefault();
             }
           }}
