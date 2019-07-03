@@ -16,5 +16,5 @@ export const isDigit = (char: string) => {
 };
 
 export const isNameValid = (name: string) => {
-  return /^([a-zA-Z]+\s)*[a-zA-Z]+$/.test(name);
+  return /^[a-zA-Z ]*$/.test(name);
 };
