@@ -6,7 +6,6 @@ import TextField, { TextFieldProps } from '@material-ui/core/TextField';
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     formControl: {
-      marginBottom: 20,
       '& label': {
         fontSize: 12,
         fontWeight: 500,
@@ -36,13 +35,21 @@ const useStyles = makeStyles((theme: Theme) => {
         borderBottom: '2px solid #00b38e',
       },
     },
+    inputError: {
+      '&:before': {
+        borderBottom: '2px solid #e50000 !important',
+      },
+      '&:after': {
+        borderBottom: '2px solid #e50000 !important',
+      },
+    },
     selectRoot: {
       fontSize: 16,
       fontWeight: 500,
       color: '#01475b',
       '& svg': {
         color: '#00b38e',
-      }
+      },
     },
   });
 });
@@ -57,7 +64,13 @@ export const AppTextField: React.FC<TextFieldProps> = (props) => {
         shrink: true,
         focused: false,
       }}
-      InputProps={{ classes: { root: classes.inputRoot, focused: classes.inputFocused } }}
+      InputProps={{
+        classes: {
+          root: classes.inputRoot,
+          focused: classes.inputFocused,
+          error: classes.inputError,
+        },
+      }}
       SelectProps={{ classes: { root: classes.selectRoot } }}
       {...props}
     />

@@ -1,11 +1,13 @@
-import { Theme } from '@material-ui/core';
+import { Theme, FormControl } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AppButton } from 'components/ui/AppButton';
 import { AppTextField } from 'components/ui/AppTextField';
 import { Sex as GENDER } from 'graphql/types/globalTypes';
-import React from 'react';
+import React, { useState } from 'react';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import { isNameValid, isEmailValid, isDobValid } from 'utils/FormValidationUtils';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -83,12 +85,29 @@ const useStyles = makeStyles((theme: Theme) => {
     formGroup: {
       paddingTop: 30,
     },
+    showMessage: {
+      display: 'block',
+    },
+    hideMessage: {
+      display: 'none',
+    },
   });
 });
 
 export const NewProfile: React.FC = (props) => {
   const classes = useStyles();
   const genders = Object.values(GENDER).filter((g) => g != 'NOT_APPLICABLE' && g != 'NOT_KNOWN');
+  const [showFirstNameError, setShowFirstNameError] = useState<boolean>(false);
+  const [showLastNameError, setShowLastNameError] = useState<boolean>(false);
+  const [showDobError, setDobError] = useState<boolean>(false);
+  const [showEmailIdError, setShowEmailIdError] = useState<boolean>(false);
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [dateOfBirth, setDateOfBirth] = useState<string>('');
+  const [emailAddress, setEmailAddress] = useState<string>('');
+
+  const submitDisabled =
+    firstName.length > 2 && lastName.length > 2 && dateOfBirth.length === 10 ? false : true;
 
   return (
     <div className={classes.signUpPop}>
@@ -103,9 +122,76 @@ export const NewProfile: React.FC = (props) => {
           </Typography>
           <p>Let us quickly get to know you so that we can get you the best help :)</p>
           <div className={classes.formGroup}>
-            <AppTextField label="First Name" placeholder="Example, Jonathan" />
-            <AppTextField label="Last Name" placeholder="Example, Donut" />
-            <AppTextField label="Date Of Birth" placeholder="mm/dd/yyyy" />
+            <FormControl className={classes.formControl} fullWidth>
+              <AppTextField
+                label="First Name"
+                placeholder="Example, Jonathan"
+                value={firstName}
+                error={firstName ? !isNameValid(firstName) : false}
+                onChange={(e) => {
+                  setFirstName(e.target.value);
+                  if (!isNameValid(e.target.value)) {
+                    setShowFirstNameError(true);
+                  } else {
+                    setShowFirstNameError(false);
+                  }
+                }}
+              />
+              <FormHelperText
+                className={showFirstNameError ? classes.showMessage : classes.hideMessage}
+                component="div"
+                error={true}
+              >
+                Invalid first name
+              </FormHelperText>
+            </FormControl>
+            <FormControl className={classes.formControl} fullWidth>
+              <AppTextField
+                label="Last Name"
+                placeholder="Example, Donut"
+                value={lastName}
+                error={lastName ? !isNameValid(lastName) : false}
+                onChange={(e) => {
+                  setLastName(e.target.value);
+                  if (!isNameValid(e.target.value)) {
+                    setShowLastNameError(true);
+                  } else {
+                    setShowLastNameError(false);
+                  }
+                }}
+              />
+              <FormHelperText
+                className={showLastNameError ? classes.showMessage : classes.hideMessage}
+                component="div"
+                error={true}
+              >
+                Invalid last name
+              </FormHelperText>
+            </FormControl>
+            <FormControl className={classes.formControl} fullWidth>
+              <AppTextField
+                label="Date Of Birth"
+                placeholder="dd/mm/yyyy"
+                value={dateOfBirth}
+                error={dateOfBirth ? !isDobValid(dateOfBirth) : false}
+                onChange={(e) => {
+                  setDateOfBirth(e.target.value);
+                  if (!isDobValid(e.target.value)) {
+                    setDobError(true);
+                  } else {
+                    setDobError(false);
+                  }
+                }}
+                inputProps={{ type: 'date' }}
+              />
+              <FormHelperText
+                className={showDobError ? classes.showMessage : classes.hideMessage}
+                component="div"
+                error={true}
+              >
+                Invalid date of birth
+              </FormHelperText>
+            </FormControl>
             <div className={classes.formControl}>
               <label>Gender</label>
               <Grid container spacing={2} className={classes.btnGroup}>
@@ -116,12 +202,34 @@ export const NewProfile: React.FC = (props) => {
                 ))}
               </Grid>
             </div>
-            <AppTextField label="Email Address (Optional)" placeholder="name@email.com" />
+            <FormControl className={classes.formControl} fullWidth>
+              <AppTextField
+                label="Email Address (Optional)"
+                placeholder="name@email.com"
+                value={emailAddress}
+                error={emailAddress ? !isEmailValid(emailAddress) : false}
+                onChange={(e) => {
+                  setEmailAddress(e.target.value);
+                  if (e.target.value !== '' && !isEmailValid(e.target.value)) {
+                    setShowEmailIdError(true);
+                  } else {
+                    setShowEmailIdError(false);
+                  }
+                }}
+              />
+              <FormHelperText
+                className={showEmailIdError ? classes.showMessage : classes.hideMessage}
+                component="div"
+                error={true}
+              >
+                Invalid email
+              </FormHelperText>
+            </FormControl>
           </div>
         </div>
       </div>
       <div className={classes.actions}>
-        <AppButton fullWidth disabled variant="contained" color="primary">
+        <AppButton fullWidth disabled={submitDisabled} variant="contained" color="primary">
           Submit
         </AppButton>
       </div>
