@@ -10,7 +10,11 @@ const gateway = new ApolloGateway({
   const config = await gateway.load();
   const schema = config.schema;
   const executor = config.executor as GraphQLExecutor;
-  const server = new ApolloServer({ cors: { origin: '*' }, schema, executor });
+  const server = new ApolloServer({
+    cors: { origin: 'http://patients-web.aph.popcornapps.com/' },
+    schema,
+    executor,
+  });
   server.listen(process.env.API_GATEWAY_PORT).then(({ url }) => {
     console.log(`🚀 api gateway ready at ${url}`);
   });
