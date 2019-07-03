@@ -6,6 +6,7 @@ export const useCurrentPatient = () => useContext(AuthContext).currentPatient;
 export const useIsLoggedIn = () => useLoggedInPatients() != null;
 export const useIsAuthenticating = () => useContext(AuthContext).isAuthenticating;
 export const useLoggedInPatients = () => useContext(AuthContext).loggedInPatients;
+export const useAuthError = () => useContext(AuthContext).authError;
 export const useAuth = () => {
   const currentPatient = useCurrentPatient();
   const setCurrentPatient = useContext(AuthContext).setCurrentPatient!;

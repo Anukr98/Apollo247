@@ -38,6 +38,7 @@ export interface AuthProviderProps {
   signOut: (() => any) | null;
   loginPopupVisible: boolean;
   setLoginPopupVisible: ((loginPopupVisible: boolean) => any) | null;
+  authError: boolean;
 }
 
 export const AuthContext = React.createContext<AuthProviderProps>({
@@ -52,17 +53,18 @@ export const AuthContext = React.createContext<AuthProviderProps>({
   signOut: null,
   loginPopupVisible: false,
   setLoginPopupVisible: null,
+  authError: false,
 });
 
 const userIsValid = (user: firebase.User | null) => user && user.phoneNumber;
 
 let apolloClient: ApolloClient<any>;
-const buildApolloClient = (authToken: string) => {
+const buildApolloClient = (authToken: string, handleAuthError: () => void) => {
   const errorLink = onError(({ networkError, operation, forward }: ErrorResponse) => {
-    // // There's a bug in the apollo typedefs and `statusCode` is not recognized, but it's there
-    // if (networkError && (networkError as any).statusCode === 401) {
-    //   window.location.reload();
-    // }
+    // There's a bug in the apollo typedefs and `statusCode` is not recognized, but it's there
+    if (networkError && (networkError as any).statusCode === 401) {
+      handleAuthError();
+    }
     console.log(networkError, operation);
     return forward(operation);
   });
@@ -80,7 +82,8 @@ const buildApolloClient = (authToken: string) => {
 
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
-  apolloClient = buildApolloClient(authToken);
+  const [authError, setAuthError] = useState<AuthProviderProps['authError']>(false);
+  apolloClient = buildApolloClient(authToken, () => setAuthError(true));
 
   const [loggedInPatients, setLoggedInPatients] = useState<AuthProviderProps['loggedInPatients']>(
     null
@@ -168,9 +171,13 @@ export const AuthProvider: React.FC = (props) => {
         variables: { jwt: updatedToken },
       });
 
+      // error messages.
       if (patientSignInResult.data && patientSignInResult.data.patientSignIn.errors) {
-        const errMsg = patientSignInResult.data.patientSignIn.errors.messages[0];
-        console.log(errMsg);
+        console.log(
+          'Test',
+          patientSignInResult.data && patientSignInResult.data.patientSignIn.errors
+        );
+        setAuthError(true);
       }
       if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
         const patients = patientSignInResult.data.patientSignIn.patients;
@@ -199,6 +206,7 @@ export const AuthProvider: React.FC = (props) => {
             signOut,
             loginPopupVisible,
             setLoginPopupVisible,
+            authError,
           }}
         >
           {props.children}

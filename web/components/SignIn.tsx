@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import FormControl from '@material-ui/core/FormControl';
 import Fab from '@material-ui/core/Fab';
-import { useAuth } from 'hooks/authHooks';
+import { useAuth, useAuthError } from 'hooks/authHooks';
 import { AppInputField } from 'components/ui/AppInputField';
 import _times from 'lodash/times';
 import _isNumber from 'lodash/isNumber';
@@ -100,6 +100,7 @@ export const SignIn: React.FC = (props) => {
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const [phoneMessage, setPhoneMessage] = useState<string>(validPhoneMessage);
   const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
+  const authError = useAuthError();
 
   const {
     buildCaptchaVerifier,
@@ -261,6 +262,7 @@ export const SignIn: React.FC = (props) => {
         </Fab>
       </div>
       {!captchaLoaded && <CircularProgress />}
+      {authError ? <div>We are over loaded. Plese try in few minutes.</div> : null}
     </div>
   );
 };
