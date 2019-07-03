@@ -4,6 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
 const isTest = process.env.NODE_ENV === 'test';
+const isLocal = process.env.NODE_ENV === 'local';
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -27,7 +28,7 @@ const plugins = [
     inject: true,
   }),
 ];
-if (isDevelopment) {
+if (isLocal || isDevelopment) {
   plugins.push(new webpack.HotModuleReplacementPlugin());
 }
 
@@ -77,11 +78,12 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
     modules: [path.join(__dirname, ''), nodeModulesDir],
-    alias: isDevelopment
-      ? {
-          'react-dom': '@hot-loader/react-dom',
-        }
-      : undefined,
+    alias:
+      isLocal || isDevelopment
+        ? {
+            'react-dom': '@hot-loader/react-dom',
+          }
+        : undefined,
   },
 
   optimization: {
@@ -92,7 +94,7 @@ module.exports = {
   },
 
   devServer:
-    isDevelopment || isTest
+    isTest || isLocal || isDevelopment
       ? {
           publicPath: '/', // URL path where the webpack files are served from
           contentBase: distDir, // A directory to serve files non-webpack files from (Absolute path)
