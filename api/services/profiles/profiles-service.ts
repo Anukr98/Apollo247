@@ -20,7 +20,7 @@ export type Resolver<Parent = any, Args = any> = (
 (async () => {
   const firebase = firebaseAdmin.initializeApp({
     credential: firebaseAdmin.credential.applicationDefault(),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
+    databaseURL: `https://${process.env.FIREBASE_PROJECT_NAME}.firebaseio.com`,
   });
 
   const dbConn = createConnection({

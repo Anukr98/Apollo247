@@ -106,7 +106,8 @@ export const AuthProvider: React.FC = (props) => {
   >(false);
 
   useEffect(() => {
-    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const projectId = process.env.FIREBASE_PROJECT_NAME;
+    console.log(projectId);
     const app = firebase.initializeApp({
       projectId,
       apiKey: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
@@ -162,6 +163,7 @@ export const AuthProvider: React.FC = (props) => {
         setIsAuthenticating(false);
         return;
       }
+      console.log('change', updatedUser);
 
       const updatedToken = await updatedUser!.getIdToken();
       setAuthToken(updatedToken);
