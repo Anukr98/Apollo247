@@ -27,6 +27,14 @@ const useStyles = makeStyles((theme: Theme) => {
         borderBottom: '2px solid #00b38e',
       },
     },
+    inputError: {
+      '&:before': {
+        borderBottom: '2px solid #e50000 !important',
+      },
+      '&:after': {
+        borderBottom: '2px solid #e50000 !important',
+      },
+    },
   });
 });
 
@@ -35,7 +43,11 @@ export const AppInputField: React.FC<InputProps> = (props) => {
   return (
     <Input
       fullWidth
-      classes={{ root: classes.inputRoot, focused: classes.inputFocused }}
+      classes={{
+        root: classes.inputRoot,
+        focused: classes.inputFocused,
+        error: classes.inputError,
+      }}
       {...props}
     />
   );

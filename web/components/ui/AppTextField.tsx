@@ -35,6 +35,14 @@ const useStyles = makeStyles((theme: Theme) => {
         borderBottom: '2px solid #00b38e',
       },
     },
+    inputError: {
+      '&:before': {
+        borderBottom: '2px solid #e50000 !important',
+      },
+      '&:after': {
+        borderBottom: '2px solid #e50000 !important',
+      },
+    },
     selectRoot: {
       fontSize: 16,
       fontWeight: 500,
@@ -56,7 +64,13 @@ export const AppTextField: React.FC<TextFieldProps> = (props) => {
         shrink: true,
         focused: false,
       }}
-      InputProps={{ classes: { root: classes.inputRoot, focused: classes.inputFocused } }}
+      InputProps={{
+        classes: {
+          root: classes.inputRoot,
+          focused: classes.inputFocused,
+          error: classes.inputError,
+        },
+      }}
       SelectProps={{ classes: { root: classes.selectRoot } }}
       {...props}
     />
