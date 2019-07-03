@@ -132,8 +132,6 @@ export const SignIn: React.FC = (props) => {
     });
   }, []);
 
-  console.log(otpInputRefs);
-
   const captchaEl = (
     <div
       id={recaptchaContainerId}
@@ -167,6 +165,19 @@ export const SignIn: React.FC = (props) => {
                   }
                 }
                 setOtp(newOtp);
+              }}
+              onKeyDown={(e) => {
+                const backspaceWasPressed = e.key === 'Backspace';
+                const currentInputIsEmpty = otp[index] == null;
+                const focusPreviousInput = () => {
+                  const prevInput = otpInputRefs[index - 1];
+                  if (prevInput && prevInput.current) {
+                    prevInput.current.focus();
+                  }
+                };
+                if (backspaceWasPressed && currentInputIsEmpty) {
+                  focusPreviousInput();
+                }
               }}
             />
           </Grid>
