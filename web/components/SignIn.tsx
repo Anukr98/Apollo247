@@ -140,7 +140,7 @@ export const SignIn: React.FC = (props) => {
     />
   );
 
-  return true || displayOtpInput ? (
+  return displayOtpInput ? (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">hi</Typography>
       <p>Type in the OTP sent to you, to authenticate</p>
