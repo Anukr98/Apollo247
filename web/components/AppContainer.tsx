@@ -7,12 +7,13 @@ import {
   StylesProvider,
   createGenerateClassName,
 } from '@material-ui/styles';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Route } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Welcome } from 'components/Welcome';
 import { PatientsList } from 'components/PatientsList';
 import { AuthProvider } from 'components/AuthProvider';
+import { useAuth } from 'hooks/authHooks';
 
 const muiTheme = createMuiTheme({
   spacing: 10,
@@ -116,6 +117,10 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const App: React.FC = () => {
   const classes = useStyles();
+  const { signInError } = useAuth();
+  useEffect(() => {
+    if (signInError) window.alert('Error signging in :(');
+  }, [signInError]);
   return (
     <div className={classes.app}>
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
