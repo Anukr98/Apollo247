@@ -13,6 +13,7 @@ const login = {
   numberPrefix: '+91',
   great: 'great!',
   type_otp_text: 'Now type in the OTP sent to you, to authentication',
+  resend_otp_text: 'Type in the OTP that has been resent to your mobile number',
   resend_opt: 'RESEND OTP',
   enter_correct_opt: 'Please enter the correct OTP',
   welcome_text: 'welcome\nto apollo 24/7',

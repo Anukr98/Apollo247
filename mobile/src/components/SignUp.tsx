@@ -149,7 +149,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   console.log(isDateTimePickerVisible, 'isDateTimePickerVisible');
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <KeyboardAwareScrollView style={styles.container} extraScrollHeight={50}>
+      <KeyboardAwareScrollView style={styles.container} extraScrollHeight={50} bounces={false}>
         <View style={{ justifyContent: 'center', marginTop: 20, marginLeft: 20 }}>
           <ApolloLogo />
         </View>

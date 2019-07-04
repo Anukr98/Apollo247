@@ -295,7 +295,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <MenuProvider customStyles={{ menuProviderWrapper: { flex: 1 } }}>
-        <KeyboardAwareScrollView style={styles.container}>
+        <KeyboardAwareScrollView style={styles.container} bounces={false}>
           <View style={{ justifyContent: 'center', marginTop: 20, marginLeft: 20 }}>
             <ApolloLogo />
           </View>

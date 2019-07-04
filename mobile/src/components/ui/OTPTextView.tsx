@@ -13,10 +13,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 22,
     fontWeight: '500',
-    color: '#000000'
+    color: '#000000',
   },
 });
-
 
 export interface OTPTextViewProps {
   defaultValue?: string;
@@ -24,93 +23,87 @@ export interface OTPTextViewProps {
   inputCount?: number;
   offTintColor?: string;
   tintColor?: string;
-  containerStyle?:StyleProp<ViewStyle>;
+  containerStyle?: StyleProp<ViewStyle>;
   textInputStyle?: StyleProp<ViewStyle>;
   handleTextChange?: () => void;
-  value?: string; 
+  value?: string;
 }
 
 export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
   const [focusedInput, setFocusedInput] = useState<number>(0);
   const [otpText, setotpText] = useState<Array<string>>([]);
-  const arrayRef = useRef([])
+  const arrayRef = useRef([]);
 
-  const { defaultValue, cellTextLength, inputCount= 4,
+  const {
+    defaultValue,
+    cellTextLength,
+    inputCount = 4,
     offTintColor,
     tintColor,
     containerStyle,
     textInputStyle,
     value,
-    ...textInputProps } = props;
+    ...textInputProps
+  } = props;
 
   const TextInputs = [];
   useEffect(() => {
-    if(otpText.length === 0) {
+    if (otpText.length === 0) {
       arrayRef.current && arrayRef.current[0].focus();
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    console.log(value, 'value')
-    if(value && value.length === 6) {
-      setotpText(value.split(''))
+    console.log(value, 'value');
+    if (value && value.length === 6) {
+      setotpText(value.split(''));
       // arrayRef.current && arrayRef.current[5].focus();
     }
-    if(value==='') {
-      setotpText(value.split(''))
+    if (value === '') {
+      setotpText(value.split(''));
       arrayRef.current && arrayRef.current[0].focus();
-
     }
   }, [value]);
 
-
-  const onTextChange = (text: string, i:number) => {
+  const onTextChange = (text: string, i: number) => {
     const { cellTextLength, inputCount, handleTextChange } = props;
     otpText[i] = text;
 
-    setotpText(otpText)
-      handleTextChange(otpText.join(""));
-      if (text.length === 1 && i !== inputCount - 1) {
-        arrayRef.current && arrayRef.current[i+1].focus();
-      }
-  }
+    setotpText(otpText);
+    handleTextChange(otpText.join(''));
+    if (text.length === 1 && i !== inputCount - 1) {
+      arrayRef.current && arrayRef.current[i + 1].focus();
+    }
+  };
 
   const onInputFocus = (i: number) => {
-    setFocusedInput(i)
-  }
+    setFocusedInput(i);
+  };
 
   const onKeyPress = (e, i) => {
     const otpArray = otpText;
 
     if (e.nativeEvent.key === 'Backspace' && i !== 0) {
-      if(otpArray[i] === "") {
-        otpArray[i-1]=""
-      arrayRef.current && arrayRef.current[i-1].focus();
-
-
-      }
-      else {
-        otpArray[i]=""
+      if (otpArray[i] === '') {
+        otpArray[i - 1] = '';
+        arrayRef.current && arrayRef.current[i - 1].focus();
+      } else {
+        otpArray[i] = '';
       }
     }
-    setotpText(otpArray)
-  }
-
+    setotpText(otpArray);
+  };
 
   for (let i = 0; i < inputCount; i += 1) {
-    let defaultChars:any = [];
-    const inputStyle = [
-      styles.textInput,
-      textInputStyle,
-      { borderColor: offTintColor }
-    ];
+    let defaultChars: any = [];
+    const inputStyle = [styles.textInput, textInputStyle, { borderColor: offTintColor }];
     if (focusedInput === i) {
       inputStyle.push({ borderColor: tintColor });
     }
 
     TextInputs.push(
       <TextInput
-        ref={ref => arrayRef.current[i] = ref}
+        ref={(ref) => (arrayRef.current[i] = ref)}
         key={i}
         defaultValue={defaultValue ? defaultChars[i] : ''}
         style={inputStyle}
@@ -118,16 +111,12 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
         onFocus={() => onInputFocus(i)}
         onChangeText={(text) => onTextChange(text, i)}
         multiline={false}
-        value={otpText[i] || ""}
-        onKeyPress={e => onKeyPress(e, i)}
+        value={otpText[i] || ''}
+        onKeyPress={(e) => onKeyPress(e, i)}
         keyboardType="numeric"
         {...textInputProps}
       />
     );
   }
-  return (
-    <View style={[styles.container, containerStyle]}>
-      {TextInputs}
-    </View>
-  );
-}
+  return <View style={[styles.container, containerStyle]}>{TextInputs}</View>;
+};
