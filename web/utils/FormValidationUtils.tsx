@@ -28,18 +28,24 @@ export const isDobValid = (dob: string) => {
   if (
     dobArray[0] !== '' &&
     !isNaN(parseInt(dobArray[0])) &&
+    dobArray[0].length === 2 &&
     dobArray[1] !== '' &&
     !isNaN(parseInt(dobArray[1])) &&
+    dobArray[1].length === 2 &&
     dobArray[2] !== '' &&
     !isNaN(parseInt(dobArray[2])) &&
     dobArray[2].length === 4
   ) {
-    const dateString = new Date(`${dobArray[1]}/${dobArray[0]}/${dobArray[2]}`);
-    return JSON.stringify(dateString) !== 'null' ? true : false;
+    const today = new Date();
+    const dd: number = today.getDate();
+    const mm: number = today.getMonth() + 1;
+    const yyyy = today.getFullYear();
+    const currentDate = yyyy + '/' + (mm < 10 ? '0' + mm : mm) + '/' + (dd < 10 ? '0' + dd : dd);
+    const dateString = `${dobArray[2]}/${dobArray[1]}/${dobArray[0]}`;
+    return JSON.stringify(dateString) !== 'null' && dateString < currentDate ? true : false;
   } else {
     return false;
   }
-  // return /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/.test(dob);
 };
 
 export const isEmailValid = (email: string) => {

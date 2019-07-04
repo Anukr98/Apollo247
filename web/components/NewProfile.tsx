@@ -98,13 +98,14 @@ export const NewProfile: React.FC = (props) => {
   const [lastName, setLastName] = useState<string>('');
   const [dateOfBirth, setDateOfBirth] = useState<string>('');
   const [emailAddress, setEmailAddress] = useState<string>('');
-  const [gender, setGender] = useState<string>('');
+  const [selectedGender, setGender] = useState<string>('');
 
   const submitDisabled =
     firstName.length > 2 &&
     lastName.length > 2 &&
-    dateOfBirth.length === 10 &&
-    _includes(genders, gender)
+    (dateOfBirth.length === 10 && isDobValid(dateOfBirth)) &&
+    (emailAddress.length === 0 || (emailAddress.length > 0 && isEmailValid(emailAddress))) &&
+    _includes(genders, selectedGender)
       ? false
       : true;
 
@@ -129,11 +130,7 @@ export const NewProfile: React.FC = (props) => {
                 error={firstName ? !isNameValid(firstName) : false}
                 onChange={(e) => {
                   setFirstName(e.target.value);
-                  if (!isNameValid(e.target.value)) {
-                    setShowFirstNameError(true);
-                  } else {
-                    setShowFirstNameError(false);
-                  }
+                  setShowFirstNameError(!isNameValid(e.target.value));
                 }}
                 inputProps={{ maxLength: 20 }}
               />
@@ -153,11 +150,7 @@ export const NewProfile: React.FC = (props) => {
                 error={lastName ? !isNameValid(lastName) : false}
                 onChange={(e) => {
                   setLastName(e.target.value);
-                  if (!isNameValid(e.target.value)) {
-                    setShowLastNameError(true);
-                  } else {
-                    setShowLastNameError(false);
-                  }
+                  setShowLastNameError(!isNameValid(e.target.value));
                 }}
                 inputProps={{ maxLength: 20 }}
               />
@@ -177,11 +170,7 @@ export const NewProfile: React.FC = (props) => {
                 error={dateOfBirth ? !isDobValid(dateOfBirth) : false}
                 onChange={(e) => {
                   setDateOfBirth(e.target.value);
-                  if (!isDobValid(e.target.value)) {
-                    setDobError(true);
-                  } else {
-                    setDobError(false);
-                  }
+                  setDobError(!isDobValid(e.target.value));
                 }}
                 inputProps={{ type: 'text', maxLength: 10 }}
               />
@@ -201,7 +190,7 @@ export const NewProfile: React.FC = (props) => {
                     <AppButton
                       variant="contained"
                       value={gender}
-                      classes={{ root: classes.btnActive }}
+                      classes={selectedGender === gender ? { root: classes.btnActive } : {}}
                       onClick={(e) => {
                         setGender(e.currentTarget.value);
                       }}
