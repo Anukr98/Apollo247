@@ -24,7 +24,22 @@ export const isNameValid = (name: string) => {
 };
 
 export const isDobValid = (dob: string) => {
-  return /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/.test(dob);
+  const dobArray = dob.split('/');
+  if (
+    dobArray[0] !== '' &&
+    !isNaN(parseInt(dobArray[0])) &&
+    dobArray[1] !== '' &&
+    !isNaN(parseInt(dobArray[1])) &&
+    dobArray[2] !== '' &&
+    !isNaN(parseInt(dobArray[2])) &&
+    dobArray[2].length === 4
+  ) {
+    const dateString = new Date(`${dobArray[1]}/${dobArray[0]}/${dobArray[2]}`);
+    return JSON.stringify(dateString) !== 'null' ? true : false;
+  } else {
+    return false;
+  }
+  // return /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/.test(dob);
 };
 
 export const isEmailValid = (email: string) => {

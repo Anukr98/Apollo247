@@ -8,6 +8,7 @@ import { Sex as GENDER } from 'graphql/types/globalTypes';
 import React, { useState } from 'react';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { isNameValid, isEmailValid, isDobValid } from 'utils/FormValidationUtils';
+import _includes from 'lodash/includes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -93,9 +94,15 @@ export const NewProfile: React.FC = (props) => {
   const [lastName, setLastName] = useState<string>('');
   const [dateOfBirth, setDateOfBirth] = useState<string>('');
   const [emailAddress, setEmailAddress] = useState<string>('');
+  const [gender, setGender] = useState<string>('');
 
   const submitDisabled =
-    firstName.length > 2 && lastName.length > 2 && dateOfBirth.length === 10 ? false : true;
+    firstName.length > 2 &&
+    lastName.length > 2 &&
+    dateOfBirth.length === 10 &&
+    _includes(genders, gender)
+      ? false
+      : true;
 
   return (
     <div className={classes.signUpPop}>
@@ -124,6 +131,7 @@ export const NewProfile: React.FC = (props) => {
                     setShowFirstNameError(false);
                   }
                 }}
+                inputProps={{ maxLength: 20 }}
               />
               <FormHelperText
                 className={showFirstNameError ? classes.showMessage : classes.hideMessage}
@@ -147,6 +155,7 @@ export const NewProfile: React.FC = (props) => {
                     setShowLastNameError(false);
                   }
                 }}
+                inputProps={{ maxLength: 20 }}
               />
               <FormHelperText
                 className={showLastNameError ? classes.showMessage : classes.hideMessage}
@@ -170,7 +179,7 @@ export const NewProfile: React.FC = (props) => {
                     setDobError(false);
                   }
                 }}
-                inputProps={{ type: 'date' }}
+                inputProps={{ type: 'text', maxLength: 10 }}
               />
               <FormHelperText
                 className={showDobError ? classes.showMessage : classes.hideMessage}
@@ -185,7 +194,15 @@ export const NewProfile: React.FC = (props) => {
               <Grid container spacing={2} className={classes.btnGroup}>
                 {genders.map((gender) => (
                   <Grid item xs={4} sm={4} key={gender}>
-                    <AppButton variant="contained">{gender}</AppButton>
+                    <AppButton
+                      variant="contained"
+                      value={gender}
+                      onClick={(e) => {
+                        setGender(e.currentTarget.value);
+                      }}
+                    >
+                      {gender}
+                    </AppButton>
                   </Grid>
                 ))}
               </Grid>
