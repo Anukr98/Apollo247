@@ -127,7 +127,7 @@ export const HeroBanner: React.FC = () => {
   return (
     <div className={classes.heroBanner}>
       <div className={classes.bannerInfo}>
-        {currentPatient && loggedInPatients && loggedInPatients[0].firstName !== '' ? (
+        {currentPatient && loggedInPatients && currentPatient.firstName !== '' ? (
           <Typography variant="h1">
             <span>hello</span>
             <AppSelectField
