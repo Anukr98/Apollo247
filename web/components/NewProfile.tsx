@@ -90,10 +90,6 @@ const useStyles = makeStyles((theme: Theme) => {
 export const NewProfile: React.FC = (props) => {
   const classes = useStyles();
   const genders = Object.values(GENDER).filter((g) => g != 'NOT_APPLICABLE' && g != 'NOT_KNOWN');
-  const [showFirstNameError, setShowFirstNameError] = useState<boolean>(false);
-  const [showLastNameError, setShowLastNameError] = useState<boolean>(false);
-  const [showDobError, setDobError] = useState<boolean>(false);
-  const [showEmailIdError, setShowEmailIdError] = useState<boolean>(false);
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [dateOfBirth, setDateOfBirth] = useState<string>('');
@@ -108,6 +104,11 @@ export const NewProfile: React.FC = (props) => {
     _includes(genders, selectedGender)
       ? false
       : true;
+
+  const showFirstNameError = firstName.length > 0 && !isNameValid(firstName) ? true : false;
+  const showLastNameError = lastName.length > 0 && !isNameValid(lastName) ? true : false;
+  const showDobError = dateOfBirth.length > 0 && !isDobValid(dateOfBirth) ? true : false;
+  const showEmailIdError = emailAddress.length > 0 && !isEmailValid(emailAddress) ? true : false;
 
   return (
     <div className={classes.signUpPop}>
@@ -127,10 +128,9 @@ export const NewProfile: React.FC = (props) => {
                 label="First Name"
                 placeholder="Example, Jonathan"
                 value={firstName}
-                error={firstName ? !isNameValid(firstName) : false}
+                error={firstName && firstName.length > 0 ? !isNameValid(firstName) : false}
                 onChange={(e) => {
                   setFirstName(e.target.value);
-                  setShowFirstNameError(!isNameValid(e.target.value));
                 }}
                 inputProps={{ maxLength: 20 }}
               />
@@ -147,10 +147,9 @@ export const NewProfile: React.FC = (props) => {
                 label="Last Name"
                 placeholder="Example, Donut"
                 value={lastName}
-                error={lastName ? !isNameValid(lastName) : false}
+                error={lastName && lastName.length > 0 ? !isNameValid(lastName) : false}
                 onChange={(e) => {
                   setLastName(e.target.value);
-                  setShowLastNameError(!isNameValid(e.target.value));
                 }}
                 inputProps={{ maxLength: 20 }}
               />
@@ -167,10 +166,9 @@ export const NewProfile: React.FC = (props) => {
                 label="Date Of Birth"
                 placeholder="dd/mm/yyyy"
                 value={dateOfBirth}
-                error={dateOfBirth ? !isDobValid(dateOfBirth) : false}
+                error={dateOfBirth && dateOfBirth.length > 0 ? !isDobValid(dateOfBirth) : false}
                 onChange={(e) => {
                   setDateOfBirth(e.target.value);
-                  setDobError(!isDobValid(e.target.value));
                 }}
                 inputProps={{ type: 'text', maxLength: 10 }}
               />
@@ -206,14 +204,11 @@ export const NewProfile: React.FC = (props) => {
                 label="Email Address (Optional)"
                 placeholder="name@email.com"
                 value={emailAddress}
-                error={emailAddress ? !isEmailValid(emailAddress) : false}
+                error={
+                  emailAddress && emailAddress.length > 0 ? !isEmailValid(emailAddress) : false
+                }
                 onChange={(e) => {
                   setEmailAddress(e.target.value);
-                  if (e.target.value !== '' && !isEmailValid(e.target.value)) {
-                    setShowEmailIdError(true);
-                  } else {
-                    setShowEmailIdError(false);
-                  }
                 }}
               />
               <FormHelperText
