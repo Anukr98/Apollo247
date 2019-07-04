@@ -27,9 +27,7 @@ export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients
   allCurrentPatients: Patient[] | null;
   setCurrentPatient: ((p: Patient) => void) | null;
 
-  sendOtp:
-    | ((phoneNumber: string, recaptchaPlacement: HTMLElement | null) => Promise<unknown>)
-    | null;
+  sendOtp: ((phoneNumber: string, captchaPlacement: HTMLElement | null) => Promise<unknown>) | null;
   sendOtpError: boolean;
   isSendingOtp: boolean;
 
@@ -37,7 +35,6 @@ export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients
   verifyOtpError: boolean;
   isVerifyingOtp: boolean;
 
-  // signIn: (() => void) | null;
   signInError: boolean;
   isSigningIn: boolean;
   signOut: (() => Promise<void>) | null;
@@ -59,7 +56,6 @@ export const AuthContext = React.createContext<AuthContextProps>({
   verifyOtpError: false,
   isVerifyingOtp: false,
 
-  // signIn: null,
   signInError: false,
   isSigningIn: true,
   signOut: null,
@@ -86,6 +82,17 @@ const buildApolloClient = (authToken: string) => {
   return new ApolloClient({ link, cache });
 };
 
+const projectId = process.env.FIREBASE_PROJECT_ID;
+const app = firebase.initializeApp({
+  projectId,
+  apiKey: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  appId: '1:537093214409:web:4eec27a7bc6bc1c8',
+  authDomain: `${projectId}.firebaseapp.com`,
+  databaseURL: `https://${projectId}.firebaseio.com`,
+  messagingSenderId: '537093214409',
+  storageBucket: '',
+});
+
 let otpVerifier: firebase.auth.ConfirmationResult;
 
 export const AuthProvider: React.FC = (props) => {
@@ -97,98 +104,80 @@ export const AuthProvider: React.FC = (props) => {
   >(null);
   const [currentPatient, setCurrentPatient] = useState<AuthContextProps['currentPatient']>(null);
 
-  const [sendOtp, setSendOtp] = useState<AuthContextProps['sendOtp']>(null);
   const [isSendingOtp, setIsSendingOtp] = useState<AuthContextProps['isSendingOtp']>(false);
   const [sendOtpError, setSendOtpError] = useState<AuthContextProps['sendOtpError']>(false);
 
-  const [verifyOtp, setVerifyOtp] = useState<AuthContextProps['verifyOtp']>(null);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState<AuthContextProps['isVerifyingOtp']>(false);
   const [verifyOtpError, setVerifyOtpError] = useState<AuthContextProps['verifyOtpError']>(false);
 
-  // const [signIn, setSignIn] = useState<AuthContextProps['signIn']>(null);
   const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(true);
   const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
-  const [signOut, setSignOut] = useState<AuthContextProps['signOut']>(null);
 
   const [loginPopupVisible, setLoginPopupVisible] = useState<AuthContextProps['loginPopupVisible']>(
     false
   );
 
-  useEffect(() => {
-    const projectId = process.env.FIREBASE_PROJECT_ID;
-    const app = firebase.initializeApp({
-      projectId,
-      apiKey: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-      appId: '1:537093214409:web:4eec27a7bc6bc1c8',
-      authDomain: `${projectId}.firebaseapp.com`,
-      databaseURL: `https://${projectId}.firebaseio.com`,
-      messagingSenderId: '537093214409',
-      storageBucket: '',
-    });
-
-    const sendOtpFunc = () => (phoneNumber: string, recaptchaPlacement: HTMLElement | null) => {
-      return new Promise((resolve, reject) => {
-        if (!recaptchaPlacement) {
-          setSendOtpError(true);
-          return reject();
-        }
-        setIsSendingOtp(true);
-        const recaptchaContainer = document.createElement('div');
-        const recaptchaId = _uniqueId('recaptcha-container');
-        recaptchaContainer.id = recaptchaId;
-        recaptchaPlacement.parentNode!.insertBefore(
-          recaptchaContainer,
-          recaptchaPlacement.nextSibling
-        );
-        const captcha = new firebase.auth.RecaptchaVerifier(recaptchaId, {
-          size: 'invisible',
-          callback: async () => {
-            const [phoneAuthResult, phoneAuthError] = await wait(
-              app.auth().signInWithPhoneNumber(phoneNumber, captcha)
-            );
-            setIsSendingOtp(false);
-            if (phoneAuthError) {
-              setSendOtpError(true);
-              reject();
-              return;
-            }
-            otpVerifier = phoneAuthResult;
-            setSendOtpError(false);
-            captcha.clear();
-            resolve();
-          },
-          'expired-callback': () => {
-            setSendOtpError(true);
-            captcha.clear();
-            reject();
-          },
-        });
-        captcha.verify();
-      }).finally(() => {
-        setIsSendingOtp(false);
-      });
-    };
-    setSendOtp(sendOtpFunc);
-
-    const verifyOtpFunc = () => async (otp: string) => {
-      if (!otpVerifier) {
+  const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
+    return new Promise((resolve, reject) => {
+      if (!captchaPlacement) {
         setSendOtpError(true);
+        reject();
         return;
       }
-      setIsVerifyingOtp(true);
-      const [otpAuthResult, otpError] = await wait(otpVerifier.confirm(otp));
-      setVerifyOtpError(otpError || !otpAuthResult.user);
-      setIsVerifyingOtp(false);
-    };
-    setVerifyOtp(verifyOtpFunc);
+      setIsSendingOtp(true);
+      // Create a new unique captcha every time because (apparently) captcha.clear() is flaky,
+      // and can eventually result in a 'recaptcha already assigned to this element' error.
+      const captchaContainer = document.createElement('div');
+      const captchaId = _uniqueId('captcha-container');
+      captchaContainer.id = captchaId;
+      captchaPlacement.parentNode!.insertBefore(captchaContainer, captchaPlacement.nextSibling);
+      const captcha = new firebase.auth.RecaptchaVerifier(captchaId, {
+        size: 'invisible',
+        callback: async () => {
+          const [phoneAuthResult, phoneAuthError] = await wait(
+            app.auth().signInWithPhoneNumber(phoneNumber, captcha)
+          );
+          setIsSendingOtp(false);
+          if (phoneAuthError) {
+            setSendOtpError(true);
+            reject();
+            return;
+          }
+          otpVerifier = phoneAuthResult;
+          setSendOtpError(false);
+          captcha.clear();
+          resolve();
+        },
+        'expired-callback': () => {
+          setSendOtpError(true);
+          captcha.clear();
+          reject();
+        },
+      });
+      captcha.verify();
+    }).finally(() => {
+      setIsSendingOtp(false);
+    });
+  };
 
-    const signOutFunc = () => () =>
-      app
-        .auth()
-        .signOut()
-        .then(() => window.location.reload());
-    setSignOut(signOutFunc);
+  const verifyOtp = async (otp: string) => {
+    if (!otpVerifier) {
+      setSendOtpError(true);
+      return;
+    }
+    setIsVerifyingOtp(true);
+    const [otpAuthResult, otpError] = await wait(otpVerifier.confirm(otp));
+    setVerifyOtpError(otpError || !otpAuthResult.user);
+    setIsVerifyingOtp(false);
+  };
 
+  const signOut = () =>
+    app
+      .auth()
+      .signOut()
+      .then(() => window.location.reload());
+
+  useEffect(() => {
     app.auth().onAuthStateChanged(async (user) => {
       if (user) {
         const [jwt, jwtError] = await wait(user.getIdToken());
@@ -240,7 +229,6 @@ export const AuthProvider: React.FC = (props) => {
             verifyOtpError,
             isVerifyingOtp,
 
-            // signIn,
             signInError,
             isSigningIn,
             signOut,

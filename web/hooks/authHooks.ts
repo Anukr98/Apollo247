@@ -21,7 +21,6 @@ export const useAuth = () => {
   const isSendingOtp = useAuthContext().isSendingOtp;
 
   const isSignedIn = useIsSignedIn();
-  // const signIn = authContext.signIn!;
   const signInError = useAuthContext().signInError;
   const isSigningIn = useAuthContext().isSigningIn;
   const signOut = useAuthContext().signOut!;
@@ -40,7 +39,6 @@ export const useAuth = () => {
     isSendingOtp,
 
     isSignedIn,
-    // signIn,
     signInError,
     isSigningIn,
     signOut,
