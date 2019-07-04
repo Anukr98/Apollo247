@@ -26,6 +26,14 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#01475b',
         paddingTop: 9,
       },
+      '&:hover': {
+        '&:before': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+        '&:after': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+      },
     },
     inputFocused: {
       '&:before': {
@@ -41,6 +49,14 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '&:after': {
         borderBottom: '2px solid #e50000 !important',
+      },
+      '&:hover': {
+        '&:before': {
+          borderBottom: '2px solid #e50000 !important',
+        },
+        '&:after': {
+          borderBottom: '2px solid #e50000 !important',
+        },
       },
     },
     selectRoot: {

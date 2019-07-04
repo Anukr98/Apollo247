@@ -80,6 +80,10 @@ const useStyles = makeStyles((theme: Theme) => {
     hideMessage: {
       display: 'none',
     },
+    btnActive: {
+      backgroundColor: '#00b38e !important',
+      color: '#fff !important',
+    },
   });
 });
 
@@ -197,6 +201,7 @@ export const NewProfile: React.FC = (props) => {
                     <AppButton
                       variant="contained"
                       value={gender}
+                      classes={{ root: classes.btnActive }}
                       onClick={(e) => {
                         setGender(e.currentTarget.value);
                       }}
