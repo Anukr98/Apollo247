@@ -109,7 +109,6 @@ export const SignIn: React.FC = (props) => {
     verifyOtpError,
     isVerifyingOtp,
 
-    signInError,
     isSigningIn,
   } = useAuth();
 
@@ -176,11 +175,7 @@ export const SignIn: React.FC = (props) => {
       <Button
         variant="text"
         disabled={isSendingOtp}
-        onClick={() => {
-          sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
-          const firstInput = otpInputRefs[0].current;
-          if (firstInput) firstInput.focus();
-        }}
+        onClick={() => sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current)}
       >
         Resend OTP
       </Button>
@@ -209,7 +204,7 @@ export const SignIn: React.FC = (props) => {
               setShowErrorMessage(false);
             }
           }}
-          error={mobileNumber ? !isMobileNumberValid(mobileNumber) : false}
+          error={!isMobileNumberValid(mobileNumber)}
           onKeyPress={(e) => {
             if (isNaN(parseInt(e.key, 10))) {
               e.preventDefault();
