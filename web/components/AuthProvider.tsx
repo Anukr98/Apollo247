@@ -195,7 +195,7 @@ export const AuthProvider: React.FC = (props) => {
         if (jwtError || !jwt) {
           setIsSigningIn(false);
           setSignInError(true);
-          setAuthToken('');
+          app.auth().signOut();
           return;
         }
         setAuthToken(jwt);
