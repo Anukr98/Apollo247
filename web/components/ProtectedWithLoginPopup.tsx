@@ -6,9 +6,9 @@ export interface ProtectedWithLoginPopupProps {
 }
 
 export const ProtectedWithLoginPopup: React.FC<ProtectedWithLoginPopupProps> = (props) => {
-  const { setLoginPopupVisible } = useLoginPopupState();
-  const { isLoggedIn, isAuthenticating } = useAuth();
-  const isProtected = !isLoggedIn && !isAuthenticating;
+  const { setIsLoginPopupVisible: setLoginPopupVisible } = useLoginPopupState();
+  const { isSignedIn, isSigningIn } = useAuth();
+  const isProtected = !isSignedIn && !isSigningIn;
   const protectWithLoginPopup = () => {
     if (isProtected) setLoginPopupVisible(true);
   };

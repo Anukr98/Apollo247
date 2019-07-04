@@ -8,7 +8,7 @@ import { AppSelectField } from 'components/ui/AppSelectField';
 import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
 import _camelCase from 'lodash/camelCase';
 import { Relation } from 'graphql/types/globalTypes';
-import { useLoggedInPatients } from 'hooks/authHooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Mutation } from 'react-apollo';
 import { updatePatientVariables, updatePatient } from 'graphql/types/updatePatient';
 import { UPDATE_PATIENT } from 'graphql/profiles';
@@ -168,7 +168,7 @@ const isPatientInvalid = (patient: PatientSignIn_patientSignIn_patients) =>
 export interface ExistingProfileProps {}
 export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const classes = useStyles();
-  const [patients, setPatients] = useState(useLoggedInPatients());
+  const [patients, setPatients] = useState(useAllCurrentPatients());
   if (!patients) return null;
   const disabled = patients.some(isPatientInvalid);
 

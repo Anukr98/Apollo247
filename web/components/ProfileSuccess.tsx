@@ -4,7 +4,7 @@ import React from 'react';
 import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
 import { AppButton } from 'components/ui/AppButton';
-import { useIsLoggedIn } from 'hooks/authHooks';
+import { useIsSignedIn } from 'hooks/authHooks';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -92,7 +92,7 @@ export const ProfileSuccess: React.FC = (props) => {
   const classes = useStyles();
   const mascotRef = React.useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-  const isLoggedIn = useIsLoggedIn();
+  const isSignedIn = useIsSignedIn();
 
   return (
     <div className={classes.signUpBar}>
@@ -103,7 +103,7 @@ export const ProfileSuccess: React.FC = (props) => {
             ref={mascotRef}
             onClick={() => {
               protectWithLoginPopup();
-              if (isLoggedIn) setIsPopoverOpen(true);
+              if (isSignedIn) setIsPopoverOpen(true);
             }}
           >
             <img src={require('images/ic_mascot.png')} alt="" />
