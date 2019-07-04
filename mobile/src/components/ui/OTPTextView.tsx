@@ -67,12 +67,13 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
 
   const onTextChange = (text: string, i: number) => {
     const { cellTextLength, inputCount, handleTextChange } = props;
-    otpText[i] = text;
-
-    setotpText(otpText);
-    handleTextChange(otpText.join(''));
-    if (text.length === 1 && i !== inputCount - 1) {
-      arrayRef.current && arrayRef.current[i + 1].focus();
+    if (text.match(/[0-9]/)) {
+      otpText[i] = text;
+      setotpText(otpText);
+      handleTextChange(otpText.join(''));
+      if (text.length === 1 && i !== inputCount - 1) {
+        arrayRef.current && arrayRef.current[i + 1].focus();
+      }
     }
   };
 

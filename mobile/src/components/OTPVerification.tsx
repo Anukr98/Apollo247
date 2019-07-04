@@ -115,13 +115,20 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
             const seconds = Math.round(dif / 1000);
             console.log(seconds, 'seconds');
-            if (seconds < 900) {
-              setInvalidOtpCount(3);
-              setIsValidOTP(false);
-              timer = 900 - seconds;
-              console.log(timer, 'timertimer');
-              setRemainingTime(timer);
-              startInterval(timer);
+            if (obj.invalidAttems === 3) {
+              if (seconds < 900) {
+                setInvalidOtpCount(3);
+                setIsValidOTP(false);
+                timer = 900 - seconds;
+                console.log(timer, 'timertimer');
+                setRemainingTime(timer);
+                startInterval(timer);
+              } else {
+                _removeFromStore();
+              }
+            } else {
+              setShowErrorMsg(true);
+              setInvalidOtpCount(obj.invalidAttems);
             }
           }
         });
@@ -132,7 +139,23 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   };
 
-  const _storeTimerData = async () => {
+  const _removeFromStore = async () => {
+    try {
+      const { phoneNumber } = props.navigation.state.params!;
+      const getData = await AsyncStorage.getItem('timeOutData');
+      if (getData) {
+        const timeOutData = JSON.parse(getData);
+        const filteredData = timeOutData.filter((el: any) => el.phoneNumber !== phoneNumber);
+        console.log(filteredData, 'filteredData');
+        await AsyncStorage.setItem('timeOutData', JSON.stringify(filteredData));
+      }
+    } catch (error) {
+      console.log(error, 'error');
+      // Error removing data
+    }
+  };
+
+  const _storeTimerData = async (invalidAttems: number) => {
     try {
       const { phoneNumber } = props.navigation.state.params!;
       const getData = await AsyncStorage.getItem('timeOutData');
@@ -147,10 +170,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         });
         if (index !== 0) {
           timeOutData[index - 1]['startTime'] = new Date().toString();
+          timeOutData[index - 1]['invalidAttems'] = invalidAttems;
         } else {
           timeOutData.push({
             startTime: new Date().toString(),
             phoneNumber: phoneNumber,
+            invalidAttems,
           });
         }
       } else {
@@ -158,6 +183,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           {
             startTime: new Date().toString(),
             phoneNumber: phoneNumber,
+            invalidAttems,
           },
         ];
       }
@@ -194,6 +220,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         console.log('otpCredenntial', otpCredenntial);
         firebase.auth().onAuthStateChanged(async (updatedUser) => {
           if (updatedUser) {
+            _removeFromStore();
             const token = await updatedUser!.getIdToken();
             const patientSign = await callApiWithToken(token);
             const patient = patientSign.data.patientSignIn.patients[0];
@@ -220,9 +247,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       .catch((error: any) => {
         console.log('error', error);
         setVerifyingOtp(false);
+        _storeTimerData(invalidOtpCount + 1);
 
         if (invalidOtpCount + 1 === 3) {
-          _storeTimerData();
           setShowErrorMsg(true);
           setIsValidOTP(false);
           startInterval(timer);
@@ -238,7 +265,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
-  const textInputRef = React.useRef<any>(null);
 
   useEffect(() => {
     const subscriptionId = SmsListener.addListener((message: any) => {
@@ -270,6 +296,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       setInvalidOtpCount(0);
       setIsValidOTP(true);
       clearInterval(intervalId);
+      _removeFromStore();
     }
   }, [timer, intervalId]);
 
@@ -362,7 +389,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           >
             <View style={styles.inputView}>
               <OTPTextView
-                ref={textInputRef}
                 handleTextChange={isOtpValid}
                 inputCount={6}
                 keyboardType="numeric"
@@ -384,7 +410,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             </View>
             {showErrorMsg && (
               <Text style={styles.errorText}>
-                Incorrect OTP. You have {3 - invalidOtpCount} more tries.
+                Incorrect OTP. You have {3 - invalidOtpCount} more{' '}
+                {invalidOtpCount == 2 ? 'try' : 'tries'}.
               </Text>
             )}
             {
