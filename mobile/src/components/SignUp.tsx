@@ -133,23 +133,23 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
     }
   };
 
-  useEffect(() => {
-    backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      console.log('hardwareBackPress');
-      return true;
-    });
-  }, []);
+  // useEffect(() => {
+  //   backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+  //     console.log('hardwareBackPress');
+  //     return true;
+  //   });
+  // }, []);
 
-  useEffect(() => {
-    return () => {
-      backHandler && backHandler.remove();
-    };
-  }, []);
+  // useEffect(() => {
+  //   return () => {
+  //     backHandler && backHandler.remove();
+  //   };
+  // }, []);
 
   console.log(isDateTimePickerVisible, 'isDateTimePickerVisible');
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <KeyboardAwareScrollView style={styles.container} extraScrollHeight={50} bounces={false}>
+      <KeyboardAwareScrollView style={styles.container} extraScrollHeight={50}>
         <View style={{ justifyContent: 'center', marginTop: 20, marginLeft: 20 }}>
           <ApolloLogo />
         </View>
@@ -171,7 +171,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
           <TextInputComponent
             label={'Full Name'}
             placeholder={'First Name'}
-            onChangeText={(text: string) => _setFirstName(text)}
+            onChangeText={(text: string) =>
+              _setFirstName(text.trim().length === 0 ? text.trim() : text)
+            }
             value={firstName}
             autoCorrect={false}
             textInputprops={{
@@ -180,7 +182,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
           />
           <TextInputComponent
             placeholder={'Last Name'}
-            onChangeText={(text: string) => _setlastName(text)}
+            onChangeText={(text: string) =>
+              _setlastName(text.trim().length === 0 ? text.trim() : text)
+            }
             value={lastName}
             autoCorrect={false}
             textInputprops={{

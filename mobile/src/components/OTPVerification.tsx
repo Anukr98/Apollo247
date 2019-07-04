@@ -220,6 +220,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       .catch((error: any) => {
         console.log('error', error);
         setVerifyingOtp(false);
+        Alert.alert('Error', 'Unable to connect the server at the moment.');
 
         if (invalidOtpCount + 1 === 3) {
           _storeTimerData();
@@ -248,16 +249,17 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       setIsValidOTP(true);
     });
     setSubscriptionId(subscriptionId);
-    backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      console.log('hardwareBackPress');
-      return false;
-    });
+    // textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
+    // backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+    //   console.log('hardwareBackPress');
+    //   return false;
+    // });
   }, []);
 
   useEffect(() => {
     return () => {
       subscriptionId && subscriptionId.remove();
-      backHandler && backHandler.remove();
+      // backHandler && backHandler.remove();
     };
   }, [subscriptionId]);
 
@@ -303,6 +305,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         .catch((error) => {
           setVerifyingOtp(false);
           console.log(error, 'error');
+          Alert.alert('Error', 'Unable to connect the server at the moment.');
         });
     }, 50);
   };
@@ -384,7 +387,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             </View>
             {showErrorMsg && (
               <Text style={styles.errorText}>
-                Incorrect OTP. You have {3 - invalidOtpCount} more tries.
+                Incorrect OTP. You have {3 - invalidOtpCount} more{' '}
+                {invalidOtpCount == 2 ? 'try' : 'tries'}.
               </Text>
             )}
             {
