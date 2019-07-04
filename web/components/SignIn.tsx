@@ -7,6 +7,7 @@ import {
   InputAdornment,
   Theme,
   Typography,
+  Button,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AppInputField } from 'components/ui/AppInputField';
@@ -165,9 +166,18 @@ export const SignIn: React.FC = (props) => {
       {verifyOtpError && 'Invalid OTP'}
       <div className={classes.otpAction}>
         <Fab color="primary" onClick={() => verifyOtp(otp.join(''))}>
-          {isSigningIn || isVerifyingOtp ? <CircularProgress /> : 'OK'}
+          {isSigningIn || isSendingOtp || isVerifyingOtp ? <CircularProgress /> : 'OK'}
         </Fab>
       </div>
+      <Button
+        variant="text"
+        onClick={() =>
+          sendOtp(mobileNumberWithPrefix, 'recaptcha-container').then(() => setOtp([]))
+        }
+      >
+        Resend OTP
+      </Button>
+      <div id="recaptcha-container" />
     </div>
   ) : (
     <div className={classes.loginFormWrap}>
