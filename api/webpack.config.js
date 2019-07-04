@@ -17,7 +17,7 @@ const plugins = [
       'NODE_ENV',
       'WEB_CLIENT_PORT',
       'API_GATEWAY_PORT',
-      'FIREBASE_PROJECT_NAME',
+      'FIREBASE_PROJECT_ID',
       'GOOGLE_APPLICATION_CREDENTIALS',
     ].reduce(
       (result, VAR) => ({

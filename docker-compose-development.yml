@@ -30,7 +30,7 @@ services:
       NODE_ENV: development
       WEB_CLIENT_PORT: 3000
       API_GATEWAY_PORT: 4000
-      FIREBASE_PROJECT_NAME: apollo-patient-interface
+      FIREBASE_PROJECT_ID: apollo-patient-interface
       CYPRESS_INSTALL_BINARY: 0
     volumes:
       - ./web:/web:cached
@@ -66,7 +66,7 @@ services:
       NPM_CONFIG_CACHE: /api/.npm-cache
       NODE_ENV: development
       GOOGLE_APPLICATION_CREDENTIALS: /api/services/profiles/firebase-secrets.json
-      FIREBASE_PROJECT_NAME: apollo-patient-interface
+      FIREBASE_PROJECT_ID: apollo-patient-interface
     volumes:
       - ./api:/api:cached
     depends_on:
