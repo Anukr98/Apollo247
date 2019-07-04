@@ -46,10 +46,10 @@ export const useAuth = () => {
 };
 
 export const useLoginPopupState = (): {
-  isLoginPopupVisible: AuthContextProps['loginPopupVisible'];
-  setIsLoginPopupVisible: NonNullable<AuthContextProps['setLoginPopupVisible']>;
+  isLoginPopupVisible: AuthContextProps['isLoginPopupVisible'];
+  setIsLoginPopupVisible: NonNullable<AuthContextProps['setIsLoginPopupVisible']>;
 } => {
-  const isLoginPopupVisible = useContext(AuthContext).loginPopupVisible;
-  const setIsLoginPopupVisible = useContext(AuthContext).setLoginPopupVisible!;
+  const isLoginPopupVisible = useContext(AuthContext).isLoginPopupVisible;
+  const setIsLoginPopupVisible = useContext(AuthContext).setIsLoginPopupVisible!;
   return { isLoginPopupVisible, setIsLoginPopupVisible };
 };

@@ -39,8 +39,8 @@ export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients
   isSigningIn: boolean;
   signOut: (() => Promise<void>) | null;
 
-  loginPopupVisible: boolean;
-  setLoginPopupVisible: ((loginPopupVisible: boolean) => void) | null;
+  isLoginPopupVisible: boolean;
+  setIsLoginPopupVisible: ((isLoginPopupVisible: boolean) => void) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -60,8 +60,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
   isSigningIn: true,
   signOut: null,
 
-  loginPopupVisible: false,
-  setLoginPopupVisible: null,
+  isLoginPopupVisible: false,
+  setIsLoginPopupVisible: null,
 });
 
 let apolloClient: ApolloClient<any>;
@@ -97,7 +97,7 @@ let otpVerifier: firebase.auth.ConfirmationResult;
 
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
-  apolloClient = buildApolloClient(authToken);
+    apolloClient = buildApolloClient(authToken);
 
   const [allCurrentPatients, setAllCurrentPatients] = useState<
     AuthContextProps['allCurrentPatients']
@@ -113,9 +113,9 @@ export const AuthProvider: React.FC = (props) => {
   const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(true);
   const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
 
-  const [loginPopupVisible, setLoginPopupVisible] = useState<AuthContextProps['loginPopupVisible']>(
-    false
-  );
+  const [isLoginPopupVisible, setIsLoginPopupVisible] = useState<
+    AuthContextProps['isLoginPopupVisible']
+  >(false);
 
   const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
     return new Promise((resolve, reject) => {
@@ -233,8 +233,8 @@ export const AuthProvider: React.FC = (props) => {
             isSigningIn,
             signOut,
 
-            loginPopupVisible,
-            setLoginPopupVisible,
+            isLoginPopupVisible,
+            setIsLoginPopupVisible,
           }}
         >
           {props.children}
