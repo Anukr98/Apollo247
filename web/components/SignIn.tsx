@@ -14,7 +14,8 @@ import { AppInputField } from 'components/ui/AppInputField';
 import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
-import React, { createRef, RefObject, useEffect, useState } from 'react';
+import _uniqueId from 'lodash/uniqueId';
+import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
 import { isMobileNumberValid } from 'utils/FormValidationUtils';
 import { AppTextField } from './ui/AppTextField';
 
@@ -82,7 +83,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-const mobileNumberPrefix = '+1';
+const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
 const otpInputRefs: RefObject<HTMLInputElement>[] = [];
 const validPhoneMessage = 'OTP will be sent to this number';
@@ -91,12 +92,13 @@ const invalidPhoneMessage = 'This seems like a wrong number';
 export const SignIn: React.FC = (props) => {
   const classes = useStyles();
 
-  const [mobileNumber, setMobileNumber] = useState<string>('7155290756');
+  const [mobileNumber, setMobileNumber] = useState<string>('');
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
   const [otp, setOtp] = useState<number[]>([]);
   const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
   const [phoneMessage, setPhoneMessage] = useState<string>(validPhoneMessage);
   const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
+  const placeRecaptchaAfterMe = useRef(null);
 
   const {
     sendOtp,
@@ -118,8 +120,6 @@ export const SignIn: React.FC = (props) => {
     });
   }, []);
 
-  if (signInError) alert('Error signing in');
-
   return displayOtpInput ? (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">hi</Typography>
@@ -131,7 +131,7 @@ export const SignIn: React.FC = (props) => {
               autoFocus={index === 0}
               inputRef={otpInputRefs[index]}
               value={_isNumber(otp[index]) ? otp[index] : ''}
-              inputProps={{ type: 'number', maxLength: 1 }}
+              inputProps={{ type: 'tel', maxLength: 1 }}
               onChange={(e) => {
                 const newOtp = [...otp];
                 const num = parseInt(e.currentTarget.value, 10);
@@ -165,19 +165,26 @@ export const SignIn: React.FC = (props) => {
       </Grid>
       {verifyOtpError && 'Invalid OTP'}
       <div className={classes.otpAction}>
-        <Fab color="primary" onClick={() => verifyOtp(otp.join(''))}>
+        <Fab
+          color="primary"
+          onClick={() => verifyOtp(otp.join(''))}
+          disabled={isSendingOtp || otp.join('').length !== numOtpDigits}
+        >
           {isSigningIn || isSendingOtp || isVerifyingOtp ? <CircularProgress /> : 'OK'}
         </Fab>
       </div>
       <Button
         variant="text"
-        onClick={() =>
-          sendOtp(mobileNumberWithPrefix, 'recaptcha-container').then(() => setOtp([]))
-        }
+        disabled={isSendingOtp}
+        onClick={() => {
+          sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
+          const firstInput = otpInputRefs[0].current;
+          if (firstInput) firstInput.focus();
+        }}
       >
         Resend OTP
       </Button>
-      <div id="recaptcha-container" />
+      <div ref={placeRecaptchaAfterMe} />
     </div>
   ) : (
     <div className={classes.loginFormWrap}>
@@ -185,7 +192,7 @@ export const SignIn: React.FC = (props) => {
       <p>Please enter your mobile number to login</p>
       <FormControl fullWidth>
         <AppInputField
-          inputProps={{ type: 'number', maxLength: 10 }}
+          inputProps={{ type: 'tel', maxLength: 10 }}
           value={mobileNumber}
           onChange={(event) => {
             setMobileNumber(event.currentTarget.value);
@@ -224,7 +231,7 @@ export const SignIn: React.FC = (props) => {
           aria-label="Sign in"
           disabled={!isMobileNumberValid(mobileNumber)}
           onClick={() =>
-            sendOtp(mobileNumberWithPrefix, 'recaptcha-container').then(() =>
+            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
               setDisplayOtpInput(true)
             )
           }
@@ -236,7 +243,7 @@ export const SignIn: React.FC = (props) => {
           )}
         </Fab>
       </div>
-      <div id="recaptcha-container" />
+      <div ref={placeRecaptchaAfterMe} />
     </div>
   );
 };

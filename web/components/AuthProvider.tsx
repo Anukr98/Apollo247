@@ -16,6 +16,7 @@ import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { Relation } from 'graphql/types/globalTypes';
+import _uniqueId from 'lodash/uniqueId';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
@@ -26,7 +27,9 @@ export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients
   allCurrentPatients: Patient[] | null;
   setCurrentPatient: ((p: Patient) => void) | null;
 
-  sendOtp: ((phoneNumber: string, signInButtonId: HTMLElement['id']) => Promise<unknown>) | null;
+  sendOtp:
+    | ((phoneNumber: string, recaptchaPlacement: HTMLElement | null) => Promise<unknown>)
+    | null;
   sendOtpError: boolean;
   isSendingOtp: boolean;
 
@@ -123,10 +126,21 @@ export const AuthProvider: React.FC = (props) => {
       storageBucket: '',
     });
 
-    const sendOtpFunc = () => (phoneNumber: string, signInButtonId: HTMLElement['id']) => {
-      setIsSendingOtp(true);
+    const sendOtpFunc = () => (phoneNumber: string, recaptchaPlacement: HTMLElement | null) => {
       return new Promise((resolve, reject) => {
-        const captcha = new firebase.auth.RecaptchaVerifier(signInButtonId, {
+        if (!recaptchaPlacement) {
+          setSendOtpError(true);
+          return reject();
+        }
+        setIsSendingOtp(true);
+        const recaptchaContainer = document.createElement('div');
+        const recaptchaId = _uniqueId('recaptcha-container');
+        recaptchaContainer.id = recaptchaId;
+        recaptchaPlacement.parentNode!.insertBefore(
+          recaptchaContainer,
+          recaptchaPlacement.nextSibling
+        );
+        const captcha = new firebase.auth.RecaptchaVerifier(recaptchaId, {
           size: 'invisible',
           callback: async () => {
             const [phoneAuthResult, phoneAuthError] = await wait(
@@ -140,10 +154,12 @@ export const AuthProvider: React.FC = (props) => {
             }
             otpVerifier = phoneAuthResult;
             setSendOtpError(false);
+            captcha.clear();
             resolve();
           },
           'expired-callback': () => {
             setSendOtpError(true);
+            captcha.clear();
             reject();
           },
         });
@@ -194,6 +210,7 @@ export const AuthProvider: React.FC = (props) => {
         if (signInError || !signInResult.data || !signInResult.data.patientSignIn.patients) {
           setSignInError(true);
           setIsSigningIn(false);
+          app.auth().signOut();
           return;
         }
         const patients = signInResult.data.patientSignIn.patients;
