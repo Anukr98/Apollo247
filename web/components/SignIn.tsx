@@ -187,6 +187,7 @@ export const SignIn: React.FC = (props) => {
       <p>Please enter your mobile number to login</p>
       <FormControl fullWidth>
         <AppInputField
+          autoFocus
           inputProps={{ type: 'tel', maxLength: 10 }}
           value={mobileNumber}
           onChange={(event) => {
