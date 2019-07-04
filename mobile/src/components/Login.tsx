@@ -13,6 +13,7 @@ import {
   View,
   ActivityIndicator,
   Keyboard,
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
@@ -72,14 +73,15 @@ export interface LoginProps extends NavigationScreenProps {}
 
 const isPhoneNumberValid = (number: string) => {
   const isValidNumber =
-    (number.replace(/^0+/, '').length !== 10 && number.length !== 0) ||
-    !/^[6-9]{1}\d{9}$/.test(number)
-      ? false
-      : true;
+    // (number.replace(/^0+/, '').length !== 10 && number.length !== 0) ||
+    !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
   return isValidNumber;
 };
 
 let otpString = '';
+let backHandler: any;
+let didBlurSubscription: any;
+
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
@@ -100,20 +102,38 @@ export const Login: React.FC<LoginProps> = (props) => {
       otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
     });
     setSubscriptionId(subscriptionId);
+
+    backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      console.log('hardwareBackPress');
+      return true;
+    });
+
+    didBlurSubscription = props.navigation.addListener('didBlur', (payload) => {
+      setPhoneNumber('');
+    });
   }, [subscriptionId]);
+
+  useEffect(() => {
+    backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      console.log('hardwareBackPress');
+      return true;
+    });
+  }, []);
 
   useEffect(() => {
     return () => {
       subscriptionId && subscriptionId.remove();
+      backHandler && backHandler.remove();
+      didBlurSubscription && didBlurSubscription.remove();
     };
   }, [subscriptionId]);
 
   const validateAndSetPhoneNumber = (number: string) => {
     if (/^\d+$/.test(number) || number == '') {
       setPhoneNumber(number);
-      if (number.length == 10) {
-        setPhoneNumberIsValid(isPhoneNumberValid(number));
-      }
+      // if (number.length == 10) {
+      setPhoneNumberIsValid(isPhoneNumberValid(number));
+      // }
     } else {
       return false;
     }
@@ -173,9 +193,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           <View
             style={[
               { height: 56, paddingTop: 20 },
-              phoneNumber == '' || phoneNumber.length < 10 || phoneNumberIsValid
-                ? styles.inputValidView
-                : styles.inputView,
+              phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
             ]}
           >
             <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
@@ -190,12 +208,12 @@ export const Login: React.FC<LoginProps> = (props) => {
           </View>
           <Text
             style={
-              phoneNumber == '' || phoneNumber.length < 10 || phoneNumberIsValid
+              phoneNumber == '' || phoneNumberIsValid
                 ? styles.bottomValidDescription
                 : styles.bottomDescription
             }
           >
-            {phoneNumber == '' || phoneNumber.length < 10 || phoneNumberIsValid
+            {phoneNumber == '' || phoneNumberIsValid
               ? string.LocalStrings.otp_sent_to
               : string.LocalStrings.wrong_number}
           </Text>

@@ -216,15 +216,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [userName, setuserName] = useState<string>('');
   const { currentUser, analytics, currentProfiles } = useAuth();
+  const [userPropsName, setuserPropsName] = useState<string>('');
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.ConsultRoom);
     // const userName = currentUser.firstName + ' ' + currentUser.lastName;
+    const { name } = props.navigation.state.params!;
+
     let userName =
-      currentUser && currentUser.firstName ? currentUser.firstName.split(' ')[0] : 'there';
+      currentUser && currentUser.firstName ? currentUser.firstName.split(' ')[0] : name;
     userName = userName.toLowerCase();
     setuserName(userName);
-  }, [currentUser, currentProfiles, analytics, userName]);
+    setuserPropsName(name);
+  }, [currentUser, currentProfiles, analytics, userName, props.navigation.state.params]);
 
   useEffect(() => {});
   const Popup = () => (
@@ -277,7 +281,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 setShowMenu(false);
               }}
             >
-              {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : 'Hi there'}
+              {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : userPropsName}
             </Text>
           </View>
         ))}

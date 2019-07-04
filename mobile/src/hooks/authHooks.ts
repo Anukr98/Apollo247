@@ -18,6 +18,8 @@ export const useAuth = () => {
   const clearCurrentUser = useContext(AuthContext).clearCurrentUser!;
   const callApiWithToken = useContext(AuthContext).callApiWithToken;
   const callUpdatePatient = useContext(AuthContext).callUpdatePatient;
+  const authError = useContext(AuthContext).authError;
+
   return {
     analytics,
     isAuthenticating,
@@ -31,5 +33,6 @@ export const useAuth = () => {
     clearCurrentUser,
     callApiWithToken,
     callUpdatePatient,
+    authError,
   };
 };

@@ -7,7 +7,15 @@ import { StickyBottomComponent } from 'app/src/components/ui/StickyBottomCompone
 import { string } from 'app/src/strings/string';
 import { theme } from 'app/src/theme/theme';
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Dimensions,
+  BackHandler,
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MenuProvider } from 'react-native-popup-menu';
 import { NavigationScreenProps } from 'react-navigation';
@@ -76,12 +84,16 @@ type currentProfiles = {
   mobileNumber: string;
   sex: string;
   uhid: string;
+  relation?: string;
 };
+
+let backHandler: any;
 
 export interface MultiSignupProps extends NavigationScreenProps {}
 
 export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [relation, setRelation] = useState<string>('Relations');
+  const [relationIndex, setRelationIndex] = useState<number>(0);
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [user, setUser] = useState<object>([]);
   const { currentUser, analytics, currentProfiles } = useAuth();
@@ -101,7 +113,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     const baseString =
       'We have found ' +
       length +
-      ' registered with this mobile number.Please tell\nus who is who ? :)';
+      ' registered with this mobile number. Please tell us who is who ? :)';
     setDiscriptionText(baseString);
 
     if (length !== 'undefined accounts') {
@@ -110,6 +122,19 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     }
     console.log('discriptionText', discriptionText);
   }, [currentUser, currentProfiles, analytics, user, profilesLength, discriptionText, showText]);
+
+  useEffect(() => {
+    backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      console.log('hardwareBackPress');
+      return true;
+    });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      backHandler && backHandler.remove();
+    };
+  }, []);
 
   const renderUserForm = (styles: any, currentProfiles: currentProfiles, i: number) => {
     return (
@@ -144,15 +169,18 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             <View style={{ paddingTop: 5, paddingBottom: 10 }}>
               <TouchableOpacity
                 style={styles.placeholderViewStyle}
-                onPress={() => setShowPopup(true)}
+                onPress={() => {
+                  setShowPopup(true);
+                  setRelationIndex(i);
+                }}
               >
                 <Text
                   style={[
                     styles.placeholderTextStyle,
-                    relation === 'Relations' ? styles.placeholderStyle : null,
+                    currentProfiles.relation ? null : styles.placeholderStyle,
                   ]}
                 >
-                  {relation}
+                  {currentProfiles.relation ? currentProfiles.relation : 'Relation'}
                 </Text>
                 <DropdownGreen size="sm" />
               </TouchableOpacity>
@@ -235,7 +263,8 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             <Text
               style={styles.textStyle}
               onPress={() => {
-                setRelation(menu.name);
+                currentProfiles[relationIndex].relation = menu.name;
+                // setRelation(menu.name);
                 setShowPopup(false);
               }}
             >
@@ -253,7 +282,11 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         <Button
           style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
           title={'SUBMIT'}
-          onPress={() => props.navigation.navigate(AppRoutes.TabBar)}
+          onPress={() =>
+            props.navigation.navigate(AppRoutes.TabBar, {
+              name: '',
+            })
+          }
         />
       </StickyBottomComponent>
     );

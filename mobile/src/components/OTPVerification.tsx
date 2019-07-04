@@ -14,9 +14,12 @@ import {
   ActivityIndicator,
   Keyboard,
   Alert,
+  BackHandler,
+  AsyncStorage,
 } from 'react-native';
 import SmsListener from 'react-native-android-sms-listener';
-import OTPTextView from 'react-native-otp-textinput';
+// import OTPTextView from 'react-native-otp-textinput';
+import { OTPTextView } from './ui/OTPTextView';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 import { PhoneNumberVerificationCredential } from './AuthProvider';
@@ -54,7 +57,9 @@ const styles = StyleSheet.create({
   },
 });
 
-let timer = 60;
+let timer = 900;
+let backHandler: any;
+
 export interface OTPVerificationProps
   extends NavigationScreenProps<{
     phoneNumberVerificationCredential: PhoneNumberVerificationCredential;
@@ -70,15 +75,85 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [intervalId, setIntervalId] = useState<any>(0);
   const [otp, setOtp] = useState<string>('');
   const [hideBackArrow, setHideBackArrow] = useState<boolean>(true);
+  const [errorAuth, setErrorAuth] = useState<boolean>(true);
 
-  const { signIn, callApiWithToken } = useAuth();
+  const { signIn, callApiWithToken, authError } = useAuth();
   const [verifyingOtp, setVerifyingOtp] = useState(false);
 
+  const startInterval = (timer: number) => {
+    const intervalId = setInterval(() => {
+      timer = timer - 1;
+      setRemainingTime(timer);
+      console.log('descriptionTextStyle', remainingTime);
+      if (timer == 0) {
+        console.log('descriptionTextStyle remainingTime', remainingTime);
+        setRemainingTime(0);
+        clearInterval(intervalId);
+      }
+    }, 1000);
+  };
   useEffect(() => {
     const { otpString } = props.navigation.state.params!;
     setOtp(otpString);
     console.log('OTPVerification otpString', otpString);
+    _getData();
   }, []);
+
+  const _getData = async () => {
+    try {
+      const data = await AsyncStorage.getItem('timeOutData');
+      if (data) {
+        const timeOutData = JSON.parse(data);
+        console.log(timeOutData);
+        timeOutData.map((obj) => {
+          if (obj.phoneNumber === obj.phoneNumber) {
+            const t1 = new Date();
+            const t2 = new Date(obj.startTime);
+            const dif = t1.getTime() - t2.getTime();
+
+            const seconds = Math.round(dif / 1000);
+            console.log(seconds, 'seconds');
+            if (seconds < 900) {
+              setInvalidOtpCount(3);
+              setIsValidOTP(false);
+              timer = 900 - seconds;
+              console.log(timer, 'timertimer');
+              setRemainingTime(timer);
+              startInterval(timer);
+            }
+          }
+        });
+      }
+    } catch (error) {
+      // Error retrieving data
+      console.log(error.message);
+    }
+  };
+  useEffect(() => {
+    setErrorAuth(authError);
+    console.log('authError OTPVerification', authError);
+    if (authError) {
+      setVerifyingOtp(false);
+      Alert.alert('Error', 'Unable to connect the server at the moment.');
+    }
+  }, [authError]);
+
+  const _storeData = async () => {
+    try {
+      const { phoneNumber } = props.navigation.state.params!;
+
+      const timeOutData = [
+        {
+          startTime: new Date().toString(),
+          phoneNumber: phoneNumber,
+        },
+      ];
+      await AsyncStorage.setItem('timeOutData', JSON.stringify(timeOutData));
+    } catch (error) {
+      console.log(error, 'error');
+      // Error saving data
+    }
+  };
 
   const onClickOk = () => {
     const { phoneNumberVerificationCredential } = props.navigation.state.params!;
@@ -123,22 +198,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         setVerifyingOtp(false);
 
         if (invalidOtpCount + 1 === 3) {
+          _storeData();
+
           setShowErrorMsg(true);
           setIsValidOTP(false);
           setHideBackArrow(false);
           setOtp('');
 
-          textInputRef.current.inputs && textInputRef.current.inputs[5].blur();
-          const intervalId = setInterval(() => {
-            timer = timer - 1;
-            setRemainingTime(timer);
-            console.log('descriptionTextStyle', remainingTime);
-            if (timer == 0) {
-              console.log('descriptionTextStyle remainingTime', remainingTime);
-              setRemainingTime(0);
-              clearInterval(intervalId);
-            }
-          }, 1000);
+          // textInputRef.current.inputs && textInputRef.current.inputs[5].blur();
+          startInterval(timer);
           setIntervalId(intervalId);
         } else {
           setShowErrorMsg(true);
@@ -148,9 +216,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         console.log(invalidOtpCount);
         setOtp('');
         for (let i = 0; i < 6; i++) {
-          textInputRef.current.inputs && textInputRef.current.onTextChange('', i);
+          // textInputRef.current.inputs && textInputRef.current.onTextChange('', i);
         }
-        textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
+        // textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
       });
   };
 
@@ -166,12 +234,17 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       setIsValidOTP(true);
     });
     setSubscriptionId(subscriptionId);
-    textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
+    // textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
+    backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      console.log('hardwareBackPress');
+      return false;
+    });
   }, []);
 
   useEffect(() => {
     return () => {
       subscriptionId && subscriptionId.remove();
+      backHandler && backHandler.remove();
     };
   }, [subscriptionId]);
 
@@ -185,7 +258,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       setIsValidOTP(true);
       clearInterval(intervalId);
       setHideBackArrow(true);
-      setTimeout(() => textInputRef.current.inputs && textInputRef.current.inputs[0].focus(), 500);
+      // setTimeout(() => textInputRef.current.inputs && textInputRef.current.inputs[0].focus(), 500);
     }
   }, [timer, intervalId]);
 
@@ -201,6 +274,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const onClickResend = () => {
     setOtp('');
     Keyboard.dismiss();
+    for (let i = 0; i < 6; i++) {
+      // textInputRef.current && textInputRef.current.onTextChange('', i);
+    }
+    // textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
     const { phoneNumber } = props.navigation.state.params!;
     console.log('onClickResend', phoneNumber);
     setVerifyingOtp(true);
@@ -214,10 +291,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           props.navigation.navigate(AppRoutes.OTPVerification, {
             phoneNumberVerificationCredential: confirmResult.verificationId,
           });
-          setTimeout(
-            () => textInputRef.current.inputs && textInputRef.current.inputs[0].focus(),
-            10
-          );
+          // setTimeout(
+          //   // () => textInputRef.current.inputs && textInputRef.current.inputs[0].focus(),
+          //   10
+          // );
         })
         .catch((error) => {
           setVerifyingOtp(false);
@@ -237,7 +314,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               intervalId && clearInterval(intervalId);
             }}
           >
-            {hideBackArrow ? <BackArrow /> : null}
+            <BackArrow />
+            {/* {hideBackArrow ? <BackArrow /> : null} */}
           </TouchableOpacity>
         </View>
         {invalidOtpCount === 3 && !isValidOTP ? (
@@ -254,7 +332,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 handleTextChange={(otp: string) => setOtp(otp)}
                 inputCount={6}
                 keyboardType="numeric"
-                defaultValue={otp}
+                value={otp}
                 textInputStyle={styles.codeInputStyle}
                 tintColor={'rgba(0, 179, 142, 0.4)'}
                 offTintColor={'rgba(0, 179, 142, 0.4)'}
@@ -296,7 +374,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                     : theme.colors.INPUT_BORDER_FAILURE
                 }
                 containerStyle={{ flex: 1 }}
-                // textContentType={'oneTimeCode'}
+                textContentType={'oneTimeCode'}
               />
             </View>
             {showErrorMsg && (
@@ -336,53 +414,3 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     </View>
   );
 };
-
-// setVerifyingOtp(true);
-// verifyOtp(phoneNumberVerificationCredential, otp)
-//   .then((otpVerificationCredential) => {
-//     setVerifyingOtp(false);
-//     signIn(otpVerificationCredential).then;
-
-//     if (currentUser) {
-//       console.log('currentUser', currentUser);
-
-//       if (currentUser.uhid && currentUser.uhid !== '') {
-//         props.navigation.navigate(AppRoutes.MultiSignup);
-//       } else {
-//         props.navigation.navigate(AppRoutes.SignUp);
-//       }
-//     } else {
-//       // textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
-//       // setOtp('');
-//       // setIsValidOTP(false);
-//       // setVerifyingOtp(false);
-
-//       if (invalidOtpCount + 1 === 3) {
-//         setShowErrorMsg(true);
-//         setIsValidOTP(false);
-//         setOtp('');
-//         textInputRef.current.inputs && textInputRef.current.inputs[5].blur();
-//         const intervalId = setInterval(() => {
-//           // console.log('descriptionTextStyle', remainingTime);
-//           timer = timer - 1;
-//           setRemainingTime(timer);
-//           console.log('descriptionTextStyle', timer);
-//         }, 1000);
-//         setIntervalId(intervalId);
-//       } else {
-//         setShowErrorMsg(true);
-//         setIsValidOTP(true);
-//       }
-//       setInvalidOtpCount(invalidOtpCount + 1);
-//       console.log(invalidOtpCount);
-//       setOtp('');
-//       for (let i = 0; i < 6; i++) {
-//         textInputRef.current.inputs && textInputRef.current.onTextChange('', i);
-//       }
-//       textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
-//     }
-//   })
-//   .catch((error) => {
-//     setVerifyingOtp(false);
-//     console.log(error, 'errorerrorerrorerror');
-//   });

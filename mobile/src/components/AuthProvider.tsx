@@ -41,6 +41,7 @@ export interface AuthProviderProps {
   signOut: (() => any) | null;
   clearCurrentUser: (() => any) | null;
   callUpdatePatient: ((patientDetails: updatePatient_updatePatient_patient) => Promise<any>) | null;
+  authError: boolean;
 }
 
 const userIsValid = (user: RNFirebase.User | null) => user && user.phoneNumber;
@@ -57,12 +58,14 @@ export const AuthContext = React.createContext<AuthProviderProps>({
   clearCurrentUser: null,
   callApiWithToken: null,
   callUpdatePatient: null,
+  authError: false,
 });
 
 let apolloClient: ApolloClient<any>;
-const buildApolloClient = (authToken: string) => {
+const buildApolloClient = (authToken: string, failureFunction: () => void) => {
   const errorLink = onError(({ networkError, operation, forward }: ErrorResponse) => {
     console.log(networkError, operation);
+    failureFunction();
     return forward(operation);
   });
   const authLink = setContext((_, { headers }) => ({
@@ -79,7 +82,9 @@ const buildApolloClient = (authToken: string) => {
 
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
-  apolloClient = buildApolloClient(authToken);
+  const [authError, setAuthError] = useState(false);
+  const failureFunction = () => setAuthError(true);
+  apolloClient = buildApolloClient(authToken, failureFunction);
 
   const [currentUser, setCurrentUser] = useState<AuthProviderProps['currentUser']>(null);
   const [currentProfiles, setcurrentProfiles] = useState<AuthProviderProps['currentProfiles']>(
@@ -146,6 +151,8 @@ export const AuthProvider: React.FC = (props) => {
         mutation: PATIENT_SIGN_IN,
         variables: { jwt: updatedToken },
       });
+
+      console.log('updatedToken', updatedToken);
 
       if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
         const patient = patientSignInResult.data.patientSignIn.patients[0];
@@ -229,6 +236,7 @@ export const AuthProvider: React.FC = (props) => {
       <ApolloHooksProvider client={apolloClient}>
         <AuthContext.Provider
           value={{
+            authError,
             analytics,
             currentUser,
             isAuthenticating,

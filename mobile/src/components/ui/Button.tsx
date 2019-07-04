@@ -46,7 +46,8 @@ export const Button: React.FC<buttonProps> = (props) => {
   return (
     <TouchableOpacity
       style={[styles.containerStyles, props.style, props.disabled ? styles.disabledStyle : null]}
-      onPress={props.onPress}
+      onPress={props.disabled ? () => {} : props.onPress}
+      activeOpacity={props.disabled ? 0.5 : 0}
     >
       <Text style={[styles.titleTextStyle, props.titleTextStyle]}>{props.title}</Text>
     </TouchableOpacity>

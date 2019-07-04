@@ -8,13 +8,23 @@ import { StickyBottomComponent } from 'app/src/components/ui/StickyBottomCompone
 import { TextInputComponent } from 'app/src/components/ui/TextInputComponent';
 import { string } from 'app/src/strings/string';
 import { theme } from 'app/src/theme/theme';
-import React, { useState } from 'react';
-import { Keyboard, SafeAreaView, StyleSheet, View, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  Keyboard,
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Alert,
+  BackHandler,
+  TouchableOpacity,
+  Text,
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
 import Moment from 'moment';
 import { useAuth } from '../hooks/authHooks';
 import { updatePatient_updatePatient_patient } from 'app/src/graphql/types/updatePatient';
+import { Relation, Sex } from 'app/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   container: {
@@ -44,6 +54,23 @@ const styles = StyleSheet.create({
   selectedButtonTitleStyle: {
     color: theme.colors.WHITE,
   },
+  placeholderTextStyle: {
+    color: '#01475b',
+    ...theme.fonts.IBMPlexSansMedium(18),
+  },
+  placeholderViewStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    borderBottomWidth: 2,
+    paddingTop: 0,
+    paddingBottom: 3,
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  placeholderStyle: {
+    color: theme.colors.placeholderTextColor,
+  },
 });
 
 type genderOptions = {
@@ -62,6 +89,8 @@ const GenderOptions: genderOptions[] = [
   },
 ];
 
+let backHandler: any;
+
 export interface SignUpProps extends NavigationScreenProps {}
 export const SignUp: React.FC<SignUpProps> = (props) => {
   const [gender, setGender] = useState<string>('');
@@ -73,7 +102,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
   const [firstNameValidation, setfirstNameValidation] = useState<boolean>(false);
   const [lastNameValidation, setLastNameValidation] = useState<boolean>(false);
-  const { callUpdatePatient } = useAuth();
+  const { callUpdatePatient, currentUser } = useAuth();
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' ' ? false : value == '' || /^[a-zA-Z ]+$/.test(value) ? true : false;
@@ -103,6 +132,20 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
       return false;
     }
   };
+
+  useEffect(() => {
+    backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      console.log('hardwareBackPress');
+      return true;
+    });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      backHandler && backHandler.remove();
+    };
+  }, []);
+
   console.log(isDateTimePickerVisible, 'isDateTimePickerVisible');
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -144,24 +187,39 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
               maxLength: 50,
             }}
           />
-          <TextInputComponent
-            label={'Date Of Birth'}
-            value={date}
-            placeholder={'dd/mm/yyyy'}
-            onFocus={() => {
-              Keyboard.dismiss();
-              setIsDateTimePickerVisible(true);
-            }}
-          />
+          <TextInputComponent label={'Date Of Birth'} noInput={true} />
+          <View style={{ marginTop: -5 }}>
+            <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+              <TouchableOpacity
+                style={styles.placeholderViewStyle}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setIsDateTimePickerVisible(true);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.placeholderTextStyle,
+                    ,
+                    date !== '' ? null : styles.placeholderStyle,
+                  ]}
+                >
+                  {date !== '' ? date : 'dd/mm/yyyy'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
           <DatePicker
             isDateTimePickerVisible={isDateTimePickerVisible}
             handleDatePicked={(date) => {
               const formatDate = Moment(date).format('DD/MM/YYYY');
               setDate(formatDate);
               setIsDateTimePickerVisible(false);
+              Keyboard.dismiss();
             }}
             hideDateTimePicker={() => {
               setIsDateTimePickerVisible(false);
+              Keyboard.dismiss();
             }}
           />
           <TextInputComponent label={'Gender'} noInput={true} />
@@ -198,6 +256,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
         <Button
           title={'SUBMIT'}
           style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
+          disabled={!firstName || !lastName || !date || !gender}
           onPress={async () => {
             let validationMessage = '';
             if (!firstName) {
@@ -217,19 +276,22 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
               Alert.alert('Error', validationMessage);
             } else {
               // const patientsDetails: updatePatient_updatePatient_patient = {
-              // id =;
-              // mobileNumber: string | null;
-              // firstName: string | null;
-              // lastName: string | null;
-              // relation: Relation | null;
-              // sex: Sex | null;
-              // uhid: string | null;
-              // dateOfBirth: string | null;
+              //   __typename: 'Patient',
+              //   id: currentUser.id,
+              //   mobileNumber: '',
+              //   firstName: firstName,
+              //   lastName: lastName,
+              //   relation: Relation.ME,
+              //   sex: Sex.MALE,
+              //   uhid: '',
+              //   dateOfBirth: date,
+              //   emailAddress: email,
               // };
-
               // const patientUpdateDetails = await callUpdatePatient(patientsDetails);
-
-              props.navigation.navigate(AppRoutes.TabBar);
+              // console.log('patientUpdateDetails', patientUpdateDetails);
+              props.navigation.navigate(AppRoutes.TabBar, {
+                name: firstName,
+              });
             }
           }}
         />

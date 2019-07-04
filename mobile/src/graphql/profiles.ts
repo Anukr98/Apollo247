@@ -45,6 +45,7 @@ export const UPDATE_PATIENT = gql`
         sex
         uhid
         dateOfBirth
+        emailAddress
       }
       errors {
         messages
