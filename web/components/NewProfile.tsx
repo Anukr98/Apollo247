@@ -105,10 +105,10 @@ export const NewProfile: React.FC = (props) => {
       ? false
       : true;
 
-  const showFirstNameError = firstName.length > 0 && !isNameValid(firstName) ? true : false;
-  const showLastNameError = lastName.length > 0 && !isNameValid(lastName) ? true : false;
-  const showDobError = dateOfBirth.length > 0 && !isDobValid(dateOfBirth) ? true : false;
-  const showEmailIdError = emailAddress.length > 0 && !isEmailValid(emailAddress) ? true : false;
+  const showFirstNameError = firstName.length > 0 && !isNameValid(firstName);
+  const showLastNameError = lastName.length > 0 && !isNameValid(lastName);
+  const showDobError = dateOfBirth.length > 0 && !isDobValid(dateOfBirth);
+  const showEmailIdError = emailAddress.length > 0 && !isEmailValid(emailAddress);
 
   return (
     <div className={classes.signUpPop}>
@@ -128,7 +128,7 @@ export const NewProfile: React.FC = (props) => {
                 label="First Name"
                 placeholder="Example, Jonathan"
                 value={firstName}
-                error={firstName && firstName.length > 0 ? !isNameValid(firstName) : false}
+                error={showFirstNameError}
                 onChange={(e) => {
                   setFirstName(e.target.value);
                 }}
@@ -147,7 +147,7 @@ export const NewProfile: React.FC = (props) => {
                 label="Last Name"
                 placeholder="Example, Donut"
                 value={lastName}
-                error={lastName && lastName.length > 0 ? !isNameValid(lastName) : false}
+                error={showLastNameError}
                 onChange={(e) => {
                   setLastName(e.target.value);
                 }}
@@ -166,7 +166,7 @@ export const NewProfile: React.FC = (props) => {
                 label="Date Of Birth"
                 placeholder="dd/mm/yyyy"
                 value={dateOfBirth}
-                error={dateOfBirth && dateOfBirth.length > 0 ? !isDobValid(dateOfBirth) : false}
+                error={showDobError}
                 onChange={(e) => {
                   setDateOfBirth(e.target.value);
                 }}
@@ -204,9 +204,7 @@ export const NewProfile: React.FC = (props) => {
                 label="Email Address (Optional)"
                 placeholder="name@email.com"
                 value={emailAddress}
-                error={
-                  emailAddress && emailAddress.length > 0 ? !isEmailValid(emailAddress) : false
-                }
+                error={showEmailIdError}
                 onChange={(e) => {
                   setEmailAddress(e.target.value);
                 }}
