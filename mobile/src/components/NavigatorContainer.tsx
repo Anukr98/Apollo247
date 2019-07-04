@@ -69,9 +69,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.OTPVerification]: {
     screen: OTPVerification,
-    navigationOptions: {
-      gesturesEnabled: false,
-    },
   },
   [AppRoutes.ConsultRoom]: {
     screen: ConsultRoom,

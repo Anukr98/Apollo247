@@ -123,18 +123,18 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     console.log('discriptionText', discriptionText);
   }, [currentUser, currentProfiles, analytics, user, profilesLength, discriptionText, showText]);
 
-  useEffect(() => {
-    backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      console.log('hardwareBackPress');
-      return true;
-    });
-  }, []);
+  // useEffect(() => {
+  //   backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+  //     console.log('hardwareBackPress');
+  //     return true;
+  //   });
+  // }, []);
 
-  useEffect(() => {
-    return () => {
-      backHandler && backHandler.remove();
-    };
-  }, []);
+  // useEffect(() => {
+  //   return () => {
+  //     backHandler && backHandler.remove();
+  //   };
+  // }, []);
 
   const renderUserForm = (styles: any, currentProfiles: currentProfiles, i: number) => {
     return (

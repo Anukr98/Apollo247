@@ -258,33 +258,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           elevation: 5,
           paddingTop: 8,
           paddingBottom: 16,
-          marginTop: 124,
+          marginTop: 154,
         }}
       >
-        {/* {[userName].map((firstName) => (
-          <View style={styles.textViewStyle}>
-            <Text
-              style={styles.textStyle}
-              onPress={() => {
-                setShowMenu(false);
-              }}
-            >
-              {firstName}
-            </Text>
-          </View>
-        ))} */}
-        {currentProfiles.map((profile: currentProfiles) => (
-          <View style={styles.textViewStyle}>
-            <Text
-              style={styles.textStyle}
-              onPress={() => {
-                setShowMenu(false);
-              }}
-            >
-              {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : userPropsName}
-            </Text>
-          </View>
-        ))}
+        {currentProfiles &&
+          currentProfiles.map((profile: currentProfiles) => (
+            <View style={styles.textViewStyle}>
+              <Text
+                style={styles.textStyle}
+                onPress={() => {
+                  setShowMenu(false);
+                }}
+              >
+                {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : userPropsName}
+              </Text>
+            </View>
+          ))}
 
         <Text
           style={{
@@ -306,7 +295,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {showMenu && Popup()}
-        <ScrollView style={{ flex: 1 }}>
+        <ScrollView style={{ flex: 1 }} bounces={false}>
           <Image
             source={require('app/src/images/doctor/doctor.png')}
             style={{

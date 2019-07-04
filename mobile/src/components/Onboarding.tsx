@@ -14,11 +14,14 @@ import {
   TextStyle,
   TouchableOpacity,
   View,
+  AsyncStorage,
+  Platform,
 } from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import firebase from 'react-native-firebase';
 import { NavigationScreenProps } from 'react-navigation';
 const { height } = Dimensions.get('window');
+import SplashScreen from 'react-native-splash-screen';
 
 const styles = StyleSheet.create({
   container: {
@@ -98,7 +101,7 @@ const slides: Slide[] = [
   },
   {
     key: 'somethun-dos',
-    title: 'health vault',
+    title: 'health records',
     text: 'Keep all your medical records in one digital vault, with you controlling access',
     image: require('app/src/images/onboard/onboard.png'),
     backgroundColor: '#FBFCFD',
@@ -130,7 +133,18 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
   const appIntroSliderRef = React.useRef<any>(null);
 
   useEffect(() => {
-    firebase.analytics().setCurrentScreen('Onboarding');
+    async function fetchData() {
+      firebase.analytics().setCurrentScreen('Onboarding');
+      const onboarding = await AsyncStorage.getItem('onboarding');
+      if (onboarding == 'true') {
+        props.navigation.replace(AppRoutes.Login);
+      }
+    }
+    fetchData();
+
+    setTimeout(() => {
+      SplashScreen.hide();
+    }, 100);
   });
 
   return (
@@ -151,6 +165,7 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     if (item.index === slides.length) {
+                      AsyncStorage.setItem('onboarding', 'true');
                       props.navigation.navigate(AppRoutes.Login);
                     } else {
                       appIntroSliderRef.current.goToSlide(item.index);
@@ -168,7 +183,10 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
       <View style={styles.skipView}>
         <Text
           style={styles.skipTextStyle}
-          onPress={() => props.navigation.navigate(AppRoutes.Login)}
+          onPress={() => {
+            AsyncStorage.setItem('onboarding', 'true');
+            props.navigation.navigate(AppRoutes.Login);
+          }}
         >
           SKIP
         </Text>

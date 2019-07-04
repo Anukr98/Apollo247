@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
   Keyboard,
   BackHandler,
+  Alert,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
@@ -86,14 +87,22 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const { analytics, currentUser } = useAuth();
+  const { analytics, currentUser, authError } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<any>();
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
-    setVerifyingPhonenNumber(false);
+    // setVerifyingPhonenNumber(false);
     console.log('login currentUser', currentUser);
-  }, [analytics, verifyingPhoneNumber, currentUser]);
+  }, [analytics, currentUser]);
+
+  useEffect(() => {
+    console.log('authError Login', authError);
+    if (authError) {
+      setVerifyingPhonenNumber(false);
+      Alert.alert('Error', 'Unable to connect the server at the moment.');
+    }
+  }, [authError]);
 
   useEffect(() => {
     const subscriptionId = SmsListener.addListener((message: any) => {
@@ -103,27 +112,22 @@ export const Login: React.FC<LoginProps> = (props) => {
     });
     setSubscriptionId(subscriptionId);
 
-    backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      console.log('hardwareBackPress');
-      return true;
-    });
-
     didBlurSubscription = props.navigation.addListener('didBlur', (payload) => {
       setPhoneNumber('');
     });
   }, [subscriptionId]);
 
-  useEffect(() => {
-    backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      console.log('hardwareBackPress');
-      return true;
-    });
-  }, []);
+  // useEffect(() => {
+  //   backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+  //     console.log('hardwareBackPress');
+  //     return true;
+  //   });
+  // }, []);
 
   useEffect(() => {
     return () => {
       subscriptionId && subscriptionId.remove();
-      backHandler && backHandler.remove();
+      // backHandler && backHandler.remove();
       didBlurSubscription && didBlurSubscription.remove();
     };
   }, [subscriptionId]);
@@ -176,17 +180,9 @@ export const Login: React.FC<LoginProps> = (props) => {
                 .catch((error) => {
                   console.log(error, 'error');
                   setVerifyingPhonenNumber(false);
+                  Alert.alert('Error', 'Unable to connect the server at the moment.');
                 });
             }
-            // setVerifyingPhonenNumber(true);
-            // verifyPhoneNumber('+91' + phoneNumber).then((phoneNumberVerificationCredential) => {
-            //   setVerifyingPhonenNumber(false);
-            //   props.navigation.navigate(AppRoutes.OTPVerification, {
-            //     phoneNumberVerificationCredential,
-            //     otpString,
-            //     phoneNumber: '+91' + phoneNumber,
-            //   });
-            // });
           }}
           disableButton={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
         >

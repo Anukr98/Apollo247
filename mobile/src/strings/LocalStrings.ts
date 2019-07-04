@@ -12,7 +12,7 @@ const login = {
   wrong_number: 'This seems like a wrong number',
   numberPrefix: '+91',
   great: 'great!',
-  type_otp_text: 'Now type in the OTP sent to you, to authentication',
+  type_otp_text: 'Now type in the OTP sent to you for authentication',
   resend_otp_text: 'Type in the OTP that has been resent to your mobile number',
   resend_opt: 'RESEND OTP',
   enter_correct_opt: 'Please enter the correct OTP',
