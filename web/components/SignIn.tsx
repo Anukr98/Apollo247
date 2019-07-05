@@ -1,17 +1,23 @@
+import {
+  CircularProgress,
+  Fab,
+  FormControl,
+  FormHelperText,
+  Grid,
+  InputAdornment,
+  Theme,
+  Typography,
+  Button,
+} from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress, Grid } from '@material-ui/core';
-import React, { useState, useEffect, useRef, RefObject, createRef } from 'react';
-import Typography from '@material-ui/core/Typography';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import FormControl from '@material-ui/core/FormControl';
-import Fab from '@material-ui/core/Fab';
-import { useAuth } from 'hooks/authHooks';
 import { AppInputField } from 'components/ui/AppInputField';
-import _times from 'lodash/times';
+import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
-import { isMobileNumberValid, isDigit } from 'utils/FormValidationUtils';
+import _times from 'lodash/times';
+import _uniqueId from 'lodash/uniqueId';
+import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
+import { isMobileNumberValid } from 'utils/FormValidationUtils';
 import { AppTextField } from './ui/AppTextField';
-import FormHelperText from '@material-ui/core/FormHelperText';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -77,53 +83,34 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-const recaptchaContainerId = 'recaptcha-container';
 const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
 const otpInputRefs: RefObject<HTMLInputElement>[] = [];
+const validPhoneMessage = 'OTP will be sent to this number';
+const invalidPhoneMessage = 'This seems like a wrong number';
 
 export const SignIn: React.FC = (props) => {
   const classes = useStyles();
-  const validPhoneMessage = 'OTP will be sent to this number';
-  const invalidPhoneMessage = 'This seems like a wrong number';
 
   const [mobileNumber, setMobileNumber] = useState<string>('');
+  const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
   const [otp, setOtp] = useState<number[]>([]);
   const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
-  const [
-    captchaVerifier,
-    setCaptchaVerifier,
-  ] = useState<firebase.auth.RecaptchaVerifier_Instance | null>(null); // eslint-disable-line camelcase
-  const [phoneNumberVerificationToken, setPhoneNumberVerificationToken] = useState<string>('');
-  const [captchaVerified, setCaptchaVerified] = useState<boolean>(false);
-  const [captchaLoaded, setCaptchaLoaded] = useState<boolean>(false);
-  const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const [phoneMessage, setPhoneMessage] = useState<string>(validPhoneMessage);
   const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
+  const placeRecaptchaAfterMe = useRef(null);
 
   const {
-    buildCaptchaVerifier,
-    verifyPhoneNumber,
+    sendOtp,
+    sendOtpError,
+    isSendingOtp,
+
     verifyOtp,
-    signIn,
-    isAuthenticating,
+    verifyOtpError,
+    isVerifyingOtp,
+
+    isSigningIn,
   } = useAuth();
-
-  useEffect(() => {
-    const captchaVerifier = buildCaptchaVerifier(recaptchaContainerId);
-    setCaptchaVerifier(captchaVerifier);
-  }, [buildCaptchaVerifier]);
-
-  useEffect(() => {
-    if (captchaVerifier) {
-      captchaVerifier.render().then(() => {
-        setCaptchaLoaded(true);
-        captchaVerifier.verify().then(() => {
-          setCaptchaVerified(true);
-        });
-      });
-    }
-  }, [captchaVerifier]);
 
   useEffect(() => {
     _times(numOtpDigits, (index) => {
@@ -131,14 +118,6 @@ export const SignIn: React.FC = (props) => {
       otpInputRefs[index] = inputRef;
     });
   }, []);
-
-  const captchaEl = (
-    <div
-      id={recaptchaContainerId}
-      className={classes.captcha}
-      style={captchaVerified ? { opacity: 0, position: 'absolute', top: 0, left: 0 } : undefined}
-    />
-  );
 
   return displayOtpInput ? (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
@@ -151,7 +130,7 @@ export const SignIn: React.FC = (props) => {
               autoFocus={index === 0}
               inputRef={otpInputRefs[index]}
               value={_isNumber(otp[index]) ? otp[index] : ''}
-              inputProps={{ type: 'number', maxLength: 1 }}
+              inputProps={{ type: 'tel', maxLength: 1 }}
               onChange={(e) => {
                 const newOtp = [...otp];
                 const num = parseInt(e.currentTarget.value, 10);
@@ -183,19 +162,24 @@ export const SignIn: React.FC = (props) => {
           </Grid>
         ))}
       </Grid>
-      {captchaEl}
+      {verifyOtpError && 'Invalid OTP'}
       <div className={classes.otpAction}>
         <Fab
           color="primary"
-          onClick={(e) =>
-            verifyOtp(phoneNumberVerificationToken, otp.join('')).then((otpVerificationToken) => {
-              signIn(otpVerificationToken);
-            })
-          }
+          onClick={() => verifyOtp(otp.join(''))}
+          disabled={isSendingOtp || otp.join('').length !== numOtpDigits}
         >
-          {isAuthenticating ? <CircularProgress /> : 'OK'}
+          {isSigningIn || isSendingOtp || isVerifyingOtp ? <CircularProgress /> : 'OK'}
         </Fab>
       </div>
+      <Button
+        variant="text"
+        disabled={isSendingOtp}
+        onClick={() => sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current)}
+      >
+        Resend OTP
+      </Button>
+      <div ref={placeRecaptchaAfterMe} />
     </div>
   ) : (
     <div className={classes.loginFormWrap}>
@@ -203,7 +187,8 @@ export const SignIn: React.FC = (props) => {
       <p>Please enter your mobile number to login</p>
       <FormControl fullWidth>
         <AppInputField
-          inputProps={{ type: 'number', maxLength: 10 }}
+          autoFocus
+          inputProps={{ type: 'tel', maxLength: 10 }}
           value={mobileNumber}
           onChange={(event) => {
             setMobileNumber(event.currentTarget.value);
@@ -220,7 +205,7 @@ export const SignIn: React.FC = (props) => {
               setShowErrorMessage(false);
             }
           }}
-          error={mobileNumber ? !isMobileNumberValid(mobileNumber) : false}
+          error={!isMobileNumberValid(mobileNumber)}
           onKeyPress={(e) => {
             if (isNaN(parseInt(e.key, 10))) {
               e.preventDefault();
@@ -233,34 +218,28 @@ export const SignIn: React.FC = (props) => {
           }
         />
         <FormHelperText component="div" className={classes.helpText} error={showErrorMessage}>
-          {phoneMessage}
+          {sendOtpError ? 'Error sending OTP' : phoneMessage}
         </FormHelperText>
       </FormControl>
-      {captchaEl}
       <div className={classes.action}>
         <Fab
           color="primary"
           aria-label="Sign in"
-          disabled={!(isMobileNumberValid(mobileNumber) && captchaVerified)}
-          onClick={(e) => {
-            setVerifyingPhoneNumber(true);
-            verifyPhoneNumber(`${mobileNumberPrefix}${mobileNumber}`, captchaVerifier).then(
-              (phoneNumberVerificationToken) => {
-                setPhoneNumberVerificationToken(phoneNumberVerificationToken);
-                setVerifyingPhoneNumber(false);
-                setDisplayOtpInput(true);
-              }
-            );
-          }}
+          disabled={!isMobileNumberValid(mobileNumber)}
+          onClick={() =>
+            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
+              setDisplayOtpInput(true)
+            )
+          }
         >
-          {verifyingPhoneNumber ? (
+          {isSendingOtp ? (
             <CircularProgress />
           ) : (
             <img src={require('images/ic_arrow_forward.svg')} />
           )}
         </Fab>
       </div>
-      {!captchaLoaded && <CircularProgress />}
+      <div ref={placeRecaptchaAfterMe} />
     </div>
   );
 };

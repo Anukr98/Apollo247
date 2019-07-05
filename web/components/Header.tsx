@@ -14,7 +14,7 @@ import { SignIn } from 'components/SignIn';
 import { Navigation } from 'components/Navigatiion';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 
-import { useIsLoggedIn, useLoginPopupState, useIsAuthenticating } from 'hooks/authHooks';
+import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -82,10 +82,9 @@ const useStyles = makeStyles((theme: Theme) => {
 export const Header: React.FC = (props) => {
   const classes = useStyles();
   const avatarRef = useRef(null);
-  const isAuthenticating = useIsAuthenticating();
-  const { loginPopupVisible, setLoginPopupVisible } = useLoginPopupState();
+  const { signOut, isSigningIn, isSignedIn } = useAuth();
+  const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const isLoggedIn = useIsLoggedIn();
 
   return (
     <header className={classes.header}>
@@ -94,41 +93,43 @@ export const Header: React.FC = (props) => {
           <img src={require('images/ic_logo.png')} />
         </Link>
       </div>
-      {isLoggedIn && <Navigation />}
-      <div className={`${classes.userAccount} ${isLoggedIn ? '' : classes.userAccountLogin}`}>
+      {isSignedIn && <Navigation />}
+      <div className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin}`}>
         <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup, isProtected }) => (
             <div
-              className={`${classes.userCircle} ${isLoggedIn ? classes.userActive : ''}`}
-              onClick={() => (isLoggedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
+              className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
+              onClick={() => (isSignedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
               ref={avatarRef}
             >
-              {isAuthenticating ? (
-                <CircularProgress />
-              ) : (
-                <img src={require('images/ic_account.svg')} />
-              )}
+              {isSigningIn ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
             </div>
           )}
         </ProtectedWithLoginPopup>
-        {/* The below dialog must be removed when the functionality is defined with Logged in User */}
-        {isLoggedIn ? (
-          <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-            <DialogTitle>Logged In</DialogTitle>
-            <DialogContent>
-              <DialogContentText>You are successfully Logged in with Apollo 24x7</DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setIsDialogOpen(false)} color="primary" autoFocus>
-                Close
-              </Button>
-            </DialogActions>
-          </Dialog>
+        {isSignedIn ? (
+          <>
+            <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+              <DialogTitle>Logged In</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  You are successfully Logged in with Apollo 24x7
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setIsDialogOpen(false)} color="primary" autoFocus>
+                  Close
+                </Button>
+              </DialogActions>
+            </Dialog>
+            <Button variant="text" size="small" onClick={() => signOut()}>
+              Sign out
+            </Button>
+          </>
         ) : (
           <Popover
-            open={loginPopupVisible}
+            open={isLoginPopupVisible}
             anchorEl={avatarRef.current}
-            onClose={() => setLoginPopupVisible(false)}
+            onClose={() => setIsLoginPopupVisible(false)}
             anchorOrigin={{
               vertical: 'top',
               horizontal: 'right',

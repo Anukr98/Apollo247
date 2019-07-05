@@ -16,61 +16,65 @@ import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { Relation } from 'graphql/types/globalTypes';
+import _uniqueId from 'lodash/uniqueId';
 
-export interface AuthProviderProps {
-  currentPatient: PatientSignIn_patientSignIn_patients | null;
-  setCurrentPatient: ((newCurrentPatient: PatientSignIn_patientSignIn_patients) => void) | null;
-  loggedInPatients: PatientSignIn_patientSignIn_patients[] | null;
-  isAuthenticating: boolean;
-  buildCaptchaVerifier:
-    | ((recaptchaContainerId: HTMLElement['id']) => firebase.auth.RecaptchaVerifier_Instance) // eslint-disable-line camelcase
-    | null;
-  verifyPhoneNumber:
-    | ((
-        mobileNumber: string,
-        captchaVerifier: firebase.auth.RecaptchaVerifier_Instance | null // eslint-disable-line camelcase
-      ) => ReturnType<firebase.auth.PhoneAuthProvider_Instance['verifyPhoneNumber']>) // eslint-disable-line camelcase
-    | null;
-  verifyOtp:
-    | ((phoneNumberVerificationToken: string, otp: string) => Promise<firebase.auth.AuthCredential>)
-    | null;
-  signIn: ((otpVerificationToken: firebase.auth.AuthCredential) => Promise<void>) | null;
-  signOut: (() => any) | null;
-  loginPopupVisible: boolean;
-  setLoginPopupVisible: ((loginPopupVisible: boolean) => any) | null;
+function wait<R, E>(promise: Promise<R>): [R, E] {
+  return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
 }
 
-export const AuthContext = React.createContext<AuthProviderProps>({
+export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients> {
+  currentPatient: Patient | null;
+  allCurrentPatients: Patient[] | null;
+  setCurrentPatient: ((p: Patient) => void) | null;
+
+  sendOtp: ((phoneNumber: string, captchaPlacement: HTMLElement | null) => Promise<unknown>) | null;
+  sendOtpError: boolean;
+  isSendingOtp: boolean;
+
+  verifyOtp: ((otp: string) => void) | null;
+  verifyOtpError: boolean;
+  isVerifyingOtp: boolean;
+
+  signInError: boolean;
+  isSigningIn: boolean;
+  signOut: (() => Promise<void>) | null;
+
+  isLoginPopupVisible: boolean;
+  setIsLoginPopupVisible: ((isLoginPopupVisible: boolean) => void) | null;
+}
+
+export const AuthContext = React.createContext<AuthContextProps>({
   currentPatient: null,
   setCurrentPatient: null,
-  loggedInPatients: null,
-  isAuthenticating: true,
-  buildCaptchaVerifier: null,
-  verifyPhoneNumber: null,
-  verifyOtp: null,
-  signIn: null,
-  signOut: null,
-  loginPopupVisible: false,
-  setLoginPopupVisible: null,
-});
+  allCurrentPatients: null,
 
-const userIsValid = (user: firebase.User | null) => user && user.phoneNumber;
+  sendOtp: null,
+  sendOtpError: false,
+  isSendingOtp: false,
+
+  verifyOtp: null,
+  verifyOtpError: false,
+  isVerifyingOtp: false,
+
+  signInError: false,
+  isSigningIn: true,
+  signOut: null,
+
+  isLoginPopupVisible: false,
+  setIsLoginPopupVisible: null,
+});
 
 let apolloClient: ApolloClient<any>;
 const buildApolloClient = (authToken: string) => {
   const errorLink = onError(({ networkError, operation, forward }: ErrorResponse) => {
-    // // There's a bug in the apollo typedefs and `statusCode` is not recognized, but it's there
-    // if (networkError && (networkError as any).statusCode === 401) {
-    //   window.location.reload();
-    // }
-    console.log(networkError, operation);
+    // There's a bug in the apollo typedefs and `statusCode` is not recognized, but it's there
+    if (networkError && (networkError as any).statusCode === 401) {
+      console.log(networkError, operation);
+    }
     return forward(operation);
   });
   const authLink = setContext((_, { headers }) => ({
-    headers: {
-      ...headers,
-      Authorization: authToken,
-    },
+    headers: { ...headers, Authorization: authToken },
   }));
   const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
   const link = errorLink.concat(authLink).concat(httpLink);
@@ -78,108 +82,133 @@ const buildApolloClient = (authToken: string) => {
   return new ApolloClient({ link, cache });
 };
 
+const projectId = process.env.FIREBASE_PROJECT_ID;
+const app = firebase.initializeApp({
+  projectId,
+  apiKey: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  appId: '1:537093214409:web:4eec27a7bc6bc1c8',
+  authDomain: `${projectId}.firebaseapp.com`,
+  databaseURL: `https://${projectId}.firebaseio.com`,
+  messagingSenderId: '537093214409',
+  storageBucket: '',
+});
+
+let otpVerifier: firebase.auth.ConfirmationResult;
+
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
-  apolloClient = buildApolloClient(authToken);
+    apolloClient = buildApolloClient(authToken);
 
-  const [loggedInPatients, setLoggedInPatients] = useState<AuthProviderProps['loggedInPatients']>(
-    null
-  );
-  const [currentPatient, setCurrentPatient] = useState<AuthProviderProps['currentPatient']>(null);
-  const [isAuthenticating, setIsAuthenticating] = useState<AuthProviderProps['isAuthenticating']>(
-    true
-  );
-  const [buildCaptchaVerifier, setBuildCaptchaVerifier] = useState<
-    AuthProviderProps['buildCaptchaVerifier']
+  const [allCurrentPatients, setAllCurrentPatients] = useState<
+    AuthContextProps['allCurrentPatients']
   >(null);
-  const [verifyPhoneNumber, setVerifyPhoneNumber] = useState<
-    AuthProviderProps['verifyPhoneNumber']
-  >(null);
-  const [verifyOtp, setVerifyOtp] = useState<AuthProviderProps['verifyOtp']>(null);
-  const [signIn, setSignIn] = useState<AuthProviderProps['signIn']>(null);
-  const [signOut, setSignOut] = useState<AuthProviderProps['signOut']>(null);
-  const [loginPopupVisible, setLoginPopupVisible] = useState<
-    AuthProviderProps['loginPopupVisible']
+  const [currentPatient, setCurrentPatient] = useState<AuthContextProps['currentPatient']>(null);
+
+  const [isSendingOtp, setIsSendingOtp] = useState<AuthContextProps['isSendingOtp']>(false);
+  const [sendOtpError, setSendOtpError] = useState<AuthContextProps['sendOtpError']>(false);
+
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState<AuthContextProps['isVerifyingOtp']>(false);
+  const [verifyOtpError, setVerifyOtpError] = useState<AuthContextProps['verifyOtpError']>(false);
+
+  const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(true);
+  const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
+
+  const [isLoginPopupVisible, setIsLoginPopupVisible] = useState<
+    AuthContextProps['isLoginPopupVisible']
   >(false);
 
-  useEffect(() => {
-    const projectId = process.env.FIREBASE_PROJECT_ID;
-    const app = firebase.initializeApp({
-      projectId,
-      apiKey: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-      appId: '1:537093214409:web:4eec27a7bc6bc1c8',
-      authDomain: `${projectId}.firebaseapp.com`,
-      databaseURL: `https://${projectId}.firebaseio.com`,
-      messagingSenderId: '537093214409',
-      storageBucket: '',
-    });
-    const auth = app.auth();
-
-    const buildCaptchaVerifierFunc = () => (recaptchaContainerId: HTMLElement['id']) => {
-      return new firebase.auth.RecaptchaVerifier(recaptchaContainerId);
-    };
-    setBuildCaptchaVerifier(buildCaptchaVerifierFunc);
-
-    const verifyPhoneNumberFunc = () => (
-      mobileNumber: string,
-      captchaVerifier: firebase.auth.RecaptchaVerifier_Instance // eslint-disable-line camelcase
-    ) => {
-      const provider = new firebase.auth.PhoneAuthProvider();
-      return provider.verifyPhoneNumber(mobileNumber, captchaVerifier);
-    };
-    setVerifyPhoneNumber(verifyPhoneNumberFunc);
-
-    const verifyOtpFunc = () => (phoneNumberVerificationToken: string, otp: string) => {
-      const otpVerificationToken = firebase.auth.PhoneAuthProvider.credential(
-        phoneNumberVerificationToken,
-        otp
-      );
-      return Promise.resolve(otpVerificationToken);
-    };
-    setVerifyOtp(verifyOtpFunc);
-
-    const signInFunc = () => (otpVerificationToken: firebase.auth.AuthCredential) => {
-      setIsAuthenticating(true);
-      return firebase
-        .auth()
-        .signInWithCredential(otpVerificationToken)
-        .then(() => {}); // Never expose the raw firebase user object
-    };
-    setSignIn(signInFunc);
-
-    const signOutFunc = () => () => auth.signOut();
-    setSignOut(signOutFunc);
-
-    auth.onAuthStateChanged(async (updatedUser) => {
-      // There is no hook to know when firebase is loading, but we know this fires when it has attempted
-      // (whether automated from an existing cache or from an actual user-initiated sign in click)
-      // Set the default `authenticating` value to true, and clear it out in all cases here
-      if (!userIsValid(updatedUser)) {
-        setLoggedInPatients(null);
-        setIsAuthenticating(false);
+  const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
+    return new Promise((resolve, reject) => {
+      if (!captchaPlacement) {
+        setSendOtpError(true);
+        reject();
         return;
       }
-
-      const updatedToken = await updatedUser!.getIdToken();
-      setAuthToken(updatedToken);
-
-      const patientSignInResult = await apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
-        mutation: PATIENT_SIGN_IN,
-        variables: { jwt: updatedToken },
+      setIsSendingOtp(true);
+      // Create a new unique captcha every time because (apparently) captcha.clear() is flaky,
+      // and can eventually result in a 'recaptcha already assigned to this element' error.
+      const captchaContainer = document.createElement('div');
+      const captchaId = _uniqueId('captcha-container');
+      captchaContainer.id = captchaId;
+      captchaPlacement.parentNode!.insertBefore(captchaContainer, captchaPlacement.nextSibling);
+      const captcha = new firebase.auth.RecaptchaVerifier(captchaId, {
+        size: 'invisible',
+        callback: async () => {
+          const [phoneAuthResult, phoneAuthError] = await wait(
+            app.auth().signInWithPhoneNumber(phoneNumber, captcha)
+          );
+          setIsSendingOtp(false);
+          if (phoneAuthError) {
+            setSendOtpError(true);
+            reject();
+            return;
+          }
+          otpVerifier = phoneAuthResult;
+          setSendOtpError(false);
+          captcha.clear();
+          resolve();
+        },
+        'expired-callback': () => {
+          setSendOtpError(true);
+          captcha.clear();
+          reject();
+        },
       });
+      captcha.verify();
+    }).finally(() => {
+      setIsSendingOtp(false);
+    });
+  };
 
-      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.errors) {
-        const errMsg = patientSignInResult.data.patientSignIn.errors.messages[0];
-        console.log(errMsg);
-      }
-      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
-        const patients = patientSignInResult.data.patientSignIn.patients;
+  const verifyOtp = async (otp: string) => {
+    if (!otpVerifier) {
+      setSendOtpError(true);
+      return;
+    }
+    setIsVerifyingOtp(true);
+    const [otpAuthResult, otpError] = await wait(otpVerifier.confirm(otp));
+    setVerifyOtpError(otpError || !otpAuthResult.user);
+    setIsVerifyingOtp(false);
+  };
+
+  const signOut = () =>
+    app
+      .auth()
+      .signOut()
+      .then(() => window.location.reload());
+
+  useEffect(() => {
+    app.auth().onAuthStateChanged(async (user) => {
+      if (user) {
+        const [jwt, jwtError] = await wait(user.getIdToken());
+        if (jwtError || !jwt) {
+          setIsSigningIn(false);
+          setSignInError(true);
+          app.auth().signOut();
+          return;
+        }
+        setAuthToken(jwt);
+
+        setIsSigningIn(true);
+        const [signInResult, signInError] = await wait(
+          apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
+            mutation: PATIENT_SIGN_IN,
+            variables: { jwt },
+          })
+        );
+        if (signInError || !signInResult.data || !signInResult.data.patientSignIn.patients) {
+          setSignInError(true);
+          setIsSigningIn(false);
+          app.auth().signOut();
+          return;
+        }
+        const patients = signInResult.data.patientSignIn.patients;
         const me = patients.find((p) => p.relation === Relation.ME) || patients[0];
-        setLoggedInPatients(patients);
+        setAllCurrentPatients(patients);
         setCurrentPatient(me);
+        setSignInError(false);
       }
-
-      setIsAuthenticating(false);
+      setIsSigningIn(false);
     });
   }, []);
 
@@ -190,15 +219,22 @@ export const AuthProvider: React.FC = (props) => {
           value={{
             currentPatient,
             setCurrentPatient,
-            loggedInPatients,
-            isAuthenticating,
-            buildCaptchaVerifier,
-            verifyPhoneNumber,
+            allCurrentPatients,
+
+            sendOtp,
+            sendOtpError,
+            isSendingOtp,
+
             verifyOtp,
-            signIn,
+            verifyOtpError,
+            isVerifyingOtp,
+
+            signInError,
+            isSigningIn,
             signOut,
-            loginPopupVisible,
-            setLoginPopupVisible,
+
+            isLoginPopupVisible,
+            setIsLoginPopupVisible,
           }}
         >
           {props.children}

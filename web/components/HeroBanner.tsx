@@ -6,8 +6,7 @@ import { AppButton } from 'components/ui/AppButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import { AppSelectField } from 'components/ui/AppSelectField';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
-import _startCase from 'lodash/startCase';
-import _toLower from 'lodash/toLower';
+import _isEmpty from 'lodash/isEmpty';
 import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
 import { useAuth } from 'hooks/authHooks';
 
@@ -122,24 +121,24 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const HeroBanner: React.FC = () => {
   const classes = useStyles();
-  const { loggedInPatients, currentPatient, setCurrentPatient } = useAuth();
+  const { allCurrentPatients, currentPatient, setCurrentPatient } = useAuth();
 
   return (
     <div className={classes.heroBanner}>
       <div className={classes.bannerInfo}>
-        {currentPatient && loggedInPatients && currentPatient.firstName !== '' ? (
+        {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
           <Typography variant="h1">
             <span>hello</span>
             <AppSelectField
               value={currentPatient.id}
               onChange={(e) => {
                 const newId = e.target.value as PatientSignIn_patientSignIn_patients['id'];
-                const newCurrentPatient = loggedInPatients.find((p) => p.id === newId);
+                const newCurrentPatient = allCurrentPatients.find((p) => p.id === newId);
                 if (newCurrentPatient) setCurrentPatient(newCurrentPatient);
               }}
               classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
             >
-              {loggedInPatients.map((patient) => (
+              {allCurrentPatients.map((patient) => (
                 <MenuItem
                   selected={patient.id === currentPatient.id}
                   value={patient.id}

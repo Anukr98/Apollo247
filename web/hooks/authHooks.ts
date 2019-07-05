@@ -1,41 +1,55 @@
 import { useContext } from 'react';
-import { AuthContext, AuthProviderProps } from 'components/AuthProvider';
-import { Relation } from 'graphql/types/globalTypes';
+import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 
-export const useCurrentPatient = () => useContext(AuthContext).currentPatient;
-export const useIsLoggedIn = () => useLoggedInPatients() != null;
-export const useIsAuthenticating = () => useContext(AuthContext).isAuthenticating;
-export const useLoggedInPatients = () => useContext(AuthContext).loggedInPatients;
+const useAuthContext = () => useContext(AuthContext);
+
+export const useCurrentPatient = () => useAuthContext().currentPatient;
+export const useAllCurrentPatients = () => useAuthContext().allCurrentPatients;
+export const useIsSignedIn = () => useAllCurrentPatients() != null;
+
 export const useAuth = () => {
   const currentPatient = useCurrentPatient();
-  const setCurrentPatient = useContext(AuthContext).setCurrentPatient!;
-  const isLoggedIn = useIsLoggedIn();
-  const isAuthenticating = useIsAuthenticating();
-  const loggedInPatients = useContext(AuthContext).loggedInPatients;
-  const buildCaptchaVerifier = useContext(AuthContext).buildCaptchaVerifier!;
-  const verifyPhoneNumber = useContext(AuthContext).verifyPhoneNumber!;
-  const verifyOtp = useContext(AuthContext).verifyOtp!;
-  const signIn = useContext(AuthContext).signIn!;
-  const signOut = useContext(AuthContext).signOut!;
+  const setCurrentPatient = useAuthContext().setCurrentPatient!;
+  const allCurrentPatients = useAllCurrentPatients();
+
+  const verifyOtp = useAuthContext().verifyOtp!;
+  const verifyOtpError = useAuthContext().verifyOtpError!;
+  const isVerifyingOtp = useAuthContext().isVerifyingOtp!;
+
+  const sendOtp = useAuthContext().sendOtp!;
+  const sendOtpError = useAuthContext().sendOtpError;
+  const isSendingOtp = useAuthContext().isSendingOtp;
+
+  const isSignedIn = useIsSignedIn();
+  const signInError = useAuthContext().signInError;
+  const isSigningIn = useAuthContext().isSigningIn;
+  const signOut = useAuthContext().signOut!;
+
   return {
     currentPatient,
     setCurrentPatient,
-    isAuthenticating,
-    isLoggedIn,
-    loggedInPatients,
-    buildCaptchaVerifier,
-    verifyPhoneNumber,
+    allCurrentPatients,
+
     verifyOtp,
-    signIn,
+    verifyOtpError,
+    isVerifyingOtp,
+
+    sendOtp,
+    sendOtpError,
+    isSendingOtp,
+
+    isSignedIn,
+    signInError,
+    isSigningIn,
     signOut,
   };
 };
 
 export const useLoginPopupState = (): {
-  loginPopupVisible: AuthProviderProps['loginPopupVisible'];
-  setLoginPopupVisible: NonNullable<AuthProviderProps['setLoginPopupVisible']>;
+  isLoginPopupVisible: AuthContextProps['isLoginPopupVisible'];
+  setIsLoginPopupVisible: NonNullable<AuthContextProps['setIsLoginPopupVisible']>;
 } => {
-  const loginPopupVisible = useContext(AuthContext).loginPopupVisible;
-  const setLoginPopupVisible = useContext(AuthContext).setLoginPopupVisible!;
-  return { loginPopupVisible, setLoginPopupVisible };
+  const isLoginPopupVisible = useContext(AuthContext).isLoginPopupVisible;
+  const setIsLoginPopupVisible = useContext(AuthContext).setIsLoginPopupVisible!;
+  return { isLoginPopupVisible, setIsLoginPopupVisible };
 };

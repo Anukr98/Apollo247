@@ -1,12 +1,11 @@
+import { BottomNavigation, Theme } from '@material-ui/core';
+import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, BottomNavigation } from '@material-ui/core';
-import React from 'react';
 import { Header } from 'components/Header';
 import { HeroBanner } from 'components/HeroBanner';
-import { ServiceList } from 'components/ServiceList';
 import { ManageProfile } from 'components/ManageProfile';
-import { useIsLoggedIn } from 'hooks/authHooks';
-import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
+import { ServiceList } from 'components/ServiceList';
+import React from 'react';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -61,7 +60,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const Welcome: React.FC = (props) => {
   const classes = useStyles();
-  const isUserLoggedIn = useIsLoggedIn();
 
   return (
     <div className={classes.welcome}>

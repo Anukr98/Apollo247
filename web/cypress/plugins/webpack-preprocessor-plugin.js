@@ -4,7 +4,7 @@ const webpack = require('webpack');
 
 module.exports = (cypressConfig) => {
   // We need to make sure to set these `process.env` vars _before_ requiring the `webpack.config`!
-  ['NODE_ENV', 'WEB_CLIENT_PORT', 'API_GATEWAY_PORT', 'FIREBASE_PROJECT_NAME'].forEach(
+  ['NODE_ENV', 'WEB_CLIENT_PORT', 'API_GATEWAY_PORT', 'FIREBASE_PROJECT_ID'].forEach(
     (VAR) => (process.env[VAR] = cypressConfig.env[VAR])
   );
   const webpackConfig = require('../../webpack.config');

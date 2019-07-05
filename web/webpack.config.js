@@ -13,7 +13,7 @@ const nodeModulesDir = path.join(__dirname, 'node_modules');
 
 const plugins = [
   new webpack.DefinePlugin(
-    ['NODE_ENV', 'WEB_CLIENT_PORT', 'API_GATEWAY_PORT', 'FIREBASE_PROJECT_NAME'].reduce(
+    ['NODE_ENV', 'WEB_CLIENT_PORT', 'API_GATEWAY_PORT', 'FIREBASE_PROJECT_ID'].reduce(
       (result, VAR) => ({
         ...result,
         [`process.env.${VAR}`]: JSON.stringify(process.env[VAR].trim()),
