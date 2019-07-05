@@ -15,13 +15,13 @@ import {
   TouchableOpacity,
   View,
   AsyncStorage,
-  Platform,
 } from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import firebase from 'react-native-firebase';
 import { NavigationScreenProps } from 'react-navigation';
 const { height } = Dimensions.get('window');
 import SplashScreen from 'react-native-splash-screen';
+import { useAuth } from 'app/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
   container: {
@@ -131,21 +131,32 @@ const slides: Slide[] = [
 export interface OnboardingProps extends NavigationScreenProps {}
 export const Onboarding: React.FC<OnboardingProps> = (props) => {
   const appIntroSliderRef = React.useRef<any>(null);
+  const { currentUser } = useAuth();
 
   useEffect(() => {
-    async function fetchData() {
-      firebase.analytics().setCurrentScreen('Onboarding');
-      const onboarding = await AsyncStorage.getItem('onboarding');
-      if (onboarding == 'true') {
-        props.navigation.replace(AppRoutes.Login);
-      }
-    }
-    fetchData();
-
-    setTimeout(() => {
-      SplashScreen.hide();
-    }, 100);
+    firebase.analytics().setCurrentScreen('Onboarding');
   });
+
+  useEffect(() => {
+    console.log('OnboardingProps currentUser', currentUser);
+
+    // async function fetchData() {
+    //   firebase.analytics().setCurrentScreen('Onboarding');
+    //   const onboarding = await AsyncStorage.getItem('onboarding');
+    //   if (onboarding == 'true') {
+    //     props.navigation.replace(AppRoutes.Login);
+    //   }
+    // }
+    // fetchData();
+
+    if (currentUser) {
+      props.navigation.replace(AppRoutes.TabBar);
+
+      setTimeout(() => {
+        SplashScreen.hide();
+      }, 100);
+    }
+  }, [currentUser, props.navigation]);
 
   return (
     <SafeAreaView style={styles.container}>

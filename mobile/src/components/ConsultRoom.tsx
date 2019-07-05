@@ -12,6 +12,7 @@ import {
   Text,
   View,
   TouchableOpacity,
+  AsyncStorage,
 } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
@@ -216,18 +217,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [userName, setuserName] = useState<string>('');
   const { currentUser, analytics, currentProfiles } = useAuth();
-  const [userPropsName, setuserPropsName] = useState<string>('');
 
   useEffect(() => {
-    analytics.setCurrentScreen(AppRoutes.ConsultRoom);
-    // const userName = currentUser.firstName + ' ' + currentUser.lastName;
-    const { name } = props.navigation.state.params!;
+    async function fetchData() {
+      const patient = await AsyncStorage.getItem('patient');
+      const patientProfiles = await AsyncStorage.getItem('patientProfiles');
 
-    let userName =
-      currentUser && currentUser.firstName ? currentUser.firstName.split(' ')[0] : name;
-    userName = userName.toLowerCase();
-    setuserName(userName);
-    setuserPropsName(name);
+      console.log('patient', patient);
+      console.log('patientProfiles', patientProfiles);
+
+      let userName =
+        currentUser && currentUser.firstName ? currentUser.firstName.split(' ')[0] : '';
+      userName = userName.toLowerCase();
+      setuserName(userName);
+
+      console.log('currentProfiles', currentProfiles);
+    }
+    fetchData();
+
+    analytics.setCurrentScreen(AppRoutes.ConsultRoom);
   }, [currentUser, currentProfiles, analytics, userName, props.navigation.state.params]);
 
   useEffect(() => {});
@@ -270,7 +278,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   setShowMenu(false);
                 }}
               >
-                {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : userPropsName}
+                {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : ''}
               </Text>
             </View>
           ))}

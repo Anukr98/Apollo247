@@ -236,7 +236,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               if (patient && patient.uhid && patient.uhid !== '') {
                 props.navigation.navigate(AppRoutes.MultiSignup);
               } else {
-                props.navigation.navigate(AppRoutes.SignUp);
+                if (patient.firstName.length != 0) {
+                  props.navigation.navigate(AppRoutes.ConsultRoom);
+                } else {
+                  props.navigation.navigate(AppRoutes.SignUp);
+                }
               }
             }
           } else {
