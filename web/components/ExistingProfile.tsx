@@ -214,16 +214,16 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
               type="submit"
               onClick={() => {
                 // WE DONT NEED TO IMPLEMENT THIS UNTIL THE NEXT SPRINT
-                // patients.forEach((patient) => {
-                //   mutate({
-                //     variables: {
-                //       patientInput: {
-                //         id: patient.id,
-                //         relation: patient.relation,
-                //       },
-                //     },
-                //   });
-                // });
+                patients.forEach((patient) => {
+                  mutate({
+                    variables: {
+                      patientInput: {
+                        id: patient.id,
+                        relation: patient.relation,
+                      },
+                    },
+                  });
+                });
               }}
               disabled={disabled}
               fullWidth
