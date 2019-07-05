@@ -1,11 +1,9 @@
 import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm';
 
-export enum Sex {
-  NOT_KNOWN = 'NOT_KNOWN',
+export enum Gender {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
   OTHER = 'OTHER',
-  NOT_APPLICABLE = 'NOT_APPLICABLE',
 }
 
 export enum Relation {
@@ -43,8 +41,8 @@ export class Patient extends BaseEntity {
   @Column()
   lastName: string;
 
-  @Column()
-  sex: Sex;
+  @Column({ nullable: true })
+  gender: Gender;
 
   @Column()
   mobileNumber: string;

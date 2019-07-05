@@ -119,7 +119,7 @@ const App: React.FC = () => {
   const classes = useStyles();
   const { signInError } = useAuth();
   useEffect(() => {
-    if (signInError) window.alert('Error signging in :(');
+    if (signInError) window.alert('Error signing in :(');
   }, [signInError]);
   return (
     <div className={classes.app}>
