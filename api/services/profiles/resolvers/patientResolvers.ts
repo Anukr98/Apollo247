@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'profiles/profiles-service';
-import { Patient, Sex, Relation, ErrorMsgs } from 'profiles/entity/patient';
+import { Patient, ErrorMsgs } from 'profiles/entity/patient';
 import fetch from 'node-fetch';
 import { auth } from 'firebase-admin';
 import { BaseEntity, QueryFailedError } from 'typeorm';
@@ -13,12 +13,10 @@ import {
 } from 'services/types/prism';
 
 export const patientTypeDefs = gql`
-  enum Sex {
-    NOT_KNOWN
+  enum Gender {
     MALE
     FEMALE
     OTHER
-    NOT_APPLICABLE
   }
 
   enum Relation {
@@ -47,7 +45,7 @@ export const patientTypeDefs = gql`
     firstName: String
     lastName: String
     mobileNumber: String
-    sex: Sex
+    gender: Gender
     uhid: String
     emailAddress: String
     dateOfBirth: String
@@ -75,7 +73,7 @@ export const patientTypeDefs = gql`
     firstName: String
     lastName: String
     mobileNumber: String
-    sex: Sex
+    gender: Gender
     uhid: String
     emailAddress: String
     dateOfBirth: String
@@ -125,7 +123,6 @@ async function updateEntity<E extends BaseEntity>(
 
 const getPatients = () => ({ patients: [] });
 
-//patient signIn resolver
 const patientSignIn: Resolver<any, { jwt: string }> = async (
   parent,
   args,
@@ -225,7 +222,7 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
             firebaseId: firebaseUid,
             firstName: data.userName,
             lastName: '',
-            sex: Sex.NOT_KNOWN,
+            gender: undefined,
             mobileNumber,
             uhid: data.UHID,
           }
@@ -238,7 +235,7 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
             firebaseId: firebaseUid,
             firstName: '',
             lastName: '',
-            sex: Sex.NOT_KNOWN,
+            gender: undefined,
             mobileNumber,
             uhid: '',
           }

@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { UpdatePatientInput, Relation, Sex } from "./globalTypes";
+import { UpdatePatientInput, Relation, Gender } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: updatePatient
@@ -15,7 +15,7 @@ export interface updatePatient_updatePatient_patient {
   firstName: string | null;
   lastName: string | null;
   relation: Relation | null;
-  sex: Sex | null;
+  gender: Gender | null;
   uhid: string | null;
   dateOfBirth: string | null;
 }

@@ -9,7 +9,7 @@ export const GET_PATIENTS = gql`
         firstName
         lastName
         relation
-        sex
+        gender
         uhid
         dateOfBirth
       }
@@ -26,7 +26,7 @@ export const PATIENT_SIGN_IN = gql`
         firstName
         lastName
         relation
-        sex
+        gender
         uhid
         dateOfBirth
       }
@@ -46,7 +46,7 @@ export const UPDATE_PATIENT = gql`
         firstName
         lastName
         relation
-        sex
+        gender
         uhid
         dateOfBirth
       }
