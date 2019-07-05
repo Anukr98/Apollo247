@@ -94,7 +94,7 @@ export const Header: React.FC = (props) => {
       </div>
       {isSignedIn && <Navigation />}
       <div className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin}`}>
-        <ProtectedWithLoginPopup>
+      {!isSignedIn && <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup, isProtected }) => (
             <div
               className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
@@ -104,7 +104,7 @@ export const Header: React.FC = (props) => {
               {isSigningIn ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
             </div>
           )}
-        </ProtectedWithLoginPopup>
+        </ProtectedWithLoginPopup>}
         {isSignedIn ? (
           <>
             <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
@@ -120,9 +120,12 @@ export const Header: React.FC = (props) => {
                 </Button>
               </DialogActions>
             </Dialog>
-            <Button variant="text" size="small" onClick={() => signOut()}>
-              Sign out
-            </Button>
+            <div
+              className={`${classes.userCircle} ${classes.userActive}`}
+              onClick={() => signOut()}
+            >
+              <img src={require('images/ic_account.svg')} />
+            </div>
           </>
         ) : (
           <Popover
