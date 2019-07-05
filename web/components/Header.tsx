@@ -45,21 +45,20 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
-      '& img': {
-        marginTop: 10,
-      },
     },
     userAccountLogin: {
       marginLeft: 'auto',
     },
     userCircle: {
-      display: 'block',
+      display: 'flex',
       width: 48,
       height: 48,
       backgroundColor: '#afc3c9',
       borderRadius: '50%',
       textAlign: 'center',
       cursor: 'pointer',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     userActive: {
       backgroundColor: theme.palette.secondary.dark,

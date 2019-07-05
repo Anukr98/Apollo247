@@ -8,6 +8,7 @@ import { Sex as GENDER } from 'graphql/types/globalTypes';
 import React, { useState } from 'react';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { isNameValid, isEmailValid, isDobValid } from 'utils/FormValidationUtils';
+import _includes from 'lodash/includes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -79,23 +80,35 @@ const useStyles = makeStyles((theme: Theme) => {
     hideMessage: {
       display: 'none',
     },
+    btnActive: {
+      backgroundColor: '#00b38e !important',
+      color: '#fff !important',
+    },
   });
 });
 
 export const NewProfile: React.FC = (props) => {
   const classes = useStyles();
   const genders = Object.values(GENDER).filter((g) => g != 'NOT_APPLICABLE' && g != 'NOT_KNOWN');
-  const [showFirstNameError, setShowFirstNameError] = useState<boolean>(false);
-  const [showLastNameError, setShowLastNameError] = useState<boolean>(false);
-  const [showDobError, setDobError] = useState<boolean>(false);
-  const [showEmailIdError, setShowEmailIdError] = useState<boolean>(false);
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [dateOfBirth, setDateOfBirth] = useState<string>('');
   const [emailAddress, setEmailAddress] = useState<string>('');
+  const [selectedGender, setGender] = useState<string>('');
 
   const submitDisabled =
-    firstName.length > 2 && lastName.length > 2 && dateOfBirth.length === 10 ? false : true;
+    firstName.length > 2 &&
+    lastName.length > 2 &&
+    (dateOfBirth.length === 10 && isDobValid(dateOfBirth)) &&
+    (emailAddress.length === 0 || (emailAddress.length > 0 && isEmailValid(emailAddress))) &&
+    _includes(genders, selectedGender)
+      ? false
+      : true;
+
+  const showFirstNameError = firstName.length > 0 && !isNameValid(firstName);
+  const showLastNameError = lastName.length > 0 && !isNameValid(lastName);
+  const showDobError = dateOfBirth.length > 0 && !isDobValid(dateOfBirth);
+  const showEmailIdError = emailAddress.length > 0 && !isEmailValid(emailAddress);
 
   return (
     <div className={classes.signUpPop}>
@@ -115,15 +128,11 @@ export const NewProfile: React.FC = (props) => {
                 label="First Name"
                 placeholder="Example, Jonathan"
                 value={firstName}
-                error={firstName ? !isNameValid(firstName) : false}
+                error={showFirstNameError}
                 onChange={(e) => {
                   setFirstName(e.target.value);
-                  if (!isNameValid(e.target.value)) {
-                    setShowFirstNameError(true);
-                  } else {
-                    setShowFirstNameError(false);
-                  }
                 }}
+                inputProps={{ maxLength: 20 }}
               />
               <FormHelperText
                 className={showFirstNameError ? classes.showMessage : classes.hideMessage}
@@ -138,15 +147,11 @@ export const NewProfile: React.FC = (props) => {
                 label="Last Name"
                 placeholder="Example, Donut"
                 value={lastName}
-                error={lastName ? !isNameValid(lastName) : false}
+                error={showLastNameError}
                 onChange={(e) => {
                   setLastName(e.target.value);
-                  if (!isNameValid(e.target.value)) {
-                    setShowLastNameError(true);
-                  } else {
-                    setShowLastNameError(false);
-                  }
                 }}
+                inputProps={{ maxLength: 20 }}
               />
               <FormHelperText
                 className={showLastNameError ? classes.showMessage : classes.hideMessage}
@@ -161,16 +166,11 @@ export const NewProfile: React.FC = (props) => {
                 label="Date Of Birth"
                 placeholder="dd/mm/yyyy"
                 value={dateOfBirth}
-                error={dateOfBirth ? !isDobValid(dateOfBirth) : false}
+                error={showDobError}
                 onChange={(e) => {
                   setDateOfBirth(e.target.value);
-                  if (!isDobValid(e.target.value)) {
-                    setDobError(true);
-                  } else {
-                    setDobError(false);
-                  }
                 }}
-                inputProps={{ type: 'date' }}
+                inputProps={{ type: 'text', maxLength: 10 }}
               />
               <FormHelperText
                 className={showDobError ? classes.showMessage : classes.hideMessage}
@@ -185,7 +185,16 @@ export const NewProfile: React.FC = (props) => {
               <Grid container spacing={2} className={classes.btnGroup}>
                 {genders.map((gender) => (
                   <Grid item xs={4} sm={4} key={gender}>
-                    <AppButton variant="contained">{gender}</AppButton>
+                    <AppButton
+                      variant="contained"
+                      value={gender}
+                      classes={selectedGender === gender ? { root: classes.btnActive } : {}}
+                      onClick={(e) => {
+                        setGender(e.currentTarget.value);
+                      }}
+                    >
+                      {gender}
+                    </AppButton>
                   </Grid>
                 ))}
               </Grid>
@@ -195,14 +204,9 @@ export const NewProfile: React.FC = (props) => {
                 label="Email Address (Optional)"
                 placeholder="name@email.com"
                 value={emailAddress}
-                error={emailAddress ? !isEmailValid(emailAddress) : false}
+                error={showEmailIdError}
                 onChange={(e) => {
                   setEmailAddress(e.target.value);
-                  if (e.target.value !== '' && !isEmailValid(e.target.value)) {
-                    setShowEmailIdError(true);
-                  } else {
-                    setShowEmailIdError(false);
-                  }
                 }}
               />
               <FormHelperText
