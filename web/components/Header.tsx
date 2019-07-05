@@ -4,17 +4,16 @@ import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
+import Button from '@material-ui/core/Button';
+import { SignIn } from 'components/SignIn';
+import { Navigation } from 'components/Navigatiion';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from '@material-ui/core/Button';
-import { SignIn } from 'components/SignIn';
-import { Navigation } from 'components/Navigatiion';
-import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
-
-import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -45,20 +44,21 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
+      '& img': {
+        marginTop: 10,
+      },
     },
     userAccountLogin: {
       marginLeft: 'auto',
     },
     userCircle: {
-      display: 'flex',
+      display: 'block',
       width: 48,
       height: 48,
       backgroundColor: '#afc3c9',
       borderRadius: '50%',
       textAlign: 'center',
       cursor: 'pointer',
-      alignItems: 'center',
-      justifyContent: 'center',
     },
     userActive: {
       backgroundColor: theme.palette.secondary.dark,
@@ -94,7 +94,7 @@ export const Header: React.FC = (props) => {
       </div>
       {isSignedIn && <Navigation />}
       <div className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin}`}>
-      {!isSignedIn && <ProtectedWithLoginPopup>
+        <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup, isProtected }) => (
             <div
               className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
@@ -104,7 +104,7 @@ export const Header: React.FC = (props) => {
               {isSigningIn ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
             </div>
           )}
-        </ProtectedWithLoginPopup>}
+        </ProtectedWithLoginPopup>
         {isSignedIn ? (
           <>
             <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
@@ -120,12 +120,9 @@ export const Header: React.FC = (props) => {
                 </Button>
               </DialogActions>
             </Dialog>
-            <div
-              className={`${classes.userCircle} ${classes.userActive}`}
-              onClick={() => signOut()}
-            >
-              <img src={require('images/ic_account.svg')} />
-            </div>
+            <Button variant="text" size="small" onClick={() => signOut()} color="primary">
+              Sign out
+            </Button>
           </>
         ) : (
           <Popover
