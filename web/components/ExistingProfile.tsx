@@ -134,7 +134,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
       <div className={classes.boxContent}>
         <div className={classes.userName}>{patient.firstName}</div>
         <div className={classes.userInfo}>
-          {_camelCase(patient.sex || '')}
+          {_camelCase(patient.gender || '')}
           {_camelCase(patient.dateOfBirth || '')}
         </div>
         <AppSelectField

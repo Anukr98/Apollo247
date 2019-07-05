@@ -4,7 +4,7 @@ import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AppButton } from 'components/ui/AppButton';
 import { AppTextField } from 'components/ui/AppTextField';
-import { Sex as GENDER } from 'graphql/types/globalTypes';
+import { Gender } from 'graphql/types/globalTypes';
 import React, { useState } from 'react';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { isNameValid, isEmailValid, isDobValid } from 'utils/FormValidationUtils';
@@ -89,7 +89,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const NewProfile: React.FC = (props) => {
   const classes = useStyles();
-  const genders = Object.values(GENDER).filter((g) => g != 'NOT_APPLICABLE' && g != 'NOT_KNOWN');
+  const genders = Object.values(Gender);
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [dateOfBirth, setDateOfBirth] = useState<string>('');
@@ -183,7 +183,7 @@ export const NewProfile: React.FC = (props) => {
             <div className={classes.formControl}>
               <label>Gender</label>
               <Grid container spacing={2} className={classes.btnGroup}>
-                {genders.map((gender) => (
+                {Object.values(Gender).map((gender) => (
                   <Grid item xs={4} sm={4} key={gender}>
                     <AppButton
                       variant="contained"
