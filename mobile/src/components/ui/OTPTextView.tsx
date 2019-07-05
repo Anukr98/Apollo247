@@ -82,7 +82,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
   };
 
   const onKeyPress = (e, i) => {
-    const otpArray = otpText;
+    const otpArray = [...otpText];
 
     if (e.nativeEvent.key === 'Backspace' && i !== 0) {
       if (otpArray[i] === '') {

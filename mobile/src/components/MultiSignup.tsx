@@ -2,25 +2,17 @@ import { ApolloLogo } from 'app/src/components/ApolloLogo';
 import { AppRoutes } from 'app/src/components/NavigatorContainer';
 import { Button } from 'app/src/components/ui/Button';
 import { Card } from 'app/src/components/ui/Card';
-import { Mascot, DropdownGreen } from 'app/src/components/ui/Icons';
+import { DropdownGreen, Mascot } from 'app/src/components/ui/Icons';
 import { StickyBottomComponent } from 'app/src/components/ui/StickyBottomComponent';
 import { string } from 'app/src/strings/string';
 import { theme } from 'app/src/theme/theme';
-import React, { useState, useEffect } from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  Dimensions,
-  BackHandler,
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MenuProvider } from 'react-native-popup-menu';
 import { NavigationScreenProps } from 'react-navigation';
-const { width, height } = Dimensions.get('window');
 import { useAuth } from '../hooks/authHooks';
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -87,29 +79,24 @@ type currentProfiles = {
   relation?: string;
 };
 
-let backHandler: any;
-
 export interface MultiSignupProps extends NavigationScreenProps {}
 
 export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
-  const [relation, setRelation] = useState<string>('Relations');
   const [relationIndex, setRelationIndex] = useState<number>(0);
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [user, setUser] = useState<object>([]);
   const { currentUser, analytics, currentProfiles } = useAuth();
-  const [profilesLength, setProfilesLength] = useState<any>({});
+  const [profiles, setProfiles] = useState<any>(currentProfiles);
   const [discriptionText, setDiscriptionText] = useState<string>('');
   const [showText, setShowText] = useState<boolean>(false);
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.MultiSignup);
     setUser(currentUser);
-    setProfilesLength(currentProfiles);
+    setProfiles(currentProfiles);
     const length =
-      profilesLength &&
-      (profilesLength.length == 1
-        ? profilesLength.length + ' account'
-        : profilesLength.length + ' accounts');
+      profiles &&
+      (profiles.length == 1 ? profiles.length + ' account' : profiles.length + ' accounts');
     const baseString =
       'We have found ' +
       length +
@@ -121,20 +108,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
       console.log('length', length);
     }
     console.log('discriptionText', discriptionText);
-  }, [currentUser, currentProfiles, analytics, user, profilesLength, discriptionText, showText]);
-
-  // useEffect(() => {
-  //   backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-  //     console.log('hardwareBackPress');
-  //     return true;
-  //   });
-  // }, []);
-
-  // useEffect(() => {
-  //   return () => {
-  //     backHandler && backHandler.remove();
-  //   };
-  // }, []);
+  }, [currentUser, currentProfiles, analytics, user, profiles, discriptionText, showText]);
 
   const renderUserForm = (styles: any, currentProfiles: currentProfiles, i: number) => {
     return (
@@ -189,6 +163,13 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         </View>
       </View>
     );
+  };
+  const isDisabled = () => {
+    const filteredProfiles = profiles.filter((obj: object) => obj.relation);
+    if (profiles.length === filteredProfiles.length) {
+      return false;
+    }
+    return true;
   };
 
   type options = {
@@ -263,8 +244,8 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             <Text
               style={styles.textStyle}
               onPress={() => {
-                currentProfiles[relationIndex].relation = menu.name;
-                // setRelation(menu.name);
+                profiles[relationIndex].relation = menu.name;
+                setProfiles(profiles);
                 setShowPopup(false);
               }}
             >
@@ -287,6 +268,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               name: '',
             })
           }
+          disabled={isDisabled()}
         />
       </StickyBottomComponent>
     );
@@ -314,7 +296,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             <View style={styles.mascotStyle}>
               <Mascot />
             </View>
-            {currentProfiles.map((currentProfiles: currentProfiles, i: number) => (
+            {profiles.map((currentProfiles: currentProfiles, i: number) => (
               <View key={i}>{renderUserForm(styles, currentProfiles, i)}</View>
             ))}
             <View style={{ height: 80 }} />
