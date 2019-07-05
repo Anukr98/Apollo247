@@ -72,7 +72,7 @@ export const ManageProfile: React.FC = (props) => {
             open={isPopoverOpen}
             anchorEl={mascotRef.current}
             className={classes.bottomPopover}
-            // onClose={() => setIsPopoverOpen(false)}
+            onClose={() => setIsPopoverOpen(false)}
             anchorOrigin={{
               vertical: 'bottom',
               horizontal: 'center',

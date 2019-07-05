@@ -107,7 +107,7 @@ export const NewProfile: React.FC = (props) => {
 
   const showFirstNameError = firstName.trim().length > 0 && !isNameValid(firstName);
   const showLastNameError = lastName.trim().length > 0 && !isNameValid(lastName);
-  const showDobError = dateOfBirth.trim().length > 0 && !isDobValid(dateOfBirth);
+  const showDobError = dateOfBirth.trim().length === 10 && !isDobValid(dateOfBirth);
   const showEmailIdError = emailAddress.trim().length > 0 && !isEmailValid(emailAddress);
 
   return (
