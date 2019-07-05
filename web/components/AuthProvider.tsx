@@ -97,7 +97,7 @@ let otpVerifier: firebase.auth.ConfirmationResult;
 
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
-    apolloClient = buildApolloClient(authToken);
+  apolloClient = buildApolloClient(authToken);
 
   const [allCurrentPatients, setAllCurrentPatients] = useState<
     AuthContextProps['allCurrentPatients']
@@ -182,6 +182,7 @@ export const AuthProvider: React.FC = (props) => {
       if (user) {
         const [jwt, jwtError] = await wait(user.getIdToken());
         if (jwtError || !jwt) {
+          if (jwtError) console.error(jwtError);
           setIsSigningIn(false);
           setSignInError(true);
           app.auth().signOut();
@@ -197,6 +198,7 @@ export const AuthProvider: React.FC = (props) => {
           })
         );
         if (signInError || !signInResult.data || !signInResult.data.patientSignIn.patients) {
+          if (signInError) console.error(signInError);
           setSignInError(true);
           setIsSigningIn(false);
           app.auth().signOut();
