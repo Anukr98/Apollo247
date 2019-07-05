@@ -6,8 +6,16 @@ import { DropdownGreen, Mascot } from 'app/src/components/ui/Icons';
 import { StickyBottomComponent } from 'app/src/components/ui/StickyBottomComponent';
 import { string } from 'app/src/strings/string';
 import { theme } from 'app/src/theme/theme';
-import React, { useEffect, useState } from 'react';
-import { Dimensions, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Dimensions,
+  AsyncStorage,
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MenuProvider } from 'react-native-popup-menu';
 import { NavigationScreenProps } from 'react-navigation';
@@ -86,14 +94,17 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [user, setUser] = useState<object>([]);
   const { currentUser, analytics, currentProfiles } = useAuth();
-  const [profiles, setProfiles] = useState<any>(currentProfiles);
+  const [profiles, setProfiles] = useState<any>([]);
   const [discriptionText, setDiscriptionText] = useState<string>('');
   const [showText, setShowText] = useState<boolean>(false);
+  useEffect(() => {
+    setProfiles(currentProfiles ? currentProfiles : []);
+  }, []);
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.MultiSignup);
     setUser(currentUser);
-    setProfiles(currentProfiles);
+    setProfiles(currentProfiles ? currentProfiles : []);
     const length =
       profiles &&
       (profiles.length == 1 ? profiles.length + ' account' : profiles.length + ' accounts');
@@ -142,21 +153,23 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
           <View style={{ marginTop: 10 }}>
             <View style={{ paddingTop: 5, paddingBottom: 10 }}>
               <TouchableOpacity
-                style={styles.placeholderViewStyle}
+                // style={styles.placeholderViewStyle}
                 onPress={() => {
                   setShowPopup(true);
                   setRelationIndex(i);
                 }}
               >
-                <Text
-                  style={[
-                    styles.placeholderTextStyle,
-                    currentProfiles.relation ? null : styles.placeholderStyle,
-                  ]}
-                >
-                  {currentProfiles.relation ? currentProfiles.relation : 'Relation'}
-                </Text>
-                <DropdownGreen size="sm" />
+                <View style={styles.placeholderViewStyle}>
+                  <Text
+                    style={[
+                      styles.placeholderTextStyle,
+                      currentProfiles.relation ? null : styles.placeholderStyle,
+                    ]}
+                  >
+                    {currentProfiles.relation ? currentProfiles.relation : 'Relation'}
+                  </Text>
+                  <DropdownGreen size="sm" />
+                </View>
               </TouchableOpacity>
             </View>
           </View>
@@ -263,12 +276,11 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         <Button
           style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
           title={'SUBMIT'}
-          onPress={() =>
-            props.navigation.navigate(AppRoutes.TabBar, {
-              name: '',
-            })
-          }
           disabled={isDisabled()}
+          onPress={() => {
+            AsyncStorage.setItem('userLoggedIn', 'true');
+            props.navigation.navigate(AppRoutes.TabBar);
+          }}
         />
       </StickyBottomComponent>
     );

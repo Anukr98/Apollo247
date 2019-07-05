@@ -191,7 +191,7 @@ export const AuthProvider: React.FC = (props) => {
         const patient = patientUpdateResult.data.updatePatient.patient;
 
         setCurrentUser(patient);
-        setcurrentProfiles(patient);
+        setcurrentProfiles([patient]);
       } else {
         setCurrentUser(null);
         setcurrentProfiles(null);

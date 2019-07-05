@@ -234,12 +234,13 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               Alert.alert('Error', errMsg);
             } else {
               if (patient && patient.uhid && patient.uhid !== '') {
-                props.navigation.navigate(AppRoutes.MultiSignup);
+                props.navigation.replace(AppRoutes.MultiSignup);
               } else {
                 if (patient.firstName.length != 0) {
-                  props.navigation.navigate(AppRoutes.ConsultRoom);
+                  AsyncStorage.setItem('userLoggedIn', 'true');
+                  props.navigation.replace(AppRoutes.TabBar);
                 } else {
-                  props.navigation.navigate(AppRoutes.SignUp);
+                  props.navigation.replace(AppRoutes.SignUp);
                 }
               }
             }
@@ -252,7 +253,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         console.log('error', error);
         setVerifyingOtp(false);
         _storeTimerData(invalidOtpCount + 1);
-        Alert.alert('Error', 'Unable to connect the server at the moment.');
 
         if (invalidOtpCount + 1 === 3) {
           setShowErrorMsg(true);

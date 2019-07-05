@@ -19,6 +19,7 @@ import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
+  AsyncStorage,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
@@ -327,6 +328,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   Alert.alert('Error', errMsg);
                 } else {
                   if (patientDetails) {
+                    AsyncStorage.setItem('userLoggedIn', 'true');
                     props.navigation.navigate(AppRoutes.TabBar);
                   }
                 }

@@ -13,8 +13,8 @@ import {
   View,
   ActivityIndicator,
   Keyboard,
-  BackHandler,
   Alert,
+  PermissionsAndroid,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
@@ -97,12 +97,37 @@ export const Login: React.FC<LoginProps> = (props) => {
   }, [analytics, currentUser]);
 
   useEffect(() => {
+    console.log('login Screen');
+  }, []);
+
+  useEffect(() => {
     console.log('authError Login', authError);
     if (authError) {
       setVerifyingPhonenNumber(false);
       Alert.alert('Error', 'Unable to connect the server at the moment.');
     }
   }, [authError]);
+
+  const requestReadSmsPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_SMS, {
+        title: 'Auto Verification OTP',
+        message: 'need access to read sms, to verify OTP',
+      });
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('sms read permissions granted', granted);
+      } else {
+        console.log('sms read permissions denied', 'denied');
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  useEffect(() => {
+    console.log('didmout');
+    Platform.OS === 'android' && requestReadSmsPermission();
+  }, []);
 
   useEffect(() => {
     const subscriptionId = SmsListener.addListener((message: any) => {
@@ -117,17 +142,9 @@ export const Login: React.FC<LoginProps> = (props) => {
     });
   }, [subscriptionId]);
 
-  // useEffect(() => {
-  //   backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-  //     console.log('hardwareBackPress');
-  //     return true;
-  //   });
-  // }, []);
-
   useEffect(() => {
     return () => {
       subscriptionId && subscriptionId.remove();
-      // backHandler && backHandler.remove();
       didBlurSubscription && didBlurSubscription.remove();
     };
   }, [subscriptionId]);
@@ -180,7 +197,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                 .catch((error) => {
                   console.log(error, 'error');
                   setVerifyingPhonenNumber(false);
-                  Alert.alert('Error', 'Unable to connect the server at the moment.');
+                  Alert.alert('Error', 'The interaction was cancelled by the user.');
                 });
             }
           }}

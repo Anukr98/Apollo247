@@ -35,6 +35,7 @@
 		8F02ADE7665545228E84A70D /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 28828092F8724884AAABC430 /* FontAwesome.ttf */; };
 		9512C594C0244A0CB891C971 /* MaterialCommunityIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 92A9BEAAC3E648F6A7F57360 /* MaterialCommunityIcons.ttf */; };
 		975AB59722C33D6F00BDD18D /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 975AB59622C33D6E00BDD18D /* GoogleService-Info.plist */; };
+		9762A0C722CF1214006AF3E8 /* libSplashScreen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9762A0C622CF11FB006AF3E8 /* libSplashScreen.a */; };
 		A374A21595684B82B2078288 /* Foundation.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9A1264780D7E44F48F31A47A /* Foundation.ttf */; };
 		A3F2A9C703B14694A5696502 /* AntDesign.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5071FDB5D3F54B438EF70ABB /* AntDesign.ttf */; };
 		AB48E180F12645FC8536A759 /* FontAwesome5_Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FA7D78D52E724C1BA7643727 /* FontAwesome5_Regular.ttf */; };
@@ -285,6 +286,13 @@
 			remoteGlobalIDString = 58B5119B1A9E6C1200147676;
 			remoteInfo = RCTText;
 		};
+		9762A0C522CF11FB006AF3E8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9762A0C122CF11FB006AF3E8 /* SplashScreen.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 3D7682761D8E76B80014119E;
+			remoteInfo = SplashScreen;
+		};
 		97A8E90122CB9B8B00DD57E4 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F8D7BAEDC4B54F65969E8D37 /* RNFirebase.xcodeproj */;
@@ -395,6 +403,7 @@
 		97362EC173AC41188EA489C7 /* libRNGestureHandler.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNGestureHandler.a; sourceTree = "<group>"; };
 		97381B2F22CA08CE001BA50A /* ApolloPatient.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = ApolloPatient.entitlements; path = ApolloPatient/ApolloPatient.entitlements; sourceTree = "<group>"; };
 		975AB59622C33D6E00BDD18D /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		9762A0C122CF11FB006AF3E8 /* SplashScreen.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SplashScreen.xcodeproj; path = "../node_modules/react-native-splash-screen/ios/SplashScreen.xcodeproj"; sourceTree = "<group>"; };
 		9A1264780D7E44F48F31A47A /* Foundation.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Foundation.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Foundation.ttf"; sourceTree = "<group>"; };
 		ADBDB91F1DFEBF0600ED6528 /* RCTBlob.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTBlob.xcodeproj; path = "../node_modules/react-native/Libraries/Blob/RCTBlob.xcodeproj"; sourceTree = "<group>"; };
 		BC164DC10808B8284C771748 /* Pods-ApolloPatient.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient.release.xcconfig"; path = "Target Support Files/Pods-ApolloPatient/Pods-ApolloPatient.release.xcconfig"; sourceTree = "<group>"; };
@@ -445,6 +454,7 @@
 				177DA70DE6954A5486FF0F96 /* libRNVectorIcons.a in Frameworks */,
 				D1B34BC3A2973B717FBCB7EB /* libPods-ApolloPatient.a in Frameworks */,
 				043D348853674AEBA85C0AED /* libRNFirebase.a in Frameworks */,
+				9762A0C722CF1214006AF3E8 /* libSplashScreen.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -585,6 +595,7 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				9762A0C122CF11FB006AF3E8 /* SplashScreen.xcodeproj */,
 				5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */,
 				146833FF1AC3E56700842450 /* React.xcodeproj */,
 				00C302A71ABCB8CE00DB3ED1 /* RCTActionSheet.xcodeproj */,
@@ -657,6 +668,14 @@
 				2126FFB853DD4C55A1279E67 /* Zocial.ttf */,
 			);
 			name = Resources;
+			sourceTree = "<group>";
+		};
+		9762A0C222CF11FB006AF3E8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9762A0C622CF11FB006AF3E8 /* libSplashScreen.a */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		97A8E8FE22CB9B8B00DD57E4 /* Products */ = {
@@ -849,6 +868,10 @@
 				{
 					ProductGroup = F1E7EA7E22C3AB6900FAD5A5 /* Products */;
 					ProjectRef = 9560FCA35A49459F840DED43 /* RNVectorIcons.xcodeproj */;
+				},
+				{
+					ProductGroup = 9762A0C222CF11FB006AF3E8 /* Products */;
+					ProjectRef = 9762A0C122CF11FB006AF3E8 /* SplashScreen.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -1083,6 +1106,13 @@
 			remoteRef = 832341B41AAA6A8300B99B32 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		9762A0C622CF11FB006AF3E8 /* libSplashScreen.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSplashScreen.a;
+			remoteRef = 9762A0C522CF11FB006AF3E8 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		97A8E90222CB9B8B00DD57E4 /* libRNFirebase.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -1280,13 +1310,11 @@
 					"$(SRCROOT)/../node_modules/react-native-gesture-handler/ios/**",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
 					"$(SRCROOT)/../node_modules/react-native-firebase/ios/RNFirebase/**",
+					"$(SRCROOT)/../node_modules/react-native-splash-screen/ios",
 				);
 				INFOPLIST_FILE = ApolloPatient/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/ApolloPatient\"",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",
@@ -1317,13 +1345,11 @@
 					"$(SRCROOT)/../node_modules/react-native-gesture-handler/ios/**",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
 					"$(SRCROOT)/../node_modules/react-native-firebase/ios/RNFirebase/**",
+					"$(SRCROOT)/../node_modules/react-native-splash-screen/ios",
 				);
 				INFOPLIST_FILE = ApolloPatient/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/ApolloPatient\"",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",

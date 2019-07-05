@@ -81,11 +81,11 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
     setFocusedInput(i);
   };
 
-  const onKeyPress = (e, i) => {
+  const onKeyPress = (e: any, i: number) => {
     const otpArray = [...otpText];
 
-    if (e.nativeEvent.key === 'Backspace' && i !== 0) {
-      if (otpArray[i] === '') {
+    if (e.nativeEvent.key === 'Backspace') {
+      if (otpArray[i] === '' && i !== 0) {
         otpArray[i - 1] = '';
         arrayRef.current && arrayRef.current[i - 1].focus();
       } else {

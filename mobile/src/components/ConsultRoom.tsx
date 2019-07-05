@@ -13,6 +13,7 @@ import {
   View,
   TouchableOpacity,
   AsyncStorage,
+  Platform,
 } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
@@ -219,26 +220,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { currentUser, analytics, currentProfiles } = useAuth();
 
   useEffect(() => {
-    async function fetchData() {
-      const patient = await AsyncStorage.getItem('patient');
-      const patientProfiles = await AsyncStorage.getItem('patientProfiles');
-
-      console.log('patient', patient);
-      console.log('patientProfiles', patientProfiles);
-
-      let userName =
-        currentUser && currentUser.firstName ? currentUser.firstName.split(' ')[0] : '';
-      userName = userName.toLowerCase();
-      setuserName(userName);
-
-      console.log('currentProfiles', currentProfiles);
-    }
-    fetchData();
+    let userName = currentUser && currentUser.firstName ? currentUser.firstName.split(' ')[0] : '';
+    userName = userName.toLowerCase();
+    setuserName(userName);
 
     analytics.setCurrentScreen(AppRoutes.ConsultRoom);
   }, [currentUser, currentProfiles, analytics, userName, props.navigation.state.params]);
 
-  useEffect(() => {});
+  useEffect(() => {
+    async function fetchData() {
+      const userLoggedIn = await AsyncStorage.getItem('gotIt');
+      if (userLoggedIn == 'true') {
+        setshowPopUp(false);
+      }
+    }
+    fetchData();
+  }, []);
   const Popup = () => (
     <TouchableOpacity
       style={{
@@ -266,12 +263,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           elevation: 5,
           paddingTop: 8,
           paddingBottom: 16,
-          marginTop: 154,
+          ...Platform.select({
+            android: {
+              marginTop: 124,
+            },
+            ios: {
+              marginTop: 134,
+            },
+          }),
         }}
       >
         {currentProfiles &&
-          currentProfiles.map((profile: currentProfiles) => (
-            <View style={styles.textViewStyle}>
+          currentProfiles.map((profile: currentProfiles, i: number) => (
+            <View style={styles.textViewStyle} key={i}>
               <Text
                 style={styles.textStyle}
                 onPress={() => {
@@ -345,7 +349,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         alignItems: 'center',
                       }}
                     >
-                      <Text style={styles.nameTextStyle}>{userName}</Text>
+                      <Text style={styles.nameTextStyle}>{userName}!</Text>
                       <DropdownGreen style={{ marginTop: 8 }} />
                     </View>
                     <View style={styles.seperatorStyle} />
@@ -577,6 +581,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <TouchableOpacity
                 style={styles.gotItStyles}
                 onPress={() => {
+                  AsyncStorage.setItem('gotIt', 'true');
                   setshowPopUp(false);
                 }}
               >
