@@ -97,18 +97,18 @@ export const NewProfile: React.FC = (props) => {
   const [selectedGender, setGender] = useState<string>('');
 
   const submitDisabled =
-    firstName.length > 2 &&
-    lastName.length > 2 &&
-    (dateOfBirth.length === 10 && isDobValid(dateOfBirth)) &&
-    (emailAddress.length === 0 || (emailAddress.length > 0 && isEmailValid(emailAddress))) &&
+    firstName.trim().length > 0 &&
+    lastName.trim().length > 0 &&
+    (dateOfBirth.trim().length === 10 && isDobValid(dateOfBirth)) &&
+    (emailAddress.trim().length === 0 || (emailAddress.length > 0 && isEmailValid(emailAddress))) &&
     _includes(genders, selectedGender)
       ? false
       : true;
 
-  const showFirstNameError = firstName.length > 0 && !isNameValid(firstName);
-  const showLastNameError = lastName.length > 0 && !isNameValid(lastName);
-  const showDobError = dateOfBirth.length > 0 && !isDobValid(dateOfBirth);
-  const showEmailIdError = emailAddress.length > 0 && !isEmailValid(emailAddress);
+  const showFirstNameError = firstName.trim().length > 0 && !isNameValid(firstName);
+  const showLastNameError = lastName.trim().length > 0 && !isNameValid(lastName);
+  const showDobError = dateOfBirth.trim().length > 0 && !isDobValid(dateOfBirth);
+  const showEmailIdError = emailAddress.trim().length > 0 && !isEmailValid(emailAddress);
 
   return (
     <div className={classes.signUpPop}>
