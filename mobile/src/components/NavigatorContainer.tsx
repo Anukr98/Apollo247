@@ -13,6 +13,7 @@ import { DoctorSearchListing } from 'app/src/components/DoctorSearchListing';
 import { HealthRecords } from 'app/src/components/HealthRecords';
 import { Medicine } from 'app/src/components/Medicine';
 import { MyAccount } from 'app/src/components/MyAccount';
+import { SplashScreen } from 'app/src/components/SplashScreen';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -27,6 +28,7 @@ export enum AppRoutes {
   HealthRecords = 'HealthRecords',
   Medicine = 'Medicine',
   MyAccount = 'MyAccount',
+  SplashScreen = 'SplashScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -69,9 +71,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.OTPVerification]: {
     screen: OTPVerification,
-    navigationOptions: {
-      gesturesEnabled: false,
-    },
   },
   [AppRoutes.ConsultRoom]: {
     screen: ConsultRoom,
@@ -88,10 +87,13 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.MyAccount]: {
     screen: MyAccount,
   },
+  [AppRoutes.SplashScreen]: {
+    screen: SplashScreen,
+  },
 };
 
 const stackConfig: StackNavigatorConfig = {
-  initialRouteName: AppRoutes.Onboarding,
+  initialRouteName: AppRoutes.SplashScreen,
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   transitionConfig: () => {

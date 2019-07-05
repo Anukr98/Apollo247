@@ -1,7 +1,7 @@
 import { Button } from 'app/src/components/ui/Button';
 import { useAuth } from 'app/src/hooks/authHooks';
 import React from 'react';
-import { View } from 'react-native';
+import { View, AsyncStorage } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from 'app/src/components/NavigatorContainer';
 
@@ -18,6 +18,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         title="LOGOUT"
         onPress={() => {
           signOut();
+          AsyncStorage.setItem('userLoggedIn', 'false');
           props.navigation.navigate(AppRoutes.Login);
         }}
       />

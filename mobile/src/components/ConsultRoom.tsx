@@ -12,6 +12,8 @@ import {
   Text,
   View,
   TouchableOpacity,
+  AsyncStorage,
+  Platform,
 } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
@@ -218,15 +220,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { currentUser, analytics, currentProfiles } = useAuth();
 
   useEffect(() => {
-    analytics.setCurrentScreen(AppRoutes.ConsultRoom);
-    // const userName = currentUser.firstName + ' ' + currentUser.lastName;
-    let userName =
-      currentUser && currentUser.firstName ? currentUser.firstName.split(' ')[0] : 'there';
+    let userName = currentUser && currentUser.firstName ? currentUser.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
-  }, [currentUser, currentProfiles, analytics, userName]);
 
-  useEffect(() => {});
+    analytics.setCurrentScreen(AppRoutes.ConsultRoom);
+  }, [currentUser, currentProfiles, analytics, userName, props.navigation.state.params]);
+
+  useEffect(() => {
+    async function fetchData() {
+      const userLoggedIn = await AsyncStorage.getItem('gotIt');
+      if (userLoggedIn == 'true') {
+        setshowPopUp(false);
+      }
+    }
+    fetchData();
+  }, []);
   const Popup = () => (
     <TouchableOpacity
       style={{
@@ -254,33 +263,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           elevation: 5,
           paddingTop: 8,
           paddingBottom: 16,
-          marginTop: 124,
+          ...Platform.select({
+            android: {
+              marginTop: 124,
+            },
+            ios: {
+              marginTop: 134,
+            },
+          }),
         }}
       >
-        {/* {[userName].map((firstName) => (
-          <View style={styles.textViewStyle}>
-            <Text
-              style={styles.textStyle}
-              onPress={() => {
-                setShowMenu(false);
-              }}
-            >
-              {firstName}
-            </Text>
-          </View>
-        ))} */}
-        {currentProfiles.map((profile: currentProfiles) => (
-          <View style={styles.textViewStyle}>
-            <Text
-              style={styles.textStyle}
-              onPress={() => {
-                setShowMenu(false);
-              }}
-            >
-              {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : 'Hi there'}
-            </Text>
-          </View>
-        ))}
+        {currentProfiles &&
+          currentProfiles.map((profile: currentProfiles, i: number) => (
+            <View style={styles.textViewStyle} key={i}>
+              <Text
+                style={styles.textStyle}
+                onPress={() => {
+                  setShowMenu(false);
+                }}
+              >
+                {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : ''}
+              </Text>
+            </View>
+          ))}
 
         <Text
           style={{
@@ -302,7 +307,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {showMenu && Popup()}
-        <ScrollView style={{ flex: 1 }}>
+        <ScrollView style={{ flex: 1 }} bounces={false}>
           <Image
             source={require('app/src/images/doctor/doctor.png')}
             style={{
@@ -344,7 +349,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         alignItems: 'center',
                       }}
                     >
-                      <Text style={styles.nameTextStyle}>{userName}</Text>
+                      <Text style={styles.nameTextStyle}>{userName}!</Text>
                       <DropdownGreen style={{ marginTop: 8 }} />
                     </View>
                     <View style={styles.seperatorStyle} />
@@ -576,6 +581,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <TouchableOpacity
                 style={styles.gotItStyles}
                 onPress={() => {
+                  AsyncStorage.setItem('gotIt', 'true');
                   setshowPopUp(false);
                 }}
               >

@@ -41,6 +41,7 @@ export interface AuthProviderProps {
   signOut: (() => any) | null;
   clearCurrentUser: (() => any) | null;
   callUpdatePatient: ((patientDetails: updatePatient_updatePatient_patient) => Promise<any>) | null;
+  authError: boolean;
 }
 
 const userIsValid = (user: RNFirebase.User | null) => user && user.phoneNumber;
@@ -57,12 +58,14 @@ export const AuthContext = React.createContext<AuthProviderProps>({
   clearCurrentUser: null,
   callApiWithToken: null,
   callUpdatePatient: null,
+  authError: false,
 });
 
 let apolloClient: ApolloClient<any>;
-const buildApolloClient = (authToken: string) => {
+const buildApolloClient = (authToken: string, failureFunction: () => void) => {
   const errorLink = onError(({ networkError, operation, forward }: ErrorResponse) => {
     console.log(networkError, operation);
+    failureFunction();
     return forward(operation);
   });
   const authLink = setContext((_, { headers }) => ({
@@ -79,7 +82,9 @@ const buildApolloClient = (authToken: string) => {
 
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
-  apolloClient = buildApolloClient(authToken);
+  const [authError, setAuthError] = useState(false);
+  const failureFunction = () => setAuthError(true);
+  apolloClient = buildApolloClient(authToken, failureFunction);
 
   const [currentUser, setCurrentUser] = useState<AuthProviderProps['currentUser']>(null);
   const [currentProfiles, setcurrentProfiles] = useState<AuthProviderProps['currentProfiles']>(
@@ -147,6 +152,13 @@ export const AuthProvider: React.FC = (props) => {
         variables: { jwt: updatedToken },
       });
 
+      console.log('updatedToken', updatedToken);
+
+      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.errors) {
+        const errMsg = patientSignInResult.data.patientSignIn.errors.messages[0];
+        console.log(errMsg);
+      }
+
       if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
         const patient = patientSignInResult.data.patientSignIn.patients[0];
         const patientProfiles = patientSignInResult.data.patientSignIn.patients;
@@ -167,61 +179,61 @@ export const AuthProvider: React.FC = (props) => {
     const callUpdatePatientFunc = () => async (
       patientDetails: updatePatient_updatePatient_patient
     ) => {
+      console.log('patientDetails', patientDetails);
       const patientUpdateResult = await apolloClient.mutate<updatePatient, updatePatientVariables>({
         mutation: UPDATE_PATIENT,
         variables: { patientInput: patientDetails },
       });
 
-      // if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
-      //   const patient = patientSignInResult.data.patientSignIn.patients[0];
-      //   const patientProfiles = patientSignInResult.data.patientSignIn.patients;
+      console.log('patientUpdateResult', patientUpdateResult);
 
-      //   setCurrentUser(patient);
-      //   setcurrentProfiles(patientProfiles);
-      //   setIsAuthenticating(false);
-      // } else {
-      //   setCurrentUser(null);
-      //   setcurrentProfiles(null);
-      //   setIsAuthenticating(false);
-      // }
+      if (patientUpdateResult.data && patientUpdateResult.data.updatePatient.patient) {
+        const patient = patientUpdateResult.data.updatePatient.patient;
+
+        setCurrentUser(patient);
+        setcurrentProfiles([patient]);
+      } else {
+        setCurrentUser(null);
+        setcurrentProfiles(null);
+      }
 
       return patientUpdateResult;
     };
     setCallUpdatePatient(callUpdatePatientFunc);
 
-    // auth.onAuthStateChanged(async (updatedUser) => {
-    //   // There is no hook to know when firebase is loading, but we know this fires when it has attempted
-    //   // (whether automated from an existing cache or from an actual user-initiated sign in click)
-    //   // Set the default `authenticating` value to true, and clear it out in all cases here
-    //   // (but not until all the async requests here are finished )
-    //   if (!userIsValid(updatedUser)) {
-    //     setCurrentUser(null);
-    //     setcurrentProfiles(null);
-    //     setIsAuthenticating(false);
-    //     return;
-    //   }
+    auth.onAuthStateChanged(async (updatedUser) => {
+      // There is no hook to know when firebase is loading, but we know this fires when it has attempted
+      // (whether automated from an existing cache or from an actual user-initiated sign in click)
+      // Set the default `authenticating` value to true, and clear it out in all cases here
+      // (but not until all the async requests here are finished )
+      if (!userIsValid(updatedUser)) {
+        setCurrentUser(null);
+        setcurrentProfiles(null);
+        setIsAuthenticating(false);
+        return;
+      }
 
-    //   const updatedToken = await updatedUser!.getIdToken();
-    //   setAuthToken(updatedToken);
-    //   setIsAuthenticating(false);
+      const updatedToken = await updatedUser!.getIdToken();
+      setAuthToken(updatedToken);
+      setIsAuthenticating(false);
 
-    //   const patientSignInResult = await apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
-    //     mutation: PATIENT_SIGN_IN,
-    //     variables: { jwt: updatedToken },
-    //   });
+      const patientSignInResult = await apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
+        mutation: PATIENT_SIGN_IN,
+        variables: { jwt: updatedToken },
+      });
 
-    //   if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
-    //     const patient = patientSignInResult.data.patientSignIn.patients[0];
-    //     const patientProfiles = patientSignInResult.data.patientSignIn.patients;
-    //     setCurrentUser(patient);
-    //     setcurrentProfiles(patientProfiles);
-    //     setIsAuthenticating(false);
-    //   } else {
-    //     setCurrentUser(null);
-    //     setcurrentProfiles(null);
-    //     setIsAuthenticating(false);
-    //   }
-    // });
+      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
+        const patient = patientSignInResult.data.patientSignIn.patients[0];
+        const patientProfiles = patientSignInResult.data.patientSignIn.patients;
+        setCurrentUser(patient);
+        setcurrentProfiles(patientProfiles);
+        setIsAuthenticating(false);
+      } else {
+        setCurrentUser(null);
+        setcurrentProfiles(null);
+        setIsAuthenticating(false);
+      }
+    });
   }, []);
 
   return (
@@ -229,6 +241,7 @@ export const AuthProvider: React.FC = (props) => {
       <ApolloHooksProvider client={apolloClient}>
         <AuthContext.Provider
           value={{
+            authError,
             analytics,
             currentUser,
             isAuthenticating,
