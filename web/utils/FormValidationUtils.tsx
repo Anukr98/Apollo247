@@ -25,17 +25,18 @@ export const isDobValid = (ddmmyyyy: string) => {
   const isCorrectFormat = /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/.test(ddmmyyyy);
   if (!isCorrectFormat) return false;
 
-  const currentDate = new Date();
-  currentDate.setHours(0, 0, 0, 0);
-
   const dateParts = ddmmyyyy.split('/');
-  const dd = parseInt(dateParts[0]);
-  const mm = parseInt(dateParts[1]);
-  const yyyy = parseInt(dateParts[2]);
+  const dd = parseInt(dateParts[0]),
+    mm = parseInt(dateParts[1]),
+    yyyy = parseInt(dateParts[2]);
 
-  const isValidDate = new Date(yyyy, dd, mm) < currentDate;
+  const date = new Date(yyyy, mm, dd);
 
-  return isValidDate;
+  const isInvalid = isNaN(date.valueOf());
+  if (isInvalid) return false;
+
+  const isPastdate = date < new Date();
+  return isPastdate;
 };
 
 export const isEmailValid = (email: string) => {
