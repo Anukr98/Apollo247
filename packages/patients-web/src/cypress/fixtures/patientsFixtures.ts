@@ -1,6 +1,6 @@
 import { QueryResultFixture } from 'cypress/types/queryFixtureTypes';
 import { GetPatients } from 'graphql/types/GetPatients';
-import { Sex } from 'graphql/types/globalTypes';
+import { Gender, Relation } from 'graphql/types/globalTypes';
 
 export const getPatientsFixture: QueryResultFixture<GetPatients> = () => {
   return {
@@ -11,10 +11,13 @@ export const getPatientsFixture: QueryResultFixture<GetPatients> = () => {
           {
             __typename: 'Patient',
             id: '1',
-            firstName: 'John',
+            uhid: '',
+            firstName: 'Jane',
             lastName: 'Doe',
-            sex: Sex.MALE,
+            gender: Gender.FEMALE,
             mobileNumber: '+91123456789',
+            relation: Relation.ME,
+            dateOfBirth: '01/01/1999',
           },
         ],
       },

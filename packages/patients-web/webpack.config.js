@@ -9,7 +9,6 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
 
 const distDir = path.resolve(__dirname, 'dist');
-const nodeModulesDir = path.join(__dirname, 'node_modules');
 
 const plugins = [
   new webpack.DefinePlugin(
@@ -51,7 +50,7 @@ const urlLoader = {
 module.exports = {
   mode: isProduction ? 'production' : 'development',
 
-  context: path.resolve(__dirname),
+  context: path.resolve(__dirname, 'src'),
 
   entry: { index: ['index.tsx'] },
 
@@ -65,7 +64,7 @@ module.exports = {
     rules: [
       {
         test: /\.(j|t)sx?$/,
-        exclude: [nodeModulesDir],
+        exclude: [/node_modules/],
         use: isProduction ? [tsLoader] : [rhlBabelLoader, tsLoader],
       },
       {
@@ -77,7 +76,7 @@ module.exports = {
 
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
-    modules: [path.join(__dirname, ''), nodeModulesDir],
+    modules: [path.resolve(__dirname, 'src'), 'node_modules'],
     alias:
       isLocal || isDevelopment
         ? {
