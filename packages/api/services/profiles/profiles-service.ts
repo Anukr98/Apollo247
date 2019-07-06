@@ -50,6 +50,6 @@ export type Resolver<Parent = any, Args = any> = (
   });
 
   server.listen({ port: 80 }).then(({ url }) => {
-    console.log(`🚀 profiles-service ready at ${url}`);
+    console.log(`🚀 profiles-service ready`);
   });
 })();
