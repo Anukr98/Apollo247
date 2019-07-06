@@ -1,7 +1,5 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
-    "baseUrl": "src",
     "module": "es6",
     "target": "es5",
     "moduleResolution": "node",
@@ -12,7 +10,7 @@
     "allowUnreachableCode": true,
     "strictNullChecks": true,
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
+    "experimentalDecorators": true
   },
   "exclude": ["node_modules", "src/cypress"]
 }

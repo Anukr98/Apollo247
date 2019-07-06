@@ -1,8 +1,12 @@
 {
-  "extends": "node_modules/@aph/common/tsconfig",
+  "extends": "./node_modules/@aph/common/tsconfig.json",
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "es5", "es6", "scripthost"],
-    "traceResolution": false
+    "outDir": "./dist",
+    "baseUrl": "./src",
+    "traceResolution": false,
+    "noImplicitAny": false,
+    "jsx": "react",
+    "lib": ["dom", "dom.iterable", "es5", "es6", "scripthost"]
   },
   "exclude": ["node_modules", "src/cypress"]
 }
