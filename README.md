@@ -1,4 +1,4 @@
-# Apollo
+# apollo-hospitals (@aph)
 
 *Note to windows users: Run the following steps on a Windows 10 Pro machine underneath an Ubuntu 18 WSL*
 

@@ -1,0 +1,9 @@
+{
+  "name": "@aph/ui-web",
+  "version": "0.0.1",
+  "main": "index.js",
+  "peerDependencies": {
+  },
+  "author": "sarink",
+  "license": "ISC"
+}

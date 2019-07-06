@@ -18,28 +18,32 @@ services:
     ports:
       - 8081:8081
 
-  web:
+  patients-web:
     image: node:11.11.0-alpine
-    working_dir: /web
-    command: ash -c "npm install --production=false && npm run start:dev"
+    working_dir: /apollo-hospitals/packages/patients-web
+    command: ash -c "cd /apollo-hospitals && 
+                     npm install --production=false && 
+                     node_modules/.bin/lerna bootstrap && 
+                     cd packages/patients-web && 
+                     npm run lint"
     environment:
       # Make sure to keep these env vars synced with the following files:
       # cypress.json, webpack.config, and cypress/plugins/webpack-preprocessor
       # We should probably refactor this to a .env file...
-      NPM_CONFIG_CACHE: /web/.npm-cache
+      NPM_CONFIG_CACHE: .npm-cache
       NODE_ENV: local
       WEB_CLIENT_PORT: 3000
       API_GATEWAY_PORT: 4000
       FIREBASE_PROJECT_ID: apollo-patient-interface
       CYPRESS_INSTALL_BINARY: 0
     volumes:
-      - ./web:/web:cached
+      - ./:/apollo-hospitals:cached
     depends_on:
       - nginx
 
   api-gateway:
     image: node:11.11.0
-    working_dir: /api/gateway
+    working_dir: /@apollo-hospitals/api/gateway
     command: >
       bash -c "npm install --production=false && 
                while ! curl -s http://profiles-service/graphql > /dev/null; 
@@ -53,14 +57,14 @@ services:
       WEB_CLIENT_PORT: 3000
       API_GATEWAY_PORT: 4000
     volumes:
-      - ./api:/api:cached
+      - ./:/@apollo-hospitals:cached
     depends_on:
       - profiles-service
       - nginx
 
   profiles-service:
     image: node:11.11.0
-    working_dir: /api/services/profiles
+    working_dir: /@apollo-hospitals/api/services/profiles
     command: bash -c "npm install --production=false && npm dedupe && npm run start:profiles-service"
     environment:
       NPM_CONFIG_CACHE: /api/.npm-cache
