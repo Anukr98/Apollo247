@@ -4,8 +4,8 @@ import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
 import * as firebaseAdmin from 'firebase-admin';
 import { createConnection } from 'typeorm';
-import { Patient } from 'profiles/entity/patient';
-import { patientTypeDefs, patientResolvers } from 'profiles/resolvers/patientResolvers';
+import { Patient } from 'services/profiles/entity/patient';
+import { patientTypeDefs, patientResolvers } from 'services/profiles/resolvers/patientResolvers';
 
 export interface Context {
   firebase: firebaseAdmin.app.App;

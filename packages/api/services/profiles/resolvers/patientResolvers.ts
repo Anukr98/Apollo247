@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
-import { Resolver } from 'profiles/profiles-service';
-import { Patient, ErrorMsgs } from 'profiles/entity/patient';
+import { Resolver } from 'services/profiles/index';
+import { Patient, ErrorMsgs } from 'services/profiles/entity/patient';
 import fetch from 'node-fetch';
 import { auth } from 'firebase-admin';
 import { BaseEntity, QueryFailedError } from 'typeorm';

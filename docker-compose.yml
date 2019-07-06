@@ -43,41 +43,42 @@ services:
 
   api-gateway:
     image: node:11.11.0
-    working_dir: /@apollo-hospitals/api/gateway
-    command: >
-      bash -c "npm install --production=false && 
-               while ! curl -s http://profiles-service/graphql > /dev/null; 
-                 do echo waiting for profiles-service...; 
-                 sleep 5; 
-               done; 
-               npm run start:api-gateway"
+    working_dir: /apollo-hospitals/api
+    command: bash -c "cd /apollo-hospitals &&
+                      npm install --production=false &&
+                      node_modules/.bin/lerna bootstrap &&
+                      while ! curl -s http://profiles-service/graphql > /dev/null; do echo waiting for profiles-service...; sleep 5; done;
+                      cd packages/api &&
+                      npm run start:api-gateway"
     environment:
-      NPM_CONFIG_CACHE: /api/.npm-cache
+      NPM_CONFIG_CACHE: .npm-cache
       NODE_ENV: local
       WEB_CLIENT_PORT: 3000
       API_GATEWAY_PORT: 4000
     volumes:
-      - ./:/@apollo-hospitals:cached
+      - ./:/apollo-hospitals:cached
     depends_on:
       - profiles-service
       - nginx
 
   profiles-service:
     image: node:11.11.0
-    working_dir: /@apollo-hospitals/api/services/profiles
-    command: bash -c "npm install --production=false && npm dedupe && npm run start:profiles-service"
+    working_dir: /apollo-hospitals/packages/api
+    command: bash -c "npm i -D lerna &&
+                      node_modules/.bin/lerna bootstrap &&
+                      npm run start:profiles-service"
     environment:
-      NPM_CONFIG_CACHE: /api/.npm-cache
+      NPM_CONFIG_CACHE: .npm-cache
       NODE_ENV: local
-      GOOGLE_APPLICATION_CREDENTIALS: /api/services/profiles/firebase-secrets.json
+      GOOGLE_APPLICATION_CREDENTIALS: /apollo-hospitals/packages/api/services/profiles/firebase-secrets.json
       FIREBASE_PROJECT_ID: apollo-patient-interface
     volumes:
-      - ./api:/api:cached
+      - ./:/apollo-hospitals:cached
     depends_on:
       - profiles-db
 
   profiles-db:
     image: postgres:10.8-alpine
     volumes:
-      - ./api/services/profiles/init-profiles-db.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./packages/api/services/profiles/init-profiles-db.sql:/docker-entrypoint-initdb.d/init.sql
 

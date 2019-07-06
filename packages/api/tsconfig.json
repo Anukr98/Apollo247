@@ -15,10 +15,7 @@
     "resolveJsonModule": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "lib": ["es5", "es6"],
-    "paths": {
-      "profiles/*": ["./services/profiles/*"]
-    }
+    "lib": ["es5", "es6"]
   },
   "exclude": ["node_modules"]
 }
