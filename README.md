@@ -4,7 +4,7 @@
 
 ## Usage
 1. Install docker and docker-compose
-2. Add the `firebase-secrets.json` to `api/services/profiles` folder (ask someone on the dev team for a copy)
+2. Add the `firebase-secrets.json` to the `api/src/profiles-service` folder (ask someone on the dev team for a copy)
 2. Start the profiles-service `docker-compose up profiles-service`
 3. Start the api-gateway `docker-compose up api-gateway`
 4. Start the web client `docker-compose up web` (this could take up to ~10 minutes)
