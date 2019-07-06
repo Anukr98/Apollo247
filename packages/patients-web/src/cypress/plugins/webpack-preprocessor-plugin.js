@@ -1,6 +1,6 @@
 const path = require('path');
 const webpackPreprocessor = require('@cypress/webpack-preprocessor');
-const webpack = require('webpack');
+const webpack = require('webpack'); // eslint-disable-line @typescript-eslint/no-unused-vars
 
 module.exports = (cypressConfig) => {
   // We need to make sure to set these `process.env` vars _before_ requiring the `webpack.config`!
