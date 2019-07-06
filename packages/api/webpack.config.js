@@ -4,11 +4,7 @@ const nodeExternals = require('webpack-node-externals');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const webpack = require('webpack');
 
-// const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
-
-const distDir = path.resolve(__dirname, 'dist');
-const nodeModulesDir = path.join(__dirname, 'node_modules');
 
 const plugins = [
   new CleanWebpackPlugin(),
@@ -38,16 +34,16 @@ module.exports = {
 
   mode: isProduction ? 'production' : 'development',
 
-  context: path.resolve(__dirname),
+  context: path.resolve(__dirname, 'src'),
 
   // Specify via command line
   // entry: {
-  //   'api-gateway': 'gateway/api-gateway.ts',
-  //   'profiles-service': 'services/profiles/profiles-service.ts',
+  //   'api-gateway': 'src/api-gateway.ts',
+  //   'profiles-service': 'src/profiles-service/profiles-service.ts',
   // },
 
   output: {
-    path: distDir,
+    path: path.resolve(__dirname, 'dist'),
     filename: '[name].bundle.js',
   },
 
@@ -55,7 +51,7 @@ module.exports = {
     rules: [
       {
         test: /\.(j|t)s?$/,
-        exclude: [nodeModulesDir],
+        exclude: [/node_modules/],
         use: [tsLoader],
       },
     ],
@@ -63,11 +59,7 @@ module.exports = {
 
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
-    modules: [path.join(__dirname, ''), nodeModulesDir],
-    alias: {
-      // Make sure to keep these in sync with tsconfig's paths setting
-      profiles: path.resolve(__dirname, 'services/profiles'),
-    },
+    modules: [path.join(__dirname, 'src'), 'node_modules'],
   },
 
   watch: false, // Turn on via --watch from the command line

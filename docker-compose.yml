@@ -66,7 +66,7 @@ services:
     environment:
       NPM_CONFIG_CACHE: .npm-cache
       NODE_ENV: local
-      GOOGLE_APPLICATION_CREDENTIALS: /apollo-hospitals/packages/api/services/profiles/firebase-secrets.json
+      GOOGLE_APPLICATION_CREDENTIALS: /apollo-hospitals/packages/api/src/profiles-service/firebase-secrets.json
       FIREBASE_PROJECT_ID: apollo-patient-interface
     volumes:
       - ./:/apollo-hospitals:cached
@@ -76,5 +76,5 @@ services:
   profiles-db:
     image: postgres:10.8-alpine
     volumes:
-      - ./packages/api/services/profiles/init-profiles-db.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./packages/api/src/profiles-service/init-profiles-db.sql:/docker-entrypoint-initdb.d/init.sql
 

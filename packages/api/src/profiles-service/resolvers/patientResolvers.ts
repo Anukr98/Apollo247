@@ -1,8 +1,8 @@
 import gql from 'graphql-tag';
-import { Resolver } from 'services/profiles/index';
-import { Patient, ErrorMsgs } from 'services/profiles/entity/patient';
+import { Resolver } from 'profiles-service/profiles-service';
+import { Patient, ErrorMsgs } from 'profiles-service/entity/patient';
 import fetch from 'node-fetch';
-import { auth } from 'firebase-admin';
+import { auth, FirebaseError } from 'firebase-admin';
 import { BaseEntity, QueryFailedError } from 'typeorm';
 
 import {
@@ -10,7 +10,7 @@ import {
   PrismGetAuthTokenError,
   PrismGetUsersError,
   PrismGetUsersResponse,
-} from 'services/types/prism';
+} from 'types/prism';
 
 export const patientTypeDefs = gql`
   enum Gender {
