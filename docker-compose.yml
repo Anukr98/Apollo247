@@ -21,11 +21,9 @@ services:
   patients-web:
     image: node:11.11.0-alpine
     working_dir: /apollo-hospitals/packages/patients-web
-    command: ash -c "cd /apollo-hospitals && 
-                     npm install --production=false && 
+    command: ash -c "npm i -D lerna &&
                      node_modules/.bin/lerna bootstrap && 
-                     cd packages/patients-web && 
-                     npm run lint"
+                     npm run start:patients-web"
     environment:
       # Make sure to keep these env vars synced with the following files:
       # cypress.json, webpack.config, and cypress/plugins/webpack-preprocessor
@@ -43,13 +41,11 @@ services:
 
   api-gateway:
     image: node:11.11.0
-    working_dir: /apollo-hospitals/api
-    command: bash -c "cd /apollo-hospitals &&
-                      npm install --production=false &&
-                      node_modules/.bin/lerna bootstrap &&
-                      while ! curl -s http://profiles-service/graphql > /dev/null; do echo waiting for profiles-service...; sleep 5; done;
-                      cd packages/api &&
-                      npm run start:api-gateway"
+    working_dir: /apollo-hospitals/packages/api
+    command: bash -c "while ! curl -s http://profiles-service/graphql > /dev/null; do echo waiting for profiles-service...; sleep 5; done;
+                      npm i -D lerna &&
+                      node_modules/.bin/lerna bootstrap && 
+                      npm run start:api-gateway" 
     environment:
       NPM_CONFIG_CACHE: .npm-cache
       NODE_ENV: local
@@ -64,8 +60,8 @@ services:
   profiles-service:
     image: node:11.11.0
     working_dir: /apollo-hospitals/packages/api
-    command: bash -c "npm i -D lerna &&
-                      node_modules/.bin/lerna bootstrap &&
+    command: bash -c "npm i -D lerna && 
+                      node_modules/.bin/lerna bootstrap && 
                       npm run start:profiles-service"
     environment:
       NPM_CONFIG_CACHE: .npm-cache
