@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "main": "index.js",
   "peerDependencies": {
+    "@material-ui/core": "^4.0.2",
+    "@material-ui/icons": "^4.0.1",
+    "@material-ui/styles": "^4.0.2"
   },
   "author": "sarink",
   "license": "ISC"
