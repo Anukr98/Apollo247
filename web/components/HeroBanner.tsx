@@ -147,7 +147,7 @@ export const HeroBanner: React.FC = () => {
                   classes={{ selected: classes.menuSelected }}
                   key={patient.id}
                 >
-                  {patient.firstName ? _startCase(_toLower(patient.firstName)) : ''}
+                  {patient.firstName ? _toLower(patient.firstName) : ''}
                 </MenuItem>
               ))}
               <MenuItem classes={{ selected: classes.menuSelected }}>

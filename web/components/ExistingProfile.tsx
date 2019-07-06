@@ -165,12 +165,16 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
 const isPatientInvalid = (patient: PatientSignIn_patientSignIn_patients) =>
   patient.relation == null;
 
-export interface ExistingProfileProps {}
+export interface ExistingProfileProps {
+  popupHandler: (popup: boolean) => void;
+}
 export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const classes = useStyles();
   const [patients, setPatients] = useState(useAllCurrentPatients());
+  const [mutationError, setMutationError] = useState<boolean>(false);
   if (!patients) return null;
   const disabled = patients.some(isPatientInvalid);
+  const { popupHandler } = props;
 
   return (
     <div className={classes.signUpPop}>
@@ -213,7 +217,6 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
             <AppButton
               type="submit"
               onClick={() => {
-                // WE DONT NEED TO IMPLEMENT THIS UNTIL THE NEXT SPRINT
                 patients.forEach((patient) => {
                   mutate({
                     variables: {
@@ -224,6 +227,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
                     },
                   });
                 });
+                popupHandler(false);
               }}
               disabled={disabled}
               fullWidth

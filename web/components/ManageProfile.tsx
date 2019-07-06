@@ -83,7 +83,11 @@ export const ManageProfile: React.FC = (props) => {
             }}
             classes={{ paper: classes.bottomPopover }}
           >
-            {currentPatient && currentPatient.uhid ? <ExistingProfile /> : <NewProfile />}
+            {currentPatient && currentPatient.uhid ? (
+              <ExistingProfile popupHandler={() => setIsPopoverOpen(false)} />
+            ) : (
+              <NewProfile />
+            )}
           </Popover>
         </div>
       )}
