@@ -1,0 +1,9 @@
+{
+  "name": "@aph/common",
+  "version": "0.0.1",
+  "main": "",
+  "peerDependencies": {
+  },
+  "author": "sarink",
+  "license": "ISC"
+}

@@ -6,7 +6,8 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
-    "start": "npm run apollo:download & npm run apollo:codegen:watch & npm run lint & npm run format:check & webpack-dev-server",
+    "start1": "npm run apollo:download & npm run apollo:codegen:watch & npm run lint & npm run format:check & webpack-dev-server",
+    "start": "webpack-dev-server",
     "build": "webpack",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
@@ -47,6 +48,7 @@
     "webpack-dev-server": "^3.7.1"
   },
   "dependencies": {
+    "@aph/common": "0.0.1",
     "@aph/eslint-config": "0.0.1",
     "@hot-loader/react-dom": "16.8.6",
     "@material-ui/core": "^4.0.2",
