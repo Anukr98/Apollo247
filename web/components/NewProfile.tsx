@@ -110,6 +110,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
 
   useEffect(() => {
     if (currentPatient) {
+      console.log(currentPatient);
       currentPatient.firstName !== null ? setFirstName(currentPatient.firstName) : '';
       currentPatient.lastName !== null ? setLastName(currentPatient.lastName) : '';
       currentPatient.gender !== null ? setGender(currentPatient.gender) : '';
@@ -143,7 +144,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const showFirstNameError = firstName.trim().length > 0 && !isNameValid(firstName);
   const showLastNameError = lastName.trim().length > 0 && !isNameValid(lastName);
   const showDobError = dateOfBirth.trim().length === 10 && !isDobValid(dateOfBirth);
-  const showEmailIdError = emailAddress.trim().length > 0 && !isEmailValid(emailAddress);
+  const showEmailIdError = emailAddress.length > 0 && !isEmailValid(emailAddress);
   const { popupHandler, showSuccess } = props;
 
   return (
