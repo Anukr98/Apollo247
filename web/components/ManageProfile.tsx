@@ -4,6 +4,7 @@ import { createStyles, makeStyles } from '@material-ui/styles';
 import { useCurrentPatient, useAllCurrentPatients } from 'hooks/authHooks';
 import { NewProfile } from 'components/NewProfile';
 import { ExistingProfile } from 'components/ExistingProfile';
+import { ProfileSuccess } from 'components/ProfileSuccess';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import React, { useRef, useEffect } from 'react';
 import _isEmpty from 'lodash/isEmpty';
@@ -49,6 +50,7 @@ export const ManageProfile: React.FC = (props) => {
   const currentPatient = useCurrentPatient();
   const allPatients = useAllCurrentPatients();
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [showSuccess, setShowSuccess] = React.useState<boolean>(false);
 
   useEffect(() => {
     if (allPatients) {
@@ -56,6 +58,22 @@ export const ManageProfile: React.FC = (props) => {
       if (isSomePatientMissingRelation) setIsPopoverOpen(true);
     }
   }, [allPatients]);
+
+  const newUserMarkup = () => {
+    if (showSuccess) {
+      setIsPopoverOpen(true);
+      return <ProfileSuccess popupHandler={(isPopoverOpen) => setIsPopoverOpen(isPopoverOpen)} />;
+    } else if (currentPatient && currentPatient.uhid) {
+      return <ExistingProfile popupHandler={(isPopoverOpen) => setIsPopoverOpen(isPopoverOpen)} />;
+    } else {
+      return (
+        <NewProfile
+          popupHandler={(isPopoverOpen) => setIsPopoverOpen(isPopoverOpen)}
+          showSuccess={(showSuccess) => setShowSuccess(showSuccess)}
+        />
+      );
+    }
+  };
 
   return (
     <ProtectedWithLoginPopup>
@@ -71,8 +89,8 @@ export const ManageProfile: React.FC = (props) => {
           <Popover
             open={isPopoverOpen}
             anchorEl={mascotRef.current}
-            onClose={() => setIsPopoverOpen(false)}
             className={classes.bottomPopover}
+            onClose={() => setIsPopoverOpen(false)}
             anchorOrigin={{
               vertical: 'bottom',
               horizontal: 'center',
@@ -83,7 +101,7 @@ export const ManageProfile: React.FC = (props) => {
             }}
             classes={{ paper: classes.bottomPopover }}
           >
-            {currentPatient && currentPatient.uhid ? <ExistingProfile /> : <NewProfile />}
+            {newUserMarkup()}
           </Popover>
         </div>
       )}
