@@ -7,7 +7,6 @@ import MenuItem from '@material-ui/core/MenuItem';
 import { AppSelectField } from 'components/ui/AppSelectField';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import _isEmpty from 'lodash/isEmpty';
-import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/lowerCase';
 import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
 import { useAuth } from 'hooks/authHooks';
