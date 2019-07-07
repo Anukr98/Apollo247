@@ -18,7 +18,6 @@ export interface GetPatients_getPatients_patients {
   gender: Gender | null;
   uhid: string | null;
   dateOfBirth: string | null;
-  emailAddress: string | null;
 }
 
 export interface GetPatients_getPatients {

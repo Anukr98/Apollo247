@@ -4,16 +4,17 @@ import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
-import Button from '@material-ui/core/Button';
-import { SignIn } from 'components/SignIn';
-import { Navigation } from 'components/Navigatiion';
-import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
-import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@material-ui/core/Button';
+import { SignIn } from 'components/SignIn';
+import { Navigation } from 'components/Navigatiion';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+
+import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -44,21 +45,20 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
-      '& img': {
-        marginTop: 10,
-      },
     },
     userAccountLogin: {
       marginLeft: 'auto',
     },
     userCircle: {
-      display: 'block',
+      display: 'flex',
       width: 48,
       height: 48,
       backgroundColor: '#afc3c9',
       borderRadius: '50%',
       textAlign: 'center',
       cursor: 'pointer',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     userActive: {
       backgroundColor: theme.palette.secondary.dark,
@@ -120,7 +120,7 @@ export const Header: React.FC = (props) => {
                 </Button>
               </DialogActions>
             </Dialog>
-            <Button variant="text" size="small" onClick={() => signOut()} color="primary">
+            <Button variant="text" size="small" onClick={() => signOut()}>
               Sign out
             </Button>
           </>
