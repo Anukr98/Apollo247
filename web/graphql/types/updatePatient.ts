@@ -18,6 +18,7 @@ export interface updatePatient_updatePatient_patient {
   gender: Gender | null;
   uhid: string | null;
   dateOfBirth: string | null;
+  emailAddress: string | null;
 }
 
 export interface updatePatient_updatePatient {

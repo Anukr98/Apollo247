@@ -171,7 +171,7 @@ export interface ExistingProfileProps {
 export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const classes = useStyles();
   const [patients, setPatients] = useState(useAllCurrentPatients());
-  const [mutationError, setMutationError] = useState<boolean>(false);
+  // const [mutationError, setMutationError] = useState<boolean>(false);
   if (!patients) return null;
   const disabled = patients.some(isPatientInvalid);
   const { popupHandler } = props;
@@ -212,7 +212,13 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
         </div>
       </div>
       <div className={classes.actions}>
-        <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
+        <Mutation<updatePatient, updatePatientVariables>
+          mutation={UPDATE_PATIENT}
+          onCompleted={() => {
+            popupHandler(false);
+            window.location.reload(); // this needs to be removed.
+          }}
+        >
           {(mutate, { loading }) => (
             <AppButton
               type="submit"
@@ -227,7 +233,6 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
                     },
                   });
                 });
-                popupHandler(false);
               }}
               disabled={disabled}
               fullWidth
