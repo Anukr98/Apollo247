@@ -28,7 +28,7 @@ services:
       # Make sure to keep these env vars synced with the following files:
       # cypress.json, webpack.config, and cypress/plugins/webpack-preprocessor
       # We should probably refactor this to a .env file...
-      NPM_CONFIG_CACHE: .npm-cache
+      NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache
       NODE_ENV: local
       WEB_CLIENT_PORT: 3000
       API_GATEWAY_PORT: 4000
@@ -47,7 +47,7 @@ services:
                       node_modules/.bin/lerna bootstrap && 
                       npm run start:api-gateway" 
     environment:
-      NPM_CONFIG_CACHE: .npm-cache
+      NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache
       NODE_ENV: local
       WEB_CLIENT_PORT: 3000
       API_GATEWAY_PORT: 4000
@@ -64,7 +64,7 @@ services:
                       node_modules/.bin/lerna bootstrap && 
                       npm run start:profiles-service"
     environment:
-      NPM_CONFIG_CACHE: .npm-cache
+      NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache
       NODE_ENV: local
       GOOGLE_APPLICATION_CREDENTIALS: /apollo-hospitals/packages/api/src/profiles-service/firebase-secrets.json
       FIREBASE_PROJECT_ID: apollo-patient-interface

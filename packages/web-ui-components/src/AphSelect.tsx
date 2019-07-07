@@ -65,8 +65,8 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const AppSelectField: React.FC<SelectProps> = (props) => {
-  const classes = useStyles();
+export const AphSelect: React.FC<SelectProps> = (props) => {
+  const classes = useStyles({});
   return (
     <Select
       fullWidth

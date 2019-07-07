@@ -3,8 +3,7 @@ import { Theme, CircularProgress } from '@material-ui/core';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
-import { AppButton } from 'components/ui/AppButton';
-import { AppSelectField } from 'components/ui/AppSelectField';
+import { AphButton, AphSelect } from '@aph/web-ui-components';
 import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
 import _camelCase from 'lodash/camelCase';
 import { Relation } from 'graphql/types/globalTypes';
@@ -137,7 +136,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
           {_camelCase(patient.gender || '')}
           {_camelCase(patient.dateOfBirth || '')}
         </div>
-        <AppSelectField
+        <AphSelect
           value={selectedRelation}
           onChange={(e) => {
             const updatedRelation = e.target.value as Relation;
@@ -156,7 +155,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
               {relationOption}
             </MenuItem>
           ))}
-        </AppSelectField>
+        </AphSelect>
       </div>
     </div>
   );
@@ -210,7 +209,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
       <div className={classes.actions}>
         <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
           {(mutate, { loading }) => (
-            <AppButton
+            <AphButton
               type="submit"
               onClick={() => {
                 // WE DONT NEED TO IMPLEMENT THIS UNTIL THE NEXT SPRINT
@@ -231,7 +230,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
               color="primary"
             >
               {loading ? <CircularProgress /> : 'Submit'}
-            </AppButton>
+            </AphButton>
           )}
         </Mutation>
       </div>

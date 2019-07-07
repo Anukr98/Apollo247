@@ -15,8 +15,8 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const AppButton: React.FC<ButtonProps> = (props) => {
-  const classes = useStyles();
+export const AphButton: React.FC<ButtonProps> = (props) => {
+  const classes = useStyles({});
   return (
     <Button className={classes.root} {...props}>
       {props.children}

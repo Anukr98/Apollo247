@@ -10,7 +10,8 @@
     "allowUnreachableCode": true,
     "strictNullChecks": true,
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "lib": ["es5", "es6"]
   },
-  "exclude": ["node_modules", "src/cypress"]
+  "exclude": ["node_modules"]
 }
