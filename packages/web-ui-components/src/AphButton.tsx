@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const AphButton: React.FC<ButtonProps> = (props) => {
+const AphButton: React.FC<ButtonProps> = (props) => {
   const classes = useStyles({});
   return (
     <Button className={classes.root} {...props}>
@@ -23,3 +23,5 @@ export const AphButton: React.FC<ButtonProps> = (props) => {
     </Button>
   );
 };
+
+export default AphButton;

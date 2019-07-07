@@ -4,7 +4,9 @@
     "outDir": "dist",
     "baseUrl": "src",
     "noImplicitAny": false,
+    "allowJs": false,
     "declaration": true,
+    "module": "commonjs",
     "jsx": "react",
     "lib": ["dom", "dom.iterable", "es5", "es6", "scripthost"]
   }

@@ -21,9 +21,10 @@ services:
   patients-web:
     image: node:11.11.0-alpine
     working_dir: /apollo-hospitals/packages/patients-web
-    command: ash -c "npm i -D lerna &&
-                     node_modules/.bin/lerna bootstrap && 
-                     npm run start"
+    # command: ash -c "npm i -D lerna &&
+    #                  node_modules/.bin/lerna bootstrap && 
+    #                  npm run start"
+    command: ash -c "npm run start"
     environment:
       # Make sure to keep these env vars synced with the following files:
       # cypress.json, webpack.config, and cypress/plugins/webpack-preprocessor

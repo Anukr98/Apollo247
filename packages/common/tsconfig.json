@@ -3,7 +3,7 @@
     "module": "es6",
     "target": "es5",
     "moduleResolution": "node",
-    "allowJs": false,
+    "allowJs": true,
     "sourceMap": true,
     "noImplicitAny": true,
     "allowSyntheticDefaultImports": true,

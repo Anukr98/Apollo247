@@ -65,7 +65,7 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const AphSelect: React.FC<SelectProps> = (props) => {
+const AphSelect: React.FC<SelectProps> = (props) => {
   const classes = useStyles({});
   return (
     <Select
@@ -80,3 +80,5 @@ export const AphSelect: React.FC<SelectProps> = (props) => {
     </Select>
   );
 };
+
+export default AphSelect;

@@ -2,8 +2,7 @@
   "name": "@aph/ui-mobile",
   "version": "0.0.1",
   "main": "index.js",
-  "peerDependencies": {
-  },
+  "peerDependencies": {},
   "author": "sarink",
   "license": "ISC"
 }

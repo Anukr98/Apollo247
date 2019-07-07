@@ -1,7 +1,6 @@
 {
   "npmClient": "npm",
   "npmClientArgs": [
-    "--production",
     "--no-optional"
   ],
   "packages": [

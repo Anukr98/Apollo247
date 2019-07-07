@@ -3,7 +3,7 @@ import { Theme } from '@material-ui/core';
 import React from 'react';
 import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
-import { AppButton } from 'components/ui/AppButton';
+import { AphButton } from '@aph/web-ui-components';
 import { useIsSignedIn } from 'hooks/authHooks';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 
@@ -137,9 +137,9 @@ export const ProfileSuccess: React.FC = (props) => {
             </p>
           </div>
           <div className={classes.actions}>
-            <AppButton color="primary" classes={{ root: classes.button }}>
+            <AphButton color="primary" classes={{ root: classes.button }}>
               Ok, Got it
-            </AppButton>
+            </AphButton>
           </div>
         </div>
       </Popover>

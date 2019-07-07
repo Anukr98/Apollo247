@@ -1,6 +1,10 @@
 {
   "name": "apollo-hospitals",
   "private": true,
+  "scripts": {
+    "install": "lerna bootstrap",
+    "clean": "lerna clean"
+  },
   "devDependencies": {
     "lerna": "^3.15.0"
   }

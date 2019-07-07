@@ -10,14 +10,13 @@ import {
   Button,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AppInputField } from 'components/ui/AppInputField';
+import { AphTextField, AphInput } from '@aph/web-ui-components';
 import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
 import _uniqueId from 'lodash/uniqueId';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
 import { isMobileNumberValid } from 'utils/FormValidationUtils';
-import { AppTextField } from './ui/AppTextField';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -126,7 +125,7 @@ export const SignIn: React.FC = (props) => {
       <Grid container spacing={1}>
         {_times(numOtpDigits, (index) => (
           <Grid item xs={2} key={index}>
-            <AppTextField
+            <AphTextField
               autoFocus={index === 0}
               inputRef={otpInputRefs[index]}
               value={_isNumber(otp[index]) ? otp[index] : ''}
@@ -186,7 +185,7 @@ export const SignIn: React.FC = (props) => {
       <Typography variant="h2">hi</Typography>
       <p>Please enter your mobile number to login</p>
       <FormControl fullWidth>
-        <AppInputField
+        <AphInput
           autoFocus
           inputProps={{ type: 'tel', maxLength: 10 }}
           value={mobileNumber}

@@ -2,9 +2,8 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
-import { AppButton } from 'components/ui/AppButton';
+import { AphButton, AphSelect } from '@aph/web-ui-components';
 import MenuItem from '@material-ui/core/MenuItem';
-import { AppSelectField } from 'components/ui/AppSelectField';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import _isEmpty from 'lodash/isEmpty';
 import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
@@ -129,7 +128,7 @@ export const HeroBanner: React.FC = () => {
         {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
           <Typography variant="h1">
             <span>hello</span>
-            <AppSelectField
+            <AphSelect
               value={currentPatient.id}
               onChange={(e) => {
                 const newId = e.target.value as PatientSignIn_patientSignIn_patients['id'];
@@ -149,11 +148,11 @@ export const HeroBanner: React.FC = () => {
                 </MenuItem>
               ))}
               <MenuItem classes={{ selected: classes.menuSelected }}>
-                <AppButton color="primary" classes={{ root: classes.addMemberBtn }}>
+                <AphButton color="primary" classes={{ root: classes.addMemberBtn }}>
                   Add Member
-                </AppButton>
+                </AphButton>
               </MenuItem>
-            </AppSelectField>
+            </AphSelect>
           </Typography>
         ) : (
           <Typography variant="h1">hello there!</Typography>
@@ -162,14 +161,14 @@ export const HeroBanner: React.FC = () => {
         <p>Not feeling well today? Don’t worry. We will help you find the right doctor :)</p>
         <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup }) => (
-            <AppButton
+            <AphButton
               variant="contained"
               color="primary"
               classes={{ root: classes.button }}
               onClick={() => protectWithLoginPopup()}
             >
               Consult a doctor
-            </AppButton>
+            </AphButton>
           )}
         </ProtectedWithLoginPopup>
       </div>

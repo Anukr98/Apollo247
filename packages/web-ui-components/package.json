@@ -2,21 +2,31 @@
   "name": "@aph/web-ui-components",
   "version": "0.0.1",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "rm -rf dist && node_modules/.bin/tsc --project . && node_modules/.bin/create-index dist"
+    "build": "rm -rf dist/* && node_modules/.bin/tsc --project . && node_modules/.bin/create-index dist && cp dist/index.js dist/index.d.ts",
+    "dev": "node_modules/.bin/create-index dist && mv dist/index.js . && rm -rf dist/* && mv index.js dist/index.js && node_modules/.bin/tsc --project . -w"
   },
-  "devDependencies": {
-    "@aph/common": "0.0.1",
+  "peerDependencies": {
     "@material-ui/core": "^4.0.2",
     "@material-ui/icons": "^4.0.1",
     "@material-ui/styles": "^4.0.2",
+    "react": "^16.8.6"
+  },
+  "devDependencies": {
+    "@material-ui/core": "^4.0.2",
+    "@material-ui/icons": "^4.0.1",
+    "@material-ui/styles": "^4.0.2",
+    "@types/react": "^16.8.19",
+    "@types/react-dom": "^16.8.4",
     "create-index": "^2.4.0",
-    "lerna": "^3.15.0",
     "react": "^16.8.6",
+    "react-dom": "16.8.6",
     "typescript": "^3.5.2"
   },
-  "peerDependencies": {},
-  "dependencies": {},
+  "dependencies": {
+    "@aph/common": "0.0.1"
+  },
   "author": "sarink",
   "license": "ISC"
 }

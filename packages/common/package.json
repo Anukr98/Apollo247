@@ -2,8 +2,7 @@
   "name": "@aph/common",
   "version": "0.0.1",
   "main": "",
-  "peerDependencies": {
-  },
+  "peerDependencies": {},
   "author": "sarink",
   "license": "ISC"
 }

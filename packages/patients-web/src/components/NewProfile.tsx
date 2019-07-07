@@ -2,8 +2,7 @@ import { Theme, FormControl } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
-import { AppButton } from 'components/ui/AppButton';
-import { AppTextField } from 'components/ui/AppTextField';
+import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { Gender } from 'graphql/types/globalTypes';
 import React, { useState } from 'react';
 import FormHelperText from '@material-ui/core/FormHelperText';
@@ -124,7 +123,7 @@ export const NewProfile: React.FC = (props) => {
           <p>Let us quickly get to know you so that we can get you the best help :)</p>
           <div className={classes.formGroup}>
             <FormControl className={classes.formControl} fullWidth>
-              <AppTextField
+              <AphTextField
                 label="First Name"
                 placeholder="Example, Jonathan"
                 value={firstName}
@@ -143,7 +142,7 @@ export const NewProfile: React.FC = (props) => {
               </FormHelperText>
             </FormControl>
             <FormControl className={classes.formControl} fullWidth>
-              <AppTextField
+              <AphTextField
                 label="Last Name"
                 placeholder="Example, Donut"
                 value={lastName}
@@ -162,7 +161,7 @@ export const NewProfile: React.FC = (props) => {
               </FormHelperText>
             </FormControl>
             <FormControl className={classes.formControl} fullWidth>
-              <AppTextField
+              <AphTextField
                 label="Date Of Birth"
                 placeholder="dd/mm/yyyy"
                 value={dateOfBirth}
@@ -185,7 +184,7 @@ export const NewProfile: React.FC = (props) => {
               <Grid container spacing={2} className={classes.btnGroup}>
                 {Object.values(Gender).map((gender) => (
                   <Grid item xs={4} sm={4} key={gender}>
-                    <AppButton
+                    <AphButton
                       variant="contained"
                       value={gender}
                       classes={selectedGender === gender ? { root: classes.btnActive } : {}}
@@ -194,13 +193,13 @@ export const NewProfile: React.FC = (props) => {
                       }}
                     >
                       {gender}
-                    </AppButton>
+                    </AphButton>
                   </Grid>
                 ))}
               </Grid>
             </div>
             <FormControl className={classes.formControl} fullWidth>
-              <AppTextField
+              <AphTextField
                 label="Email Address (Optional)"
                 placeholder="name@email.com"
                 value={emailAddress}
@@ -221,9 +220,9 @@ export const NewProfile: React.FC = (props) => {
         </div>
       </div>
       <div className={classes.actions}>
-        <AppButton fullWidth disabled={submitDisabled} variant="contained" color="primary">
+        <AphButton fullWidth disabled={submitDisabled} variant="contained" color="primary">
           Submit
-        </AppButton>
+        </AphButton>
       </div>
     </div>
   );

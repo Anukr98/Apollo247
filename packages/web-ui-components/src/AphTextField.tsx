@@ -70,7 +70,7 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const AphTextField: React.FC<TextFieldProps> = (props) => {
+const AphTextField: React.FC<TextFieldProps> = (props) => {
   const classes = useStyles({});
   return (
     <TextField
@@ -92,3 +92,5 @@ export const AphTextField: React.FC<TextFieldProps> = (props) => {
     />
   );
 };
+
+export default AphTextField;
