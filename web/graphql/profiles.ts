@@ -12,7 +12,6 @@ export const GET_PATIENTS = gql`
         gender
         uhid
         dateOfBirth
-        emailAddress
       }
     }
   }
@@ -30,7 +29,6 @@ export const PATIENT_SIGN_IN = gql`
         gender
         uhid
         dateOfBirth
-        emailAddress
       }
       errors {
         messages
@@ -51,7 +49,6 @@ export const UPDATE_PATIENT = gql`
         gender
         uhid
         dateOfBirth
-        emailAddress
       }
     }
   }
