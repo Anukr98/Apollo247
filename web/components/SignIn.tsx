@@ -14,7 +14,6 @@ import { AppInputField } from 'components/ui/AppInputField';
 import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
-import _uniqueId from 'lodash/uniqueId';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
 import { isMobileNumberValid, isDigit } from 'utils/FormValidationUtils';
 import { AppTextField } from './ui/AppTextField';
@@ -99,6 +98,7 @@ export const SignIn: React.FC = (props) => {
   const {
     sendOtp,
     sendOtpError,
+    setVerifyOtpError,
     isSendingOtp,
 
     verifyOtp,
@@ -114,6 +114,13 @@ export const SignIn: React.FC = (props) => {
       otpInputRefs[index] = inputRef;
     });
   }, []);
+
+  // if we receive otp error as object... This is unnecessary though...
+  // this code is scrpe. need to revamp.
+  const booleanOtpError =
+    verifyOtpError && typeof verifyOtpError === 'object' && verifyOtpError !== null
+      ? true
+      : verifyOtpError;
 
   return displayOtpInput ? (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
@@ -154,7 +161,7 @@ export const SignIn: React.FC = (props) => {
                   focusPreviousInput();
                 }
               }}
-              error={verifyOtpError}
+              error={booleanOtpError}
             />
           </Grid>
         ))}
@@ -172,6 +179,7 @@ export const SignIn: React.FC = (props) => {
         onClick={() => {
           setOtp([]);
           sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
+          setVerifyOtpError(false);
         }}
       >
         Resend OTP

@@ -72,6 +72,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const AppTextField: React.FC<TextFieldProps> = (props) => {
   const classes = useStyles();
+  console.log(props);
   return (
     <TextField
       fullWidth
