@@ -262,7 +262,6 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
           onCompleted={() => {
             popupHandler(false);
             showSuccess(true);
-            window.location.reload(); // this needs to be removed.
           }}
         >
           {(mutate, { loading }) => (

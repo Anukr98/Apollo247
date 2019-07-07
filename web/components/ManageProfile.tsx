@@ -62,9 +62,9 @@ export const ManageProfile: React.FC = (props) => {
   const newUserMarkup = () => {
     if (showSuccess) {
       setIsPopoverOpen(true);
-      return <ProfileSuccess />;
+      return <ProfileSuccess popupHandler={(isPopoverOpen) => setIsPopoverOpen(isPopoverOpen)} />;
     } else if (currentPatient && currentPatient.uhid) {
-      return <ExistingProfile popupHandler={() => setIsPopoverOpen(false)} />;
+      return <ExistingProfile popupHandler={(isPopoverOpen) => setIsPopoverOpen(isPopoverOpen)} />;
     } else {
       return (
         <NewProfile

@@ -85,8 +85,13 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const ProfileSuccess: React.FC = (props) => {
+export interface ProfileSuccessProps {
+  popupHandler: (popup: boolean) => void;
+}
+
+export const ProfileSuccess: React.FC<ProfileSuccessProps> = (props) => {
   const classes = useStyles();
+  const { popupHandler } = props;
   return (
     <div className={classes.signUpBar}>
       <div className={classes.signUpPop}>
@@ -101,7 +106,14 @@ export const ProfileSuccess: React.FC = (props) => {
           </p>
         </div>
         <div className={classes.actions}>
-          <AppButton color="primary" classes={{ root: classes.button }}>
+          <AppButton
+            color="primary"
+            classes={{ root: classes.button }}
+            onClick={() => {
+              popupHandler(false);
+              window.location.reload(); // this needs to be removed.
+            }}
+          >
             Ok, Got it
           </AppButton>
         </div>
