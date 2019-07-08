@@ -13,6 +13,8 @@
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx"
   },
   "devDependencies": {
+    "@aph/eslint-config": "0.0.1",
+    "@aph/prettier-config": "0.0.1",
     "@types/graphql": "^14.2.1",
     "@types/lodash": "^4.14.134",
     "@typescript-eslint/eslint-plugin": "^1.9.0",
@@ -30,7 +32,6 @@
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
-    "@aph/eslint-config": "0.0.1",
     "@apollo/federation": "^0.6.4",
     "@apollo/gateway": "^0.6.6",
     "@types/node-fetch": "^2.3.7",
