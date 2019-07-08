@@ -5,7 +5,7 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
-    "start:profiles-service": "(test -f dist/profiles-service.bundle.js || echo 'module.exports={}' > dist/profiles-service.bundle.js) && webpack profiles-service=profiles-service/profiles-service.ts --watch & nodemon dist/profiles-service.bundle.js --watch dist/profiles-service.bundle.js",
+    "start:profiles-service": "(mkdir -p dist && test -f dist/profiles-service.bundle.js || echo 'module.exports={}' > dist/profiles-service.bundle.js) && webpack profiles-service=profiles-service/profiles-service.ts --watch & nodemon dist/profiles-service.bundle.js --watch dist/profiles-service.bundle.js",
     "start:api-gateway": "webpack api-gateway=api-gateway.ts && node dist/api-gateway.bundle.js",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
