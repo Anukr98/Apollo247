@@ -1,11 +1,8 @@
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
-import Popover from '@material-ui/core/Popover';
 import Typography from '@material-ui/core/Typography';
 import { AppButton } from 'components/ui/AppButton';
-import { useIsSignedIn } from 'hooks/authHooks';
-import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -88,61 +85,39 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const ProfileSuccess: React.FC = (props) => {
-  const classes = useStyles();
-  const mascotRef = React.useRef(null);
-  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-  const isSignedIn = useIsSignedIn();
+export interface ProfileSuccessProps {
+  popupHandler: (popup: boolean) => void;
+}
 
+export const ProfileSuccess: React.FC<ProfileSuccessProps> = (props) => {
+  const classes = useStyles();
+  const { popupHandler } = props;
   return (
     <div className={classes.signUpBar}>
-      <ProtectedWithLoginPopup>
-        {({ protectWithLoginPopup }) => (
-          <div
-            className={classes.mascotCircle}
-            ref={mascotRef}
+      <div className={classes.signUpPop}>
+        <div className={classes.mascotIcon}>
+          <img src={require('images/ic_mascot.png')} alt="" />
+        </div>
+        <div className={classes.signinGroup}>
+          <Typography variant="h2">congratulations!</Typography>
+          <p>
+            Welcome to the Apollo family. You can add more family members any time from ‘My
+            Account’.
+          </p>
+        </div>
+        <div className={classes.actions}>
+          <AppButton
+            color="primary"
+            classes={{ root: classes.button }}
             onClick={() => {
-              protectWithLoginPopup();
-              if (isSignedIn) setIsPopoverOpen(true);
+              popupHandler(false);
+              window.location.reload(); // this needs to be removed.
             }}
           >
-            <img src={require('images/ic_mascot.png')} alt="" />
-          </div>
-        )}
-      </ProtectedWithLoginPopup>
-      <Popover
-        open={isPopoverOpen}
-        anchorEl={mascotRef.current}
-        onClose={() => setIsPopoverOpen(false)}
-        className={classes.bottomPopover}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.signUpPop}>
-          <div className={classes.mascotIcon}>
-            <img src={require('images/ic_mascot.png')} alt="" />
-          </div>
-          <div className={classes.signinGroup}>
-            <Typography variant="h2">Congratulations!</Typography>
-            <p>
-              Welcome to the Apollo family. You can add more family members any time from ‘My
-              Account’.
-            </p>
-          </div>
-          <div className={classes.actions}>
-            <AppButton color="primary" classes={{ root: classes.button }}>
-              Ok, Got it
-            </AppButton>
-          </div>
+            Ok, Got it
+          </AppButton>
         </div>
-      </Popover>
+      </div>
     </div>
   );
 };
