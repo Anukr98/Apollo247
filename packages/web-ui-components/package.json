@@ -5,7 +5,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rm -rf dist/* && tsc --project . && create-index dist && cp dist/index.js dist/index.d.ts",
-    "start": "create-index dist && mv dist/index.js . && rm -rf dist/* && mv index.js dist/index.js && tsc --project . -w"
+    "start": "npm run build && tsc --project . -w"
   },
   "peerDependencies": {
     "@material-ui/core": "^4.0.2",
