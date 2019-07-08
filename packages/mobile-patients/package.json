@@ -19,6 +19,7 @@
   "devDependencies": {
     "@aph/eslint-config": "0.0.1",
     "@aph/prettier-config": "0.0.1",
+    "@aph/tsconfig": "0.0.1",
     "@types/graphql": "^14.2.1",
     "@types/lodash": "^4.14.134",
     "@types/react": "^16.8.19",

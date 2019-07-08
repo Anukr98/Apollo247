@@ -1,21 +1,9 @@
 {
+  "extends": "./node_modules/@aph/tsconfig/tsconfig.json",
   "compilerOptions": {
-    "outDir": "./dist/",
-    "baseUrl": "./src/",
-    "module": "es6",
-    "target": "es6",
-    "moduleResolution": "node",
-    "allowJs": true,
-    "sourceMap": true,
-    "noImplicitAny": true,
-    "allowSyntheticDefaultImports": true,
-    "traceResolution": false,
-    "allowUnreachableCode": true,
-    "strictNullChecks": true,
-    "resolveJsonModule": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "lib": ["es5", "es6"]
+    "outDir": "dist",
+    "baseUrl": "src",
+    "noImplicitAny": false
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist"]
 }

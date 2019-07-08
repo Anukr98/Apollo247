@@ -24,7 +24,7 @@
     "typescript": "^3.5.2"
   },
   "dependencies": {
-    "@aph/common": "0.0.1"
+    "@aph/tsconfig": "0.0.1"
   },
   "author": "sarink",
   "license": "ISC"
