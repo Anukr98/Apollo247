@@ -15,6 +15,7 @@ export const useAuth = () => {
   const verifyOtp = useAuthContext().verifyOtp!;
   const verifyOtpError = useAuthContext().verifyOtpError!;
   const isVerifyingOtp = useAuthContext().isVerifyingOtp!;
+  const setVerifyOtpError = useAuthContext().setVerifyOtpError!;
 
   const sendOtp = useAuthContext().sendOtp!;
   const sendOtpError = useAuthContext().sendOtpError;
@@ -33,6 +34,7 @@ export const useAuth = () => {
     verifyOtp,
     verifyOtpError,
     isVerifyingOtp,
+    setVerifyOtpError,
 
     sendOtp,
     sendOtpError,
