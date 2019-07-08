@@ -2,8 +2,10 @@
   "name": "apollo-hospitals",
   "private": true,
   "scripts": {
-    "install": "lerna bootstrap",
-    "clean": "lerna clean"
+    "clean": "lerna clean",
+    "bootstrap": "lerna bootstrap",
+    "bootstrap:web": "lerna bootstrap --ignore mobile*",
+    "bootstrap:mobile": "lerna bootstrap --ignore web*"
   },
   "workspaces": {
     "packages": [

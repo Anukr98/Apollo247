@@ -1,5 +1,5 @@
 {
-  "name": "@aph/patients-web",
+  "name": "@aph/web-patients",
   "version": "0.0.1",
   "description": "",
   "main": "dist/index.bundle.js",

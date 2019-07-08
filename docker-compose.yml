@@ -11,16 +11,16 @@ services:
     volumes:
       - ./nginx/log/:/var/log/nginx
       - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
-      - ./packages/patients-web/dist/:/usr/share/nginx/html/:ro 
+      - ./packages/web-patients/dist/:/usr/share/nginx/html/:ro 
 
   pgweb:
     image: sosedoff/pgweb:0.11.2
     ports:
       - 8081:8081
 
-  patients-web:
+  web-patients:
     image: node:12.6.0-alpine
-    working_dir: /apollo-hospitals/packages/patients-web
+    working_dir: /apollo-hospitals/packages/web-patients
     command: ash -c "npm run start"
     environment:
       # Make sure to keep these env vars synced with the following files:
