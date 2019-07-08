@@ -30,6 +30,7 @@ export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients
   sendOtp: ((phoneNumber: string, captchaPlacement: HTMLElement | null) => Promise<unknown>) | null;
   sendOtpError: boolean;
   isSendingOtp: boolean;
+  setVerifyOtpError: ((otpVerified: boolean) => void) | null;
 
   verifyOtp: ((otp: string) => void) | null;
   verifyOtpError: boolean;
@@ -62,6 +63,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
   isLoginPopupVisible: false,
   setIsLoginPopupVisible: null,
+  setVerifyOtpError: null,
 });
 
 let apolloClient: ApolloClient<any>;
@@ -237,6 +239,7 @@ export const AuthProvider: React.FC = (props) => {
 
             isLoginPopupVisible,
             setIsLoginPopupVisible,
+            setVerifyOtpError,
           }}
         >
           {props.children}
