@@ -5,6 +5,11 @@
     "install": "lerna bootstrap",
     "clean": "lerna clean"
   },
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
   "devDependencies": {
     "lerna": "^3.15.0"
   }

@@ -6,20 +6,18 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
-    "start1": "npm run apollo:download & npm run apollo:codegen:watch & npm run lint & npm run format:check & webpack-dev-server",
-    "start": "webpack-dev-server",
+    "start": "npm run apollo:download & npm run apollo:codegen:watch & webpack-dev-server",
     "build": "webpack",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "apollo:download": "apollo schema:download ./graphql/schema.json --endpoint=http://api-gateway:${API_GATEWAY_PORT}/graphql",
-    "apollo:codegen": "apollo codegen:generate ./graphql/types/ --outputFlat --addTypename --localSchemaFile=./graphql/schema.json --target=typescript --queries=./graphql/**.ts",
-    "apollo:codegen:watch": "apollo codegen:generate ./graphql/types/ --outputFlat --addTypename --localSchemaFile=./graphql/schema.json --target=typescript --queries=./graphql/**.ts --watch"
+    "apollo:download": "apollo schema:download ./src/graphql/schema.json --endpoint=http://api-gateway:${API_GATEWAY_PORT}/graphql",
+    "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./src/graphql/schema.json --target=typescript --queries=./src/graphql/**.ts",
+    "apollo:codegen:watch": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./src/graphql/schema.json --target=typescript --queries=./src/graphql/**.ts --watch"
   },
   "devDependencies": {
     "@babel/core": "7.4.5",
     "@cypress/webpack-preprocessor": "^4.1.0",
-    "@types/auth0-js": "^9.10.2",
     "@types/graphql": "^14.2.1",
     "@types/lodash": "^4.14.134",
     "@types/react": "^16.8.19",
@@ -60,7 +58,6 @@
     "apollo-client": "^2.6.2",
     "apollo-link-error": "^1.1.11",
     "apollo-link-http": "^1.5.15",
-    "auth0-js": "^9.10.4",
     "firebase": "^6.2.2",
     "firebaseui": "^4.0.0",
     "graphql": "~14.2.1",

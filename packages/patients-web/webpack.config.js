@@ -65,6 +65,7 @@ module.exports = {
       {
         test: /\.(j|t)sx?$/,
         exclude: [/node_modules/],
+        use: isProduction ? [tsLoader] : [tsLoader],
         use: isProduction ? [tsLoader] : [rhlBabelLoader, tsLoader],
       },
       {
@@ -77,12 +78,14 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
     modules: [path.resolve(__dirname, 'src'), 'node_modules'],
-    alias:
-      isLocal || isDevelopment
-        ? {
-            'react-dom': '@hot-loader/react-dom',
-          }
-        : undefined,
+    alias: {
+      react: path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/@hot-loader/react-dom'),
+      'react-hot-loader': path.resolve(__dirname, 'node_modules/react-hot-loader'),
+      '@material-ui/core': path.resolve(__dirname, 'node_modules/@material-ui/core'),
+      '@material-ui/icons': path.resolve(__dirname, 'node_modules/@material-ui/icons'),
+      '@material-ui/styles': path.resolve(__dirname, 'node_modules/@material-ui/styles'),
+    },
   },
 
   optimization: {
@@ -107,7 +110,7 @@ module.exports = {
           watchOptions: {
             aggregateTimeout: 300,
             poll: 1000,
-            ignored: [/node_modules/],
+            ignored: [/node_modules([\\]+|\/)+(?!@aph)/],
           },
         }
       : undefined,

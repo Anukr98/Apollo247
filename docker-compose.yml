@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   nginx:
-    image: nginx:1.14.2-alpine
+    image: nginx:1.16.0-alpine
     tty: true
     command: ash -c "nginx -t && nginx -g 'daemon off;'"
     ports:
@@ -11,7 +11,7 @@ services:
     volumes:
       - ./nginx/log/:/var/log/nginx
       - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
-      - ./web/dist/:/usr/share/nginx/html/:ro 
+      - ./packages/patients-web/dist/:/usr/share/nginx/html/:ro 
 
   pgweb:
     image: sosedoff/pgweb:0.11.2
@@ -19,11 +19,8 @@ services:
       - 8081:8081
 
   patients-web:
-    image: node:11.11.0-alpine
+    image: node:12.6.0-alpine
     working_dir: /apollo-hospitals/packages/patients-web
-    # command: ash -c "npm i -D lerna &&
-    #                  node_modules/.bin/lerna bootstrap && 
-    #                  npm run start"
     command: ash -c "npm run start"
     environment:
       # Make sure to keep these env vars synced with the following files:
@@ -40,12 +37,15 @@ services:
     depends_on:
       - nginx
 
+  web-ui-components:
+    image: node:12.6.0-alpine
+    working_dir: /apollo-hospitals/packages/web-ui-components
+    command: ash -c "npm run start"
+
   api-gateway:
-    image: node:11.11.0
+    image: node:12.6.0
     working_dir: /apollo-hospitals/packages/api
     command: bash -c "while ! curl -s http://profiles-service/graphql > /dev/null; do echo waiting for profiles-service...; sleep 5; done;
-                      npm i -D lerna &&
-                      node_modules/.bin/lerna bootstrap && 
                       npm run start:api-gateway" 
     environment:
       NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache
@@ -59,11 +59,9 @@ services:
       - nginx
 
   profiles-service:
-    image: node:11.11.0
+    image: node:12.6.0
     working_dir: /apollo-hospitals/packages/api
-    command: bash -c "npm i -D lerna && 
-                      node_modules/.bin/lerna bootstrap && 
-                      npm run start:profiles-service"
+    command: bash -c "npm run start:profiles-service"
     environment:
       NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache
       NODE_ENV: local

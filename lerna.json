@@ -1,8 +1,5 @@
 {
   "npmClient": "npm",
-  "npmClientArgs": [
-    "--no-optional"
-  ],
   "packages": [
     "packages/*"
   ],

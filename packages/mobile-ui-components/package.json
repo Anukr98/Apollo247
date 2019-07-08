@@ -1,5 +1,5 @@
 {
-  "name": "@aph/ui-mobile",
+  "name": "@aph/mobile-ui-components",
   "version": "0.0.1",
   "main": "index.js",
   "peerDependencies": {},
