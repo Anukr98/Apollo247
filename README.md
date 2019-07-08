@@ -11,15 +11,15 @@
 ## Web
 4. Run `npm install --cache .npm-cache --unsafe-perm` 
 5. Run `npm run bootstrap:web`
-6. Start the api-gateway and web-patients containers (-d for daemon mode) `docker-compose up -d api-gateway web-patients`
+6. Start the containers (-d for daemon mode) `docker-compose up -d`
+7. Run `lazydocker` to manage containers
+8. web-patients app will be running on http://localhost:3000, graphql playground on http://localhost:4000
 
 ## Mobile
 4. Run `npm install --cache .npm-cache` 
 5. Run `npm run bootstrap:mobile`
-6. Start the api-gateway `docker-compose up api-gateway`
-
+6. Start the api-gateway `docker-compose up -d api-gateway`
 7. Run `lazydocker` to manage containers
-8. web-patients app will be running on http://localhost:3000, graphql playground on http://localhost:4000
 
 
 ## Database viewer
