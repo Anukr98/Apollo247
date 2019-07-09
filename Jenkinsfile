@@ -4,8 +4,8 @@ pipeline {
         stage('Checkout SCM'){
             steps {
                 git branch: 'development',
-                credentialsId: 'GitAccount',
-                url: 'https://github.com/popcornapps/apollo-web.git'    
+                credentialsId: '',
+                url: ''    
             }
             
         }
