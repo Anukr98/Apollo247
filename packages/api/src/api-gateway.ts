@@ -3,7 +3,10 @@ import { ApolloGateway } from '@apollo/gateway';
 import { GraphQLExecutor } from 'apollo-server-core';
 
 const gateway = new ApolloGateway({
-  serviceList: [{ name: 'profiles', url: 'http://profiles-service/graphql' }],
+  serviceList: [
+    { name: 'profiles', url: 'http://profiles-service/graphql' },
+    { name: 'doctors', url: 'http://doctors-service/graphql' },
+  ],
 });
 
 const env = process.env.NODE_ENV as 'local' | 'development';
