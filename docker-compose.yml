@@ -7,6 +7,7 @@ services:
     command: ash -c "nginx -t && nginx -g 'daemon off;'"
     ports:
       - 3000:3000
+      - 3001:3001
       - 4000:4000
     volumes:
       - ./nginx/log/:/var/log/nginx
