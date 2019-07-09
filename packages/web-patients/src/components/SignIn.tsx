@@ -15,9 +15,7 @@ import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
-import { validators } from '@aph/universal';
-
-const { isMobileNumberValid } = validators;
+import { isMobileNumberValid } from '@aph/universal/validators';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

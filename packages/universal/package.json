@@ -1,18 +1,21 @@
 {
   "name": "@aph/universal",
   "version": "0.0.1",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "",
+  "types": "",
   "scripts": {
-    "build": "rm -rf dist/* && tsc --project . && create-index dist && cp dist/index.js dist/index.d.ts",
-    "start": "npm run build && tsc --project . -w"
+    "build": "tsc --project .",
+    "start": "tsc --project . -w"
   },
   "peerDependencies": {},
   "devDependencies": {
     "@aph/eslint-config": "0.0.1",
     "@aph/prettier-config": "0.0.1",
     "@aph/tsconfig": "0.0.1",
-    "create-index": "^2.4.0",
+    "@typescript-eslint/eslint-plugin": "^1.9.0",
+    "@typescript-eslint/parser": "^1.9.0",
+    "eslint": "^5.16.0",
+    "eslint-plugin-import": "^2.17.3",
     "typescript": "^3.5.2"
   },
   "dependencies": {},

@@ -1,12 +1,12 @@
 {
   "extends": "./node_modules/@aph/tsconfig/tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist",
+    "outDir": "./",
     "baseUrl": "src",
     "noImplicitAny": false,
     "allowJs": false,
     "declaration": true,
     "module": "commonjs"
   },
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "./*.js", "./*.d.ts"]
 }
