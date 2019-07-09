@@ -14,9 +14,10 @@ import { AphTextField, AphInput } from '@aph/web-ui-components';
 import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
-import _uniqueId from 'lodash/uniqueId';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
-import { isMobileNumberValid } from 'utils/FormValidationUtils';
+import { validators } from '@aph/universal';
+
+const { isMobileNumberValid } = validators;
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

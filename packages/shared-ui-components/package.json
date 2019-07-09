@@ -1,5 +1,5 @@
 {
-  "name": "@aph/mobile-ui-components",
+  "name": "@aph/shared-ui-components",
   "version": "0.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

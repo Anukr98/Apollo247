@@ -6,8 +6,10 @@ import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { Gender } from 'graphql/types/globalTypes';
 import React, { useState } from 'react';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import { isNameValid, isEmailValid, isDobValid } from 'utils/FormValidationUtils';
+import { validators } from '@aph/universal';
 import _includes from 'lodash/includes';
+
+const { isNameValid, isEmailValid, isDobValid } = validators;
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({

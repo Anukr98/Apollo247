@@ -1,5 +1,5 @@
 {
-  "name": "@aph/mobile-patients",
+  "name": "@aph/mobile-doctors",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -42,6 +42,9 @@
     "typescript": "^3.5.2"
   },
   "dependencies": {
+    "@aph/universal": "0.0.1",
+    "@aph/mobile-ui-components": "0.0.1",
+    "@aph/shared-ui-components": "0.0.1",
     "apollo": "^2.13.1",
     "apollo-cache-inmemory": "^1.6.2",
     "apollo-client": "^2.6.2",

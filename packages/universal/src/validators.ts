@@ -1,12 +1,12 @@
 export const isMobileNumberValid = (mobileNumber: string) => {
-  const ValidFirstDigits: string[] = ['6', '7', '8', '9'];
-  if (mobileNumber.length === 10 && ValidFirstDigits.indexOf(mobileNumber[0]) > -1) {
+  const validFirstDigits: string[] = ['6', '7', '8', '9'];
+  if (mobileNumber.length === 10 && validFirstDigits.indexOf(mobileNumber[0]) > -1) {
     return true;
   }
   if (
     mobileNumber.length > 0 &&
     mobileNumber.length < 10 &&
-    ValidFirstDigits.indexOf(mobileNumber[0]) > -1
+    validFirstDigits.indexOf(mobileNumber[0]) > -1
   ) {
     return true;
   }
@@ -18,7 +18,7 @@ export const isDigit = (char: string) => {
 };
 
 export const isNameValid = (name: string) => {
-  return /^[a-zA-Z ]*$/.test(name.trim()) && name.trim().length > 2;
+  return /^[a-zA-Z ]*$/.test(name.trim()) && name.trim().length > 1;
 };
 
 export const isDobValid = (ddmmyyyy: string) => {
@@ -26,17 +26,14 @@ export const isDobValid = (ddmmyyyy: string) => {
   if (!isCorrectFormat) return false;
 
   const dateParts = ddmmyyyy.split('/');
-  const dd = parseInt(dateParts[0]),
-    mm = parseInt(dateParts[1]),
-    yyyy = parseInt(dateParts[2]);
-
-  const date = new Date(yyyy, mm, dd);
-
+  const dd = parseInt(dateParts[0]);
+  const mm = parseInt(dateParts[1]);
+  const yyyy = parseInt(dateParts[2]);
+  const date = new Date(`${mm}/${dd}/${yyyy}`);
   const isInvalid = isNaN(date.valueOf());
-  if (isInvalid) return false;
+  const isInFuture = date > new Date();
 
-  const isPastdate = date < new Date();
-  return isPastdate;
+  return isInvalid || isInFuture ? false : true;
 };
 
 export const isEmailValid = (email: string) => {
