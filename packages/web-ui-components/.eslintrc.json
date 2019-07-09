@@ -1,0 +1,6 @@
+{
+  "extends": ["@aph/eslint-config", "@aph/eslint-config-react"],
+  "rules": {
+    "import/no-default-export": 0
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "@aph/mobile-ui-components",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "peerDependencies": {
+    "react": "16.8.6"
+  },
+  "devDependencies": {
+    "@aph/eslint-config": "0.0.1",
+    "@aph/prettier-config": "0.0.1",
+    "@aph/tsconfig": "0.0.1",
+    "@types/react": "^16.8.6",
+    "create-index": "^2.4.0",
+    "react": "16.8.6",
+    "typescript": "^3.5.2"
+  },
+  "dependencies": {
+    "@aph/universal": "0.0.1"
+  },
+  "author": "sarink",
+  "license": "ISC"
+}

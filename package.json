@@ -1,0 +1,18 @@
+{
+  "name": "apollo-hospitals",
+  "private": true,
+  "scripts": {
+    "clean": "lerna clean",
+    "bootstrap:web": "lerna bootstrap --ignore mobile* && lerna run build --scope @aph/web-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
+    "bootstrap:mobile": "lerna bootstrap --ignore web* && lerna run build --scope @aph/mobile-ui-components --scope @aph/shared-ui-components --scope @aph/universal"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
+  "devDependencies": {
+    "lerna": "^3.15.0",
+    "typescript": "^3.5.2"
+  }
+}

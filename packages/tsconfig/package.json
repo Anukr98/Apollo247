@@ -1,0 +1,8 @@
+{
+  "name": "@aph/tsconfig",
+  "version": "0.0.1",
+  "main": "tsconfig.json",
+  "peerDependencies": {},
+  "author": "sarink",
+  "license": "ISC"
+}

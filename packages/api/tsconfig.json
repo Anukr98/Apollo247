@@ -1,0 +1,10 @@
+{
+  "extends": "./node_modules/@aph/tsconfig/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": "src",
+    "emitDecoratorMetadata": true,
+    "noImplicitAny": false
+  },
+  "exclude": ["node_modules", "dist"]
+}
