@@ -165,16 +165,12 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
 const isPatientInvalid = (patient: PatientSignIn_patientSignIn_patients) =>
   patient.relation == null;
 
-export interface ExistingProfileProps {
-  popupHandler: (popup: boolean) => void;
-}
+export interface ExistingProfileProps {}
 export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const classes = useStyles();
   const [patients, setPatients] = useState(useAllCurrentPatients());
-  // const [mutationError, setMutationError] = useState<boolean>(false);
   if (!patients) return null;
   const disabled = patients.some(isPatientInvalid);
-  const { popupHandler } = props;
 
   return (
     <div className={classes.signUpPop}>
@@ -212,27 +208,22 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
         </div>
       </div>
       <div className={classes.actions}>
-        <Mutation<updatePatient, updatePatientVariables>
-          mutation={UPDATE_PATIENT}
-          onCompleted={() => {
-            popupHandler(false);
-            window.location.reload(); // this needs to be removed.
-          }}
-        >
+        <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
           {(mutate, { loading }) => (
             <AppButton
               type="submit"
               onClick={() => {
-                patients.forEach((patient) => {
-                  mutate({
-                    variables: {
-                      patientInput: {
-                        id: patient.id,
-                        relation: patient.relation,
-                      },
-                    },
-                  });
-                });
+                // WE DONT NEED TO IMPLEMENT THIS UNTIL THE NEXT SPRINT
+                // patients.forEach((patient) => {
+                //   mutate({
+                //     variables: {
+                //       patientInput: {
+                //         id: patient.id,
+                //         relation: patient.relation,
+                //       },
+                //     },
+                //   });
+                // });
               }}
               disabled={disabled}
               fullWidth
