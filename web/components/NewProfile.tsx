@@ -4,17 +4,11 @@ import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AppButton } from 'components/ui/AppButton';
 import { AppTextField } from 'components/ui/AppTextField';
-import { Gender, Relation } from 'graphql/types/globalTypes';
-import React, { useState, useEffect } from 'react';
+import { Gender } from 'graphql/types/globalTypes';
+import React, { useState } from 'react';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { isNameValid, isEmailValid, isDobValid } from 'utils/FormValidationUtils';
 import _includes from 'lodash/includes';
-import { Mutation } from 'react-apollo';
-import { updatePatientVariables, updatePatient } from 'graphql/types/updatePatient';
-import { UPDATE_PATIENT } from 'graphql/profiles';
-import { useCurrentPatient } from 'hooks/authHooks';
-// import { onError } from 'apollo-link-error';
-import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -93,59 +87,28 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export interface NewProfileProps {
-  popupHandler: (popup: boolean) => void;
-  showSuccess: (popup: boolean) => void;
-}
-
-export const NewProfile: React.FC<NewProfileProps> = (props) => {
+export const NewProfile: React.FC = (props) => {
   const classes = useStyles();
   const genders = Object.values(Gender);
-  const currentPatient = useCurrentPatient();
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [dateOfBirth, setDateOfBirth] = useState<string>('');
   const [emailAddress, setEmailAddress] = useState<string>('');
   const [selectedGender, setGender] = useState<string>('');
 
-  useEffect(() => {
-    if (currentPatient) {
-      currentPatient.firstName !== null ? setFirstName(currentPatient.firstName) : '';
-      currentPatient.lastName !== null ? setLastName(currentPatient.lastName) : '';
-      currentPatient.gender !== null ? setGender(currentPatient.gender) : '';
-      currentPatient.emailAddress !== null ? setEmailAddress(currentPatient.emailAddress) : '';
-      if (currentPatient.dateOfBirth !== null) {
-        const dobString = new Date(parseInt(currentPatient.dateOfBirth));
-        setDateOfBirth(moment(dobString.toUTCString()).format('DD/MM/YYYY'));
-      }
-    }
-  }, [currentPatient]);
-
-  const currentPatientId = currentPatient ? currentPatient.id : '';
-
-  // const link = onError(({ graphQLErrors, networkError }) => {
-  //   if (graphQLErrors)
-  //     graphQLErrors.map(({ message, locations, path }) =>
-  //       console.log(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`)
-  //     );
-  //   if (networkError) console.log(`[Network error]: ${networkError}`);
-  // });
-
   const submitDisabled =
-    firstName.trim().length > 0 &&
-    isNameValid(firstName) &&
-    (lastName.trim().length > 0 && isNameValid(lastName)) &&
-    (dateOfBirth.trim().length === 10 && isDobValid(dateOfBirth)) &&
-    (emailAddress.trim().length === 0 || (emailAddress.length > 0 && isEmailValid(emailAddress))) &&
+    firstName.length > 2 &&
+    lastName.length > 2 &&
+    (dateOfBirth.length === 10 && isDobValid(dateOfBirth)) &&
+    (emailAddress.length === 0 || (emailAddress.length > 0 && isEmailValid(emailAddress))) &&
     _includes(genders, selectedGender)
       ? false
       : true;
 
-  const showFirstNameError = firstName.trim().length > 0 && !isNameValid(firstName);
-  const showLastNameError = lastName.trim().length > 0 && !isNameValid(lastName);
-  const showDobError = dateOfBirth.trim().length === 10 && !isDobValid(dateOfBirth);
-  const showEmailIdError = emailAddress.trim().length > 0 && !isEmailValid(emailAddress);
-  const { popupHandler, showSuccess } = props;
+  const showFirstNameError = firstName.length > 0 && !isNameValid(firstName);
+  const showLastNameError = lastName.length > 0 && !isNameValid(lastName);
+  const showDobError = dateOfBirth.length > 0 && !isDobValid(dateOfBirth);
+  const showEmailIdError = emailAddress.length > 0 && !isEmailValid(emailAddress);
 
   return (
     <div className={classes.signUpPop}>
@@ -258,42 +221,9 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
         </div>
       </div>
       <div className={classes.actions}>
-        <Mutation<updatePatient, updatePatientVariables>
-          mutation={UPDATE_PATIENT}
-          onCompleted={() => {
-            popupHandler(false);
-            showSuccess(true);
-          }}
-        >
-          {(mutate, { loading }) => (
-            <AppButton
-              fullWidth
-              disabled={submitDisabled}
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                const gqlDobFormat = moment(dateOfBirth, 'DD/MM/YYYY')
-                  .format('YYYY/MM/DD')
-                  .toString();
-                mutate({
-                  variables: {
-                    patientInput: {
-                      id: currentPatientId,
-                      firstName: firstName,
-                      lastName: lastName,
-                      gender: Gender[selectedGender],
-                      dateOfBirth: gqlDobFormat,
-                      emailAddress: emailAddress,
-                      relation: Relation['ME'],
-                    },
-                  },
-                });
-              }}
-            >
-              Submit
-            </AppButton>
-          )}
-        </Mutation>
+        <AppButton fullWidth disabled={submitDisabled} variant="contained" color="primary">
+          Submit
+        </AppButton>
       </div>
     </div>
   );
