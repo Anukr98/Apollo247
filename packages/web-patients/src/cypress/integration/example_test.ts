@@ -10,7 +10,7 @@ describe('TypeScript', () => {
   });
 
   it('can visit our app', () => {
-    cy.request({ url: clientBaseUrl }).then((resp) => {
+    cy.request({ url: clientBaseUrl() }).then((resp) => {
       expect(resp.status).to.eq(200);
     });
   });

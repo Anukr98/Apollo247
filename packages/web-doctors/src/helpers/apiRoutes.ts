@@ -1,3 +1,5 @@
+declare var process;
+
 const apiBaseUrl = () => {
   const env = process.env.NODE_ENV;
   const port = process.env.API_GATEWAY_PORT === '80' ? '' : `:${process.env.API_GATEWAY_PORT}`;
