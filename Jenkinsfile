@@ -4,8 +4,8 @@ pipeline {
         stage('Checkout SCM'){
             steps {
                 git branch: 'development',
-                credentialsId: '',
-                url: ''    
+                credentialsId: 'githuborg',
+                url: 'https://github.com/popcornapps/apollo-hospitals.git'    
             }
             
         }
