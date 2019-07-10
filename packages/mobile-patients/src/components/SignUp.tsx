@@ -1,13 +1,13 @@
-import { ApolloLogo } from 'app/src/components/ApolloLogo';
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
-import { Button } from 'app/src/components/ui/Button';
-import { Card } from 'app/src/components/ui/Card';
-import { DatePicker } from 'app/src/components/ui/DatePicker';
-import { Mascot } from 'app/src/components/ui/Icons';
-import { StickyBottomComponent } from 'app/src/components/ui/StickyBottomComponent';
-import { TextInputComponent } from 'app/src/components/ui/TextInputComponent';
-import { string } from 'app/src/strings/string';
-import { theme } from 'app/src/theme/theme';
+import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
+import { Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { string } from '@aph/mobile-patients/src/strings/string';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import {
   Keyboard,
@@ -25,8 +25,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { NavigationScreenProps } from 'react-navigation';
 import Moment from 'moment';
 import { useAuth } from '../hooks/authHooks';
-import { updatePatient_updatePatient_patient } from 'app/src/graphql/types/updatePatient';
-import { Relation, Sex } from 'app/src/graphql/types/globalTypes';
+import { updatePatient_updatePatient_patient } from '@aph/mobile-patients/src/graphql/types/updatePatient';
+import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   container: {
@@ -148,12 +148,14 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
     }
   };
 
-  // useEffect(() => {
-  //   backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-  //     console.log('hardwareBackPress');
-  //     return true;
-  //   });
-  // }, []);
+  useEffect(() => {
+    AsyncStorage.setItem('signUp', 'true');
+
+    // backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+    //   console.log('hardwareBackPress');
+    //   return true;
+    // });
+  }, []);
 
   // useEffect(() => {
   //   return () => {
@@ -282,7 +284,6 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
             disabled={!firstName || !lastName || !date || !gender}
             onPress={async () => {
-              setVerifyingPhonenNumber(true);
               let validationMessage = '';
               if (!firstName) {
                 validationMessage = 'Enter valid first name';
@@ -300,7 +301,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
               if (validationMessage) {
                 Alert.alert('Error', validationMessage);
               } else {
-                // const formatDate = Moment(date).format('MM/DD/YYYY');
+                setVerifyingPhonenNumber(true);
+
                 const formatDate = Moment(date, 'DD/MM/YYYY').format('MM/DD/YYYY');
 
                 const patientsDetails: updatePateint = {
@@ -309,7 +311,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   firstName: firstName,
                   lastName: lastName,
                   relation: Relation.ME,
-                  sex: gender.toUpperCase(),
+                  gender: gender.toUpperCase(),
                   uhid: '',
                   dateOfBirth: formatDate,
                   emailAddress: email,
@@ -322,16 +324,19 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   patientUpdateDetails.data.updatePatient.errors &&
                   patientUpdateDetails.data.updatePatient.errors.messages[0];
 
-                setVerifyingPhonenNumber(true);
-
-                if (errMsg) {
-                  Alert.alert('Error', errMsg);
-                } else {
-                  if (patientDetails) {
-                    AsyncStorage.setItem('userLoggedIn', 'true');
-                    props.navigation.navigate(AppRoutes.TabBar);
+                setTimeout(() => {
+                  setVerifyingPhonenNumber(false);
+                  if (errMsg) {
+                    Alert.alert('Error', errMsg);
+                  } else {
+                    if (patientDetails) {
+                      AsyncStorage.setItem('userLoggedIn', 'true');
+                      AsyncStorage.setItem('signUp', 'false');
+                      AsyncStorage.setItem('gotIt', 'false');
+                      props.navigation.navigate(AppRoutes.TabBar);
+                    }
                   }
-                }
+                }, 2000);
               }
             }}
           />
@@ -350,6 +355,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             left: 0,
             right: 0,
             bottom: 0,
+            elevation: 3,
+            zIndex: 3,
           }}
         >
           <ActivityIndicator animating={verifyingPhoneNumber} size="large" color="green" />

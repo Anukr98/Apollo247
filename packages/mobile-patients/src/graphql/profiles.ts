@@ -8,8 +8,9 @@ export const GET_PATIENTS = gql`
         mobileNumber
         firstName
         lastName
-        sex
+        gender
         uhid
+        relation
       }
     }
   }
@@ -23,8 +24,9 @@ export const PATIENT_SIGN_IN = gql`
         firstName
         lastName
         uhid
-        sex
+        gender
         mobileNumber
+        relation
       }
       errors {
         messages
@@ -42,7 +44,7 @@ export const UPDATE_PATIENT = gql`
         firstName
         lastName
         relation
-        sex
+        gender
         uhid
         dateOfBirth
         emailAddress

@@ -15,6 +15,12 @@ export enum ErrorMsgs {
   UPDATE_PROFILE_ERROR = 'UPDATE_PROFILE_ERROR',
 }
 
+export enum Gender {
+  FEMALE = 'FEMALE',
+  MALE = 'MALE',
+  OTHER = 'OTHER',
+}
+
 export enum Relation {
   BROTHER = 'BROTHER',
   COUSIN = 'COUSIN',
@@ -27,20 +33,12 @@ export enum Relation {
   WIFE = 'WIFE',
 }
 
-export enum Sex {
-  FEMALE = 'FEMALE',
-  MALE = 'MALE',
-  NOT_APPLICABLE = 'NOT_APPLICABLE',
-  NOT_KNOWN = 'NOT_KNOWN',
-  OTHER = 'OTHER',
-}
-
 export interface UpdatePatientInput {
   id: string;
   firstName?: string | null;
   lastName?: string | null;
   mobileNumber?: string | null;
-  sex?: Sex | null;
+  gender?: Gender | null;
   uhid?: string | null;
   emailAddress?: string | null;
   dateOfBirth?: string | null;

@@ -1,5 +1,5 @@
-import { DoctorCard, doctorCardProps } from 'app/src/components/ui/DoctorCard';
-import { Header } from 'app/src/components/ui/Header';
+import { DoctorCard, doctorCardProps } from '@aph/mobile-patients/src/components/ui/DoctorCard';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   DoctorImage,
   DropdownGreen,
@@ -7,10 +7,10 @@ import {
   LocationOff,
   Reload,
   SortIncreasing,
-} from 'app/src/components/ui/Icons';
-import { SectionHeaderComponent } from 'app/src/components/ui/SectionHeader';
-import { string } from 'app/src/strings/string';
-import { theme } from 'app/src/theme/theme';
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
+import { string } from '@aph/mobile-patients/src/strings/string';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import {
   SafeAreaView,

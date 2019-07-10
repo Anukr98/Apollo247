@@ -1,8 +1,8 @@
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
-import { Card } from 'app/src/components/ui/Card';
-import { ArrowDisabled, ArrowYellow } from 'app/src/components/ui/Icons';
-import { string } from 'app/src/strings/string';
-import { theme } from 'app/src/theme/theme';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { ArrowDisabled, ArrowYellow } from '@aph/mobile-patients/src/components/ui/Icons';
+import { string } from '@aph/mobile-patients/src/strings/string';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
   Platform,
@@ -15,6 +15,7 @@ import {
   Keyboard,
   Alert,
   PermissionsAndroid,
+  AsyncStorage,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
@@ -87,7 +88,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const { analytics, currentUser, authError } = useAuth();
+  const { analytics, currentUser, authError, clearCurrentUser } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<any>();
 
   useEffect(() => {
@@ -103,6 +104,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   useEffect(() => {
     console.log('authError Login', authError);
     if (authError) {
+      clearCurrentUser();
       setVerifyingPhonenNumber(false);
       Alert.alert('Error', 'Unable to connect the server at the moment.');
     }
@@ -110,17 +112,25 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const requestReadSmsPermission = async () => {
     try {
-      const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_SMS, {
-        title: 'Auto Verification OTP',
-        message: 'need access to read sms, to verify OTP',
-      });
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('sms read permissions granted', granted);
-      } else {
-        console.log('sms read permissions denied', 'denied');
+      const resuts = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.READ_SMS,
+        PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
+      ]);
+
+      if (resuts[PermissionsAndroid.PERMISSIONS.READ_SMS] !== PermissionsAndroid.RESULTS.GRANTED) {
+        console.log(resuts, 'READ_SMS');
       }
-    } catch (err) {
-      console.warn(err);
+      if (
+        resuts[PermissionsAndroid.PERMISSIONS.RECEIVE_SMS] !== PermissionsAndroid.RESULTS.GRANTED
+      ) {
+        console.log(resuts, 'RECEIVE_SMS');
+      }
+
+      if (resuts) {
+        console.log(resuts, 'RECEIVE_SMS');
+      }
+    } catch (error) {
+      console.log('error', error);
     }
   };
 
@@ -160,6 +170,36 @@ export const Login: React.FC<LoginProps> = (props) => {
     }
   };
 
+  const _getTimerData = async () => {
+    let isNoBlocked = false;
+    try {
+      const data = await AsyncStorage.getItem('timeOutData');
+      if (data) {
+        const timeOutData = JSON.parse(data);
+        timeOutData.map((obj) => {
+          if (obj.phoneNumber === `+91${phoneNumber}`) {
+            const t1 = new Date();
+            const t2 = new Date(obj.startTime);
+            const dif = t1.getTime() - t2.getTime();
+
+            const seconds = Math.round(dif / 1000);
+            console.log(seconds, 'seconds');
+            if (obj.invalidAttems === 3) {
+              if (seconds < 900) {
+                isNoBlocked = true;
+              }
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+    console.log(isNoBlocked, 'isNoBlocked');
+
+    return isNoBlocked;
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
@@ -175,30 +215,42 @@ export const Login: React.FC<LoginProps> = (props) => {
               <ArrowDisabled />
             )
           }
-          onClickButton={() => {
+          onClickButton={async () => {
             Keyboard.dismiss();
             if (!(phoneNumber.length == 10 && phoneNumberIsValid)) {
               null;
             } else {
-              setVerifyingPhonenNumber(true);
-              firebase
-                .auth()
-                .signInWithPhoneNumber('+91' + phoneNumber)
-                .then((confirmResult) => {
-                  setVerifyingPhonenNumber(false);
-                  props.navigation.navigate(AppRoutes.OTPVerification, {
-                    phoneNumberVerificationCredential: confirmResult.verificationId,
-                    confirmResult,
-                    otpString,
-                    phoneNumber: '+91' + phoneNumber,
-                  });
-                  console.log(confirmResult, 'confirmResult');
-                })
-                .catch((error) => {
-                  console.log(error, 'error');
-                  setVerifyingPhonenNumber(false);
-                  Alert.alert('Error', 'The interaction was cancelled by the user.');
+              const isBlocked = await _getTimerData();
+              console.log('isBlocked', isBlocked);
+
+              if (isBlocked) {
+                props.navigation.navigate(AppRoutes.OTPVerification, {
+                  phoneNumberVerificationCredential: '',
+                  otpString,
+                  phoneNumber: '+91' + phoneNumber,
                 });
+              } else {
+                setVerifyingPhonenNumber(true);
+                firebase
+                  .auth()
+                  .signInWithPhoneNumber('+91' + phoneNumber)
+                  .then((confirmResult) => {
+                    setVerifyingPhonenNumber(false);
+                    console.log(confirmResult, 'confirmResult');
+
+                    props.navigation.navigate(AppRoutes.OTPVerification, {
+                      phoneNumberVerificationCredential: confirmResult.verificationId,
+                      confirmResult,
+                      otpString,
+                      phoneNumber: '+91' + phoneNumber,
+                    });
+                  })
+                  .catch((error) => {
+                    console.log(error, 'error');
+                    setVerifyingPhonenNumber(false);
+                    Alert.alert('Error', 'The interaction was cancelled by the user.');
+                  });
+              }
             }
           }}
           disableButton={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}

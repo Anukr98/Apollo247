@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, AsyncStorage, Platform, ActivityIndicator, Alert } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { SplashLogo } from 'app/src/components/SplashLogo';
-import { useAuth } from 'app/src/hooks/authHooks';
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
+import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
+import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 
@@ -38,6 +38,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       firebase.analytics().setCurrentScreen('SplashScreen');
       const onboarding = await AsyncStorage.getItem('onboarding');
       const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+      const signUp = await AsyncStorage.getItem('signUp');
+      const multiSignUp = await AsyncStorage.getItem('multiSignUp');
+
       console.log('onboarding', onboarding);
       console.log('userLoggedIn', userLoggedIn);
 
@@ -51,11 +54,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             props.navigation.replace(AppRoutes.TabBar);
           }
         } else if (onboarding == 'true') {
-          props.navigation.replace(AppRoutes.Login);
+          if (signUp == 'true') {
+            props.navigation.replace(AppRoutes.SignUp);
+          } else if (multiSignUp == 'true') {
+            props.navigation.replace(AppRoutes.MultiSignup);
+          } else {
+            props.navigation.replace(AppRoutes.Login);
+          }
         } else {
           props.navigation.replace(AppRoutes.Onboarding);
         }
-      }, 300);
+      }, 2500);
     }
     fetchData();
 

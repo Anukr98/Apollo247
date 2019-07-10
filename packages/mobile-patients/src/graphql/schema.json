@@ -124,12 +124,12 @@
             "deprecationReason": null
           },
           {
-            "name": "sex",
+            "name": "gender",
             "description": null,
             "args": [],
             "type": {
               "kind": "ENUM",
-              "name": "Sex",
+              "name": "Gender",
               "ofType": null
             },
             "isDeprecated": false,
@@ -211,18 +211,12 @@
       },
       {
         "kind": "ENUM",
-        "name": "Sex",
+        "name": "Gender",
         "description": null,
         "fields": null,
         "inputFields": null,
         "interfaces": null,
         "enumValues": [
-          {
-            "name": "NOT_KNOWN",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
           {
             "name": "MALE",
             "description": null,
@@ -237,12 +231,6 @@
           },
           {
             "name": "OTHER",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "NOT_APPLICABLE",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -556,11 +544,11 @@
             "defaultValue": null
           },
           {
-            "name": "sex",
+            "name": "gender",
             "description": null,
             "type": {
               "kind": "ENUM",
-              "name": "Sex",
+              "name": "Gender",
               "ofType": null
             },
             "defaultValue": null
