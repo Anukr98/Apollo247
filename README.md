@@ -17,6 +17,11 @@ _Note to windows users: Run the following steps on a Windows 10 Pro machine in a
 7. Run `lazydocker` to manage containers
 8. web-patients app will be running on http://localhost:3000, graphql playground on http://localhost:4000
 
+## Doctor Web
+
+* To get doctor web running start the containers (-d for daemon mode) `docker-compose up -d web-doctors`
+* web-doctors app will be running on http://localhost:3001
+
 ## Mobile
 
 4. Run `npm install`

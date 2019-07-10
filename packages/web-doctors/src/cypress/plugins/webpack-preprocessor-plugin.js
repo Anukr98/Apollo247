@@ -7,7 +7,7 @@ module.exports = (cypressConfig) => {
   ['NODE_ENV', 'WEB_CLIENT_PORT', 'API_GATEWAY_PORT', 'FIREBASE_PROJECT_ID'].forEach(
     (VAR) => (process.env[VAR] = cypressConfig.env[VAR])
   );
-  const webpackConfig = require('../../webpack.config');
+  const webpackConfig = require('../../../webpack.config');
 
   const webpackOptions = {
     context: path.resolve(__dirname, '../../'),
