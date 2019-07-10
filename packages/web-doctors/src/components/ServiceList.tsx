@@ -94,7 +94,7 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
             <div className={classes.serviceInfo}>
               <Typography variant="h5">{title}</Typography>
               <p>{content}</p>
-              <Link
+              {/* <Link
                 className={classes.action}
                 to={action.link}
                 onClick={(e) => {
@@ -103,7 +103,7 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
                 }}
               >
                 {action.content}
-              </Link>
+              </Link> */}
             </div>
             <div className={classes.avatarBlock}>
               <Avatar
@@ -123,23 +123,23 @@ export const ServiceList: React.FC = (props) => {
   const classes = useStyles();
   const serviceItems: ServiceItem[] = [
     {
-      title: 'You know which doctor you are looking for?',
-      content: `Let's get you connected with them.`,
+      title: 'higher revenues',
+      content: `Get more patients and higher utilisation`,
       action: { link: '', content: 'Find specialist' },
     },
     {
-      title: `Just want to buy medicines? It’s easy!`,
-      content: 'You can search by name or prescription.',
+      title: `easy followups`,
+      content: 'Follow up with your patients virtually and whenever you want',
       action: { link: '', content: 'Search Medicine' },
     },
     {
-      title: 'Do you want to get some tests done?',
-      content: 'Get your tests/diagnostics booked here.',
+      title: 'anytime anywhere',
+      content: 'Consult virtually, at time of your convenience',
       action: { link: '', content: 'Book a test' },
     },
     {
-      title: 'Want to know how we have the best?',
-      content: 'Learn about our Start Doctors Program.',
+      title: 'medico-legal assistance',
+      content: 'Get more patients and higher utilisation',
       action: { link: '', content: 'Who are star doctors' },
     },
   ];

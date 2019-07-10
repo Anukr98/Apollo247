@@ -155,10 +155,14 @@ export const HeroBanner: React.FC = () => {
             </AphSelect>
           </Typography>
         ) : (
-          <Typography variant="h1">hello there!</Typography>
+          <Typography variant="h1">hello there!!</Typography>
         )}
 
-        <p>Not feeling well today? Don’t worry. We will help you find the right doctor :)</p>
+        <p>The best way to connect with your patients,<br />
+          grow your practice and enhance your<br />
+          professional network;<br />
+          <b>anytime, anywhere :)</b>
+        </p>
         <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup }) => (
             <AphButton
@@ -167,7 +171,7 @@ export const HeroBanner: React.FC = () => {
               classes={{ root: classes.button }}
               onClick={() => protectWithLoginPopup()}
             >
-              Consult a doctor
+              Get Started
             </AphButton>
           )}
         </ProtectedWithLoginPopup>
