@@ -11,7 +11,7 @@ _Note to windows users: Run the following steps on a Windows 10 Pro machine in a
 
 ## Web
 
-4. Run `npm install --cache .npm-cache --unsafe-perm`
+4. Run `npm install`
 5. Run `npm run bootstrap:web`
 6. Start the containers (-d for daemon mode) `docker-compose up api-gateway web-patients -d`
 7. Run `lazydocker` to manage containers
@@ -19,7 +19,7 @@ _Note to windows users: Run the following steps on a Windows 10 Pro machine in a
 
 ## Mobile
 
-4. Run `npm install --cache .npm-cache`
+4. Run `npm install`
 5. Run `npm run bootstrap:mobile`
 6. Start the api-gateway `docker-compose up -d api-gateway`
 7. Run `lazydocker` to manage containers

@@ -1,8 +1,10 @@
 import { setConfig, Config } from 'react-hot-loader';
 import { hot } from 'react-hot-loader/root';
-import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
 import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { makeStyles } from '@material-ui/styles';
+import { Theme, createMuiTheme } from '@material-ui/core';
+import { AphThemeProvider, aphTheme } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -19,11 +21,23 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const App: React.FC = () => {
   const classes = useStyles();
-  return <div className={classes.app}>Welcome to web-doctors</div>;
+  return (
+    <div className={classes.app}>
+      <h1>Welcome to Doctors</h1>
+    </div>
+  );
 };
 
+const theme = createMuiTheme({ ...aphTheme });
+
 const AppContainer: React.FC = () => {
-  return <App />;
+  return (
+    <BrowserRouter>
+      <AphThemeProvider theme={theme}>
+        <App />
+      </AphThemeProvider>
+    </BrowserRouter>
+  );
 };
 
 const rhlConfig = ({ hotHooks: true } as any) as Partial<Config>;
