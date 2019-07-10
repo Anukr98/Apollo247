@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 
-const useAuthContext = () => useContext(AuthContext);
+const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
 
 export const useCurrentPatient = () => useAuthContext().currentPatient;
 export const useAllCurrentPatients = () => useAuthContext().allCurrentPatients;
@@ -49,7 +49,7 @@ export const useLoginPopupState = (): {
   isLoginPopupVisible: AuthContextProps['isLoginPopupVisible'];
   setIsLoginPopupVisible: NonNullable<AuthContextProps['setIsLoginPopupVisible']>;
 } => {
-  const isLoginPopupVisible = useContext(AuthContext).isLoginPopupVisible;
-  const setIsLoginPopupVisible = useContext(AuthContext).setIsLoginPopupVisible!;
+  const isLoginPopupVisible = useAuthContext().isLoginPopupVisible;
+  const setIsLoginPopupVisible = useAuthContext().setIsLoginPopupVisible!;
   return { isLoginPopupVisible, setIsLoginPopupVisible };
 };
