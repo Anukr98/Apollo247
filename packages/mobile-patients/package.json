@@ -50,7 +50,6 @@
     "apollo-client": "^2.6.2",
     "apollo-link-error": "^1.1.11",
     "apollo-link-http": "^1.5.15",
-    "graphql": "~14.2.1",
     "graphql-tag": "^2.10.1",
     "lodash": "^4.17.11",
     "moment": "^2.24.0",

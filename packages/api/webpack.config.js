@@ -2,11 +2,25 @@ const path = require('path');
 const process = require('process');
 const nodeExternals = require('webpack-node-externals');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const FilterWarningsPlugin = require('webpack-filter-warnings-plugin');
 const webpack = require('webpack');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
 const plugins = [
+  new FilterWarningsPlugin({
+    exclude: [
+      /mongodb/,
+      /mssql/,
+      /mysql/,
+      /mysql2/,
+      /oracledb/,
+      /pg-native/,
+      /pg-query-stream/,
+      /redis/,
+      /sqlite3/,
+    ],
+  }),
   new CleanWebpackPlugin(),
   new webpack.DefinePlugin(
     [
@@ -58,7 +72,7 @@ module.exports = {
   },
 
   resolve: {
-    extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx'],
     modules: [path.join(__dirname, 'src'), 'node_modules'],
   },
 

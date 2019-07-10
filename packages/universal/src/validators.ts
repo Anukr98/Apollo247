@@ -3,13 +3,7 @@ export const isMobileNumberValid = (mobileNumber: string) => {
   if (mobileNumber.length === 10 && validFirstDigits.indexOf(mobileNumber[0]) > -1) {
     return true;
   }
-  if (
-    mobileNumber.length > 0 &&
-    mobileNumber.length < 10 &&
-    validFirstDigits.indexOf(mobileNumber[0]) > -1
-  ) {
-    return true;
-  }
+  if ( mobileNumber.length > 0 && mobileNumber.length < 10 && validFirstDigits.indexOf(mobileNumber[0]) > -1) { return true; }
   return false;
 };
 
