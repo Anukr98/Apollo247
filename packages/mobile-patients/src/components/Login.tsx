@@ -93,7 +93,6 @@ export const Login: React.FC<LoginProps> = (props) => {
     authError,
     clearCurrentUser,
     signInWithPhoneNumber,
-    confirmResult,
     authProvider,
   } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<any>();
