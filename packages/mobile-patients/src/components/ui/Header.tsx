@@ -1,4 +1,4 @@
-import { BackArrow } from 'app/src/components/ui/Icons';
+import { BackArrow } from '@aph/mobile-patients/src/components/ui/Icons';
 import React from 'react';
 import {
   StyleProp,

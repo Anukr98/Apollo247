@@ -1,11 +1,16 @@
-import { AppRoute, AppRoutes } from 'app/src/components/NavigatorContainer';
-import { ConsultRoom } from 'app/src/components/ConsultRoom';
-import { HealthRecords } from 'app/src/components/HealthRecords';
-import { MyAccount } from 'app/src/components/MyAccount';
-import { Medicine } from 'app/src/components/Medicine';
+import { AppRoute, AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { ConsultRoom } from '@aph/mobile-patients/src/components/ConsultRoom';
+import { HealthRecords } from '@aph/mobile-patients/src/components/HealthRecords';
+import { MyAccount } from '@aph/mobile-patients/src/components/MyAccount';
+import { Medicine } from '@aph/mobile-patients/src/components/Medicine';
 
-import { ConsultationRoom, MyHealth, Person, ShoppingCart } from 'app/src/components/ui/Icons';
-import { theme } from 'app/src/theme/theme';
+import {
+  ConsultationRoom,
+  MyHealth,
+  Person,
+  ShoppingCart,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigation';
 

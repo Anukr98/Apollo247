@@ -12,6 +12,4 @@ target 'ApolloPatient' do
  pod 'Firebase/Auth'
  pod 'GoogleAppMeasurement'
 
-  pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
-
 end

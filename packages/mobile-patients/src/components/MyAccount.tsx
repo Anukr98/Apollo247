@@ -1,9 +1,9 @@
-import { Button } from 'app/src/components/ui/Button';
-import { useAuth } from 'app/src/hooks/authHooks';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import React from 'react';
 import { View, AsyncStorage } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 export interface MyAccountProps extends NavigationScreenProps {}
 
@@ -19,7 +19,9 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         onPress={() => {
           signOut();
           AsyncStorage.setItem('userLoggedIn', 'false');
-          props.navigation.navigate(AppRoutes.Login);
+          AsyncStorage.setItem('multiSignUp', 'false');
+          AsyncStorage.setItem('signUp', 'false');
+          props.navigation.replace(AppRoutes.Login);
         }}
       />
     </View>

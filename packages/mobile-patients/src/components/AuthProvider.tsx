@@ -8,18 +8,19 @@ import { ErrorResponse, onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
 
-import { apiRoutes } from 'app/src/helpers/apiRoutes';
+import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import {
   PatientSignIn,
   PatientSignInVariables,
   PatientSignIn_patientSignIn_patients,
-} from 'app/src/graphql/types/PatientSignIn';
-import { PATIENT_SIGN_IN, UPDATE_PATIENT } from 'app/src/graphql/profiles';
+} from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
+import { PATIENT_SIGN_IN, UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   updatePatient_updatePatient_patient,
   updatePatient,
   updatePatientVariables,
-} from 'app/src/graphql/types/updatePatient';
+} from '@aph/mobile-patients/src/graphql/types/updatePatient';
+import { AsyncStorage } from 'react-native';
 
 export type PhoneNumberVerificationCredential = RNFirebase.PhoneAuthSnapshot['verificationId'];
 export type OtpVerificationCredential = AuthCredential;
@@ -83,6 +84,7 @@ const buildApolloClient = (authToken: string, failureFunction: () => void) => {
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
   const [authError, setAuthError] = useState(false);
+  const [authCalled, setAuthCalled] = useState<boolean>(false);
   const failureFunction = () => setAuthError(true);
   apolloClient = buildApolloClient(authToken, failureFunction);
 
@@ -142,7 +144,7 @@ export const AuthProvider: React.FC = (props) => {
     setSignOut(signOutFunc);
 
     const clearCurrentUserFunc = () => () => {
-      setCurrentUser(null);
+      setAuthError(false);
     };
     setClearCurrentUser(clearCurrentUserFunc);
 
@@ -217,21 +219,35 @@ export const AuthProvider: React.FC = (props) => {
       setAuthToken(updatedToken);
       setIsAuthenticating(false);
 
-      const patientSignInResult = await apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
-        mutation: PATIENT_SIGN_IN,
-        variables: { jwt: updatedToken },
-      });
-
-      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
-        const patient = patientSignInResult.data.patientSignIn.patients[0];
-        const patientProfiles = patientSignInResult.data.patientSignIn.patients;
-        setCurrentUser(patient);
-        setcurrentProfiles(patientProfiles);
-        setIsAuthenticating(false);
+      const authStateChanged = await AsyncStorage.getItem('onAuthStateChanged');
+      if (authStateChanged == 'true') {
+        setAuthCalled(true);
+        console.log('patientUpdateResult authStateChanged');
       } else {
-        setCurrentUser(null);
-        setcurrentProfiles(null);
-        setIsAuthenticating(false);
+        if (!authCalled) {
+          setAuthCalled(true);
+          console.log('patientUpdateResult onAuthStateChanged', updatedToken);
+
+          const patientSignInResult = await apolloClient.mutate<
+            PatientSignIn,
+            PatientSignInVariables
+          >({
+            mutation: PATIENT_SIGN_IN,
+            variables: { jwt: updatedToken },
+          });
+
+          if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
+            const patient = patientSignInResult.data.patientSignIn.patients[0];
+            const patientProfiles = patientSignInResult.data.patientSignIn.patients;
+            setCurrentUser(patient);
+            setcurrentProfiles(patientProfiles);
+            setIsAuthenticating(false);
+          } else {
+            setCurrentUser(null);
+            setcurrentProfiles(null);
+            setIsAuthenticating(false);
+          }
+        }
       }
     });
   }, []);

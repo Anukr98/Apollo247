@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavigatorContainer } from 'app/src/components/NavigatorContainer';
+import { NavigatorContainer } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { AuthProvider } from './AuthProvider';
 
 export const AppContainer: React.FC = () => {

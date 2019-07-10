@@ -1,6 +1,11 @@
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
-import { ArrowFull, ArrowStep1, ArrowStep2, ArrowStep3 } from 'app/src/components/ui/Icons';
-import { theme } from 'app/src/theme/theme';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  ArrowFull,
+  ArrowStep1,
+  ArrowStep2,
+  ArrowStep3,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect } from 'react';
 import {
   Dimensions,
@@ -21,7 +26,6 @@ import firebase from 'react-native-firebase';
 import { NavigationScreenProps } from 'react-navigation';
 const { height } = Dimensions.get('window');
 import SplashScreen from 'react-native-splash-screen';
-import { useAuth } from 'app/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
   container: {
@@ -93,7 +97,7 @@ const slides: Slide[] = [
     key: 'somethun',
     title: 'anytime, anywhere',
     text: 'Talk to an Apollo certified doctor in under 15 minutes, anytime, anywhere!',
-    image: require('app/src/images/onboard/onboard.png'),
+    image: require('@aph/mobile-patients/src/images/onboard/onboard.png'),
     titleStyle: styles.titleStyle,
     backgroundColor: '"FBFCFD"',
     index: 1,
@@ -103,7 +107,7 @@ const slides: Slide[] = [
     key: 'somethun-dos',
     title: 'health records',
     text: 'Keep all your medical records in one digital vault, with you controlling access',
-    image: require('app/src/images/onboard/onboard.png'),
+    image: require('@aph/mobile-patients/src/images/onboard/onboard.png'),
     backgroundColor: '#FBFCFD',
     index: 2,
     icon: <ArrowStep2 style={style} />,
@@ -112,7 +116,7 @@ const slides: Slide[] = [
     key: 'somethun1',
     title: 'at your doorstep',
     text: 'Order medicines, tests and health checkups from the comfort of your home',
-    image: require('app/src/images/onboard/onboard.png'),
+    image: require('@aph/mobile-patients/src/images/onboard/onboard.png'),
     backgroundColor: '#FBFCFD',
     index: 3,
     icon: <ArrowStep3 style={style} />,
@@ -121,7 +125,7 @@ const slides: Slide[] = [
     key: 'somethun2',
     title: 'star doctors',
     text: 'Leverage the Apollo expertise using our Star Doctors',
-    image: require('app/src/images/onboard/onboard.png'),
+    image: require('@aph/mobile-patients/src/images/onboard/onboard.png'),
     backgroundColor: '#FBFCFD',
     index: 4,
     icon: <ArrowFull style={style} />,
@@ -177,7 +181,7 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
                   onPress={() => {
                     if (item.index === slides.length) {
                       AsyncStorage.setItem('onboarding', 'true');
-                      props.navigation.navigate(AppRoutes.Login);
+                      props.navigation.replace(AppRoutes.Login);
                     } else {
                       appIntroSliderRef.current.goToSlide(item.index);
                     }
@@ -196,7 +200,7 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
           style={styles.skipTextStyle}
           onPress={() => {
             AsyncStorage.setItem('onboarding', 'true');
-            props.navigation.navigate(AppRoutes.Login);
+            props.navigation.replace(AppRoutes.Login);
           }}
         >
           SKIP
