@@ -119,7 +119,6 @@ export const AuthProvider: React.FC = (props) => {
 
   const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
     return new Promise((resolve, reject) => {
-      setVerifyOtpError(false);
       if (!captchaPlacement) {
         setSendOtpError(true);
         reject();
@@ -168,7 +167,7 @@ export const AuthProvider: React.FC = (props) => {
     }
     setIsVerifyingOtp(true);
     const [otpAuthResult, otpError] = await wait(otpVerifier.confirm(otp));
-    setVerifyOtpError(Boolean(otpError || !otpAuthResult.user));
+    setVerifyOtpError(otpError || !otpAuthResult.user);
     setIsVerifyingOtp(false);
   };
 

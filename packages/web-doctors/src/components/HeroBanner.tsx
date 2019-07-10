@@ -16,8 +16,8 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     heroBanner: {
       borderRadius: '0 0 10px 10px',
-      backgroundColor: theme.palette.text.primary,
-      padding: 40,
+      backgroundColor: theme.palette.primary.contrastText,
+      padding: '40px 0 80px 40px',
       position: 'relative',
       [theme.breakpoints.up('lg')]: {
         display: 'flex',
@@ -26,22 +26,26 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '40px 20px',
       },
       [theme.breakpoints.between('sm', 'md')]: {
-        paddingTop: 60,
+        paddingTop: 30,
       },
     },
     bannerInfo: {
       [theme.breakpoints.up('lg')]: {
-        width: '50%',
+        width: '40%',
       },
       '& p': {
-        fontSize: 17,
+        fontSize: 20,
         lineHeight: 1.47,
         fontWeight: 500,
-        color: theme.palette.secondary.main,
-        marginTop: 16,
-        marginBottom: 20,
+        color: theme.palette.secondary.dark,
+        marginTop: 40,
+        marginBottom: 40,
         [theme.breakpoints.between('sm', 'md')]: {
           paddingRight: 400,
+        },
+        '& span': {
+          fontWeight: 'bold',
+          display: 'block',
         },
       },
       '& h1': {
@@ -60,20 +64,26 @@ const useStyles = makeStyles((theme: Theme) => {
     bannerImg: {
       marginBottom: -190,
       textAlign: 'right',
+      position: 'absolute',
+      top: 90,
+      right:0,
       [theme.breakpoints.up('lg')]: {
-        width: '50%',
+        width: '75%',
         marginLeft: 'auto',
       },
       [theme.breakpoints.between('sm', 'md')]: {
-        width: 400,
+        width: 585,
         position: 'absolute',
-        right: 40,
+        right: 0,
         bottom: 0,
         marginBottom: -150,
       },
       '& img': {
         marginTop: -15,
         maxWidth: '100%',
+        [theme.breakpoints.between('sm', 'md')]: {
+          marginTop: -21,
+        },
         [theme.breakpoints.down('xs')]: {
           maxWidth: 281,
           marginTop: -50,
@@ -128,40 +138,8 @@ export const HeroBanner: React.FC = () => {
   return (
     <div className={classes.heroBanner}>
       <div className={classes.bannerInfo}>
-        {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
-          <Typography variant="h1">
-            <span>hello</span>
-            <AphSelect
-              value={currentPatient.id}
-              onChange={(e) => {
-                const newId = e.target.value as PatientSignIn_patientSignIn_patients['id'];
-                const newCurrentPatient = allCurrentPatients.find((p) => p.id === newId);
-                if (newCurrentPatient) setCurrentPatient(newCurrentPatient);
-              }}
-              classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
-            >
-              {allCurrentPatients.map((patient) => (
-                <MenuItem
-                  selected={patient.id === currentPatient.id}
-                  value={patient.id}
-                  classes={{ selected: classes.menuSelected }}
-                  key={patient.id}
-                >
-                  {patient.firstName ? _toLower(patient.firstName) : ''}
-                </MenuItem>
-              ))}
-              <MenuItem classes={{ selected: classes.menuSelected }}>
-                <AphButton color="primary" classes={{ root: classes.addMemberBtn }}>
-                  Add Member
-                </AphButton>
-              </MenuItem>
-            </AphSelect>
-          </Typography>
-        ) : (
-          <Typography variant="h1">hello there!</Typography>
-        )}
-
-        <p>Not feeling well today? Don’t worry. We will help you find the right doctor :)</p>
+        <p>The best way to connect with your patients, grow your practice and enhance your professional network; 
+<span>anytime, anywhere :)</span></p>
         <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup }) => (
             <AphButton
@@ -170,7 +148,7 @@ export const HeroBanner: React.FC = () => {
               classes={{ root: classes.button }}
               onClick={() => protectWithLoginPopup()}
             >
-              Consult a doctor
+              GET STARTED
             </AphButton>
           )}
         </ProtectedWithLoginPopup>
