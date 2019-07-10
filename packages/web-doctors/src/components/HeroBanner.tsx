@@ -2,10 +2,13 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
-import { AphButton, AphSelect } from '@aph/web-ui-components';
+import { AphButton } from '@aph/web-ui-components';
 import MenuItem from '@material-ui/core/MenuItem';
+import { AphSelect } from '@aph/web-ui-components';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import _isEmpty from 'lodash/isEmpty';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/lowerCase';
 import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
 import { useAuth } from 'hooks/authHooks';
 
@@ -144,7 +147,7 @@ export const HeroBanner: React.FC = () => {
                   classes={{ selected: classes.menuSelected }}
                   key={patient.id}
                 >
-                  {patient.firstName}
+                  {patient.firstName ? _toLower(patient.firstName) : ''}
                 </MenuItem>
               ))}
               <MenuItem classes={{ selected: classes.menuSelected }}>
@@ -155,8 +158,8 @@ export const HeroBanner: React.FC = () => {
             </AphSelect>
           </Typography>
         ) : (
-            <Typography variant="h1">hello there!</Typography>
-          )}
+          <Typography variant="h1">hello there!</Typography>
+        )}
 
         <p>Not feeling well today? Don’t worry. We will help you find the right doctor :)</p>
         <ProtectedWithLoginPopup>
