@@ -20,7 +20,6 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 import SmsListener from 'react-native-android-sms-listener';
-import firebase from 'react-native-firebase';
 
 const styles = StyleSheet.create({
   container: {
@@ -88,7 +87,15 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const { analytics, currentUser, authError, clearCurrentUser } = useAuth();
+  const {
+    analytics,
+    currentUser,
+    authError,
+    clearCurrentUser,
+    signInWithPhoneNumber,
+    confirmResult,
+    authProvider,
+  } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<any>();
 
   useEffect(() => {
@@ -137,6 +144,14 @@ export const Login: React.FC<LoginProps> = (props) => {
   useEffect(() => {
     console.log('didmout');
     Platform.OS === 'android' && requestReadSmsPermission();
+
+    authProvider()
+      .then((result) => {
+        console.log('auth', result);
+      })
+      .catch((error) => {
+        console.log('auth', error);
+      });
   }, []);
 
   useEffect(() => {
@@ -221,34 +236,27 @@ export const Login: React.FC<LoginProps> = (props) => {
               null;
             } else {
               const isBlocked = await _getTimerData();
-              console.log('isBlocked', isBlocked);
-
               if (isBlocked) {
                 props.navigation.navigate(AppRoutes.OTPVerification, {
-                  phoneNumberVerificationCredential: '',
                   otpString,
-                  phoneNumber: '+91' + phoneNumber,
+                  phoneNumber: phoneNumber,
                 });
               } else {
                 setVerifyingPhonenNumber(true);
-                firebase
-                  .auth()
-                  .signInWithPhoneNumber('+91' + phoneNumber)
-                  .then((confirmResult) => {
-                    setVerifyingPhonenNumber(false);
-                    console.log(confirmResult, 'confirmResult');
 
+                signInWithPhoneNumber(phoneNumber)
+                  .then((confirmResult) => {
+                    console.log(confirmResult, 'confirmResult');
+                    setVerifyingPhonenNumber(false);
                     props.navigation.navigate(AppRoutes.OTPVerification, {
-                      phoneNumberVerificationCredential: confirmResult.verificationId,
-                      confirmResult,
                       otpString,
-                      phoneNumber: '+91' + phoneNumber,
+                      phoneNumber: phoneNumber,
                     });
                   })
                   .catch((error) => {
                     console.log(error, 'error');
+
                     setVerifyingPhonenNumber(false);
-                    Alert.alert('Error', 'The interaction was cancelled by the user.');
                   });
               }
             }

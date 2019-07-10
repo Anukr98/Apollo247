@@ -76,7 +76,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [isresent, setIsresent] = useState<boolean>(false);
   const [errorAuth, setErrorAuth] = useState<boolean>(true);
 
-  const { signIn, callApiWithToken, authError, clearCurrentUser } = useAuth();
+  const {
+    signIn,
+    callApiWithToken,
+    authError,
+    clearCurrentUser,
+    verifyOtp,
+    authProvider,
+  } = useAuth();
   const [verifyingOtp, setVerifyingOtp] = useState(false);
 
   const startInterval = (timer: number) => {
@@ -217,72 +224,88 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     setVerifyingOtp(true);
     Keyboard.dismiss();
 
-    const credential = firebase.auth.PhoneAuthProvider.credential(
-      phoneNumberVerificationCredential,
-      otp
-    );
-
-    signIn(credential)
-      .then((otpCredenntial: void) => {
-        console.log('otpCredenntial', otpCredenntial);
-        firebase.auth().onAuthStateChanged(async (updatedUser) => {
-          AsyncStorage.setItem('onAuthStateChanged', 'true');
-          if (updatedUser) {
-            _removeFromStore();
-            const token = await updatedUser!.getIdToken();
-            const patientSign = await callApiWithToken(token);
-            const patient = patientSign.data.patientSignIn.patients[0];
-            const errMsg =
-              patientSign.data.patientSignIn.errors &&
-              patientSign.data.patientSignIn.errors.messages[0];
-
-            console.log('patient', patient);
-            AsyncStorage.setItem('onAuthStateChanged', 'false');
-
-            setTimeout(() => {
-              setVerifyingOtp(false);
-              if (errMsg) {
-                Alert.alert('Error', errMsg);
-              } else {
-                if (patient && patient.uhid && patient.uhid !== '') {
-                  if (patient.firstName.relation != 0) {
-                    AsyncStorage.setItem('userLoggedIn', 'true');
-                    props.navigation.replace(AppRoutes.TabBar);
-                  } else {
-                    props.navigation.replace(AppRoutes.MultiSignup);
-                  }
-                } else {
-                  if (patient.firstName.length != 0) {
-                    AsyncStorage.setItem('userLoggedIn', 'true');
-                    props.navigation.replace(AppRoutes.TabBar);
-                  } else {
-                    props.navigation.replace(AppRoutes.SignUp);
-                  }
-                }
-              }
-            }, 2000);
-          } else {
-            console.log('no new user');
-          }
-        });
-      })
-      .catch((error: any) => {
-        console.log('error', error);
+    verifyOtp(otp)
+      .then((result) => {
         setVerifyingOtp(false);
-        _storeTimerData(invalidOtpCount + 1);
-
-        if (invalidOtpCount + 1 === 3) {
-          setShowErrorMsg(true);
-          setIsValidOTP(false);
-          startInterval(timer);
-          setIntervalId(intervalId);
-        } else {
-          setShowErrorMsg(true);
-          setIsValidOTP(true);
-        }
-        setInvalidOtpCount(invalidOtpCount + 1);
-        setOtp('');
+        console.log('otp success', result);
+        authProvider()
+          .then((result) => {
+            console.log('auth', result);
+          })
+          .catch((error) => {
+            console.log('auth', error);
+          });
+      })
+      .catch((error) => {
+        setVerifyingOtp(false);
+        console.log('otp error');
       });
+    // const credential = firebase.auth.PhoneAuthProvider.credential(
+    //   phoneNumberVerificationCredential,
+    //   otp
+    // );
+
+    // signIn(credential)
+    //   .then((otpCredenntial: void) => {
+    //     console.log('otpCredenntial', otpCredenntial);
+    //     firebase.auth().onAuthStateChanged(async (updatedUser) => {
+    //       AsyncStorage.setItem('onAuthStateChanged', 'true');
+    //       if (updatedUser) {
+    //         _removeFromStore();
+    //         const token = await updatedUser!.getIdToken();
+    //         const patientSign = await callApiWithToken(token);
+    //         const patient = patientSign.data.patientSignIn.patients[0];
+    //         const errMsg =
+    //           patientSign.data.patientSignIn.errors &&
+    //           patientSign.data.patientSignIn.errors.messages[0];
+
+    //         console.log('patient', patient);
+    //         AsyncStorage.setItem('onAuthStateChanged', 'false');
+
+    //         setTimeout(() => {
+    //           setVerifyingOtp(false);
+    //           if (errMsg) {
+    //             Alert.alert('Error', errMsg);
+    //           } else {
+    //             if (patient && patient.uhid && patient.uhid !== '') {
+    //               if (patient.firstName.relation != 0) {
+    //                 AsyncStorage.setItem('userLoggedIn', 'true');
+    //                 props.navigation.replace(AppRoutes.TabBar);
+    //               } else {
+    //                 props.navigation.replace(AppRoutes.MultiSignup);
+    //               }
+    //             } else {
+    //               if (patient.firstName.length != 0) {
+    //                 AsyncStorage.setItem('userLoggedIn', 'true');
+    //                 props.navigation.replace(AppRoutes.TabBar);
+    //               } else {
+    //                 props.navigation.replace(AppRoutes.SignUp);
+    //               }
+    //             }
+    //           }
+    //         }, 2000);
+    //       } else {
+    //         console.log('no new user');
+    //       }
+    //     });
+    //   })
+    //   .catch((error: any) => {
+    //     console.log('error', error);
+    //     setVerifyingOtp(false);
+    //     _storeTimerData(invalidOtpCount + 1);
+
+    //     if (invalidOtpCount + 1 === 3) {
+    //       setShowErrorMsg(true);
+    //       setIsValidOTP(false);
+    //       startInterval(timer);
+    //       setIntervalId(intervalId);
+    //     } else {
+    //       setShowErrorMsg(true);
+    //       setIsValidOTP(true);
+    //     }
+    //     setInvalidOtpCount(invalidOtpCount + 1);
+    //     setOtp('');
+    //   });
   };
 
   const minutes = Math.floor(remainingTime / 60);

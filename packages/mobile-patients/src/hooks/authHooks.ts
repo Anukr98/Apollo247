@@ -1,38 +1,58 @@
 import { useContext } from 'react';
-import { AuthContext } from '@aph/mobile-patients/src/components/AuthProvider';
+import { AuthContext, AuthContextProps } from '@aph/mobile-patients/src/components/AuthProvider';
 
+const useAuthContext = () => useContext(AuthContext);
+
+export const useCurrentPatient = () => useAuthContext().currentPatient;
+export const useAllCurrentPatients = () => useAuthContext().allCurrentPatients;
+export const useIsSignedIn = () => useAllCurrentPatients() != null;
 export const useAnalytics = () => useContext(AuthContext).analytics!;
-export const useIsLoggedIn = () => useCurrentUser() != null;
-export const useIsAuthenticating = () => useContext(AuthContext).isAuthenticating;
-export const useCurrentUser = () => useContext(AuthContext).currentUser!;
+
 export const useAuth = () => {
+  const currentPatient = useCurrentPatient();
+  const setCurrentPatient = useAuthContext().setCurrentPatient!;
+  const allCurrentPatients = useAllCurrentPatients();
+
+  const verifyOtp = useAuthContext().verifyOtp!;
+  const verifyOtpError = useAuthContext().verifyOtpError!;
+  const isVerifyingOtp = useAuthContext().isVerifyingOtp!;
+
+  const sendOtpError = useAuthContext().sendOtpError;
+  const isSendingOtp = useAuthContext().isSendingOtp;
+
+  const isSignedIn = useIsSignedIn();
+  const signInError = useAuthContext().signInError;
+  const isSigningIn = useAuthContext().isSigningIn;
+  const signOut = useAuthContext().signOut!;
+
+  const signInWithPhoneNumber = useAuthContext().signInWithPhoneNumber!;
+
   const analytics = useAnalytics();
-  const isLoggedIn = useIsLoggedIn();
-  const isAuthenticating = useIsAuthenticating();
-  const currentUser = useContext(AuthContext).currentUser!;
-  const verifyPhoneNumber = useContext(AuthContext).verifyPhoneNumber!;
-  const verifyOtp = useContext(AuthContext).verifyOtp!;
-  const signIn = useContext(AuthContext).signIn!;
-  const signOut = useContext(AuthContext).signOut!;
-  const currentProfiles = useContext(AuthContext).currentProfiles!;
-  const clearCurrentUser = useContext(AuthContext).clearCurrentUser!;
-  const callApiWithToken = useContext(AuthContext).callApiWithToken;
-  const callUpdatePatient = useContext(AuthContext).callUpdatePatient;
-  const authError = useContext(AuthContext).authError;
+  const confirmResult = useAuthContext().confirmResult!;
+  const authProvider = useAuthContext().authProvider!;
 
   return {
-    analytics,
-    isAuthenticating,
-    isLoggedIn,
-    currentUser,
-    verifyPhoneNumber,
+    currentPatient,
+    setCurrentPatient,
+    allCurrentPatients,
+
     verifyOtp,
-    signIn,
+    verifyOtpError,
+    isVerifyingOtp,
+
+    sendOtpError,
+    isSendingOtp,
+
+    isSignedIn,
+    signInError,
+    isSigningIn,
     signOut,
-    currentProfiles,
-    clearCurrentUser,
-    callApiWithToken,
-    callUpdatePatient,
-    authError,
+
+    signInWithPhoneNumber,
+
+    analytics,
+    confirmResult,
+
+    authProvider,
   };
 };
