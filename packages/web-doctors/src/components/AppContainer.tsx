@@ -1,7 +1,12 @@
 import { setConfig, Config } from 'react-hot-loader';
 import { hot } from 'react-hot-loader/root';
-import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Route } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { Welcome } from 'components/Welcome';
+import { PatientsList } from 'components/PatientsList';
+import { AuthProvider } from 'components/AuthProvider';
+import { useAuth } from 'hooks/authHooks';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, createMuiTheme } from '@material-ui/core';
 import { AphThemeProvider, aphTheme } from '@aph/web-ui-components';
@@ -21,9 +26,14 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const App: React.FC = () => {
   const classes = useStyles();
+  const { signInError } = useAuth();
+  useEffect(() => {
+    if (signInError) window.alert('Error signing in :(');
+  }, [signInError]);
   return (
     <div className={classes.app}>
-      <h1>Welcome to Doctors</h1>
+      <Route exact path={clientRoutes.welcome()} component={Welcome} />
+      <Route exact path={clientRoutes.patients()} component={PatientsList} />
     </div>
   );
 };
@@ -33,9 +43,11 @@ const theme = createMuiTheme({ ...aphTheme });
 const AppContainer: React.FC = () => {
   return (
     <BrowserRouter>
-      <AphThemeProvider theme={theme}>
-        <App />
-      </AphThemeProvider>
+      <AuthProvider>
+        <AphThemeProvider theme={theme}>
+          <App />
+        </AphThemeProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 };
