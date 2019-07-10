@@ -86,7 +86,7 @@ export const Header: React.FC = (props) => {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   return (
-    <header className={classes.header}>
+    <header className={classes.header} data-cypress="header">
       <div className={classes.logo}>
         <Link to="/">
           <img src={require('images/ic_logo.png')} />
@@ -101,7 +101,11 @@ export const Header: React.FC = (props) => {
               onClick={() => (isSignedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
               ref={avatarRef}
             >
-              {isSigningIn ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
+              {isSigningIn ? (
+                <CircularProgress />
+              ) : (
+                <img src={require('images/ic_account.svg')} data-cypress="userAccountImg" />
+              )}
             </div>
           )}
         </ProtectedWithLoginPopup>
