@@ -76,6 +76,7 @@ services:
       - ./:/apollo-hospitals:cached
     depends_on:
       - profiles-service
+      - doctors-service
       - nginx
 
   profiles-service:
