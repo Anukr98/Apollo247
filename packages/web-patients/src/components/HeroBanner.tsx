@@ -164,7 +164,7 @@ export const HeroBanner: React.FC = () => {
             <AphButton
               variant="contained"
               color="primary"
-              classes={{ root: classes.button }}
+              className={classes.button}
               onClick={() => protectWithLoginPopup()}
             >
               Consult a doctor
