@@ -44,6 +44,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.secondary.dark,
       marginTop: 10,
       lineHeight: 2,
+      opacity: 0.5,
     },
     action: {
       paddingTop: 0,

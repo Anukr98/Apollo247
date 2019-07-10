@@ -11,7 +11,7 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     serviceList: {
-      paddingTop: 145,
+      paddingTop: 80,
       paddingBottom: 40,
       paddingLeft: 20,
       paddingRight: 20,
@@ -23,12 +23,20 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
       position: 'relative',
       height: '100%',
+      [theme.breakpoints.between('sm', 'md')]: {
+        minHeight: 150,
+        display: 'flex',
+        alignItems: 'center',
+        paddingLeft: 140,
+      },
       [theme.breakpoints.down('xs')]: {
         display: 'flex',
       },
       '& h5': {
+        fontSize: 17,
+        textAlign: 'center',
         [theme.breakpoints.up('sm')]: {
-          paddingRight: 40,
+          paddingRight: 0,
         },
       },
       '& p': {
@@ -39,6 +47,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: 'rgba(0,0,0,0.5)',
         marginTop: 5,
         marginBottom: 5,
+        textAlign: 'center',
       },
     },
     serviceInfo: {
@@ -49,16 +58,15 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     avatarBlock: {
       marginLeft: 'auto',
-      [theme.breakpoints.up('sm')]: {
+      [theme.breakpoints.between('sm', 'md')]: {
         position: 'absolute',
-        top: -10,
-        right: -10,
+        top: 0,
+        left: -10,
       },
     },
     bigAvatar: {
-      width: 70,
-      height: 70,
-      backgroundColor: '#afc3c9',
+      width: 180,
+      height: 140,
     },
     action: {
       fontSize: 13,
@@ -72,6 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type ServiceItem = {
   title: string;
+  image: string;
   content: string;
   action: {
     link: string;
@@ -85,32 +94,22 @@ interface ServiceItemProps {
 
 const ServiceItem: React.FC<ServiceItemProps> = (props) => {
   const classes = useStyles();
-  const { title, content, action } = props.item;
+  const { title, content, action, image } = props.item;
   return (
     <ProtectedWithLoginPopup>
       {({ protectWithLoginPopup, isProtected }) => (
         <Grid item lg={3} sm={6} xs={12}>
           <Paper className={classes.serviceItem}>
             <div className={classes.serviceInfo}>
+              <div className={classes.avatarBlock}>
+                <img
+                  alt=""
+                  src={image}
+                  className={classes.bigAvatar}
+                />
+              </div>
               <Typography variant="h5">{title}</Typography>
               <p>{content}</p>
-              {/* <Link
-                className={classes.action}
-                to={action.link}
-                onClick={(e) => {
-                  protectWithLoginPopup();
-                  if (isProtected) e.preventDefault();
-                }}
-              >
-                {action.content}
-              </Link> */}
-            </div>
-            <div className={classes.avatarBlock}>
-              <Avatar
-                alt=""
-                src={require('images/ic_placeholder.png')}
-                className={classes.bigAvatar}
-              />
             </div>
           </Paper>
         </Grid>
@@ -124,21 +123,25 @@ export const ServiceList: React.FC = (props) => {
   const serviceItems: ServiceItem[] = [
     {
       title: 'higher revenues',
+      image: require('images/ic_higher_revenues.svg'),
       content: `Get more patients and higher utilisation`,
       action: { link: '', content: 'Find specialist' },
     },
     {
-      title: `easy followups`,
+      title: `easy follow ups`,
+      image: require('images/ic_easy_followups.svg'),
       content: 'Follow up with your patients virtually and whenever you want',
       action: { link: '', content: 'Search Medicine' },
     },
     {
       title: 'anytime anywhere',
-      content: 'Consult virtually, at time of your convenience',
+      image: require('images/ic_anytime.svg'),
+      content: 'Consult virtually, at a time of your convenience',
       action: { link: '', content: 'Book a test' },
     },
     {
       title: 'medico-legal assistance',
+      image: require('images/ic_medico_assistance.svg'),
       content: 'Get more patients and higher utilisation',
       action: { link: '', content: 'Who are star doctors' },
     },
