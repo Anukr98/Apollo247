@@ -1,8 +1,8 @@
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
-import { Card } from 'app/src/components/ui/Card';
-import { BackArrow, OkText, OkTextDisabled } from 'app/src/components/ui/Icons';
-import { string } from 'app/src/strings/string';
-import { theme } from 'app/src/theme/theme';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { BackArrow, OkText, OkTextDisabled } from '@aph/mobile-patients/src/components/ui/Icons';
+import { string } from '@aph/mobile-patients/src/strings/string';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
   Platform,
@@ -76,7 +76,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [isresent, setIsresent] = useState<boolean>(false);
   const [errorAuth, setErrorAuth] = useState<boolean>(true);
 
-  const { signIn, callApiWithToken, authError } = useAuth();
+  const { signIn, callApiWithToken, authError, clearCurrentUser } = useAuth();
   const [verifyingOtp, setVerifyingOtp] = useState(false);
 
   const startInterval = (timer: number) => {
@@ -200,6 +200,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     setErrorAuth(authError);
     console.log('authError OTPVerification', authError);
     if (authError) {
+      clearCurrentUser();
       setVerifyingOtp(false);
       Alert.alert('Error', 'Unable to connect the server at the moment.');
     }
@@ -207,6 +208,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const onClickOk = async () => {
     const { phoneNumberVerificationCredential } = props.navigation.state.params!;
+    console.log(
+      'phoneNumberVerificationCredential OTPVerification',
+      phoneNumberVerificationCredential
+    );
+
+    console.log('otp OTPVerification', otp);
     setVerifyingOtp(true);
     Keyboard.dismiss();
 
@@ -219,6 +226,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       .then((otpCredenntial: void) => {
         console.log('otpCredenntial', otpCredenntial);
         firebase.auth().onAuthStateChanged(async (updatedUser) => {
+          AsyncStorage.setItem('onAuthStateChanged', 'true');
           if (updatedUser) {
             _removeFromStore();
             const token = await updatedUser!.getIdToken();
@@ -227,23 +235,32 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             const errMsg =
               patientSign.data.patientSignIn.errors &&
               patientSign.data.patientSignIn.errors.messages[0];
-            setVerifyingOtp(false);
-            console.log('patient', patient);
 
-            if (errMsg) {
-              Alert.alert('Error', errMsg);
-            } else {
-              if (patient && patient.uhid && patient.uhid !== '') {
-                props.navigation.replace(AppRoutes.MultiSignup);
+            console.log('patient', patient);
+            AsyncStorage.setItem('onAuthStateChanged', 'false');
+
+            setTimeout(() => {
+              setVerifyingOtp(false);
+              if (errMsg) {
+                Alert.alert('Error', errMsg);
               } else {
-                if (patient.firstName.length != 0) {
-                  AsyncStorage.setItem('userLoggedIn', 'true');
-                  props.navigation.replace(AppRoutes.TabBar);
+                if (patient && patient.uhid && patient.uhid !== '') {
+                  if (patient.firstName.relation != 0) {
+                    AsyncStorage.setItem('userLoggedIn', 'true');
+                    props.navigation.replace(AppRoutes.TabBar);
+                  } else {
+                    props.navigation.replace(AppRoutes.MultiSignup);
+                  }
                 } else {
-                  props.navigation.replace(AppRoutes.SignUp);
+                  if (patient.firstName.length != 0) {
+                    AsyncStorage.setItem('userLoggedIn', 'true');
+                    props.navigation.replace(AppRoutes.TabBar);
+                  } else {
+                    props.navigation.replace(AppRoutes.SignUp);
+                  }
                 }
               }
-            }
+            }, 2000);
           } else {
             console.log('no new user');
           }

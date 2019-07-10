@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rm -rf dist/* && tsc --project . && create-index dist && cp dist/index.js dist/index.d.ts",
+    "start": "npm run build && tsc --project . -w"
+  },
   "peerDependencies": {
     "react": "16.8.6"
   },
@@ -13,6 +17,7 @@
     "@types/react": "^16.8.19",
     "create-index": "^2.4.0",
     "react": "16.8.6",
+    "react-native": "0.59.9",
     "typescript": "^3.5.2"
   },
   "dependencies": {

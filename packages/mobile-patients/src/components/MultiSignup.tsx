@@ -1,11 +1,11 @@
-import { ApolloLogo } from 'app/src/components/ApolloLogo';
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
-import { Button } from 'app/src/components/ui/Button';
-import { Card } from 'app/src/components/ui/Card';
-import { DropdownGreen, Mascot } from 'app/src/components/ui/Icons';
-import { StickyBottomComponent } from 'app/src/components/ui/StickyBottomComponent';
-import { string } from 'app/src/strings/string';
-import { theme } from 'app/src/theme/theme';
+import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { DropdownGreen, Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { string } from '@aph/mobile-patients/src/strings/string';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
@@ -15,11 +15,14 @@ import {
   TouchableOpacity,
   Dimensions,
   AsyncStorage,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MenuProvider } from 'react-native-popup-menu';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
+import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -87,18 +90,26 @@ type currentProfiles = {
   relation?: string;
 };
 
+type updatePateint = {
+  id: string;
+  relation: Relation | null;
+};
+
 export interface MultiSignupProps extends NavigationScreenProps {}
 
 export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [relationIndex, setRelationIndex] = useState<number>(0);
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [user, setUser] = useState<object>([]);
-  const { currentUser, analytics, currentProfiles } = useAuth();
+  const { currentUser, analytics, currentProfiles, callUpdatePatient } = useAuth();
   const [profiles, setProfiles] = useState<any>([]);
   const [discriptionText, setDiscriptionText] = useState<string>('');
   const [showText, setShowText] = useState<boolean>(false);
+  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
+
   useEffect(() => {
     setProfiles(currentProfiles ? currentProfiles : []);
+    AsyncStorage.setItem('multiSignUp', 'true');
   }, []);
 
   useEffect(() => {
@@ -119,6 +130,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
       console.log('length', length);
     }
     console.log('discriptionText', discriptionText);
+    console.log('currentProfiles', currentProfiles);
   }, [currentUser, currentProfiles, analytics, user, profiles, discriptionText, showText]);
 
   const renderUserForm = (styles: any, currentProfiles: currentProfiles, i: number) => {
@@ -149,7 +161,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
           <Text style={styles.nameTextStyle}>
             {currentProfiles.firstName} {currentProfiles.lastName}
           </Text>
-          <Text style={styles.idTextStyle}>{currentProfiles.sex} | 01 January 1987</Text>
+          <Text style={styles.idTextStyle}>{currentProfiles.gender} | 01 January 1987</Text>
           <View style={{ marginTop: 10 }}>
             <View style={{ paddingTop: 5, paddingBottom: 10 }}>
               <TouchableOpacity
@@ -187,38 +199,45 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
 
   type options = {
     name: string;
+    value: string;
   };
 
   const Options: options[] = [
     {
       name: 'Me',
+      value: 'ME',
     },
     {
       name: 'Mother',
+      value: 'MOTHER',
     },
     {
       name: 'Father',
+      value: 'FATHER',
     },
     {
       name: 'Sister',
+      value: 'SISTER',
     },
     {
       name: 'Wife',
-    },
-    {
-      name: 'Father',
+      value: 'WIFE',
     },
     {
       name: 'Husband',
+      value: 'HUSBAND',
     },
     {
       name: 'Son',
+      value: 'SON',
     },
     {
       name: 'Daughter',
+      value: 'DAUGHTER',
     },
     {
       name: 'Other',
+      value: 'OTHER',
     },
   ];
 
@@ -257,7 +276,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             <Text
               style={styles.textStyle}
               onPress={() => {
-                profiles[relationIndex].relation = menu.name;
+                profiles[relationIndex].relation = menu.value;
                 setProfiles(profiles);
                 setShowPopup(false);
               }}
@@ -277,9 +296,36 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
           style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
           title={'SUBMIT'}
           disabled={isDisabled()}
-          onPress={() => {
-            AsyncStorage.setItem('userLoggedIn', 'true');
-            props.navigation.navigate(AppRoutes.TabBar);
+          onPress={async () => {
+            setVerifyingPhonenNumber(true);
+
+            profiles.forEach(async (profile: any) => {
+              const patientsDetails: updatePateint = {
+                id: profile.id || '',
+                relation: profile.relation || '',
+              };
+              console.log('patientsDetails', patientsDetails);
+
+              const patientUpdateDetails = await callUpdatePatient(patientsDetails);
+              const patientDetails = patientUpdateDetails.data.updatePatient.patient;
+              const errMsg =
+                patientUpdateDetails.data.updatePatient.errors &&
+                patientUpdateDetails.data.updatePatient.errors.messages[0];
+
+              setTimeout(() => {
+                setVerifyingPhonenNumber(false);
+                if (errMsg) {
+                  Alert.alert('Error', errMsg);
+                } else {
+                  if (patientDetails) {
+                    AsyncStorage.setItem('userLoggedIn', 'true');
+                    AsyncStorage.setItem('multiSignUp', 'false');
+                    AsyncStorage.setItem('gotIt', 'false');
+                    props.navigation.navigate(AppRoutes.TabBar);
+                  }
+                }
+              }, 3000);
+            });
           }}
         />
       </StickyBottomComponent>
@@ -287,36 +333,58 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <MenuProvider customStyles={{ menuProviderWrapper: { flex: 1 } }}>
-        <KeyboardAwareScrollView style={styles.container} bounces={false}>
-          <View style={{ justifyContent: 'center', marginTop: 20, marginLeft: 20 }}>
-            <ApolloLogo />
-          </View>
-
-          <Card
-            cardContainer={{
-              marginHorizontal: 0,
-              marginTop: 20,
-              shadowOffset: { width: 0, height: -10 },
-              shadowOpacity: 0.4,
-            }}
-            heading={string.LocalStrings.welcome_text}
-            description={showText ? discriptionText : string.LocalStrings.multi_signup_desc}
-            descriptionTextStyle={{ paddingBottom: 50 }}
-          >
-            <View style={styles.mascotStyle}>
-              <Mascot />
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <MenuProvider customStyles={{ menuProviderWrapper: { flex: 1 } }}>
+          <KeyboardAwareScrollView style={styles.container} bounces={false}>
+            <View style={{ justifyContent: 'center', marginTop: 20, marginLeft: 20 }}>
+              <ApolloLogo />
             </View>
-            {profiles.map((currentProfiles: currentProfiles, i: number) => (
-              <View key={i}>{renderUserForm(styles, currentProfiles, i)}</View>
-            ))}
-            <View style={{ height: 80 }} />
-          </Card>
-        </KeyboardAwareScrollView>
-        {renderButtons()}
-      </MenuProvider>
-      {showPopup && Popup()}
-    </SafeAreaView>
+
+            <Card
+              cardContainer={{
+                marginHorizontal: 0,
+                marginTop: 20,
+                shadowOffset: { width: 0, height: -10 },
+                shadowOpacity: 0.4,
+              }}
+              heading={string.LocalStrings.welcome_text}
+              description={showText ? discriptionText : string.LocalStrings.multi_signup_desc}
+              descriptionTextStyle={{ paddingBottom: 50 }}
+            >
+              <View style={styles.mascotStyle}>
+                <Mascot />
+              </View>
+              {profiles.map((currentProfiles: currentProfiles, i: number) => (
+                <View key={i}>{renderUserForm(styles, currentProfiles, i)}</View>
+              ))}
+              <View style={{ height: 80 }} />
+            </Card>
+          </KeyboardAwareScrollView>
+          {renderButtons()}
+        </MenuProvider>
+        {showPopup && Popup()}
+      </SafeAreaView>
+      {verifyingPhoneNumber ? (
+        <View
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0, 0.2)',
+            alignSelf: 'center',
+            justifyContent: 'center',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            elevation: 3,
+            zIndex: 3,
+          }}
+        >
+          <ActivityIndicator animating={verifyingPhoneNumber} size="large" color="green" />
+        </View>
+      ) : null}
+    </View>
   );
 };

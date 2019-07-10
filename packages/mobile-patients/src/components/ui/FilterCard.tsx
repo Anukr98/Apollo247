@@ -1,4 +1,4 @@
-import { Button } from 'app/src/components/ui/Button';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';

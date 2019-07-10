@@ -1,19 +1,19 @@
 import { createStackNavigator, createAppContainer, StackNavigatorConfig } from 'react-navigation';
 
-import { Login } from 'app/src/components/Login';
-import { Onboarding } from 'app/src/components/Onboarding';
-import { TabBar } from 'app/src/components/TabBar';
-import { DoctorSearch } from 'app/src/components/DoctorSearch';
-import { SignUp } from 'app/src/components/SignUp';
-import { MultiSignup } from 'app/src/components/MultiSignup';
-import { OTPVerification } from 'app/src/components/OTPVerification';
+import { Login } from '@aph/mobile-patients/src/components/Login';
+import { Onboarding } from '@aph/mobile-patients/src/components/Onboarding';
+import { TabBar } from '@aph/mobile-patients/src/components/TabBar';
+import { DoctorSearch } from '@aph/mobile-patients/src/components/DoctorSearch';
+import { SignUp } from '@aph/mobile-patients/src/components/SignUp';
+import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
+import { OTPVerification } from '@aph/mobile-patients/src/components/OTPVerification';
 import { NavigationRouteConfig } from 'react-navigation';
-import { ConsultRoom } from 'app/src/components/ConsultRoom';
-import { DoctorSearchListing } from 'app/src/components/DoctorSearchListing';
-import { HealthRecords } from 'app/src/components/HealthRecords';
-import { Medicine } from 'app/src/components/Medicine';
-import { MyAccount } from 'app/src/components/MyAccount';
-import { SplashScreen } from 'app/src/components/SplashScreen';
+import { ConsultRoom } from '@aph/mobile-patients/src/components/ConsultRoom';
+import { DoctorSearchListing } from '@aph/mobile-patients/src/components/DoctorSearchListing';
+import { HealthRecords } from '@aph/mobile-patients/src/components/HealthRecords';
+import { Medicine } from '@aph/mobile-patients/src/components/Medicine';
+import { MyAccount } from '@aph/mobile-patients/src/components/MyAccount';
+import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',

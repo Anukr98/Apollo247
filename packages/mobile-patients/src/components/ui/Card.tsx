@@ -1,4 +1,4 @@
-import { theme } from 'app/src/theme/theme';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import {
   StyleProp,

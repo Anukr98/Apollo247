@@ -1,4 +1,4 @@
-import { Header } from 'app/src/components/ui/Header';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   DoctorImage,
   GeneralPhysician,
@@ -6,9 +6,9 @@ import {
   Neurologist,
   Paedatrician,
   Urologist,
-} from 'app/src/components/ui/Icons';
-import { SectionHeaderComponent } from 'app/src/components/ui/SectionHeader';
-import { TextInputComponent } from 'app/src/components/ui/TextInputComponent';
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import React, { useState } from 'react';
 import {
   FlatList,

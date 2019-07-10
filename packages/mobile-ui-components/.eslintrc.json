@@ -1,3 +1,6 @@
 {
-  "extends": ["@aph/eslint-config", "@aph/eslint-config/react-native"]
+  "extends": ["@aph/eslint-config", "@aph/eslint-config/react-native"],
+  "rules": {
+    "import/no-default-export": 0
+  }
 }

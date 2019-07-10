@@ -1,8 +1,13 @@
-import { ApolloLogo } from 'app/src/components/ApolloLogo';
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
-import { Button } from 'app/src/components/ui/Button';
-import { DoctorImage, DoctorPlaceholder, DropdownGreen, Mascot } from 'app/src/components/ui/Icons';
-import { theme } from 'app/src/theme/theme';
+import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import {
+  DoctorImage,
+  DoctorPlaceholder,
+  DropdownGreen,
+  Mascot,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
@@ -14,10 +19,12 @@ import {
   TouchableOpacity,
   AsyncStorage,
   Platform,
+  Alert,
 } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { useAuth } from 'app/src/hooks/authHooks';
+import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import firebase from 'react-native-firebase';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -217,12 +224,45 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(true);
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [userName, setuserName] = useState<string>('');
-  const { currentUser, analytics, currentProfiles } = useAuth();
+  const { currentUser, analytics, currentProfiles, callApiWithToken } = useAuth();
+  const [firebaseCalled, setFirebaseCalled] = useState<boolean>(false);
 
   useEffect(() => {
     let userName = currentUser && currentUser.firstName ? currentUser.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
+
+    async function fetchFirebase() {
+      if (!userName) {
+        console.log('else');
+
+        if (!firebaseCalled) {
+          firebase.auth().onAuthStateChanged(async (updatedUser) => {
+            if (updatedUser) {
+              const token = await updatedUser!.getIdToken();
+              const patientSign = await callApiWithToken(token);
+              const patient = patientSign.data.patientSignIn.patients[0];
+              const errMsg =
+                patientSign.data.patientSignIn.errors &&
+                patientSign.data.patientSignIn.errors.messages[0];
+
+              console.log('patient', patient);
+              setFirebaseCalled(true);
+
+              setTimeout(() => {
+                if (errMsg) {
+                  Alert.alert('Error', errMsg);
+                } else {
+                }
+              }, 1000);
+            } else {
+              console.log('no new user');
+            }
+          });
+        }
+      }
+    }
+    fetchFirebase();
 
     analytics.setCurrentScreen(AppRoutes.ConsultRoom);
   }, [currentUser, currentProfiles, analytics, userName, props.navigation.state.params]);
@@ -236,6 +276,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     fetchData();
   }, []);
+
   const Popup = () => (
     <TouchableOpacity
       style={{
@@ -309,7 +350,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         {showMenu && Popup()}
         <ScrollView style={{ flex: 1 }} bounces={false}>
           <Image
-            source={require('app/src/images/doctor/doctor.png')}
+            source={require('@aph/mobile-patients/src/images/doctor/doctor.png')}
             style={{
               right: 20,
               top: 207,

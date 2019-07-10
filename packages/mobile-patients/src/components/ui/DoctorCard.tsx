@@ -1,4 +1,4 @@
-import { Star } from 'app/src/components/ui/Icons';
+import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import React from 'react';
 import {
   ImageSourcePropType,
