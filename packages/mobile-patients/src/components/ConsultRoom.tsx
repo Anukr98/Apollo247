@@ -210,12 +210,13 @@ const arrayDoctor: ArrayDoctor[] = [
 ];
 
 type currentProfiles = {
-  firstName: string;
+  firstName: string | null;
   id: string;
-  lastName: string;
-  mobileNumber: string;
-  sex: string;
-  uhid: string;
+  lastName: string | null;
+  mobileNumber: string | null;
+  gender: string | null;
+  uhid: string | null;
+  relation: string | null;
 };
 
 export interface ConsultRoomProps extends NavigationScreenProps {}
@@ -224,11 +225,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(true);
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [userName, setuserName] = useState<string>('');
-  const { currentUser, analytics, currentProfiles, callApiWithToken } = useAuth();
+  const { currentPatient, analytics, allCurrentPatients } = useAuth();
   const [firebaseCalled, setFirebaseCalled] = useState<boolean>(false);
 
   useEffect(() => {
-    let userName = currentUser && currentUser.firstName ? currentUser.firstName.split(' ')[0] : '';
+    let userName =
+      currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
 
@@ -236,36 +238,36 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       if (!userName) {
         console.log('else');
 
-        if (!firebaseCalled) {
-          firebase.auth().onAuthStateChanged(async (updatedUser) => {
-            if (updatedUser) {
-              const token = await updatedUser!.getIdToken();
-              const patientSign = await callApiWithToken(token);
-              const patient = patientSign.data.patientSignIn.patients[0];
-              const errMsg =
-                patientSign.data.patientSignIn.errors &&
-                patientSign.data.patientSignIn.errors.messages[0];
+        // if (!firebaseCalled) {
+        //   firebase.auth().onAuthStateChanged(async (updatedUser) => {
+        //     if (updatedUser) {
+        //       const token = await updatedUser!.getIdToken();
+        //       const patientSign = await callApiWithToken(token);
+        //       const patient = patientSign.data.patientSignIn.patients[0];
+        //       const errMsg =
+        //         patientSign.data.patientSignIn.errors &&
+        //         patientSign.data.patientSignIn.errors.messages[0];
 
-              console.log('patient', patient);
-              setFirebaseCalled(true);
+        //       console.log('patient', patient);
+        //       setFirebaseCalled(true);
 
-              setTimeout(() => {
-                if (errMsg) {
-                  Alert.alert('Error', errMsg);
-                } else {
-                }
-              }, 1000);
-            } else {
-              console.log('no new user');
-            }
-          });
-        }
+        //       setTimeout(() => {
+        //         if (errMsg) {
+        //           Alert.alert('Error', errMsg);
+        //         } else {
+        //         }
+        //       }, 1000);
+        //     } else {
+        //       console.log('no new user');
+        //     }
+        //   });
+        // }
       }
     }
     fetchFirebase();
 
     analytics.setCurrentScreen(AppRoutes.ConsultRoom);
-  }, [currentUser, currentProfiles, analytics, userName, props.navigation.state.params]);
+  }, [currentPatient, allCurrentPatients, analytics, userName, props.navigation.state.params]);
 
   useEffect(() => {
     async function fetchData() {
@@ -314,8 +316,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           }),
         }}
       >
-        {currentProfiles &&
-          currentProfiles.map((profile: currentProfiles, i: number) => (
+        {allCurrentPatients &&
+          allCurrentPatients.map((profile: currentProfiles, i: number) => (
             <View style={styles.textViewStyle} key={i}>
               <Text
                 style={styles.textStyle}

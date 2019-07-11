@@ -17,6 +17,7 @@ export const useAuth = () => {
   const verifyOtpError = useAuthContext().verifyOtpError!;
   const isVerifyingOtp = useAuthContext().isVerifyingOtp!;
 
+  const sendOtp = useAuthContext().sendOtp!;
   const sendOtpError = useAuthContext().sendOtpError;
   const isSendingOtp = useAuthContext().isSendingOtp;
 
@@ -30,6 +31,9 @@ export const useAuth = () => {
   const analytics = useAnalytics();
   const confirmResult = useAuthContext().confirmResult!;
   const authProvider = useAuthContext().authProvider!;
+  const authError = useAuthContext().authError!;
+  const setAuthError = useAuthContext().setAuthError!;
+  const updatePatient = useAuthContext().updatePatient!;
 
   return {
     currentPatient,
@@ -40,6 +44,7 @@ export const useAuth = () => {
     verifyOtpError,
     isVerifyingOtp,
 
+    sendOtp,
     sendOtpError,
     isSendingOtp,
 
@@ -54,5 +59,8 @@ export const useAuth = () => {
     confirmResult,
 
     authProvider,
+    authError,
+    setAuthError,
+    updatePatient,
   };
 };

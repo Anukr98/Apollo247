@@ -116,7 +116,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
   const [firstNameValidation, setfirstNameValidation] = useState<boolean>(false);
   const [lastNameValidation, setLastNameValidation] = useState<boolean>(false);
-  const { callUpdatePatient, currentUser } = useAuth();
+  const { updatePatient, currentPatient } = useAuth();
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
 
   const isSatisfyingNameRegex = (value: string) =>
@@ -306,8 +306,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                 const formatDate = Moment(date, 'DD/MM/YYYY').format('MM/DD/YYYY');
 
                 const patientsDetails: updatePateint = {
-                  id: currentUser.id,
-                  mobileNumber: currentUser.mobileNumber,
+                  id: currentPatient.id,
+                  mobileNumber: currentPatient.mobileNumber,
                   firstName: firstName,
                   lastName: lastName,
                   relation: Relation.ME,
@@ -318,25 +318,22 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                 };
                 console.log('patientsDetails', patientsDetails);
 
-                const patientUpdateDetails = await callUpdatePatient(patientsDetails);
-                const patientDetails = patientUpdateDetails.data.updatePatient.patient;
-                const errMsg =
-                  patientUpdateDetails.data.updatePatient.errors &&
-                  patientUpdateDetails.data.updatePatient.errors.messages[0];
-
-                setTimeout(() => {
-                  setVerifyingPhonenNumber(false);
-                  if (errMsg) {
+                updatePatient(patientsDetails)
+                  .then((updatePatient) => {
+                    setVerifyingPhonenNumber(false);
+                    console.log('updatePatient', updatePatient);
+                    AsyncStorage.setItem('userLoggedIn', 'true');
+                    AsyncStorage.setItem('signUp', 'false');
+                    AsyncStorage.setItem('gotIt', 'false');
+                    props.navigation.navigate(AppRoutes.TabBar);
+                  })
+                  .catch((error) => {
+                    setVerifyingPhonenNumber(false);
+                    const errMsg =
+                      error.data.updatePatient.errors &&
+                      error.data.updatePatient.errors.messages[0];
                     Alert.alert('Error', errMsg);
-                  } else {
-                    if (patientDetails) {
-                      AsyncStorage.setItem('userLoggedIn', 'true');
-                      AsyncStorage.setItem('signUp', 'false');
-                      AsyncStorage.setItem('gotIt', 'false');
-                      props.navigation.navigate(AppRoutes.TabBar);
-                    }
-                  }
-                }, 2000);
+                  });
               }
             }}
           />

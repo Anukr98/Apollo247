@@ -73,48 +73,28 @@ const styles = StyleSheet.create({
 export interface LoginProps extends NavigationScreenProps {}
 
 const isPhoneNumberValid = (number: string) => {
-  const isValidNumber =
-    // (number.replace(/^0+/, '').length !== 10 && number.length !== 0) ||
-    !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
+  const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
   return isValidNumber;
 };
 
 let otpString = '';
-let backHandler: any;
 let didBlurSubscription: any;
 
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const {
-    analytics,
-    currentUser,
-    authError,
-    clearCurrentUser,
-    signInWithPhoneNumber,
-    authProvider,
-  } = useAuth();
+  const { analytics, authError, setAuthError, sendOtp } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<any>();
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
-    // setVerifyingPhonenNumber(false);
-    console.log('login currentUser', currentUser);
-  }, [analytics, currentUser]);
-
-  useEffect(() => {
-    console.log('login Screen');
-  }, []);
-
-  useEffect(() => {
-    console.log('authError Login', authError);
     if (authError) {
-      clearCurrentUser();
       setVerifyingPhonenNumber(false);
+      setAuthError(false);
       Alert.alert('Error', 'Unable to connect the server at the moment.');
     }
-  }, [authError]);
+  }, [authError, analytics]);
 
   const requestReadSmsPermission = async () => {
     try {
@@ -143,14 +123,6 @@ export const Login: React.FC<LoginProps> = (props) => {
   useEffect(() => {
     console.log('didmout');
     Platform.OS === 'android' && requestReadSmsPermission();
-
-    authProvider()
-      .then((result) => {
-        console.log('auth', result);
-      })
-      .catch((error) => {
-        console.log('auth', error);
-      });
   }, []);
 
   useEffect(() => {
@@ -176,9 +148,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const validateAndSetPhoneNumber = (number: string) => {
     if (/^\d+$/.test(number) || number == '') {
       setPhoneNumber(number);
-      // if (number.length == 10) {
       setPhoneNumberIsValid(isPhoneNumberValid(number));
-      // }
     } else {
       return false;
     }
@@ -209,8 +179,6 @@ export const Login: React.FC<LoginProps> = (props) => {
     } catch (error) {
       console.log(error.message);
     }
-    console.log(isNoBlocked, 'isNoBlocked');
-
     return isNoBlocked;
   };
 
@@ -243,9 +211,9 @@ export const Login: React.FC<LoginProps> = (props) => {
               } else {
                 setVerifyingPhonenNumber(true);
 
-                signInWithPhoneNumber(phoneNumber)
+                sendOtp(phoneNumber)
                   .then((confirmResult) => {
-                    console.log(confirmResult, 'confirmResult');
+                    console.log('confirmResult login', confirmResult);
                     setVerifyingPhonenNumber(false);
                     props.navigation.navigate(AppRoutes.OTPVerification, {
                       otpString,
@@ -253,10 +221,22 @@ export const Login: React.FC<LoginProps> = (props) => {
                     });
                   })
                   .catch((error) => {
-                    console.log(error, 'error');
-
+                    Alert.alert('Error', 'The interaction was cancelled by the user.');
                     setVerifyingPhonenNumber(false);
                   });
+
+                // signInWithPhoneNumber(phoneNumber)
+                //   .then((confirmResult) => {
+                //     setVerifyingPhonenNumber(false);
+                //     props.navigation.navigate(AppRoutes.OTPVerification, {
+                //       otpString,
+                //       phoneNumber: phoneNumber,
+                //     });
+                //   })
+                //   .catch((error) => {
+                //     Alert.alert('Error', 'The interaction was cancelled by the user.');
+                //     setVerifyingPhonenNumber(false);
+                //   });
               }
             }
           }}

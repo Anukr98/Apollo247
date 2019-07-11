@@ -74,15 +74,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [intervalId, setIntervalId] = useState<any>(0);
   const [otp, setOtp] = useState<string>('');
   const [isresent, setIsresent] = useState<boolean>(false);
-  const [errorAuth, setErrorAuth] = useState<boolean>(true);
 
   const {
-    signIn,
-    callApiWithToken,
     authError,
-    clearCurrentUser,
     verifyOtp,
     authProvider,
+    setAuthError,
+    signInWithPhoneNumber,
+    isSigningIn,
+    currentPatient,
   } = useAuth();
   const [verifyingOtp, setVerifyingOtp] = useState(false);
 
@@ -204,108 +204,95 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   useEffect(() => {
-    setErrorAuth(authError);
-    console.log('authError OTPVerification', authError);
     if (authError) {
-      clearCurrentUser();
       setVerifyingOtp(false);
+      setAuthError(false);
       Alert.alert('Error', 'Unable to connect the server at the moment.');
     }
   }, [authError]);
 
-  const onClickOk = async () => {
-    const { phoneNumberVerificationCredential } = props.navigation.state.params!;
-    console.log(
-      'phoneNumberVerificationCredential OTPVerification',
-      phoneNumberVerificationCredential
-    );
+  // const callAuthProvider = async () => {
+  //   authProvider()
+  //     .then((patient) => {
+  //       if (patient && patient.uhid && patient.uhid !== '') {
+  //         if (patient.relation == null) {
+  //           props.navigation.replace(AppRoutes.MultiSignup);
+  //         } else {
+  //           AsyncStorage.setItem('userLoggedIn', 'true');
+  //           props.navigation.replace(AppRoutes.TabBar);
+  //         }
+  //       } else {
+  //         if (patient.firstName == null) {
+  //           props.navigation.replace(AppRoutes.SignUp);
+  //         } else {
+  //           AsyncStorage.setItem('userLoggedIn', 'true');
+  //           props.navigation.replace(AppRoutes.TabBar);
+  //         }
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.log('auth', error);
+  //       // const errMsg =
+  //       //   (error.data.patientSignIn.errors && error.data.patientSignIn.errors.messages[0]) ||
+  //       //   'Cannot connect to server.';
+  //       // Alert.alert('Error', errMsg);
+  //     });
+  // };
 
+  useEffect(() => {
+    if (isSigningIn) {
+      setVerifyingOtp(true);
+      if (currentPatient) {
+        if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
+          if (currentPatient.relation == null) {
+            props.navigation.replace(AppRoutes.MultiSignup);
+          } else {
+            AsyncStorage.setItem('userLoggedIn', 'true');
+            props.navigation.replace(AppRoutes.TabBar);
+          }
+        } else {
+          if (currentPatient.firstName == null) {
+            props.navigation.replace(AppRoutes.SignUp);
+          } else {
+            AsyncStorage.setItem('userLoggedIn', 'true');
+            props.navigation.replace(AppRoutes.TabBar);
+          }
+        }
+      }
+    } else {
+      setVerifyingOtp(false);
+    }
+  }, [isSigningIn, currentPatient]);
+
+  const onClickOk = async () => {
     console.log('otp OTPVerification', otp);
     setVerifyingOtp(true);
     Keyboard.dismiss();
 
     verifyOtp(otp)
       .then((result) => {
+        console.log('result OTPVerification', result);
         setVerifyingOtp(false);
-        console.log('otp success', result);
-        authProvider()
-          .then((result) => {
-            console.log('auth', result);
-          })
-          .catch((error) => {
-            console.log('auth', error);
-          });
+        _removeFromStore();
+        // callAuthProvider();
       })
       .catch((error) => {
+        console.log('error', error);
         setVerifyingOtp(false);
-        console.log('otp error');
+        _storeTimerData(invalidOtpCount + 1);
+
+        if (invalidOtpCount + 1 === 3) {
+          setShowErrorMsg(true);
+          setIsValidOTP(false);
+          startInterval(timer);
+          setIntervalId(intervalId);
+        } else {
+          setShowErrorMsg(true);
+          setIsValidOTP(true);
+        }
+        setInvalidOtpCount(invalidOtpCount + 1);
+        setOtp('');
       });
-    // const credential = firebase.auth.PhoneAuthProvider.credential(
-    //   phoneNumberVerificationCredential,
-    //   otp
-    // );
-
-    // signIn(credential)
-    //   .then((otpCredenntial: void) => {
-    //     console.log('otpCredenntial', otpCredenntial);
-    //     firebase.auth().onAuthStateChanged(async (updatedUser) => {
-    //       AsyncStorage.setItem('onAuthStateChanged', 'true');
-    //       if (updatedUser) {
-    //         _removeFromStore();
-    //         const token = await updatedUser!.getIdToken();
-    //         const patientSign = await callApiWithToken(token);
-    //         const patient = patientSign.data.patientSignIn.patients[0];
-    //         const errMsg =
-    //           patientSign.data.patientSignIn.errors &&
-    //           patientSign.data.patientSignIn.errors.messages[0];
-
-    //         console.log('patient', patient);
-    //         AsyncStorage.setItem('onAuthStateChanged', 'false');
-
-    //         setTimeout(() => {
-    //           setVerifyingOtp(false);
-    //           if (errMsg) {
-    //             Alert.alert('Error', errMsg);
-    //           } else {
-    //             if (patient && patient.uhid && patient.uhid !== '') {
-    //               if (patient.firstName.relation != 0) {
-    //                 AsyncStorage.setItem('userLoggedIn', 'true');
-    //                 props.navigation.replace(AppRoutes.TabBar);
-    //               } else {
-    //                 props.navigation.replace(AppRoutes.MultiSignup);
-    //               }
-    //             } else {
-    //               if (patient.firstName.length != 0) {
-    //                 AsyncStorage.setItem('userLoggedIn', 'true');
-    //                 props.navigation.replace(AppRoutes.TabBar);
-    //               } else {
-    //                 props.navigation.replace(AppRoutes.SignUp);
-    //               }
-    //             }
-    //           }
-    //         }, 2000);
-    //       } else {
-    //         console.log('no new user');
-    //       }
-    //     });
-    //   })
-    //   .catch((error: any) => {
-    //     console.log('error', error);
-    //     setVerifyingOtp(false);
-    //     _storeTimerData(invalidOtpCount + 1);
-
-    //     if (invalidOtpCount + 1 === 3) {
-    //       setShowErrorMsg(true);
-    //       setIsValidOTP(false);
-    //       startInterval(timer);
-    //       setIntervalId(intervalId);
-    //     } else {
-    //       setShowErrorMsg(true);
-    //       setIsValidOTP(true);
-    //     }
-    //     setInvalidOtpCount(invalidOtpCount + 1);
-    //     setOtp('');
-    //   });
   };
 
   const minutes = Math.floor(remainingTime / 60);
@@ -363,22 +350,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     console.log('onClickResend', phoneNumber);
     setVerifyingOtp(true);
 
-    setTimeout(() => {
-      firebase
-        .auth()
-        .signInWithPhoneNumber(phoneNumber)
-        .then((confirmResult) => {
-          setVerifyingOtp(false);
-          props.navigation.setParams({
-            phoneNumberVerificationCredential: confirmResult.verificationId || '',
-          });
-        })
-        .catch((error) => {
-          setVerifyingOtp(false);
-          console.log(error, 'error');
-          Alert.alert('Error', 'Unable to connect the server at the moment.');
-        });
-    }, 50);
+    signInWithPhoneNumber(phoneNumber)
+      .then((confirmResult) => {
+        setVerifyingOtp(false);
+      })
+      .catch((error) => {
+        Alert.alert('Error', 'Unable to connect the server at the moment.');
+        setVerifyingOtp(false);
+      });
   };
 
   return (
