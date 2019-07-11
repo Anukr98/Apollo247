@@ -11,7 +11,7 @@
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
-    "lint": "eslint . --ext .ts,.tsx,.js,.jsx"
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx"
   },
   "devDependencies": {
     "@aph/eslint-config": "0.0.1",
