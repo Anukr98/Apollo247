@@ -1,3 +1,6 @@
 {
-  "extends": ["@aph/eslint-config", "@aph/eslint-config/react"]
+  "extends": [
+    "./node_modules/@aph/eslint-config/index.js",
+    "./node_modules/@aph/eslint-config/react.js"
+  ]
 }

@@ -1,3 +1,7 @@
 {
-  "extends": ["@aph/eslint-config", "@aph/eslint-config/react", "@aph/eslint-config/react-native"]
+  "extends": [
+    "./node_modules/@aph/eslint-config/index.js",
+    "./node_modules/@aph/eslint-config/react.js",
+    "./node_modules/@aph/eslint-config/react-native.js"
+  ]
 }
