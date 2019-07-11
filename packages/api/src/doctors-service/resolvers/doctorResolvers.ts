@@ -2,23 +2,55 @@ import gql from 'graphql-tag';
 import { Resolver } from 'doctors-service/doctors-service';
 import DoctorsData from '../data/doctors.json';
 import { JsonValue } from 'apollo-utilities';
-import { isNull } from 'util';
+import { isNull, isUndefined } from 'util';
 
 export const doctorTypeDefs = gql`
   type Doctor {
+    id: String
     firstName: String
     lastName: String
     mobileNumber: String
     experience: String
   }
 
+  type clinicsList {
+    name: String
+    location: String
+  }
+
+  type starDoctorTeam {
+    firstName: String
+    lastName: String
+    experience: String
+    typeOfConsult: String
+    inviteStatus: String
+  }
+
+  type DoctorProfile {
+    id: String
+    firstName: String
+    lastName: String
+    mobileNumber: String
+    experience: String
+    speciality: String
+    isStarDoctor: Boolean
+    education: String
+    services: String
+    languages: String
+    city: String
+    awards: String
+    clinicsList: [clinicsList]
+    starDoctorTeam: [starDoctorTeam]
+  }
+
   extend type Query {
-    getDoctorsData: [Doctor]
+    getDoctors: [Doctor]
     hasAccess(mobileNumber: String): Boolean
+    getDoctorProfile(mobileNumber: String): DoctorProfile
   }
 `;
 
-const getDoctorsData: Resolver<any> = async (parent, args): Promise<JSON> => {
+const getDoctors: Resolver<any> = async (parent, args): Promise<JSON> => {
   return JSON.parse(JSON.stringify(DoctorsData));
 };
 
@@ -27,15 +59,55 @@ const hasAccess: Resolver<any, { mobileNumber: string }> = async (
   args
 ): Promise<Boolean> => {
   let authorized = DoctorsData.find((item) => {
-    return item.mobileNumber == args.mobileNumber;
+    return item.mobileNumber === args.mobileNumber;
   });
-  if (isNull(authorized)) return false;
-  return true;
+  return isUndefined(authorized) ? false : true;
+};
+
+type clinicsList = {
+  name: String;
+  location: String;
+};
+
+type starDoctorTeam = {
+  firstName: String;
+  lastName: String;
+  experience: String;
+  typeOfConsult: String;
+  inviteStatus: String;
+};
+
+type DoctorProfile = {
+  id: String;
+  firstName: String;
+  lastName: String;
+  mobileNumber: String;
+  experience: String;
+  speciality: String;
+  isStarDoctor: Boolean;
+  education: String;
+  services: String;
+  languages: String;
+  city: String;
+  awards: String;
+  clinicsList: clinicsList[];
+  starDoctorTeam: starDoctorTeam[];
+};
+
+const getDoctorProfile: Resolver<any, { mobileNumber: string }> = async (
+  parent,
+  args
+): Promise<DoctorProfile> => {
+  let doctor = DoctorsData.find((item) => {
+    return item.mobileNumber === args.mobileNumber;
+  });
+  return <DoctorProfile>doctor;
 };
 
 export const doctorResolvers = {
   Query: {
-    getDoctorsData,
+    getDoctors,
     hasAccess,
+    getDoctorProfile,
   },
 };
