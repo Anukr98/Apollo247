@@ -72,6 +72,8 @@ services:
       NODE_ENV: local
       WEB_CLIENT_PORT: 3000
       API_GATEWAY_PORT: 4000
+      GOOGLE_APPLICATION_CREDENTIALS: /apollo-hospitals/packages/api/src/firebase-secrets.json
+      FIREBASE_PROJECT_ID: apollo-patient-interface
     volumes:
       - ./:/apollo-hospitals:cached
     depends_on:
@@ -86,8 +88,6 @@ services:
     environment:
       NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache
       NODE_ENV: local
-      GOOGLE_APPLICATION_CREDENTIALS: /apollo-hospitals/packages/api/src/profiles-service/firebase-secrets.json
-      FIREBASE_PROJECT_ID: apollo-patient-interface
     volumes:
       - ./:/apollo-hospitals:cached
     depends_on:
@@ -105,7 +105,5 @@ services:
     environment:
       NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache
       NODE_ENV: local
-      GOOGLE_APPLICATION_CREDENTIALS: /apollo-hospitals/packages/api/src/doctors-service/firebase-secrets.json
-      FIREBASE_PROJECT_ID: apollo-patient-interface
     volumes:
       - ./:/apollo-hospitals:cached

@@ -2,13 +2,13 @@ import 'reflect-metadata';
 import _merge from 'lodash/merge';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
-import * as firebaseAdmin from 'firebase-admin';
 import { createConnection } from 'typeorm';
 import { Patient } from 'profiles-service/entity/patient';
 import { patientTypeDefs, patientResolvers } from 'profiles-service/resolvers/patientResolvers';
 
 export interface Context {
-  firebase: firebaseAdmin.app.App;
+  firebaseUid: any;
+  mobileNumber: any;
 }
 
 export type Resolver<Parent = any, Args = any> = (
@@ -18,11 +18,6 @@ export type Resolver<Parent = any, Args = any> = (
 ) => any;
 
 (async () => {
-  const firebase = firebaseAdmin.initializeApp({
-    credential: firebaseAdmin.credential.applicationDefault(),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-  });
-
   const dbConn = createConnection({
     entities: [Patient],
     type: 'postgres',
@@ -35,12 +30,16 @@ export type Resolver<Parent = any, Args = any> = (
     synchronize: true,
   });
 
-  await Promise.all([firebase, dbConn]);
+  await Promise.all([dbConn]);
 
-  const context: Context = { firebase };
+  const context: Context = { firebaseUid: '', mobileNumber: '' };
 
   const server = new ApolloServer({
-    context: () => context,
+    context: ({ req }) => {
+      context.mobileNumber = req.headers.mobilenumber;
+      context.firebaseUid = req.headers.firebaseuid;
+      return context;
+    },
     schema: buildFederatedSchema([
       {
         typeDefs: patientTypeDefs,

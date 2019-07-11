@@ -2,7 +2,6 @@ import gql from 'graphql-tag';
 import { Resolver } from 'profiles-service/profiles-service';
 import { Patient, ErrorMsgs } from 'profiles-service/entity/patient';
 import fetch from 'node-fetch';
-import { auth, FirebaseError } from 'firebase-admin';
 import { BaseEntity, QueryFailedError } from 'typeorm';
 
 import {
@@ -126,29 +125,8 @@ const getPatients = () => ({ patients: [] });
 const patientSignIn: Resolver<any, { jwt: string }> = async (
   parent,
   args,
-  { firebase }
+  { firebaseUid, mobileNumber }
 ): Promise<PatientSignInResult> => {
-  const [firebaseIdToken, firebaseIdTokenError] = await wait<auth.DecodedIdToken, FirebaseError>(
-    firebase.auth().verifyIdToken(args.jwt)
-  );
-
-  if (firebaseIdTokenError) {
-    return {
-      patients: null,
-      errors: { messages: [`${ErrorMsgs.INVALID_TOKEN}`] },
-    };
-  }
-
-  const firebaseUid = firebaseIdToken.uid;
-  const [firebaseUser, firebaseUserError] = await wait(firebase.auth().getUser(firebaseUid));
-  if (firebaseUserError) {
-    return {
-      patients: [],
-      errors: { messages: [ErrorMsgs.INVALID_MOBILE_NUMBER] },
-    };
-  }
-  const mobileNumber = firebaseUser.phoneNumber!;
-
   const prismBaseUrl = 'http://blue.phrdemo.com/ui/data';
   const prismHeaders = { method: 'get', headers: { Host: 'blue.phrdemo.com' } };
   const [prismAuthToken, prismAuthTokenError] = await wait<
