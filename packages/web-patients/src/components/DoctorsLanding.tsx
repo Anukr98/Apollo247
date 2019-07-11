@@ -1,4 +1,4 @@
-import { BottomNavigation, Theme } from '@material-ui/core';
+import { BottomNavigation, Theme, Grid } from '@material-ui/core';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -88,7 +88,12 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 10,
       paddingTop: 10,
       marginBottom: 20,
-    },    
+      display: 'flex',
+      alignItems: 'center',
+    },
+    count: {
+      marginLeft: 'auto',
+    },
   };
 });
 
@@ -112,8 +117,12 @@ export const DoctorsLanding: React.FC = (props) => {
               <PastSearches />
               <div className={classes.sectionHeader}>Specialities</div>
               <Specialities />
-              <div className={classes.sectionHeader}>Matching Doctors</div>
-              <DoctorCard />
+              <div className={classes.sectionHeader}><span>Matching Doctors</span><span className={classes.count}>01</span></div>
+              <Grid spacing={2} container>
+                <Grid item sm={6}>
+                  <DoctorCard />
+                </Grid>
+              </Grid>
             </div>
           </div>
         </div>
