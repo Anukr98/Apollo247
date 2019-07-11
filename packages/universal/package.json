@@ -5,6 +5,7 @@
   "types": "",
   "scripts": {
     "build": "tsc --project .",
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "start": "tsc --project . -w"
   },
   "peerDependencies": {},
