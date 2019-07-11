@@ -5,5 +5,8 @@
   ],
   "env": {
     "browser": false
+  },
+  "rules": {
+    "import/no-default-export": 0
   }
 }
