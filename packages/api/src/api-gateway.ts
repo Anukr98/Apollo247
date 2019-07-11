@@ -77,7 +77,7 @@ function wait<R, E>(promise: Promise<R>): [R, E] {
   const schema = config.schema;
   const executor = config.executor as GraphQLExecutor;
   const server = new ApolloServer({
-    cors: { origin: envToCorsOrigin[env] },
+    cors: { origin: '*' },
     schema,
     executor,
     context: async ({ req }) => {
