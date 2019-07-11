@@ -12,6 +12,14 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       boxShadow: '0 2px 4px 0 rgba(0,0,0, 0.2)',
     },
+    primaryBtn: {
+      backgroundColor: theme.palette.primary.main,
+      color: theme.palette.common.white,
+      '&:hover': {
+        backgroundColor: theme.palette.primary.main,
+        color: theme.palette.common.white,
+      },
+    },
     secondaryBtn: {
       backgroundColor: theme.palette.common.white,
       color: '#00b38e',
@@ -32,6 +40,7 @@ const AphButton: React.FC<ButtonProps> = (props) => {
       classes={{
         root: classes.buttonRoot,
         textSecondary: classes.secondaryBtn,
+        textPrimary: classes.primaryBtn,
         sizeSmall: classes.smallBtn,
       }}
       {...props}

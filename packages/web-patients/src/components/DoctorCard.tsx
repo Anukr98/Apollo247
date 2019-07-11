@@ -1,6 +1,7 @@
 import React from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, Grid, Avatar } from '@material-ui/core';
+import { Theme, Avatar } from '@material-ui/core';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -12,6 +13,7 @@ const useStyles = makeStyles((theme: Theme) => {
     topContent: {
       padding: 15,
       display: 'flex',
+      position: 'relative',
     },
     doctorAvatar: {
       width: 80,
@@ -19,6 +21,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     doctorInfo: {
       paddingLeft: 15,
+      paddingTop: 15,
     },
     doctorName: {
       fontSize: 16,
@@ -29,14 +32,59 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 10,
       fontWeight: 600,
       color: '#0087ba',
+      textTransform: 'uppercase',
+      letterSpacing: 0.25,
     },
     doctorExp: {
-      paddingLeft: 5,
+      paddingLeft: 8,
+      marginLeft: 5,
       paddingRight: 5,
+      position: 'relative',
+      '&:before': {
+        position: 'absolute',
+        content: '""',
+        width: 1,
+        height: 10,
+        top: 1,
+        left: 0,
+        backgroundColor: '#0087ba',
+      },      
     },
     doctorDetails: {
       paddingTop: 10,
-    },    
+      fontSize: 10,
+      fontWeight: 500,
+      color: '#658f9b',
+      '& p': {
+        margin: 0,
+      },
+    },
+    availability: {
+      fontSize: 9,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      backgroundColor: 'rgba(0,135,186,0.11)',
+      padding: '6px 12px',
+      color: '#02475b',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      borderRadius: 10,
+      position: 'absolute',
+      right: 0,
+      top: 0,      
+    },
+    availableNow: {
+      backgroundColor: '#ff748e',
+      color: theme.palette.common.white,
+    },
+    bottomAction: {
+      width: '100%',
+    },
+    button: {
+      width: '100%',
+      borderRadius: '0 0 10px 10px',
+      boxShadow: 'none',
+    },
   });
 });
 
@@ -48,6 +96,9 @@ export const DoctorCard: React.FC = (props) => {
       <div className={classes.topContent}>
         <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.doctorAvatar} />
         <div className={classes.doctorInfo}>
+          <div className={`${classes.availability} ${classes.availableNow}`}>
+            Available in 15 mins
+          </div>
           <div className={classes.doctorName}>Dr. Gennifer Ghosh</div>
           <div className={classes.doctorType}>General Physician <span className={classes.doctorExp}>7 YRS</span></div>
           <div className={classes.doctorDetails}>
@@ -55,6 +106,11 @@ export const DoctorCard: React.FC = (props) => {
             <p>Apollo Hospitals, Jubilee Hills</p>
           </div>
         </div>
+      </div>
+      <div className={classes.bottomAction}>
+        <AphButton fullWidth color="primary" className={classes.button}>
+          Consult Now
+        </AphButton>
       </div>
     </div>
   );
