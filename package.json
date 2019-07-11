@@ -3,8 +3,10 @@
   "private": true,
   "scripts": {
     "clean": "lerna clean",
-    "bootstrap:web": "CYPRESS_INSTALL_BINARY=0 lerna bootstrap --hoist --ignore @aph/mobile* && lerna run build --scope @aph/web-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
-    "bootstrap:mobile": "CYPRESS_INSTALL_BINARY=0 lerna bootstrap --hoist --ignore @aph/web* && lerna run build --scope @aph/mobile-ui-components --scope @aph/shared-ui-components --scope @aph/universal"
+    "lint": "lerna exec --scope @aph/web* --scope @aph/mobile* --scope @aph/universal* --scope @aph/shared* -- npm run lint",
+    "bootstrap": "CYPRESS_INSTALL_BINARY=0 lerna bootstrap",
+    "bootstrap:web": "CYPRESS_INSTALL_BINARY=0 lerna bootstrap --ignore @aph/mobile* && lerna run build --scope @aph/web-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
+    "bootstrap:mobile": "CYPRESS_INSTALL_BINARY=0 lerna bootstrap --ignore @aph/web* && lerna run build --scope @aph/mobile-ui-components --scope @aph/shared-ui-components --scope @aph/universal"
   },
   "workspaces": {
     "packages": [
