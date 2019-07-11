@@ -1,13 +1,12 @@
-import { BottomNavigation, Theme } from '@material-ui/core';
+import { BottomNavigation, Theme, Typography, Grid } from '@material-ui/core';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { ManageProfile } from 'components/ManageProfile';
 import React from 'react';
 import { DoctorsFilter } from 'components/DoctorsFilter';
-import { PastSearches } from 'components/PastSearches';
-import { Specialities } from 'components/Specialities';
 import { DoctorCard } from './doctorCard';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -80,6 +79,39 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 'calc(100% - 328px)',
       paddingLeft: 20,
     },
+    pageHeader: {
+      fontSize: 17,
+      fontWeight: 500,
+      color: '#0087ba',
+      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      display: 'flex',
+      alignItems: 'center',
+      marginBottom: 20,
+    },
+    filterSection: {
+      marginLeft: 'auto',
+      '& button:last-child': {
+        marginRight: 0,
+      },
+    },
+    filterButton: {
+      boxShadow: 'none',
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#658f9b',
+      backgroundColor: 'transparent',
+      textTransform: 'none',
+      borderBottom: '5px solid #f7f8f5',
+      borderRadius: 0,
+      paddingLeft: 0,
+      paddingRight: 0,
+      marginLeft: 10,
+      marginRight: 10,
+    },
+    buttonActive: {
+      borderBottom: '5px solid #00b38e',
+      color: '#02475b',
+    },
   };
 });
 
@@ -99,9 +131,43 @@ export const DoctorsListing: React.FC = (props) => {
           <div className={classes.doctorListingSection}>
             <DoctorsFilter />
             <div className={classes.searchSection}>
-              <PastSearches />
-              <Specialities />
-              <DoctorCard />
+              <Typography variant="h2">
+                Okay!
+              </Typography>
+              <div className={classes.pageHeader}>
+                <div>Here are our best General Physicians</div>
+                <div className={classes.filterSection}>
+                  <AphButton className={`${classes.filterButton} ${classes.buttonActive}`}>All Consults</AphButton>
+                  <AphButton className={classes.filterButton}>Online Consult</AphButton>
+                  <AphButton className={classes.filterButton}>Clinic Visit</AphButton>
+                </div>
+              </div>
+              <Grid container spacing={2}>
+                <Grid item sm={12} md={6}>
+                  <DoctorCard />
+                </Grid>
+                <Grid item sm={12} md={6}>
+                  <DoctorCard />
+                </Grid>
+                <Grid item sm={12} md={6}>
+                  <DoctorCard />
+                </Grid>
+                <Grid item sm={12} md={6}>
+                  <DoctorCard />
+                </Grid>
+                <Grid item sm={12} md={6}>
+                  <DoctorCard />
+                </Grid>
+                <Grid item sm={12} md={6}>
+                  <DoctorCard />
+                </Grid>
+                <Grid item sm={12} md={6}>
+                  <DoctorCard />
+                </Grid>
+                <Grid item sm={12} md={6}>
+                  <DoctorCard />
+                </Grid>
+              </Grid>
             </div>
           </div>
         </div>

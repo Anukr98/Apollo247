@@ -95,7 +95,7 @@ export const DoctorCard: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.topContent}>
-        <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.doctorAvatar} />
+        <Avatar alt="" src={require('images/ic_placeholder.png')} className={classes.doctorAvatar} />
         <div className={classes.doctorInfo}>
           <div className={`${classes.availability} ${classes.availableNow}`}>
             Available in 15 mins
