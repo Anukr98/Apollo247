@@ -17,6 +17,9 @@ import _times from 'lodash/times';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
 import { isMobileNumberValid, isDigit } from '@aph/universal/validators';
 import { AphTextField } from '@aph/web-ui-components';
+import { useQuery } from 'react-apollo-hooks';
+import { IS_DOCTOR } from 'graphql/profiles';
+//import { GetPatients } from 'graphql/types/GetPatients';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -85,9 +88,19 @@ const otpInputRefs: RefObject<HTMLInputElement>[] = [];
 const validPhoneMessage = 'OTP will be sent to this number';
 const invalidPhoneMessage = 'This seems like a wrong number';
 
+export interface DoctorsProps {
+  mobileNumber: string;
+}
+
 export const SignIn: React.FC = (props) => {
   const classes = useStyles();
+  const { data, error, loading } = useQuery(IS_DOCTOR, {
+    variables: { mobileNumber: '1234567890' },
+  });
 
+  if (loading) console.log('loading');
+  if (error) console.log('Error');
+  if (data) console.log('data', data);
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
   const [otp, setOtp] = useState<number[]>([]);
