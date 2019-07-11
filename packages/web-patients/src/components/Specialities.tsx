@@ -7,16 +7,7 @@ const useStyles = makeStyles((theme: Theme) => {
     root: {
       width: '100%',
     },
-    header: {
-      color: '#02475b',
-      fontSize: 14,
-      fontWeight: 500,
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
-      paddingBottom: 10,
-      paddingTop: 10,
-    },
     searchList: {
-      paddingTop: 30,
       paddingBottom: 20,
     },
     contentBox: {
@@ -46,7 +37,6 @@ export const Specialities: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.header}>Specialities</div>
       <div className={classes.searchList}>
         <Grid container spacing={2}>
           <Grid item xs={3}>

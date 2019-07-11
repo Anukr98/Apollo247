@@ -11,6 +11,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, createMuiTheme } from '@material-ui/core';
 import { AphThemeProvider, aphTheme } from '@aph/web-ui-components';
 import { DoctorsListing } from './DoctorsListing';
+import { DoctorsLanding } from './DoctorsLanding';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -35,6 +36,7 @@ const App: React.FC = () => {
     <div className={classes.app}>
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
       <Route exact path={clientRoutes.patients()} component={PatientsList} />
+      <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
       <Route exact path={clientRoutes.doctorsListing()} component={DoctorsListing} />
     </div>
   );

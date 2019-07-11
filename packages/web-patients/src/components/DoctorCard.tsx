@@ -14,6 +14,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 15,
       display: 'flex',
       position: 'relative',
+      cursor: 'pointer',
     },
     doctorAvatar: {
       width: 80,
