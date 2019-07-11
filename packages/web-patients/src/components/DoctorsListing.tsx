@@ -7,6 +7,7 @@ import React from 'react';
 import { DoctorsFilter } from 'components/DoctorsFilter';
 import { PastSearches } from 'components/PastSearches';
 import { Specialities } from 'components/Specialities';
+import { DoctorCard } from './doctorCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -100,6 +101,7 @@ export const DoctorsListing: React.FC = (props) => {
             <div className={classes.searchSection}>
               <PastSearches />
               <Specialities />
+              <DoctorCard />
             </div>
           </div>
         </div>
