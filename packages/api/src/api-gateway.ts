@@ -67,7 +67,7 @@ function wait<R, E>(promise: Promise<R>): [R, E] {
   const env = process.env.NODE_ENV as 'local' | 'development';
   const port = process.env.WEB_CLIENT_PORT === '80' ? '' : `:${process.env.WEB_CLIENT_PORT}`;
   const envToCorsOrigin = {
-    local: `http://localhost${port}`,
+    local: '*', // `http://localhost${port}`,
     development: '*', // 'http://patients-web.aph.popcornapps.com'
     // staging: '',
     // production: ''
@@ -77,7 +77,7 @@ function wait<R, E>(promise: Promise<R>): [R, E] {
   const schema = config.schema;
   const executor = config.executor as GraphQLExecutor;
   const server = new ApolloServer({
-    cors: { origin: '*' },
+    cors: { origin: envToCorsOrigin[env] },
     schema,
     executor,
     context: async ({ req }) => {
