@@ -77,13 +77,15 @@ module.exports = {
 
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
-    modules: [path.resolve(__dirname, 'src'), 'node_modules'],
-    alias:
-      isLocal || isDevelopment
-        ? {
-            'react-dom': '@hot-loader/react-dom',
-          }
-        : undefined,
+    modules: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'node_modules')],
+    alias: {
+      'react-dom': '@hot-loader/react-dom',
+      // 'react-dom': path.resolve(__dirname, 'node_modules/@hot-loader/react-dom'),
+      // 'react': path.resolve(__dirname, 'node_modules/react'),
+      // '@material-ui': path.resolve(__dirname, 'node_modules/@material-ui'),
+      // 'react-dom': path.resolve(__dirname, 'node_modules/@hot-loader/react-dom'),
+      // 'react-dom': path.resolve(__dirname, 'node_modules/@hot-loader/react-dom'),
+    },
   },
 
   optimization: {

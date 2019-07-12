@@ -56,11 +56,6 @@ services:
     depends_on:
       - nginx
 
-  web-ui-components:
-    image: node:12.6.0-alpine
-    working_dir: /apollo-hospitals/packages/web-ui-components
-    command: ash -c "npm run start"
-
   api-gateway:
     image: node:12.6.0
     working_dir: /apollo-hospitals/packages/api

@@ -73,7 +73,7 @@ module.exports = {
 
   resolve: {
     extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx'],
-    modules: [path.join(__dirname, 'src'), 'node_modules'],
+    modules: [path.join(__dirname, 'src'), path.resolve(__dirname, 'node_modules')],
   },
 
   watch: false, // Turn on via --watch from the command line
