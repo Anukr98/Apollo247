@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "module": "es6",
+    "target": "es6",
+    "moduleResolution": "node",
+    "jsx": "react-native",
+    "baseUrl": "./",
+    "noEmit": true,
+    "allowJs": true,
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "allowSyntheticDefaultImports": true,
+    "traceResolution": false,
+    "allowUnreachableCode": true,
+    "strictNullChecks": true,
+    "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "lib": [
+      "es5",
+      "es6"
+    ],
+    "paths": {
+      "app/*": [
+        "./*"
+      ]
+    },
+    "esModuleInterop": true,
+    "jsx": "react",
+    "target": "esnext"
+  },
+  "exclude": [
+    "node_modules",
+    "babel.config.js",
+    "metro.config.js",
+    "jest.config.js"
+  ]
+}

@@ -110,7 +110,7 @@ export const Welcome: React.FC = (props) => {
           }}
         />
       </BottomNavigation>
-      <ManageProfile />
+      {/* <ManageProfile /> */}
     </div>
   );
 };

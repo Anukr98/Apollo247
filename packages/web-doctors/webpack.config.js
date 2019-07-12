@@ -37,7 +37,7 @@ const rhlBabelLoader = {
     plugins: ['react-hot-loader/babel'],
   },
 };
-const tsLoader = { loader: 'ts-loader' };
+const tsLoader = { loader: 'awesome-typescript-loader' };
 const urlLoader = {
   loader: 'url-loader',
   options: {
@@ -77,7 +77,7 @@ module.exports = {
 
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
-    modules: [path.resolve(__dirname, 'src'), 'node_modules'],
+    modules: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'node_modules')],
     alias:
       isLocal || isDevelopment
         ? {

@@ -5,6 +5,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rm -rf dist/* && tsc --project . && create-index dist && cp dist/index.js dist/index.d.ts",
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "start": "npm run build && tsc --project . -w"
   },
   "peerDependencies": {
@@ -14,23 +15,26 @@
     "react": "^16.8.6"
   },
   "devDependencies": {
-    "@aph/eslint-config": "0.0.1",
-    "@aph/prettier-config": "0.0.1",
-    "@aph/tsconfig": "0.0.1",
+    "@aph/eslint-config": "file:../eslint-config",
+    "@aph/prettier-config": "file:../prettier-config",
+    "@aph/tsconfig": "file:../tsconfig",
     "@material-ui/core": "^4.0.2",
     "@material-ui/icons": "^4.0.1",
     "@material-ui/styles": "^4.0.2",
     "@types/react": "^16.8.19",
-    "create-index": "^2.4.0",
-    "react": "16.8.6",
     "@typescript-eslint/eslint-plugin": "^1.9.0",
     "@typescript-eslint/parser": "^1.9.0",
+    "create-index": "^2.4.0",
     "eslint": "^5.16.0",
     "eslint-plugin-import": "^2.17.3",
+    "eslint-plugin-react": "^7.13.0",
+    "eslint-plugin-react-hooks": "^1.6.0",
+    "eslint-plugin-react-native": "^3.7.0",
+    "react": "16.8.6",
     "typescript": "^3.5.2"
   },
   "dependencies": {
-    "@aph/universal": "0.0.1"
+    "@aph/universal": "file:../universal"
   },
   "author": "sarink",
   "license": "ISC"

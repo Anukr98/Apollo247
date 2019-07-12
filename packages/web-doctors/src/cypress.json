@@ -2,7 +2,7 @@
   "supportFile": "cypress/support/index.ts",
   "env": {
     "NODE_ENV": "test",
-    "WEB_CLIENT_PORT": 3001,
+    "WEB_CLIENT_PORT": 3000,
     "API_CLIENT_PORT": 4000,
     "FIREBASE_PROJECT_ID": "apollo-patient-interface"
   },
