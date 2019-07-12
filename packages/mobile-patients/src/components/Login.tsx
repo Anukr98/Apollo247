@@ -84,7 +84,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const { analytics, authError, setAuthError, sendOtp } = useAuth();
+  const { analytics, authError, setAuthError, sendOtp, isSendingOtp } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<any>();
 
   useEffect(() => {
@@ -209,12 +209,9 @@ export const Login: React.FC<LoginProps> = (props) => {
                   phoneNumber: phoneNumber,
                 });
               } else {
-                setVerifyingPhonenNumber(true);
-
                 sendOtp(phoneNumber)
                   .then((confirmResult) => {
                     console.log('confirmResult login', confirmResult);
-                    setVerifyingPhonenNumber(false);
                     props.navigation.navigate(AppRoutes.OTPVerification, {
                       otpString,
                       phoneNumber: phoneNumber,
@@ -222,21 +219,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                   })
                   .catch((error) => {
                     Alert.alert('Error', 'The interaction was cancelled by the user.');
-                    setVerifyingPhonenNumber(false);
                   });
-
-                // signInWithPhoneNumber(phoneNumber)
-                //   .then((confirmResult) => {
-                //     setVerifyingPhonenNumber(false);
-                //     props.navigation.navigate(AppRoutes.OTPVerification, {
-                //       otpString,
-                //       phoneNumber: phoneNumber,
-                //     });
-                //   })
-                //   .catch((error) => {
-                //     Alert.alert('Error', 'The interaction was cancelled by the user.');
-                //     setVerifyingPhonenNumber(false);
-                //   });
               }
             }
           }}
@@ -271,7 +254,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           </Text>
         </Card>
       </SafeAreaView>
-      {verifyingPhoneNumber ? (
+      {verifyingPhoneNumber || isSendingOtp ? (
         <View
           style={{
             position: 'absolute',
@@ -286,7 +269,11 @@ export const Login: React.FC<LoginProps> = (props) => {
             bottom: 0,
           }}
         >
-          <ActivityIndicator animating={verifyingPhoneNumber} size="large" color="green" />
+          <ActivityIndicator
+            animating={verifyingPhoneNumber || isSendingOtp}
+            size="large"
+            color="green"
+          />
         </View>
       ) : null}
     </View>

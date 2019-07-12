@@ -78,11 +78,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const {
     authError,
     verifyOtp,
-    authProvider,
     setAuthError,
     signInWithPhoneNumber,
     isSigningIn,
     currentPatient,
+    isVerifyingOtp,
   } = useAuth();
   const [verifyingOtp, setVerifyingOtp] = useState(false);
 
@@ -211,74 +211,37 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   }, [authError]);
 
-  // const callAuthProvider = async () => {
-  //   authProvider()
-  //     .then((patient) => {
-  //       if (patient && patient.uhid && patient.uhid !== '') {
-  //         if (patient.relation == null) {
-  //           props.navigation.replace(AppRoutes.MultiSignup);
-  //         } else {
-  //           AsyncStorage.setItem('userLoggedIn', 'true');
-  //           props.navigation.replace(AppRoutes.TabBar);
-  //         }
-  //       } else {
-  //         if (patient.firstName == null) {
-  //           props.navigation.replace(AppRoutes.SignUp);
-  //         } else {
-  //           AsyncStorage.setItem('userLoggedIn', 'true');
-  //           props.navigation.replace(AppRoutes.TabBar);
-  //         }
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.log('auth', error);
-  //       // const errMsg =
-  //       //   (error.data.patientSignIn.errors && error.data.patientSignIn.errors.messages[0]) ||
-  //       //   'Cannot connect to server.';
-  //       // Alert.alert('Error', errMsg);
-  //     });
-  // };
-
   useEffect(() => {
-    if (isSigningIn) {
-      setVerifyingOtp(true);
-      if (currentPatient) {
-        if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
-          if (currentPatient.relation == null) {
-            props.navigation.replace(AppRoutes.MultiSignup);
-          } else {
-            AsyncStorage.setItem('userLoggedIn', 'true');
-            props.navigation.replace(AppRoutes.TabBar);
-          }
+    if (currentPatient) {
+      if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
+        if (currentPatient.relation == null) {
+          props.navigation.replace(AppRoutes.MultiSignup);
         } else {
-          if (currentPatient.firstName == null) {
-            props.navigation.replace(AppRoutes.SignUp);
-          } else {
-            AsyncStorage.setItem('userLoggedIn', 'true');
-            props.navigation.replace(AppRoutes.TabBar);
-          }
+          AsyncStorage.setItem('userLoggedIn', 'true');
+          props.navigation.replace(AppRoutes.TabBar);
+        }
+      } else {
+        if (currentPatient.firstName == null) {
+          props.navigation.replace(AppRoutes.SignUp);
+        } else {
+          AsyncStorage.setItem('userLoggedIn', 'true');
+          props.navigation.replace(AppRoutes.TabBar);
         }
       }
-    } else {
-      setVerifyingOtp(false);
     }
   }, [isSigningIn, currentPatient]);
 
   const onClickOk = async () => {
     console.log('otp OTPVerification', otp);
-    setVerifyingOtp(true);
     Keyboard.dismiss();
 
     verifyOtp(otp)
       .then((result) => {
         console.log('result OTPVerification', result);
-        setVerifyingOtp(false);
         _removeFromStore();
-        // callAuthProvider();
       })
       .catch((error) => {
         console.log('error', error);
-        setVerifyingOtp(false);
         _storeTimerData(invalidOtpCount + 1);
 
         if (invalidOtpCount + 1 === 3) {
@@ -448,7 +411,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           </Card>
         )}
       </SafeAreaView>
-      {verifyingOtp ? (
+      {isSigningIn || isVerifyingOtp || verifyingOtp ? (
         <View
           style={{
             position: 'absolute',
@@ -463,7 +426,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             bottom: 0,
           }}
         >
-          <ActivityIndicator animating={verifyingOtp} size="large" color="green" />
+          <ActivityIndicator
+            animating={isSigningIn || verifyingOtp || isVerifyingOtp}
+            size="large"
+            color="green"
+          />
         </View>
       ) : null}
     </View>
