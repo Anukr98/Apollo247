@@ -37,7 +37,7 @@ const rhlBabelLoader = {
     plugins: ['react-hot-loader/babel'],
   },
 };
-const tsLoader = { loader: 'ts-loader' };
+const tsLoader = { loader: 'awesome-typescript-loader' };
 const urlLoader = {
   loader: 'url-loader',
   options: {
