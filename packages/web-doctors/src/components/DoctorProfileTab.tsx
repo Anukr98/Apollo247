@@ -13,8 +13,6 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/lowerCase';
 import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
 import { useAuth } from 'hooks/authHooks';
-import { useQuery } from 'react-apollo-hooks';
-import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -125,21 +123,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-export interface DoctorProfileTabProps {
-  profileData: any;
-}
-export const DoctorProfileTab: React.FC = (props) => {
-  const classes = useStyles();
-  const [profileData, setProfileData] = React.useState({});
-  const { data, error, loading } = useQuery(GET_DOCTOR_PROFILE, {
-    variables: { mobileNumber: '1234567890' },
-  });
 
-  if (loading) console.log('loading');
-  if (error) console.log('Error');
-  if (data) console.log(data.getDoctorProfile);
-  // if (data) setProfileData(data.getDoctorProfile);
-  // console.log(profileData);
+export const DoctorProfileTab: React.FC = () => {
+  const classes = useStyles();
 
   return (
     <div className={classes.ProfileContainer}>

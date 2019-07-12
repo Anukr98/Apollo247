@@ -1,3 +1,4 @@
+import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography } from '@material-ui/core';
 import PropTypes from 'prop-types';
@@ -6,7 +7,10 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { Header } from 'components/Header';
 import { DoctorProfileTab } from 'components/DoctorProfileTab';
-import React from 'react';
+import { AvailabilityTab } from 'components/AvailabilityTab';
+import { FeesTab } from 'components/FeesTab';
+import { useQuery } from 'react-apollo-hooks';
+import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 
 function TabContainer(props) {
   return (
@@ -76,7 +80,13 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
   const classes = useStyles();
 
   const [value, setValue] = React.useState(0);
+  const { data, error, loading } = useQuery(GET_DOCTOR_PROFILE, {
+    variables: { mobileNumber: '1234567890' },
+  });
 
+  if (loading) console.log('loading');
+  if (error) console.log('Error');
+  if (data) console.log('data', data);
   function handleChange(event, newValue) {
     setValue(newValue);
   }
@@ -114,8 +124,16 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
             <DoctorProfileTab />
           </TabContainer>
         )}
-        {value === 1 && <TabContainer>Availability Tab</TabContainer>}
-        {value === 2 && <TabContainer>Fees Tab</TabContainer>}
+        {value === 1 && (
+          <TabContainer>
+            <AvailabilityTab />
+          </TabContainer>
+        )}
+        {value === 2 && (
+          <TabContainer>
+            <FeesTab />
+          </TabContainer>
+        )}
       </div>
     </div>
   );
