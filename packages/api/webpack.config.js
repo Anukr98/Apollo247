@@ -39,7 +39,7 @@ const plugins = [
   ),
 ];
 
-const tsLoader = { loader: 'ts-loader' };
+const tsLoader = { loader: 'awesome-typescript-loader' };
 
 module.exports = {
   target: 'node',
