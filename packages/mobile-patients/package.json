@@ -17,9 +17,9 @@
     "apollo:codegen:watch": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./src/graphql/schema.json --target=typescript --queries=./src/graphql/**.ts --watch"
   },
   "devDependencies": {
-    "@aph/eslint-config": "0.0.1",
-    "@aph/prettier-config": "0.0.1",
-    "@aph/tsconfig": "0.0.1",
+    "@aph/eslint-config": "file:../eslint-config",
+    "@aph/prettier-config": "file:../prettier-config",
+    "@aph/tsconfig": "file:../tsconfig",
     "@types/graphql": "^14.2.1",
     "@types/lodash": "^4.14.134",
     "@types/react": "^16.8.19",
@@ -42,9 +42,9 @@
     "typescript": "^3.5.2"
   },
   "dependencies": {
-    "@aph/universal": "0.0.1",
-    "@aph/mobile-ui-components": "0.0.1",
-    "@aph/shared-ui-components": "0.0.1",
+    "@aph/universal": "file:../universal",
+    "@aph/mobile-ui-components": "file:../mobile-ui-components",
+    "@aph/shared-ui-components": "file:../shared-ui-components",
     "apollo": "^2.13.1",
     "apollo-cache-inmemory": "^1.6.2",
     "apollo-client": "^2.6.2",

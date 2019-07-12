@@ -56,16 +56,13 @@ services:
     depends_on:
       - nginx
 
-  web-ui-components:
-    image: node:12.6.0-alpine
-    working_dir: /apollo-hospitals/packages/web-ui-components
-    command: ash -c "npm run start"
-
   api-gateway:
     image: node:12.6.0
     working_dir: /apollo-hospitals/packages/api
-    command:
-      bash -c "while ! curl -s http://profiles-service/graphql > /dev/null; do echo waiting for profiles-service...; sleep 5; done;
+    command: bash -c "
+      while ((! curl -s http://profiles-service/graphql) || (! curl -s http://doctors-service/graphql)) > /dev/null;
+      do echo waiting for services to start...; sleep 5;
+      done;
       npm run start:api-gateway"
     environment:
       NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache

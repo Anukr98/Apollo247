@@ -15,9 +15,9 @@
     "react": "^16.8.6"
   },
   "devDependencies": {
-    "@aph/eslint-config": "0.0.1",
-    "@aph/prettier-config": "0.0.1",
-    "@aph/tsconfig": "0.0.1",
+    "@aph/eslint-config": "file:../eslint-config",
+    "@aph/prettier-config": "file:../prettier-config",
+    "@aph/tsconfig": "file:../tsconfig",
     "@material-ui/core": "^4.0.2",
     "@material-ui/icons": "^4.0.1",
     "@material-ui/styles": "^4.0.2",
@@ -34,7 +34,7 @@
     "typescript": "^3.5.2"
   },
   "dependencies": {
-    "@aph/universal": "0.0.1"
+    "@aph/universal": "file:../universal"
   },
   "author": "sarink",
   "license": "ISC"

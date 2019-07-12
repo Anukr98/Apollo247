@@ -16,9 +16,9 @@
     "apollo:codegen:watch": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./src/graphql/schema.json --target=typescript --queries=./src/graphql/**.ts --watch"
   },
   "devDependencies": {
-    "@aph/eslint-config": "0.0.1",
-    "@aph/prettier-config": "0.0.1",
-    "@aph/tsconfig": "0.0.1",
+    "@aph/eslint-config": "file:../eslint-config",
+    "@aph/prettier-config": "file:../prettier-config",
+    "@aph/tsconfig": "file:../tsconfig",
     "@babel/core": "7.4.5",
     "@cypress/webpack-preprocessor": "^4.1.0",
     "@types/graphql": "^14.2.1",
@@ -30,6 +30,7 @@
     "@types/react-router-dom": "^4.3.3",
     "@typescript-eslint/eslint-plugin": "^1.9.0",
     "@typescript-eslint/parser": "^1.9.0",
+    "awesome-typescript-loader": "^5.2.1",
     "babel-loader": "^8.0.6",
     "clean-webpack-plugin": "^3.0.0",
     "cypress": "^3.3.1",
@@ -41,7 +42,6 @@
     "html-webpack-plugin": "^3.2.0",
     "lerna": "^3.15.0",
     "prettier": "^1.18.2",
-    "ts-loader": "^6.0.2",
     "typescript": "^3.5.2",
     "url-loader": "^2.0.0",
     "webpack": "^4.33.0",
@@ -49,9 +49,9 @@
     "webpack-dev-server": "^3.7.1"
   },
   "dependencies": {
-    "@aph/shared-ui-components": "0.0.1",
-    "@aph/web-ui-components": "0.0.1",
-    "@aph/universal": "0.0.1",
+    "@aph/shared-ui-components": "file:../shared-ui-components",
+    "@aph/web-ui-components": "file:../web-ui-components",
+    "@aph/universal": "file:../universal",
     "@hot-loader/react-dom": "16.8.6",
     "@material-ui/core": "^4.0.2",
     "@material-ui/icons": "^4.0.1",

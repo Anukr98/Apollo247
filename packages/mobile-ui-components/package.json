@@ -12,9 +12,9 @@
     "react": "16.8.6"
   },
   "devDependencies": {
-    "@aph/eslint-config": "0.0.1",
-    "@aph/prettier-config": "0.0.1",
-    "@aph/tsconfig": "0.0.1",
+    "@aph/eslint-config": "file:../eslint-config",
+    "@aph/prettier-config": "file:../prettier-config",
+    "@aph/tsconfig": "file:../tsconfig",
     "@types/react": "^16.8.19",
     "@typescript-eslint/eslint-plugin": "^1.9.0",
     "@typescript-eslint/parser": "^1.9.0",
@@ -29,7 +29,7 @@
     "typescript": "^3.5.2"
   },
   "dependencies": {
-    "@aph/universal": "0.0.1"
+    "@aph/universal": "file:../universal"
   },
   "author": "sarink",
   "license": "ISC"
