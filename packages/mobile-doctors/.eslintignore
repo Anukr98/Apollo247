@@ -1,0 +1,8 @@
+node_modules
+.npm-cache
+package-lock.json
+android/app/build
+android/app/google-services.json
+android/.gradle
+ios/build
+ios/*/Images*
