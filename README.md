@@ -7,7 +7,7 @@ _Note to windows users: Run the following steps on a Windows 10 Pro machine in a
 1. Install docker and docker-compose
 2. Install [lazydocker](https://github.com/jesseduffield/lazydocker)
 3. Install [nvm](https://nvm.sh), run `nvm use` (now you may have to run an `nvm install` command, read the output)
-4. Add the `firebase-secrets.json` to the `packages/api/src/profiles-service` folder (ask someone on the dev team for a copy)
+4. Add the `firebase-secrets.json` to the `packages/api/src/profiles-service` and `packages/api/src/` folders (ask someone on the dev team for a copy)
 
 ## Web
 
@@ -55,3 +55,4 @@ Using jest. Execute `npm run test`
 `docker-compose up api-gateway`
 `docker-compose up web-doctors`
 `docker-compose up web-patients`
+Make sure `firebase-secrets.json` is copied to `packages/api/src/` folders (ask someone on the dev team for a copy)
