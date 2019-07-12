@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, View, Text, Image, Alert } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
-import { theme } from 'app/src/theme/theme';
-import { Header } from 'app/src/components/ui/Header';
-import { TabBar } from 'app/src/components/TabBar';
 import { Button } from 'app/src/components/ui/Button';
+import { DoctorCard } from 'app/src/components/ui/DoctorCard';
+import { Header } from 'app/src/components/ui/Header';
 import { RoundIcon, Star } from 'app/src/components/ui/Icons';
+import { ProfileTabHeader } from 'app/src/components/ui/ProfileTabHeader';
+import { theme } from 'app/src/theme/theme';
+import React from 'react';
+import { Alert, Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {
-    //...theme.viewStyles.container,
     flex: 1,
     width: '100%',
     height: 600,
@@ -29,18 +29,7 @@ const styles = StyleSheet.create({
       }
     ),
   },
-  profileName: {
-    ...theme.fonts.IBMPlexSansSemiBold(28),
-    color: '#02475b',
-    marginTop: 16,
-  },
-  profileDescription: {
-    ...theme.fonts.IBMPlexSansMedium(16),
-    color: '#0087ba',
-    lineHeight: 24,
-    marginTop: 8,
-    marginBottom: 20,
-  },
+
   statusBarline: {
     width: '100%',
     backgroundColor: '#f0f4f5',
@@ -136,6 +125,17 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     marginTop: 4,
   },
+  stardata: {
+    width: 284,
+    height: 20,
+    fontFamily: 'IBMPlexSans',
+    fontSize: 16,
+    fontWeight: '600',
+    fontStyle: 'normal',
+    letterSpacing: 0.07,
+    color: '#02475b',
+    margin: 20,
+  },
 });
 
 type ProfileData = {
@@ -153,6 +153,18 @@ type ProfileData = {
   mcinumber: string;
   inpersonconsult: string;
   designation: string;
+  starDoctorTeam: {
+    firstName: string;
+    lastName: string;
+    experience: string;
+    typeOfConsult: string;
+    inviteStatus: string;
+    speciality: string;
+    education: string;
+    services: string;
+    designation: string;
+    uri: string;
+  }[];
 };
 export interface ProfilePageProps extends NavigationScreenProps {}
 
@@ -172,6 +184,32 @@ export const ProfilePage: React.FC<ProfilePageProps> = (props) => {
     mcinumber: '1234',
     inpersonconsult: '20 Orchard Avenue, Hiranandani, PowaiMumbai 400076',
     designation: 'GENERAL PHYSICIAN',
+    starDoctorTeam: [
+      {
+        firstName: 'Dr. Rakhi Sharma',
+        lastName: 'Mcmarrow',
+        experience: '7',
+        typeOfConsult: '24/7',
+        inviteStatus: 'accepted',
+        speciality: 'Gynacology',
+        education: 'MBBS',
+        services: 'Consultations, Surgery',
+        designation: 'GENERAL PHYSICIAN',
+        uri: 'https://facebook.github.io/react-native/docs/assets/favicon.png',
+      },
+      {
+        firstName: 'Dr. Jayanth Reddy',
+        lastName: 'Carter',
+        experience: '7',
+        typeOfConsult: '24/7',
+        inviteStatus: 'Not accepted',
+        speciality: 'Gynacology',
+        education: 'MBBS',
+        services: 'Consultations, Surgery',
+        designation: 'GENERAL PHYSICIAN',
+        uri: 'https://facebook.github.io/react-native/docs/assets/favicon.png',
+      },
+    ],
   };
 
   const profileRow = (title: string, description: string) => {
@@ -199,20 +237,17 @@ export const ProfilePage: React.FC<ProfilePageProps> = (props) => {
                 },
               ]}
             />
-            <View style={{ marginHorizontal: 20 }}>
-              <View>
-                <Text style={styles.profileName}>hi {profileObject.firstName}</Text>
-                <Text style={styles.profileDescription}>
-                  It’s great to have you join us!{'\n'}Here’s what your patients see when they{' '}
-                  {'\n'}
-                  view your profile
-                </Text>
-              </View>
-            </View>
+
+            <ProfileTabHeader
+              title="hi dr. rao!"
+              description="It’s great to have you join us! Here’s what your patients see when they view your profile"
+              tabs={['Profile', 'Availibility', 'Fees']}
+              activeTabIndex={1}
+            />
           </View>
           <View style={styles.statusBarline} />
-          <View style={{ flex: 1, backgroundColor: '#f7f7f7', height: 700 }}>
-            <View style={{ margin: 20, height: 605, borderRadius: 10 }}>
+          <View style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+            <View style={{ margin: 20, borderRadius: 10 }}>
               <Text style={styles.yourprofiletext}>Your Profile</Text>
 
               <View style={styles.cardview}>
@@ -255,21 +290,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = (props) => {
           <View style={styles.statusBarBg} />
           <View>
             <View style={{ backgroundColor: '#f7f7f7' }}>
-              <Text
-                style={{
-                  width: 284,
-                  height: 20,
-                  fontFamily: 'IBMPlexSans',
-                  fontSize: 16,
-                  fontWeight: '600',
-                  fontStyle: 'normal',
-                  letterSpacing: 0.07,
-                  color: '#02475b',
-                  margin: 20,
-                }}
-              >
-                Your Star Doctors Team (2)
-              </Text>
+              <Text style={styles.stardata}>Your Star Doctors Team (2)</Text>
+
+              {profileObject.starDoctorTeam.map((starDoctor) => (
+                <DoctorCard
+                  image={starDoctor.uri}
+                  doctorName={starDoctor.firstName}
+                  experience={starDoctor.experience}
+                  specialization={starDoctor.designation}
+                  education={starDoctor.education}
+                  location={starDoctor.services}
+                />
+              ))}
             </View>
           </View>
 
@@ -278,7 +310,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = (props) => {
               title={profileObject.isStarDoctor ? 'SAVE AND PROCEED' : 'PROCEED'}
               titleTextStyle={styles.titleTextStyle}
               style={styles.buttonView}
-              //onPress={() => props.navigation.push(AppRoutes.OnBoardingPage)}
             />
           </View>
         </ScrollView>

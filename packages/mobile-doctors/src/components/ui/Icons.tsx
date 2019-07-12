@@ -194,3 +194,18 @@ export const RoundIcon: React.FC<IconProps> = (props) => (
     source={require('./icons/round_help_outline_24_px.png')}
   />
 );
+
+export const Up: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('./icons/up.png')}
+  />
+);
+export const Down: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('./icons/down.png')}
+  />
+);

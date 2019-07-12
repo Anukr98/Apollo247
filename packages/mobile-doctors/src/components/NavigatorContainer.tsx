@@ -18,7 +18,7 @@ import { LandingPage } from 'app/src/components/LandingPage';
 import { OnBoardingPage } from 'app/src/components/OnBoardingPage';
 import { NeedHelp } from 'app/src/components/NeedHelp';
 import { ProfilePage } from 'app/src/components/ProfilePage';
-
+import { FeeTab } from 'app/src/components/FeeTab';
 export enum AppRoutes {
   Onboarding = 'Onboarding',
   Login = 'Login',
@@ -37,6 +37,7 @@ export enum AppRoutes {
   OnBoardingPage = 'OnBoardingPage',
   NeedHelp = 'NeedHelp',
   ProfilePage = 'ProfilePage',
+  FeeTab = 'FeeTab',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -109,6 +110,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ProfilePage]: {
     screen: ProfilePage,
+  },
+  [AppRoutes.FeeTab]: {
+    screen: FeeTab,
   },
 };
 

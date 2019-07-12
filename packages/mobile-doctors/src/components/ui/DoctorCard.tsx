@@ -1,15 +1,15 @@
-import { Star } from 'app/src/components/ui/Icons';
 import React from 'react';
 import {
-  ImageSourcePropType,
+  Image,
   ImageStyle,
   StyleProp,
   StyleSheet,
   Text,
   TextStyle,
   View,
+  TouchableOpacityProps,
+  TouchableOpacity,
 } from 'react-native';
-import { string } from '../../strings/string';
 import { theme } from '../../theme/theme';
 
 const styles = StyleSheet.create({
@@ -25,44 +25,24 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 10,
   },
-  buttonView: {
-    height: 44,
-    marginTop: 16,
-    backgroundColor: theme.colors.BUTTON_BG,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    ...theme.fonts.IBMPlexSansBold(14),
-    color: theme.colors.BUTTON_TEXT,
-  },
-  availableView: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    borderRadius: 10,
-    backgroundColor: '#ff748e',
-  },
-  availableTextStyles: {
-    color: 'white',
-    textAlign: 'center',
-    ...theme.fonts.IBMPlexSansSemiBold(9),
-    letterSpacing: 0.5,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-  },
   imageView: {
     margin: 16,
     alignContent: 'center',
     justifyContent: 'center',
+    height: 80,
+    width: 80,
   },
   doctorNameStyles: {
-    paddingTop: 32,
+    paddingTop: 15,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.SEARCH_DOCTOR_NAME,
+  },
+  imageremovestyles: {
+    height: 24,
+    width: 24,
+    marginTop: 16,
+    marginRight: 16,
   },
   doctorSpecializationStyles: {
     paddingTop: 4,
@@ -76,91 +56,56 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
   },
-  consultViewStyles: {
-    paddingHorizontal: 0,
-    marginTop: 16,
-    alignSelf: 'center',
-    justifyContent: 'center',
-    width: '100%',
-  },
-  separatorViewStyles: {
-    backgroundColor: theme.colors.CARD_HEADER,
-    opacity: 0.3,
-    marginHorizontal: 16,
-    height: 1,
-  },
-  consultTextStyles: {
-    paddingLeft: 0,
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    color: theme.colors.SEARCH_CONSULT_COLOR,
-    textAlign: 'center',
-    paddingVertical: 12,
-    lineHeight: 24,
-  },
+
   educationTextStyles: {
     paddingTop: 12,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
   },
+  iconview: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
 });
 
-type rowData = {
-  available: boolean;
-  doctorName: string;
-  specialization: string;
-  image: ImageSourcePropType;
+export interface doctorCardProps {
+  available?: boolean;
+  doctorName?: string;
+  specialization?: string;
+  image?: string;
   imageStyle?: StyleProp<ImageStyle>;
   titleStyle?: StyleProp<TextStyle>;
-  experience: string;
-  education: string;
-  location: string;
-  time: string;
-};
-
-export interface doctorCardProps {
-  rowData: rowData;
+  experience?: string;
+  education?: string;
+  location?: string;
+  time?: string;
+  onPress?: TouchableOpacityProps['onPress'];
 }
 
 export const DoctorCard: React.FC<doctorCardProps> = (props) => {
-  const rowData = props.rowData;
+  const rowData = props;
   return (
     <View style={styles.doctorView}>
       <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
-        <View style={{ flexDirection: 'row' }}>
-          {rowData.available ? (
-            <View style={styles.availableView}>
-              <Text style={styles.availableTextStyles}>{string.LocalStrings.availableNow}</Text>
-            </View>
-          ) : null}
+        <View style={{ flexDirection: 'row', marginBottom: 16 }}>
           <View style={styles.imageView}>
-            {rowData.image}
-            {rowData.available ? (
-              <Star
-                style={{ height: 28, width: 28, position: 'absolute', bottom: -10, left: 30 }}
-              />
-            ) : null}
+            <Image source={{ uri: rowData.image }} />
           </View>
-          <View>
-            <Text style={styles.doctorNameStyles}>{rowData.doctorName}</Text>
+          <View style={{ flex: 1 }}>
+            <View style={styles.iconview}>
+              <Text style={styles.doctorNameStyles}>{rowData.doctorName}</Text>
+              <TouchableOpacity onPress={props.onPress}>
+                <Image style={styles.imageremovestyles} source={require('./icons/remove.png')} />
+              </TouchableOpacity>
+            </View>
+
             <Text style={styles.doctorSpecializationStyles}>
-              {rowData.specialization} | {rowData.experience}
+              {rowData.specialization} | {rowData.experience} YRS
             </Text>
             <Text style={styles.educationTextStyles}>{rowData.education}</Text>
             <Text style={styles.doctorLocation}>{rowData.location}</Text>
           </View>
-        </View>
-        <View style={{ overflow: 'hidden' }}>
-          {rowData.available ? (
-            <View style={styles.buttonView}>
-              <Text style={styles.buttonText}>{rowData.time}</Text>
-            </View>
-          ) : (
-            <View style={styles.consultViewStyles}>
-              <View style={styles.separatorViewStyles} />
-              <Text style={styles.consultTextStyles}>{rowData.time}</Text>
-            </View>
-          )}
         </View>
       </View>
     </View>
