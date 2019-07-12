@@ -44,15 +44,15 @@ We use [Cypress](cypress.io) for web testing. Please download their gui binary t
 Using jest. Execute `npm run test`
 
 ## Troubleshooting
-`docker-compose stop`
-`git pull`
-`npm run clean`
-`rm -rf node_modules`
-`npm i`
-`npm run bootstrap` [ for windows run: `npm run bootstrap:web` ]
+* `docker-compose stop`
+* `git pull`
+* `npm run clean`
+* `rm -rf node_modules`
+* `npm i`
+* `npm run bootstrap` [ for windows run: `npm run bootstrap:web` ]
 
-`docker-compose stop`
-`docker-compose up api-gateway`
-`docker-compose up web-doctors`
-`docker-compose up web-patients`
-Make sure `firebase-secrets.json` is copied to `packages/api/src/` folders (ask someone on the dev team for a copy)
+* `docker-compose stop`
+* `docker-compose up api-gateway`
+* `docker-compose up web-doctors`
+* `docker-compose up web-patients`
+* Make sure `firebase-secrets.json` is copied to `packages/api/src/` folders (ask someone on the dev team for a copy)
