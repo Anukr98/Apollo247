@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React from 'react';
+import React, { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
@@ -124,8 +124,39 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const DoctorProfileTab: React.FC = () => {
+export const DoctorProfileTab: React.FC = ({values}) => {
   const classes = useStyles();
+  const [data, setData] = useState(values);
+
+  console.log(data);
+
+  const starDocNumber = data.starDoctorTeam.length;
+  const starDoctors = data.starDoctorTeam.map((item, index) => {
+    return (<Grid item lg={4} sm={6} xs={12} key={index.toString()}>
+      <div className={classes.tabContentStarDoctor}>
+        <div className={classes.starDoctors}>
+          <img
+            alt=""
+            src={require('images/doctor-profile.jpg')}
+            className={classes.profileImg}
+          />
+        </div>
+        <Typography variant="h4">Dr. {item.firstName} {item.lastName}</Typography>
+        <Typography variant="h6">
+          GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
+        </Typography>
+        <Typography variant="h5">
+          MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+        </Typography>
+      </div>
+    </Grid>)
+  });
+
+  const clinicsList = data.clinicsList.map((item, index) => {
+    return (<Typography variant="h3" key={index.toString()}>
+      {item.name}, {item.location}
+    </Typography>)
+  });
 
   return (
     <div className={classes.ProfileContainer}>
@@ -141,9 +172,9 @@ export const DoctorProfileTab: React.FC = () => {
                   className={classes.bigAvatar}
                 />
               </div>
-              <Typography variant="h4">Dr. Simran Rai</Typography>
+              <Typography variant="h4">Dr. {data.firstName} {data.lastName}</Typography>
               <Typography variant="h6">
-                GENERAL PHYSICIAN <span> | </span> <span> 7YRS </span>{' '}
+                {data.speciality} <span> | </span> <span> {data.experience}YRS </span>{' '}
               </Typography>
             </Paper>
           </Grid>
@@ -152,39 +183,37 @@ export const DoctorProfileTab: React.FC = () => {
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Education</Typography>
-                  <Typography variant="h3">MS (Surgery), MBBS (Internal Medicine)</Typography>
+                  <Typography variant="h3">{data.education}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Awards</Typography>
-                  <Typography variant="h3">Dr. B.C.Roy Award (2009)</Typography>
+                  <Typography variant="h3">{data.awards}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Speciality</Typography>
-                  <Typography variant="h3">Specialization 1, Specialization 2</Typography>
+                  <Typography variant="h3">{data.services}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Speaks</Typography>
-                  <Typography variant="h3">English, Telugu, Hindi</Typography>
+                  <Typography variant="h3">{data.languages}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Services</Typography>
-                  <Typography variant="h3">Consultation, Surgery, Physio</Typography>
+                  <Typography variant="h3">{data.services}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">In-person Consult Location</Typography>
-                  <Typography variant="h3">
-                    20 Orchard Avenue, Hiranandani, Powai, Mumbai 400076
-                  </Typography>
+                  {clinicsList}
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
@@ -197,50 +226,17 @@ export const DoctorProfileTab: React.FC = () => {
           </Grid>
         </Grid>
       </div>
-      <Typography variant="h2">Your Star Doctors Team (2)</Typography>
-      <Grid container alignItems="flex-start" spacing={0}>
-        <Grid item lg={4} sm={6} xs={12}>
-          <div className={classes.tabContentStarDoctor}>
-            <div className={classes.starDoctors}>
-              <img
-                alt=""
-                src={require('images/doctor-profile.jpg')}
-                className={classes.profileImg}
-              />
-            </div>
-            <Typography variant="h4">Dr. Simran Rai</Typography>
-            <Typography variant="h6">
-              GENERAL PHYSICIAN <span> | </span> <span> 7YRS </span>{' '}
-            </Typography>
-            <Typography variant="h5">
-              MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
-            </Typography>
-          </div>
+      {!!data.isStarDoctor && <div><Typography variant="h2">Your Star Doctors Team ({starDocNumber})</Typography>
+        <Grid container alignItems="flex-start" spacing={0}>
+          {starDoctors}
         </Grid>
-        <Grid item lg={4} sm={6} xs={12}>
-          <div className={classes.tabContentStarDoctor}>
-            <div className={classes.starDoctors}>
-              <img
-                alt=""
-                src={require('images/doctor-profile.jpg')}
-                className={classes.profileImg}
-              />
-            </div>
-            <Typography variant="h4">Dr. Rakhi Sharma</Typography>
-            <Typography variant="h6">
-              GENERAL PHYSICIAN <span> | </span> <span> 7YRS </span>{' '}
-            </Typography>
-            <Typography variant="h5">
-              MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
-            </Typography>
-          </div>
-        </Grid>
-      </Grid>
-      <div className={classes.addDocter}>
-        <AphButton variant="contained" color="primary" classes={{ root: classes.btnAddDoctor }}>
-          + ADD DOCTOR
-        </AphButton>
-      </div>
+        <div className={classes.addDocter}>
+          <AphButton variant="contained" color="primary" classes={{ root: classes.btnAddDoctor }}>
+            + ADD DOCTOR
+          </AphButton>
+        </div>
+      </div>}
+      
       <Grid container alignItems="flex-start" spacing={0} className={classes.btmContainer}>
         <Grid item lg={12} sm={12} xs={12}>
           <AphButton variant="contained" color="primary" classes={{ root: classes.saveButton }}>
