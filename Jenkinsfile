@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Checkout SCM'){
             steps {
-                git branch: 'development', credentialsId: 'githubcred', url: 'https://github.com/popcornapps/apollo-hospitals.git'    
+                git branch: 'development', credentialsId: 'test', url: 'https://github.com/popcornapps/apollo-hospitals.git' 
             }
             
         }
