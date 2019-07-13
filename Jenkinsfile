@@ -13,6 +13,12 @@ pipeline {
     
             }
         }
+        stage('run bootstrap') {
+            steps {
+                sh "npm run bootstrap"
+    
+            }
+        }
         stage("lint check") {
             steps {
                 sh "npm run lint"
