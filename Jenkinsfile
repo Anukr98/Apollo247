@@ -14,20 +14,20 @@ pipeline {
         }
         stage('Install') {
             steps {
-                sh "/usr/local/bin/docker-compose -f docker-compose.yml run --rm npm run bootstrap"
+                sh "npm run bootstrap"
     
             }
         }
         stage("lint check") {
             steps {
-                sh "/usr/local/bin/docker-compose -f docker-compose.yml run --rm npm run lint"
+                sh "npm run lint"
             }
             
         }
         
          stage("Syntax Check") {
             steps {
-                sh "/usr/local/bin/docker-compose -f docker-compose.yml run --rm npm run format:check"
+                sh "npm run format:check"
             }
             
         }
