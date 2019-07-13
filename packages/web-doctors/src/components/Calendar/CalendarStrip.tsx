@@ -10,7 +10,9 @@ import {
   isWithinRange,
   endOfMonth,
   startOfWeek,
-  endOfWeek
+  endOfWeek,
+  startOfDay,
+  getYear
 } from 'date-fns';
 
 const useStyles = makeStyles({
@@ -28,7 +30,10 @@ const useStyles = makeStyles({
 });
 
 interface Props {
-  dayClickHandler?: Function
+  dayClickHandler?: Function,
+  monthChangeHandler?: Function,
+  onNext?: Function,
+  onPrev?: Function
 }
 
 export const CalendarStrip: React.FC<Props> = (props) => {
@@ -46,17 +51,36 @@ export const CalendarStrip: React.FC<Props> = (props) => {
 
   const next = e => {
     setPrevDate(date);
-    setDate(addWeeks(date, 1));
+
+    const newDate = addWeeks(date, 1);
+    setDate(newDate);
+
+    if (typeof props.onNext === "function") {
+      props.onNext(e, newDate, startOfWeek(startOfDay(newDate)));
+    }
   }
 
   const previous = e => {
     setPrevDate(date);
-    setDate(subWeeks(date, 1));
+
+    const newDate = subWeeks(date, 1);
+    setDate(newDate);
+
+    if (typeof props.onPrev === "function") {
+      props.onPrev(e, newDate, startOfWeek(startOfDay(newDate)));
+    }
   }
 
   const onMonthSelect = e => {
-    setDate(new Date(2019, e.target.value, 1, 0, 0, 0));
-    setMonth(e.target.value);
+    const monthSelected = e.target.value;
+    const newDate = new Date(getYear(date), monthSelected, 1, 0, 0, 0);
+
+    setDate(newDate);
+    setMonth(monthSelected);
+
+    if (typeof props.monthChangeHandler === "function") {
+      props.monthChangeHandler(e, monthSelected, startOfWeek(startOfDay(newDate)));
+    }
   }
 
   const dayClickHandler = (e, date) => {
