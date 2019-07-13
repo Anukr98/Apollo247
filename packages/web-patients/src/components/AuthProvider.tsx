@@ -14,10 +14,6 @@ import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { Relation } from 'graphql/types/globalTypes';
 import _uniqueId from 'lodash/uniqueId';
 
-function wait<R, E>(promise: Promise<R>): [R, E] {
-  return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
-}
-
 export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients> {
   currentPatient: Patient | null;
   allCurrentPatients: Patient[] | null;
@@ -130,15 +126,15 @@ export const AuthProvider: React.FC = (props) => {
       const captcha = new firebase.auth.RecaptchaVerifier(captchaId, {
         size: 'invisible',
         callback: async () => {
-          const [phoneAuthResult, phoneAuthError] = await wait(
-            app.auth().signInWithPhoneNumber(phoneNumber, captcha)
-          );
+          const phoneAuthResult = await app
+            .auth()
+            .signInWithPhoneNumber(phoneNumber, captcha)
+            .catch((error) => {
+              setSendOtpError(true);
+              reject();
+              throw error;
+            });
           setIsSendingOtp(false);
-          if (phoneAuthError) {
-            setSendOtpError(true);
-            reject();
-            return;
-          }
           otpVerifier = phoneAuthResult;
           setSendOtpError(false);
           captcha.clear();
@@ -162,8 +158,10 @@ export const AuthProvider: React.FC = (props) => {
       return;
     }
     setIsVerifyingOtp(true);
-    const [otpAuthResult, otpError] = await wait(otpVerifier.confirm(otp));
-    setVerifyOtpError(otpError || !otpAuthResult.user);
+    const otpAuthResult = await otpVerifier.confirm(otp).catch((error) => {
+      setVerifyOtpError(true);
+    });
+    if (!otpAuthResult) setVerifyOtpError(true);
     setIsVerifyingOtp(false);
   };
 
@@ -176,29 +174,31 @@ export const AuthProvider: React.FC = (props) => {
   useEffect(() => {
     app.auth().onAuthStateChanged(async (user) => {
       if (user) {
-        const [jwt, jwtError] = await wait(user.getIdToken());
-        if (jwtError || !jwt) {
-          if (jwtError) console.error(jwtError);
+        const jwt = await user.getIdToken().catch((error) => {
           setIsSigningIn(false);
           setSignInError(true);
           app.auth().signOut();
-          return;
-        }
+          throw error;
+        });
         setAuthToken(jwt);
 
         setIsSigningIn(true);
-        const [signInResult, signInError] = await wait(
-          apolloClient.mutate<PatientSignIn>({
+        const signInResult = await apolloClient
+          .mutate<PatientSignIn>({
             mutation: PATIENT_SIGN_IN,
             variables: {},
           })
-        );
-        if (signInError || !signInResult.data || !signInResult.data.patientSignIn.patients) {
-          if (signInError) console.error(signInError);
+          .catch((error) => {
+            setSignInError(true);
+            setIsSigningIn(false);
+            app.auth().signOut();
+            throw error;
+          });
+        if (!signInResult.data || !signInResult.data.patientSignIn.patients) {
           setSignInError(true);
           setIsSigningIn(false);
           app.auth().signOut();
-          return;
+          throw new Error('no data returned from sign in call');
         }
         const patients = signInResult.data.patientSignIn.patients;
         const me = patients.find((p) => p.relation === Relation.ME) || patients[0];
