@@ -152,6 +152,15 @@ const useStyles = makeStyles((theme: Theme) => {
     column: {
       flexBasis: '50%',
     },
+    columnDays: {
+      flexBasis: '60%',
+    },
+    columnTime: {
+      flexBasis: '30%',
+    },
+    columnType: {
+      flexBasis: '10%',
+    },
     helper: {
       borderLeft: `2px solid ${theme.palette.divider}`,
       padding: theme.spacing(1, 2),
@@ -239,15 +248,15 @@ export const AvailabilityTab: React.FC = ({values}) => {
                 aria-controls="panel1c-content"
                 id="panel1c-header"
               >
-                <div className={classes.column}>
+                <div className={classes.columnTime}>
                   <Typography className={classes.heading}>9:00 AM - 12:30 PM</Typography>
                 </div>
-                <div className={classes.column}>
-                  <Typography className={classes.secondaryHeading}>Mon, Tue, Wed, Thur, Fri | Online, Physical (Fixed)</Typography>
+                <div className={classes.columnDays}>
+                  <Typography className={classes.secondaryHeading}>Mon, Tue, Wed, Thur, Fri | Online, Physical</Typography>
                 </div>
-                {/* <div className={classes.column}>
+                <div className={classes.columnType}>
                   <Typography className={classes.secondaryHeading}>(Fixed)</Typography>
-                </div> */}
+                </div>
               </ExpansionPanelSummary>
               <ExpansionPanelDetails className={classes.details}>
                 <div className={classes.column}>
@@ -300,7 +309,7 @@ export const AvailabilityTab: React.FC = ({values}) => {
       </Grid>
       
       <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
-        <Grid item lg={3} sm={12} xs={12}>
+        <Grid item lg={12} sm={12} xs={12}>
           <AphButton variant="contained" color="primary" classes={{ root: classes.saveButton }}>
             SAVE AND PROCEED
           </AphButton>
