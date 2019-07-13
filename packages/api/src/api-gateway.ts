@@ -81,13 +81,18 @@ function wait<R, E>(promise: Promise<R>): [R, E] {
     schema,
     executor,
     context: async ({ req }) => {
-      // const token = req.headers.authorization || '';
-      // const [firebaseData, error] = await wait<GatewayContext, GatewayError>(validateToken(token));
-      // if (error) {
-      //   throw error;
-      // }
-      // return firebaseData;
-      return { firebaseUid: '', mobileNumber: '' };
+      if (
+        (process.env.NODE_ENV == 'development' || process.env.NODE_ENV == 'local') &&
+        req.body.operationName == 'IntrospectionQuery'
+      ) {
+        return { firebaseUid: '', mobileNumber: '' };
+      }
+      const token = req.headers.authorization || '';
+      const [firebaseData, error] = await wait<GatewayContext, GatewayError>(validateToken(token));
+      if (error) {
+        throw error;
+      }
+      return firebaseData;
     },
   });
   server.listen(process.env.API_GATEWAY_PORT).then(({ url }) => {
