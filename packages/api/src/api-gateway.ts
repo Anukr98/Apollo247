@@ -32,11 +32,10 @@ const envToCorsOrigin = {
     buildService({ name, url }) {
       return new RemoteGraphQLDataSource({
         url,
-        willSendRequest({ request, context }) {
-          const firebaseData = (context as any) as GatewayContext;
+        willSendRequest<GatewayContext>({ request, context }) {
           if (request && request.http) {
-            request.http.headers.set('mobileNumber', firebaseData.mobileNumber);
-            request.http.headers.set('firebaseUid', firebaseData.firebaseUid);
+            request.http.headers.set('mobileNumber', context.mobileNumber);
+            request.http.headers.set('firebaseUid', context.firebaseUid);
           }
         },
       });
