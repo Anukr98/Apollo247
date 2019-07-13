@@ -6,11 +6,11 @@ services:
     tty: true
     environment:
       - API_GATEWAY_PORT=4000
-      - WEB_PATIENT_PORT=3000
-      - WEB_DOCTOR_PORT=3001
+      - WEB_PATIENTS_PORT=3000
+      - WEB_DOCTORS_PORT=3001
     command: 
       ash -c "
-        envsubst '$$API_GATEWAY_PORT $$WEB_PATIENT_PORT $$WEB_DOCTOR_PORT' < /etc/nginx/conf.d/local.conf.template > /etc/nginx/conf.d/local.conf && 
+        envsubst '$$API_GATEWAY_PORT $$WEB_PATIENTS_PORT $$WEB_DOCTORS_PORT' < /etc/nginx/conf.d/local.conf.template > /etc/nginx/conf.d/local.conf && 
         nginx -g 'daemon off;'"
     ports:
       - 3000:3000
@@ -38,7 +38,7 @@ services:
       # cypress.json, webpack.config, and cypress/plugins/webpack-preprocessor
       NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache
       NODE_ENV: local
-      WEB_CLIENT_PORT: 3000
+      WEB_PATIENTS_PORT: 3000
       API_GATEWAY_PORT: 4000
       FIREBASE_PROJECT_ID: apollo-patient-interface
       CYPRESS_INSTALL_BINARY: 0
@@ -56,7 +56,7 @@ services:
       # cypress.json, webpack.config, and cypress/plugins/webpack-preprocessor
       NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache
       NODE_ENV: local
-      WEB_CLIENT_PORT: 3001
+      WEB_DOCTORS_PORT: 3001
       API_GATEWAY_PORT: 4000
       FIREBASE_PROJECT_ID: apollo-patient-interface
       CYPRESS_INSTALL_BINARY: 0
@@ -76,7 +76,8 @@ services:
     environment:
       NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache
       NODE_ENV: local
-      WEB_CLIENT_PORT: 3000
+      WEB_PATIENTS_PORT: 3000
+      WEB_DOCTORS_PORT: 3001
       API_GATEWAY_PORT: 4000
       GOOGLE_APPLICATION_CREDENTIALS: /apollo-hospitals/packages/api/src/firebase-secrets.json
       FIREBASE_PROJECT_ID: apollo-patient-interface
