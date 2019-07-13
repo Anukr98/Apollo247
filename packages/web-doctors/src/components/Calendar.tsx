@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { CalendarStrip } from 'components/Calendar/CalendarStrip';
 import { Appointments } from 'components/Appointments';
-import { addMinutes, startOfDay, getTime } from 'date-fns';
+import {
+  addMinutes,
+  startOfDay,
+  getTime
+} from 'date-fns';
 
 export const Calendar: React.FC = () => {
   const dummyData = [{
@@ -25,18 +29,37 @@ export const Calendar: React.FC = () => {
   }];
   const [appointments, setAppointments] = useState(dummyData);
 
-  const onDayClick = (e, date) => {
-    if (getTime(startOfDay(date)) === getTime(startOfDay(Date.now()))) {
+  const setData = (startOfWeekDate) => {
+    if (getTime(startOfWeekDate) === getTime(startOfDay(Date.now())) || getTime(startOfWeekDate) === getTime(startOfDay(new Date(2019, 11, 1, 0, 0)))) {
       return setAppointments(dummyData);
     }
 
     setAppointments([]);
   };
 
+  const onDayClick = (e, date) => {
+    setData(startOfDay(date));
+  };
+
+  const onMonthChange = (e, selectedMonth, startOfWeekDate) => {
+    setData(startOfWeekDate);
+  };
+
+  const onNext = (e, date, startOfWeekDate) => {
+    setData(startOfWeekDate);
+  };
+
+  const onPrev = (e, date, startOfWeekDate) => {
+    setData(startOfWeekDate);
+  };
+
   return (
     <div style={{ background: "black" }}>
       <CalendarStrip
         dayClickHandler={onDayClick}
+        monthChangeHandler={onMonthChange}
+        onNext={onNext}
+        onPrev={onPrev}
       />
       <Appointments
         values={appointments}
