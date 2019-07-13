@@ -39,10 +39,6 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: 20,
         borderBottom: 'solid 0.5px rgba(98,22,64,0.2)',
       },
-      '& h5': {
-        padding: '5px 5px 3px 20px',
-        color: '#658f9b',
-      },
       '& h6': {
         color: theme.palette.secondary.main,
         padding: '5px 5px 5px 0',
@@ -76,14 +72,8 @@ const useStyles = makeStyles((theme: Theme) => {
     tabLeftcontent: {
       padding: '10px 5px 10px 5px',
     },
-    serviceItem: {
-      padding: '0 0 10px 0',
-      position: 'relative',
-      height: '100%',
-      boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        display: 'flex',
-      },
+    availabletabContent: {
+      padding: theme.spacing(1, 0),
     },
     avatarBlock: {
       overflow: 'hidden',
@@ -120,7 +110,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
-      fontWeight: 'bold',
+      fontWeight: theme.typography.fontWeightBold,
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -130,17 +120,30 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: '30px',
     },
     btnActive: {
-      backgroundColor: '#00b38e !important',
-      color: '#fff !important',
+      backgroundColor: '#00b38e',
+      color: theme.palette.secondary.contrastText,
+      margin: theme.spacing(1, 1, 1, 0),
+    },
+    btnInactive: {
+      backgroundColor: '#fff',
+      color: '#00b38e',
+      margin: theme.spacing(1, 1, 1, 0),
     },
     heading: {
       fontSize: theme.typography.pxToRem(15),
-      color: '#02475b',
+      color: theme.palette.secondary.dark,
     },
+    primaryHeading: {
+
+      fontSize: theme.typography.pxToRem(20),
+      color: theme.palette.secondary.dark,
+      fontWeight: theme.typography.fontWeightMedium,
+    }
     secondaryHeading: {
       fontSize: theme.typography.pxToRem(15),
       color: theme.palette.text.secondary,
     },
+
     icon: {
       verticalAlign: 'bottom',
       height: 20,
@@ -148,18 +151,23 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     details: {
       alignItems: 'center',
+      display: 'block',
     },
     column: {
-      flexBasis: '50%',
+      flexBasis: '100%',
     },
     columnDays: {
       flexBasis: '60%',
+      paddingTop: '4px',
     },
     columnTime: {
       flexBasis: '30%',
     },
     columnType: {
       flexBasis: '10%',
+      paddingTop: '4px',
+      color: theme.palette.primary.dark,
+      fontWeight: theme.typography.fontWeightMedium;
     },
     helper: {
       borderLeft: `2px solid ${theme.palette.divider}`,
@@ -179,10 +187,41 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: theme.spacing(1),
       marginRight: theme.spacing(1),
       width: 140,
-      color: '#02475b',
+      '& input' {
+        fontSize: '20px',
+        color: '#02475b',
+        fontWeight: theme.typography.fontWeightMedium,
+        paddingTop: 0,
+        borderBottom: '2px solid #00b38e',
+      }
     },
-    timeForm: {},
+    addAvailabilitydetails: {
+      padding: theme.spacing(2),
+    },
+    timeForm: {
+      fontSize: '16px',
+      color: '#658f9b',
+      padding: '20px 20px 0 0',
+      fontWeight: theme.typography.fontWeightMedium,
+    },
+    footerButtons: {
+      textAlign: 'right',
+      paddingTop: '15px',
+      '& button' {
+        fontSize: '15px',
+        fontWeight: theme.typography.fontWeightMedium,
+      },
+    },
+    cancelBtn: {
+      color: theme.palette.secondary.dark,,
+    },
     timeDivider: {},
+    instructions: {
+      fontSize: 12,
+      color: '#ff748e',
+      fontWeight: theme.typography.fontWeightMedium,
+      padding: theme.spacing(2, 0, 2, 0),
+    },
   };
 });
 interface Props {
@@ -198,16 +237,320 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
 
   return (
     <div className={classes.ProfileContainer}>
-      <Grid container alignItems="flex-start" spacing={0}>
+      <Grid container className={classes.availabletabContent} alignItems="flex-start" >
         <Grid item lg={2} sm={6} xs={12}>
           <Typography variant="h2">Consultation Type</Typography>
         </Grid>
 
         <Grid item lg={10} sm={6} xs={12}>
+          <div>
+            <Typography variant="h5">What type of consults will you be available for?</Typography>
+            <AphButton
+              variant="contained"
+              value="Physical"
+              classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
+              onClick={(e) => {
+                console.log(e);
+              }}
+            >
+              Physical
+                </AphButton>
+            <AphButton
+              variant="contained"
+              value="Physical"
+              classes={sp === 'Physical' ? { root: classes.btnInactive } : {}}
+              onClick={(e) => {
+                console.log(e);
+              }}
+            >
+              Online
+                </AphButton>
+            </Grid>
+          </div>
+      </Grid>
+
+      <Grid container className={classes.availabletabContent} alignItems="flex-start">
+        <Grid item lg={2} sm={6} xs={12}>
+          <Typography variant="h2">Consultation Hours</Typography>
+        </Grid>
+
+        <Grid item lg={10} sm={6} xs={12}>
           <div className={classes.tabContent}>
-            <Paper className={classes.serviceItem}>
-              <Typography variant="h5">What type of consults will you be available for?</Typography>
-              <Grid item lg={8} sm={4}>
+            <ExpansionPanel>
+              <ExpansionPanelSummary
+                expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+                aria-controls="panel1c-content"
+                id="panel1c-header"
+              >
+                <div className={classes.columnTime}>
+                  <Typography className={classes.primaryHeading}>9:00 AM - 12:30 PM</Typography>
+                </div>
+                <div className={classes.columnDays}>
+                  <Typography className={classes.heading}>
+                    Mon, Tue, Wed, Thur, Fri | Online, Physical
+                  </Typography>
+                </div>
+                <div className={classes.columnType}>
+                  (Fixed)
+                </div>
+              </ExpansionPanelSummary>
+              <ExpansionPanelDetails className={classes.details}>
+                <div className={classes.column}>
+                  <Typography variant="h5">
+                    <form className={classes.timeForm}>
+                      Enter your preferred consult hours:
+                      <TextField
+                        id="time"
+                        type="time"
+                        defaultValue="09:30"
+                        className={classes.textField}
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                        inputProps={{
+                          step: 300, // 5 min
+                        }}
+                      />
+                      <span className={classes.timeDivider}> - </span>
+                      <TextField
+                        id="time"
+                        type="time"
+                        defaultValue="12:30"
+                        className={classes.textField}
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                        inputProps={{
+                          step: 300, // 5 min
+                        }}
+                      />
+                    </form>
+                    <br />
+                  </Typography>
+                </div>
+                <div>
+                  <div>
+                    <Typography variant="h5" className={classes.timeForm}>Which days you wish to apply these hours to?</Typography>
+                    <AphButton
+                      variant="contained"
+                      value="Physical"
+                      classes={sp === 'Physical' ? { root: classes.btnInactive } : {}}
+                      onClick={(e) => {
+                        console.log(e);
+                      }}
+                    >
+                      Sun
+                </AphButton>
+                    <AphButton
+                      variant="contained"
+                      value="Physical"
+                      classes={sp === 'Physical' ? { root: classes.btnInactive } : {}}
+                      onClick={(e) => {
+                        console.log(e);
+                      }}
+                    >
+                      Mon
+                </AphButton>
+                    <AphButton
+                      variant="contained"
+                      value="Physical"
+                      classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
+                      onClick={(e) => {
+                        console.log(e);
+                      }}
+                    >
+                      Tue
+                </AphButton>
+                    <AphButton
+                      variant="contained"
+                      value="Physical"
+                      classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
+                      onClick={(e) => {
+                        console.log(e);
+                      }}
+                    >
+                      Wed
+                </AphButton>
+                    <AphButton
+                      variant="contained"
+                      value="Physical"
+                      classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
+                      onClick={(e) => {
+                        console.log(e);
+                      }}
+                    >
+                      Thu
+                </AphButton>
+                    <AphButton
+                      variant="contained"
+                      value="Physical"
+                      classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
+                      onClick={(e) => {
+                        console.log(e);
+                      }}
+                    >
+                      Fri
+                </AphButton>
+                    <AphButton
+                      variant="contained"
+                      value="Physical"
+                      classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
+                      onClick={(e) => {
+                        console.log(e);
+                      }}
+                    >
+                      Sat
+                </AphButton>
+                  </div>
+                  <div>
+                    <Typography variant="h5" className={classes.timeForm}>What type of consults would you like to do?</Typography>
+                    <AphButton
+                      variant="contained"
+                      value="Physical"
+                      classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
+                      onClick={(e) => {
+                        console.log(e);
+                      }}
+                    >
+                      Physical
+                </AphButton>
+                    <AphButton
+                      variant="contained"
+                      value="Physical"
+                      classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
+                      onClick={(e) => {
+                        console.log(e);
+                      }}
+                    >
+                      Online
+                </AphButton>
+                  </div>
+                  <Typography className={classes.instructions}>
+                    Note: Any addition or modification to your consultation hours will take effect only after 24 hours.
+                </Typography>
+                </div>
+                <div>
+                </div>
+              </ExpansionPanelDetails>
+              <Divider />
+              <ExpansionPanelActions className={classes.footerButtons}>
+                <Button size="small" className={classes.cancelBtn}>Cancel</Button>
+                <Button size="small" color="primary">
+                  Save
+                </Button>
+              </ExpansionPanelActions>
+            </ExpansionPanel>
+          </div>
+          <div className={classes.tabContent}>
+            <div className={classes.addAvailabilitydetails}>
+              <div className={classes.column}>
+                <Typography variant="h5">
+                  <form className={classes.timeForm}>
+                    Enter your preferred consult hours:
+                      <TextField
+                      id="time"
+                      type="time"
+                      defaultValue="09:30"
+                      className={classes.textField}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      inputProps={{
+                        step: 300, // 5 min
+                      }}
+                    />
+                    <span className={classes.timeDivider}> - </span>
+                    <TextField
+                      id="time"
+                      type="time"
+                      defaultValue="12:30"
+                      className={classes.textField}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      inputProps={{
+                        step: 300, // 5 min
+                      }}
+                    />
+                  </form>
+                  <br />
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="h5" className={classes.timeForm}>Which days you wish to apply these hours to?</Typography>
+                <AphButton
+                  variant="contained"
+                  value="Physical"
+                  classes={sp === 'Physical' ? { root: classes.btnInactive } : {}}
+                  onClick={(e) => {
+                    console.log(e);
+                  }}
+                >
+                  Sun
+                </AphButton>
+                <AphButton
+                  variant="contained"
+                  value="Physical"
+                  classes={sp === 'Physical' ? { root: classes.btnInactive } : {}}
+                  onClick={(e) => {
+                    console.log(e);
+                  }}
+                >
+                  Mon
+                </AphButton>
+                <AphButton
+                  variant="contained"
+                  value="Physical"
+                  classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
+                  onClick={(e) => {
+                    console.log(e);
+                  }}
+                >
+                  Tue
+                </AphButton>
+                <AphButton
+                  variant="contained"
+                  value="Physical"
+                  classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
+                  onClick={(e) => {
+                    console.log(e);
+                  }}
+                >
+                  Wed
+                </AphButton>
+                <AphButton
+                  variant="contained"
+                  value="Physical"
+                  classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
+                  onClick={(e) => {
+                    console.log(e);
+                  }}
+                >
+                  Thu
+                </AphButton>
+                <AphButton
+                  variant="contained"
+                  value="Physical"
+                  classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
+                  onClick={(e) => {
+                    console.log(e);
+                  }}
+                >
+                  Fri
+                </AphButton>
+                <AphButton
+                  variant="contained"
+                  value="Physical"
+                  classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
+                  onClick={(e) => {
+                    console.log(e);
+                  }}
+                >
+                  Sat
+                </AphButton>
+              </div>
+              <div>
+                <Typography variant="h5" className={classes.timeForm}>What type of consults would you like to do?</Typography>
                 <AphButton
                   variant="contained"
                   value="Physical"
@@ -228,86 +571,32 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
                 >
                   Online
                 </AphButton>
-              </Grid>
-            </Paper>
-          </div>
-        </Grid>
-      </Grid>
-
-      <Grid container alignItems="flex-start" spacing={0}>
-        <Grid item lg={2} sm={6} xs={12}>
-          <Typography variant="h2">Consultation Hours</Typography>
-        </Grid>
-
-        <Grid item lg={10} sm={6} xs={12}>
-          <div className={classes.tabContent}>
-            <ExpansionPanel>
-              <ExpansionPanelSummary
-                expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-                aria-controls="panel1c-content"
-                id="panel1c-header"
-              >
-                <div className={classes.columnTime}>
-                  <Typography className={classes.heading}>9:00 AM - 12:30 PM</Typography>
-                </div>
-                <div className={classes.columnDays}>
-                  <Typography className={classes.secondaryHeading}>
-                    Mon, Tue, Wed, Thur, Fri | Online, Physical
-                  </Typography>
-                </div>
-                <div className={classes.columnType}>
-                  <Typography className={classes.secondaryHeading}>(Fixed)</Typography>
-                </div>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.details}>
-                <div className={classes.column}>
-                  <Typography variant="h5">
-                    <form className={classes.timeForm}>
-                      Enter your preferred consult hours:
-                      <TextField
-                        id="time"
-                        label="Start"
-                        type="time"
-                        defaultValue="09:30"
-                        className={classes.textField}
-                        InputLabelProps={{
-                          shrink: true,
-                        }}
-                        inputProps={{
-                          step: 300, // 5 min
-                        }}
-                      />
-                      <div className={classes.timeDivider}> - </div>
-                      <TextField
-                        id="time"
-                        label="End"
-                        type="time"
-                        defaultValue="12:30"
-                        className={classes.textField}
-                        InputLabelProps={{
-                          shrink: true,
-                        }}
-                        inputProps={{
-                          step: 300, // 5 min
-                        }}
-                      />
-                    </form>
-                    <br />
-                  </Typography>
-                </div>
-              </ExpansionPanelDetails>
+              </div>
+              <Typography className={classes.instructions}>
+                Note: Any addition or modification to your consultation hours will take effect only after 24 hours.
+                </Typography>
               <Divider />
-              <ExpansionPanelActions>
-                <Button size="small">Cancel</Button>
+              <div display="flex" className={classes.footerButtons}>
+                <Button size="small" className={classes.cancelBtn} >Cancel</Button>
                 <Button size="small" color="primary">
                   Save
                 </Button>
-              </ExpansionPanelActions>
-            </ExpansionPanel>
+              </div>
+            </div>
+
+          </div>
+          <div className={classes.addDocter}>
+            <AphButton
+              variant="contained"
+              color="primary"
+              classes={{ root: classes.btnAddDoctor }}
+              onClick={(e) => setShowAddDoc(!showAddDoc)}
+            >
+              + ADD CONSULTATION HOURS
+            </AphButton>
           </div>
         </Grid>
       </Grid>
-
       <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
         <Grid item lg={12} sm={12} xs={12}>
           <AphButton
