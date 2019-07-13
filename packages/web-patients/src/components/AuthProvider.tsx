@@ -61,7 +61,6 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 
 let apolloClient: ApolloClient<any>;
 const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
-  // const errorLink = onError(({ networkError, operation, forward }: ErrorResponse) => {
   const errorLink = onError((error) => {
     const { graphQLErrors, operation, forward } = error;
     if (isLocal || isDevelopment) console.error(error);
