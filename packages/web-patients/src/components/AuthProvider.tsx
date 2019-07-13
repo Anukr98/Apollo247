@@ -177,7 +177,7 @@ export const AuthProvider: React.FC = (props) => {
     const otpAuthResult = await otpVerifier.confirm(otp).catch((error) => {
       setVerifyOtpError(true);
     });
-    if (!otpAuthResult) setVerifyOtpError(true);
+    if (!otpAuthResult || !otpAuthResult.user) setVerifyOtpError(true);
     setIsVerifyingOtp(false);
   };
 
