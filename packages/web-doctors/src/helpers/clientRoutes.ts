@@ -14,4 +14,5 @@ export const clientRoutes = {
   consultRoom: () => '#',
   testsAndMedicine: () => '#',
   healthRecords: () => '#',
+  calendar: () => '/calendar'
 };
