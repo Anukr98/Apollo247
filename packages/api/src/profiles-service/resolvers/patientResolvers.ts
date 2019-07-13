@@ -172,7 +172,9 @@ const patientSignIn: Resolver<any> = async (
         ),
       ];
 
-  const patients = await Promise.all(patientPromises);
+  const patients = await Promise.all(patientPromises).catch((findOrCreateErrors) => {
+    throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
+  });
   return { patients };
 };
 

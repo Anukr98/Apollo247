@@ -3,6 +3,8 @@ import { ApolloGateway, RemoteGraphQLDataSource } from '@apollo/gateway';
 import { GraphQLExecutor } from 'apollo-server-core';
 import * as firebaseAdmin from 'firebase-admin';
 import { IncomingHttpHeaders } from 'http';
+import { AphAuthenticationError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/aphErrorMessages';
 
 export interface GatewayContext {
   firebaseUid: string;
@@ -69,15 +71,15 @@ const envToCorsOrigin = {
       const firebaseIdToken = await firebase
         .auth()
         .verifyIdToken(jwt)
-        .catch((error: firebaseAdmin.FirebaseError) => {
-          throw new AuthenticationError(error.code);
+        .catch((firebaseError: firebaseAdmin.FirebaseError) => {
+          throw new AphAuthenticationError(AphErrorMessages.FIREBASE_AUTH_TOKEN_ERROR);
         });
 
       const firebaseUser = await firebase
         .auth()
         .getUser(firebaseIdToken.uid)
-        .catch((error: firebaseAdmin.FirebaseError) => {
-          throw new AuthenticationError(error.message);
+        .catch((firebaseError: firebaseAdmin.FirebaseError) => {
+          throw new AphAuthenticationError(AphErrorMessages.FIREBASE_GET_USER_ERROR);
         });
 
       const gatewayContext: GatewayContext = {

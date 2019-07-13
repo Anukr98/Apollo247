@@ -1,7 +1,7 @@
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloClient } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
-import { ErrorResponse, onError } from 'apollo-link-error';
+import { onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
@@ -56,12 +56,22 @@ export const AuthContext = React.createContext<AuthContextProps>({
   setIsLoginPopupVisible: null,
 });
 
+const isLocal = process.env.NODE_ENV === 'local';
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 let apolloClient: ApolloClient<any>;
-const buildApolloClient = (authToken: string) => {
-  const errorLink = onError(({ networkError, operation, forward }: ErrorResponse) => {
-    // There's a bug in the apollo typedefs and `statusCode` is not recognized, but it's there
-    if (networkError && (networkError as any).statusCode === 401) {
-      console.log(networkError, operation);
+const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
+  // const errorLink = onError(({ networkError, operation, forward }: ErrorResponse) => {
+  const errorLink = onError((error) => {
+    const { graphQLErrors, operation, forward } = error;
+    if (isLocal || isDevelopment) console.error(error);
+    if (graphQLErrors) {
+      const unauthenticatedError = graphQLErrors.some(
+        (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
+      );
+      if (unauthenticatedError) {
+        handleUnauthenticated();
+      }
     }
     return forward(operation);
   });
@@ -89,7 +99,7 @@ let otpVerifier: firebase.auth.ConfirmationResult;
 
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
-  apolloClient = buildApolloClient(authToken);
+  apolloClient = buildApolloClient(authToken, () => signOut());
 
   const [allCurrentPatients, setAllCurrentPatients] = useState<
     AuthContextProps['allCurrentPatients']
@@ -108,6 +118,12 @@ export const AuthProvider: React.FC = (props) => {
   const [isLoginPopupVisible, setIsLoginPopupVisible] = useState<
     AuthContextProps['isLoginPopupVisible']
   >(false);
+
+  const signOut = () =>
+    app
+      .auth()
+      .signOut()
+      .then(() => window.location.reload());
 
   const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
     return new Promise((resolve, reject) => {
@@ -165,12 +181,6 @@ export const AuthProvider: React.FC = (props) => {
     setIsVerifyingOtp(false);
   };
 
-  const signOut = () =>
-    app
-      .auth()
-      .signOut()
-      .then(() => window.location.reload());
-
   useEffect(() => {
     app.auth().onAuthStateChanged(async (user) => {
       if (user) {
@@ -184,20 +194,18 @@ export const AuthProvider: React.FC = (props) => {
 
         setIsSigningIn(true);
         const signInResult = await apolloClient
-          .mutate<PatientSignIn>({
-            mutation: PATIENT_SIGN_IN,
-            variables: {},
-          })
+          .mutate<PatientSignIn>({ mutation: PATIENT_SIGN_IN })
           .catch((error) => {
             setSignInError(true);
             setIsSigningIn(false);
-            app.auth().signOut();
+            // app.auth().signOut();
+            console.error(error);
             throw error;
           });
         if (!signInResult.data || !signInResult.data.patientSignIn.patients) {
           setSignInError(true);
           setIsSigningIn(false);
-          app.auth().signOut();
+          // app.auth().signOut();
           throw new Error('no data returned from sign in call');
         }
         const patients = signInResult.data.patientSignIn.patients;
