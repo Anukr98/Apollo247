@@ -137,42 +137,45 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const DoctorProfileTab: React.FC = ({values}) => {
+interface Props {
+  values: any;
+  proceedHadler: () => void;
+}
+
+export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => {
   const classes = useStyles();
+  console.log(values);
+  console.log(proceedHadler);
   const [data, setData] = useState(values);
   const [showAddDoc, setShowAddDoc] = useState(false);
-
-  console.log(data);
-
-
   let starDocNumber = data.starDoctorTeam.length;
   let starDoctors = data.starDoctorTeam.map((item, index) => {
-    return (<Grid item lg={4} sm={6} xs={12} key={index.toString()}>
-      <div className={classes.tabContentStarDoctor}>
-        <div className={classes.starDoctors}>
-          <img
-            alt=""
-            src={require('images/doctor-profile.jpg')}
-            className={classes.profileImg}
-          />
+    return (
+      <Grid item lg={4} sm={6} xs={12} key={index.toString()}>
+        <div className={classes.tabContentStarDoctor}>
+          <div className={classes.starDoctors}>
+            <img alt="" src={require('images/doctor-profile.jpg')} className={classes.profileImg} />
+          </div>
+          <Typography variant="h4">
+            Dr. {item.firstName} {item.lastName}
+          </Typography>
+          <Typography variant="h6">
+            GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
+          </Typography>
+          <Typography variant="h5">
+            MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+          </Typography>
         </div>
-        <Typography variant="h4">Dr. {item.firstName} {item.lastName}</Typography>
-        <Typography variant="h6">
-          GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
-        </Typography>
-        <Typography variant="h5">
-          MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
-        </Typography>
-      </div>
-    </Grid>)
+      </Grid>
+    );
   });
 
-  
-
   const clinicsList = data.clinicsList.map((item, index) => {
-    return (<Typography variant="h3" key={index.toString()}>
-      {item.name}, {item.location}
-    </Typography>)
+    return (
+      <Typography variant="h3" key={index.toString()}>
+        {item.name}, {item.location}
+      </Typography>
+    );
   });
 
   return (
@@ -189,7 +192,9 @@ export const DoctorProfileTab: React.FC = ({values}) => {
                   className={classes.bigAvatar}
                 />
               </div>
-              <Typography variant="h4">Dr. {data.firstName} {data.lastName}</Typography>
+              <Typography variant="h4">
+                Dr. {data.firstName} {data.lastName}
+              </Typography>
               <Typography variant="h6">
                 {data.speciality} <span> | </span> <span> {data.experience}YRS </span>{' '}
               </Typography>
@@ -243,33 +248,43 @@ export const DoctorProfileTab: React.FC = ({values}) => {
           </Grid>
         </Grid>
       </div>
-      {!!data.isStarDoctor && <div><Typography variant="h2">Your Star Doctors Team ({starDocNumber})</Typography>
-        <Grid container alignItems="flex-start" spacing={0}>
-          {starDoctors}
-          {!!showAddDoc && <Grid item lg={4} sm={6} xs={12} >
-            <div className={classes.addStarDoctor}>
-              <Typography variant="h5">
-                Add doctor to your team
-                <StarDoctorSearch />
-              </Typography>
-            </div>
+      {!!data.isStarDoctor && (
+        <div>
+          <Typography variant="h2">Your Star Doctors Team ({starDocNumber})</Typography>
+          <Grid container alignItems="flex-start" spacing={0}>
+            {starDoctors}
+            {!!showAddDoc && (
+              <Grid item lg={4} sm={6} xs={12}>
+                <div className={classes.addStarDoctor}>
+                  <Typography variant="h5">
+                    Add doctor to your team
+                    <StarDoctorSearch />
+                  </Typography>
+                </div>
+              </Grid>
+            )}
           </Grid>
-        </Grid>}
-        <div className={classes.addDocter}>
-          <AphButton 
-            variant="contained" 
-            color="primary" 
-            classes={{ root: classes.btnAddDoctor }}
-            onClick={e => setShowAddDoc(!showAddDoc)}
-          >
-            + ADD DOCTOR
-          </AphButton>
+          <div className={classes.addDocter}>
+            <AphButton
+              variant="contained"
+              color="primary"
+              classes={{ root: classes.btnAddDoctor }}
+              onClick={(e) => setShowAddDoc(!showAddDoc)}
+            >
+              + ADD DOCTOR
+            </AphButton>
+          </div>
         </div>
-      </div>}
-      
+      )}
+
       <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
         <Grid item lg={12} sm={12} xs={12}>
-          <AphButton variant="contained" color="primary" classes={{ root: classes.saveButton }}>
+          <AphButton
+            variant="contained"
+            color="primary"
+            classes={{ root: classes.saveButton }}
+            onClick={proceedHadler()}
+          >
             SAVE AND PROCEED
           </AphButton>
         </Grid>
