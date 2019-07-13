@@ -117,7 +117,7 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
-    btmContainer: {
+    btnContainer: {
       borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
       marginTop: '30px',
     },
@@ -237,7 +237,7 @@ export const DoctorProfileTab: React.FC = ({values}) => {
         </div>
       </div>}
       
-      <Grid container alignItems="flex-start" spacing={0} className={classes.btmContainer}>
+      <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
         <Grid item lg={12} sm={12} xs={12}>
           <AphButton variant="contained" color="primary" classes={{ root: classes.saveButton }}>
             SAVE AND PROCEED
