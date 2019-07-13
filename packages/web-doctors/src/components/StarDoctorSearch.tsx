@@ -1,28 +1,79 @@
-import React from "react";
+import React from 'react';
 //import deburr from "lodash/deburr";
-import Autosuggest from "react-autosuggest";
-import match from "autosuggest-highlight/match";
-import parse from "autosuggest-highlight/parse";
-import TextField from "@material-ui/core/TextField";
-import Paper from "@material-ui/core/Paper";
-import MenuItem from "@material-ui/core/MenuItem";
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-//import Icon from '@material-ui/core/Icon';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import PriorityHighIcon from '@material-ui/icons/PriorityHigh';
+import Autosuggest from 'react-autosuggest';
+import match from 'autosuggest-highlight/match';
+import parse from 'autosuggest-highlight/parse';
+import TextField from '@material-ui/core/TextField';
+import Paper from '@material-ui/core/Paper';
+import MenuItem from '@material-ui/core/MenuItem';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
 interface DoctorsName {
   label: string;
+  typeOfConsult: string;
+  experience: string;
+  firstName: string;
+  inviteStatus: string;
+  lastName: string;
 }
 
 const suggestions: DoctorsName[] = [
-  { label: "Dr Sunita Rao" },
-  { label: "Dr Ranjit Mehra" },
-  { label: "Dr Simran Kaur" },
-  { label: "Dr Ajay Ranka" },
-  { label: "Dr Suman Seth" },
-  { label: "Dr kiran Seth" },
-  { label: "Dr Pooja Seth" }
+  {
+    label: 'Dr Sunita Rao',
+    typeOfConsult: '24/7',
+    experience: '7',
+    firstName: 'Sunita',
+    inviteStatus: 'Not accepted',
+    lastName: 'Rao',
+  },
+  {
+    label: 'Dr Ranjit Mehra',
+    typeOfConsult: '24/7',
+    experience: '7',
+    firstName: 'Ranjit',
+    inviteStatus: 'Not accepted',
+    lastName: 'Mehra',
+  },
+  {
+    label: 'Dr Simran Kaur',
+    typeOfConsult: '24/7',
+    experience: '7',
+    firstName: 'Simran',
+    inviteStatus: 'Not accepted',
+    lastName: 'Kaur',
+  },
+  {
+    label: 'Dr Ajay Ranka',
+    typeOfConsult: '24/7',
+    experience: '7',
+    firstName: 'Ajay',
+    inviteStatus: 'Not accepted',
+    lastName: 'Ranka',
+  },
+  {
+    label: 'Dr Suman Seth',
+    typeOfConsult: '24/7',
+    experience: '7',
+    firstName: 'Suman',
+    inviteStatus: 'Not accepted',
+    lastName: 'Seth',
+  },
+  {
+    label: 'Dr kiran Seth',
+    typeOfConsult: '24/7',
+    experience: '7',
+    firstName: 'kiran',
+    inviteStatus: 'Not accepted',
+    lastName: 'Seth',
+  },
+  {
+    label: 'Dr Pooja Seth',
+    typeOfConsult: '24/7',
+    experience: '7',
+    firstName: 'Pooja',
+    inviteStatus: 'Not accepted',
+    lastName: 'Seth',
+  },
 ];
 
 function renderInputComponent(inputProps: any) {
@@ -32,12 +83,12 @@ function renderInputComponent(inputProps: any) {
     <TextField
       fullWidth
       InputProps={{
-        inputRef: node => {
+        inputRef: (node) => {
           ref(node);
           inputRef(node);
         },
         classes: {
-          input: classes.input
+          input: classes.input,
         },
       }}
       {...other}
@@ -55,9 +106,9 @@ function renderSuggestion(
   return (
     <MenuItem selected={isHighlighted} component="div">
       <div>
-        {parts.map(part => (
+        {parts.map((part, index) => (
           <span
-            key={part.text}
+            key={index.toString()}
             style={{ fontWeight: part.highlight ? 500 : 400, color: '#000' }}
           >
             {part.text}
@@ -74,10 +125,8 @@ function getSuggestions(value: string) {
 
   return inputLength < 3
     ? []
-    : suggestions.filter(suggestion => {
-        return (
-          suggestion.label.toLowerCase().indexOf(value.toLowerCase()) !== -1
-        );
+    : suggestions.filter((suggestion) => {
+        return suggestion.label.toLowerCase().indexOf(value.toLowerCase()) !== -1;
       });
 }
 
@@ -92,38 +141,38 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
     },
     container: {
-      position: "relative"
+      position: 'relative',
     },
     suggestionsContainerOpen: {
-      position: "absolute",
+      position: 'absolute',
       zIndex: 1,
       marginTop: theme.spacing(1),
       left: 0,
-      right: 0
+      right: 0,
     },
     suggestion: {
-      display: "block"
+      display: 'block',
     },
     suggestionsList: {
       margin: 0,
       padding: 0,
-      listStyleType: "none"
+      listStyleType: 'none',
     },
     divider: {
-      height: theme.spacing(2)
+      height: theme.spacing(2),
     },
     input: {
-      color: '#000'
-    }
+      color: '#000',
+    },
   })
 );
 
-export default function IntegrationAutosuggest() {
+export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
   const classes = useStyles();
-  //const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [state, setState] = React.useState({
-    single: ""
+    single: '',
   });
+  const [doctor, setDoctor] = React.useState({});
   const [stateSuggestions, setSuggestions] = React.useState<DoctorsName[]>([]);
 
   const handleSuggestionsFetchRequested = ({ value }: any) => {
@@ -133,14 +182,19 @@ export default function IntegrationAutosuggest() {
   const handleSuggestionsClearRequested = () => {
     setSuggestions([]);
   };
-
+  const onSuggestionSelected = (
+    event,
+    { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }
+  ) => {
+    setDoctor(suggestion);
+  };
   const handleChange = (name: keyof typeof state) => (
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
     setState({
       ...state,
-      [name]: newValue
+      [name]: newValue,
     });
   };
 
@@ -150,7 +204,8 @@ export default function IntegrationAutosuggest() {
     onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
     onSuggestionsClearRequested: handleSuggestionsClearRequested,
     getSuggestionValue,
-    renderSuggestion
+    renderSuggestion,
+    onSuggestionSelected: onSuggestionSelected,
   };
 
   return (
@@ -159,24 +214,28 @@ export default function IntegrationAutosuggest() {
         {...autosuggestProps}
         inputProps={{
           classes,
-          id: "react-autosuggest-simple",
-          label: "Search doctor",
+          id: 'react-autosuggest-simple',
+          label: 'Search doctor',
 
           value: state.single,
-          onChange: handleChange("single")
+          onChange: handleChange('single'),
         }}
         theme={{
           container: classes.container,
           suggestionsContainerOpen: classes.suggestionsContainerOpen,
           suggestionsList: classes.suggestionsList,
-          suggestion: classes.suggestion
+          suggestion: classes.suggestion,
         }}
-        renderSuggestionsContainer={options => (
+        renderSuggestionsContainer={(options) => (
           <Paper {...options.containerProps} square>
             {options.children}
           </Paper>
         )}
       />
+
+      {doctor.label && state.single === doctor.label && (
+        <button onClick={() => addDoctorHadler(doctor)}>Add</button>
+      )}
     </div>
   );
 }

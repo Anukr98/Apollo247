@@ -5,14 +5,6 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
-import MenuItem from '@material-ui/core/MenuItem';
-import { AphSelect } from '@aph/web-ui-components';
-import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
-import _isEmpty from 'lodash/isEmpty';
-import _startCase from 'lodash/startCase';
-import _toLower from 'lodash/lowerCase';
-import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
-import { useAuth } from 'hooks/authHooks';
 import StarDoctorSearch from './StarDoctorSearch';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -144,12 +136,16 @@ interface Props {
 
 export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => {
   const classes = useStyles();
-  console.log(values);
-  console.log(proceedHadler);
   const [data, setData] = useState(values);
   const [showAddDoc, setShowAddDoc] = useState(false);
-  let starDocNumber = data.starDoctorTeam.length;
-  let starDoctors = data.starDoctorTeam.map((item, index) => {
+  function addDoctorHadler(obj) {
+    if (obj.label) {
+      setData({ ...data, starDoctorTeam: data.starDoctorTeam.concat(obj) });
+      setShowAddDoc(false);
+    }
+  }
+  const starDocNumber = data.starDoctorTeam.length;
+  const starDoctors = data.starDoctorTeam.map((item, index) => {
     return (
       <Grid item lg={4} sm={6} xs={12} key={index.toString()}>
         <div className={classes.tabContentStarDoctor}>
@@ -258,7 +254,7 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
                 <div className={classes.addStarDoctor}>
                   <Typography variant="h5">
                     Add doctor to your team
-                    <StarDoctorSearch />
+                    <StarDoctorSearch addDoctorHadler={addDoctorHadler} isReset={true} />
                   </Typography>
                 </div>
               </Grid>

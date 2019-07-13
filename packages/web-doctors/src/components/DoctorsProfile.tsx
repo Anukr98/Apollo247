@@ -88,7 +88,7 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
     setValue(newValue);
   }
   const proceedHadler = () => {
-    setValue(value);
+    setValue(value + 1);
   };
   if (loading) console.log('loading');
   if (error) console.log('Error');
@@ -101,9 +101,13 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
         </div>
       </div>
       <div className={classes.container}>
+      {!!data.getDoctorProfile && (
+      <div>
         <div className={classes.tabHeading}>
           <Typography variant="h1">
-            <span>hi dr. rao!</span>
+            <span>
+              hi dr. {`${data.getDoctorProfile.firstName} ${data.getDoctorProfile.lastName}`}!
+            </span>
           </Typography>
           <p>
             It’s great to have you join us! <br /> Here’s what your patients see when they view your
@@ -127,7 +131,7 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
             {!!data.getDoctorProfile && (
               <DoctorProfileTab
                 values={data.getDoctorProfile}
-                proceedHadler={proceedHadler}
+                proceedHadler={() => proceedHadler}
                 key={1}
               />
             )}
@@ -135,13 +139,24 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
         )}
         {value === 1 && (
           <TabContainer>
-            {!!data.getDoctorProfile && <AvailabilityTab values={data.getDoctorProfile} key={2} />}
+            {!!data.getDoctorProfile && (
+              <AvailabilityTab
+                values={data.getDoctorProfile}
+                proceedHadler={() => proceedHadler}
+                key={2}
+              />
+            )}
           </TabContainer>
         )}
         {value === 2 && (
-          <TabContainer>{!!data.getDoctorProfile && <FeesTab key={3} />}</TabContainer>
+          <TabContainer>
+            {!!data.getDoctorProfile && (
+              <FeesTab values={data.getDoctorProfile} proceedHadler={() => proceedHadler} key={3} />
+            )}
+          </TabContainer>
         )}
       </div>
+      </div></div>)}
     </div>
   );
 };

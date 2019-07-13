@@ -16,7 +16,7 @@ import { useAuth } from 'hooks/authHooks';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions'
+import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
@@ -135,7 +135,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     heading: {
       fontSize: theme.typography.pxToRem(15),
-      color: '#02475b'
+      color: '#02475b',
     },
     secondaryHeading: {
       fontSize: theme.typography.pxToRem(15),
@@ -173,24 +173,23 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     expandIcon: {
-      color: '#000'
+      color: '#000',
     },
     textField: {
       marginLeft: theme.spacing(1),
       marginRight: theme.spacing(1),
       width: 140,
-      color: '#02475b'
+      color: '#02475b',
     },
-    timeForm: {
-
-    },
-    timeDivider: {
-
-    }
+    timeForm: {},
+    timeDivider: {},
   };
 });
-
-export const AvailabilityTab: React.FC = ({values}) => {
+interface Props {
+  values: any;
+  proceedHadler: () => void;
+}
+export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
   const classes = useStyles();
   const [data, setData] = useState(values);
   const [sp, setsp] = useState<string>('Physical');
@@ -212,9 +211,9 @@ export const AvailabilityTab: React.FC = ({values}) => {
                 <AphButton
                   variant="contained"
                   value="Physical"
-                  classes={sp === "Physical" ? { root: classes.btnActive } : {}}
+                  classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
                   onClick={(e) => {
-                    console.log(e)
+                    console.log(e);
                   }}
                 >
                   Physical
@@ -222,9 +221,9 @@ export const AvailabilityTab: React.FC = ({values}) => {
                 <AphButton
                   variant="contained"
                   value="Physical"
-                  classes={sp === "Physical" ? { root: classes.btnActive } : {}}
+                  classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
                   onClick={(e) => {
-                    console.log(e)
+                    console.log(e);
                   }}
                 >
                   Online
@@ -252,7 +251,9 @@ export const AvailabilityTab: React.FC = ({values}) => {
                   <Typography className={classes.heading}>9:00 AM - 12:30 PM</Typography>
                 </div>
                 <div className={classes.columnDays}>
-                  <Typography className={classes.secondaryHeading}>Mon, Tue, Wed, Thur, Fri | Online, Physical</Typography>
+                  <Typography className={classes.secondaryHeading}>
+                    Mon, Tue, Wed, Thur, Fri | Online, Physical
+                  </Typography>
                 </div>
                 <div className={classes.columnType}>
                   <Typography className={classes.secondaryHeading}>(Fixed)</Typography>
@@ -261,9 +262,8 @@ export const AvailabilityTab: React.FC = ({values}) => {
               <ExpansionPanelDetails className={classes.details}>
                 <div className={classes.column}>
                   <Typography variant="h5">
-                    
                     <form className={classes.timeForm}>
-                      Enter your preferred consult hours: 
+                      Enter your preferred consult hours:
                       <TextField
                         id="time"
                         label="Start"
@@ -307,10 +307,15 @@ export const AvailabilityTab: React.FC = ({values}) => {
           </div>
         </Grid>
       </Grid>
-      
+
       <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
         <Grid item lg={12} sm={12} xs={12}>
-          <AphButton variant="contained" color="primary" classes={{ root: classes.saveButton }}>
+          <AphButton
+            variant="contained"
+            color="primary"
+            classes={{ root: classes.saveButton }}
+            onClick={proceedHadler()}
+          >
             SAVE AND PROCEED
           </AphButton>
         </Grid>
