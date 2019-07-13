@@ -29,6 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 16,
         color: theme.palette.secondary.dark,
         marginBottom: '15px',
+        paddingTop: '15px',
       },
       '& h3': {
         lineHeight: '22px',
@@ -44,10 +45,11 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#658f9b',
       },
       '& h6': {
-        color: theme.palette.secondary.main,
+        color: '#658f9b',
         padding: '5px 5px 5px 0',
         letterSpacing: '0.3px',
         marginLeft: 20,
+        fontWeight: theme.typography.fontWeightMedium,
         '& span': {
           padding: '0 2px',
         },
@@ -136,10 +138,12 @@ const useStyles = makeStyles((theme: Theme) => {
     heading: {
       fontSize: theme.typography.pxToRem(15),
       color: '#02475b',
+      fontWeight: '700',
     },
     secondaryHeading: {
       fontSize: theme.typography.pxToRem(15),
-      color: theme.palette.text.secondary,
+      color: '#658f9b',
+      fontWeight: '700',
     },
     icon: {
       verticalAlign: 'bottom',
@@ -183,6 +187,11 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     timeForm: {},
     timeDivider: {},
+    bold: {
+      fontWeight: theme.typography.fontWeightBold,
+      color: '#02475b',
+      marginLeft: '20px',
+    },
   };
 });
 interface Props {
@@ -207,11 +216,11 @@ export const FeesTab: React.FC<Props> = ({ values, proceedHadler }) => {
           <div className={classes.tabContent}>
             <Paper className={classes.serviceItem}>
               <Typography variant="subtitle1">What are your online consultation fees?</Typography>
-              <Typography variant="subtitle1">Rs. 399</Typography>
+              <Typography className={classes.bold}>Rs. 399</Typography>
               <Typography variant="subtitle1">What are your physical consultation fees?</Typography>
-              <Typography variant="subtitle1">Rs. 399</Typography>
+              <Typography className={classes.bold}>Rs. 399</Typography>
               <Typography variant="subtitle1">What packages do you offer your patients?</Typography>
-              <Typography variant="subtitle1">
+              <Typography className={classes.bold}>
                 3 Online Consults + 3 Physical Consults @ Rs. 999
               </Typography>
             </Paper>
@@ -221,7 +230,7 @@ export const FeesTab: React.FC<Props> = ({ values, proceedHadler }) => {
 
       <Grid container alignItems="flex-start" spacing={0}>
         <Grid item lg={2} sm={6} xs={12}>
-          <Typography variant="h2">Consultation Hours</Typography>
+          <Typography variant="h2">Payment Method</Typography>
         </Grid>
 
         <Grid item lg={10} sm={6} xs={12}>
