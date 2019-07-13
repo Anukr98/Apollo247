@@ -7,14 +7,9 @@ pipeline {
             }
             
         }
-        stage('Shutdown Docker Images') {
-            steps{
-                sh "/usr/local/bin/docker-compose -f docker-compose.yml down"    
-            }
-        }
         stage('Install') {
             steps {
-                sh "npm run bootstrap"
+                sh "npm install"
     
             }
         }
