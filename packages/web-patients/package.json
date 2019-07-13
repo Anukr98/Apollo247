@@ -49,8 +49,8 @@
     "webpack-dev-server": "^3.7.1"
   },
   "dependencies": {
-    "@aph/web-ui-components": "file:../web-ui-components",
     "@aph/universal": "file:../universal",
+    "@aph/web-ui-components": "file:../web-ui-components",
     "@hot-loader/react-dom": "16.8.6",
     "@material-ui/core": "^4.0.2",
     "@material-ui/icons": "^4.0.1",
@@ -58,6 +58,7 @@
     "apollo": "^2.13.1",
     "apollo-cache-inmemory": "^1.6.2",
     "apollo-client": "^2.6.2",
+    "apollo-link-context": "^1.0.18",
     "apollo-link-error": "^1.1.11",
     "apollo-link-http": "^1.5.15",
     "firebase": "^6.2.2",
