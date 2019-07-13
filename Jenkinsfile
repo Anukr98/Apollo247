@@ -7,27 +7,22 @@ pipeline {
             }
             
         }
-        stage('Shutdown Docker Images') {
-            steps{
-                sh "/usr/local/bin/docker-compose -f docker-compose.yml down"    
-            }
-        }
-        stage('Install Web Modules') {
+        stage('Install') {
             steps {
-                sh "/usr/local/bin/docker-compose -f docker-compose.yml run --rm web npm install --production=false"
+                sh "npm run bootstrap"
     
             }
         }
-        stage("lint checking on Web Service") {
+        stage("lint check") {
             steps {
-                sh "/usr/local/bin/docker-compose -f docker-compose.yml run --rm web npm run lint"
+                sh "npm run lint"
             }
             
         }
         
          stage("Syntax Check") {
             steps {
-                sh "/usr/local/bin/docker-compose -f docker-compose.yml run --rm web npm run format:check"
+                sh "npm run format:check"
             }
             
         }
