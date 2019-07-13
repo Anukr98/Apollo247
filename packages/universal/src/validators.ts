@@ -37,5 +37,5 @@ export const isDobValid = (ddmmyyyy: string) => {
 };
 
 export const isEmailValid = (email: string) => {
-  return /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/.test(email);
+  return /\S+@\S+\.\S+/.test(email);
 };
