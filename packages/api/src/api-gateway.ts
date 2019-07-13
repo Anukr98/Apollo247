@@ -2,10 +2,16 @@ import { ApolloServer, AuthenticationError } from 'apollo-server';
 import { ApolloGateway, RemoteGraphQLDataSource } from '@apollo/gateway';
 import { GraphQLExecutor } from 'apollo-server-core';
 import * as firebaseAdmin from 'firebase-admin';
+import { IncomingHttpHeaders } from 'http';
 
-interface GatewayContext {
+export interface GatewayContext {
   firebaseUid: string;
   mobileNumber: string;
+}
+
+export interface GatewayHeaders extends IncomingHttpHeaders {
+  firebaseuid: string;
+  mobilenumber: string;
 }
 
 const env = process.env.NODE_ENV as 'local' | 'development';
@@ -55,7 +61,8 @@ const envToCorsOrigin = {
       const isDevelopment = process.env.NODE_ENV == 'development';
       const isSchemaIntrospectionQuery = req.body.operationName == 'IntrospectionQuery';
       if ((isLocal || isDevelopment) && isSchemaIntrospectionQuery) {
-        return { firebaseUid: '', mobileNumber: '' };
+        const gatewayContext: GatewayContext = { firebaseUid: '', mobileNumber: '' };
+        return gatewayContext;
       }
 
       const jwt = req.headers.authorization || '';
