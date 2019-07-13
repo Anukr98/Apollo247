@@ -126,6 +126,7 @@ export const AuthProvider: React.FC = (props) => {
 
   const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
     return new Promise((resolve, reject) => {
+      setVerifyOtpError(false);
       if (!captchaPlacement) {
         setSendOtpError(true);
         reject();
