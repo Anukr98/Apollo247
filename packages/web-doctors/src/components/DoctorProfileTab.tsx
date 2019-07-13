@@ -13,6 +13,7 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/lowerCase';
 import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
 import { useAuth } from 'hooks/authHooks';
+import StarDoctorSearch from './StarDoctorSearch';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -99,6 +100,18 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: '30px',
       marginRight: '10px',
     },
+    addStarDoctor: {
+      borderRadius: 10,
+      backgroundColor: theme.palette.primary.contrastText,
+      padding: '10px',
+      position: 'relative',
+      paddingLeft: '10px',
+      minHeight: '100px',
+      flexGrow: 1,
+      boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
+      marginBottom: '30px',
+      marginRight: '10px',
+    },
     saveButton: {
       minWidth: '300px',
       marginTop: '20px',
@@ -127,11 +140,13 @@ const useStyles = makeStyles((theme: Theme) => {
 export const DoctorProfileTab: React.FC = ({values}) => {
   const classes = useStyles();
   const [data, setData] = useState(values);
+  const [showAddDoc, setShowAddDoc] = useState(false);
 
   console.log(data);
 
-  const starDocNumber = data.starDoctorTeam.length;
-  const starDoctors = data.starDoctorTeam.map((item, index) => {
+
+  let starDocNumber = data.starDoctorTeam.length;
+  let starDoctors = data.starDoctorTeam.map((item, index) => {
     return (<Grid item lg={4} sm={6} xs={12} key={index.toString()}>
       <div className={classes.tabContentStarDoctor}>
         <div className={classes.starDoctors}>
@@ -151,6 +166,8 @@ export const DoctorProfileTab: React.FC = ({values}) => {
       </div>
     </Grid>)
   });
+
+  
 
   const clinicsList = data.clinicsList.map((item, index) => {
     return (<Typography variant="h3" key={index.toString()}>
@@ -229,9 +246,22 @@ export const DoctorProfileTab: React.FC = ({values}) => {
       {!!data.isStarDoctor && <div><Typography variant="h2">Your Star Doctors Team ({starDocNumber})</Typography>
         <Grid container alignItems="flex-start" spacing={0}>
           {starDoctors}
-        </Grid>
+          {!!showAddDoc && <Grid item lg={4} sm={6} xs={12} >
+            <div className={classes.addStarDoctor}>
+              <Typography variant="h5">
+                Add doctor to your team
+                <StarDoctorSearch />
+              </Typography>
+            </div>
+          </Grid>
+        </Grid>}
         <div className={classes.addDocter}>
-          <AphButton variant="contained" color="primary" classes={{ root: classes.btnAddDoctor }}>
+          <AphButton 
+            variant="contained" 
+            color="primary" 
+            classes={{ root: classes.btnAddDoctor }}
+            onClick={e => setShowAddDoc(!showAddDoc)}
+          >
             + ADD DOCTOR
           </AphButton>
         </div>
