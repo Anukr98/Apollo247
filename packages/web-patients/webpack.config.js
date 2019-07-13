@@ -65,7 +65,6 @@ module.exports = {
       {
         test: /\.(j|t)sx?$/,
         exclude: [/node_modules/],
-        use: isProduction ? [tsLoader] : [tsLoader],
         use: isProduction ? [tsLoader] : [rhlBabelLoader, tsLoader],
       },
       {
