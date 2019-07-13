@@ -187,7 +187,6 @@ export const AuthProvider: React.FC = (props) => {
         const jwt = await user.getIdToken().catch((error) => {
           setIsSigningIn(false);
           setSignInError(true);
-          app.auth().signOut();
           throw error;
         });
         setAuthToken(jwt);
@@ -198,14 +197,12 @@ export const AuthProvider: React.FC = (props) => {
           .catch((error) => {
             setSignInError(true);
             setIsSigningIn(false);
-            // app.auth().signOut();
             console.error(error);
             throw error;
           });
         if (!signInResult.data || !signInResult.data.patientSignIn.patients) {
           setSignInError(true);
           setIsSigningIn(false);
-          // app.auth().signOut();
           throw new Error('no data returned from sign in call');
         }
         const patients = signInResult.data.patientSignIn.patients;
