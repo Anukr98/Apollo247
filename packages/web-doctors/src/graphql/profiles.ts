@@ -67,9 +67,6 @@ export const PATIENT_SIGN_IN = gql`
         dateOfBirth
         emailAddress
       }
-      errors {
-        messages
-      }
     }
   }
 `;
