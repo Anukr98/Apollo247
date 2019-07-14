@@ -25,7 +25,8 @@ const plugins = [
   new webpack.DefinePlugin(
     [
       'NODE_ENV',
-      'WEB_CLIENT_PORT',
+      'WEB_PATIENTS_PORT',
+      'WEB_DOCTORS_PORT',
       'API_GATEWAY_PORT',
       'FIREBASE_PROJECT_ID',
       'GOOGLE_APPLICATION_CREDENTIALS',

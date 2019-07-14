@@ -17,9 +17,13 @@ export interface GatewayHeaders extends IncomingHttpHeaders {
 }
 
 const env = process.env.NODE_ENV as 'local' | 'development';
-const port = process.env.WEB_CLIENT_PORT === '80' ? '' : `:${process.env.WEB_CLIENT_PORT}`;
+const webPatientsPort =
+  process.env.WEB_PATIENTS_PORT === '80' ? '' : `:${process.env.WEB_PATIENTS_PORT}`;
+const webDoctorsPort =
+  process.env.WEB_DOCTORS_PORT === '80' ? '' : `:${process.env.WEB_DOCTORS_PORT}`;
+
 const envToCorsOrigin = {
-  local: '*', // `http://localhost${port}`,
+  local: [`http://localhost${webPatientsPort}`, `http://localhost${webDoctorsPort}`],
   development: '*', // 'http://patients-web.aph.popcornapps.com'
   // staging: '',
   // production: ''

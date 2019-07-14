@@ -12,7 +12,7 @@ const distDir = path.resolve(__dirname, 'dist');
 
 const plugins = [
   new webpack.DefinePlugin(
-    ['NODE_ENV', 'WEB_CLIENT_PORT', 'API_GATEWAY_PORT', 'FIREBASE_PROJECT_ID'].reduce(
+    ['NODE_ENV', 'WEB_DOCTORS_PORT', 'API_GATEWAY_PORT', 'FIREBASE_PROJECT_ID'].reduce(
       (result, VAR) => ({
         ...result,
         [`process.env.${VAR}`]: JSON.stringify(process.env[VAR].trim()),
@@ -98,7 +98,7 @@ module.exports = {
           publicPath: '/', // URL path where the webpack files are served from
           contentBase: distDir, // A directory to serve files non-webpack files from (Absolute path)
           host: '0.0.0.0',
-          port: process.env.WEB_CLIENT_PORT,
+          port: process.env.WEB_DOCTORS_PORT,
           disableHostCheck: true,
           hot: true,
           inline: true,
