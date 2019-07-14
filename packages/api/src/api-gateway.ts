@@ -16,11 +16,11 @@ export interface GatewayHeaders extends IncomingHttpHeaders {
   mobilenumber: string;
 }
 
+const getPortStr = (port: string) => (port === '80' ? '' : `:${port}`);
+
 const env = process.env.NODE_ENV as 'local' | 'development';
-const webPatientsPort =
-  process.env.WEB_PATIENTS_PORT === '80' ? '' : `:${process.env.WEB_PATIENTS_PORT}`;
-const webDoctorsPort =
-  process.env.WEB_DOCTORS_PORT === '80' ? '' : `:${process.env.WEB_DOCTORS_PORT}`;
+const webPatientsPort = getPortStr(process.env.WEB_PATIENTS_PORT!);
+const webDoctorsPort = getPortStr(process.env.WEB_DOCTORS_PORT!);
 
 const envToCorsOrigin = {
   local: [`http://localhost${webPatientsPort}`, `http://localhost${webDoctorsPort}`],
