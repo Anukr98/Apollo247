@@ -99,8 +99,8 @@ export const MyHealth: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_myhealth.png')} />
 );
 
-export const ShoppingCart: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_orders.png')} />
+export const InboxIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_round_inbox.png')} />
 );
 
 export const Person: React.FC<IconProps> = (props) => (

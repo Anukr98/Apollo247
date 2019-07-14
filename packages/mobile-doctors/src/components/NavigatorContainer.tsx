@@ -1,36 +1,32 @@
-import { createStackNavigator, createAppContainer, StackNavigatorConfig } from 'react-navigation';
-
-import { Login } from 'app/src/components/Login';
-import { Onboarding } from 'app/src/components/Onboarding';
-import { TabBar } from 'app/src/components/TabBar';
-import { DoctorSearch } from 'app/src/components/DoctorSearch';
-import { SignUp } from 'app/src/components/SignUp';
-import { MultiSignup } from 'app/src/components/MultiSignup';
-import { OTPVerification } from 'app/src/components/OTPVerification';
-import { NavigationRouteConfig } from 'react-navigation';
-import { ConsultRoom } from 'app/src/components/ConsultRoom';
-import { DoctorSearchListing } from 'app/src/components/DoctorSearchListing';
-import { HealthRecords } from 'app/src/components/HealthRecords';
-import { Medicine } from 'app/src/components/Medicine';
-import { MyAccount } from 'app/src/components/MyAccount';
+import { Appointments } from 'app/src/components/Appointments';
+import { FeeTab } from 'app/src/components/FeeTab';
+import { Inbox } from 'app/src/components/Inbox';
 //import { SplashScreen } from 'app/src/components/SplashScreen';
 import { LandingPage } from 'app/src/components/LandingPage';
-import { OnBoardingPage } from 'app/src/components/OnBoardingPage';
+import { Login } from 'app/src/components/Login';
+import { MyAccount } from 'app/src/components/MyAccount';
 import { NeedHelp } from 'app/src/components/NeedHelp';
+import { Onboarding } from 'app/src/components/Onboarding';
+import { OnBoardingPage } from 'app/src/components/OnBoardingPage';
+import { OTPVerification } from 'app/src/components/OTPVerification';
+import { Patients } from 'app/src/components/Patients';
 import { ProfilePage } from 'app/src/components/ProfilePage';
-import { FeeTab } from 'app/src/components/FeeTab';
+import { TabBar } from 'app/src/components/TabBar';
+import {
+  createAppContainer,
+  createStackNavigator,
+  NavigationRouteConfig,
+  StackNavigatorConfig,
+} from 'react-navigation';
+
 export enum AppRoutes {
   Onboarding = 'Onboarding',
   Login = 'Login',
-  ConsultRoom = 'ConsultRoom',
+  Appointments = 'Appointments',
   TabBar = 'TabBar',
-  DoctorSearch = 'DoctorSearch',
-  SignUp = 'SignUp',
-  MultiSignup = 'MultiSignup',
   OTPVerification = 'OTPVerification',
-  DoctorSearchListing = 'DoctorSearchListing',
-  HealthRecords = 'HealthRecords',
-  Medicine = 'Medicine',
+  Patients = 'Patients',
+  Inbox = 'Inbox',
   MyAccount = 'MyAccount',
   SplashScreen = 'SplashScreen',
   LandingPage = 'LandingPage',
@@ -59,39 +55,17 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.Login]: {
     screen: Login,
   },
-  [AppRoutes.DoctorSearch]: {
-    screen: DoctorSearch,
-    navigationOptions: {
-      header: null,
-    },
-  },
-
-  [AppRoutes.SignUp]: {
-    screen: SignUp,
-    navigationOptions: {
-      gesturesEnabled: false,
-    },
-  },
-  [AppRoutes.MultiSignup]: {
-    screen: MultiSignup,
-    navigationOptions: {
-      gesturesEnabled: false,
-    },
-  },
   [AppRoutes.OTPVerification]: {
     screen: OTPVerification,
   },
-  [AppRoutes.ConsultRoom]: {
-    screen: ConsultRoom,
+  [AppRoutes.Appointments]: {
+    screen: Appointments,
   },
-  [AppRoutes.DoctorSearchListing]: {
-    screen: DoctorSearchListing,
+  [AppRoutes.Patients]: {
+    screen: Patients,
   },
-  [AppRoutes.HealthRecords]: {
-    screen: HealthRecords,
-  },
-  [AppRoutes.Medicine]: {
-    screen: Medicine,
+  [AppRoutes.Inbox]: {
+    screen: Inbox,
   },
   [AppRoutes.MyAccount]: {
     screen: MyAccount,
@@ -117,7 +91,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
 };
 
 const stackConfig: StackNavigatorConfig = {
-  initialRouteName: AppRoutes.ProfilePage,
+  initialRouteName: AppRoutes.LandingPage,
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   transitionConfig: () => {

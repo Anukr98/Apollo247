@@ -1,26 +1,25 @@
-import { AppRoute, AppRoutes } from 'app/src/components/NavigatorContainer';
-import { ConsultRoom } from 'app/src/components/ConsultRoom';
-import { HealthRecords } from 'app/src/components/HealthRecords';
+import { Appointments } from 'app/src/components/Appointments';
+import { Inbox } from 'app/src/components/Inbox';
 import { MyAccount } from 'app/src/components/MyAccount';
-import { Medicine } from 'app/src/components/Medicine';
-
-import { ConsultationRoom, MyHealth, Person, ShoppingCart } from 'app/src/components/ui/Icons';
+import { AppRoute } from 'app/src/components/NavigatorContainer';
+import { Patients } from 'app/src/components/Patients';
+import { ConsultationRoom, InboxIcon, MyHealth, Person } from 'app/src/components/ui/Icons';
 import { theme } from 'app/src/theme/theme';
 import React from 'react';
 import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigation';
 
-const routeToIcon: Partial<Record<keyof typeof AppRoutes, any>> = {
-  ConsultRoom: <ConsultationRoom />,
-  HealthRecords: <MyHealth />,
-  Medicine: <ShoppingCart />,
-  MyAccount: <Person />,
+const routeToIcon: Partial<Record<string, any>> = {
+  APPOINTMENTS: <ConsultationRoom />,
+  PATIENTS: <MyHealth />,
+  INBOX: <InboxIcon />,
+  'MY ACCOUNT': <Person />,
 };
 
-const routeConfigMap: Partial<Record<keyof typeof AppRoutes, NavigationRouteConfig>> = {
-  ConsultRoom: ConsultRoom,
-  HealthRecords: HealthRecords,
-  Medicine: Medicine,
-  MyAccount: MyAccount,
+const routeConfigMap: Partial<Record<string, NavigationRouteConfig>> = {
+  APPOINTMENTS: Appointments,
+  PATIENTS: Patients,
+  INBOX: Inbox,
+  'MY ACCOUNT': MyAccount,
 };
 
 export const TabBar = createBottomTabNavigator(routeConfigMap, {
@@ -28,7 +27,16 @@ export const TabBar = createBottomTabNavigator(routeConfigMap, {
     tabBarIcon: () => routeToIcon[navigation.state.routeName as AppRoute],
   }),
   tabBarOptions: {
-    activeTintColor: theme.colors.TAB_BAR_ACTIVE_TINT_COLOR,
-    inactiveTintColor: theme.colors.TAB_BAR_INACTIVE_TINT_COLOR,
+    activeBackgroundColor: theme.colors.TAB_BAR_ACTIVE_BG_COLOR,
+    activeTintColor: theme.colors.TAB_BAR_ACTIVE_TEXT_COLOR,
+    inactiveTintColor: theme.colors.TAB_BAR_INACTIVE_TEXT_COLOR,
+    labelStyle: {
+      opacity: 0.6,
+      ...theme.fonts.IBMPlexSansSemiBold(7),
+      letterSpacing: 0.5,
+      marginBottom: 7,
+      marginTop: 7,
+      textAlign: 'center',
+    },
   },
 });
