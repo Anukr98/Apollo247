@@ -5,8 +5,11 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rm -rf dist/* && tsc --project . && create-index dist && cp dist/index.js dist/index.d.ts",
+    "start": "npm run build && tsc --project . -w",
+    "format": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
+    "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
-    "start": "npm run build && tsc --project . -w"
+    "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix"
   },
   "peerDependencies": {
     "react": "16.8.6"
@@ -24,6 +27,7 @@
     "eslint-plugin-react": "^7.13.0",
     "eslint-plugin-react-hooks": "^1.6.0",
     "eslint-plugin-react-native": "^3.7.0",
+    "prettier": "^1.18.2",
     "react": "16.8.6",
     "react-native": "0.59.9",
     "typescript": "^3.5.2"

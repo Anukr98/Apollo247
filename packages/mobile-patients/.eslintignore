@@ -6,3 +6,5 @@ android/app/google-services.json
 android/.gradle
 ios/build
 ios/*/Images*
+src/graphql/schema.json
+src/graphql/types
