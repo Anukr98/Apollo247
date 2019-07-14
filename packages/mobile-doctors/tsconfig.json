@@ -16,23 +16,13 @@
     "resolveJsonModule": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "lib": [
-      "es5",
-      "es6"
-    ],
+    "lib": ["es5", "es6"],
     "paths": {
-      "app/*": [
-        "./*"
-      ]
+      "app/*": ["./*"]
     },
     "esModuleInterop": true,
     "jsx": "react",
     "target": "esnext"
   },
-  "exclude": [
-    "node_modules",
-    "babel.config.js",
-    "metro.config.js",
-    "jest.config.js"
-  ]
+  "exclude": ["node_modules", "babel.config.js", "metro.config.js", "jest.config.js"]
 }

@@ -8,9 +8,10 @@
   "scripts": {
     "start": "npm run apollo:codegen:watch & webpack-dev-server",
     "build": "webpack",
+    "format": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
-    "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
     "apollo:download": "apollo schema:download ./src/graphql/schema.json --endpoint=http://api-gateway:${API_GATEWAY_PORT}/graphql",
     "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./src/graphql/schema.json --target=typescript --queries=./src/graphql/**.ts",
     "apollo:codegen:watch": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./src/graphql/schema.json --target=typescript --queries=./src/graphql/**.ts --watch"

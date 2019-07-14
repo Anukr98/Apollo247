@@ -28,7 +28,7 @@ pipeline {
         
          stage("Syntax Check") {
             steps {
-                sh "npm run format:check"
+                sh "npm run format"
             }
             
         }

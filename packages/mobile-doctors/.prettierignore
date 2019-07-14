@@ -1,3 +1,4 @@
+dist
 node_modules
 .npm-cache
 package-lock.json
@@ -6,3 +7,5 @@ android/app/google-services.json
 android/.gradle
 ios/build
 ios/*/Images*
+src/graphql/types
+src/graphql/schema.json

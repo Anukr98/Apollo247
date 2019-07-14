@@ -58,7 +58,7 @@ const hasAccess: Resolver<any, { mobileNumber: string }> = async (
   parent,
   args
 ): Promise<Boolean> => {
-  let authorized = DoctorsData.find((item) => {
+  const authorized = DoctorsData.find((item) => {
     return item.mobileNumber === args.mobileNumber;
   });
   return isUndefined(authorized) ? false : true;
@@ -98,7 +98,7 @@ const getDoctorProfile: Resolver<any, { mobileNumber: string }> = async (
   parent,
   args
 ): Promise<DoctorProfile> => {
-  let doctor = DoctorsData.find((item) => {
+  const doctor = DoctorsData.find((item) => {
     return item.mobileNumber === args.mobileNumber;
   });
   return <DoctorProfile>doctor;
