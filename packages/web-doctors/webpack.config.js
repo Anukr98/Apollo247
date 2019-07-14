@@ -72,6 +72,10 @@ module.exports = {
         test: /\.(png|jpg|jpeg|svg|gif)$/,
         use: [urlLoader],
       },
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader']
+      }
     ],
   },
 
@@ -81,8 +85,8 @@ module.exports = {
     alias:
       isLocal || isDevelopment
         ? {
-            'react-dom': '@hot-loader/react-dom',
-          }
+          'react-dom': '@hot-loader/react-dom',
+        }
         : undefined,
   },
 
@@ -96,21 +100,21 @@ module.exports = {
   devServer:
     isTest || isLocal || isDevelopment
       ? {
-          publicPath: '/', // URL path where the webpack files are served from
-          contentBase: distDir, // A directory to serve files non-webpack files from (Absolute path)
-          host: '0.0.0.0',
-          port: process.env.WEB_CLIENT_PORT,
-          disableHostCheck: true,
-          hot: true,
-          inline: true,
-          historyApiFallback: true,
-          // We have to poll for changes bc we're running inside a docker container :(
-          watchOptions: {
-            aggregateTimeout: 300,
-            poll: 1000,
-            ignored: [/node_modules([\\]+|\/)+(?!@aph)/],
-          },
-        }
+        publicPath: '/', // URL path where the webpack files are served from
+        contentBase: distDir, // A directory to serve files non-webpack files from (Absolute path)
+        host: '0.0.0.0',
+        port: process.env.WEB_CLIENT_PORT,
+        disableHostCheck: true,
+        hot: true,
+        inline: true,
+        historyApiFallback: true,
+        // We have to poll for changes bc we're running inside a docker container :(
+        watchOptions: {
+          aggregateTimeout: 300,
+          poll: 1000,
+          ignored: [/node_modules([\\]+|\/)+(?!@aph)/],
+        },
+      }
       : undefined,
 
   plugins,

@@ -1,24 +1,21 @@
 import 'reflect-metadata';
-import _merge from 'lodash/merge';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
 import { createConnection } from 'typeorm';
 import { Patient } from 'profiles-service/entity/patient';
 import { patientTypeDefs, patientResolvers } from 'profiles-service/resolvers/patientResolvers';
+import { GatewayContext, GatewayHeaders } from 'api-gateway';
 
-export interface Context {
-  firebaseUid: any;
-  mobileNumber: any;
-}
+export interface ProfilesServiceContext extends GatewayContext {}
 
 export type Resolver<Parent = any, Args = any> = (
   parent: Parent,
   args: Args,
-  context: Context
+  context: ProfilesServiceContext
 ) => any;
 
 (async () => {
-  const dbConn = createConnection({
+  await createConnection({
     entities: [Patient],
     type: 'postgres',
     host: 'profiles-db',
@@ -28,22 +25,23 @@ export type Resolver<Parent = any, Args = any> = (
     database: `profiles_${process.env.NODE_ENV}`,
     logging: true,
     synchronize: true,
+  }).catch((error) => {
+    throw new Error(error);
   });
-
-  await Promise.all([dbConn]);
-
-  const context: Context = { firebaseUid: '', mobileNumber: '' };
 
   const server = new ApolloServer({
     context: ({ req }) => {
-      context.mobileNumber = req.headers.mobilenumber;
-      context.firebaseUid = req.headers.firebaseuid;
+      const headers = req.headers as GatewayHeaders;
+      const context: ProfilesServiceContext = {
+        mobileNumber: headers.mobilenumber,
+        firebaseUid: headers.firebaseuid,
+      };
       return context;
     },
     schema: buildFederatedSchema([
       {
         typeDefs: patientTypeDefs,
-        resolvers: _merge(patientResolvers),
+        resolvers: patientResolvers,
       },
     ]),
   });

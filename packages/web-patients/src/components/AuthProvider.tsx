@@ -6,11 +6,7 @@ import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import { PATIENT_SIGN_IN } from 'graphql/profiles';
-import {
-  PatientSignIn,
-  PatientSignInVariables,
-  PatientSignIn_patientSignIn_patients,
-} from 'graphql/types/PatientSignIn';
+import { PatientSignIn, PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn';
 import { apiRoutes } from 'helpers/apiRoutes';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
@@ -192,9 +188,9 @@ export const AuthProvider: React.FC = (props) => {
 
         setIsSigningIn(true);
         const [signInResult, signInError] = await wait(
-          apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
+          apolloClient.mutate<PatientSignIn>({
             mutation: PATIENT_SIGN_IN,
-            variables: { jwt },
+            variables: {},
           })
         );
         if (signInError || !signInResult.data || !signInResult.data.patientSignIn.patients) {

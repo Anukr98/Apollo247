@@ -85,7 +85,7 @@ export const patientTypeDefs = gql`
   }
 
   extend type Mutation {
-    patientSignIn(jwt: String): PatientSignInResult!
+    patientSignIn: PatientSignInResult!
     updatePatient(patientInput: UpdatePatientInput): UpdatePatientResult!
   }
 `;
@@ -122,7 +122,7 @@ async function updateEntity<E extends BaseEntity>(
 
 const getPatients = () => ({ patients: [] });
 
-const patientSignIn: Resolver<any, { jwt: string }> = async (
+const patientSignIn: Resolver<any> = async (
   parent,
   args,
   { firebaseUid, mobileNumber }
