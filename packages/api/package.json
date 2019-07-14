@@ -5,9 +5,9 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
-    "start:api-gateway": "webpack --config webpack.config-api-gateway.js",
-    "start:profiles-service": "webpack --config webpack.config-profiles-service.js",
-    "start:doctors-service": "webpack --config webpack.config-doctors-service.js",
+    "start:api-gateway": "webpack --config webpack.config.api-gateway.js",
+    "start:profiles-service": "webpack --config webpack.config.profiles-service.js",
+    "start:doctors-service": "webpack --config webpack.config.doctors-service.js",
     "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
