@@ -138,7 +138,9 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
     <ProfileTabHeader
       title={headerContent[tabIndex].heading(profileObject.firstName)}
       description={headerContent[tabIndex].description}
-      tabs={headerContent.map((content) => content.tab)}
+      tabs={(profileObject.isStarDoctor ? headerContent : [headerContent[0], headerContent[1]]).map(
+        (content) => content.tab
+      )}
       activeTabIndex={tabIndex}
     />
   );
@@ -146,7 +148,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
     tabIndex == 0 ? (
       <Profile profileObject={profileObject} />
     ) : tabIndex == 1 ? (
-      <Availability />
+      <Availability profileData={profileObject} />
     ) : (
       <Fees />
     );

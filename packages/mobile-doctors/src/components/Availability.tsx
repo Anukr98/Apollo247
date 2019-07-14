@@ -1,3 +1,4 @@
+import { ProfileData } from 'app/src/components/ProfileSetup';
 import { theme } from 'app/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -55,30 +56,38 @@ const styles = StyleSheet.create({
   },
 });
 
-export const Availability: React.FC = () => {
+export interface AvailabilityProps {
+  profileData: ProfileData;
+}
+
+export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
   const [consultationType, setConsultationType] = useState({ physical: false, online: false });
   return (
     <View style={styles.container}>
-      <SquareCardWithTitle title="Consultation Type" containerStyle={{ marginTop: 16 }}>
-        <Text style={styles.consultDescText}>What type of consults will you be available for?</Text>
-        <View style={styles.consultTypeSelection}>
-          <SelectableButton
-            containerStyle={{ marginRight: 20 }}
-            onChange={(isChecked) => {
-              setConsultationType({ ...consultationType, physical: isChecked });
-            }}
-            title="Physical"
-            isChecked={consultationType.physical}
-          />
-          <SelectableButton
-            onChange={(isChecked) => {
-              setConsultationType({ ...consultationType, online: isChecked });
-            }}
-            title="Online"
-            isChecked={consultationType.online}
-          />
-        </View>
-      </SquareCardWithTitle>
+      {profileData.isStarDoctor ? (
+        <SquareCardWithTitle title="Consultation Type" containerStyle={{ marginTop: 16 }}>
+          <Text style={styles.consultDescText}>
+            What type of consults will you be available for?
+          </Text>
+          <View style={styles.consultTypeSelection}>
+            <SelectableButton
+              containerStyle={{ marginRight: 20 }}
+              onChange={(isChecked) => {
+                setConsultationType({ ...consultationType, physical: isChecked });
+              }}
+              title="Physical"
+              isChecked={consultationType.physical}
+            />
+            <SelectableButton
+              onChange={(isChecked) => {
+                setConsultationType({ ...consultationType, online: isChecked });
+              }}
+              title="Online"
+              isChecked={consultationType.online}
+            />
+          </View>
+        </SquareCardWithTitle>
+      ) : null}
       <SquareCardWithTitle title="Consultation Hours" containerStyle={{ marginTop: 16 }}>
         <View style={[theme.viewStyles.whiteRoundedCornerCard, { marginTop: 16 }]}>
           <View style={styles.rowSpaceBetween}>
