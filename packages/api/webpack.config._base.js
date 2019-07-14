@@ -2,26 +2,12 @@ const path = require('path');
 const process = require('process');
 const nodeExternals = require('webpack-node-externals');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const FilterWarningsPlugin = require('webpack-filter-warnings-plugin');
+const NodemonPlugin = require('nodemon-webpack-plugin');
 const webpack = require('webpack');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
 const plugins = [
-  new FilterWarningsPlugin({
-    exclude: [
-      /mongodb/,
-      /mssql/,
-      /mysql/,
-      /mysql2/,
-      /oracledb/,
-      /pg-native/,
-      /pg-query-stream/,
-      /redis/,
-      /sqlite3/,
-    ],
-  }),
-  new CleanWebpackPlugin(),
   new webpack.DefinePlugin(
     [
       'NODE_ENV',
@@ -38,6 +24,8 @@ const plugins = [
       {}
     )
   ),
+  new CleanWebpackPlugin(),
+  new NodemonPlugin(),
 ];
 
 const tsLoader = { loader: 'awesome-typescript-loader' };
@@ -50,12 +38,6 @@ module.exports = {
   mode: isProduction ? 'production' : 'development',
 
   context: path.resolve(__dirname, 'src'),
-
-  // Specify via command line
-  // entry: {
-  //   'api-gateway': 'src/api-gateway.ts',
-  //   'profiles-service': 'src/profiles-service/profiles-service.ts',
-  // },
 
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -77,7 +59,7 @@ module.exports = {
     modules: [path.join(__dirname, 'src'), path.resolve(__dirname, 'node_modules')],
   },
 
-  watch: false, // Turn on via --watch from the command line
+  watch: true,
   watchOptions: {
     aggregateTimeout: 300,
     poll: 1000,
