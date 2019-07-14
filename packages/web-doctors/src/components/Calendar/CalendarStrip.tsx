@@ -17,7 +17,7 @@ import {
 
 const useStyles = makeStyles({
   float: {
-    display: "inline-block"
+    display: "inline-block",
   },
   container: {
     display: "flex",
@@ -25,8 +25,48 @@ const useStyles = makeStyles({
     "justify-content": "space-between"
   },
   daysList: {
-    width: "80%"
-  }
+    width: '70%',
+    display: 'inline-block',
+    verticalAlign: 'middle',
+    '& li': {
+      width: '14%',
+      padding: '10px 0 10px 0',
+      '&.highlight': {
+        backgroundColor: '#02475b',
+        color: '#fff',
+      },
+    }
+  },
+  weekView: {
+    backgroundColor: '#fff',
+    borderRadius: '10px',
+    width: '86%',
+    margin: 'auto',
+    padding: '0 15px',
+    textAlign: 'center',
+  },
+  monthPopup: {
+    fontSize: 21,
+    display: 'inline-block',
+    width: '15%',
+  },
+  prevBtn: {
+    width: '7%',
+    display: 'inline-block',
+    fontWeight: 600,
+    fontSize: 25,
+    color: '#658f9b',
+    cursor: 'pointer',
+
+  },
+  nextBtn: {
+    width: '7%',
+    display: 'inline-block',
+    fontWeight: 600,
+    fontSize: 25,
+    color: '#658f9b',
+    cursor: 'pointer',
+  },
 });
 
 interface Props {
@@ -92,19 +132,19 @@ export const CalendarStrip: React.FC<Props> = (props) => {
   }
 
   return (
-    <div className={classes.container}>
+    <div className={classes.weekView}>
       <MonthList
-        classes={classes.float}
+        classes={classes.monthPopup}
         month={month}
         onChange={onMonthSelect}
       />
-      <div className={classes.float} onClick={previous}>Previous</div>
+      <div className={classes.prevBtn} onClick={previous} > &lt; </div>
       <Days
         classes={classes.daysList}
         date={date}
         handler={dayClickHandler}
       />
-      <div className={classes.float} onClick={next}>Next</div>
+      <div className={classes.nextBtn} onClick={next}> > </div>
     </div>
   );
 };

@@ -8,6 +8,7 @@ import {
   getDay,
   isToday
 } from 'date-fns';
+import { fontSize } from '@material-ui/system';
 
 const days: Array<string> = [
   'sun',
@@ -33,7 +34,9 @@ const useStyles = makeStyles({
     display: "block"
   },
   date: {
-    display: "block"
+    display: "block",
+    fontSize: 22,
+    fontWeight: 500,
   }
 });
 
@@ -58,7 +61,7 @@ export const Days: React.FC<Props> = (props) => {
     <div className={props.classes}>
       <ul className={classes.reset}>
         {
-          range.map((date, idx) => <li className={classes.days} key={idx} onClick={e => props.handler(e, date)}>
+          range.map((date, idx) => <li className={classes.days + ((isToday(date)) ? ' highlight' : '')} key={idx} onClick={e => props.handler(e, date)}>
             <span className={classes.day}>{isToday(date) ? 'today' : days[getDay(date)]}</span>
             <span className={classes.date}>{getDate(date)}</span>
           </li>)
