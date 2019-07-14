@@ -11,7 +11,7 @@ import {
   PrismGetUsersResponse,
 } from 'types/prism';
 import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/aphErrorMessages';
+import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 
 export const patientTypeDefs = gql`
   enum Gender {
