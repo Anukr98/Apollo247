@@ -12,7 +12,7 @@ const distDir = path.resolve(__dirname, 'dist');
 
 const plugins = [
   new webpack.DefinePlugin(
-    ['NODE_ENV', 'WEB_CLIENT_PORT', 'API_GATEWAY_PORT', 'FIREBASE_PROJECT_ID'].reduce(
+    ['NODE_ENV', 'WEB_DOCTORS_PORT', 'API_GATEWAY_PORT', 'FIREBASE_PROJECT_ID'].reduce(
       (result, VAR) => ({
         ...result,
         [`process.env.${VAR}`]: JSON.stringify(process.env[VAR].trim()),
