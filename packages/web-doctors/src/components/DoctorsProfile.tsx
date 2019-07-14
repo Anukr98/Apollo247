@@ -84,12 +84,15 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
     variables: { mobileNumber: '1234567890' },
   });
 
-  if (loading) console.log('loading');
-  if (error) console.log('Error');
-  if (data) console.log('data', data);
   function handleChange(event, newValue) {
     setValue(newValue);
   }
+  const proceedHadler = () => {
+    setValue(value + 1);
+  };
+  if (loading) console.log('loading');
+  if (error) console.log('Error');
+  //if (data) console.log('data', data);
   return (
     <div className={classes.profile}>
       <div className={classes.headerSticky}>
@@ -98,9 +101,13 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
         </div>
       </div>
       <div className={classes.container}>
+      {!!data.getDoctorProfile && (
+      <div>
         <div className={classes.tabHeading}>
           <Typography variant="h1">
-            <span>hi dr. rao!</span>
+            <span>
+              hi dr. {`${data.getDoctorProfile.firstName} ${data.getDoctorProfile.lastName}`}!
+            </span>
           </Typography>
           <p>
             It’s great to have you join us! <br /> Here’s what your patients see when they view your
@@ -115,26 +122,41 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
             onChange={handleChange}
           >
             <Tab label="Profile" />
-            <Tab label="Availability" />
-            <Tab label="Fees" />
+            <Tab label="Availability" disabled={value < 1 ? true : false} />
+            <Tab label="Fees" disabled={value < 2 ? true : false} />
           </Tabs>
         </AppBar>
         {value === 0 && (
           <TabContainer>
-            <DoctorProfileTab />
+            {!!data.getDoctorProfile && (
+              <DoctorProfileTab
+                values={data.getDoctorProfile}
+                proceedHadler={() => proceedHadler}
+                key={1}
+              />
+            )}
           </TabContainer>
         )}
         {value === 1 && (
           <TabContainer>
-            <AvailabilityTab />
+            {!!data.getDoctorProfile && (
+              <AvailabilityTab
+                values={data.getDoctorProfile}
+                proceedHadler={() => proceedHadler}
+                key={2}
+              />
+            )}
           </TabContainer>
         )}
         {value === 2 && (
           <TabContainer>
-            <FeesTab />
+            {!!data.getDoctorProfile && (
+              <FeesTab values={data.getDoctorProfile} proceedHadler={() => proceedHadler} key={3} />
+            )}
           </TabContainer>
         )}
       </div>
+      </div></div>)}
     </div>
   );
 };

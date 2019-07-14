@@ -1,18 +1,11 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React from 'react';
+import React, { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
-import MenuItem from '@material-ui/core/MenuItem';
-import { AphSelect } from '@aph/web-ui-components';
-import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
-import _isEmpty from 'lodash/isEmpty';
-import _startCase from 'lodash/startCase';
-import _toLower from 'lodash/lowerCase';
-import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
-import { useAuth } from 'hooks/authHooks';
+import StarDoctorSearch from './StarDoctorSearch';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -99,6 +92,18 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: '30px',
       marginRight: '10px',
     },
+    addStarDoctor: {
+      borderRadius: 10,
+      backgroundColor: theme.palette.primary.contrastText,
+      padding: '10px',
+      position: 'relative',
+      paddingLeft: '10px',
+      minHeight: '100px',
+      flexGrow: 1,
+      boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
+      marginBottom: '30px',
+      marginRight: '10px',
+    },
     saveButton: {
       minWidth: '300px',
       marginTop: '20px',
@@ -117,15 +122,57 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
-    btmContainer: {
+    btnContainer: {
       borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
       marginTop: '30px',
     },
   };
 });
 
-export const DoctorProfileTab: React.FC = () => {
+interface Props {
+  values: any;
+  proceedHadler: () => void;
+}
+
+export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => {
   const classes = useStyles();
+  const [data, setData] = useState(values);
+  const [showAddDoc, setShowAddDoc] = useState(false);
+  function addDoctorHadler(obj) {
+    if (obj.label) {
+      setData({ ...data, starDoctorTeam: data.starDoctorTeam.concat(obj) });
+      setShowAddDoc(false);
+    }
+  }
+  const starDocNumber = data.starDoctorTeam.length;
+  const starDoctors = data.starDoctorTeam.map((item, index) => {
+    return (
+      <Grid item lg={4} sm={6} xs={12} key={index.toString()}>
+        <div className={classes.tabContentStarDoctor}>
+          <div className={classes.starDoctors}>
+            <img alt="" src={require('images/doctor-profile.jpg')} className={classes.profileImg} />
+          </div>
+          <Typography variant="h4">
+            Dr. {item.firstName} {item.lastName}
+          </Typography>
+          <Typography variant="h6">
+            GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
+          </Typography>
+          <Typography variant="h5">
+            MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+          </Typography>
+        </div>
+      </Grid>
+    );
+  });
+
+  const clinicsList = data.clinicsList.map((item, index) => {
+    return (
+      <Typography variant="h3" key={index.toString()}>
+        {item.name}, {item.location}
+      </Typography>
+    );
+  });
 
   return (
     <div className={classes.ProfileContainer}>
@@ -141,9 +188,11 @@ export const DoctorProfileTab: React.FC = () => {
                   className={classes.bigAvatar}
                 />
               </div>
-              <Typography variant="h4">Dr. Simran Rai</Typography>
+              <Typography variant="h4">
+                Dr. {data.firstName} {data.lastName}
+              </Typography>
               <Typography variant="h6">
-                GENERAL PHYSICIAN <span> | </span> <span> 7YRS </span>{' '}
+                {data.speciality} <span> | </span> <span> {data.experience}YRS </span>{' '}
               </Typography>
             </Paper>
           </Grid>
@@ -152,39 +201,37 @@ export const DoctorProfileTab: React.FC = () => {
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Education</Typography>
-                  <Typography variant="h3">MS (Surgery), MBBS (Internal Medicine)</Typography>
+                  <Typography variant="h3">{data.education}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Awards</Typography>
-                  <Typography variant="h3">Dr. B.C.Roy Award (2009)</Typography>
+                  <Typography variant="h3">{data.awards}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Speciality</Typography>
-                  <Typography variant="h3">Specialization 1, Specialization 2</Typography>
+                  <Typography variant="h3">{data.services}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Speaks</Typography>
-                  <Typography variant="h3">English, Telugu, Hindi</Typography>
+                  <Typography variant="h3">{data.languages}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Services</Typography>
-                  <Typography variant="h3">Consultation, Surgery, Physio</Typography>
+                  <Typography variant="h3">{data.services}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">In-person Consult Location</Typography>
-                  <Typography variant="h3">
-                    20 Orchard Avenue, Hiranandani, Powai, Mumbai 400076
-                  </Typography>
+                  {clinicsList}
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
@@ -197,53 +244,43 @@ export const DoctorProfileTab: React.FC = () => {
           </Grid>
         </Grid>
       </div>
-      <Typography variant="h2">Your Star Doctors Team (2)</Typography>
-      <Grid container alignItems="flex-start" spacing={0}>
-        <Grid item lg={4} sm={6} xs={12}>
-          <div className={classes.tabContentStarDoctor}>
-            <div className={classes.starDoctors}>
-              <img
-                alt=""
-                src={require('images/doctor-profile.jpg')}
-                className={classes.profileImg}
-              />
-            </div>
-            <Typography variant="h4">Dr. Simran Rai</Typography>
-            <Typography variant="h6">
-              GENERAL PHYSICIAN <span> | </span> <span> 7YRS </span>{' '}
-            </Typography>
-            <Typography variant="h5">
-              MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
-            </Typography>
+      {!!data.isStarDoctor && (
+        <div>
+          <Typography variant="h2">Your Star Doctors Team ({starDocNumber})</Typography>
+          <Grid container alignItems="flex-start" spacing={0}>
+            {starDoctors}
+            {!!showAddDoc && (
+              <Grid item lg={4} sm={6} xs={12}>
+                <div className={classes.addStarDoctor}>
+                  <Typography variant="h5">
+                    Add doctor to your team
+                    <StarDoctorSearch addDoctorHadler={addDoctorHadler} isReset={true} />
+                  </Typography>
+                </div>
+              </Grid>
+            )}
+          </Grid>
+          <div className={classes.addDocter}>
+            <AphButton
+              variant="contained"
+              color="primary"
+              classes={{ root: classes.btnAddDoctor }}
+              onClick={(e) => setShowAddDoc(!showAddDoc)}
+            >
+              + ADD DOCTOR
+            </AphButton>
           </div>
-        </Grid>
-        <Grid item lg={4} sm={6} xs={12}>
-          <div className={classes.tabContentStarDoctor}>
-            <div className={classes.starDoctors}>
-              <img
-                alt=""
-                src={require('images/doctor-profile.jpg')}
-                className={classes.profileImg}
-              />
-            </div>
-            <Typography variant="h4">Dr. Rakhi Sharma</Typography>
-            <Typography variant="h6">
-              GENERAL PHYSICIAN <span> | </span> <span> 7YRS </span>{' '}
-            </Typography>
-            <Typography variant="h5">
-              MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
-            </Typography>
-          </div>
-        </Grid>
-      </Grid>
-      <div className={classes.addDocter}>
-        <AphButton variant="contained" color="primary" classes={{ root: classes.btnAddDoctor }}>
-          + ADD DOCTOR
-        </AphButton>
-      </div>
-      <Grid container alignItems="flex-start" spacing={0} className={classes.btmContainer}>
+        </div>
+      )}
+
+      <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
         <Grid item lg={12} sm={12} xs={12}>
-          <AphButton variant="contained" color="primary" classes={{ root: classes.saveButton }}>
+          <AphButton
+            variant="contained"
+            color="primary"
+            classes={{ root: classes.saveButton }}
+            onClick={proceedHadler()}
+          >
             SAVE AND PROCEED
           </AphButton>
         </Grid>
