@@ -137,16 +137,22 @@ export const HeroBanner: React.FC = () => {
               }}
               classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
             >
-              {allCurrentPatients.map((patient) => (
-                <MenuItem
-                  selected={patient.id === currentPatient.id}
-                  value={patient.id}
-                  classes={{ selected: classes.menuSelected }}
-                  key={patient.id}
-                >
-                  {patient.firstName}
-                </MenuItem>
-              ))}
+              {allCurrentPatients.map((patient) => {
+                const isSelected = patient.id === currentPatient.id;
+                const name = isSelected
+                  ? (patient.firstName || '').toLocaleLowerCase()
+                  : patient.firstName || '';
+                return (
+                  <MenuItem
+                    selected={isSelected}
+                    value={patient.id}
+                    classes={{ selected: classes.menuSelected }}
+                    key={patient.id}
+                  >
+                    {name}
+                  </MenuItem>
+                );
+              })}
               <MenuItem classes={{ selected: classes.menuSelected }}>
                 <AphButton color="primary" classes={{ root: classes.addMemberBtn }}>
                   Add Member
