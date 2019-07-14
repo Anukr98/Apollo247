@@ -27,7 +27,7 @@
       "post-checkout": "run-if-changed",
       "post-merge": "run-if-changed",
       "post-rewrite": "run-if-changed",
-      "pre-commit": "lerna run format:fix"
+      "pre-push": "lerna run format:fix"
     }
   },
   "run-if-changed": {
