@@ -10,6 +10,7 @@ services:
       - WEB_DOCTORS_PORT=3001
     command: ash -c "
       envsubst '$$API_GATEWAY_PORT $$WEB_PATIENTS_PORT $$WEB_DOCTORS_PORT' < /etc/nginx/conf.d/local.conf.template > /etc/nginx/conf.d/local.conf &&
+      nginx -t &&
       nginx -g 'daemon off;'"
     ports:
       - 3000:3000
