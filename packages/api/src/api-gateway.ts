@@ -4,7 +4,7 @@ import { GraphQLExecutor } from 'apollo-server-core';
 import * as firebaseAdmin from 'firebase-admin';
 import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/aphErrorMessages';
+import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 
 export interface GatewayContext {
   firebaseUid: string;
