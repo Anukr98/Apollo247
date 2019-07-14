@@ -54,14 +54,14 @@ const styles = StyleSheet.create({
     paddingTop: 2,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
-    color: theme.colors.SEARCH_EDUCATION_COLOR,
+    color: '#658f9b',
   },
 
   educationTextStyles: {
     paddingTop: 12,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
-    color: theme.colors.SEARCH_EDUCATION_COLOR,
+    color: '#658f9b',
   },
   iconview: {
     flexDirection: 'row',

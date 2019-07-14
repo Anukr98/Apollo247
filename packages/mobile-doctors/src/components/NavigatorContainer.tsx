@@ -1,5 +1,4 @@
 import { Appointments } from 'app/src/components/Appointments';
-import { FeeTab } from 'app/src/components/FeeTab';
 import { Inbox } from 'app/src/components/Inbox';
 //import { SplashScreen } from 'app/src/components/SplashScreen';
 import { LandingPage } from 'app/src/components/LandingPage';
@@ -10,8 +9,9 @@ import { Onboarding } from 'app/src/components/Onboarding';
 import { OnBoardingPage } from 'app/src/components/OnBoardingPage';
 import { OTPVerification } from 'app/src/components/OTPVerification';
 import { Patients } from 'app/src/components/Patients';
-import { ProfilePage } from 'app/src/components/ProfilePage';
+import { ProfileSetup } from 'app/src/components/ProfileSetup';
 import { TabBar } from 'app/src/components/TabBar';
+import { TransitionPage } from 'app/src/components/TransitionPage';
 import {
   createAppContainer,
   createStackNavigator,
@@ -32,8 +32,8 @@ export enum AppRoutes {
   LandingPage = 'LandingPage',
   OnBoardingPage = 'OnBoardingPage',
   NeedHelp = 'NeedHelp',
-  ProfilePage = 'ProfilePage',
-  FeeTab = 'FeeTab',
+  ProfileSetup = 'ProfileSetup',
+  TransitionPage = 'TransitionPage',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -82,11 +82,11 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.NeedHelp]: {
     screen: NeedHelp,
   },
-  [AppRoutes.ProfilePage]: {
-    screen: ProfilePage,
+  [AppRoutes.ProfileSetup]: {
+    screen: ProfileSetup,
   },
-  [AppRoutes.FeeTab]: {
-    screen: FeeTab,
+  [AppRoutes.TransitionPage]: {
+    screen: TransitionPage,
   },
 };
 

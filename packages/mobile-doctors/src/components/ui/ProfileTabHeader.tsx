@@ -111,7 +111,7 @@ export const ProfileTabHeader: React.FC<ProfileTabHeaderProps> = (props) => {
           <Text style={[styles.descriptionStyle, descriptionStyle]}>{description}</Text>
         )}
       </View>
-      <View style={styles.statusBarline}></View>
+      {tabs && <View style={styles.statusBarline}></View>}
       <View style={styles.tabContainer}>
         {tabs &&
           tabs.map((tab, i) => {
