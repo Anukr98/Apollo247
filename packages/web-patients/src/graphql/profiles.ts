@@ -30,9 +30,6 @@ export const PATIENT_SIGN_IN = gql`
         uhid
         dateOfBirth
       }
-      errors {
-        messages
-      }
     }
   }
 `;

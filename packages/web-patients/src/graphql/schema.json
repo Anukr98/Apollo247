@@ -817,105 +817,11 @@
             },
             "isDeprecated": false,
             "deprecationReason": null
-          },
-          {
-            "name": "errors",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "OBJECT",
-              "name": "Error",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
           }
         ],
         "inputFields": null,
         "interfaces": [],
         "enumValues": null,
-        "possibleTypes": null
-      },
-      {
-        "kind": "OBJECT",
-        "name": "Error",
-        "description": null,
-        "fields": [
-          {
-            "name": "messages",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "LIST",
-                "name": null,
-                "ofType": {
-                  "kind": "NON_NULL",
-                  "name": null,
-                  "ofType": {
-                    "kind": "ENUM",
-                    "name": "ErrorMsgs",
-                    "ofType": null
-                  }
-                }
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          }
-        ],
-        "inputFields": null,
-        "interfaces": [],
-        "enumValues": null,
-        "possibleTypes": null
-      },
-      {
-        "kind": "ENUM",
-        "name": "ErrorMsgs",
-        "description": null,
-        "fields": null,
-        "inputFields": null,
-        "interfaces": null,
-        "enumValues": [
-          {
-            "name": "INVALID_TOKEN",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "INVALID_MOBILE_NUMBER",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "PRISM_AUTH_TOKEN_ERROR",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "PRISM_GET_USERS_ERROR",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "UPDATE_PROFILE_ERROR",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "PRISM_NO_DATA",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          }
-        ],
         "possibleTypes": null
       },
       {
@@ -1035,18 +941,6 @@
             "type": {
               "kind": "OBJECT",
               "name": "Patient",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "errors",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "OBJECT",
-              "name": "Error",
               "ofType": null
             },
             "isDeprecated": false,
