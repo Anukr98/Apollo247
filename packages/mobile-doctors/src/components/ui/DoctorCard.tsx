@@ -96,7 +96,10 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
             <View style={styles.iconview}>
               <Text style={styles.doctorNameStyles}>{rowData.doctorName}</Text>
               <TouchableOpacity onPress={props.onPress}>
-                <Image style={styles.imageremovestyles} source={require('./icons/remove.png')} />
+                <Image
+                  style={styles.imageremovestyles}
+                  source={require('../../images/icons/remove.png')}
+                />
               </TouchableOpacity>
             </View>
 
