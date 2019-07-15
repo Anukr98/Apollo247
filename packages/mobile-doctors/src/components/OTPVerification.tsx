@@ -1,29 +1,29 @@
 import { AppRoutes } from 'app/src/components/NavigatorContainer';
+import { OkText, OkTextDisabled } from 'app/src/components/ui/Icons';
 import { OtpCard } from 'app/src/components/ui/OtpCard';
-import { BackIcon, OkText, OkTextDisabled } from 'app/src/components/ui/Icons';
+import { setLoggedIn } from 'app/src/helpers/localStorage';
 import { string } from 'app/src/strings/string';
 import { theme } from 'app/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
+  AsyncStorage,
+  Keyboard,
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator,
-  Keyboard,
-  Alert,
-  BackHandler,
-  AsyncStorage,
 } from 'react-native';
 import SmsListener from 'react-native-android-sms-listener';
-import { OTPTextView } from './ui/OTPTextView';
+import firebase from 'react-native-firebase';
+import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 import { PhoneNumberVerificationCredential } from './AuthProvider';
-import firebase from 'react-native-firebase';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { OTPTextView } from './ui/OTPTextView';
 
 const styles = StyleSheet.create({
   container: {
@@ -255,7 +255,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       .then((otpCredenntial: void) => {
         console.log('otpCredenntial', otpCredenntial);
         firebase.auth().onAuthStateChanged(async (updatedUser) => {
-          AsyncStorage.setItem('onAuthStateChanged', 'true');
+          setLoggedIn(true);
           if (updatedUser) {
             _removeFromStore();
             const token = await updatedUser!.getIdToken();
@@ -265,7 +265,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               patientSign.data.patientSignIn.errors &&
               patientSign.data.patientSignIn.errors.messages[0];
 
-            console.log('patient', patient);
             AsyncStorage.setItem('onAuthStateChanged', 'false');
 
             setTimeout(() => {

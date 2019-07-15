@@ -1,6 +1,6 @@
 import { Appointments } from 'app/src/components/Appointments';
 import { Inbox } from 'app/src/components/Inbox';
-//import { SplashScreen } from 'app/src/components/SplashScreen';
+import { SplashScreen } from 'app/src/components/SplashScreen';
 import { LandingPage } from 'app/src/components/LandingPage';
 import { Login } from 'app/src/components/Login';
 import { MyAccount } from 'app/src/components/MyAccount';
@@ -70,9 +70,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.MyAccount]: {
     screen: MyAccount,
   },
-  // [AppRoutes.SplashScreen]: {
-  //   screen: SplashScreen,
-  // },
+  [AppRoutes.SplashScreen]: {
+    screen: SplashScreen,
+  },
   [AppRoutes.LandingPage]: {
     screen: LandingPage,
   },
@@ -91,7 +91,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
 };
 
 const stackConfig: StackNavigatorConfig = {
-  initialRouteName: AppRoutes.LandingPage,
+  initialRouteName: AppRoutes.SplashScreen,
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   transitionConfig: () => {

@@ -10,6 +10,7 @@ import { theme } from 'app/src/theme/theme';
 import React, { useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { setProfileFlowDone } from 'app/src/helpers/localStorage';
 
 const styles = StyleSheet.create({
   footerButtonsContainer: {
@@ -158,7 +159,9 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       if (activeTabIndex < tabsCount - 1) {
         setActiveTabIndex(activeTabIndex + 1);
       } else {
-        props.navigation.navigate(AppRoutes.TransitionPage);
+        setProfileFlowDone(true).finally(() => {
+          props.navigation.navigate(AppRoutes.TransitionPage);
+        });
       }
     };
     return (
