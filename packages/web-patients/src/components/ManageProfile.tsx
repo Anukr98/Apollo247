@@ -53,9 +53,15 @@ export const ManageProfile: React.FC = (props) => {
   useEffect(() => {
     if (allPatients) {
       const isSomePatientMissingRelation = allPatients.some((p) => _isEmpty(p.relation));
-      if (isSomePatientMissingRelation) setIsPopoverOpen(true);
+      if (isSomePatientMissingRelation) {
+        // The mascotRef position has maybe not been calculated properly (or something) yet?
+        // So the popup appears, but in the wrong location. Use a setTimeout to avoid this.
+        setTimeout(() => setIsPopoverOpen(true), 0);
+      }
     }
   }, [allPatients]);
+
+  const hasExistingProfile = allPatients && allPatients.some((p) => !_isEmpty(p.uhid));
 
   return (
     <ProtectedWithLoginPopup>
@@ -83,7 +89,11 @@ export const ManageProfile: React.FC = (props) => {
             }}
             classes={{ paper: classes.bottomPopover }}
           >
-            {currentPatient && currentPatient.uhid ? <ExistingProfile /> : <NewProfile />}
+            {hasExistingProfile ? (
+              <ExistingProfile patients={allPatients!} onComplete={() => setIsPopoverOpen(false)} />
+            ) : currentPatient ? (
+              <NewProfile patient={currentPatient} onClose={() => setIsPopoverOpen(false)} />
+            ) : null}
           </Popover>
         </div>
       )}

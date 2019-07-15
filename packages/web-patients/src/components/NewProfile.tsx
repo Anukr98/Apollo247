@@ -1,13 +1,18 @@
-import { Theme, FormControl } from '@material-ui/core';
+import { Theme, FormControl, CircularProgress } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
-import { Gender } from 'graphql/types/globalTypes';
+import { Gender, Relation } from 'graphql/types/globalTypes';
 import React, { useState } from 'react';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { isNameValid, isEmailValid, isDobValid } from '@aph/universal/validators';
 import _includes from 'lodash/includes';
+import { updatePatient, updatePatientVariables } from 'graphql/types/updatePatient';
+import { Mutation } from 'react-apollo';
+import { UPDATE_PATIENT } from 'graphql/profiles';
+import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn';
+import { ProfileSuccess } from 'components/ProfileSuccess';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -86,14 +91,21 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const NewProfile: React.FC = (props) => {
+export interface NewProfileProps {
+  patient: PatientSignIn_patientSignIn_patients;
+  onClose: () => void;
+}
+
+export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const classes = useStyles();
+  const { patient } = props;
   const genders = Object.values(Gender);
-  const [firstName, setFirstName] = useState<string>('');
-  const [lastName, setLastName] = useState<string>('');
-  const [dateOfBirth, setDateOfBirth] = useState<string>('');
-  const [emailAddress, setEmailAddress] = useState<string>('');
-  const [selectedGender, setGender] = useState<string>('');
+  const [firstName, setFirstName] = useState<string>(patient.firstName || '');
+  const [lastName, setLastName] = useState<string>(patient.lastName || '');
+  const [dateOfBirth, setDateOfBirth] = useState<string>(patient.dateOfBirth || '');
+  const [emailAddress, setEmailAddress] = useState<string>(patient.emailAddress || '');
+  const [selectedGender, setGender] = useState<Gender | null>(patient.gender);
+  const [showProfileSuccess, setShowProfileSuccess] = useState<boolean>(false);
 
   const submitDisabled =
     firstName.length > 2 &&
@@ -109,6 +121,10 @@ export const NewProfile: React.FC = (props) => {
   const showDobError = dateOfBirth.length > 0 && !isDobValid(dateOfBirth);
   const showEmailIdError = emailAddress.length > 0 && !isEmailValid(emailAddress);
 
+  if (showProfileSuccess) {
+    return <ProfileSuccess onSubmitClick={() => props.onClose()} />;
+  }
+
   return (
     <div className={classes.signUpPop}>
       <div className={classes.mascotIcon}>
@@ -117,8 +133,7 @@ export const NewProfile: React.FC = (props) => {
       <div className={classes.customScrollBar}>
         <div className={classes.signinGroup}>
           <Typography variant="h2">
-            welcome
-            <br /> to apollo 24/7
+            welcome <br /> to apollo 24/7
           </Typography>
           <p>Let us quickly get to know you so that we can get you the best help :)</p>
           <div className={classes.formGroup}>
@@ -128,9 +143,7 @@ export const NewProfile: React.FC = (props) => {
                 placeholder="Example, Jonathan"
                 value={firstName}
                 error={showFirstNameError}
-                onChange={(e) => {
-                  setFirstName(e.target.value);
-                }}
+                onChange={(e) => setFirstName(e.target.value)}
                 inputProps={{ maxLength: 20 }}
               />
               <FormHelperText
@@ -147,9 +160,7 @@ export const NewProfile: React.FC = (props) => {
                 placeholder="Example, Donut"
                 value={lastName}
                 error={showLastNameError}
-                onChange={(e) => {
-                  setLastName(e.target.value);
-                }}
+                onChange={(e) => setLastName(e.target.value)}
                 inputProps={{ maxLength: 20 }}
               />
               <FormHelperText
@@ -166,9 +177,7 @@ export const NewProfile: React.FC = (props) => {
                 placeholder="dd/mm/yyyy"
                 value={dateOfBirth}
                 error={showDobError}
-                onChange={(e) => {
-                  setDateOfBirth(e.target.value);
-                }}
+                onChange={(e) => setDateOfBirth(e.target.value)}
                 inputProps={{ type: 'text', maxLength: 10 }}
               />
               <FormHelperText
@@ -188,9 +197,7 @@ export const NewProfile: React.FC = (props) => {
                       variant="contained"
                       value={gender}
                       classes={selectedGender === gender ? { root: classes.btnActive } : {}}
-                      onClick={(e) => {
-                        setGender(e.currentTarget.value);
-                      }}
+                      onClick={(e) => setGender(e.currentTarget.value as Gender)}
                     >
                       {gender}
                     </AphButton>
@@ -201,28 +208,53 @@ export const NewProfile: React.FC = (props) => {
             <FormControl className={classes.formControl} fullWidth>
               <AphTextField
                 label="Email Address (Optional)"
-                placeholder="name@email.com"
+                placeholder="name@emailaddress.com"
                 value={emailAddress}
                 error={showEmailIdError}
-                onChange={(e) => {
-                  setEmailAddress(e.target.value);
-                }}
+                onChange={(e) => setEmailAddress(e.target.value)}
               />
               <FormHelperText
                 className={showEmailIdError ? classes.showMessage : classes.hideMessage}
                 component="div"
                 error={true}
               >
-                Invalid email
+                Invalid email address
               </FormHelperText>
             </FormControl>
           </div>
         </div>
       </div>
       <div className={classes.actions}>
-        <AphButton fullWidth disabled={submitDisabled} variant="contained" color="primary">
-          Submit
-        </AphButton>
+        <Mutation<updatePatient, updatePatientVariables>
+          mutation={UPDATE_PATIENT}
+          onCompleted={() => setShowProfileSuccess(true)}
+        >
+          {(mutate, { loading }) => (
+            <AphButton
+              fullWidth
+              disabled={submitDisabled}
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                mutate({
+                  variables: {
+                    patientInput: {
+                      id: patient.id,
+                      firstName: firstName,
+                      lastName: lastName,
+                      gender: selectedGender && Gender[selectedGender],
+                      dateOfBirth,
+                      emailAddress,
+                      relation: Relation.ME,
+                    },
+                  },
+                });
+              }}
+            >
+              {loading ? <CircularProgress /> : 'Submit'}
+            </AphButton>
+          )}
+        </Mutation>
       </div>
     </div>
   );
