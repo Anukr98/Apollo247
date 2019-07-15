@@ -26,11 +26,7 @@ export const useAuth = () => {
   const isSigningIn = useAuthContext().isSigningIn;
   const signOut = useAuthContext().signOut!;
 
-  const signInWithPhoneNumber = useAuthContext().signInWithPhoneNumber!;
-
   const analytics = useAnalytics();
-  const confirmResult = useAuthContext().confirmResult!;
-  const authProvider = useAuthContext().authProvider!;
   const authError = useAuthContext().authError!;
   const setAuthError = useAuthContext().setAuthError!;
   const updatePatient = useAuthContext().updatePatient!;
@@ -53,12 +49,8 @@ export const useAuth = () => {
     isSigningIn,
     signOut,
 
-    signInWithPhoneNumber,
-
     analytics,
-    confirmResult,
 
-    authProvider,
     authError,
     setAuthError,
     updatePatient,

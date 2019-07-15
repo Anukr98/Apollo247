@@ -49,8 +49,6 @@ export interface AuthContextProps<
   authError: boolean;
   setAuthError: ((authError: boolean) => void) | null;
   updatePatient: ((patientDetails: updatePatient_updatePatient_patient) => Promise<unknown>) | null;
-
-  authProvider: (() => Promise<unknown>) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -76,7 +74,6 @@ export const AuthContext = React.createContext<AuthContextProps>({
   setAuthError: null,
 
   updatePatient: null,
-  authProvider: null,
 });
 
 let apolloClient: ApolloClient<any>;
@@ -118,7 +115,7 @@ export const AuthProvider: React.FC = (props) => {
   const [isVerifyingOtp, setIsVerifyingOtp] = useState<AuthContextProps['isVerifyingOtp']>(false);
   const [verifyOtpError, setVerifyOtpError] = useState<AuthContextProps['verifyOtpError']>(false);
 
-  const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(true);
+  const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(false);
   const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
   const [authError, setAuthError] = useState<AuthContextProps['authError']>(false);
 
@@ -194,78 +191,24 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   const PatientSignIn = async () => {};
-  const authProvider = async () => {
-    // return new Promise((resolve, reject) => {
-    //   let authFlag = true;
-    //   auth.onAuthStateChanged(async (user) => {
-    //     if (authFlag) {
-    //       console.log('if ---> ');
-    //       authFlag = false;
-    //       if (user) {
-    //         const [jwt, jwtError] = await wait(user.getIdToken());
-    //         if (jwtError || !jwt) {
-    //           if (jwtError) console.error(jwtError);
-    //           setIsSigningIn(false);
-    //           setSignInError(true);
-    //           signOut();
-    //           reject(jwtError);
-    //           return;
-    //         }
-    //         if (authToken.length == 0) {
-    //           console.log('authToken ---> ', authToken);
-    //         }
-    //         setAuthToken(jwt);
-    //         console.log('authProvider authProvider me', jwt);
-    //         setIsSigningIn(true);
-    //         const [signInResult, signInError] = await wait(
-    //           apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
-    //             mutation: PATIENT_SIGN_IN,
-    //             variables: { jwt },
-    //           })
-    //         );
-    //         if (signInError || !signInResult.data || !signInResult.data.patientSignIn.patients) {
-    //           if (signInError) console.error(signInError);
-    //           setSignInError(true);
-    //           setIsSigningIn(false);
-    //           reject(signInResult);
-    //           return;
-    //         }
-    //         const patients = signInResult.data.patientSignIn.patients;
-    //         const me = patients.find((p) => p.relation === Relation.ME) || patients[0];
-    //         setAllCurrentPatients(patients);
-    //         setCurrentPatient(me);
-    //         setSignInError(false);
-    //         resolve(me);
-    //         console.log('authProvider authProvider me', me);
-    //       } else {
-    //         console.log('else ---> ');
-    //         setIsSigningIn(false);
-    //         reject();
-    //       }
-    //     } else {
-    //       console.log('else if---> ');
-    //     }
-    //   });
-    // });
-  };
 
   useEffect(() => {
     setAnalytics(firebase.analytics());
-    let authFlag = true;
+    let authStateRegistered = false;
 
     auth.onAuthStateChanged(async (user) => {
-      console.log('if ---> user', user);
-      // if (authFlag) {
-      authFlag = false;
-      console.log('authprovider');
-      if (user) {
+      console.log('authStateChanged', authStateRegistered, user);
+
+      if (user && !authStateRegistered) {
+        authStateRegistered = true;
+        console.log('fetching jwt');
         const [jwt, jwtError] = await wait(user.getIdToken());
         if (jwtError || !jwt) {
           console.log('authprovider jwtError', jwtError);
           if (jwtError) console.error(jwtError);
+          authStateRegistered = false;
           setIsSigningIn(false);
           setSignInError(true);
-          auth.signOut();
           return;
         }
         setAuthToken(jwt);
@@ -280,9 +223,10 @@ export const AuthProvider: React.FC = (props) => {
         );
         if (signInError || !signInResult.data || !signInResult.data.patientSignIn.patients) {
           if (signInError) console.error(signInError);
+          authStateRegistered = false;
           setSignInError(true);
           setIsSigningIn(false);
-          auth.signOut();
+          console.log('authprovider signInError', signInError);
           return;
         }
         const patients = signInResult.data.patientSignIn.patients;
@@ -291,13 +235,8 @@ export const AuthProvider: React.FC = (props) => {
         setCurrentPatient(me);
         setSignInError(false);
         console.log('authprovider me', me);
-      } else {
-        console.log('else ----> me');
         setIsSigningIn(false);
       }
-      // } else {
-      //   console.log('else if ----> me');
-      // }
     });
   }, []);
 
@@ -328,8 +267,6 @@ export const AuthProvider: React.FC = (props) => {
             setAuthError,
 
             updatePatient,
-
-            authProvider,
           }}
         >
           {props.children}
