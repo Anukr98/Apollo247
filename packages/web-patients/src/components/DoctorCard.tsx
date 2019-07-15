@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) => {
         top: 1,
         left: 0,
         backgroundColor: '#0087ba',
-      },      
+      },
     },
     doctorDetails: {
       paddingTop: 10,
@@ -72,7 +72,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       position: 'absolute',
       right: 0,
-      top: 0,      
+      top: 0,
     },
     availableNow: {
       backgroundColor: '#ff748e',
@@ -95,13 +95,19 @@ export const DoctorCard: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.topContent}>
-        <Avatar alt="" src={require('images/ic_placeholder.png')} className={classes.doctorAvatar} />
+        <Avatar
+          alt=""
+          src={require('images/ic_placeholder.png')}
+          className={classes.doctorAvatar}
+        />
         <div className={classes.doctorInfo}>
           <div className={`${classes.availability} ${classes.availableNow}`}>
             Available in 15 mins
           </div>
           <div className={classes.doctorName}>Dr. Gennifer Ghosh</div>
-          <div className={classes.doctorType}>General Physician <span className={classes.doctorExp}>7 YRS</span></div>
+          <div className={classes.doctorType}>
+            General Physician <span className={classes.doctorExp}>7 YRS</span>
+          </div>
           <div className={classes.doctorDetails}>
             <p>MBBS, Internal Medicine</p>
             <p>Apollo Hospitals, Jubilee Hills</p>

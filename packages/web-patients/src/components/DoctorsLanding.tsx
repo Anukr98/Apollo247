@@ -117,7 +117,10 @@ export const DoctorsLanding: React.FC = (props) => {
               <PastSearches />
               <div className={classes.sectionHeader}>Specialities</div>
               <Specialities />
-              <div className={classes.sectionHeader}><span>Matching Doctors</span><span className={classes.count}>01</span></div>
+              <div className={classes.sectionHeader}>
+                <span>Matching Doctors</span>
+                <span className={classes.count}>01</span>
+              </div>
               <Grid spacing={2} container>
                 <Grid item sm={6}>
                   <DoctorCard />

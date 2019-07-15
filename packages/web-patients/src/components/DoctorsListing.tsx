@@ -131,13 +131,13 @@ export const DoctorsListing: React.FC = (props) => {
           <div className={classes.doctorListingSection}>
             <DoctorsFilter />
             <div className={classes.searchSection}>
-              <Typography variant="h2">
-                Okay!
-              </Typography>
+              <Typography variant="h2">Okay!</Typography>
               <div className={classes.pageHeader}>
                 <div>Here are our best General Physicians</div>
                 <div className={classes.filterSection}>
-                  <AphButton className={`${classes.filterButton} ${classes.buttonActive}`}>All Consults</AphButton>
+                  <AphButton className={`${classes.filterButton} ${classes.buttonActive}`}>
+                    All Consults
+                  </AphButton>
                   <AphButton className={classes.filterButton}>Online Consult</AphButton>
                   <AphButton className={classes.filterButton}>Clinic Visit</AphButton>
                 </div>
