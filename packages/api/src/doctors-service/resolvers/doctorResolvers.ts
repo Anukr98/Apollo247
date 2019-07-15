@@ -129,13 +129,13 @@ type DoctorProfile = {
   awards: String;
   photoUrl: String;
   registrationNumber: String;
-  isProfileComplete: String;
+  isProfileComplete: Boolean;
   availableForPhysicalConsultation: Boolean;
   availableForVirtualConsultation: Boolean;
   onlineConsultationFees: String;
   physicalConsultationFees: String;
   package: String;
-  paymentDetails: String[];
+  paymentDetails: paymentDetails[];
   clinicsList: clinicsList[];
   starDoctorTeam: starDoctorTeam[];
   consultationHours: consultations[];
