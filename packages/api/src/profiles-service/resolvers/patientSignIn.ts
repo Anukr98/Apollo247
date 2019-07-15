@@ -44,62 +44,18 @@ export const patientTypeDefs = gql`
     relation: Relation
   }
 
-  type GetPatientsResult {
-    patients: [Patient!]!
-  }
-  extend type Query {
-    getPatients: GetPatientsResult
-  }
-
   type PatientSignInResult {
     patients: [Patient!]
   }
 
-  input UpdatePatientInput {
-    id: ID!
-    firstName: String
-    lastName: String
-    mobileNumber: String
-    gender: Gender
-    uhid: String
-    emailAddress: String
-    dateOfBirth: String
-    relation: Relation
-  }
-
-  type UpdatePatientResult {
-    patient: Patient
-  }
-
   extend type Mutation {
     patientSignIn: PatientSignInResult!
-    updatePatient(patientInput: UpdatePatientInput): UpdatePatientResult!
   }
 `;
 
 type PatientSignInResult = {
   patients: Patient[] | null;
 };
-
-type UpdatePatientResult = {
-  patient: Patient | null;
-};
-
-async function updateEntity<E extends BaseEntity>(
-  Entity: typeof BaseEntity,
-  id: string,
-  attrs: Partial<Omit<E, keyof BaseEntity>>
-): Promise<E> {
-  let entity: E;
-  try {
-    entity = await Entity.findOneOrFail<E>(id);
-    await Entity.update(id, attrs);
-    await entity.reload();
-  } catch (updateProfileError) {
-    throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { updateProfileError });
-  }
-  return entity;
-}
 
 const patientSignIn: Resolver<any> = async (
   parent,
@@ -178,26 +134,8 @@ const patientSignIn: Resolver<any> = async (
   return { patients };
 };
 
-type UpdatePatientInput = { patientInput: Partial<Patient> & { id: Patient['id'] } };
-const updatePatient: Resolver<any, UpdatePatientInput> = async (
-  parent,
-  { patientInput }
-): Promise<UpdatePatientResult> => {
-  const { id, ...updateAttrs } = patientInput;
-  const patient = await updateEntity<Patient>(Patient, id, updateAttrs);
-  return { patient };
-};
-
-const getPatients = () => {
-  return { patients: [] };
-};
-
 export const patientResolvers = {
-  Query: {
-    getPatients,
-  },
   Mutation: {
     patientSignIn,
-    updatePatient,
   },
 };
