@@ -1,7 +1,7 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { useCurrentPatient } from 'hooks/authHooks';
 import React from 'react';
+import _uniqueId from 'lodash/uniqueId';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -71,14 +71,12 @@ export const AppointmentHistory: React.FC = (props) => {
     },
   };
 
-  const currentPatientDetails = useCurrentPatient();
-
   return (
     <div className={classes.welcome}>
       <h1>Appointment History</h1> {/*this must be from either parent or here*/}
       {Object.values(appointments).map((appointment) => {
         return (
-          <div>
+          <div key={_uniqueId('aphistory_')}>
             <div>{appointment.appointmentDate}</div>
             <div>{appointment.appointmentTime}</div>
             <div>

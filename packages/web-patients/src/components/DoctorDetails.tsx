@@ -3,7 +3,6 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React, { useState, useRef } from 'react';
 import { useParams } from 'hooks/routerHooks';
-import _get from 'lodash/get';
 import { DoctorProfile } from 'components/DoctorProfile';
 import { DoctorClinics } from 'components/DoctorClinics';
 import { StarDoctorTeam } from 'components/StarDoctorTeam';

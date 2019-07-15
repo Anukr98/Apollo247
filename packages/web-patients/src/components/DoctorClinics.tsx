@@ -1,6 +1,7 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
+import _uniqueId from 'lodash/uniqueId';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -86,7 +87,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
 
   const clinicsMarkup = (clinicsObj) => {
     return Object.values(clinicsObj).map((clinicDetails: any) => (
-      <div key={clinicDetails.id}>
+      <div key={_uniqueId('clinic_')}>
         <div>
           <img src="https://placeimg.com/300/100/any" />
         </div>
