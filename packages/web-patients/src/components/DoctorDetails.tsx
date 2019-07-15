@@ -95,7 +95,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const params = useParams<Params>();
   const popOverRef = useRef(null);
   const doctorId = params.id;
-  const [showConsultPopup, setShowConsultPopup] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
   const [selectedDate, handleDateChange] = useState(new Date());
@@ -175,10 +174,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         </div>
       </div>
       <div className={classes.container} ref={popOverRef}>
-        <DoctorProfile
-          doctorDetails={doctorDetails}
-          showConsultPopup={(isPopoverOpen) => setIsPopoverOpen(isPopoverOpen)}
-        />
+        <DoctorProfile doctorDetails={doctorDetails} onBookConsult={() => setIsPopoverOpen(true)} />
         <DoctorClinics doctorId={doctorId} />
         <StarDoctorTeam doctorId={doctorId} />
         <AppointmentHistory />

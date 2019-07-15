@@ -67,13 +67,13 @@ export interface DoctorProfileProps {
     consultingOptions: {};
     isStarDoctor: boolean;
   };
-  showConsultPopup: (showConsultPopup: boolean) => void;
+  onBookConsult: () => void;
 }
 
 export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
   const classes = useStyles();
 
-  const { doctorDetails, showConsultPopup } = props;
+  const { doctorDetails, onBookConsult } = props;
 
   const consultingOptions = (consultingOptions) => {
     return Object.values(consultingOptions).map((consultingOption: any) => (
@@ -118,7 +118,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       <div>{consultingOptions(doctorDetails.consultingOptions)}</div>
       <AphButton
         onClick={(e) => {
-          showConsultPopup(true);
+          onBookConsult();
         }}
       >
         BOOK CONSULTATION
