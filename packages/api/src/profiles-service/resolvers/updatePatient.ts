@@ -6,7 +6,6 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 
 export const updatePatientTypeDefs = gql`
-  
   input UpdatePatientInput {
     id: ID!
     firstName: String
@@ -23,7 +22,7 @@ export const updatePatientTypeDefs = gql`
     patient: Patient
   }
 
-  extend type Mutation {    
+  extend type Mutation {
     updatePatient(patientInput: UpdatePatientInput): UpdatePatientResult!
   }
 `;
@@ -59,7 +58,6 @@ const updatePatient: Resolver<any, UpdatePatientInput> = async (
 };
 
 export const updatePatientResolvers = {
-
   Mutation: {
     updatePatient,
   },

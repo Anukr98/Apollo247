@@ -57,7 +57,6 @@ type PatientSignInResult = {
   patients: Patient[] | null;
 };
 
-
 const patientSignIn: Resolver<any> = async (
   parent,
   args,
@@ -136,8 +135,7 @@ const patientSignIn: Resolver<any> = async (
 };
 
 export const patientResolvers = {
-
   Mutation: {
-    patientSignIn
+    patientSignIn,
   },
 };

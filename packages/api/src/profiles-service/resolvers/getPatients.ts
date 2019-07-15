@@ -5,7 +5,6 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 
 export const getPatientTypeDefs = gql`
-  
   type GetPatientsResult {
     patients: [Patient!]!
   }
@@ -21,5 +20,5 @@ const getPatients = () => {
 export const getPatientResolvers = {
   Query: {
     getPatients,
-  }
+  },
 };
