@@ -5,14 +5,14 @@ import { ButtonProps } from '@material-ui/core/Button';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
-    buttonRoot: {
+    root: {
       fontSize: 13,
       fontWeight: 'bold',
       padding: '9px 13px 9px 13px',
       borderRadius: 5,
       boxShadow: '0 2px 4px 0 rgba(0,0,0, 0.2)',
     },
-    primaryBtn: {
+    textPrimary: {
       backgroundColor: theme.palette.primary.main,
       color: theme.palette.common.white,
       '&:hover': {
@@ -20,11 +20,11 @@ const useStyles = makeStyles((theme: Theme) => {
         color: theme.palette.common.white,
       },
     },
-    secondaryBtn: {
+    textSecondary: {
       backgroundColor: theme.palette.common.white,
       color: '#00b38e',
     },
-    smallBtn: {
+    sizeSmall: {
       fontSize: 12,
       fontWeight: 500,
       padding: '5px 10px',
@@ -34,17 +34,11 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 const AphButton: React.FC<ButtonProps> = (props) => {
-  const classes = useStyles({});
+  const defaultClasses = useStyles({});
+  const classes = props.classes || defaultClasses;
+
   return (
-    <Button
-      classes={{
-        root: classes.buttonRoot,
-        textSecondary: classes.secondaryBtn,
-        textPrimary: classes.primaryBtn,
-        sizeSmall: classes.smallBtn,
-      }}
-      {...props}
-    >
+    <Button {...props} classes={classes}>
       {props.children}
     </Button>
   );
