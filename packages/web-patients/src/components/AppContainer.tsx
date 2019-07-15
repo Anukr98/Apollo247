@@ -10,6 +10,9 @@ import { useAuth } from 'hooks/authHooks';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, createMuiTheme } from '@material-ui/core';
 import { AphThemeProvider, aphTheme } from '@aph/web-ui-components';
+import { DoctorDetails } from 'components/DoctorDetails';
+import { DatePicker, MuiPickersUtilsProvider, MaterialUiPickersDate } from '@material-ui/pickers';
+import DateFnsUtils from '@date-io/date-fns';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -34,6 +37,7 @@ const App: React.FC = () => {
     <div className={classes.app}>
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
       <Route exact path={clientRoutes.patients()} component={PatientsList} />
+      <Route exact path={clientRoutes.doctorDetails()} component={DoctorDetails} />
     </div>
   );
 };
@@ -45,7 +49,9 @@ const AppContainer: React.FC = () => {
     <BrowserRouter>
       <AuthProvider>
         <AphThemeProvider theme={theme}>
-          <App />
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <App />
+          </MuiPickersUtilsProvider>
         </AphThemeProvider>
       </AuthProvider>
     </BrowserRouter>
