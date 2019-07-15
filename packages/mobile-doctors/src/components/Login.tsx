@@ -1,27 +1,28 @@
 import { AppRoutes } from 'app/src/components/NavigatorContainer';
 import { Card } from 'app/src/components/ui/Card';
 import { ArrowDisabled, ArrowYellow } from 'app/src/components/ui/Icons';
+import { setOnboardingDone } from 'app/src/helpers/localStorage';
 import { string } from 'app/src/strings/string';
 import { theme } from 'app/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
+  AsyncStorage,
+  Keyboard,
+  PermissionsAndroid,
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   View,
-  ActivityIndicator,
-  Keyboard,
-  Alert,
-  PermissionsAndroid,
-  AsyncStorage,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import { useAuth } from '../hooks/authHooks';
 import SmsListener from 'react-native-android-sms-listener';
 import firebase from 'react-native-firebase';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { NavigationScreenProps } from 'react-navigation';
+import { useAuth } from '../hooks/authHooks';
 
 const styles = StyleSheet.create({
   container: {
@@ -110,14 +111,14 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<any>();
 
   useEffect(() => {
+    setOnboardingDone(true);
+  }, []);
+
+  useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
     // setVerifyingPhonenNumber(false);
     console.log('login currentUser', currentUser);
   }, [analytics, currentUser]);
-
-  useEffect(() => {
-    console.log('login Screen');
-  }, []);
 
   useEffect(() => {
     console.log('authError Login', authError);
@@ -194,7 +195,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       const data = await AsyncStorage.getItem('timeOutData');
       if (data) {
         const timeOutData = JSON.parse(data);
-        timeOutData.map((obj) => {
+        timeOutData.map((obj: any) => {
           if (obj.phoneNumber === `+91${phoneNumber}`) {
             const t1 = new Date();
             const t2 = new Date(obj.startTime);
