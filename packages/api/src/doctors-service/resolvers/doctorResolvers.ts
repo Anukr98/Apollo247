@@ -1,8 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'doctors-service/doctors-service';
-import DoctorsData from '../data/doctors.json';
-import { JsonValue } from 'apollo-utilities';
-import { isNull, isUndefined } from 'util';
+import DoctorsData from 'doctors-service/data/doctors.json';
+import { isUndefined } from 'util';
 
 export const doctorTypeDefs = gql`
   type Doctor {
@@ -26,6 +25,19 @@ export const doctorTypeDefs = gql`
     inviteStatus: String
   }
 
+  type consultations {
+    days: String
+    timings: String
+    availableForPhysicalConsultation: Boolean
+    availableForVirtualConsultation: Boolean
+    type: String
+  }
+
+  type paymentDetails {
+    accountNumber: String
+    address: String
+  }
+
   type DoctorProfile {
     id: String
     firstName: String
@@ -33,14 +45,25 @@ export const doctorTypeDefs = gql`
     mobileNumber: String
     experience: String
     speciality: String
+    specialization: String
     isStarDoctor: Boolean
     education: String
     services: String
     languages: String
     city: String
     awards: String
+    photoUrl: String
+    registrationNumber: String
+    isProfileComplete: String
+    availableForPhysicalConsultation: Boolean
+    availableForVirtualConsultation: Boolean
+    onlineConsultationFees: String
+    physicalConsultationFees: String
+    package: String
+    paymentDetails: [String]
     clinicsList: [clinicsList]
     starDoctorTeam: [starDoctorTeam]
+    consultationHours: [consultations]
   }
 
   extend type Query {
@@ -77,6 +100,19 @@ type starDoctorTeam = {
   inviteStatus: String;
 };
 
+type consultations = {
+  days: String;
+  timings: String;
+  availableForPhysicalConsultation: Boolean;
+  availableForVirtualConsultation: Boolean;
+  type: String;
+};
+
+type paymentDetails = {
+  accountNumber: String;
+  address: String;
+};
+
 type DoctorProfile = {
   id: String;
   firstName: String;
@@ -84,14 +120,25 @@ type DoctorProfile = {
   mobileNumber: String;
   experience: String;
   speciality: String;
+  specialization: String;
   isStarDoctor: Boolean;
   education: String;
   services: String;
   languages: String;
   city: String;
   awards: String;
+  photoUrl: String;
+  registrationNumber: String;
+  isProfileComplete: Boolean;
+  availableForPhysicalConsultation: Boolean;
+  availableForVirtualConsultation: Boolean;
+  onlineConsultationFees: String;
+  physicalConsultationFees: String;
+  package: String;
+  paymentDetails: paymentDetails[];
   clinicsList: clinicsList[];
   starDoctorTeam: starDoctorTeam[];
+  consultationHours: consultations[];
 };
 
 const getDoctorProfile: Resolver<any, { mobileNumber: string }> = async (

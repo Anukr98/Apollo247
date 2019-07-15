@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, AsyncStorage, Platform, ActivityIndicator, Alert } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import { SplashLogo } from 'app/src/components/SplashLogo';
-import { useAuth } from 'app/src/hooks/authHooks';
 import { AppRoutes } from 'app/src/components/NavigatorContainer';
+import { SplashLogo } from 'app/src/components/SplashLogo';
+import { getLocalData } from 'app/src/helpers/localStorage';
+import { useAuth } from 'app/src/hooks/authHooks';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Platform, StyleSheet, View } from 'react-native';
 import firebase from 'react-native-firebase';
-//import SplashScreenView from 'react-native-splash-screen';
+import SplashScreenView from 'react-native-splash-screen';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   mainView: {
@@ -39,40 +40,28 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
     async function fetchData() {
       firebase.analytics().setCurrentScreen('SplashScreen');
-      const onboarding = await AsyncStorage.getItem('onboarding');
-      const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
-      const signUp = await AsyncStorage.getItem('signUp');
-      const multiSignUp = await AsyncStorage.getItem('multiSignUp');
 
-      console.log('onboarding', onboarding);
-      console.log('userLoggedIn', userLoggedIn);
+      const localData = await getLocalData();
 
       setVerifyingPhonenNumber(true);
 
       setTimeout(() => {
         setVerifyingPhonenNumber(false);
-
-        if (userLoggedIn == 'true') {
-          if (currentUser) {
+        if (localData.isLoggedIn) {
+          if (localData.isProfileFlowDone) {
             props.navigation.replace(AppRoutes.TabBar);
+          } else {
+            props.navigation.replace(AppRoutes.ProfileSetup);
           }
-        } else if (onboarding == 'true') {
-          props.navigation.replace(AppRoutes.Login);
-          // if (signUp == 'true') {
-          //   props.navigation.replace(AppRoutes.SignUp);
-          // } else if (multiSignUp == 'true') {
-          //   props.navigation.replace(AppRoutes.MultiSignup);
-          // } else {
-          //   props.navigation.replace(AppRoutes.Login);
-          // }
         } else {
           props.navigation.replace(AppRoutes.LandingPage);
         }
       }, 2500);
     }
+
     fetchData();
 
-    //SplashScreenView.hide();
+    SplashScreenView.hide();
   }, [currentUser, props.navigation]);
 
   return (

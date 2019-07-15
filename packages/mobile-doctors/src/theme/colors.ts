@@ -1,98 +1,79 @@
-const white = 'white';
-const black = 'black';
-const clear = 'transparent';
-const semiDarkClear = 'rgba(0, 0, 0, 0.3)';
-const lightColor = 'rgb(216, 216, 216)';
-const darkColor = 'rgb(115, 118, 131)';
+const orange = '#fc9916';
+const green = '#00b38e';
+const red = '#e50000';
+const darkRed = '#890000';
 
-const appGreen = '#00b38e';
-const APP_Sherpa_Blue = '#01475b';
-const tangerine_yellow = '#fc9916';
+const whiteColor = (opacity: number = 1) => `rgba(255,255,255,${opacity})`; //'#ffffff'
+const blackColor = (opacity: number = 1) => `rgba(0,0,0,${opacity})`; //'#000000'
+const darkBlueColor = (opacity: number = 1) => `rgba(2,71,91,${opacity})`; //'#02475b'
+const skyBlueColor = (opacity: number = 1) => `rgba(0,135,186,${opacity})`; //'#0087ba'
+
+const colorsWithCustomOpacity = {
+  whiteColor,
+  blackColor,
+  darkBlueColor,
+  skyBlueColor,
+};
 
 const TabBar = {
-  TAB_BAR_ACTIVE_TINT_COLOR: '#02475b',
-  TAB_BAR_INACTIVE_TINT_COLOR: '#02475b',
+  TAB_BAR_ACTIVE_BG_COLOR: whiteColor(),
+  TAB_BAR_ACTIVE_TEXT_COLOR: darkBlueColor(),
+  TAB_BAR_INACTIVE_TEXT_COLOR: darkBlueColor(),
 };
 
 const Buttons = {
-  BUTTON_BG: '#fcb716',
-  BUTTON_TEXT: white,
-  BUTTON_DISABLED_BG: '#fed984',
+  BUTTON_BG: orange,
+  BUTTON_TEXT: whiteColor(),
+  BUTTON_DISABLED_BG: '#fed6a2',
 };
 
 const Card = {
-  CARD_BG: 'white',
-  CARD_HEADER: '#02475b',
-  CARD_DESCRIPTION: '#0087ba',
-  FILTER_CARD_LABEL: '#02475b',
+  CARD_BG: whiteColor(),
+  CARD_SHADOW_COLOR: 'rgba(128,128,128,0.6)', //'#808080'
+  CARD_GRAY_BG: 'rgba(247,247,247,1)', //'#f7f7f7'
+  CARD_HEADER: darkBlueColor(),
+  CARD_DESCRIPTION: skyBlueColor(),
 };
 
 const Common = {
-  BLACK_COLOR: black,
-  DEFAULT_BACKGROUND_COLOR: '#f0f1ec',
-  INPUT_CURSOR_COLOR: appGreen,
-  APP_GREEN: appGreen,
-  WHITE: white,
-  SHERPA_BLUE: APP_Sherpa_Blue,
-  APP_YELLOW_COLOR: '#fcb716',
-  APP_YELLOW: tangerine_yellow,
+  WHITE: whiteColor(),
+  BLACK: blackColor(),
+  TRANSPARENT: 'transparent',
+  DEFAULT_BACKGROUND_COLOR: '#f0f4f5',
+  INPUT_CURSOR_COLOR: green,
+  APP_GREEN: green,
+  APP_YELLOW: orange,
 };
 
 const Header = {
-  HEADER_BG: lightColor,
-  HEADER_BAR_BUTTON_TEXT: darkColor,
-  HEADER_CENTER_TEXT: darkColor,
-  HEADER_SEP: darkColor,
-};
-
-const RefreshControl = {
-  REFRESH_CONTROL_TINT: lightColor,
-  REFRESH_CONTROL_TEXT: lightColor,
-  REFRESH_CONTROL_BG: clear,
-};
-
-const Texts = {
-  DEFAULT_TEXT_COLOR: darkColor,
-  DISABLED_TEXT_COLOR: semiDarkClear,
-  DESCRIPTION_TEXT_PRIMARY: lightColor,
-  DESCRIPTION_TEXT_SECONDARY: darkColor,
-  HEADING_TEXT_PRIMARY: lightColor,
-  HEADING_TEXT_SECONDARY: darkColor,
-  INFO_TEXT_PRIMARY: lightColor,
-  INFO_TEXT_SECONDARY: darkColor,
-  PUNCHH_TEXT_ALPHA_COLOR: semiDarkClear,
-  SEPARATOR_TEXT_PRIMARY: lightColor,
-  SEPARATOR_TEXT_SECONDARY: darkColor,
-  SEPARATOR_TEXT_LINE_PRIMARY: lightColor,
-  SEPARATOR_TEXT_LINE_SECONDARY: darkColor,
+  HEADER_BG: whiteColor(),
 };
 
 const TextInput = {
-  INPUT_TEXT: '#02475b',
-  INPUT_BORDER_SUCCESS: appGreen,
-  INPUT_BORDER_FAILURE: '#e50000',
-  INPUT_SUCCESS_TEXT: '#02475b',
-  INPUT_FAILURE_TEXT: '#890000',
-  INPUT_INFO: '#fc9916',
+  INPUT_TEXT: darkBlueColor(),
+  INPUT_BORDER_SUCCESS: green,
+  INPUT_BORDER_FAILURE: red,
+  INPUT_SUCCESS_TEXT: darkBlueColor(),
+  INPUT_FAILURE_TEXT: darkRed,
+  INPUT_INFO: orange,
   placeholderTextColor: 'rgba(1,48,91, 0.3)',
-  OTP_NOT_VALID: '#e50000',
+  OTP_NOT_VALID: red,
 };
 
 const Search = {
-  SEARCH_UNDERLINE_COLOR: '#00b38e',
-  SEARCH_TITLE_COLOR: '#fc9916',
-  SEARCH_DOCTOR_NAME: '#02475b',
-  SEARCH_EDUCATION_COLOR: '#658f9b',
-  SEARCH_CONSULT_COLOR: '#fc9916',
+  SEARCH_UNDERLINE_COLOR: green,
+  SEARCH_TITLE_COLOR: orange,
+  SEARCH_DOCTOR_NAME: darkBlueColor(),
+  SEARCH_EDUCATION_COLOR: red,
+  SEARCH_CONSULT_COLOR: orange,
 };
 
 export const colors = {
+  ...colorsWithCustomOpacity,
   ...Buttons,
   ...Card,
   ...Common,
   ...Header,
-  ...RefreshControl,
-  ...Texts,
   ...TextInput,
   ...Search,
   ...TabBar,

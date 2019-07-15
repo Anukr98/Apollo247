@@ -8,8 +8,8 @@
     "start:api-gateway": "webpack --config webpack.config.api-gateway.js",
     "start:profiles-service": "webpack --config webpack.config.profiles-service.js",
     "start:doctors-service": "webpack --config webpack.config.doctors-service.js",
-    "format": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
-    "format:fix": "prettier --write **/**/*.js **/**/*.jsx **/**/*.ts **/**/*.tsx **/**/*.json",
+    "format": "prettier --list-different '**/*.{js,jsx,ts,tsx,json,htm,html}'",
+    "format:fix": "prettier --write '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx"
   },

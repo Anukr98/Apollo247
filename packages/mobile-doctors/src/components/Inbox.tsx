@@ -1,8 +1,8 @@
 import React from 'react';
 import { View } from 'react-native';
 
-export interface MedicineProps {}
+export interface InboxProps {}
 
-export const Medicine: React.FC<MedicineProps> = (props) => {
+export const Inbox: React.FC<InboxProps> = (props) => {
   return <View style={{ flex: 1, backgroundColor: 'white' }} />;
 };
