@@ -1,7 +1,7 @@
-import { Theme } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import Popover from '@material-ui/core/Popover';
 import { createStyles, makeStyles } from '@material-ui/styles';
-import { useCurrentPatient, useAllCurrentPatients } from 'hooks/authHooks';
+import { useCurrentPatient, useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { NewProfile } from 'components/NewProfile';
 import { ExistingProfile } from 'components/ExistingProfile';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
@@ -48,6 +48,7 @@ export const ManageProfile: React.FC = (props) => {
   const mascotRef = useRef(null);
   const currentPatient = useCurrentPatient();
   const allPatients = useAllCurrentPatients();
+  const { isSigningIn } = useAuth();
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   useEffect(() => {
@@ -73,9 +74,12 @@ export const ManageProfile: React.FC = (props) => {
             onClick={() => (isProtected ? protectWithLoginPopup() : setIsPopoverOpen(true))}
           >
             <img src={require('images/ic_mascot.png')} alt="" />
+            {isSigningIn && (
+              <CircularProgress style={{ position: 'absolute', top: 17, left: 17 }} />
+            )}
           </div>
           <Popover
-            open={isPopoverOpen}
+            open={!isSigningIn && isPopoverOpen}
             anchorEl={mascotRef.current}
             onClose={() => setIsPopoverOpen(false)}
             className={classes.bottomPopover}
