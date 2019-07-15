@@ -48,7 +48,12 @@ export const More: React.FC<IconProps> = (props) => (
 );
 
 export const DropdownGreen: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('../../images/icons/ic_dropdown_green.png')} />
+  <IconBase
+    style={{ height: 9, width: 14, left: 5 }}
+    size="sm"
+    {...props}
+    source={require('../../images/icons/expand.png')}
+  />
 );
 
 export const ArrowFull: React.FC<IconProps> = (props) => (
@@ -227,5 +232,28 @@ export const Add: React.FC<IconProps> = (props) => (
     style={{ height: 24, width: 24, resizeMode: 'contain' }}
     {...props}
     source={require('../../images/icons/add.png')}
+  />
+);
+export const InviteIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/inviteicon.png')}
+  />
+);
+
+export const Notification: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/notification.png')}
+  />
+);
+
+export const RemoveDot: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/remove.png')}
   />
 );

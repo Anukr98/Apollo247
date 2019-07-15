@@ -49,7 +49,7 @@ export type ProfileData = {
     lastName: string;
     experience: string;
     typeOfConsult: string;
-    inviteStatus: string;
+    inviteStatus: boolean;
     speciality: string;
     education: string;
     services: string;
@@ -80,7 +80,7 @@ const profileObject: ProfileData = {
       lastName: 'Mcmarrow',
       experience: '7',
       typeOfConsult: '24/7',
-      inviteStatus: 'accepted',
+      inviteStatus: false,
       speciality: 'Gynacology',
       education: 'MBBS',
       services: 'Consultations, Surgery',
@@ -92,7 +92,7 @@ const profileObject: ProfileData = {
       lastName: 'Carter',
       experience: '7',
       typeOfConsult: '24/7',
-      inviteStatus: 'Not accepted',
+      inviteStatus: true,
       speciality: 'Gynacology',
       education: 'MBBS',
       services: 'Consultations, Surgery',

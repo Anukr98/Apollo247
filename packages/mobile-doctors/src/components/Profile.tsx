@@ -4,7 +4,7 @@ import { Add, Send, Star } from 'app/src/components/ui/Icons';
 import { SquareCardWithTitle } from 'app/src/components/ui/SquareCardWithTitle';
 import { theme } from 'app/src/theme/theme';
 import React, { useState } from 'react';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 
 const styles = StyleSheet.create({
@@ -144,6 +144,7 @@ export const Profile: React.FC<ProfileProps> = (props) => {
             specialization={starDoctor.designation}
             education={starDoctor.education}
             location={starDoctor.services}
+            inviteStatus={starDoctor.inviteStatus}
           />
         ))}
         {!addshow ? (
@@ -158,6 +159,8 @@ export const Profile: React.FC<ProfileProps> = (props) => {
                   fontStyle: 'normal',
                   letterSpacing: 0,
                   color: '#fc9916',
+                  marginLeft: 10,
+                  marginTop: 2,
                 }}
               >
                 ADD DOCTOR
