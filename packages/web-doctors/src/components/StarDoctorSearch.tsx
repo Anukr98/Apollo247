@@ -164,6 +164,14 @@ const useStyles = makeStyles((theme: Theme) =>
     input: {
       color: '#000',
     },
+    posRelative: {
+      position: 'relative',
+    },
+    addBtn: {
+      position: 'absolute',
+      right: 0,
+      top: '20px',
+    },
   })
 );
 
@@ -209,7 +217,7 @@ export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
   };
 
   return (
-    <div className={classes.root}>
+    <div className={`${classes.root} ${classes.posRelative}`}>
       <Autosuggest
         {...autosuggestProps}
         inputProps={{
@@ -234,7 +242,12 @@ export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
       />
 
       {doctor.label && state.single === doctor.label && (
-        <button onClick={() => addDoctorHadler(doctor)}>Add</button>
+        <div className={classes.addBtn} onClick={() => addDoctorHadler(doctor)}>
+          <img alt="" src={require('images/add_doctor.svg')} />
+        </div>
+        // <button>
+        //   Add
+        // </button>
       )}
     </div>
   );

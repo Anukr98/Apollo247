@@ -7,7 +7,7 @@ import { AphButton } from '@aph/web-ui-components';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions';
+//import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
@@ -215,6 +215,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightMedium,
       padding: theme.spacing(2, 0, 2, 0),
     },
+    pointerNone: {
+      pointerEvents: 'none',
+    },
   };
 });
 interface Props {
@@ -248,15 +251,15 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
   const consultTypeHtml = consultType.map((item, index) => {
     return (
       <AphButton
-        key={item.key.toString()}
+        key={item.key}
         variant="contained"
-        value="Physical"
-        classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
+        value={item.value}
+        classes={item.selected ? { root: classes.btnActive } : { root: classes.btnInactive }}
         onClick={(e) => {
           console.log(e);
         }}
       >
-        Physical
+        {item.value}
       </AphButton>
     );
   });
@@ -326,6 +329,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
       <AphButton
         key={item.key.toString()}
         variant="contained"
+        //value={item.value}
         classes={item.selected ? { root: classes.btnActive } : { root: classes.btnInactive }}
         onClick={() => {
           dayClickHandler(item.key);
@@ -408,7 +412,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
         </Grid>
         <Grid item lg={10} sm={6} xs={12}>
           <div className={classes.tabContent}>
-            <ExpansionPanel className={classes.tabContentPanel} disabled>
+            <ExpansionPanel className={`${classes.tabContentPanel} ${classes.pointerNone}`}>
               <ExpansionPanelSummary
                 expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
                 aria-controls="panel1c-content"
