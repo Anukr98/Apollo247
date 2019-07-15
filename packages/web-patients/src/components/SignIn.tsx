@@ -118,7 +118,7 @@ export const SignIn: React.FC = (props) => {
   }, []);
 
   return displayOtpInput ? (
-    <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`} data-cypress="loginForm">
+    <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`} data-cypress="loginform">
       <Typography variant="h2">hi</Typography>
       <p>Type in the OTP sent to you, to authenticate</p>
       <Grid container spacing={1}>
@@ -163,6 +163,7 @@ export const SignIn: React.FC = (props) => {
       {verifyOtpError && 'Invalid OTP'}
       <div className={classes.otpAction}>
         <Fab
+          type="submit"
           color="primary"
           onClick={() => verifyOtp(otp.join(''))}
           disabled={isSendingOtp || otp.join('').length !== numOtpDigits}
@@ -171,6 +172,7 @@ export const SignIn: React.FC = (props) => {
         </Fab>
       </div>
       <Button
+        type="submit"
         variant="text"
         disabled={isSendingOtp}
         onClick={() => sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current)}

@@ -79,7 +79,7 @@ module.exports = {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
     modules: [path.resolve(__dirname, 'src'), 'node_modules'],
     alias:
-      isLocal || isDevelopment
+      isTest || isLocal || isDevelopment
         ? {
             'react-dom': '@hot-loader/react-dom',
           }
