@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: theme.palette.secondary.dark,
         fontSize: 16,
         fontWeight: 600,
-        marginBottom: 4,
+        marginBottom: 9,
       },
     },
     helpText: {

@@ -24,6 +24,12 @@ TabContainer.propTypes = {
 };
 const useStyles = makeStyles((theme: Theme) => {
   return {
+    highlightActive: {
+      borderBottom: '2px solid #02475b',
+    },
+    highlightInactive: {
+      borderBottom: 'none',
+    },
     profile: {
       paddingTop: 85,
       [theme.breakpoints.down('xs')]: {
@@ -83,12 +89,37 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
   const { data, error, loading } = useQuery(GET_DOCTOR_PROFILE, {
     variables: { mobileNumber: '1234567890' },
   });
-
-  function handleChange(event, newValue) {
-    setValue(newValue);
-  }
+  const tabsArray = [
+    {
+      key: 0,
+      value: 'Profile',
+    },
+    {
+      key: 1,
+      value: 'Availability',
+    },
+    {
+      key: 2,
+      value: 'Fees',
+    },
+  ];
+  const tabsHtml = tabsArray.map((item, index) => {
+    return (
+      <Tab
+        key={item.value}
+        className={value > item.key - 1 ? classes.highlightActive : classes.highlightInactive}
+        label={item.value}
+      />
+    );
+  });
+  // function handleChange(event, newValue) {
+  //   setValue(newValue);
+  // }
   const proceedHadler = () => {
     setValue(value + 1);
+  };
+  const backBtnHandler = () => {
+    setValue(value - 1);
   };
   if (loading) console.log('loading');
   if (error) console.log('Error');
@@ -115,15 +146,8 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
               </p>
             </div>
             <AppBar position="static" color="default">
-              <Tabs
-                value={value}
-                indicatorColor="secondary"
-                className={classes.tabBar}
-                onChange={handleChange}
-              >
-                <Tab label="Profile" />
-                <Tab label="Availability" disabled={value < 1 ? true : false} />
-                <Tab label="Fees" disabled={value < 2 ? true : false} />
+              <Tabs value={value} indicatorColor="secondary" className={classes.tabBar}>
+                {tabsHtml}
               </Tabs>
             </AppBar>
             {value === 0 && (
@@ -143,6 +167,7 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
                   <AvailabilityTab
                     values={data.getDoctorProfile}
                     proceedHadler={() => proceedHadler()}
+                    backBtnHandler={() => backBtnHandler()}
                     key={2}
                   />
                 )}
@@ -154,6 +179,7 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
                   <FeesTab
                     values={data.getDoctorProfile}
                     proceedHadler={() => proceedHadler()}
+                    backBtnHandler={() => backBtnHandler()}
                     key={3}
                   />
                 )}

@@ -116,7 +116,7 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: theme.spacing(1),
       '&:hover': {
         backgroundColor: '#fcb716',
-      }
+      },
     },
     backButton: {
       minWidth: '120px',
@@ -213,24 +213,24 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
               </Typography>
             </div>
           ) : (
-              <div className={classes.posRelative}>
-                <img
-                  alt=""
-                  src={require('images/ic_more.svg')}
-                  className={classes.moreIcon}
-                  onClick={() => removeDoctor()}
-                />
-                <Typography variant="h4">
-                  Dr. {item.firstName} {item.lastName}
-                </Typography>
-                <Typography variant="h6">
-                  GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
-                </Typography>
-                <Typography variant="h5">
-                  MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+            <div className={classes.posRelative}>
+              <img
+                alt=""
+                src={require('images/ic_more.svg')}
+                className={classes.moreIcon}
+                onClick={() => removeDoctor()}
+              />
+              <Typography variant="h4">
+                Dr. {item.firstName} {item.lastName}
               </Typography>
-              </div>
-            )}
+              <Typography variant="h6">
+                GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
+              </Typography>
+              <Typography variant="h5">
+                MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+              </Typography>
+            </div>
+          )}
         </div>
       </Grid>
     );

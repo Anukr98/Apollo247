@@ -102,7 +102,7 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: theme.spacing(1),
       '&:hover': {
         backgroundColor: '#fcb716',
-      }
+      },
     },
     backButton: {
       minWidth: '120px',
@@ -196,8 +196,9 @@ const useStyles = makeStyles((theme: Theme) => {
 interface Props {
   values: any;
   proceedHadler: () => void;
+  backBtnHandler: () => void;
 }
-export const FeesTab: React.FC<Props> = ({ values, proceedHadler }) => {
+export const FeesTab: React.FC<Props> = ({ values, proceedHadler, backBtnHandler }) => {
   const classes = useStyles();
   //const [data, setData] = useState(values);
   // const [sp, setsp] = useState<string>('Physical');
@@ -265,7 +266,7 @@ export const FeesTab: React.FC<Props> = ({ values, proceedHadler }) => {
             variant="contained"
             color="primary"
             classes={{ root: classes.backButton }}
-            onClick={() => proceedHadler()}
+            onClick={() => backBtnHandler()}
           >
             BACK
           </AphButton>
