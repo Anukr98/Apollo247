@@ -95,7 +95,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
         <div>
           {Object.keys(clinicDetails.availability).map((index) => {
             return (
-              <div>
+              <div key={_uniqueId('ava_')}>
                 <span>{index}</span>: {clinicDetails.availability[index]}
               </div>
             );

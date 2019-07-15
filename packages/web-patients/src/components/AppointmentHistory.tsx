@@ -81,7 +81,7 @@ export const AppointmentHistory: React.FC = (props) => {
             <div>{appointment.appointmentTime}</div>
             <div>
               {appointment.symptoms.map((symptom: string) => (
-                <p>{symptom}</p>
+                <p key={_uniqueId('symptom_')}>{symptom}</p>
               ))}
             </div>
           </div>
