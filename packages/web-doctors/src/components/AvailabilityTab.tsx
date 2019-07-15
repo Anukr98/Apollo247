@@ -159,7 +159,7 @@ const useStyles = makeStyles((theme: Theme) => {
     columnType: {
       flexBasis: '10%',
       paddingTop: '4px',
-      color: theme.palette.primary.dark,
+      color: '#ff748e',
       fontWeight: theme.typography.fontWeightMedium,
     },
     helper: {

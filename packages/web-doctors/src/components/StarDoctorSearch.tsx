@@ -149,6 +149,10 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: theme.spacing(1),
       left: 0,
       right: 0,
+      borderRadius: '10px',
+      '& li': {
+        borderBottom: '1px solid rgba(2,71,91,0.2)',
+      },
     },
     suggestion: {
       display: 'block',
@@ -240,7 +244,6 @@ export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
           </Paper>
         )}
       />
-
       {doctor.label && state.single === doctor.label && (
         <div className={classes.addBtn} onClick={() => addDoctorHadler(doctor)}>
           <img alt="" src={require('images/add_doctor.svg')} />

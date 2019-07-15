@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
 import StarDoctorSearch from './StarDoctorSearch';
+import { relative } from 'path';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -86,11 +87,14 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '10px',
       position: 'relative',
       paddingLeft: '90px',
-      minHeight: '100px',
+      minHeight: '130px',
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
       marginBottom: '30px',
       marginRight: '10px',
+      '& h4': {
+        borderBottom: 'none',
+      },
     },
     addStarDoctor: {
       borderRadius: 10,
@@ -103,6 +107,9 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
       marginBottom: '30px',
       marginRight: '10px',
+      '& input': {
+        // borderBottom: '2px solid #f00',
+      },
     },
     saveButton: {
       minWidth: '300px',
@@ -126,6 +133,27 @@ const useStyles = makeStyles((theme: Theme) => {
       borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
       marginTop: '30px',
     },
+    invited: {
+      color: '#ff748e',
+      fontSize: 15,
+      fontWeight: theme.typography.fontWeightMedium,
+      marginTop: '10px',
+      textTransform: 'uppercase',
+      '& img': {
+        position: 'relative',
+        top: '4px',
+        marginRight: '15px',
+        marginLeft: '15px',
+      },
+    },
+    posRelative: {
+      position: 'relative',
+    },
+    moreIcon: {
+      position: 'absolute',
+      top: 0,
+      right: 0,
+    },
   };
 });
 
@@ -144,6 +172,9 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
       setShowAddDoc(false);
     }
   }
+  function removeDoctor(doctor) {
+    alert('delete');
+  }
   const starDocNumber = data.starDoctorTeam.length;
   const starDoctors = data.starDoctorTeam.map((item, index) => {
     return (
@@ -152,15 +183,41 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
           <div className={classes.starDoctors}>
             <img alt="" src={require('images/doctor-profile.jpg')} className={classes.profileImg} />
           </div>
-          <Typography variant="h4">
-            Dr. {item.firstName} {item.lastName}
-          </Typography>
-          <Typography variant="h6">
-            GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
-          </Typography>
-          <Typography variant="h5">
-            MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
-          </Typography>
+          {!(item.inviteStatus === 'accepted') ? (
+            <div className={classes.posRelative}>
+              <img
+                alt="more.svg"
+                src={require('images/ic_more.svg')}
+                className={classes.moreIcon}
+                onClick={() => removeDoctor()}
+              />
+              <Typography variant="h4">
+                Dr. {item.firstName} {item.lastName}
+              </Typography>
+              <Typography className={classes.invited}>
+                <img alt="" src={require('images/ic_invite.svg')} />
+                Invited
+              </Typography>
+            </div>
+          ) : (
+            <div className={classes.posRelative}>
+              <img
+                alt=""
+                src={require('images/ic_more.svg')}
+                className={classes.moreIcon}
+                onClick={() => removeDoctor()}
+              />
+              <Typography variant="h4">
+                Dr. {item.firstName} {item.lastName}
+              </Typography>
+              <Typography variant="h6">
+                GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
+              </Typography>
+              <Typography variant="h5">
+                MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+              </Typography>
+            </div>
+          )}
         </div>
       </Grid>
     );
