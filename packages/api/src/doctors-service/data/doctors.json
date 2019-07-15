@@ -56,14 +56,14 @@
     "consultationHours": [
       {
         "days": "Mon, Tue, Wed, Thu",
-        "timings": "9:00 Am - 12:30 PM",
+        "timings": "09:00 AM - 12:30 PM",
         "availableForPhysicalConsultation": true,
         "availableForVirtualConsultation": true,
         "type": "Fixed"
       },
       {
         "days": "Tue, Wed",
-        "timings": "2:00 Pm - 3:30 PM",
+        "timings": "02:00 PM - 3:30 PM",
         "availableForPhysicalConsultation": false,
         "availableForVirtualConsultation": true,
         "type": ""
@@ -127,14 +127,14 @@
     "consultationHours": [
       {
         "days": "Mon, Tue, Wed, Thu",
-        "timings": "9:00 Am - 12:30 PM",
+        "timings": "09:00 AM - 12:30 PM",
         "availableForPhysicalConsultation": true,
         "availableForVirtualConsultation": true,
         "type": "Fixed"
       },
       {
         "days": "Tue, Wed",
-        "timings": "2:00 Pm - 3:30 PM",
+        "timings": "02:00 PM - 3:30 PM",
         "availableForPhysicalConsultation": false,
         "availableForVirtualConsultation": true,
         "type": ""
