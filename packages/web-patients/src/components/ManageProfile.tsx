@@ -63,6 +63,7 @@ export const ManageProfile: React.FC = (props) => {
   }, [allPatients]);
 
   const hasExistingProfile = allPatients && allPatients.some((p) => !_isEmpty(p.uhid));
+  const defaultNewProfile = allPatients ? currentPatient || allPatients[0] : null;
 
   return (
     <ProtectedWithLoginPopup>
@@ -95,8 +96,8 @@ export const ManageProfile: React.FC = (props) => {
           >
             {hasExistingProfile ? (
               <ExistingProfile patients={allPatients!} onComplete={() => setIsPopoverOpen(false)} />
-            ) : currentPatient ? (
-              <NewProfile patient={currentPatient} onClose={() => setIsPopoverOpen(false)} />
+            ) : defaultNewProfile ? (
+              <NewProfile patient={defaultNewProfile} onClose={() => setIsPopoverOpen(false)} />
             ) : null}
           </Popover>
         </div>
