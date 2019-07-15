@@ -99,8 +99,19 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     saveButton: {
       minWidth: '300px',
-      marginTop: '20px',
-      float: 'right',
+      margin: theme.spacing(1),
+      '&:hover': {
+        backgroundColor: '#fcb716',
+      }
+    },
+    backButton: {
+      minWidth: '120px',
+      color: '#fc9916',
+      backgroundColor: '#fff',
+      margin: theme.spacing(1),
+      '&:hover': {
+        backgroundColor: '#fff',
+      },
     },
     addDocter: {
       marginTop: '20px',
@@ -118,6 +129,8 @@ const useStyles = makeStyles((theme: Theme) => {
     btnContainer: {
       borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
       marginTop: '30px',
+      paddingTop: '15px',
+      textAlign: 'right',
     },
     btnActive: {
       backgroundColor: '#00b38e !important',
@@ -248,6 +261,14 @@ export const FeesTab: React.FC<Props> = ({ values, proceedHadler }) => {
 
       <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
         <Grid item lg={12} sm={12} xs={12}>
+          <AphButton
+            variant="contained"
+            color="primary"
+            classes={{ root: classes.backButton }}
+            onClick={() => proceedHadler()}
+          >
+            BACK
+          </AphButton>
           <AphButton variant="contained" color="primary" classes={{ root: classes.saveButton }}>
             SAVE AND PROCEED
           </AphButton>

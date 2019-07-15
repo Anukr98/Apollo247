@@ -77,7 +77,7 @@ const suggestions: DoctorsName[] = [
 ];
 
 function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
+  const { classes, inputRef = () => { }, ref, ...other } = inputProps;
 
   return (
     <TextField
@@ -109,7 +109,7 @@ function renderSuggestion(
         {parts.map((part, index) => (
           <span
             key={index.toString()}
-            style={{ fontWeight: part.highlight ? 500 : 400, color: '#000' }}
+            style={{ fontWeight: part.highlight ? 400 : 400, color: '#000' }}
           >
             {part.text}
           </span>
@@ -126,8 +126,8 @@ function getSuggestions(value: string) {
   return inputLength < 3
     ? []
     : suggestions.filter((suggestion) => {
-        return suggestion.label.toLowerCase().indexOf(value.toLowerCase()) !== -1;
-      });
+      return suggestion.label.toLowerCase().indexOf(value.toLowerCase()) !== -1;
+    });
 }
 
 function getSuggestionValue(suggestion: DoctorsName) {
@@ -184,7 +184,7 @@ export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
   const [state, setState] = React.useState({
     single: '',
   });
-  const [doctor, setDoctor] = React.useState({});
+  const [doctor, setDoctor] = React.useState({ label: '' });
   const [stateSuggestions, setSuggestions] = React.useState<DoctorsName[]>([]);
 
   const handleSuggestionsFetchRequested = ({ value }: any) => {
@@ -244,9 +244,11 @@ export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
           </Paper>
         )}
       />
-      <div className={classes.addBtn} onClick={() => addDoctorHadler(doctor)}>
-        <img alt="" src={require('images/add_doctor.svg')} />
-      </div>
+      {doctor.label && state.single === doctor.label && (
+        <div className={classes.addBtn} onClick={() => addDoctorHadler(doctor)}>
+          <img alt="" src={require('images/add_doctor.svg')} />
+        </div>
+      )}
     </div>
   );
 }

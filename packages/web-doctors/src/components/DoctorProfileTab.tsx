@@ -113,8 +113,19 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     saveButton: {
       minWidth: '300px',
-      marginTop: '20px',
-      float: 'right',
+      margin: theme.spacing(1),
+      '&:hover': {
+        backgroundColor: '#fcb716',
+      }
+    },
+    backButton: {
+      minWidth: '120px',
+      color: '#fc9916',
+      backgroundColor: '#fff',
+      margin: theme.spacing(1),
+      '&:hover': {
+        backgroundColor: '#fff',
+      },
     },
     addDocter: {
       marginTop: '20px',
@@ -132,6 +143,8 @@ const useStyles = makeStyles((theme: Theme) => {
     btnContainer: {
       borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
       marginTop: '30px',
+      paddingTop: '15px',
+      textAlign: 'right',
     },
     invited: {
       color: '#ff748e',
@@ -200,24 +213,24 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
               </Typography>
             </div>
           ) : (
-            <div className={classes.posRelative}>
-              <img
-                alt=""
-                src={require('images/ic_more.svg')}
-                className={classes.moreIcon}
-                onClick={() => removeDoctor()}
-              />
-              <Typography variant="h4">
-                Dr. {item.firstName} {item.lastName}
+              <div className={classes.posRelative}>
+                <img
+                  alt=""
+                  src={require('images/ic_more.svg')}
+                  className={classes.moreIcon}
+                  onClick={() => removeDoctor()}
+                />
+                <Typography variant="h4">
+                  Dr. {item.firstName} {item.lastName}
+                </Typography>
+                <Typography variant="h6">
+                  GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
+                </Typography>
+                <Typography variant="h5">
+                  MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
               </Typography>
-              <Typography variant="h6">
-                GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
-              </Typography>
-              <Typography variant="h5">
-                MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
-              </Typography>
-            </div>
-          )}
+              </div>
+            )}
         </div>
       </Grid>
     );
