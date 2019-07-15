@@ -82,7 +82,7 @@ interface TabContainerProps {
   children?: React.ReactNode;
 }
 
-const TabContainer = (props: TabContainerProps) => {
+const TabContainer: React.FC = (props) => {
   return (
     <Typography component="div" style={{ padding: 8 * 3 }}>
       {props.children}
@@ -165,9 +165,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     },
   };
 
-  const doctorDetails = _get(detailsObj, doctorId);
-
-  console.log(showConsultPopup, selectedDate);
+  const doctorDetails = detailsObj[doctorId];
 
   return (
     <div className={classes.welcome}>
