@@ -66,7 +66,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'right',
       position: 'absolute',
       top: 90,
-      right:0,
+      right: 0,
       [theme.breakpoints.up('lg')]: {
         width: '75%',
         marginLeft: 'auto',
@@ -138,8 +138,11 @@ export const HeroBanner: React.FC = () => {
   return (
     <div className={classes.heroBanner}>
       <div className={classes.bannerInfo}>
-        <p>The best way to connect with your patients, grow your practice and enhance your professional network; 
-<span>anytime, anywhere :)</span></p>
+        <p>
+          The best way to connect with your patients, grow your practice and enhance your
+          professional network;
+          <span>anytime, anywhere :)</span>
+        </p>
         <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup }) => (
             <AphButton

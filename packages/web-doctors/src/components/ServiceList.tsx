@@ -102,11 +102,7 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
           <Paper className={classes.serviceItem}>
             <div className={classes.serviceInfo}>
               <div className={classes.avatarBlock}>
-                <img
-                  alt=""
-                  src={image}
-                  className={classes.bigAvatar}
-                />
+                <img alt="" src={image} className={classes.bigAvatar} />
               </div>
               <Typography variant="h5">{title}</Typography>
               <p>{content}</p>

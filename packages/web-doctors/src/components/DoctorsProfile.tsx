@@ -101,62 +101,67 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
         </div>
       </div>
       <div className={classes.container}>
-      {!!data.getDoctorProfile && (
-      <div>
-        <div className={classes.tabHeading}>
-          <Typography variant="h1">
-            <span>
-              hi dr. {`${data.getDoctorProfile.firstName} ${data.getDoctorProfile.lastName}`}!
-            </span>
-          </Typography>
-          <p>
-            It’s great to have you join us! <br /> Here’s what your patients see when they view your
-            profile
-          </p>
-        </div>
-        <AppBar position="static" color="default">
-          <Tabs
-            value={value}
-            indicatorColor="secondary"
-            className={classes.tabBar}
-            onChange={handleChange}
-          >
-            <Tab label="Profile" />
-            <Tab label="Availability" disabled={value < 1 ? true : false} />
-            <Tab label="Fees" disabled={value < 2 ? true : false} />
-          </Tabs>
-        </AppBar>
-        {value === 0 && (
-          <TabContainer>
-            {!!data.getDoctorProfile && (
-              <DoctorProfileTab
-                values={data.getDoctorProfile}
-                proceedHadler={() => proceedHadler}
-                key={1}
-              />
+        {!!data.getDoctorProfile && (
+          <div>
+            <div className={classes.tabHeading}>
+              <Typography variant="h1">
+                <span>
+                  hi dr. {`${data.getDoctorProfile.firstName} ${data.getDoctorProfile.lastName}`}!
+                </span>
+              </Typography>
+              <p>
+                It’s great to have you join us! <br /> Here’s what your patients see when they view
+                your profile
+              </p>
+            </div>
+            <AppBar position="static" color="default">
+              <Tabs
+                value={value}
+                indicatorColor="secondary"
+                className={classes.tabBar}
+                onChange={handleChange}
+              >
+                <Tab label="Profile" />
+                <Tab label="Availability" disabled={value < 1 ? true : false} />
+                <Tab label="Fees" disabled={value < 2 ? true : false} />
+              </Tabs>
+            </AppBar>
+            {value === 0 && (
+              <TabContainer>
+                {!!data.getDoctorProfile && (
+                  <DoctorProfileTab
+                    values={data.getDoctorProfile}
+                    proceedHadler={() => proceedHadler}
+                    key={1}
+                  />
+                )}
+              </TabContainer>
             )}
-          </TabContainer>
-        )}
-        {value === 1 && (
-          <TabContainer>
-            {!!data.getDoctorProfile && (
-              <AvailabilityTab
-                values={data.getDoctorProfile}
-                proceedHadler={() => proceedHadler}
-                key={2}
-              />
+            {value === 1 && (
+              <TabContainer>
+                {!!data.getDoctorProfile && (
+                  <AvailabilityTab
+                    values={data.getDoctorProfile}
+                    proceedHadler={() => proceedHadler}
+                    key={2}
+                  />
+                )}
+              </TabContainer>
             )}
-          </TabContainer>
-        )}
-        {value === 2 && (
-          <TabContainer>
-            {!!data.getDoctorProfile && (
-              <FeesTab values={data.getDoctorProfile} proceedHadler={() => proceedHadler} key={3} />
+            {value === 2 && (
+              <TabContainer>
+                {!!data.getDoctorProfile && (
+                  <FeesTab
+                    values={data.getDoctorProfile}
+                    proceedHadler={() => proceedHadler}
+                    key={3}
+                  />
+                )}
+              </TabContainer>
             )}
-          </TabContainer>
+          </div>
         )}
       </div>
-      </div></div>)}
     </div>
   );
 };
