@@ -3,16 +3,7 @@ import { Theme } from '@material-ui/core';
 import React, { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
-import MenuItem from '@material-ui/core/MenuItem';
-import { AphSelect } from '@aph/web-ui-components';
-import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
-import _isEmpty from 'lodash/isEmpty';
-import _startCase from 'lodash/startCase';
-import _toLower from 'lodash/lowerCase';
-import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
-import { useAuth } from 'hooks/authHooks';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -57,6 +48,9 @@ const useStyles = makeStyles((theme: Theme) => {
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
       marginBottom: '30px',
+    },
+    tabContentPanel: {
+      backgroundColor: '#fff !important',
     },
     starDoctors: {
       width: '80px',
@@ -134,11 +128,10 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.secondary.dark,
     },
     primaryHeading: {
-
       fontSize: theme.typography.pxToRem(20),
       color: theme.palette.secondary.dark,
       fontWeight: theme.typography.fontWeightMedium,
-    }
+    },
     secondaryHeading: {
       fontSize: theme.typography.pxToRem(15),
       color: theme.palette.text.secondary,
@@ -167,7 +160,7 @@ const useStyles = makeStyles((theme: Theme) => {
       flexBasis: '10%',
       paddingTop: '4px',
       color: theme.palette.primary.dark,
-      fontWeight: theme.typography.fontWeightMedium;
+      fontWeight: theme.typography.fontWeightMedium,
     },
     helper: {
       borderLeft: `2px solid ${theme.palette.divider}`,
@@ -187,13 +180,13 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: theme.spacing(1),
       marginRight: theme.spacing(1),
       width: 140,
-      '& input' {
+      '& input': {
         fontSize: '20px',
         color: '#02475b',
         fontWeight: theme.typography.fontWeightMedium,
         paddingTop: 0,
         borderBottom: '2px solid #00b38e',
-      }
+      },
     },
     addAvailabilitydetails: {
       padding: theme.spacing(2),
@@ -207,13 +200,13 @@ const useStyles = makeStyles((theme: Theme) => {
     footerButtons: {
       textAlign: 'right',
       paddingTop: '15px',
-      '& button' {
+      '& button': {
         fontSize: '15px',
         fontWeight: theme.typography.fontWeightMedium,
       },
     },
     cancelBtn: {
-      color: theme.palette.secondary.dark,,
+      color: theme.palette.secondary.dark,
     },
     timeDivider: {},
     instructions: {
@@ -232,51 +225,190 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
   const classes = useStyles();
   const [data, setData] = useState(values);
   const [sp, setsp] = useState<string>('Physical');
+  const [showOperatingHoursForm, setShowOperatingHoursForm] = useState<boolean>(false);
 
-  console.log(data);
-
+  interface consultItem {
+    key: string;
+    value: string;
+    selected: boolean;
+  }
+  const consultTypeArr = [
+    {
+      key: 'physical',
+      value: 'Physical',
+      selected: true,
+    },
+    {
+      key: 'online',
+      value: 'Online',
+      selected: false,
+    },
+  ];
+  const [consultType, setVonsultType] = useState<consultItem>(consultTypeArr);
+  const consultTypeHtml = consultType.map((item, index) => {
+    return (
+      <AphButton
+        key={item.key.toString()}
+        variant="contained"
+        value="Physical"
+        classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
+        onClick={(e) => {
+          console.log(e);
+        }}
+      >
+        Physical
+      </AphButton>
+    );
+  });
+  function getConsultTypeHTML() {
+    return (
+      <div>
+        <Typography variant="h5">What type of consults will you be available for?</Typography>
+        {consultTypeHtml}
+      </div>
+    );
+  }
+  interface weekItem {
+    key: number;
+    value: string;
+    selected: boolean;
+  }
+  const weekArr: any = [
+    {
+      key: 0,
+      value: 'SUN',
+      selected: true,
+    },
+    {
+      key: 1,
+      value: 'MON',
+      selected: true,
+    },
+    {
+      key: 2,
+      value: 'TUE',
+      selected: false,
+    },
+    {
+      key: 3,
+      value: 'WED',
+      selected: false,
+    },
+    {
+      key: 4,
+      value: 'THU',
+      selected: false,
+    },
+    {
+      key: 5,
+      value: 'FRI',
+      selected: false,
+    },
+    {
+      key: 6,
+      value: 'SAT',
+      selected: false,
+    },
+  ];
+  const [week, setWeek] = useState<weekItem>(weekArr);
+  const dayClickHandler = (key) => {
+    const updatedWeekArr = weekArr.map((day) => {
+      if (day.key === key) {
+        console.log(day.selected, !day.selected);
+        day.selected = !day.selected;
+      }
+      return day;
+    });
+    setWeek(updatedWeekArr);
+  };
+  const weekHtml = week.map((item, index) => {
+    return (
+      <AphButton
+        key={item.key.toString()}
+        variant="contained"
+        classes={item.selected ? { root: classes.btnActive } : { root: classes.btnInactive }}
+        onClick={() => {
+          dayClickHandler(item.key);
+        }}
+      >
+        {item.value}
+      </AphButton>
+    );
+  });
+  function getWeekHTML() {
+    return (
+      <div>
+        <Typography variant="h5" className={classes.timeForm}>
+          Which days you wish to apply these hours to?
+        </Typography>
+        {weekHtml}
+      </div>
+    );
+  }
+  function getDetails() {
+    return (
+      <div>
+        <div className={classes.column}>
+          <Typography variant="h5">
+            <form className={classes.timeForm}>
+              Enter your preferred consult hours:
+              <TextField
+                id="time"
+                type="time"
+                defaultValue="09:30"
+                className={classes.textField}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                inputProps={{
+                  step: 300, // 5 min
+                }}
+              />
+              <span className={classes.timeDivider}> - </span>
+              <TextField
+                id="time"
+                type="time"
+                defaultValue="12:30"
+                className={classes.textField}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                inputProps={{
+                  step: 300, // 5 min
+                }}
+              />
+            </form>
+            <br />
+          </Typography>
+        </div>
+        <div>
+          <div>{getWeekHTML()}</div>
+          <div>{getConsultTypeHTML()}</div>
+          <Typography className={classes.instructions}>
+            Note: Any addition or modification to your consultation hours will take effect only
+            after 24 hours.
+          </Typography>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className={classes.ProfileContainer}>
-      <Grid container className={classes.availabletabContent} alignItems="flex-start" >
+      <Grid container className={classes.availabletabContent} alignItems="flex-start">
         <Grid item lg={2} sm={6} xs={12}>
           <Typography variant="h2">Consultation Type</Typography>
         </Grid>
-
         <Grid item lg={10} sm={6} xs={12}>
-          <div>
-            <Typography variant="h5">What type of consults will you be available for?</Typography>
-            <AphButton
-              variant="contained"
-              value="Physical"
-              classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-              onClick={(e) => {
-                console.log(e);
-              }}
-            >
-              Physical
-                </AphButton>
-            <AphButton
-              variant="contained"
-              value="Physical"
-              classes={sp === 'Physical' ? { root: classes.btnInactive } : {}}
-              onClick={(e) => {
-                console.log(e);
-              }}
-            >
-              Online
-                </AphButton>
-            </Grid>
-          </div>
+          <div>{getConsultTypeHTML()}</div>
+        </Grid>
       </Grid>
-
       <Grid container className={classes.availabletabContent} alignItems="flex-start">
         <Grid item lg={2} sm={6} xs={12}>
           <Typography variant="h2">Consultation Hours</Typography>
         </Grid>
-
         <Grid item lg={10} sm={6} xs={12}>
           <div className={classes.tabContent}>
-            <ExpansionPanel>
+            <ExpansionPanel className={classes.tabContentPanel} disabled>
               <ExpansionPanelSummary
                 expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
                 aria-controls="panel1c-content"
@@ -290,311 +422,46 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
                     Mon, Tue, Wed, Thur, Fri | Online, Physical
                   </Typography>
                 </div>
-                <div className={classes.columnType}>
-                  (Fixed)
-                </div>
+                <div className={classes.columnType}>(Fixed)</div>
               </ExpansionPanelSummary>
               <ExpansionPanelDetails className={classes.details}>
-                <div className={classes.column}>
-                  <Typography variant="h5">
-                    <form className={classes.timeForm}>
-                      Enter your preferred consult hours:
-                      <TextField
-                        id="time"
-                        type="time"
-                        defaultValue="09:30"
-                        className={classes.textField}
-                        InputLabelProps={{
-                          shrink: true,
-                        }}
-                        inputProps={{
-                          step: 300, // 5 min
-                        }}
-                      />
-                      <span className={classes.timeDivider}> - </span>
-                      <TextField
-                        id="time"
-                        type="time"
-                        defaultValue="12:30"
-                        className={classes.textField}
-                        InputLabelProps={{
-                          shrink: true,
-                        }}
-                        inputProps={{
-                          step: 300, // 5 min
-                        }}
-                      />
-                    </form>
-                    <br />
-                  </Typography>
-                </div>
-                <div>
-                  <div>
-                    <Typography variant="h5" className={classes.timeForm}>Which days you wish to apply these hours to?</Typography>
-                    <AphButton
-                      variant="contained"
-                      value="Physical"
-                      classes={sp === 'Physical' ? { root: classes.btnInactive } : {}}
-                      onClick={(e) => {
-                        console.log(e);
-                      }}
-                    >
-                      Sun
-                </AphButton>
-                    <AphButton
-                      variant="contained"
-                      value="Physical"
-                      classes={sp === 'Physical' ? { root: classes.btnInactive } : {}}
-                      onClick={(e) => {
-                        console.log(e);
-                      }}
-                    >
-                      Mon
-                </AphButton>
-                    <AphButton
-                      variant="contained"
-                      value="Physical"
-                      classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-                      onClick={(e) => {
-                        console.log(e);
-                      }}
-                    >
-                      Tue
-                </AphButton>
-                    <AphButton
-                      variant="contained"
-                      value="Physical"
-                      classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-                      onClick={(e) => {
-                        console.log(e);
-                      }}
-                    >
-                      Wed
-                </AphButton>
-                    <AphButton
-                      variant="contained"
-                      value="Physical"
-                      classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-                      onClick={(e) => {
-                        console.log(e);
-                      }}
-                    >
-                      Thu
-                </AphButton>
-                    <AphButton
-                      variant="contained"
-                      value="Physical"
-                      classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-                      onClick={(e) => {
-                        console.log(e);
-                      }}
-                    >
-                      Fri
-                </AphButton>
-                    <AphButton
-                      variant="contained"
-                      value="Physical"
-                      classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-                      onClick={(e) => {
-                        console.log(e);
-                      }}
-                    >
-                      Sat
-                </AphButton>
-                  </div>
-                  <div>
-                    <Typography variant="h5" className={classes.timeForm}>What type of consults would you like to do?</Typography>
-                    <AphButton
-                      variant="contained"
-                      value="Physical"
-                      classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-                      onClick={(e) => {
-                        console.log(e);
-                      }}
-                    >
-                      Physical
-                </AphButton>
-                    <AphButton
-                      variant="contained"
-                      value="Physical"
-                      classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-                      onClick={(e) => {
-                        console.log(e);
-                      }}
-                    >
-                      Online
-                </AphButton>
-                  </div>
-                  <Typography className={classes.instructions}>
-                    Note: Any addition or modification to your consultation hours will take effect only after 24 hours.
-                </Typography>
-                </div>
-                <div>
-                </div>
+                {getDetails()}
               </ExpansionPanelDetails>
               <Divider />
-              <ExpansionPanelActions className={classes.footerButtons}>
-                <Button size="small" className={classes.cancelBtn}>Cancel</Button>
-                <Button size="small" color="primary">
-                  Save
-                </Button>
-              </ExpansionPanelActions>
             </ExpansionPanel>
           </div>
-          <div className={classes.tabContent}>
-            <div className={classes.addAvailabilitydetails}>
-              <div className={classes.column}>
-                <Typography variant="h5">
-                  <form className={classes.timeForm}>
-                    Enter your preferred consult hours:
-                      <TextField
-                      id="time"
-                      type="time"
-                      defaultValue="09:30"
-                      className={classes.textField}
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                      inputProps={{
-                        step: 300, // 5 min
-                      }}
-                    />
-                    <span className={classes.timeDivider}> - </span>
-                    <TextField
-                      id="time"
-                      type="time"
-                      defaultValue="12:30"
-                      className={classes.textField}
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                      inputProps={{
-                        step: 300, // 5 min
-                      }}
-                    />
-                  </form>
-                  <br />
-                </Typography>
-              </div>
-              <div>
-                <Typography variant="h5" className={classes.timeForm}>Which days you wish to apply these hours to?</Typography>
-                <AphButton
-                  variant="contained"
-                  value="Physical"
-                  classes={sp === 'Physical' ? { root: classes.btnInactive } : {}}
-                  onClick={(e) => {
-                    console.log(e);
-                  }}
-                >
-                  Sun
-                </AphButton>
-                <AphButton
-                  variant="contained"
-                  value="Physical"
-                  classes={sp === 'Physical' ? { root: classes.btnInactive } : {}}
-                  onClick={(e) => {
-                    console.log(e);
-                  }}
-                >
-                  Mon
-                </AphButton>
-                <AphButton
-                  variant="contained"
-                  value="Physical"
-                  classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-                  onClick={(e) => {
-                    console.log(e);
-                  }}
-                >
-                  Tue
-                </AphButton>
-                <AphButton
-                  variant="contained"
-                  value="Physical"
-                  classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-                  onClick={(e) => {
-                    console.log(e);
-                  }}
-                >
-                  Wed
-                </AphButton>
-                <AphButton
-                  variant="contained"
-                  value="Physical"
-                  classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-                  onClick={(e) => {
-                    console.log(e);
-                  }}
-                >
-                  Thu
-                </AphButton>
-                <AphButton
-                  variant="contained"
-                  value="Physical"
-                  classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-                  onClick={(e) => {
-                    console.log(e);
-                  }}
-                >
-                  Fri
-                </AphButton>
-                <AphButton
-                  variant="contained"
-                  value="Physical"
-                  classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-                  onClick={(e) => {
-                    console.log(e);
-                  }}
-                >
-                  Sat
-                </AphButton>
-              </div>
-              <div>
-                <Typography variant="h5" className={classes.timeForm}>What type of consults would you like to do?</Typography>
-                <AphButton
-                  variant="contained"
-                  value="Physical"
-                  classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-                  onClick={(e) => {
-                    console.log(e);
-                  }}
-                >
-                  Physical
-                </AphButton>
-                <AphButton
-                  variant="contained"
-                  value="Physical"
-                  classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-                  onClick={(e) => {
-                    console.log(e);
-                  }}
-                >
-                  Online
-                </AphButton>
-              </div>
-              <Typography className={classes.instructions}>
-                Note: Any addition or modification to your consultation hours will take effect only after 24 hours.
-                </Typography>
-              <Divider />
-              <div display="flex" className={classes.footerButtons}>
-                <Button size="small" className={classes.cancelBtn} >Cancel</Button>
-                <Button size="small" color="primary">
-                  Save
-                </Button>
+          {showOperatingHoursForm && (
+            <div className={classes.tabContent}>
+              <div className={classes.addAvailabilitydetails}>
+                {getDetails()}
+                <Divider />
+                <div display="flex" className={classes.footerButtons}>
+                  <Button
+                    size="small"
+                    className={classes.cancelBtn}
+                    onClick={(e) => setShowOperatingHoursForm(!showOperatingHoursForm)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button size="small" color="primary">
+                    Save
+                  </Button>
+                </div>
               </div>
             </div>
-
-          </div>
-          <div className={classes.addDocter}>
-            <AphButton
-              variant="contained"
-              color="primary"
-              classes={{ root: classes.btnAddDoctor }}
-              onClick={(e) => setShowAddDoc(!showAddDoc)}
-            >
-              + ADD CONSULTATION HOURS
-            </AphButton>
-          </div>
+          )}
+          {!showOperatingHoursForm && (
+            <div className={classes.addDocter}>
+              <AphButton
+                variant="contained"
+                color="primary"
+                classes={{ root: classes.btnAddDoctor }}
+                onClick={(e) => setShowOperatingHoursForm(!showOperatingHoursForm)}
+              >
+                + ADD CONSULTATION HOURS
+              </AphButton>
+            </div>
+          )}
         </Grid>
       </Grid>
       <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>

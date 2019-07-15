@@ -13,6 +13,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { Welcome } from 'components/Welcome';
 import { PatientsList } from 'components/PatientsList';
 import { DoctorsProfile } from 'components/DoctorsProfile';
+import { Calendar } from 'components/Calendar';
 import { AuthProvider } from 'components/AuthProvider';
 import { useAuth } from 'hooks/authHooks';
 
@@ -133,6 +134,7 @@ const App: React.FC = () => {
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
       <Route exact path={clientRoutes.patients()} component={PatientsList} />
       <Route exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
+      <Route exact path={clientRoutes.calendar()} component={Calendar} />
     </div>
   );
 };
