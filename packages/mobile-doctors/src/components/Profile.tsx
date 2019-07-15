@@ -1,10 +1,10 @@
 import { ProfileData } from 'app/src/components/ProfileSetup';
 import { DoctorCard } from 'app/src/components/ui/DoctorCard';
-import { Star } from 'app/src/components/ui/Icons';
+import { Add, Send, Star } from 'app/src/components/ui/Icons';
 import { SquareCardWithTitle } from 'app/src/components/ui/SquareCardWithTitle';
 import { theme } from 'app/src/theme/theme';
-import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 
 const styles = StyleSheet.create({
@@ -65,6 +65,22 @@ const styles = StyleSheet.create({
     right: 16,
     top: 141 - 28,
   },
+  inputTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: '#02475b',
+    opacity: 0.6,
+  },
+  inputStyle: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    width: '100%',
+    color: theme.colors.INPUT_TEXT,
+    paddingBottom: 4,
+    marginTop: 12,
+    borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+    borderBottomWidth: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 });
 
 export interface ProfileProps {
@@ -72,6 +88,8 @@ export interface ProfileProps {
 }
 
 export const Profile: React.FC<ProfileProps> = (props) => {
+  const [addshow, setAddShow] = useState<boolean>(false);
+
   const profileRow = (title: string, description: string) => {
     if (!description) return null;
     return (
@@ -128,6 +146,48 @@ export const Profile: React.FC<ProfileProps> = (props) => {
             location={starDoctor.services}
           />
         ))}
+        {!addshow ? (
+          <View style={{ flexDirection: 'row', margin: 20 }}>
+            <Add />
+            <TouchableOpacity onPress={() => setAddShow(!addshow)}>
+              <Text
+                style={{
+                  fontFamily: 'IBMPlexSans',
+                  fontSize: 14,
+                  fontWeight: 'bold',
+                  fontStyle: 'normal',
+                  letterSpacing: 0,
+                  color: '#fc9916',
+                }}
+              >
+                ADD DOCTOR
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View
+            style={{
+              backgroundColor: '#f0f4f5',
+              flex: 1,
+              margin: 20,
+              borderRadius: 10,
+            }}
+          >
+            <View
+              style={{
+                margin: 20,
+              }}
+            >
+              <Text style={styles.inputTextStyle}>Add a doctor to your team</Text>
+              <View style={{ flexDirection: 'row' }}>
+                <TextInput autoFocus style={styles.inputStyle} />
+                <TouchableOpacity>
+                  <Send />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
       </SquareCardWithTitle>
     </View>
   );

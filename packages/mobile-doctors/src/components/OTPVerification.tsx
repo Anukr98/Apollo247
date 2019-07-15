@@ -276,18 +276,16 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 if (patient && patient.uhid && patient.uhid !== '') {
                   if (patient.firstName.relation != 0) {
                     AsyncStorage.setItem('userLoggedIn', 'true');
-                    props.navigation.replace(AppRoutes.TabBar);
+                    props.navigation.replace(AppRoutes.ProfileSetup);
                   } else {
-                    props.navigation.replace(AppRoutes.TabBar);
-                    // props.navigation.replace(AppRoutes.MultiSignup);
+                    props.navigation.replace(AppRoutes.ProfileSetup);
                   }
                 } else {
                   if (patient.firstName.length != 0) {
                     AsyncStorage.setItem('userLoggedIn', 'true');
-                    props.navigation.replace(AppRoutes.TabBar);
+                    props.navigation.replace(AppRoutes.ProfileSetup);
                   } else {
-                    props.navigation.replace(AppRoutes.TabBar);
-                    //props.navigation.replace(AppRoutes.SignUp);
+                    props.navigation.replace(AppRoutes.ProfileSetup);
                   }
                 }
               }

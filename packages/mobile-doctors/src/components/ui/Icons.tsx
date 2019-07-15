@@ -213,3 +213,19 @@ export const Down: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/down.png')}
   />
 );
+
+export const Send: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain', marginTop: 20, right: 20, bottom: 5 }}
+    {...props}
+    source={require('../../images/icons/send.png')}
+  />
+);
+
+export const Add: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/add.png')}
+  />
+);
