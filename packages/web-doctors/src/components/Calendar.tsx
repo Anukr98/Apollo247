@@ -78,7 +78,9 @@ export const Calendar: React.FC = (props) => {
       endTime: addMinutes(Date.now(), -1),
       details: {
         patientName: 'Prateek Sharma',
-        checkups: ['Fever', 'Cough & Cold'],
+        checkups: ['Fever', 'Cough & Cold', 'Nausea', 'Sore Eyes'],
+        avatar:
+          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
       },
       isNew: true,
       type: 'walkin',
@@ -89,8 +91,10 @@ export const Calendar: React.FC = (props) => {
       details: {
         patientName: 'George',
         checkups: ['Fever', 'Cough & Cold'],
+        avatar:
+          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
       },
-      isNew: true,
+      isNew: false,
       type: 'walkin',
     },
   ];
