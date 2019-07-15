@@ -131,7 +131,7 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
                 {!!data.getDoctorProfile && (
                   <DoctorProfileTab
                     values={data.getDoctorProfile}
-                    proceedHadler={() => proceedHadler}
+                    proceedHadler={() => proceedHadler()}
                     key={1}
                   />
                 )}
@@ -142,7 +142,7 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
                 {!!data.getDoctorProfile && (
                   <AvailabilityTab
                     values={data.getDoctorProfile}
-                    proceedHadler={() => proceedHadler}
+                    proceedHadler={() => proceedHadler()}
                     key={2}
                   />
                 )}
@@ -153,7 +153,7 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
                 {!!data.getDoctorProfile && (
                   <FeesTab
                     values={data.getDoctorProfile}
-                    proceedHadler={() => proceedHadler}
+                    proceedHadler={() => proceedHadler()}
                     key={3}
                   />
                 )}

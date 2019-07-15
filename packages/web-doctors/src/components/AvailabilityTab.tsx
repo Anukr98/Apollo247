@@ -226,15 +226,15 @@ interface Props {
 }
 export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
   const classes = useStyles();
-  const [data, setData] = useState(values);
-  const [sp, setsp] = useState<string>('Physical');
+  //const [data, setData] = useState(values);
+  //const [sp, setsp] = useState<string>('Physical');
   const [showOperatingHoursForm, setShowOperatingHoursForm] = useState<boolean>(false);
 
-  interface consultItem {
-    key: string;
-    value: string;
-    selected: boolean;
-  }
+  // interface consultItem {
+  //   key: string;
+  //   value: string;
+  //   selected: boolean;
+  // }
   const consultTypeArr = [
     {
       key: 'physical',
@@ -247,8 +247,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
       selected: false,
     },
   ];
-  const [consultType, setVonsultType] = useState<consultItem>(consultTypeArr);
-  const consultTypeHtml = consultType.map((item, index) => {
+  const consultTypeHtml = consultTypeArr.map((item, index) => {
     return (
       <AphButton
         key={item.key}
@@ -314,17 +313,19 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
     },
   ];
   const [week, setWeek] = useState<weekItem>(weekArr);
+  console.log(week);
   const dayClickHandler = (key) => {
-    const updatedWeekArr = weekArr.map((day) => {
-      if (day.key === key) {
-        console.log(day.selected, !day.selected);
-        day.selected = !day.selected;
-      }
-      return day;
-    });
-    setWeek(updatedWeekArr);
+    console.log(key);
+    // const updatedWeekArr = week.map((day) => {
+    //   if (day.key === key) {
+    //     console.log(day.selected, !day.selected);
+    //     day.selected = !day.selected;
+    //   }
+    //   return day;
+    // });
+    // setWeek(updatedWeekArr);
   };
-  const weekHtml = week.map((item, index) => {
+  const weekHtml = weekArr.map((item, index) => {
     return (
       <AphButton
         key={item.key.toString()}
@@ -439,7 +440,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
               <div className={classes.addAvailabilitydetails}>
                 {getDetails()}
                 <Divider />
-                <div display="flex" className={classes.footerButtons}>
+                <div className={classes.footerButtons}>
                   <Button
                     size="small"
                     className={classes.cancelBtn}
@@ -474,7 +475,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
             variant="contained"
             color="primary"
             classes={{ root: classes.saveButton }}
-            onClick={proceedHadler()}
+            onClick={() => proceedHadler()}
           >
             SAVE AND PROCEED
           </AphButton>

@@ -172,7 +172,7 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
       setShowAddDoc(false);
     }
   }
-  function removeDoctor(doctor) {
+  function removeDoctor() {
     alert('delete');
   }
   const starDocNumber = data.starDoctorTeam.length;
@@ -336,7 +336,7 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
             variant="contained"
             color="primary"
             classes={{ root: classes.saveButton }}
-            onClick={proceedHadler()}
+            onClick={() => proceedHadler()}
           >
             SAVE AND PROCEED
           </AphButton>

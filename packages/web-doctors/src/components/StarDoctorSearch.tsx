@@ -244,14 +244,9 @@ export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
           </Paper>
         )}
       />
-      {doctor.label && state.single === doctor.label && (
-        <div className={classes.addBtn} onClick={() => addDoctorHadler(doctor)}>
-          <img alt="" src={require('images/add_doctor.svg')} />
-        </div>
-        // <button>
-        //   Add
-        // </button>
-      )}
+      <div className={classes.addBtn} onClick={() => addDoctorHadler(doctor)}>
+        <img alt="" src={require('images/add_doctor.svg')} />
+      </div>
     </div>
   );
 }
