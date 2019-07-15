@@ -29,6 +29,7 @@ export const PATIENT_SIGN_IN = gql`
         gender
         uhid
         dateOfBirth
+        emailAddress
       }
     }
   }
@@ -46,6 +47,7 @@ export const UPDATE_PATIENT = gql`
         gender
         uhid
         dateOfBirth
+        emailAddress
       }
     }
   }
