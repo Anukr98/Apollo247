@@ -206,7 +206,7 @@ export const AuthProvider: React.FC = (props) => {
           throw new Error('no data returned from sign in call');
         }
         const patients = signInResult.data.patientSignIn.patients;
-        const me = patients.find((p) => p.relation === Relation.ME) || patients[0];
+        const me = patients.find((p) => p.relation === Relation.ME) || null;
         setAllCurrentPatients(patients);
         setCurrentPatient(me);
         setSignInError(false);
