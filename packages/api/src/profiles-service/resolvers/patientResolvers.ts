@@ -1,9 +1,8 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'profiles-service/profiles-service';
-import { Patient, ErrorMsgs } from 'profiles-service/entity/patient';
+import { Patient } from 'profiles-service/entity/patient';
 import fetch from 'node-fetch';
-import { auth, FirebaseError } from 'firebase-admin';
-import { BaseEntity, QueryFailedError } from 'typeorm';
+import { BaseEntity } from 'typeorm';
 
 import {
   PrismGetAuthTokenResponse,
@@ -11,6 +10,8 @@ import {
   PrismGetUsersError,
   PrismGetUsersResponse,
 } from 'types/prism';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 
 export const patientTypeDefs = gql`
   enum Gender {
@@ -31,15 +32,6 @@ export const patientTypeDefs = gql`
     OTHER
   }
 
-  enum ErrorMsgs {
-    INVALID_TOKEN
-    INVALID_MOBILE_NUMBER
-    PRISM_AUTH_TOKEN_ERROR
-    PRISM_GET_USERS_ERROR
-    UPDATE_PROFILE_ERROR
-    PRISM_NO_DATA
-  }
-
   type Patient @key(fields: "id") {
     id: ID!
     firstName: String
@@ -52,10 +44,6 @@ export const patientTypeDefs = gql`
     relation: Relation
   }
 
-  type Error {
-    messages: [ErrorMsgs!]!
-  }
-
   type GetPatientsResult {
     patients: [Patient!]!
   }
@@ -65,7 +53,6 @@ export const patientTypeDefs = gql`
 
   type PatientSignInResult {
     patients: [Patient!]
-    errors: Error
   }
 
   input UpdatePatientInput {
@@ -82,28 +69,21 @@ export const patientTypeDefs = gql`
 
   type UpdatePatientResult {
     patient: Patient
-    errors: Error
   }
 
   extend type Mutation {
-    patientSignIn(jwt: String): PatientSignInResult!
+    patientSignIn: PatientSignInResult!
     updatePatient(patientInput: UpdatePatientInput): UpdatePatientResult!
   }
 `;
 
 type PatientSignInResult = {
   patients: Patient[] | null;
-  errors: { messages: string[] } | null;
 };
 
 type UpdatePatientResult = {
   patient: Patient | null;
-  errors: { messages: string[] } | null;
 };
-
-function wait<R, E>(promise: Promise<R>): [R, E] {
-  return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
-}
 
 async function updateEntity<E extends BaseEntity>(
   Entity: typeof BaseEntity,
@@ -115,91 +95,41 @@ async function updateEntity<E extends BaseEntity>(
     entity = await Entity.findOneOrFail<E>(id);
     await Entity.update(id, attrs);
     await entity.reload();
-  } catch (e) {
-    throw e;
+  } catch (updateProfileError) {
+    throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { updateProfileError });
   }
   return entity;
 }
 
-const getPatients = () => ({ patients: [] });
-
-const patientSignIn: Resolver<any, { jwt: string }> = async (
+const patientSignIn: Resolver<any> = async (
   parent,
   args,
-  { firebase }
+  { firebaseUid, mobileNumber }
 ): Promise<PatientSignInResult> => {
-  const [firebaseIdToken, firebaseIdTokenError] = await wait<auth.DecodedIdToken, FirebaseError>(
-    firebase.auth().verifyIdToken(args.jwt)
-  );
-
-  if (firebaseIdTokenError) {
-    return {
-      patients: null,
-      errors: { messages: [`${ErrorMsgs.INVALID_TOKEN}`] },
-    };
-  }
-
-  const firebaseUid = firebaseIdToken.uid;
-  const [firebaseUser, firebaseUserError] = await wait(firebase.auth().getUser(firebaseUid));
-  if (firebaseUserError) {
-    return {
-      patients: [],
-      errors: { messages: [ErrorMsgs.INVALID_MOBILE_NUMBER] },
-    };
-  }
-  const mobileNumber = firebaseUser.phoneNumber!;
-
   const prismBaseUrl = 'http://blue.phrdemo.com/ui/data';
   const prismHeaders = { method: 'get', headers: { Host: 'blue.phrdemo.com' } };
-  const [prismAuthToken, prismAuthTokenError] = await wait<
-    PrismGetAuthTokenResponse,
-    PrismGetAuthTokenError
-  >(
-    fetch(`${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`, prismHeaders).then((res) =>
-      res
-        .json()
-        .then((resp) => {
-          return resp;
-        })
-        .catch((e) => {
-          return {
-            patients: [],
-            errors: { messages: [ErrorMsgs.PRISM_NO_DATA] },
-          };
-        })
-    )
-  );
-  if (prismAuthTokenError) {
-    return {
-      patients: null,
-      errors: { messages: [ErrorMsgs.PRISM_AUTH_TOKEN_ERROR] },
-    };
-  }
 
-  const [uhids, uhidsError] = await wait<PrismGetUsersResponse, PrismGetUsersError>(
-    fetch(
-      `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`,
-      prismHeaders
-    ).then((res) =>
-      res
-        .json()
-        .then((resp) => {
-          return resp;
-        })
-        .catch((e) => {
-          return {
-            patients: [],
-            errors: { messages: [ErrorMsgs.PRISM_NO_DATA] },
-          };
-        })
-    )
-  );
-  if (uhidsError) {
-    return {
-      patients: null,
-      errors: { messages: [ErrorMsgs.PRISM_GET_USERS_ERROR] },
-    };
-  }
+  const prismAuthToken = await fetch(
+    `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`,
+    prismHeaders
+  )
+    .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
+    .catch((prismGetAuthTokenError: PrismGetAuthTokenError) => {
+      throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {
+        prismGetAuthTokenError,
+      });
+    });
+
+  const uhids = await fetch(
+    `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`,
+    prismHeaders
+  )
+    .then((res) => res.json() as Promise<PrismGetUsersResponse>)
+    .catch((prismGetUsersError: PrismGetUsersError) => {
+      throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR, undefined, {
+        prismGetUsersError,
+      });
+    });
 
   const findOrCreatePatient = (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber'] },
@@ -242,8 +172,10 @@ const patientSignIn: Resolver<any, { jwt: string }> = async (
         ),
       ];
 
-  const patients = await Promise.all(patientPromises);
-  return { patients, errors: null };
+  const patients = await Promise.all(patientPromises).catch((findOrCreateErrors) => {
+    throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
+  });
+  return { patients };
 };
 
 type UpdatePatientInput = { patientInput: Partial<Patient> & { id: Patient['id'] } };
@@ -252,12 +184,12 @@ const updatePatient: Resolver<any, UpdatePatientInput> = async (
   { patientInput }
 ): Promise<UpdatePatientResult> => {
   const { id, ...updateAttrs } = patientInput;
-  const [updatedPatient, updateError] = await wait<Patient, QueryFailedError>(
-    updateEntity<Patient>(Patient, id, updateAttrs)
-  );
+  const patient = await updateEntity<Patient>(Patient, id, updateAttrs);
+  return { patient };
+};
 
-  if (updateError) return { patient: null, errors: { messages: [ErrorMsgs.UPDATE_PROFILE_ERROR] } };
-  return { patient: updatedPatient, errors: null };
+const getPatients = () => {
+  return { patients: [] };
 };
 
 export const patientResolvers = {

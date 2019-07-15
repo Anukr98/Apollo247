@@ -7,7 +7,7 @@ _Note to windows users: Run the following steps on a Windows 10 Pro machine in a
 1. Install docker and docker-compose
 2. Install [lazydocker](https://github.com/jesseduffield/lazydocker)
 3. Install [nvm](https://nvm.sh), run `nvm use` (now you may have to run an `nvm install` command, read the output)
-4. Add the `firebase-secrets.json` to the `packages/api/src/profiles-service` folder (ask someone on the dev team for a copy)
+4. Add the `firebase-secrets.json` to the `packages/api/src/profiles-service` and `packages/api/src/` folders (ask someone on the dev team for a copy)
 
 ## Web
 
@@ -24,10 +24,12 @@ _Note to windows users: Run the following steps on a Windows 10 Pro machine in a
 
 ## Mobile
 
-4. Run `npm install`
-5. Run `npm run bootstrap:mobile`
-6. Start the api-gateway `docker-compose up -d api-gateway`
-7. Run `lazydocker` to manage containers
+* Run `npm install`
+* Run `npm run bootstrap:mobile`
+* Start the api-gateway `docker-compose up -d api-gateway`
+* Run `lazydocker` to manage containers
+* For Doctors mobile run `npm install` inside mobile-doctors folder
+* Run mobile-doctors from xcode or android studio
 
 ## Database viewer
 
@@ -40,3 +42,17 @@ We use [Cypress](cypress.io) for web testing. Please download their gui binary t
 ## Mobile Testing
 
 Using jest. Execute `npm run test`
+
+## Troubleshooting
+* `docker-compose stop`
+* `git pull`
+* `npm run clean`
+* `rm -rf node_modules`
+* `npm i`
+* `npm run bootstrap` [ for windows run: `npm run bootstrap:web` ]
+
+* `docker-compose stop`
+* `docker-compose up api-gateway`
+* `docker-compose up web-doctors`
+* `docker-compose up web-patients`
+* Make sure `firebase-secrets.json` is copied to `packages/api/src/` folders (ask someone on the dev team for a copy)

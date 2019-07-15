@@ -5,17 +5,22 @@
   "types": "",
   "scripts": {
     "build": "tsc --project .",
-    "start": "tsc --project . -w"
+    "start": "tsc --project . -w",
+    "format": "prettier --list-different src/**/*.js src/**/*.jsx src/**/*.ts src/**/*.tsx src/**/*.json",
+    "format:fix": "prettier --write src/**/*.js src/**/*.jsx src/**/*.ts src/**/*.tsx src/**/*.json",
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix"
   },
   "peerDependencies": {},
   "devDependencies": {
-    "@aph/eslint-config": "0.0.1",
-    "@aph/prettier-config": "0.0.1",
-    "@aph/tsconfig": "0.0.1",
+    "@aph/eslint-config": "file:../eslint-config",
+    "@aph/prettier-config": "file:../prettier-config",
+    "@aph/tsconfig": "file:../tsconfig",
     "@typescript-eslint/eslint-plugin": "^1.9.0",
     "@typescript-eslint/parser": "^1.9.0",
     "eslint": "^5.16.0",
     "eslint-plugin-import": "^2.17.3",
+    "prettier": "^1.18.2",
     "typescript": "^3.5.2"
   },
   "dependencies": {},

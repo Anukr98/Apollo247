@@ -1,29 +1,21 @@
 import 'reflect-metadata';
-import _merge from 'lodash/merge';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
-import * as firebaseAdmin from 'firebase-admin';
 import { createConnection } from 'typeorm';
 import { Patient } from 'profiles-service/entity/patient';
 import { patientTypeDefs, patientResolvers } from 'profiles-service/resolvers/patientResolvers';
+import { GatewayContext, GatewayHeaders } from 'api-gateway';
 
-export interface Context {
-  firebase: firebaseAdmin.app.App;
-}
+export interface ProfilesServiceContext extends GatewayContext {}
 
 export type Resolver<Parent = any, Args = any> = (
   parent: Parent,
   args: Args,
-  context: Context
+  context: ProfilesServiceContext
 ) => any;
 
 (async () => {
-  const firebase = firebaseAdmin.initializeApp({
-    credential: firebaseAdmin.credential.applicationDefault(),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-  });
-
-  const dbConn = createConnection({
+  await createConnection({
     entities: [Patient],
     type: 'postgres',
     host: 'profiles-db',
@@ -33,18 +25,23 @@ export type Resolver<Parent = any, Args = any> = (
     database: `profiles_${process.env.NODE_ENV}`,
     logging: true,
     synchronize: true,
+  }).catch((error) => {
+    throw new Error(error);
   });
 
-  await Promise.all([firebase, dbConn]);
-
-  const context: Context = { firebase };
-
   const server = new ApolloServer({
-    context: () => context,
+    context: ({ req }) => {
+      const headers = req.headers as GatewayHeaders;
+      const context: ProfilesServiceContext = {
+        mobileNumber: headers.mobilenumber,
+        firebaseUid: headers.firebaseuid,
+      };
+      return context;
+    },
     schema: buildFederatedSchema([
       {
         typeDefs: patientTypeDefs,
-        resolvers: _merge(patientResolvers),
+        resolvers: patientResolvers,
       },
     ]),
   });

@@ -2,9 +2,14 @@
   "name": "apollo-hospitals",
   "private": true,
   "scripts": {
-    "clean": "lerna clean",
-    "bootstrap:web": "CYPRESS_INSTALL_BINARY=0 lerna bootstrap --hoist --ignore @aph/mobile* && lerna run build --scope @aph/web-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
-    "bootstrap:mobile": "CYPRESS_INSTALL_BINARY=0 lerna bootstrap --hoist --ignore @aph/web* && lerna run build --scope @aph/mobile-ui-components --scope @aph/shared-ui-components --scope @aph/universal"
+    "clean": "lerna exec -- rm -rf dist/* && lerna clean",
+    "lint": "lerna exec --scope @aph/web* --scope @aph/mobile* --scope @aph/universal* --scope @aph/shared* -- npm run lint",
+    "build:web": "lerna run build --scope @aph/web-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
+    "build:mobile": "lerna run build --scope @aph/mobile-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
+    "build": "lerna run build --scope @aph/web-ui-components --scope @aph/mobile-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
+    "bootstrap": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install && lerna run build --scope @aph/web-ui-components --scope @aph/mobile-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
+    "bootstrap:web": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --ignore @aph/mobile* && npm run build:web",
+    "bootstrap:mobile": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --ignore @aph/web* && npm run build:mobile"
   },
   "workspaces": {
     "packages": [
@@ -12,6 +17,35 @@
     ]
   },
   "devDependencies": {
+    "@hkdobrev/run-if-changed": "^0.2.5",
+    "husky": "^3.0.0",
     "lerna": "^3.15.0"
+  },
+  "husky": {
+    "hooks": {
+      "post-checkout": "run-if-changed",
+      "post-merge": "run-if-changed",
+      "post-rewrite": "run-if-changed",
+      "pre-push": "lerna run format:fix"
+    }
+  },
+  "run-if-changed": {
+    "package-lock.json": "CYPRESS_INSTALL_BINARY=0 npm install --prefer-offline --no-audit",
+    "packages/api/package-lock.json": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --prefer-offline --no-audit --scope @aph/api",
+    "packages/eslint-config/package-lock.json": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --prefer-offline --no-audit --scope @aph/eslint-config",
+    "packages/mobile-doctors/package-lock.json": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --prefer-offline --no-audit --scope @aph/mobile-doctors",
+    "packages/mobile-patients/package-lock.json": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --prefer-offline --no-audit --scope @aph/mobile-patients",
+    "packages/mobile-ui-components/package-lock.json": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --prefer-offline --no-audit --scope @aph/mobile-ui-components",
+    "packages/prettier-config/package-lock.json": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --prefer-offline --no-audit --scope @aph/prettier-config",
+    "packages/shared-ui-components/package-lock.json": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --prefer-offline --no-audit --scope @aph/shared-ui-components",
+    "packages/tsconfig/package-lock.json": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --prefer-offline --no-audit --scope @aph/tsconfig",
+    "packages/universal/package-lock.json": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --prefer-offline --no-audit --scope @aph/universal",
+    "packages/web-doctors/package-lock.json": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --prefer-offline --no-audit --scope @aph/web-doctors",
+    "packages/web-patients/package-lock.json": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --prefer-offline --no-audit --scope @aph/web-patients",
+    "packages/web-ui-components/package-lock.json": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --prefer-offline --no-audit --scope @aph/web-ui-components",
+    "packages/mobile-ui-components/src": "lerna run build --scope @aph/mobile-ui-components",
+    "packages/shared-ui-components/src": "lerna run build --scope @aph/shared-ui-components",
+    "packages/universal/src": "lerna run build --scope @aph/universal",
+    "packages/web-ui-components/src": "lerna run build --scope @aph/web-ui-components"
   }
 }
