@@ -10,6 +10,8 @@ export const clientBaseUrl = () => {
 export const clientRoutes = {
   welcome: () => '/',
   patients: () => '/patients',
+  doctorsLanding: () => '/doctors',
+  doctorsListing: () => '/doctorslisting',
   consultRoom: () => '#',
   testsAndMedicine: () => '#',
   healthRecords: () => '#',
