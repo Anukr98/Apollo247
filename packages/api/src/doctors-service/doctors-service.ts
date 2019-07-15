@@ -4,6 +4,10 @@ import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
 import * as firebaseAdmin from 'firebase-admin';
 import { doctorTypeDefs, doctorResolvers } from 'doctors-service/resolvers/doctorResolvers';
+import {
+  getSpecialtyTypeDefs,
+  getSpecialtyResolvers,
+} from 'doctors-service/resolvers/getSpecialties';
 
 export interface Context {
   firebase: firebaseAdmin.app.App;
@@ -21,6 +25,10 @@ export type Resolver<Parent = any, Args = any> = (
       {
         typeDefs: doctorTypeDefs,
         resolvers: _merge(doctorResolvers),
+      },
+      {
+        typeDefs: getSpecialtyTypeDefs,
+        resolvers: getSpecialtyResolvers,
       },
     ]),
   });
