@@ -2,21 +2,19 @@ import 'reflect-metadata';
 import _merge from 'lodash/merge';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
-import * as firebaseAdmin from 'firebase-admin';
 import { doctorTypeDefs, doctorResolvers } from 'doctors-service/resolvers/doctorResolvers';
 import {
   getSpecialtyTypeDefs,
   getSpecialtyResolvers,
 } from 'doctors-service/resolvers/getSpecialties';
+import { GatewayContext } from 'api-gateway';
 
-export interface Context {
-  firebase: firebaseAdmin.app.App;
-}
+export interface DoctorsServiceContext extends GatewayContext {}
 
 export type Resolver<Parent = any, Args = any> = (
   parent: Parent,
   args: Args,
-  context: Context
+  context: DoctorsServiceContext
 ) => any;
 
 (async () => {
