@@ -4,7 +4,10 @@ import { buildFederatedSchema } from '@apollo/federation';
 import { createConnection } from 'typeorm';
 import { Patient } from 'profiles-service/entity/patient';
 import { patientTypeDefs, patientResolvers } from 'profiles-service/resolvers/patientSignIn';
-import { updatePatientTypeDefs, updatePatientResolvers } from 'profiles-service/resolvers/updatePatient';
+import {
+  updatePatientTypeDefs,
+  updatePatientResolvers,
+} from 'profiles-service/resolvers/updatePatient';
 import { getPatientTypeDefs, getPatientResolvers } from 'profiles-service/resolvers/getPatients';
 import { GatewayContext, GatewayHeaders } from 'api-gateway';
 
