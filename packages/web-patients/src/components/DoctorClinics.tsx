@@ -63,7 +63,17 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
 
   const { doctorId } = props;
 
-  console.log(doctorId);
+  interface clinicDetailsType {
+    id: string;
+    address: string;
+    availability: {
+      [key: string]: string;
+    };
+  }
+
+  interface clinicDetails {
+    [key: string]: clinicDetailsType;
+  }
 
   /* this should be a graphql call */
   const clinicsObj = {
@@ -85,15 +95,15 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
     },
   };
 
-  const clinicsMarkup = (clinicsObj) => {
-    return Object.values(clinicsObj).map((clinicDetails: any) => (
+  const clinicsMarkup = (clinicsObj: clinicDetails) => {
+    return Object.values(clinicsObj).map((clinicDetails: clinicDetailsType) => (
       <div key={_uniqueId('clinic_')}>
         <div>
           <img src="https://placeimg.com/300/100/any" />
         </div>
         <div>{clinicDetails.address}</div>
         <div>
-          {Object.keys(clinicDetails.availability).map((index) => {
+          {Object.keys(clinicDetails.availability).map((index: string) => {
             return (
               <div key={_uniqueId('ava_')}>
                 <span>{index}</span>: {clinicDetails.availability[index]}
