@@ -16,10 +16,17 @@ import { ProfileSuccess } from 'components/ProfileSuccess';
 import { parse, format } from 'date-fns';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 
-export const convertAphClientDateToIso = (ddmmyyyy: string) => {
-  const date = parse(ddmmyyyy, 'dd/MM/yyyy', new Date());
-  const converted = format(date, 'yyyy-MM-dd');
-  return converted;
+const isoDatePattern = 'yyyy-MM-dd';
+const clientDatePattern = 'dd/MM/yyyy';
+
+export const convertClientDateToIsoDate = (ddmmyyyy: string) => {
+  const date = parse(ddmmyyyy, clientDatePattern, new Date());
+  return format(date, isoDatePattern);
+};
+
+const convertIsoDateToClientDate = (isoDateStr: string) => {
+  const date = parse(isoDateStr, isoDatePattern, new Date());
+  return format(date, clientDatePattern);
 };
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -110,7 +117,9 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const genders = Object.values(Gender);
   const [firstName, setFirstName] = useState<string>(patient.firstName || '');
   const [lastName, setLastName] = useState<string>(patient.lastName || '');
-  const [dateOfBirth, setDateOfBirth] = useState<string>(patient.dateOfBirth || '');
+  const [dateOfBirth, setDateOfBirth] = useState<string>(
+    patient.dateOfBirth ? convertIsoDateToClientDate(patient.dateOfBirth) : ''
+  );
   const [emailAddress, setEmailAddress] = useState<string>(patient.emailAddress || '');
   const [selectedGender, setGender] = useState<Gender | null>(patient.gender);
   const [showProfileSuccess, setShowProfileSuccess] = useState<boolean>(false);
@@ -251,7 +260,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                       firstName: firstName,
                       lastName: lastName,
                       gender: selectedGender && Gender[selectedGender],
-                      dateOfBirth: convertAphClientDateToIso(dateOfBirth),
+                      dateOfBirth: convertClientDateToIsoDate(dateOfBirth),
                       emailAddress,
                       relation: Relation.ME,
                     },

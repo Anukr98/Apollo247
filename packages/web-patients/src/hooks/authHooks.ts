@@ -7,8 +7,6 @@ import { Relation } from 'graphql/types/globalTypes';
 
 const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
 
-export const useCurrentPatient = () => useAllCurrentPatients().currentPatient;
-
 export const useAuth = () => {
   const verifyOtp = useAuthContext().verifyOtp!;
   const verifyOtpError = useAuthContext().verifyOtpError!;
@@ -18,9 +16,10 @@ export const useAuth = () => {
   const sendOtpError = useAuthContext().sendOtpError;
   const isSendingOtp = useAuthContext().isSendingOtp;
 
-  const isSignedIn = useAuthContext().isSignedIn;
-  const signInError = useAuthContext().signInError;
+  const hasAuthToken = useAuthContext().hasAuthToken;
   const isSigningIn = useAuthContext().isSigningIn;
+  const signInError = useAuthContext().signInError;
+  const isSignedIn = useAllCurrentPatients().allCurrentPatients != null;
   const signOut = useAuthContext().signOut!;
 
   return {
@@ -32,38 +31,45 @@ export const useAuth = () => {
     sendOtpError,
     isSendingOtp,
 
-    signInError,
+    hasAuthToken,
     isSigningIn,
+    signInError,
     isSignedIn,
     signOut,
   };
 };
 
+export const useCurrentPatient = () => useAllCurrentPatients().currentPatient;
+
 export const useAllCurrentPatients = () => {
-  const { isSigningIn, isSignedIn } = useAuth();
+  const isSigningIn = useAuthContext().isSigningIn;
+  const hasAuthToken = useAuthContext().hasAuthToken;
   const { loading, data, error } = useQuery<GetCurrentPatients>(GET_CURRENT_PATIENTS, {
-    skip: isSigningIn || !isSignedIn,
+    skip: isSigningIn || !hasAuthToken,
   });
-  const setCurrentPatient = useAuthContext().setCurrentPatient!;
-  const currentPatient = useAuthContext().currentPatient;
+  const setCurrentPatientId = useAuthContext().setCurrentPatientId!;
+  const currentPatientId = useAuthContext().currentPatientId;
   const allCurrentPatients =
     data && data.getCurrentPatients ? data.getCurrentPatients.patients : null;
+  const currentPatient = allCurrentPatients
+    ? allCurrentPatients.find((patient) => patient.id === currentPatientId)
+    : null;
 
   useEffect(() => {
-    if (!currentPatient) {
+    if (!currentPatientId) {
       const defaultCurrentPatient = allCurrentPatients
         ? allCurrentPatients.find((patient) => patient.relation === Relation.ME) || null
         : null;
-      setCurrentPatient(defaultCurrentPatient);
+      setCurrentPatientId(defaultCurrentPatient ? defaultCurrentPatient.id : null);
     }
-  }, [allCurrentPatients, currentPatient, setCurrentPatient]);
+  }, [allCurrentPatients, currentPatientId, setCurrentPatientId]);
 
   return {
     loading,
     error,
     allCurrentPatients,
     currentPatient,
-    setCurrentPatient,
+    setCurrentPatientId,
   };
 };
 

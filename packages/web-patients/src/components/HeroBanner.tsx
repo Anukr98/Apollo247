@@ -122,7 +122,7 @@ type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
 export const HeroBanner: React.FC = () => {
   const classes = useStyles();
-  const { allCurrentPatients, currentPatient, setCurrentPatient } = useAllCurrentPatients();
+  const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
 
   return (
     <div className={classes.heroBanner}>
@@ -132,11 +132,7 @@ export const HeroBanner: React.FC = () => {
             <span>hello</span>
             <AphSelect
               value={currentPatient.id}
-              onChange={(e) => {
-                const newId = e.target.value as Patient['id'];
-                const newCurrentPatient = allCurrentPatients.find((p) => p.id === newId);
-                if (newCurrentPatient) setCurrentPatient(newCurrentPatient);
-              }}
+              onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
               classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
             >
               {allCurrentPatients.map((patient) => {

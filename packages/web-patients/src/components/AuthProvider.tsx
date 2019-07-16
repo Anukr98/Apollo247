@@ -11,15 +11,12 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import _isEmpty from 'lodash/isEmpty';
 import _uniqueId from 'lodash/uniqueId';
-import {
-  GetCurrentPatients_getCurrentPatients_patients,
-  GetCurrentPatients,
-} from 'graphql/types/GetCurrentPatients';
+import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
 import { GET_CURRENT_PATIENTS } from 'graphql/profiles';
 
-export interface AuthContextProps<Patient = GetCurrentPatients_getCurrentPatients_patients> {
-  currentPatient: Patient | null;
-  setCurrentPatient: ((p: Patient | null) => void) | null;
+export interface AuthContextProps {
+  currentPatientId: string | null;
+  setCurrentPatientId: ((pid: string | null) => void) | null;
 
   sendOtp: ((phoneNumber: string, captchaPlacement: HTMLElement | null) => Promise<unknown>) | null;
   sendOtpError: boolean;
@@ -31,7 +28,7 @@ export interface AuthContextProps<Patient = GetCurrentPatients_getCurrentPatient
 
   signInError: boolean;
   isSigningIn: boolean;
-  isSignedIn: boolean;
+  hasAuthToken: boolean;
   signOut: (() => Promise<void>) | null;
 
   isLoginPopupVisible: boolean;
@@ -39,8 +36,8 @@ export interface AuthContextProps<Patient = GetCurrentPatients_getCurrentPatient
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
-  currentPatient: null,
-  setCurrentPatient: null,
+  currentPatientId: null,
+  setCurrentPatientId: null,
 
   sendOtp: null,
   sendOtpError: false,
@@ -52,7 +49,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
   signInError: false,
   isSigningIn: true,
-  isSignedIn: false,
+  hasAuthToken: false,
   signOut: null,
 
   isLoginPopupVisible: false,
@@ -101,10 +98,12 @@ let otpVerifier: firebase.auth.ConfirmationResult;
 
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
-  const isSignedIn = !_isEmpty(authToken);
+  const hasAuthToken = !_isEmpty(authToken);
   apolloClient = buildApolloClient(authToken, () => signOut());
 
-  const [currentPatient, setCurrentPatient] = useState<AuthContextProps['currentPatient']>(null);
+  const [currentPatientId, setCurrentPatientId] = useState<AuthContextProps['currentPatientId']>(
+    null
+  );
 
   const [isSendingOtp, setIsSendingOtp] = useState<AuthContextProps['isSendingOtp']>(false);
   const [sendOtpError, setSendOtpError] = useState<AuthContextProps['sendOtpError']>(false);
@@ -209,8 +208,8 @@ export const AuthProvider: React.FC = (props) => {
       <ApolloHooksProvider client={apolloClient}>
         <AuthContext.Provider
           value={{
-            currentPatient,
-            setCurrentPatient,
+            currentPatientId,
+            setCurrentPatientId,
 
             sendOtp,
             sendOtpError,
@@ -220,9 +219,9 @@ export const AuthProvider: React.FC = (props) => {
             verifyOtpError,
             isVerifyingOtp,
 
-            signInError,
+            hasAuthToken,
             isSigningIn,
-            isSignedIn,
+            signInError,
             signOut,
 
             isLoginPopupVisible,

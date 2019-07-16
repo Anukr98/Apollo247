@@ -40,7 +40,7 @@ export const getCurrentPatientsTypeDefs = gql`
     gender: Gender
     uhid: String
     emailAddress: String
-    dateOfBirth: String
+    dateOfBirth: Date
     relation: Relation
   }
 
