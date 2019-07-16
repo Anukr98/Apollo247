@@ -2,12 +2,12 @@ import gql from 'graphql-tag';
 import { Resolver } from 'doctors-service/doctors-service';
 import DoctorsData from 'doctors-service/data/doctors.json';
 export const doctorTypeDefs = gql`
-  type clinicsList {
+  type ClinicsList {
     name: String
     location: String
   }
 
-  type consultations {
+  type Consultations {
     days: String
     timings: String
     availableForPhysicalConsultation: Boolean
@@ -15,7 +15,7 @@ export const doctorTypeDefs = gql`
     type: String
   }
 
-  type paymentDetails {
+  type PaymentDetails {
     accountNumber: String
     address: String
   }
@@ -48,27 +48,24 @@ export const doctorTypeDefs = gql`
 
   type DoctorProfile {
     profile: Doctor
-    paymentDetails: [paymentDetails]
-    clinicsList: [clinicsList]
+    paymentDetails: [PaymentDetails]
+    clinicsList: [ClinicsList]
     starDoctorTeam: [Doctor]
-    consultationHours: [consultations]
+    consultationHours: [Consultations]
   }
   extend type Query {
+    getDoctors: [DoctorProfile]
     getDoctorProfile: DoctorProfile
     getDoctorProfileById(id: String): DoctorProfile
   }
 `;
 
-const getDoctors: Resolver<any> = async (parent, args): Promise<JSON> => {
-  return JSON.parse(JSON.stringify(DoctorsData));
-};
-
-type clinicsList = {
+type ClinicsList = {
   name: String;
   location: String;
 };
 
-type consultations = {
+type Consultations = {
   days: String;
   timings: String;
   availableForPhysicalConsultation: Boolean;
@@ -76,7 +73,7 @@ type consultations = {
   type: String;
 };
 
-type paymentDetails = {
+type PaymentDetails = {
   accountNumber: String;
   address: String;
 };
@@ -109,10 +106,14 @@ type Doctor = {
 
 type DoctorProfile = {
   profile: Doctor;
-  paymentDetails: paymentDetails[];
-  clinicsList: clinicsList[];
+  paymentDetails: PaymentDetails[];
+  clinicsList: ClinicsList[];
   starDoctorTeam: Partial<Doctor>[];
-  consultationHours: consultations[];
+  consultationHours: Consultations[];
+};
+
+const getDoctors: Resolver<any> = async (parent, args): Promise<JSON> => {
+  return JSON.parse(JSON.stringify(DoctorsData));
 };
 
 const getDoctorProfile: Resolver<any> = async (
