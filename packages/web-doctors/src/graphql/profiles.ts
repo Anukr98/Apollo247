@@ -23,6 +23,7 @@ export const IS_DOCTOR = gql`
     hasAccess(mobileNumber: $mobileNumber)
   }
 `;
+
 export const GET_DOCTOR_PROFILE = gql`
   query getDoctorProfile($mobileNumber: String!) {
     getDoctorProfile(mobileNumber: $mobileNumber) {

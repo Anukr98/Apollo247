@@ -6,13 +6,21 @@ import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { Gender, Relation } from 'graphql/types/globalTypes';
 import React, { useState } from 'react';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import { isNameValid, isEmailValid, isDobValid } from '@aph/universal/validators';
+import { isNameValid, isDateValid } from '@aph/universal/aphValidators';
+import isEmail from 'validator/lib/isEmail';
 import _includes from 'lodash/includes';
 import { updatePatient, updatePatientVariables } from 'graphql/types/updatePatient';
 import { Mutation } from 'react-apollo';
 import { UPDATE_PATIENT } from 'graphql/profiles';
 import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn';
 import { ProfileSuccess } from 'components/ProfileSuccess';
+import { parse, format } from 'date-fns';
+
+export const convertAphClientDateToIso = (ddmmyyyy: string) => {
+  const date = parse(ddmmyyyy, 'dd/MM/yyyy', new Date());
+  const converted = format(date, 'yyyy-MM-dd');
+  return converted;
+};
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -110,16 +118,16 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const submitDisabled =
     firstName.length > 2 &&
     lastName.length > 2 &&
-    (dateOfBirth.length === 10 && isDobValid(dateOfBirth)) &&
-    (emailAddress.length === 0 || (emailAddress.length > 0 && isEmailValid(emailAddress))) &&
+    (dateOfBirth.length === 10 && isDateValid(dateOfBirth)) &&
+    (emailAddress.length === 0 || (emailAddress.length > 0 && isEmail(emailAddress))) &&
     _includes(genders, selectedGender)
       ? false
       : true;
 
   const showFirstNameError = firstName.length > 0 && !isNameValid(firstName);
   const showLastNameError = lastName.length > 0 && !isNameValid(lastName);
-  const showDobError = dateOfBirth.length > 0 && !isDobValid(dateOfBirth);
-  const showEmailIdError = emailAddress.length > 0 && !isEmailValid(emailAddress);
+  const showDobError = dateOfBirth.length > 0 && !isDateValid(dateOfBirth);
+  const showEmailIdError = emailAddress.length > 0 && !isEmail(emailAddress);
 
   if (showProfileSuccess) {
     return <ProfileSuccess onSubmitClick={() => props.onClose()} />;
@@ -243,7 +251,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                       firstName: firstName,
                       lastName: lastName,
                       gender: selectedGender && Gender[selectedGender],
-                      dateOfBirth,
+                      dateOfBirth: convertAphClientDateToIso(dateOfBirth),
                       emailAddress,
                       relation: Relation.ME,
                     },

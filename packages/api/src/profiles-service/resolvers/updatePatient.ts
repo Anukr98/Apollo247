@@ -2,10 +2,14 @@ import gql from 'graphql-tag';
 import { Resolver } from 'profiles-service/profiles-service';
 import { Patient } from 'profiles-service/entity/patient';
 import { BaseEntity } from 'typeorm';
-import { AphError } from 'AphError';
+import { AphError, AphUserInputError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { validate } from 'class-validator';
+import { GraphQLDate } from 'graphql-iso-date';
 
 export const updatePatientTypeDefs = gql`
+  scalar Date
+
   input UpdatePatientInput {
     id: ID!
     firstName: String
@@ -14,7 +18,7 @@ export const updatePatientTypeDefs = gql`
     gender: Gender
     uhid: String
     emailAddress: String
-    dateOfBirth: String
+    dateOfBirth: Date
     relation: Relation
   }
 
@@ -44,6 +48,10 @@ async function updateEntity<E extends BaseEntity>(
   } catch (updateProfileError) {
     throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { updateProfileError });
   }
+  const errors = await validate(entity);
+  if (errors.length > 0) {
+    throw new AphUserInputError(AphErrorMessages.INVALID_ENTITY, { errors });
+  }
   return entity;
 }
 
@@ -58,6 +66,7 @@ const updatePatient: Resolver<any, UpdatePatientInput> = async (
 };
 
 export const updatePatientResolvers = {
+  Date: GraphQLDate,
   Mutation: {
     updatePatient,
   },

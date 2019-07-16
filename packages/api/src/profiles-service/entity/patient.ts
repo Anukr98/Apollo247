@@ -1,4 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm';
+import { Validate, IsDate } from 'class-validator';
+import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
 
 export enum Gender {
   MALE = 'MALE',
@@ -27,26 +29,31 @@ export class Patient extends BaseEntity {
   firebaseId: string;
 
   @Column()
+  @Validate(NameValidator)
   firstName: string;
 
   @Column()
+  @Validate(NameValidator)
   lastName: string;
 
   @Column({ nullable: true })
   gender: Gender;
 
   @Column()
+  @Validate(MobileNumberValidator)
   mobileNumber: string;
 
   @Column({ nullable: true })
   uhid: string;
 
   @Column({ nullable: true })
+  @Validate(EmailValidator)
   emailAddress: string;
 
   @Column({ nullable: true })
   relation: Relation;
 
   @Column({ nullable: true })
+  @IsDate()
   dateOfBirth: Date;
 }
