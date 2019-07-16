@@ -136,6 +136,7 @@ export const AuthProvider: React.FC = (props) => {
       // Create a new unique captcha every time because (apparently) captcha.clear() is flaky,
       // and can eventually result in a 'recaptcha already assigned to this element' error.
       const captchaContainer = document.createElement('div');
+      captchaContainer.style.display = 'none';
       const captchaId = _uniqueId('captcha-container');
       captchaContainer.id = captchaId;
       captchaPlacement.parentNode!.insertBefore(captchaContainer, captchaPlacement.nextSibling);
