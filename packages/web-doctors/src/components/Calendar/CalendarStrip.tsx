@@ -44,6 +44,7 @@ const useStyles = makeStyles({
     margin: 'auto',
     padding: '0 15px',
     textAlign: 'center',
+    boxShadow: '-4px 0px 10px 2px rgba(0, 0, 0, 0.1)',
   },
   monthPopup: {
     fontSize: 21,

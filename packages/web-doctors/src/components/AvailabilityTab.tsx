@@ -240,6 +240,7 @@ interface Props {
 }
 export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBtnHandler }) => {
   const classes = useStyles();
+  const data = values;
   //const [data, setData] = useState(values);
   //const [sp, setsp] = useState<string>('Physical');
   const [showOperatingHoursForm, setShowOperatingHoursForm] = useState<boolean>(false);
@@ -411,6 +412,40 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
       </div>
     );
   }
+  const AvailabilityHtml = data.consultationHours.map((item, index) => {
+    return (
+      <div key={index.toString()} className={classes.tabContent}>
+        <ExpansionPanel
+          className={
+            classes.tabContentPanel +
+            ((item.type && item.type.toLowerCase()) === 'fixed' ? classes.pointerNone : '')
+          }
+        >
+          <ExpansionPanelSummary
+            expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+            aria-controls="panel1c-content"
+            id="panel1c-header"
+          >
+            <div className={classes.columnTime}>
+              <Typography className={classes.primaryHeading}>{item.timings}</Typography>
+            </div>
+            <div className={classes.columnDays}>
+              <Typography className={classes.heading}>
+                {item.days} | {item.availableForPhysicalConsultation && 'Physical'},{' '}
+                {item.availableForVirtualConsultation && 'Online'}
+              </Typography>
+            </div>
+            {item.type && item.type !== '' && <div className={classes.columnType}>(Fixed)</div>}
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails className={classes.details}>{getDetails()}</ExpansionPanelDetails>
+          <Divider />
+        </ExpansionPanel>
+      </div>
+    );
+  });
+  function getAvailabilityHtml() {
+    return AvailabilityHtml;
+  }
   return (
     <div className={classes.ProfileContainer}>
       <Grid container className={classes.availabletabContent} alignItems="flex-start">
@@ -418,7 +453,39 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
           <Typography variant="h2">Consultation Type</Typography>
         </Grid>
         <Grid item lg={10} sm={6} xs={12}>
-          <div>{getConsultTypeHTML()}</div>
+          <div>
+            <div>
+              <Typography variant="h5">What type of consults will you be available for?</Typography>
+              <AphButton
+                variant="contained"
+                value={data.availableForPhysicalConsultation}
+                classes={
+                  data.availableForPhysicalConsultation
+                    ? { root: classes.btnActive }
+                    : { root: classes.btnInactive }
+                }
+                onClick={(e) => {
+                  console.log(e);
+                }}
+              >
+                Physical
+              </AphButton>
+              <AphButton
+                variant="contained"
+                value={data.availableForVirtualConsultation}
+                classes={
+                  data.availableForVirtualConsultation
+                    ? { root: classes.btnActive }
+                    : { root: classes.btnInactive }
+                }
+                onClick={(e) => {
+                  console.log(e);
+                }}
+              >
+                Online
+              </AphButton>
+            </div>
+          </div>
         </Grid>
       </Grid>
       <Grid container className={classes.availabletabContent} alignItems="flex-start">
@@ -426,29 +493,8 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
           <Typography variant="h2">Consultation Hours</Typography>
         </Grid>
         <Grid item lg={10} sm={6} xs={12}>
-          <div className={classes.tabContent}>
-            <ExpansionPanel className={`${classes.tabContentPanel} ${classes.pointerNone}`}>
-              <ExpansionPanelSummary
-                expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-                aria-controls="panel1c-content"
-                id="panel1c-header"
-              >
-                <div className={classes.columnTime}>
-                  <Typography className={classes.primaryHeading}>9:00 AM - 12:30 PM</Typography>
-                </div>
-                <div className={classes.columnDays}>
-                  <Typography className={classes.heading}>
-                    Mon, Tue, Wed, Thur, Fri | Online, Physical
-                  </Typography>
-                </div>
-                <div className={classes.columnType}>(Fixed)</div>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.details}>
-                {getDetails()}
-              </ExpansionPanelDetails>
-              <Divider />
-            </ExpansionPanel>
-          </div>
+          {data.consultationHours && data.consultationHours.length && getAvailabilityHtml()}
+
           {showOperatingHoursForm && (
             <div className={classes.tabContent}>
               <div className={classes.addAvailabilitydetails}>

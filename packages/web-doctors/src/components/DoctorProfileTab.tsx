@@ -174,12 +174,20 @@ interface Props {
   values: any;
   proceedHadler: () => void;
 }
+interface DoctorsName {
+  label: string;
+  typeOfConsult: string;
+  experience: string;
+  firstName: string;
+  inviteStatus: string;
+  lastName: string;
+}
 
 export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => {
   const classes = useStyles();
   const [data, setData] = useState(values);
   const [showAddDoc, setShowAddDoc] = useState(false);
-  function addDoctorHadler(obj) {
+  function addDoctorHadler(obj: DoctorsName) {
     if (obj.label) {
       setData({ ...data, starDoctorTeam: data.starDoctorTeam.concat(obj) });
       setShowAddDoc(false);
@@ -262,7 +270,7 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
                 Dr. {data.firstName} {data.lastName}
               </Typography>
               <Typography variant="h6">
-                {data.speciality} <span> | </span> <span> {data.experience}YRS </span>{' '}
+                {data.specialization} <span> | </span> <span> {data.experience}YRS </span>{' '}
               </Typography>
             </Paper>
           </Grid>
@@ -283,7 +291,7 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Speciality</Typography>
-                  <Typography variant="h3">{data.services}</Typography>
+                  <Typography variant="h3">{data.speciality}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
@@ -307,7 +315,7 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">MCI Number</Typography>
-                  <Typography variant="h3">123456</Typography>
+                  <Typography variant="h3">{data.registrationNumber}</Typography>
                 </Paper>
               </Grid>
             </Grid>

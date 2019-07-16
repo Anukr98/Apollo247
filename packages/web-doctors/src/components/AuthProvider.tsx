@@ -182,7 +182,7 @@ export const AuthProvider: React.FC = (props) => {
     app
       .auth()
       .signOut()
-      .then(() => window.location.reload());
+      .then(() => window.location.replace('/'));
 
   useEffect(() => {
     app.auth().onAuthStateChanged(async (user) => {
@@ -198,7 +198,6 @@ export const AuthProvider: React.FC = (props) => {
         setAuthToken(jwt);
 
         setIsSigningIn(true);
-        console.log('1111111111111111');
         const [signInResult, signInError] = await wait(
           apolloClient.mutate<getDoctorProfile, getDoctorProfileVariables>({
             mutation: GET_DOCTOR_PROFILE,

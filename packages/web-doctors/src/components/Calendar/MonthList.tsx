@@ -11,21 +11,37 @@ interface Props {
 }
 const useStyles = makeStyles({
   monthList: {
-    width: '15%',
+    width: '17%',
     display: 'inline-block',
     textAlign: 'center',
+    paddingTop: '18px',
+    paddingBottom: '22px',
+    marginLeft: '-38px',
+    borderRadius: '10px 0 0 10px',
+    backgroundColor: '#f7f7f7',
   },
   monthListPopup: {
     color: '#02475b',
     fontSize: 21,
     fontWeight: 600,
+    '& div': {
+      backgroundColor: 'transparent',
+      '&:focus': {
+        backgroundColor: 'transparent',
+      },
+    },
+
+    '&:after': {
+      borderBottom: 'none',
+    },
     '&:before': {
       borderBottom: 'none',
+      transform: 'scaleX(0)',
     },
     '& svg': {
       color: '#02475b',
     },
-    '& bitton': {
+    '& button': {
       color: '#02475b',
     },
   },

@@ -185,6 +185,7 @@ export const SignIn: React.FC = (props) => {
           setOtp([]);
           setDisplayOtpInput(false);
           setSubmitCount(0);
+          setDisplayGetHelp(false);
         }}
       >
         {'<'}

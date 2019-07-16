@@ -200,10 +200,11 @@ interface Props {
 }
 export const FeesTab: React.FC<Props> = ({ values, proceedHadler, backBtnHandler }) => {
   const classes = useStyles();
+  const data = values;
   //const [data, setData] = useState(values);
   // const [sp, setsp] = useState<string>('Physical');
 
-  // console.log(data);
+  console.log(data);
 
   return (
     <div className={classes.ProfileContainer}>
@@ -216,49 +217,50 @@ export const FeesTab: React.FC<Props> = ({ values, proceedHadler, backBtnHandler
           <div className={classes.tabContent}>
             <Paper className={classes.serviceItem}>
               <Typography variant="subtitle1">What are your online consultation fees?</Typography>
-              <Typography className={classes.bold}>Rs. 399</Typography>
+              <Typography className={classes.bold}>Rs. {data.onlineConsultationFees}</Typography>
               <Typography variant="subtitle1">What are your physical consultation fees?</Typography>
-              <Typography className={classes.bold}>Rs. 399</Typography>
+              <Typography className={classes.bold}>Rs. {data.physicalConsultationFees}</Typography>
               <Typography variant="subtitle1">What packages do you offer your patients?</Typography>
-              <Typography className={classes.bold}>
-                3 Online Consults + 3 Physical Consults @ Rs. 999
-              </Typography>
+              <Typography className={classes.bold}>{data.package}</Typography>
             </Paper>
           </div>
         </Grid>
       </Grid>
+      {data.paymentDetails && data.paymentDetails.length > 0 && (
+        <Grid container alignItems="flex-start" spacing={0}>
+          <Grid item lg={2} sm={6} xs={12}>
+            <Typography variant="h2">Payment Method</Typography>
+          </Grid>
 
-      <Grid container alignItems="flex-start" spacing={0}>
-        <Grid item lg={2} sm={6} xs={12}>
-          <Typography variant="h2">Payment Method</Typography>
+          <Grid item lg={10} sm={6} xs={12}>
+            <div className={classes.tabContent}>
+              <ExpansionPanel>
+                <ExpansionPanelSummary
+                  expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+                  aria-controls="panel1c-content"
+                  id="panel1c-header"
+                >
+                  <div className={classes.columnAC}>
+                    <Typography className={classes.heading}>
+                      A/C Number: {data.paymentDetails[0].accountNumber}
+                    </Typography>
+                  </div>
+                  <div>
+                    <Typography className={classes.secondaryHeading}>
+                      {data.paymentDetails[0].address}
+                    </Typography>
+                  </div>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails className={classes.details}>
+                  <div className={classes.column}>
+                    <Typography variant="h5">More bank details.</Typography>
+                  </div>
+                </ExpansionPanelDetails>
+              </ExpansionPanel>
+            </div>
+          </Grid>
         </Grid>
-
-        <Grid item lg={10} sm={6} xs={12}>
-          <div className={classes.tabContent}>
-            <ExpansionPanel>
-              <ExpansionPanelSummary
-                expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-                aria-controls="panel1c-content"
-                id="panel1c-header"
-              >
-                <div className={classes.columnAC}>
-                  <Typography className={classes.heading}>A/C Number: xxx xxx xxx 7890</Typography>
-                </div>
-                <div>
-                  <Typography className={classes.secondaryHeading}>
-                    State Bank of India, Powai
-                  </Typography>
-                </div>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.details}>
-                <div className={classes.column}>
-                  <Typography variant="h5">More bank details.</Typography>
-                </div>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-          </div>
-        </Grid>
-      </Grid>
+      )}
 
       <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
         <Grid item lg={12} sm={12} xs={12}>

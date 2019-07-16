@@ -8,7 +8,7 @@ import {
   createGenerateClassName,
 } from '@material-ui/styles';
 import React, { useEffect } from 'react';
-import { BrowserRouter, Route } from 'react-router-dom';
+import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Welcome } from 'components/Welcome';
 import { PatientsList } from 'components/PatientsList';
@@ -125,16 +125,20 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const App: React.FC = () => {
   const classes = useStyles();
-  const { signInError } = useAuth();
+  const { signInError, isSignedIn } = useAuth();
   useEffect(() => {
     if (signInError) window.alert('Error signing in :(');
   }, [signInError]);
-  return (
+  return isSignedIn ? (
     <div className={classes.app}>
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
       <Route exact path={clientRoutes.patients()} component={PatientsList} />
       <Route exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
       <Route exact path={clientRoutes.calendar()} component={Calendar} />
+    </div>
+  ) : (
+    <div className={classes.app}>
+      <Route exact path={clientRoutes.welcome()} component={Welcome} />
     </div>
   );
 };
