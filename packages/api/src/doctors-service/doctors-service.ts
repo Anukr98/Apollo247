@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-import _merge from 'lodash/merge';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
 import * as firebaseAdmin from 'firebase-admin';
@@ -24,7 +23,7 @@ export type Resolver<Parent = any, Args = any> = (
     schema: buildFederatedSchema([
       {
         typeDefs: doctorTypeDefs,
-        resolvers: _merge(doctorResolvers),
+        resolvers: doctorResolvers,
       },
       {
         typeDefs: getSpecialtyTypeDefs,

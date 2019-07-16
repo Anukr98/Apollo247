@@ -8,7 +8,7 @@ export const getSpecialtyTypeDefs = gql`
     name: String
   }
   extend type Query {
-    getSpecialties: [Specialty]
+    getSpecialties: [Specialty!]!
   }
 `;
 
