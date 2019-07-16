@@ -8,6 +8,7 @@ module.exports = {
   rules: {
     '@typescript-eslint/array-type': ['warn', 'array'],
     '@typescript-eslint/class-name-casing': 'warn',
+    '@typescript-eslint/no-array-constructor': 'warn',
     '@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
     camelcase: 'warn',
     'import/no-default-export': 'warn',
