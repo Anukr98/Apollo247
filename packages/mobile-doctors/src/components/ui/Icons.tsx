@@ -257,3 +257,11 @@ export const RemoveDot: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/remove.png')}
   />
 );
+
+export const Cancel: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/clear.png')}
+  />
+);
