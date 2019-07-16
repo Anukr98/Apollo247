@@ -1,17 +1,17 @@
-import { Appointments } from 'app/src/components/Appointments';
-import { Inbox } from 'app/src/components/Inbox';
-import { SplashScreen } from 'app/src/components/SplashScreen';
-import { LandingPage } from 'app/src/components/LandingPage';
-import { Login } from 'app/src/components/Login';
-import { MyAccount } from 'app/src/components/MyAccount';
-import { NeedHelp } from 'app/src/components/NeedHelp';
-import { Onboarding } from 'app/src/components/Onboarding';
-import { OnBoardingPage } from 'app/src/components/OnBoardingPage';
-import { OTPVerification } from 'app/src/components/OTPVerification';
-import { Patients } from 'app/src/components/Patients';
-import { ProfileSetup } from 'app/src/components/ProfileSetup';
-import { TabBar } from 'app/src/components/TabBar';
-import { TransitionPage } from 'app/src/components/TransitionPage';
+import { Appointments } from '@aph/mobile-doctors/src/components/Appointments';
+import { Inbox } from '@aph/mobile-doctors/src/components/Inbox';
+import { SplashScreen } from '@aph/mobile-doctors/src/components/SplashScreen';
+import { LandingPage } from '@aph/mobile-doctors/src/components/LandingPage';
+import { Login } from '@aph/mobile-doctors/src/components/Login';
+import { MyAccount } from '@aph/mobile-doctors/src/components/MyAccount';
+import { NeedHelp } from '@aph/mobile-doctors/src/components/NeedHelp';
+import { Onboarding } from '@aph/mobile-doctors/src/components/Onboarding';
+import { OnBoardingPage } from '@aph/mobile-doctors/src/components/OnBoardingPage';
+import { OTPVerification } from '@aph/mobile-doctors/src/components/OTPVerification';
+import { Patients } from '@aph/mobile-doctors/src/components/Patients';
+import { ProfileSetup } from '@aph/mobile-doctors/src/components/ProfileSetup';
+import { TabBar } from '@aph/mobile-doctors/src/components/TabBar';
+import { TransitionPage } from '@aph/mobile-doctors/src/components/TransitionPage';
 import {
   createAppContainer,
   createStackNavigator,

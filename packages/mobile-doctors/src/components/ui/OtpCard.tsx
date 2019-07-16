@@ -1,4 +1,4 @@
-import { theme } from 'app/src/theme/theme';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import {
   StyleProp,
@@ -11,7 +11,7 @@ import {
   ImageSourcePropType,
   ImageStyle,
 } from 'react-native';
-import { BackIcon } from 'app/src/components/ui/Icons';
+import { BackIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   cardContainer: {

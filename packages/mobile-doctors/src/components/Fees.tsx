@@ -1,6 +1,6 @@
-import { Down, Up } from 'app/src/components/ui/Icons';
-import { SquareCardWithTitle } from 'app/src/components/ui/SquareCardWithTitle';
-import { theme } from 'app/src/theme/theme';
+import { Down, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 

@@ -1,16 +1,16 @@
-import { Availability } from 'app/src/components/Availability';
-import { Fees } from 'app/src/components/Fees';
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
-import { Profile } from 'app/src/components/Profile';
-import { Button } from 'app/src/components/ui/Button';
-import { Header } from 'app/src/components/ui/Header';
-import { RoundIcon } from 'app/src/components/ui/Icons';
-import { ProfileTabHeader } from 'app/src/components/ui/ProfileTabHeader';
-import { theme } from 'app/src/theme/theme';
+import { Availability } from '@aph/mobile-doctors/src/components/Availability';
+import { Fees } from '@aph/mobile-doctors/src/components/Fees';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { Profile } from '@aph/mobile-doctors/src/components/Profile';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
+import { RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { setProfileFlowDone } from 'app/src/helpers/localStorage';
+import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 
 const styles = StyleSheet.create({
   footerButtonsContainer: {

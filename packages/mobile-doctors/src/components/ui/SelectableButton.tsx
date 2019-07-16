@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
-import { theme } from 'app/src/theme/theme';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 
 const styles = StyleSheet.create({
   container: {

@@ -1,8 +1,8 @@
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
-import { OtpCard } from 'app/src/components/ui/OtpCard';
-import { Button } from 'app/src/components/ui/Button';
-import { string } from 'app/src/strings/string';
-import { theme } from 'app/src/theme/theme';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { OtpCard } from '@aph/mobile-doctors/src/components/ui/OtpCard';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import { string } from '@aph/mobile-doctors/src/strings/string';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
   Platform,

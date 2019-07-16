@@ -1,8 +1,8 @@
-import { ProfileData } from 'app/src/components/ProfileSetup';
-import { DoctorCard } from 'app/src/components/ui/DoctorCard';
-import { Add, Send, Star } from 'app/src/components/ui/Icons';
-import { SquareCardWithTitle } from 'app/src/components/ui/SquareCardWithTitle';
-import { theme } from 'app/src/theme/theme';
+import { ProfileData } from '@aph/mobile-doctors/src/components/ProfileSetup';
+import { DoctorCard } from '@aph/mobile-doctors/src/components/ui/DoctorCard';
+import { Add, Send, Star } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';

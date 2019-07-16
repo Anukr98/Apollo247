@@ -1,5 +1,5 @@
-import { ProfileData } from 'app/src/components/ProfileSetup';
-import { theme } from 'app/src/theme/theme';
+import { ProfileData } from '@aph/mobile-doctors/src/components/ProfileSetup';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SelectableButton } from './ui/SelectableButton';
