@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'doctors-service/doctors-service';
 import DoctorsData from 'doctors-service/data/doctors.json';
 export const doctorTypeDefs = gql`
-  type ClinicsList {
+  type clinics {
     name: String
     location: String
   }
@@ -49,7 +49,7 @@ export const doctorTypeDefs = gql`
   type DoctorProfile {
     profile: Doctor
     paymentDetails: [PaymentDetails]
-    clinicsList: [ClinicsList]
+    clinics: [clinics]
     starDoctorTeam: [Doctor]
     consultationHours: [Consultations]
   }
@@ -60,7 +60,7 @@ export const doctorTypeDefs = gql`
   }
 `;
 
-type ClinicsList = {
+type clinics = {
   name: String;
   location: String;
 };
@@ -106,10 +106,10 @@ type Doctor = {
 
 type DoctorProfile = {
   profile: Doctor;
-  paymentDetails: PaymentDetails[];
-  clinicsList: ClinicsList[];
+  clinics: clinics[];
   starDoctorTeam: Partial<Doctor>[];
   consultationHours: Consultations[];
+  paymentDetails: PaymentDetails[];
 };
 
 const getDoctors: Resolver<any> = async (parent, args): Promise<JSON> => {
@@ -138,26 +138,10 @@ const getDoctorProfileById: Resolver<any, { id: String }> = async (
   return <DoctorProfile>doctor;
 };
 
-/*const getDoctorsForStarDoctorProgram: Resolver<any, { searchString: string }> = async (
-  parent,
-  args
-): Promise<Doctor> => {
-  args.searchString = 'an';
-  const result = DoctorsData.filter(
-    (obj) =>
-      obj.profile.firstName.match(args.searchString) &&
-      !obj.profile.isStarDoctor &&
-      obj.profile.inviteStatus !== 'accepted'
-  );
-  //return JSON.parse(JSON.stringify(result));
-  return result;
-};*/
-
 export const doctorResolvers = {
   Query: {
     getDoctors,
     getDoctorProfile,
-    /*getDoctorsForStarDoctorProgram,*/
     getDoctorProfileById,
   },
 };

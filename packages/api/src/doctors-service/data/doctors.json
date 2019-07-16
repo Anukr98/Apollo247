@@ -31,7 +31,7 @@
         "address": "State Bank of India, Powal"
       }
     ],
-    "clinicsList": [
+    "clinics": [
       {
         "name": "Homeocare Hospital",
         "location": "Secunderbad"
@@ -106,7 +106,7 @@
         "address": "State Bank of India, Powal"
       }
     ],
-    "clinicsList": [
+    "clinics": [
       {
         "name": "City Hospital",
         "location": "Begumpet"
