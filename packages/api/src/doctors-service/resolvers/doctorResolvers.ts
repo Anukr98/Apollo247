@@ -1,28 +1,10 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'doctors-service/doctors-service';
 import DoctorsData from 'doctors-service/data/doctors.json';
-import { isUndefined } from 'util';
-
 export const doctorTypeDefs = gql`
-  type Doctor {
-    id: String
-    firstName: String
-    lastName: String
-    mobileNumber: String
-    experience: String
-  }
-
   type clinicsList {
     name: String
     location: String
-  }
-
-  type starDoctorTeam {
-    firstName: String
-    lastName: String
-    experience: String
-    typeOfConsult: String
-    inviteStatus: String
   }
 
   type consultations {
@@ -38,7 +20,7 @@ export const doctorTypeDefs = gql`
     address: String
   }
 
-  type DoctorProfile {
+  type Doctor {
     id: String
     firstName: String
     lastName: String
@@ -60,16 +42,20 @@ export const doctorTypeDefs = gql`
     onlineConsultationFees: String
     physicalConsultationFees: String
     package: String
-    paymentDetails: [String]
-    clinicsList: [clinicsList]
-    starDoctorTeam: [starDoctorTeam]
-    consultationHours: [consultations]
+    typeOfConsult: String
+    inviteStatus: String
   }
 
+  type DoctorProfile {
+    profile: Doctor
+    paymentDetails: [paymentDetails]
+    clinicsList: [clinicsList]
+    starDoctorTeam: [Doctor]
+    consultationHours: [consultations]
+  }
   extend type Query {
-    getDoctors: [Doctor]
-    hasAccess(mobileNumber: String): Boolean
-    getDoctorProfile(mobileNumber: String): DoctorProfile
+    getDoctorProfile: DoctorProfile
+    getDoctorProfileById(id: String): DoctorProfile
   }
 `;
 
@@ -77,27 +63,9 @@ const getDoctors: Resolver<any> = async (parent, args): Promise<JSON> => {
   return JSON.parse(JSON.stringify(DoctorsData));
 };
 
-const hasAccess: Resolver<any, { mobileNumber: string }> = async (
-  parent,
-  args
-): Promise<Boolean> => {
-  const authorized = DoctorsData.find((item) => {
-    return item.mobileNumber === args.mobileNumber;
-  });
-  return isUndefined(authorized) ? false : true;
-};
-
 type clinicsList = {
   name: String;
   location: String;
-};
-
-type starDoctorTeam = {
-  firstName: String;
-  lastName: String;
-  experience: String;
-  typeOfConsult: String;
-  inviteStatus: String;
 };
 
 type consultations = {
@@ -113,7 +81,7 @@ type paymentDetails = {
   address: String;
 };
 
-type DoctorProfile = {
+type Doctor = {
   id: String;
   firstName: String;
   lastName: String;
@@ -135,26 +103,60 @@ type DoctorProfile = {
   onlineConsultationFees: String;
   physicalConsultationFees: String;
   package: String;
+  typeOfConsult: String;
+  inviteStatus: String;
+};
+
+type DoctorProfile = {
+  profile: Doctor;
   paymentDetails: paymentDetails[];
   clinicsList: clinicsList[];
-  starDoctorTeam: starDoctorTeam[];
+  starDoctorTeam: Partial<Doctor>[];
   consultationHours: consultations[];
 };
 
-const getDoctorProfile: Resolver<any, { mobileNumber: string }> = async (
+const getDoctorProfile: Resolver<any> = async (
   parent,
-  args
+  args,
+  { mobileNumber }
 ): Promise<DoctorProfile> => {
+  mobileNumber = '1234567890';
   const doctor = DoctorsData.find((item) => {
-    return item.mobileNumber === args.mobileNumber;
+    return item.profile.mobileNumber === mobileNumber;
   });
   return <DoctorProfile>doctor;
 };
 
+const getDoctorProfileById: Resolver<any, { id: String }> = async (
+  parent,
+  args
+): Promise<DoctorProfile> => {
+  const doctor = DoctorsData.find((item) => {
+    return item.profile.id === args.id;
+  });
+  return <DoctorProfile>doctor;
+};
+
+/*const getDoctorsForStarDoctorProgram: Resolver<any, { searchString: string }> = async (
+  parent,
+  args
+): Promise<Doctor> => {
+  args.searchString = 'an';
+  const result = DoctorsData.filter(
+    (obj) =>
+      obj.profile.firstName.match(args.searchString) &&
+      !obj.profile.isStarDoctor &&
+      obj.profile.inviteStatus !== 'accepted'
+  );
+  //return JSON.parse(JSON.stringify(result));
+  return result;
+};*/
+
 export const doctorResolvers = {
   Query: {
     getDoctors,
-    hasAccess,
     getDoctorProfile,
+    /*getDoctorsForStarDoctorProgram,*/
+    getDoctorProfileById,
   },
 };
