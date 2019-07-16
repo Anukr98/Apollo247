@@ -8,7 +8,7 @@ describe('Home page Elements', () => {
     });
   });
   it('Apollo logo displayed', () => {
-    cy.get('[data-cypress="header"]').find('img');
+    cy.get('header').find('img');
   });
 
   // it('Available tabs in the header', () => {
@@ -17,7 +17,7 @@ describe('Home page Elements', () => {
   //   cy.get('header').contains('Tests & Medicines');
   // });
   it('profile icon displayed', () => {
-    const header = cy.get('[data-cypress="header"]');
+    const header = cy.get('header');
     const userAccount = header.find('[ data-cypress="userAccountImg"]');
     expect(userAccount).to.exist;
   });

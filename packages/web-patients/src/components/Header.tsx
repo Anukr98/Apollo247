@@ -86,7 +86,7 @@ export const Header: React.FC = (props) => {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   return (
-    <header className={classes.header} data-cypress="header">
+    <header className={classes.header}>
       <div className={classes.logo}>
         <Link to="/">
           <img src={require('images/ic_logo.png')} />
