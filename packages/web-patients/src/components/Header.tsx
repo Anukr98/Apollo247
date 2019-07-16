@@ -110,18 +110,18 @@ export const Header: React.FC = (props) => {
         {isSignedIn ? (
           <>
             <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-              <DialogTitle>Logged In</DialogTitle>
+              <DialogTitle></DialogTitle>
               <DialogContent>
                 <DialogContentText>
                   You are successfully Logged in with Apollo 24x7
                 </DialogContentText>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => setIsDialogOpen(false)} autoFocus>
-                  Close
-                </Button>
                 <Button color="primary" onClick={() => signOut()}>
                   Sign out
+                </Button>
+                <Button color="primary" onClick={() => setIsDialogOpen(false)} autoFocus>
+                  Close
                 </Button>
               </DialogActions>
             </Dialog>
