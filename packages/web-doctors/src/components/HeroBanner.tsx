@@ -133,7 +133,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const HeroBanner: React.FC = () => {
   const classes = useStyles();
-  const { allCurrentPatients, currentPatient, setCurrentPatient } = useAuth();
+  const { currentPatient, setCurrentPatient } = useAuth();
 
   return (
     <div className={classes.heroBanner}>

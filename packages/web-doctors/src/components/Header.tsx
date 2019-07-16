@@ -6,7 +6,7 @@ import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import { SignIn } from 'components/SignIn';
-import { Navigation } from 'components/Navigatiion';
+//import { Navigation } from 'components/Navigatiion';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import Dialog from '@material-ui/core/Dialog';
@@ -92,7 +92,7 @@ export const Header: React.FC = (props) => {
           <img src={require('images/ic_logo.png')} />
         </Link>
       </div>
-      {isSignedIn && <Navigation />}
+      {/* {isSignedIn && <Navigation />} */}
       <div className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin}`}>
         <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup, isProtected }) => (

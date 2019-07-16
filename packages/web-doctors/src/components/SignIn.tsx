@@ -17,8 +17,8 @@ import _times from 'lodash/times';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
 import { isMobileNumberValid, isDigit } from '@aph/universal/validators';
 import { AphTextField } from '@aph/web-ui-components';
-import { useQuery } from 'react-apollo-hooks';
-import { IS_DOCTOR } from 'graphql/profiles';
+//import { useQuery } from 'react-apollo-hooks';
+//import { IS_DOCTOR } from 'graphql/profiles';
 //import { GetPatients } from 'graphql/types/GetPatients';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -124,13 +124,6 @@ export interface DoctorsProps {
 }
 export const SignIn: React.FC = (props) => {
   const classes = useStyles();
-  const { data, error, loading } = useQuery(IS_DOCTOR, {
-    variables: { mobileNumber: '1234567890' },
-  });
-
-  if (loading) console.log('loading');
-  if (error) console.log('Error');
-  if (data) console.log('data', data);
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
   const [otp, setOtp] = useState<number[]>([]);
@@ -154,7 +147,6 @@ export const SignIn: React.FC = (props) => {
 
     isSigningIn,
   } = useAuth();
-
   useEffect(() => {
     _times(numOtpDigits, (index) => {
       const inputRef = createRef<HTMLInputElement>();
