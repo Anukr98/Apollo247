@@ -1,5 +1,5 @@
-import { DropdownGreen } from '@aph/mobile-doctors//src/components/ui/Icons';
-import { theme } from '@aph/mobile-doctors//src/theme/theme';
+import { DropdownGreen } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Menu, MenuOption, MenuOptions, MenuTrigger } from 'react-native-popup-menu';
@@ -99,7 +99,7 @@ export const DropDownComponent: React.FC<DropDownComponentProps> = (props) => {
         </MenuTrigger>
         <MenuOptions
           customStyles={{
-            optionsWr@aph/mobile-doctors/er: {
+            optionsWrapper: {
               width: 160,
               paddingVertical: 9,
             },
