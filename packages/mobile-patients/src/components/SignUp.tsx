@@ -15,7 +15,6 @@ import {
   StyleSheet,
   View,
   Alert,
-  BackHandler,
   TouchableOpacity,
   Text,
   ActivityIndicator,
@@ -25,8 +24,14 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { NavigationScreenProps } from 'react-navigation';
 import Moment from 'moment';
 import { useAuth } from '../hooks/authHooks';
-import { updatePatient_updatePatient_patient } from '@aph/mobile-patients/src/graphql/types/updatePatient';
+import {
+  updatePatient_updatePatient_patient,
+  updatePatientVariables,
+  updatePatient,
+} from '@aph/mobile-patients/src/graphql/types/updatePatient';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
+import { Mutation } from 'react-apollo';
 
 const styles = StyleSheet.create({
   container: {
@@ -79,18 +84,6 @@ type genderOptions = {
   name: string;
 };
 
-type updatePateint = {
-  id: string;
-  mobileNumber: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  relation: Relation | null;
-  sex: string | null;
-  uhid: string | null;
-  dateOfBirth: string | null;
-  emailAddress: string | null;
-};
-
 const GenderOptions: genderOptions[] = [
   {
     name: 'Male',
@@ -103,7 +96,7 @@ const GenderOptions: genderOptions[] = [
   },
 ];
 
-let backHandler: any;
+// let backHandler: any;
 
 export interface SignUpProps extends NavigationScreenProps {}
 export const SignUp: React.FC<SignUpProps> = (props) => {
@@ -114,9 +107,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const [lastName, setLastName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
-  const [firstNameValidation, setfirstNameValidation] = useState<boolean>(false);
-  const [lastNameValidation, setLastNameValidation] = useState<boolean>(false);
-  const { updatePatient, currentPatient } = useAuth();
+  const { currentPatient } = useAuth();
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
 
   const isSatisfyingNameRegex = (value: string) =>
@@ -133,7 +124,6 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
 
   const _setFirstName = (value: string) => {
     if (isSatisfyingNameRegex(value)) {
-      setfirstNameValidation(isSatisfyingNameRegex(value));
       setFirstName(value);
     } else {
       return false;
@@ -141,7 +131,6 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   };
   const _setlastName = (value: string) => {
     if (isSatisfyingNameRegex(value)) {
-      setLastNameValidation(isSatisfyingNameRegex(value));
       setLastName(value);
     } else {
       return false;
@@ -150,18 +139,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
 
   useEffect(() => {
     AsyncStorage.setItem('signUp', 'true');
-
-    // backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-    //   console.log('hardwareBackPress');
-    //   return true;
-    // });
   }, []);
-
-  // useEffect(() => {
-  //   return () => {
-  //     backHandler && backHandler.remove();
-  //   };
-  // }, []);
 
   console.log(isDateTimePickerVisible, 'isDateTimePickerVisible');
   return (
@@ -279,64 +257,67 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
           </Card>
         </KeyboardAwareScrollView>
         <StickyBottomComponent>
-          <Button
-            title={'SUBMIT'}
-            style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
-            disabled={!firstName || !lastName || !date || !gender}
-            onPress={async () => {
-              let validationMessage = '';
-              if (!firstName) {
-                validationMessage = 'Enter valid first name';
-              } else if (!lastName) {
-                validationMessage = 'Enter valid last name';
-              } else if (!date) {
-                validationMessage = 'Enter valid date of birth';
-              } else if (email) {
-                if (!emailValidation) {
-                  validationMessage = 'Enter valid email';
-                }
-              } else if (!gender) {
-                validationMessage = 'Please select gender';
-              }
-              if (validationMessage) {
-                Alert.alert('Error', validationMessage);
-              } else {
-                setVerifyingPhonenNumber(true);
+          <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
+            {(mutate, { loading, data, error }) => (
+              <Button
+                title={'SUBMIT'}
+                style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
+                disabled={!firstName || !lastName || !date || !gender}
+                onPress={async () => {
+                  let validationMessage = '';
+                  if (!firstName) {
+                    validationMessage = 'Enter valid first name';
+                  } else if (!lastName) {
+                    validationMessage = 'Enter valid last name';
+                  } else if (!date) {
+                    validationMessage = 'Enter valid date of birth';
+                  } else if (email) {
+                    if (!emailValidation) {
+                      validationMessage = 'Enter valid email';
+                    }
+                  } else if (!gender) {
+                    validationMessage = 'Please select gender';
+                  }
+                  if (validationMessage) {
+                    Alert.alert('Error', validationMessage);
+                  } else {
+                    setVerifyingPhonenNumber(true);
 
-                const formatDate = Moment(date, 'DD/MM/YYYY').format('MM/DD/YYYY');
+                    const formatDate = Moment(date, 'DD/MM/YYYY').format('MM/DD/YYYY');
 
-                const patientsDetails: updatePateint = {
-                  id: currentPatient.id,
-                  mobileNumber: currentPatient.mobileNumber,
-                  firstName: firstName,
-                  lastName: lastName,
-                  relation: Relation.ME,
-                  gender: gender.toUpperCase(),
-                  uhid: '',
-                  dateOfBirth: formatDate,
-                  emailAddress: email,
-                };
-                console.log('patientsDetails', patientsDetails);
+                    const patientsDetails: updatePatient_updatePatient_patient = {
+                      id: currentPatient.id,
+                      mobileNumber: currentPatient.mobileNumber,
+                      firstName: firstName,
+                      lastName: lastName,
+                      relation: Relation.ME,
+                      gender: gender.toUpperCase(),
+                      uhid: '',
+                      dateOfBirth: formatDate,
+                      emailAddress: email,
+                    };
 
-                updatePatient(patientsDetails)
-                  .then((updatePatient) => {
-                    setVerifyingPhonenNumber(false);
-                    console.log('updatePatient', updatePatient);
-                    AsyncStorage.setItem('userLoggedIn', 'true');
-                    AsyncStorage.setItem('signUp', 'false');
-                    AsyncStorage.setItem('gotIt', 'false');
-                    props.navigation.navigate(AppRoutes.TabBar);
-                  })
-                  .catch((error) => {
-                    setVerifyingPhonenNumber(false);
-                    const errMsg =
-                      error.data.updatePatient.errors &&
-                      error.data.updatePatient.errors.messages[0];
-                    Alert.alert('Error', errMsg);
-                  });
-              }
-            }}
-          />
+                    mutate({
+                      variables: {
+                        patientInput: patientsDetails,
+                      },
+                    });
+                  }
+                }}
+              >
+                {data
+                  ? (setVerifyingPhonenNumber(false),
+                    console.log('data', data),
+                    AsyncStorage.setItem('userLoggedIn', 'true'),
+                    AsyncStorage.setItem('signUp', 'false'),
+                    AsyncStorage.setItem('gotIt', 'false'),
+                    props.navigation.navigate(AppRoutes.TabBar))
+                  : null}
+                {loading ? setVerifyingPhonenNumber(false) : setVerifyingPhonenNumber(false)}
+                {error ? setVerifyingPhonenNumber(false) : setVerifyingPhonenNumber(false)}
+              </Button>
+            )}
+          </Mutation>
         </StickyBottomComponent>
       </SafeAreaView>
       {verifyingPhoneNumber ? (

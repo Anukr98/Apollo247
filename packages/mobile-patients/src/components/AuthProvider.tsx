@@ -3,18 +3,13 @@ import { ApolloClient } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
 import { ErrorResponse, onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
-import firebase, { RNFirebase, AuthCredential } from 'react-native-firebase';
-import { PATIENT_SIGN_IN, UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
+import firebase, { RNFirebase } from 'react-native-firebase';
+import { PATIENT_SIGN_IN } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   PatientSignIn,
   PatientSignInVariables,
   PatientSignIn_patientSignIn_patients,
 } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
-import {
-  updatePatient_updatePatient_patient,
-  updatePatient,
-  updatePatientVariables,
-} from '@aph/mobile-patients/src/graphql/types/updatePatient';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
@@ -25,9 +20,7 @@ function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
 }
 
-export interface AuthContextProps<
-  Patient = PatientSignIn_patientSignIn_patients | updatePatient_updatePatient_patient
-> {
+export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients> {
   analytics: RNFirebase.Analytics | null;
 
   currentPatient: Patient | null;
@@ -48,7 +41,6 @@ export interface AuthContextProps<
 
   authError: boolean;
   setAuthError: ((authError: boolean) => void) | null;
-  updatePatient: ((patientDetails: updatePatient_updatePatient_patient) => Promise<unknown>) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -72,8 +64,6 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
   authError: false,
   setAuthError: null,
-
-  updatePatient: null,
 });
 
 let apolloClient: ApolloClient<any>;
@@ -101,7 +91,10 @@ export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
   const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
 
-  const failureFunction = () => setAuthError(true);
+  const failureFunction = () => {
+    setAuthError(true);
+    setIsSendingOtp(false);
+  };
   apolloClient = buildApolloClient(authToken, failureFunction);
 
   const [allCurrentPatients, setAllCurrentPatients] = useState<
@@ -161,37 +154,6 @@ export const AuthProvider: React.FC = (props) => {
 
   const signOut = () => auth.signOut();
 
-  const updatePatient = (patientDetails: updatePatient_updatePatient_patient) => {
-    return new Promise(async (resolve, reject) => {
-      console.log('patientDetails', patientDetails);
-      const [patientUpdateResult, patientUpdateError] = await wait(
-        apolloClient.mutate<updatePatient, updatePatientVariables>({
-          mutation: UPDATE_PATIENT,
-          variables: { patientInput: patientDetails },
-        })
-      );
-
-      if (
-        patientUpdateError ||
-        !patientUpdateResult.data ||
-        !patientUpdateResult.data.updatePatient.patient
-      ) {
-        if (patientUpdateError) console.error(patientUpdateError);
-        reject(patientUpdateResult);
-        return;
-      }
-
-      if (patientUpdateResult.data && patientUpdateResult.data.updatePatient.patient) {
-        const patient = patientUpdateResult.data.updatePatient.patient;
-        resolve(patient);
-      } else {
-        reject(patientUpdateResult);
-      }
-    });
-  };
-
-  const PatientSignIn = async () => {};
-
   useEffect(() => {
     setAnalytics(firebase.analytics());
     let authStateRegistered = false;
@@ -238,7 +200,7 @@ export const AuthProvider: React.FC = (props) => {
         setIsSigningIn(false);
       }
     });
-  }, []);
+  }, [auth]);
 
   return (
     <ApolloProvider client={apolloClient}>
@@ -265,8 +227,6 @@ export const AuthProvider: React.FC = (props) => {
 
             authError,
             setAuthError,
-
-            updatePatient,
           }}
         >
           {props.children}

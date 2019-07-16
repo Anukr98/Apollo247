@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { AuthContext, AuthContextProps } from '@aph/mobile-patients/src/components/AuthProvider';
+import { AuthContext } from '@aph/mobile-patients/src/components/AuthProvider';
 
 const useAuthContext = () => useContext(AuthContext);
 
@@ -29,7 +29,6 @@ export const useAuth = () => {
   const analytics = useAnalytics();
   const authError = useAuthContext().authError!;
   const setAuthError = useAuthContext().setAuthError!;
-  const updatePatient = useAuthContext().updatePatient!;
 
   return {
     currentPatient,
@@ -53,6 +52,5 @@ export const useAuth = () => {
 
     authError,
     setAuthError,
-    updatePatient,
   };
 };

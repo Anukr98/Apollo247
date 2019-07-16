@@ -19,13 +19,12 @@ import {
   TouchableOpacity,
   AsyncStorage,
   Platform,
-  Alert,
 } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import firebase from 'react-native-firebase';
 const { width, height } = Dimensions.get('window');
+import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
 
 const styles = StyleSheet.create({
   viewName: {
@@ -209,16 +208,6 @@ const arrayDoctor: ArrayDoctor[] = [
   },
 ];
 
-type currentProfiles = {
-  firstName: string | null;
-  id: string;
-  lastName: string | null;
-  mobileNumber: string | null;
-  gender: string | null;
-  uhid: string | null;
-  relation: string | null;
-};
-
 export interface ConsultRoomProps extends NavigationScreenProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
@@ -226,45 +215,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [userName, setuserName] = useState<string>('');
   const { currentPatient, analytics, allCurrentPatients } = useAuth();
-  const [firebaseCalled, setFirebaseCalled] = useState<boolean>(false);
 
   useEffect(() => {
     let userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
-
-    async function fetchFirebase() {
-      if (!userName) {
-        console.log('else');
-
-        // if (!firebaseCalled) {
-        //   firebase.auth().onAuthStateChanged(async (updatedUser) => {
-        //     if (updatedUser) {
-        //       const token = await updatedUser!.getIdToken();
-        //       const patientSign = await callApiWithToken(token);
-        //       const patient = patientSign.data.patientSignIn.patients[0];
-        //       const errMsg =
-        //         patientSign.data.patientSignIn.errors &&
-        //         patientSign.data.patientSignIn.errors.messages[0];
-
-        //       console.log('patient', patient);
-        //       setFirebaseCalled(true);
-
-        //       setTimeout(() => {
-        //         if (errMsg) {
-        //           Alert.alert('Error', errMsg);
-        //         } else {
-        //         }
-        //       }, 1000);
-        //     } else {
-        //       console.log('no new user');
-        //     }
-        //   });
-        // }
-      }
-    }
-    fetchFirebase();
 
     analytics.setCurrentScreen(AppRoutes.ConsultRoom);
   }, [currentPatient, allCurrentPatients, analytics, userName, props.navigation.state.params]);
@@ -317,7 +273,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }}
       >
         {allCurrentPatients &&
-          allCurrentPatients.map((profile: currentProfiles, i: number) => (
+          allCurrentPatients.map((profile: PatientSignIn_patientSignIn_patients, i: number) => (
             <View style={styles.textViewStyle} key={i}>
               <Text
                 style={styles.textStyle}
