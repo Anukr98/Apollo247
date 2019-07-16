@@ -1,4 +1,4 @@
-import { Theme, Popover, Grid } from '@material-ui/core';
+import { Theme, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React, { useState, useRef } from 'react';
@@ -198,13 +198,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <StarDoctorTeam doctorId={doctorId} />
               <div className={classes.sectionHeader}>
                 <span>Appointment History</span>
-                <span className={classes.count}>01</span>
+                <span className={classes.count}>02</span>
               </div>
-              <Grid spacing={2} container>
-                <Grid item sm={6}>
-                  <AppointmentHistory />
-                </Grid>
-              </Grid>
+              <AppointmentHistory />
             </div>
           </div>
         </div>

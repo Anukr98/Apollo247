@@ -30,6 +30,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       letterSpacing: 0.25,
       color: '#0087ba',
+      textTransform: 'uppercase',
     },
     doctorExp: {
       paddingLeft: 5,
@@ -84,7 +85,9 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
                 <div className={classes.doctorName}>{starDoctorDetails.doctorName}</div>
                 <div className={classes.speciality}>
                   {starDoctorDetails.doctorSpeciality}
-                  <span className={classes.doctorExp}>| {starDoctorDetails.doctorExperience}</span>
+                  <span className={classes.doctorExp}>
+                    | {starDoctorDetails.doctorExperience} Yrs
+                  </span>
                 </div>
                 <div className={classes.doctorMoreInfo}>
                   {starDoctorDetails.clinicName}
