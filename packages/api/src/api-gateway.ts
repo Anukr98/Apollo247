@@ -1,4 +1,4 @@
-import { ApolloServer, AuthenticationError } from 'apollo-server';
+import { ApolloServer } from 'apollo-server';
 import { ApolloGateway, RemoteGraphQLDataSource } from '@apollo/gateway';
 import { GraphQLExecutor } from 'apollo-server-core';
 import * as firebaseAdmin from 'firebase-admin';
@@ -38,7 +38,9 @@ const envToCorsOrigin = {
     buildService({ name, url }) {
       return new RemoteGraphQLDataSource({
         url,
-        willSendRequest<GatewayContext>({ request, context }) {
+        willSendRequest(requestContext) {
+          const request = requestContext.request;
+          const context = (requestContext.context as any) as GatewayContext;
           if (request && request.http) {
             request.http.headers.set('mobileNumber', context.mobileNumber);
             request.http.headers.set('firebaseUid', context.firebaseUid);
@@ -62,37 +64,35 @@ const envToCorsOrigin = {
     schema,
     executor,
     context: async ({ req }) => {
-      // const isLocal = process.env.NODE_ENV == 'local';
-      // const isDevelopment = process.env.NODE_ENV == 'development';
-      // const isSchemaIntrospectionQuery = req.body.operationName == 'IntrospectionQuery';
+      const isLocal = process.env.NODE_ENV == 'local';
+      const isDevelopment = process.env.NODE_ENV == 'development';
+      const isSchemaIntrospectionQuery = req.body.operationName == 'IntrospectionQuery';
 
-      // if ((isLocal || isDevelopment) && isSchemaIntrospectionQuery) {
-      //   const gatewayContext: GatewayContext = { firebaseUid: '', mobileNumber: '' };
-      //   return gatewayContext;
-      // }
+      if ((isLocal || isDevelopment) && isSchemaIntrospectionQuery) {
+        const gatewayContext: GatewayContext = { firebaseUid: '', mobileNumber: '' };
+        return gatewayContext;
+      }
 
-      // const jwt = req.headers.authorization || '';
+      const jwt = req.headers.authorization || '';
 
-      // const firebaseIdToken = await firebase
-      //   .auth()
-      //   .verifyIdToken(jwt)
-      //   .catch((firebaseError: firebaseAdmin.FirebaseError) => {
-      //     throw new AphAuthenticationError(AphErrorMessages.FIREBASE_AUTH_TOKEN_ERROR);
-      //   });
+      const firebaseIdToken = await firebase
+        .auth()
+        .verifyIdToken(jwt)
+        .catch((firebaseError: firebaseAdmin.FirebaseError) => {
+          throw new AphAuthenticationError(AphErrorMessages.FIREBASE_AUTH_TOKEN_ERROR);
+        });
 
-      // const firebaseUser = await firebase
-      //   .auth()
-      //   .getUser(firebaseIdToken.uid)
-      //   .catch((firebaseError: firebaseAdmin.FirebaseError) => {
-      //     throw new AphAuthenticationError(AphErrorMessages.FIREBASE_GET_USER_ERROR);
-      //   });
+      const firebaseUser = await firebase
+        .auth()
+        .getUser(firebaseIdToken.uid)
+        .catch((firebaseError: firebaseAdmin.FirebaseError) => {
+          throw new AphAuthenticationError(AphErrorMessages.FIREBASE_GET_USER_ERROR);
+        });
 
-      // const gatewayContext: GatewayContext = {
-      //   firebaseUid: firebaseUser.uid,
-      //   mobileNumber: firebaseUser.phoneNumber || '',
-      // };
-
-      const gatewayContext: GatewayContext = { firebaseUid: '', mobileNumber: '' };
+      const gatewayContext: GatewayContext = {
+        firebaseUid: firebaseUser.uid,
+        mobileNumber: firebaseUser.phoneNumber || '',
+      };
       return gatewayContext;
     },
   });

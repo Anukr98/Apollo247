@@ -12,13 +12,33 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       boxShadow: '0 2px 4px 0 rgba(0,0,0, 0.2)',
     },
+    textPrimary: {
+      backgroundColor: theme.palette.primary.main,
+      color: theme.palette.common.white,
+      '&:hover': {
+        backgroundColor: theme.palette.primary.main,
+        color: theme.palette.common.white,
+      },
+    },
+    textSecondary: {
+      backgroundColor: theme.palette.common.white,
+      color: '#00b38e',
+    },
+    sizeSmall: {
+      fontSize: 12,
+      fontWeight: 500,
+      padding: '5px 10px',
+      textTransform: 'none',
+    },
   });
 });
 
 const AphButton: React.FC<ButtonProps> = (props) => {
-  const classes = useStyles({});
+  const defaultClasses = useStyles({});
+  const classes = props.classes || defaultClasses;
+
   return (
-    <Button className={classes.root} {...props}>
+    <Button {...props} classes={classes}>
       {props.children}
     </Button>
   );

@@ -9,13 +9,28 @@ export const viewStyles = {
     flex: 0,
     height: 1,
     marginHorizontal: 8,
-    // backgroundColor: colors.LIGHT_SEPARATOR_COLOR,
   },
-  shadow: {
-    // shadowColor: colors.SHADOW_COLOR,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.8,
-    shadowRadius: 5,
+  whiteRoundedCornerCard: {
+    backgroundColor: colors.WHITE,
+    shadowColor: colors.CARD_SHADOW_COLOR,
+    shadowOffset: { width: 0, height: 5 },
+    shadowRadius: 20,
+    borderRadius: 10,
+    elevation: 5,
+  },
+  graySquareCard: {
+    backgroundColor: colors.CARD_GRAY_BG,
+    shadowColor: colors.CARD_SHADOW_COLOR,
+    shadowOffset: { width: 0, height: 5 },
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  ProgressBarTabShadow: {
+    backgroundColor: colors.WHITE,
+    shadowColor: colors.CARD_SHADOW_COLOR,
+    shadowOffset: { width: 0, height: 5 },
+    shadowRadius: 20,
+    elevation: 5,
   },
   borderRadius: {
     borderRadius: 5,
@@ -23,8 +38,5 @@ export const viewStyles = {
   },
   disabled: {
     opacity: 0.5,
-  },
-  footerButtonStyle: {
-    margin: 16,
   },
 };

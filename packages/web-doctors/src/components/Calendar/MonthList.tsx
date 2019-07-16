@@ -5,9 +5,9 @@ import { SelectInputProps } from '@material-ui/core/Select/SelectInput';
 import { makeStyles } from '@material-ui/styles';
 
 interface Props {
-  month?: number,
-  classes?: string,
-  onChange?: SelectInputProps['onChange']
+  month?: number;
+  classes?: string;
+  onChange?: SelectInputProps['onChange'];
 }
 const useStyles = makeStyles({
   monthList: {
@@ -33,9 +33,9 @@ const useStyles = makeStyles({
     color: '#02475b',
   },
   container: {
-    display: "flex",
-    "flex-wrap": "nowrap",
-    "justify-content": "space-between"
+    display: 'flex',
+    'flex-wrap': 'nowrap',
+    'justify-content': 'space-between',
   },
   monthPopup: {
     fontSize: 21,
@@ -53,23 +53,44 @@ export const MonthList: React.FC<Props> = (props) => {
 
   return (
     <div className={classes.monthList}>
-      <Select className={classes.monthListPopup}
-        value={month}
-        onChange={props.onChange}
-      >
-        <MenuItem className={classes.monthListItem} value={0}>January</MenuItem>
-        <MenuItem className={classes.monthListItem} value={1}>February</MenuItem>
-        <MenuItem className={classes.monthListItem} value={2}>March</MenuItem>
-        <MenuItem className={classes.monthListItem} value={3}>April</MenuItem>
-        <MenuItem className={classes.monthListItem} value={4}>May</MenuItem>
-        <MenuItem className={classes.monthListItem} value={5}>June</MenuItem>
-        <MenuItem className={classes.monthListItem} value={6}>July</MenuItem>
-        <MenuItem className={classes.monthListItem} value={7}>August</MenuItem>
-        <MenuItem className={classes.monthListItem} value={8}>September</MenuItem>
-        <MenuItem className={classes.monthListItem} value={9}>October</MenuItem>
-        <MenuItem className={classes.monthListItem} value={10}>November</MenuItem>
-        <MenuItem className={classes.monthListItem} value={11}>December</MenuItem>
+      <Select className={classes.monthListPopup} value={month} onChange={props.onChange}>
+        <MenuItem className={classes.monthListItem} value={0}>
+          January
+        </MenuItem>
+        <MenuItem className={classes.monthListItem} value={1}>
+          February
+        </MenuItem>
+        <MenuItem className={classes.monthListItem} value={2}>
+          March
+        </MenuItem>
+        <MenuItem className={classes.monthListItem} value={3}>
+          April
+        </MenuItem>
+        <MenuItem className={classes.monthListItem} value={4}>
+          May
+        </MenuItem>
+        <MenuItem className={classes.monthListItem} value={5}>
+          June
+        </MenuItem>
+        <MenuItem className={classes.monthListItem} value={6}>
+          July
+        </MenuItem>
+        <MenuItem className={classes.monthListItem} value={7}>
+          August
+        </MenuItem>
+        <MenuItem className={classes.monthListItem} value={8}>
+          September
+        </MenuItem>
+        <MenuItem className={classes.monthListItem} value={9}>
+          October
+        </MenuItem>
+        <MenuItem className={classes.monthListItem} value={10}>
+          November
+        </MenuItem>
+        <MenuItem className={classes.monthListItem} value={11}>
+          December
+        </MenuItem>
       </Select>
     </div>
-  )
-}
+  );
+};

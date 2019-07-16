@@ -5,12 +5,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { CalendarStrip } from 'components/Calendar/CalendarStrip';
 import { Appointments } from 'components/Appointments';
-import {
-  addMinutes,
-  startOfDay,
-  getTime
-} from 'date-fns';
-
+import { addMinutes, startOfDay, getTime } from 'date-fns';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -45,7 +40,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.primary.main,
     },
 
-
     tabHeading: {
       padding: '30px 40px 20px 40px',
       backgroundColor: theme.palette.secondary.contrastText,
@@ -74,37 +68,39 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 18,
       color: 'rgba(101, 143, 155, 0.6)',
     },
-
-
-
-
   };
 });
 
 export const Calendar: React.FC = (props) => {
-  const dummyData = [{
-    startTime: Date.now(),
-    endTime: addMinutes(Date.now(), -1),
-    details: {
-      patientName: 'Prateek Sharma',
-      checkups: ['Fever', 'Cough & Cold']
+  const dummyData = [
+    {
+      startTime: Date.now(),
+      endTime: addMinutes(Date.now(), -1),
+      details: {
+        patientName: 'Prateek Sharma',
+        checkups: ['Fever', 'Cough & Cold'],
+      },
+      isNew: true,
+      type: 'walkin',
     },
-    isNew: true,
-    type: 'walkin'
-  }, {
-    startTime: Date.now(),
-    endTime: addMinutes(Date.now(), 2),
-    details: {
-      patientName: 'George',
-      checkups: ['Fever', 'Cough & Cold']
+    {
+      startTime: Date.now(),
+      endTime: addMinutes(Date.now(), 2),
+      details: {
+        patientName: 'George',
+        checkups: ['Fever', 'Cough & Cold'],
+      },
+      isNew: true,
+      type: 'walkin',
     },
-    isNew: true,
-    type: 'walkin'
-  }];
+  ];
   const [appointments, setAppointments] = useState(dummyData);
 
   const setData = (startOfWeekDate) => {
-    if (getTime(startOfWeekDate) === getTime(startOfDay(Date.now())) || getTime(startOfWeekDate) === getTime(startOfDay(new Date(2019, 11, 1, 0, 0)))) {
+    if (
+      getTime(startOfWeekDate) === getTime(startOfDay(Date.now())) ||
+      getTime(startOfWeekDate) === getTime(startOfDay(new Date(2019, 11, 1, 0, 0)))
+    ) {
       return setAppointments(dummyData);
     }
 
@@ -137,15 +133,11 @@ export const Calendar: React.FC = (props) => {
       </div>
       <div className={classes.container}>
         <div className={classes.tabHeading}>
-          <Typography variant="h1">
-            hello dr.rao :)
-          </Typography>
+          <Typography variant="h1">hello dr.rao :)</Typography>
           <p>here’s your schedule for today</p>
         </div>
-        <div style={{ background: "black" }}>
-          <div>
-
-          </div>
+        <div style={{ background: 'black' }}>
+          <div></div>
           <div className={classes.calendarContainer}>
             <CalendarStrip
               dayClickHandler={onDayClick}
@@ -155,10 +147,8 @@ export const Calendar: React.FC = (props) => {
             />
           </div>
 
-          <Appointments
-            values={appointments}
-          />
-        </div >
+          <Appointments values={appointments} />
+        </div>
       </div>
     </div>
   );

@@ -1,19 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Stepper,
-  Step,
-  StepLabel,
-  Typography
-} from '@material-ui/core';
-import {
-  format,
-  getTime,
-  setSeconds,
-  setMilliseconds
-} from 'date-fns';
+import { Stepper, Step, StepLabel, Typography } from '@material-ui/core';
+import { format, getTime, setSeconds, setMilliseconds } from 'date-fns';
 
 interface Props {
-  values: Array<any>
+  values: Array<any>;
 }
 
 let timeOutId;
@@ -26,11 +16,13 @@ const udpateActiveStep = (appointments, activeStep, setActiveStep) => {
   if (activeStep < appointments.length) {
     timeOutId = setTimeout(() => udpateActiveStep(appointments, activeStep, setActiveStep), 1000);
   }
-}
-const checkIfComplete = appointmentEndTime => getTime(setSeconds(setMilliseconds(appointmentEndTime, 0), 0)) <=
+};
+const checkIfComplete = (appointmentEndTime) =>
+  getTime(setSeconds(setMilliseconds(appointmentEndTime, 0), 0)) <=
   getTime(setSeconds(setMilliseconds(Date.now(), 0), 0));
 
-const getActiveStep = appointments => appointments.findIndex(appointment => checkIfComplete(appointment.endTime));
+const getActiveStep = (appointments) =>
+  appointments.findIndex((appointment) => checkIfComplete(appointment.endTime));
 
 export const Appointments: React.FC<Props> = (props) => {
   const [appointments, setAppointments] = useState(props.values);
@@ -50,19 +42,17 @@ export const Appointments: React.FC<Props> = (props) => {
   return (
     <div>
       <Stepper activeStep={activeStep} orientation="vertical">
-        {
-          appointments.map((appointment, idx) => (
-            <Step key={idx}>
-              <StepLabel>
-                <Typography>
-                  {format(appointment.startTime, 'hh:mm')} - {format(appointment.endTime, 'hh:mm A')}
-                  <span>{appointment.details.patientName}</span>
-                </Typography>
-              </StepLabel>
-            </Step>
-          ))
-        }
+        {appointments.map((appointment, idx) => (
+          <Step key={idx}>
+            <StepLabel>
+              <Typography>
+                {format(appointment.startTime, 'hh:mm')} - {format(appointment.endTime, 'hh:mm A')}
+                <span>{appointment.details.patientName}</span>
+              </Typography>
+            </StepLabel>
+          </Step>
+        ))}
       </Stepper>
     </div>
-  )
-}
+  );
+};

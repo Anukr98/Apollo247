@@ -40,16 +40,30 @@ export interface buttonProps {
   title?: string;
   onPress?: TouchableOpacityProps['onPress'];
   disabled?: boolean;
+  variant?: 'white' | 'orange';
 }
 
 export const Button: React.FC<buttonProps> = (props) => {
   return (
     <TouchableOpacity
-      style={[styles.containerStyles, props.style, props.disabled ? styles.disabledStyle : null]}
+      style={[
+        styles.containerStyles,
+        props.variant == 'white' ? { backgroundColor: theme.colors.WHITE } : {},
+        props.style,
+        props.disabled ? styles.disabledStyle : null,
+      ]}
       onPress={props.disabled ? () => {} : props.onPress}
       activeOpacity={props.disabled ? 1 : 0.6}
     >
-      <Text style={[styles.titleTextStyle, props.titleTextStyle]}>{props.title}</Text>
+      <Text
+        style={[
+          styles.titleTextStyle,
+          props.variant == 'white' ? { color: theme.colors.BUTTON_BG } : {},
+          props.titleTextStyle,
+        ]}
+      >
+        {props.title}
+      </Text>
     </TouchableOpacity>
   );
 };

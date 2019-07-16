@@ -1,14 +1,14 @@
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 import { ApolloError, AuthenticationError } from 'apollo-server';
 
-export class AphError extends ApolloError {
+export class AphError {
   constructor(message: AphErrorMessages, code?: string, properties?: Record<string, any>) {
-    super(message, code, properties);
+    return new ApolloError(message, code, properties);
   }
 }
 
-export class AphAuthenticationError extends AuthenticationError {
+export class AphAuthenticationError {
   constructor(message: AphErrorMessages) {
-    super(message);
+    return new AuthenticationError(message);
   }
 }
