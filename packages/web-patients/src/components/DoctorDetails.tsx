@@ -163,7 +163,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     },
   };
 
-  const doctorDetails = detailsObj[doctorId];
+  const doctorDetails = detailsObj[doctorId as '1' | '2'];
 
   return (
     <div className={classes.welcome}>

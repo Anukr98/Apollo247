@@ -54,20 +54,44 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface DoctorProfileProps {
+interface DoctorProfileProps {
   doctorDetails: {
     profilePicture: String;
     doctorName: String;
     doctorSpeciality: String;
     doctorExperience: String;
-    doctorQualification: [];
-    awards: [];
-    locations: [];
-    languagesKnown: [];
-    consultingOptions: {};
+    doctorQualification: string[];
+    awards: string[];
+    locations: string[];
+    languagesKnown: string[];
+    consultingOptions: {
+      online: {
+        consultType: string;
+        fees: number;
+        availableIn: number;
+      };
+      clinic: {
+        consultType: string;
+        fees: number;
+        availableIn: number;
+      };
+    };
     isStarDoctor: boolean;
   };
   onBookConsult: () => void;
+}
+
+interface ConsultingOption {
+  online: {
+    consultType: string;
+    fees: number;
+    availableIn: number;
+  };
+  clinic: {
+    consultType: string;
+    fees: number;
+    availableIn: number;
+  };
 }
 
 export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
@@ -75,8 +99,8 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
 
   const { doctorDetails, onBookConsult } = props;
 
-  const consultingOptions = (consultingOptions) => {
-    return Object.values(consultingOptions).map((consultingOption: any) => (
+  const consultingOptions = (consultingOptions: ConsultingOption) => {
+    return Object.values(consultingOptions).map((consultingOption) => (
       <div key={consultingOption.consultType}>
         <div>{consultingOption.consultType}</div>
         <div>
