@@ -15,6 +15,7 @@ import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
+import { Formik, FormikProps, Form, Field, FieldProps } from 'formik';
 import { isMobileNumberValid } from '@aph/universal/aphValidators';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -84,18 +85,14 @@ const useStyles = makeStyles((theme: Theme) => {
 const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
 const otpInputRefs: RefObject<HTMLInputElement>[] = [];
-const validPhoneMessage = 'OTP will be sent to this number';
-const invalidPhoneMessage = 'This seems like a wrong number';
 
 export const SignIn: React.FC = (props) => {
   const classes = useStyles();
 
-  const [mobileNumber, setMobileNumber] = useState<string>('');
-  const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
+  // const [mobileNumber, setMobileNumber] = useState<string>('');
+  // const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
   const [otp, setOtp] = useState<number[]>([]);
   const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
-  const [phoneMessage, setPhoneMessage] = useState<string>(validPhoneMessage);
-  const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
   const placeRecaptchaAfterMe = useRef(null);
 
   const {
@@ -175,7 +172,7 @@ export const SignIn: React.FC = (props) => {
         type="submit"
         variant="text"
         disabled={isSendingOtp}
-        onClick={() => sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current)}
+        onClick={() => sendOtp('', placeRecaptchaAfterMe.current)}
       >
         Resend OTP
       </Button>
@@ -185,61 +182,77 @@ export const SignIn: React.FC = (props) => {
     <div className={classes.loginFormWrap}>
       <Typography variant="h2">hi</Typography>
       <p>Please enter your mobile number to login</p>
-      <FormControl fullWidth>
-        <AphInput
-          autoFocus
-          inputProps={{ type: 'tel', maxLength: 10 }}
-          value={mobileNumber}
-          onChange={(event) => {
-            setMobileNumber(event.currentTarget.value);
-            if (event.currentTarget.value !== '') {
-              if (isMobileNumberValid(event.currentTarget.value)) {
-                setPhoneMessage(validPhoneMessage);
-                setShowErrorMessage(false);
-              } else {
-                setPhoneMessage(invalidPhoneMessage);
-                setShowErrorMessage(true);
+      <Formik
+        initialValues={{ mobileNumber: '' }}
+        onSubmit={(values) => {
+          const mobileNumberWithPrefix = `${mobileNumberPrefix}${values.mobileNumber}`;
+          sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
+            setDisplayOtpInput(true)
+          );
+        }}
+        render={({ touched, dirty, errors }: FormikProps<{ mobileNumber: string }>) => (
+          <Form>
+            <Field
+              name="mobileNumber"
+              validate={(val: string) =>
+                isMobileNumberValid(val) ? undefined : 'This seems like a wrong number'
               }
-            } else {
-              setPhoneMessage(validPhoneMessage);
-              setShowErrorMessage(false);
-            }
-          }}
-          error={!isMobileNumberValid(mobileNumber)}
-          onKeyPress={(e) => {
-            if (isNaN(parseInt(e.key, 10))) {
-              e.preventDefault();
-            }
-          }}
-          startAdornment={
-            <InputAdornment className={classes.inputAdornment} position="start">
-              {mobileNumberPrefix}
-            </InputAdornment>
-          }
-        />
-        <FormHelperText component="div" className={classes.helpText} error={showErrorMessage}>
-          {sendOtpError ? 'Error sending OTP' : phoneMessage}
-        </FormHelperText>
-      </FormControl>
-      <div className={classes.action}>
-        <Fab
-          type="submit"
-          color="primary"
-          aria-label="Sign in"
-          disabled={!isMobileNumberValid(mobileNumber)}
-          onClick={() =>
-            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
-              setDisplayOtpInput(true)
-            )
-          }
-        >
-          {isSendingOtp ? (
-            <CircularProgress />
-          ) : (
-            <img src={require('images/ic_arrow_forward.svg')} />
-          )}
-        </Fab>
-      </div>
+              render={({ field }: FieldProps<{ mobileNumber: string }>) => {
+                const finishedTyping = field.value.length === 10;
+                const showValidationError =
+                  dirty &&
+                  !sendOtpError &&
+                  Boolean(errors.mobileNumber) &&
+                  (finishedTyping || touched.mobileNumber);
+                const showSendOtpError = sendOtpError;
+                return (
+                  <FormControl fullWidth>
+                    <AphInput
+                      {...field}
+                      autoFocus
+                      inputProps={{ type: 'tel', maxLength: 10 }}
+                      error={showValidationError}
+                      onKeyPress={(e) => {
+                        if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+                      }}
+                      startAdornment={
+                        <InputAdornment className={classes.inputAdornment} position="start">
+                          {mobileNumberPrefix}
+                        </InputAdornment>
+                      }
+                    />
+                    <FormHelperText
+                      component="div"
+                      className={classes.helpText}
+                      error={showValidationError || showSendOtpError}
+                    >
+                      {showValidationError
+                        ? errors.mobileNumber
+                        : showSendOtpError
+                        ? 'Error sending OTP'
+                        : 'OTP will be sent to this number'}
+                    </FormHelperText>
+                  </FormControl>
+                );
+              }}
+            />
+            <div className={classes.action}>
+              <Fab
+                type="submit"
+                color="primary"
+                aria-label="Sign in"
+                disabled={Boolean(errors.mobileNumber) || !dirty}
+              >
+                {isSendingOtp ? (
+                  <CircularProgress color="secondary" />
+                ) : (
+                  <img src={require('images/ic_arrow_forward.svg')} />
+                )}
+              </Fab>
+            </div>
+          </Form>
+        )}
+      />
       <div ref={placeRecaptchaAfterMe} />
     </div>
   );
