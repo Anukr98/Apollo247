@@ -5,19 +5,21 @@ import { onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
-import { PATIENT_SIGN_IN } from 'graphql/profiles';
-import { PatientSignIn, PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn';
 import { apiRoutes } from 'helpers/apiRoutes';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
-import { Relation } from 'graphql/types/globalTypes';
+import _isEmpty from 'lodash/isEmpty';
 import _uniqueId from 'lodash/uniqueId';
+import {
+  GetCurrentPatients_getCurrentPatients_patients,
+  GetCurrentPatients,
+} from 'graphql/types/GetCurrentPatients';
+import { GET_CURRENT_PATIENTS } from 'graphql/profiles';
 
-export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients> {
+export interface AuthContextProps<Patient = GetCurrentPatients_getCurrentPatients_patients> {
   currentPatient: Patient | null;
-  allCurrentPatients: Patient[] | null;
-  setCurrentPatient: ((p: Patient) => void) | null;
+  setCurrentPatient: ((p: Patient | null) => void) | null;
 
   sendOtp: ((phoneNumber: string, captchaPlacement: HTMLElement | null) => Promise<unknown>) | null;
   sendOtpError: boolean;
@@ -29,6 +31,7 @@ export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients
 
   signInError: boolean;
   isSigningIn: boolean;
+  isSignedIn: boolean;
   signOut: (() => Promise<void>) | null;
 
   isLoginPopupVisible: boolean;
@@ -38,7 +41,6 @@ export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients
 export const AuthContext = React.createContext<AuthContextProps>({
   currentPatient: null,
   setCurrentPatient: null,
-  allCurrentPatients: null,
 
   sendOtp: null,
   sendOtpError: false,
@@ -50,6 +52,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
   signInError: false,
   isSigningIn: true,
+  isSignedIn: false,
   signOut: null,
 
   isLoginPopupVisible: false,
@@ -98,11 +101,9 @@ let otpVerifier: firebase.auth.ConfirmationResult;
 
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
+  const isSignedIn = !_isEmpty(authToken);
   apolloClient = buildApolloClient(authToken, () => signOut());
 
-  const [allCurrentPatients, setAllCurrentPatients] = useState<
-    AuthContextProps['allCurrentPatients']
-  >(null);
   const [currentPatient, setCurrentPatient] = useState<AuthContextProps['currentPatient']>(null);
 
   const [isSendingOtp, setIsSendingOtp] = useState<AuthContextProps['isSendingOtp']>(false);
@@ -187,29 +188,17 @@ export const AuthProvider: React.FC = (props) => {
         const jwt = await user.getIdToken().catch((error) => {
           setIsSigningIn(false);
           setSignInError(true);
+          setAuthToken('');
           throw error;
         });
-        setAuthToken(jwt);
 
-        setIsSigningIn(true);
-        const signInResult = await apolloClient
-          .mutate<PatientSignIn>({ mutation: PATIENT_SIGN_IN })
-          .catch((error) => {
-            setSignInError(true);
-            setIsSigningIn(false);
-            console.error(error);
-            throw error;
-          });
-        if (!signInResult.data || !signInResult.data.patientSignIn.patients) {
-          setSignInError(true);
-          setIsSigningIn(false);
-          throw new Error('no data returned from sign in call');
-        }
-        const patients = signInResult.data.patientSignIn.patients;
-        const me = patients.find((p) => p.relation === Relation.ME) || null;
-        setAllCurrentPatients(patients);
-        setCurrentPatient(me);
-        setSignInError(false);
+        setAuthToken(jwt);
+        apolloClient = buildApolloClient(jwt, () => signOut());
+
+        await apolloClient
+          .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
+          .then(() => setSignInError(false))
+          .catch(() => setSignInError(true));
       }
       setIsSigningIn(false);
     });
@@ -222,7 +211,6 @@ export const AuthProvider: React.FC = (props) => {
           value={{
             currentPatient,
             setCurrentPatient,
-            allCurrentPatients,
 
             sendOtp,
             sendOtpError,
@@ -234,6 +222,7 @@ export const AuthProvider: React.FC = (props) => {
 
             signInError,
             isSigningIn,
+            isSignedIn,
             signOut,
 
             isLoginPopupVisible,

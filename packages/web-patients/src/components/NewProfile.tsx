@@ -9,12 +9,12 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import { isNameValid, isDateValid } from '@aph/universal/aphValidators';
 import isEmail from 'validator/lib/isEmail';
 import _includes from 'lodash/includes';
-import { updatePatient, updatePatientVariables } from 'graphql/types/updatePatient';
+import { UpdatePatient, UpdatePatientVariables } from 'graphql/types/UpdatePatient';
 import { Mutation } from 'react-apollo';
 import { UPDATE_PATIENT } from 'graphql/profiles';
-import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn';
 import { ProfileSuccess } from 'components/ProfileSuccess';
 import { parse, format } from 'date-fns';
+import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 
 export const convertAphClientDateToIso = (ddmmyyyy: string) => {
   const date = parse(ddmmyyyy, 'dd/MM/yyyy', new Date());
@@ -100,7 +100,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export interface NewProfileProps {
-  patient: PatientSignIn_patientSignIn_patients;
+  patient: GetCurrentPatients_getCurrentPatients_patients;
   onClose: () => void;
 }
 
@@ -233,7 +233,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
         </div>
       </div>
       <div className={classes.actions}>
-        <Mutation<updatePatient, updatePatientVariables>
+        <Mutation<UpdatePatient, UpdatePatientVariables>
           mutation={UPDATE_PATIENT}
           onCompleted={() => setShowProfileSuccess(true)}
         >

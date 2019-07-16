@@ -3,7 +3,10 @@ import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
 import { createConnection } from 'typeorm';
 import { Patient } from 'profiles-service/entity/patient';
-import { patientTypeDefs, patientResolvers } from 'profiles-service/resolvers/patientSignIn';
+import {
+  getCurrentPatientsTypeDefs,
+  getCurrentPatientsResolvers,
+} from 'profiles-service/resolvers/getCurrentPatients';
 import {
   updatePatientTypeDefs,
   updatePatientResolvers,
@@ -12,12 +15,6 @@ import { getPatientTypeDefs, getPatientResolvers } from 'profiles-service/resolv
 import { GatewayContext, GatewayHeaders } from 'api-gateway';
 
 export interface ProfilesServiceContext extends GatewayContext {}
-
-export type Resolver<Parent = any, Args = any> = (
-  parent: Parent,
-  args: Args,
-  context: ProfilesServiceContext
-) => any;
 
 (async () => {
   await createConnection({
@@ -45,8 +42,8 @@ export type Resolver<Parent = any, Args = any> = (
     },
     schema: buildFederatedSchema([
       {
-        typeDefs: patientTypeDefs,
-        resolvers: patientResolvers,
+        typeDefs: getCurrentPatientsTypeDefs,
+        resolvers: getCurrentPatientsResolvers,
       },
       {
         typeDefs: updatePatientTypeDefs,

@@ -5,10 +5,10 @@
 import { Relation, Gender } from "./globalTypes";
 
 // ====================================================
-// GraphQL mutation operation: PatientSignIn
+// GraphQL query operation: GetCurrentPatients
 // ====================================================
 
-export interface PatientSignIn_patientSignIn_patients {
+export interface GetCurrentPatients_getCurrentPatients_patients {
   __typename: "Patient";
   id: string;
   mobileNumber: string | null;
@@ -21,11 +21,11 @@ export interface PatientSignIn_patientSignIn_patients {
   emailAddress: string | null;
 }
 
-export interface PatientSignIn_patientSignIn {
-  __typename: "PatientSignInResult";
-  patients: PatientSignIn_patientSignIn_patients[] | null;
+export interface GetCurrentPatients_getCurrentPatients {
+  __typename: "GetCurrentPatientsResult";
+  patients: GetCurrentPatients_getCurrentPatients_patients[];
 }
 
-export interface PatientSignIn {
-  patientSignIn: PatientSignIn_patientSignIn;
+export interface GetCurrentPatients {
+  getCurrentPatients: GetCurrentPatients_getCurrentPatients | null;
 }

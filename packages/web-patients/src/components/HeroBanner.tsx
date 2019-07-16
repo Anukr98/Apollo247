@@ -6,8 +6,8 @@ import { AphButton, AphSelect } from '@aph/web-ui-components';
 import MenuItem from '@material-ui/core/MenuItem';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import _isEmpty from 'lodash/isEmpty';
-import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
-import { useAuth } from 'hooks/authHooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -118,9 +118,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+type Patient = GetCurrentPatients_getCurrentPatients_patients;
+
 export const HeroBanner: React.FC = () => {
   const classes = useStyles();
-  const { allCurrentPatients, currentPatient, setCurrentPatient } = useAuth();
+  const { allCurrentPatients, currentPatient, setCurrentPatient } = useAllCurrentPatients();
 
   return (
     <div className={classes.heroBanner}>
@@ -131,7 +133,7 @@ export const HeroBanner: React.FC = () => {
             <AphSelect
               value={currentPatient.id}
               onChange={(e) => {
-                const newId = e.target.value as PatientSignIn_patientSignIn_patients['id'];
+                const newId = e.target.value as Patient['id'];
                 const newCurrentPatient = allCurrentPatients.find((p) => p.id === newId);
                 if (newCurrentPatient) setCurrentPatient(newCurrentPatient);
               }}

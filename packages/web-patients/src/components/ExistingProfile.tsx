@@ -4,12 +4,12 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AphButton, AphSelect } from '@aph/web-ui-components';
-import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn';
 import _camelCase from 'lodash/camelCase';
 import { Relation } from 'graphql/types/globalTypes';
 import { Mutation } from 'react-apollo';
-import { updatePatientVariables, updatePatient } from 'graphql/types/updatePatient';
+import { UpdatePatientVariables, UpdatePatient } from 'graphql/types/UpdatePatient';
 import { UPDATE_PATIENT } from 'graphql/profiles';
+import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -112,10 +112,12 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
+type Patient = GetCurrentPatients_getCurrentPatients_patients;
+
 interface PatientProfileProps {
-  patient: PatientSignIn_patientSignIn_patients;
+  patient: Patient;
   number: number;
-  onUpdatePatient: (patient: PatientSignIn_patientSignIn_patients) => void;
+  onUpdatePatient: (patient: Patient) => void;
 }
 const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   const classes = useStyles();
@@ -160,11 +162,10 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   );
 };
 
-const isPatientInvalid = (patient: PatientSignIn_patientSignIn_patients) =>
-  patient.relation == null;
+const isPatientInvalid = (patient: Patient) => patient.relation == null;
 
 export interface ExistingProfileProps {
-  patients: NonNullable<PatientSignIn_patientSignIn_patients[]>;
+  patients: NonNullable<Patient[]>;
   onComplete: () => void;
 }
 export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
@@ -209,7 +210,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
         </div>
       </div>
       <div className={classes.actions}>
-        <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
+        <Mutation<UpdatePatient, UpdatePatientVariables> mutation={UPDATE_PATIENT}>
           {(mutate) => (
             <AphButton
               type="submit"

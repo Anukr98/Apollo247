@@ -16,6 +16,12 @@ export interface GatewayHeaders extends IncomingHttpHeaders {
   mobilenumber: string;
 }
 
+export type Resolver<Parent, Args, Context, Result> = (
+  parent: Parent,
+  args: Args,
+  context: Context
+) => AsyncIterator<Result> | Promise<Result>;
+
 const getPortStr = (port: string) => (port === '80' ? '' : `:${port}`);
 
 const env = process.env.NODE_ENV as 'local' | 'development';

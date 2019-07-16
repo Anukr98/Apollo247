@@ -17,9 +17,9 @@ export const GET_PATIENTS = gql`
   }
 `;
 
-export const PATIENT_SIGN_IN = gql`
-  mutation PatientSignIn {
-    patientSignIn {
+export const GET_CURRENT_PATIENTS = gql`
+  query GetCurrentPatients {
+    getCurrentPatients {
       patients {
         id
         mobileNumber
@@ -36,7 +36,7 @@ export const PATIENT_SIGN_IN = gql`
 `;
 
 export const UPDATE_PATIENT = gql`
-  mutation updatePatient($patientInput: UpdatePatientInput!) {
+  mutation UpdatePatient($patientInput: UpdatePatientInput!) {
     updatePatient(patientInput: $patientInput) {
       patient {
         id
