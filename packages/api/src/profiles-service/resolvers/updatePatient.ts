@@ -1,11 +1,12 @@
 import gql from 'graphql-tag';
-import { Resolver } from 'profiles-service/profiles-service';
 import { Patient } from 'profiles-service/entity/patient';
 import { BaseEntity } from 'typeorm';
 import { AphError, AphUserInputError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 import { validate } from 'class-validator';
 import { GraphQLDate } from 'graphql-iso-date';
+import { Resolver } from 'api-gateway';
+import { ProfilesServiceContext } from 'profiles-service/profiles-service';
 
 export const updatePatientTypeDefs = gql`
   scalar Date
@@ -55,11 +56,13 @@ async function updateEntity<E extends BaseEntity>(
   return entity;
 }
 
-type UpdatePatientInput = { patientInput: Partial<Patient> & { id: Patient['id'] } };
-const updatePatient: Resolver<any, UpdatePatientInput> = async (
-  parent,
-  { patientInput }
-): Promise<UpdatePatientResult> => {
+type UpdatePatientArgs = { patientInput: Partial<Patient> & { id: Patient['id'] } };
+const updatePatient: Resolver<
+  null,
+  UpdatePatientArgs,
+  ProfilesServiceContext,
+  UpdatePatientResult
+> = async (parent, { patientInput }) => {
   const { id, ...updateAttrs } = patientInput;
   const patient = await updateEntity<Patient>(Patient, id, updateAttrs);
   return { patient };
