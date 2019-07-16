@@ -132,7 +132,9 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         </div>
         <div className={classes.details}>
           {consultingOption.consultType}
-          <div className={`${classes.availability} ${classes.availableNow}`}>Available in {consultingOption.availableIn} mins</div>
+          <div className={`${classes.availability} ${classes.availableNow}`}>
+            Available in {consultingOption.availableIn} mins
+          </div>
         </div>
         <div className={classes.doctorPrice}>{consultingOption.fees}</div>
       </div>
@@ -146,11 +148,10 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
           <img src="https://via.placeholder.com/328x138" alt="" />
         </div>
         <div className={classes.doctorInfo}>
-          <div className={classes.doctorName}>
-            {doctorDetails.doctorName}
-          </div>
+          <div className={classes.doctorName}>{doctorDetails.doctorName}</div>
           <div className={classes.specialits}>
-            General Physician <span className={classes.lineDivider}>|</span> {doctorDetails.doctorExperience} Yrs
+            General Physician <span className={classes.lineDivider}>|</span>{' '}
+            {doctorDetails.doctorExperience} Yrs
             <div className={classes.shareIcon}>
               <img src={require('images/ic_home.svg')} alt="" />
             </div>

@@ -181,7 +181,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <div className={classes.doctorDetailsPage}>
           <div className={classes.breadcrumbs}>Doctor Details</div>
           <div className={classes.doctorProfileSection}>
-            <DoctorProfile doctorDetails={doctorDetails} onBookConsult={() => setIsPopoverOpen(true)} />
+            <DoctorProfile
+              doctorDetails={doctorDetails}
+              onBookConsult={() => setIsPopoverOpen(true)}
+            />
             <div className={classes.searchSection}>
               <div className={classes.sectionHeader}>Dr. Simran’s Clinic</div>
               <DoctorClinics doctorId={doctorId} />
