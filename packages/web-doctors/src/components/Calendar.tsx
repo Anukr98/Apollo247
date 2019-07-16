@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { BottomNavigation, Theme, Typography } from '@material-ui/core';
-import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
+import { Theme, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { CalendarStrip } from 'components/Calendar/CalendarStrip';
-import { Appointments } from 'components/Appointments';
+import { Appointments, Appointment } from 'components/Appointments';
 import { addMinutes, startOfDay, getTime } from 'date-fns';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -71,11 +70,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Calendar: React.FC = (props) => {
-  const dummyData = [
+export const Calendar: React.FC = () => {
+  const dummyData: Appointment[] = [
     {
       startTime: Date.now(),
-      endTime: addMinutes(Date.now(), -1),
+      endTime: getTime(addMinutes(Date.now(), -1)),
       details: {
         patientName: 'Prateek Sharma',
         checkups: ['Fever', 'Cough & Cold', 'Nausea', 'Sore Eyes'],
@@ -87,7 +86,7 @@ export const Calendar: React.FC = (props) => {
     },
     {
       startTime: Date.now(),
-      endTime: addMinutes(Date.now(), 2),
+      endTime: getTime(addMinutes(Date.now(), 2)),
       details: {
         patientName: 'George',
         checkups: ['Fever', 'Cough & Cold'],
@@ -100,7 +99,7 @@ export const Calendar: React.FC = (props) => {
   ];
   const [appointments, setAppointments] = useState(dummyData);
 
-  const setData = (startOfWeekDate) => {
+  const setData = (startOfWeekDate: Date) => {
     if (
       getTime(startOfWeekDate) === getTime(startOfDay(Date.now())) ||
       getTime(startOfWeekDate) === getTime(startOfDay(new Date(2019, 11, 1, 0, 0)))
@@ -111,19 +110,23 @@ export const Calendar: React.FC = (props) => {
     setAppointments([]);
   };
 
-  const onDayClick = (e, date) => {
+  const onDayClick = (e: React.MouseEvent, date: Date) => {
     setData(startOfDay(date));
   };
 
-  const onMonthChange = (e, selectedMonth, startOfWeekDate) => {
+  const onMonthChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+    selectedMonth: number,
+    startOfWeekDate: Date
+  ) => {
     setData(startOfWeekDate);
   };
 
-  const onNext = (e, date, startOfWeekDate) => {
+  const onNext = (e: React.MouseEvent, date: Date, startOfWeekDate: Date) => {
     setData(startOfWeekDate);
   };
 
-  const onPrev = (e, date, startOfWeekDate) => {
+  const onPrev = (e: React.MouseEvent, date: Date, startOfWeekDate: Date) => {
     setData(startOfWeekDate);
   };
   const classes = useStyles();

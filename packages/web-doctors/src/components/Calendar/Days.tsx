@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { startOfWeek, endOfWeek, eachDay, getDate, getDay, isToday } from 'date-fns';
-import { fontSize } from '@material-ui/system';
+import { startOfWeek, endOfWeek, eachDayOfInterval, getDate, getDay, isToday } from 'date-fns';
 
-const days: Array<string> = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+const days: string[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+let firstLoad: boolean = true;
 
 const useStyles = makeStyles({
   reset: {
@@ -25,31 +25,47 @@ const useStyles = makeStyles({
   },
 });
 
-interface Props {
+export interface DaysProps {
   date: Date;
   classes?: string;
-  handler: Function;
+  handler: (e: React.MouseEvent<HTMLLIElement>, date?: Date) => void;
 }
 
-export const Days: React.FC<Props> = (props) => {
-  const today: any = props.date;
+export const Days: React.FC<DaysProps> = (props) => {
+  const today: Date = props.date;
   const weekStart: Date = startOfWeek(today, { weekStartsOn: 0 });
   const weekEnd: Date = endOfWeek(today);
-  const [range, setRange] = useState(eachDay(weekStart, weekEnd));
+  const [range, setRange] = useState(eachDayOfInterval({ start: weekStart, end: weekEnd }));
+  const [selected, setSelected] = useState();
   const classes = useStyles();
 
   useEffect(() => {
-    setRange(eachDay(startOfWeek(props.date, { weekStartsOn: 0 }), endOfWeek(props.date)));
+    !firstLoad &&
+      setRange(
+        eachDayOfInterval({
+          start: startOfWeek(props.date, { weekStartsOn: 0 }),
+          end: endOfWeek(props.date),
+        })
+      );
   }, [props.date]);
+
+  useEffect(() => {
+    console.log(firstLoad);
+    let todayIdx: number;
+    setSelected(
+      firstLoad && (todayIdx = range.findIndex((date) => isToday(date))) > -1 ? todayIdx : 0
+    );
+    firstLoad && (firstLoad = false);
+  }, [range]);
 
   return (
     <div className={props.classes}>
       <ul className={classes.reset}>
-        {range.map((date, idx) => (
+        {range.map((date: Date, idx: number) => (
           <li
-            className={classes.days + (isToday(date) ? ' highlight' : '')}
+            className={classes.days + (selected === idx ? ' highlight' : '')}
             key={idx}
-            onClick={(e) => props.handler(e, date)}
+            onClick={(e) => (setSelected(idx), props.handler(e, date))}
           >
             <span className={classes.day}>{isToday(date) ? 'today' : days[getDay(date)]}</span>
             <span className={classes.date}>{getDate(date)}</span>
