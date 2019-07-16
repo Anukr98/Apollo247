@@ -6,6 +6,8 @@ module.exports = {
   },
   plugins: ['@typescript-eslint', 'import'],
   rules: {
+    '@typescript-eslint/array-type': ['warn', 'array'],
+    '@typescript-eslint/class-name-casing': 'warn',
     '@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
     camelcase: 'warn',
     'import/no-default-export': 'warn',
