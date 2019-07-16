@@ -4,13 +4,10 @@ import { BaseEntity } from 'typeorm';
 import { AphError, AphUserInputError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 import { validate } from 'class-validator';
-import { GraphQLDate } from 'graphql-iso-date';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profiles-service';
 
 export const updatePatientTypeDefs = gql`
-  scalar Date
-
   input UpdatePatientInput {
     id: ID!
     firstName: String
@@ -69,7 +66,6 @@ const updatePatient: Resolver<
 };
 
 export const updatePatientResolvers = {
-  Date: GraphQLDate,
   Mutation: {
     updatePatient,
   },
