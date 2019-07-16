@@ -118,7 +118,7 @@ export const SignIn: React.FC = (props) => {
   }, []);
 
   return displayOtpInput ? (
-    <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`} data-cypress="Signin">
+    <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">hi</Typography>
       <p>Type in the OTP sent to you, to authenticate</p>
       <Grid container spacing={1}>
@@ -182,7 +182,7 @@ export const SignIn: React.FC = (props) => {
       <div ref={placeRecaptchaAfterMe} />
     </div>
   ) : (
-    <div className={classes.loginFormWrap} data-cypress="SignIn">
+    <div className={classes.loginFormWrap}>
       <Typography variant="h2">hi</Typography>
       <p>Please enter your mobile number to login</p>
       <FormControl fullWidth>
