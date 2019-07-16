@@ -31,9 +31,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderBottom: 'none',
     },
     profile: {
-      paddingTop: 85,
+      paddingTop: 68,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 78,
+        paddingTop: 62,
       },
     },
     headerSticky: {
@@ -80,7 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface DoctorsProfileProps {}
+export interface DoctorsProfileProps { }
 
 export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
   const classes = useStyles();

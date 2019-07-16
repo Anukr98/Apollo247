@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: theme.palette.common.white,
-      padding: '20px 20px 7px 20px',
+      padding: '10px 20px 5px 20px',
       [theme.breakpoints.down('xs')]: {
         padding: '15px 20px 5px 20px',
       },
@@ -32,9 +32,9 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
       '& img': {
-        maxWidth: 77,
+        maxWidth: 64,
         [theme.breakpoints.down('xs')]: {
-          maxWidth: 67,
+          maxWidth: 62,
         },
       },
     },
@@ -93,15 +93,14 @@ export const Header: React.FC = (props) => {
         </Link>
       </div>
       {/* {isSignedIn && <Navigation />} */}
-      <div className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin}`}>
+      <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
         <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup, isProtected }) => (
             <div
-              className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
               onClick={() => (isSignedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
               ref={avatarRef}
             >
-              {isSigningIn ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
+              {isSigningIn ? <CircularProgress /> : <img src={require('images/ic_help.svg')} />}
             </div>
           )}
         </ProtectedWithLoginPopup>
@@ -120,30 +119,30 @@ export const Header: React.FC = (props) => {
                 </Button>
               </DialogActions>
             </Dialog>
-            <Button variant="text" size="small" onClick={() => signOut()} color="primary">
+            {/* <Button variant="text" size="small" onClick={() => signOut()} color="primary">
               Sign out
-            </Button>
+            </Button> */}
           </>
         ) : (
-          <Popover
-            open={isLoginPopupVisible}
-            anchorEl={avatarRef.current}
-            onClose={() => setIsLoginPopupVisible(false)}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            classes={{ paper: classes.topPopover }}
-          >
-            <Paper className={classes.loginForm}>
-              <SignIn />
-            </Paper>
-          </Popover>
-        )}
+            <Popover
+              open={isLoginPopupVisible}
+              anchorEl={avatarRef.current}
+              onClose={() => setIsLoginPopupVisible(false)}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              classes={{ paper: classes.topPopover }}
+            >
+              <Paper className={classes.loginForm}>
+                <SignIn />
+              </Paper>
+            </Popover>
+          )}
       </div>
     </header>
   );
