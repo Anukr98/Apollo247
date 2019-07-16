@@ -60,7 +60,7 @@ export const doctorTypeDefs = gql`
     onlineConsultationFees: String
     physicalConsultationFees: String
     package: String
-    paymentDetails: [String]
+    paymentDetails: [paymentDetails]
     clinicsList: [clinicsList]
     starDoctorTeam: [starDoctorTeam]
     consultationHours: [consultations]

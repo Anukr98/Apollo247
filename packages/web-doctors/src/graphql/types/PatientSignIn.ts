@@ -29,7 +29,3 @@ export interface PatientSignIn_patientSignIn {
 export interface PatientSignIn {
   patientSignIn: PatientSignIn_patientSignIn;
 }
-
-export interface PatientSignInVariables {
-  jwt: string;
-}

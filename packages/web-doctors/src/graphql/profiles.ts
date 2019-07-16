@@ -32,12 +32,25 @@ export const GET_DOCTOR_PROFILE = gql`
       mobileNumber
       experience
       speciality
+      specialization
       isStarDoctor
       education
       services
       languages
       city
       awards
+      photoUrl
+      registrationNumber
+      isProfileComplete
+      availableForPhysicalConsultation
+      availableForVirtualConsultation
+      onlineConsultationFees
+      physicalConsultationFees
+      package
+      paymentDetails {
+        accountNumber
+        address
+      }
       clinicsList {
         name
         location
@@ -49,13 +62,20 @@ export const GET_DOCTOR_PROFILE = gql`
         typeOfConsult
         inviteStatus
       }
+      consultationHours {
+        days
+        timings
+        availableForPhysicalConsultation
+        availableForVirtualConsultation
+        type
+      }
     }
   }
 `;
 
 export const PATIENT_SIGN_IN = gql`
-  mutation PatientSignIn($jwt: String!) {
-    patientSignIn(jwt: $jwt) {
+  mutation PatientSignIn {
+    patientSignIn {
       patients {
         id
         mobileNumber
