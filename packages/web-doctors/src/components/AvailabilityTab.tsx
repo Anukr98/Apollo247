@@ -8,6 +8,7 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 //import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions';
+import { getDoctorProfile_getDoctorProfile_consultationHours } from 'graphql/types/getDoctorProfile';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
@@ -329,7 +330,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
   ];
   const [week, setWeek] = useState<weekItem>(weekArr);
   console.log(week);
-  const dayClickHandler = (key) => {
+  const dayClickHandler = (key: number) => {
     console.log(key);
     // const updatedWeekArr = week.map((day) => {
     //   if (day.key === key) {
@@ -340,7 +341,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
     // });
     // setWeek(updatedWeekArr);
   };
-  const weekHtml = weekArr.map((item, index) => {
+  const weekHtml = weekArr.map((item: weekItem, index: number) => {
     return (
       <AphButton
         key={item.key.toString()}
@@ -412,37 +413,41 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
       </div>
     );
   }
-  const AvailabilityHtml = data.consultationHours.map((item, index) => {
-    return (
-      <div key={index.toString()} className={classes.tabContent}>
-        <ExpansionPanel
-          className={
-            classes.tabContentPanel +
-            ((item.type && item.type.toLowerCase()) === 'fixed' ? classes.pointerNone : '')
-          }
-        >
-          <ExpansionPanelSummary
-            expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-            aria-controls="panel1c-content"
-            id="panel1c-header"
+  const AvailabilityHtml = data.consultationHours.map(
+    (item: getDoctorProfile_getDoctorProfile_consultationHours, index: number) => {
+      return (
+        <div key={index.toString()} className={classes.tabContent}>
+          <ExpansionPanel
+            className={
+              classes.tabContentPanel +
+              ((item.type && item.type.toLowerCase()) === 'fixed' ? classes.pointerNone : '')
+            }
           >
-            <div className={classes.columnTime}>
-              <Typography className={classes.primaryHeading}>{item.timings}</Typography>
-            </div>
-            <div className={classes.columnDays}>
-              <Typography className={classes.heading}>
-                {item.days} | {item.availableForPhysicalConsultation && 'Physical'},{' '}
-                {item.availableForVirtualConsultation && 'Online'}
-              </Typography>
-            </div>
-            {item.type && item.type !== '' && <div className={classes.columnType}>(Fixed)</div>}
-          </ExpansionPanelSummary>
-          <ExpansionPanelDetails className={classes.details}>{getDetails()}</ExpansionPanelDetails>
-          <Divider />
-        </ExpansionPanel>
-      </div>
-    );
-  });
+            <ExpansionPanelSummary
+              expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+              aria-controls="panel1c-content"
+              id="panel1c-header"
+            >
+              <div className={classes.columnTime}>
+                <Typography className={classes.primaryHeading}>{item.timings}</Typography>
+              </div>
+              <div className={classes.columnDays}>
+                <Typography className={classes.heading}>
+                  {item.days} | {item.availableForPhysicalConsultation && 'Physical'},{' '}
+                  {item.availableForVirtualConsultation && 'Online'}
+                </Typography>
+              </div>
+              {item.type && item.type !== '' && <div className={classes.columnType}>(Fixed)</div>}
+            </ExpansionPanelSummary>
+            <ExpansionPanelDetails className={classes.details}>
+              {getDetails()}
+            </ExpansionPanelDetails>
+            <Divider />
+          </ExpansionPanel>
+        </div>
+      );
+    }
+  );
   function getAvailabilityHtml() {
     return AvailabilityHtml;
   }

@@ -16,7 +16,10 @@ interface DoctorsName {
   inviteStatus: string;
   lastName: string;
 }
-
+interface Search {
+  text: string;
+  highlight: boolean;
+}
 const suggestions: DoctorsName[] = [
   {
     label: 'Dr Sunita Rao',
@@ -77,7 +80,7 @@ const suggestions: DoctorsName[] = [
 ];
 
 function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => { }, ref, ...other } = inputProps;
+  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
 
   return (
     <TextField
@@ -102,11 +105,11 @@ function renderSuggestion(
 ) {
   const matches = match(suggestion.label, query);
   const parts = parse(suggestion.label, matches);
-
+  console.log(parts, 'parts');
   return (
     <MenuItem selected={isHighlighted} component="div">
       <div>
-        {parts.map((part, index) => (
+        {parts.map((part: Search, index: number) => (
           <span
             key={index.toString()}
             style={{ fontWeight: part.highlight ? 400 : 400, color: '#000' }}
@@ -126,8 +129,8 @@ function getSuggestions(value: string) {
   return inputLength < 3
     ? []
     : suggestions.filter((suggestion) => {
-      return suggestion.label.toLowerCase().indexOf(value.toLowerCase()) !== -1;
-    });
+        return suggestion.label.toLowerCase().indexOf(value.toLowerCase()) !== -1;
+      });
 }
 
 function getSuggestionValue(suggestion: DoctorsName) {
@@ -178,8 +181,10 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   })
 );
-
-export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
+interface Suggestprops {
+  addDoctorHadler: () => void;
+}
+export default function IntegrationAutosuggest({ addDoctorHadler }: any) {
   const classes = useStyles();
   const [state, setState] = React.useState({
     single: '',
@@ -194,10 +199,8 @@ export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
   const handleSuggestionsClearRequested = () => {
     setSuggestions([]);
   };
-  const onSuggestionSelected = (
-    event,
-    { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }
-  ) => {
+  const onSuggestionSelected = (event: any, { suggestion }: any) => {
+    console.log(suggestion);
     setDoctor(suggestion);
   };
   const handleChange = (name: keyof typeof state) => (
@@ -217,7 +220,7 @@ export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
     onSuggestionsClearRequested: handleSuggestionsClearRequested,
     getSuggestionValue,
     renderSuggestion,
-    onSuggestionSelected: onSuggestionSelected,
+    onSuggestionSelected,
   };
 
   return (
@@ -238,7 +241,7 @@ export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
           suggestionsList: classes.suggestionsList,
           suggestion: classes.suggestion,
         }}
-        renderSuggestionsContainer={(options) => (
+        renderSuggestionsContainer={(options: any) => (
           <Paper {...options.containerProps} square>
             {options.children}
           </Paper>

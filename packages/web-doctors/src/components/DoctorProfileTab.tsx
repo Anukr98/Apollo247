@@ -7,6 +7,13 @@ import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
 import StarDoctorSearch from './StarDoctorSearch';
 import { relative } from 'path';
+import {
+  getDoctorProfile,
+  getDoctorProfileVariables,
+  getDoctorProfile_getDoctorProfile_starDoctorTeam,
+  getDoctorProfile_getDoctorProfile_clinicsList,
+  getDoctorProfile_getDoctorProfile,
+} from 'graphql/types/getDoctorProfile';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -193,64 +200,66 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
       setShowAddDoc(false);
     }
   }
-  function removeDoctor() {
-    alert('delete');
-  }
+  // function removeDoctor() {
+  //   alert('delete');
+  // }
   const starDocNumber = data.starDoctorTeam.length;
-  const starDoctors = data.starDoctorTeam.map((item, index) => {
-    return (
-      <Grid item lg={4} sm={6} xs={12} key={index.toString()}>
-        <div className={classes.tabContentStarDoctor}>
-          <div className={classes.starDoctors}>
-            <img alt="" src={require('images/doctor-profile.jpg')} className={classes.profileImg} />
-          </div>
-          {!(item.inviteStatus === 'accepted') ? (
-            <div className={classes.posRelative}>
-              <img
-                alt="more.svg"
-                src={require('images/ic_more.svg')}
-                className={classes.moreIcon}
-                onClick={() => removeDoctor()}
-              />
-              <Typography variant="h4">
-                Dr. {item.firstName} {item.lastName}
-              </Typography>
-              <Typography className={classes.invited}>
-                <img alt="" src={require('images/ic_invite.svg')} />
-                Invited
-              </Typography>
-            </div>
-          ) : (
-            <div className={classes.posRelative}>
+  const starDoctors = data.starDoctorTeam.map(
+    (item: getDoctorProfile_getDoctorProfile_starDoctorTeam, index: number) => {
+      return (
+        <Grid item lg={4} sm={6} xs={12} key={index.toString()}>
+          <div className={classes.tabContentStarDoctor}>
+            <div className={classes.starDoctors}>
               <img
                 alt=""
-                src={require('images/ic_more.svg')}
-                className={classes.moreIcon}
-                onClick={() => removeDoctor()}
+                src={require('images/doctor-profile.jpg')}
+                className={classes.profileImg}
               />
-              <Typography variant="h4">
-                Dr. {item.firstName} {item.lastName}
-              </Typography>
-              <Typography variant="h6">
-                GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
-              </Typography>
-              <Typography variant="h5">
-                MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
-              </Typography>
             </div>
-          )}
-        </div>
-      </Grid>
-    );
-  });
+            {!(item.inviteStatus === 'accepted') ? (
+              <div className={classes.posRelative}>
+                <img
+                  alt="more.svg"
+                  src={require('images/ic_more.svg')}
+                  className={classes.moreIcon}
+                />
+                <Typography variant="h4">
+                  Dr. {item.firstName} {item.lastName}
+                </Typography>
+                <Typography className={classes.invited}>
+                  <img alt="" src={require('images/ic_invite.svg')} />
+                  Invited
+                </Typography>
+              </div>
+            ) : (
+              <div className={classes.posRelative}>
+                <img alt="" src={require('images/ic_more.svg')} className={classes.moreIcon} />
+                <Typography variant="h4">
+                  Dr. {item.firstName} {item.lastName}
+                </Typography>
+                <Typography variant="h6">
+                  GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
+                </Typography>
+                <Typography variant="h5">
+                  MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+                </Typography>
+              </div>
+            )}
+          </div>
+        </Grid>
+      );
+    }
+  );
 
-  const clinicsList = data.clinicsList.map((item, index) => {
-    return (
-      <Typography variant="h3" key={index.toString()}>
-        {item.name}, {item.location}
-      </Typography>
-    );
-  });
+  const clinicsList = data.clinicsList.map(
+    (item: getDoctorProfile_getDoctorProfile_clinicsList, index: number) => {
+      return (
+        <Typography variant="h3" key={index.toString()}>
+          {item.name}, {item.location}
+        </Typography>
+      );
+    }
+  );
 
   return (
     <div className={classes.ProfileContainer}>
@@ -332,7 +341,7 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
                 <div className={classes.addStarDoctor}>
                   <Typography variant="h5">
                     Add doctor to your team
-                    <StarDoctorSearch addDoctorHadler={addDoctorHadler} isReset={true} />
+                    <StarDoctorSearch addDoctorHadler={addDoctorHadler} />
                   </Typography>
                 </div>
               </Grid>

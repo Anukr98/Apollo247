@@ -12,7 +12,7 @@ import { FeesTab } from 'components/FeesTab';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 
-function TabContainer(props) {
+function TabContainer(props: any) {
   return (
     <Typography component="div" style={{ padding: 8 * 3 }}>
       {props.children}
@@ -80,7 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface DoctorsProfileProps { }
+export interface DoctorsProfileProps {}
 
 export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
   const classes = useStyles();
