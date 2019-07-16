@@ -89,7 +89,7 @@ export const Calendar: React.FC = () => {
       endTime: getTime(addMinutes(Date.now(), 2)),
       details: {
         patientName: 'George',
-        checkups: ['Fever', 'Cough & Cold'],
+        checkups: ['Fever', 'Cough & Cold', 'Nausea'],
         avatar:
           'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
       },

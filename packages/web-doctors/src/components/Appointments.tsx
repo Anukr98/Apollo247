@@ -94,6 +94,11 @@ const useStyles = makeStyles((theme: Theme) =>
     calendarContent: {
       backgroundColor: '#f7f7f7',
     },
+    iconContainer: {
+      '& text': {
+        display: 'none',
+      },
+    },
   })
 );
 let timeOutId: number;
@@ -142,7 +147,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       <Stepper activeStep={activeStep} orientation="vertical" className={classes.calendarContent}>
         {appointments.map((appointment, idx) => (
           <Step key={idx} className={stepsCompleted + 1 === idx ? 'upcoming' : ''}>
-            <StepLabel>
+            <StepLabel classes={{ iconContainer: classes.iconContainer }}>
               <Typography variant="h5">
                 <span>
                   {format(appointment.startTime, 'hh:mm')} -{' '}
@@ -187,7 +192,10 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
                         {appointment.details.checkups && appointment.details.checkups.length && (
                           <Grid lg={5} sm={5} xs={5} key={2} item className={classes.valign}>
                             <div className={classes.section1}>
-                              {appointment.details.checkups.slice(0, 2).map((checkup, idx) => (
+                              {(appointment.details.checkups.length > 3
+                                ? appointment.details.checkups.slice(0, 2)
+                                : appointment.details.checkups
+                              ).map((checkup, idx) => (
                                 <Chip
                                   key={idx}
                                   className={classes.chip}
