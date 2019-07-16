@@ -141,7 +141,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     <div>
       <Stepper activeStep={activeStep} orientation="vertical" className={classes.calendarContent}>
         {appointments.map((appointment, idx) => (
-          <Step key={idx}>
+          <Step key={idx} className={stepsCompleted + 1 === idx ? 'upcoming' : ''}>
             <StepLabel>
               <Typography variant="h5">
                 <span>

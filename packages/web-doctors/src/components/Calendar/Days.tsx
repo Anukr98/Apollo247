@@ -50,7 +50,6 @@ export const Days: React.FC<DaysProps> = (props) => {
   }, [props.date]);
 
   useEffect(() => {
-    console.log(firstLoad);
     let todayIdx: number;
     setSelected(
       firstLoad && (todayIdx = range.findIndex((date) => isToday(date))) > -1 ? todayIdx : 0
