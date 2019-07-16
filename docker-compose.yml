@@ -4,14 +4,21 @@ services:
   nginx:
     image: nginx:1.16.0-alpine
     tty: true
-    command: ash -c "nginx -t && nginx -g 'daemon off;'"
+    environment:
+      - API_GATEWAY_PORT=4000
+      - WEB_PATIENTS_PORT=3000
+      - WEB_DOCTORS_PORT=3001
+    command: ash -c "
+      envsubst '$$API_GATEWAY_PORT $$WEB_PATIENTS_PORT $$WEB_DOCTORS_PORT' < /etc/nginx/conf.d/local.conf.template > /etc/nginx/conf.d/local.conf &&
+      nginx -t &&
+      nginx -g 'daemon off;'"
     ports:
       - 3000:3000
       - 3001:3001
       - 4000:4000
     volumes:
       - ./nginx/log/:/var/log/nginx
-      - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
+      - ./nginx/conf.d/local.conf.template:/etc/nginx/conf.d/local.conf.template/:ro
       - ./packages/web-patients/dist/:/usr/share/nginx/html/web-patients:ro
       - ./packages/web-doctors/dist/:/usr/share/nginx/html/web-doctors:ro
 
@@ -29,7 +36,7 @@ services:
       # cypress.json, webpack.config, and cypress/plugins/webpack-preprocessor
       NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache
       NODE_ENV: local
-      WEB_CLIENT_PORT: 3000
+      WEB_PATIENTS_PORT: 3000
       API_GATEWAY_PORT: 4000
       FIREBASE_PROJECT_ID: apollo-patient-interface
       CYPRESS_INSTALL_BINARY: 0
@@ -47,7 +54,7 @@ services:
       # cypress.json, webpack.config, and cypress/plugins/webpack-preprocessor
       NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache
       NODE_ENV: local
-      WEB_CLIENT_PORT: 3001
+      WEB_DOCTORS_PORT: 3001
       API_GATEWAY_PORT: 4000
       FIREBASE_PROJECT_ID: apollo-patient-interface
       CYPRESS_INSTALL_BINARY: 0
@@ -56,22 +63,22 @@ services:
     depends_on:
       - nginx
 
-  web-ui-components:
-    image: node:12.6.0-alpine
-    working_dir: /apollo-hospitals/packages/web-ui-components
-    command: ash -c "npm run start"
-
   api-gateway:
     image: node:12.6.0
     working_dir: /apollo-hospitals/packages/api
-    command:
-      bash -c "while ! curl -s http://profiles-service/graphql > /dev/null; do echo waiting for profiles-service...; sleep 5; done;
+    command: bash -c "
+      while ((! curl -s http://profiles-service/graphql) || (! curl -s http://doctors-service/graphql)) > /dev/null;
+      do echo waiting for services to start...; sleep 5;
+      done;
       npm run start:api-gateway"
     environment:
       NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache
       NODE_ENV: local
-      WEB_CLIENT_PORT: 3000
+      WEB_PATIENTS_PORT: 3000
+      WEB_DOCTORS_PORT: 3001
       API_GATEWAY_PORT: 4000
+      GOOGLE_APPLICATION_CREDENTIALS: /apollo-hospitals/packages/api/src/firebase-secrets.json
+      FIREBASE_PROJECT_ID: apollo-patient-interface
     volumes:
       - ./:/apollo-hospitals:cached
     depends_on:
@@ -86,8 +93,6 @@ services:
     environment:
       NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache
       NODE_ENV: local
-      GOOGLE_APPLICATION_CREDENTIALS: /apollo-hospitals/packages/api/src/profiles-service/firebase-secrets.json
-      FIREBASE_PROJECT_ID: apollo-patient-interface
     volumes:
       - ./:/apollo-hospitals:cached
     depends_on:
@@ -105,7 +110,5 @@ services:
     environment:
       NPM_CONFIG_CACHE: /apollo-hospitals/.npm-cache
       NODE_ENV: local
-      GOOGLE_APPLICATION_CREDENTIALS: /apollo-hospitals/packages/api/src/doctors-service/firebase-secrets.json
-      FIREBASE_PROJECT_ID: apollo-patient-interface
     volumes:
       - ./:/apollo-hospitals:cached

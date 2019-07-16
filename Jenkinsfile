@@ -3,38 +3,39 @@ pipeline {
     stages {
         stage('Checkout SCM'){
             steps {
-                git branch: 'development', credentialsId: 'githubcred', url: 'https://github.com/popcornapps/apollo-hospitals.git'    
+                git branch: 'development', credentialsId: 'test', url: 'https://github.com/popcornapps/apollo-hospitals.git' 
             }
             
         }
-        stage('Shutdown Docker Images') {
-            steps{
-                sh "/usr/local/bin/docker-compose -f docker-compose.yml down"    
-            }
-        }
-        stage('Install Web Modules') {
+        stage('Install') {
             steps {
-                sh "/usr/local/bin/docker-compose -f docker-compose.yml run --rm web npm install --production=false"
+                sh "npm install"
     
             }
         }
-        stage("lint checking on Web Service") {
+        stage('run bootstrap') {
             steps {
-                sh "/usr/local/bin/docker-compose -f docker-compose.yml run --rm web npm run lint"
+                sh "npm run bootstrap"
+    
+            }
+        }
+        stage("lint check") {
+            steps {
+                sh "npm run lint"
             }
             
         }
         
          stage("Syntax Check") {
             steps {
-                sh "/usr/local/bin/docker-compose -f docker-compose.yml run --rm web npm run format:check"
+                sh "npm run format"
             }
             
         }
     }
     post { 
         always { 
-            echo 'I will always say Hello again!'
+            echo 'I will always say Hello again'
         }
     }
 }

@@ -17,7 +17,7 @@ const AphThemeProvider: React.FC<ThemeProviderProps<any>> = (props) => {
     <StylesProvider generateClassName={generator}>
       <MuiThemeProvider {...themeProviderProps}>
         <CssBaseline />
-        {props.children}
+        {children}
       </MuiThemeProvider>
     </StylesProvider>
   );

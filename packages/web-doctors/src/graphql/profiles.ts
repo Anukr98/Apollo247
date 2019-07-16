@@ -18,6 +18,41 @@ export const GET_PATIENTS = gql`
   }
 `;
 
+export const IS_DOCTOR = gql`
+  query hasAccess($mobileNumber: String!) {
+    hasAccess(mobileNumber: $mobileNumber)
+  }
+`;
+export const GET_DOCTOR_PROFILE = gql`
+  query getDoctorProfile($mobileNumber: String!) {
+    getDoctorProfile(mobileNumber: $mobileNumber) {
+      id
+      firstName
+      lastName
+      mobileNumber
+      experience
+      speciality
+      isStarDoctor
+      education
+      services
+      languages
+      city
+      awards
+      clinicsList {
+        name
+        location
+      }
+      starDoctorTeam {
+        firstName
+        lastName
+        experience
+        typeOfConsult
+        inviteStatus
+      }
+    }
+  }
+`;
+
 export const PATIENT_SIGN_IN = gql`
   mutation PatientSignIn($jwt: String!) {
     patientSignIn(jwt: $jwt) {
@@ -31,9 +66,6 @@ export const PATIENT_SIGN_IN = gql`
         uhid
         dateOfBirth
         emailAddress
-      }
-      errors {
-        messages
       }
     }
   }

@@ -12,7 +12,7 @@ const distDir = path.resolve(__dirname, 'dist');
 
 const plugins = [
   new webpack.DefinePlugin(
-    ['NODE_ENV', 'WEB_CLIENT_PORT', 'API_GATEWAY_PORT', 'FIREBASE_PROJECT_ID'].reduce(
+    ['NODE_ENV', 'WEB_DOCTORS_PORT', 'API_GATEWAY_PORT', 'FIREBASE_PROJECT_ID'].reduce(
       (result, VAR) => ({
         ...result,
         [`process.env.${VAR}`]: JSON.stringify(process.env[VAR].trim()),
@@ -37,7 +37,7 @@ const rhlBabelLoader = {
     plugins: ['react-hot-loader/babel'],
   },
 };
-const tsLoader = { loader: 'ts-loader' };
+const tsLoader = { loader: 'awesome-typescript-loader' };
 const urlLoader = {
   loader: 'url-loader',
   options: {
@@ -65,7 +65,6 @@ module.exports = {
       {
         test: /\.(j|t)sx?$/,
         exclude: [/node_modules/],
-        use: isProduction ? [tsLoader] : [tsLoader],
         use: isProduction ? [tsLoader] : [rhlBabelLoader, tsLoader],
       },
       {
@@ -77,7 +76,7 @@ module.exports = {
 
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
-    modules: [path.resolve(__dirname, 'src'), 'node_modules'],
+    modules: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'node_modules')],
     alias:
       isLocal || isDevelopment
         ? {
@@ -99,7 +98,7 @@ module.exports = {
           publicPath: '/', // URL path where the webpack files are served from
           contentBase: distDir, // A directory to serve files non-webpack files from (Absolute path)
           host: '0.0.0.0',
-          port: process.env.WEB_CLIENT_PORT,
+          port: process.env.WEB_DOCTORS_PORT,
           disableHostCheck: true,
           hot: true,
           inline: true,

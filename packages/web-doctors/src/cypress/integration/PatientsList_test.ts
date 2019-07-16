@@ -4,7 +4,7 @@ import { getPatientsFixture } from 'cypress/fixtures/patientsFixtures';
 
 describe('PatientsList', () => {
   it('Shows the PatientsList', () => {
-    cy.visit(`${clientBaseUrl}${clientRoutes.patients()}`);
+    cy.visit(`${clientBaseUrl()}${clientRoutes.patients()}`);
     cy.contains('h3', 'Patients List').should('exist');
   });
 
@@ -12,7 +12,7 @@ describe('PatientsList', () => {
     const patientsListQueryResult = getPatientsFixture();
     cy.server();
     cy.route('POST', apiRoutes.graphql(), patientsListQueryResult);
-    cy.visit(`${clientBaseUrl}${clientRoutes.patients()}`);
+    cy.visit(`${clientBaseUrl()}${clientRoutes.patients()}`);
     patientsListQueryResult.data.getPatients!.patients.forEach((patient) => {
       cy.contains('div', `${patient.firstName} ${patient.lastName}`);
     });

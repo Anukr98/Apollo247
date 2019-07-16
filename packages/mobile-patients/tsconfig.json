@@ -4,7 +4,6 @@
     "outDir": "dist",
     "baseUrl": "./",
     "target": "es6",
-    "noImplicitAny": false,
     "jsx": "react-native",
     "paths": {
       "@aph/mobile-patients/*": ["./*"]

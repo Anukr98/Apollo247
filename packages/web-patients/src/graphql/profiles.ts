@@ -18,8 +18,8 @@ export const GET_PATIENTS = gql`
 `;
 
 export const PATIENT_SIGN_IN = gql`
-  mutation PatientSignIn($jwt: String!) {
-    patientSignIn(jwt: $jwt) {
+  mutation PatientSignIn {
+    patientSignIn {
       patients {
         id
         mobileNumber
@@ -29,9 +29,6 @@ export const PATIENT_SIGN_IN = gql`
         gender
         uhid
         dateOfBirth
-      }
-      errors {
-        messages
       }
     }
   }

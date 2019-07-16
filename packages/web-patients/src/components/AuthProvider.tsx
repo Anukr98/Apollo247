@@ -1,26 +1,18 @@
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloClient } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
-import { ErrorResponse, onError } from 'apollo-link-error';
+import { onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import { PATIENT_SIGN_IN } from 'graphql/profiles';
-import {
-  PatientSignIn,
-  PatientSignInVariables,
-  PatientSignIn_patientSignIn_patients,
-} from 'graphql/types/PatientSignIn';
+import { PatientSignIn, PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn';
 import { apiRoutes } from 'helpers/apiRoutes';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { Relation } from 'graphql/types/globalTypes';
 import _uniqueId from 'lodash/uniqueId';
-
-function wait<R, E>(promise: Promise<R>): [R, E] {
-  return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
-}
 
 export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients> {
   currentPatient: Patient | null;
@@ -64,12 +56,21 @@ export const AuthContext = React.createContext<AuthContextProps>({
   setIsLoginPopupVisible: null,
 });
 
+const isLocal = process.env.NODE_ENV === 'local';
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 let apolloClient: ApolloClient<any>;
-const buildApolloClient = (authToken: string) => {
-  const errorLink = onError(({ networkError, operation, forward }: ErrorResponse) => {
-    // There's a bug in the apollo typedefs and `statusCode` is not recognized, but it's there
-    if (networkError && (networkError as any).statusCode === 401) {
-      console.log(networkError, operation);
+const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
+  const errorLink = onError((error) => {
+    const { graphQLErrors, operation, forward } = error;
+    if (isLocal || isDevelopment) console.error(error);
+    if (graphQLErrors) {
+      const unauthenticatedError = graphQLErrors.some(
+        (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
+      );
+      if (unauthenticatedError) {
+        handleUnauthenticated();
+      }
     }
     return forward(operation);
   });
@@ -97,7 +98,7 @@ let otpVerifier: firebase.auth.ConfirmationResult;
 
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
-  apolloClient = buildApolloClient(authToken);
+  apolloClient = buildApolloClient(authToken, () => signOut());
 
   const [allCurrentPatients, setAllCurrentPatients] = useState<
     AuthContextProps['allCurrentPatients']
@@ -117,6 +118,12 @@ export const AuthProvider: React.FC = (props) => {
     AuthContextProps['isLoginPopupVisible']
   >(false);
 
+  const signOut = () =>
+    app
+      .auth()
+      .signOut()
+      .then(() => window.location.reload());
+
   const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
     return new Promise((resolve, reject) => {
       if (!captchaPlacement) {
@@ -134,15 +141,15 @@ export const AuthProvider: React.FC = (props) => {
       const captcha = new firebase.auth.RecaptchaVerifier(captchaId, {
         size: 'invisible',
         callback: async () => {
-          const [phoneAuthResult, phoneAuthError] = await wait(
-            app.auth().signInWithPhoneNumber(phoneNumber, captcha)
-          );
+          const phoneAuthResult = await app
+            .auth()
+            .signInWithPhoneNumber(phoneNumber, captcha)
+            .catch((error) => {
+              setSendOtpError(true);
+              reject();
+              throw error;
+            });
           setIsSendingOtp(false);
-          if (phoneAuthError) {
-            setSendOtpError(true);
-            reject();
-            return;
-          }
           otpVerifier = phoneAuthResult;
           setSendOtpError(false);
           captcha.clear();
@@ -166,43 +173,36 @@ export const AuthProvider: React.FC = (props) => {
       return;
     }
     setIsVerifyingOtp(true);
-    const [otpAuthResult, otpError] = await wait(otpVerifier.confirm(otp));
-    setVerifyOtpError(otpError || !otpAuthResult.user);
+    const otpAuthResult = await otpVerifier.confirm(otp).catch((error) => {
+      setVerifyOtpError(true);
+    });
+    if (!otpAuthResult) setVerifyOtpError(true);
     setIsVerifyingOtp(false);
   };
-
-  const signOut = () =>
-    app
-      .auth()
-      .signOut()
-      .then(() => window.location.reload());
 
   useEffect(() => {
     app.auth().onAuthStateChanged(async (user) => {
       if (user) {
-        const [jwt, jwtError] = await wait(user.getIdToken());
-        if (jwtError || !jwt) {
-          if (jwtError) console.error(jwtError);
+        const jwt = await user.getIdToken().catch((error) => {
           setIsSigningIn(false);
           setSignInError(true);
-          app.auth().signOut();
-          return;
-        }
+          throw error;
+        });
         setAuthToken(jwt);
 
         setIsSigningIn(true);
-        const [signInResult, signInError] = await wait(
-          apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
-            mutation: PATIENT_SIGN_IN,
-            variables: { jwt },
-          })
-        );
-        if (signInError || !signInResult.data || !signInResult.data.patientSignIn.patients) {
-          if (signInError) console.error(signInError);
+        const signInResult = await apolloClient
+          .mutate<PatientSignIn>({ mutation: PATIENT_SIGN_IN })
+          .catch((error) => {
+            setSignInError(true);
+            setIsSigningIn(false);
+            console.error(error);
+            throw error;
+          });
+        if (!signInResult.data || !signInResult.data.patientSignIn.patients) {
           setSignInError(true);
           setIsSigningIn(false);
-          app.auth().signOut();
-          return;
+          throw new Error('no data returned from sign in call');
         }
         const patients = signInResult.data.patientSignIn.patients;
         const me = patients.find((p) => p.relation === Relation.ME) || patients[0];

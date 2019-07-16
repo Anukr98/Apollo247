@@ -1,6 +1,6 @@
 export const clientBaseUrl = () => {
   const env = process.env.NODE_ENV;
-  const port = process.env.WEB_CLIENT_PORT === '80' ? '' : `:${process.env.WEB_CLIENT_PORT}`;
+  const port = process.env.WEB_PATIENTS_PORT === '80' ? '' : `:${process.env.WEB_PATIENTS_PORT}`;
   if (env === 'test') return `localhost${port}`;
   if (env === 'local') return `//localhost${port}`;
   if (env === 'development') return `//patients-web.aph.popcornapps.com${port}`;
@@ -10,6 +10,9 @@ export const clientBaseUrl = () => {
 export const clientRoutes = {
   welcome: () => '/',
   patients: () => '/patients',
+  doctorDetails: () => '/doctor-details/:id',
+  doctorsLanding: () => '/doctors',
+  doctorsListing: () => '/doctorslisting',
   consultRoom: () => '#',
   testsAndMedicine: () => '#',
   healthRecords: () => '#',

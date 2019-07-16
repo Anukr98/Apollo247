@@ -1,6 +1,7 @@
 module.exports = {
   env: {
     'react-native/react-native': true,
+    browser: false,
   },
   plugins: ['react-native'],
   rules: {

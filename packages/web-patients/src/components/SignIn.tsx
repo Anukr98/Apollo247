@@ -163,6 +163,7 @@ export const SignIn: React.FC = (props) => {
       {verifyOtpError && 'Invalid OTP'}
       <div className={classes.otpAction}>
         <Fab
+          type="submit"
           color="primary"
           onClick={() => verifyOtp(otp.join(''))}
           disabled={isSendingOtp || otp.join('').length !== numOtpDigits}
@@ -171,6 +172,7 @@ export const SignIn: React.FC = (props) => {
         </Fab>
       </div>
       <Button
+        type="submit"
         variant="text"
         disabled={isSendingOtp}
         onClick={() => sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current)}
@@ -221,6 +223,7 @@ export const SignIn: React.FC = (props) => {
       </FormControl>
       <div className={classes.action}>
         <Fab
+          type="submit"
           color="primary"
           aria-label="Sign in"
           disabled={!isMobileNumberValid(mobileNumber)}
