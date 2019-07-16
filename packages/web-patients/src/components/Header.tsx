@@ -117,14 +117,14 @@ export const Header: React.FC = (props) => {
                 </DialogContentText>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => setIsDialogOpen(false)} color="primary" autoFocus>
+                <Button onClick={() => setIsDialogOpen(false)} autoFocus>
                   Close
+                </Button>
+                <Button color="primary" onClick={() => signOut()}>
+                  Sign out
                 </Button>
               </DialogActions>
             </Dialog>
-            <Button variant="text" size="small" onClick={() => signOut()}>
-              Sign out
-            </Button>
           </>
         ) : (
           <Popover
