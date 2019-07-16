@@ -186,9 +186,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               onBookConsult={() => setIsPopoverOpen(true)}
             />
             <div className={classes.searchSection}>
-              <div className={classes.sectionHeader}>Dr. Simran’s Clinic</div>
+              <div className={classes.sectionHeader}>
+                <span>Dr. Simran’s Clinic</span>
+                <span className={classes.count}>02</span>
+              </div>
               <DoctorClinics doctorId={doctorId} />
-              <div className={classes.sectionHeader}>Dr. Simran’s Team</div>
+              <div className={classes.sectionHeader}>
+                <span>Dr. Simran’s Team</span>
+                <span className={classes.count}>02</span>
+              </div>
               <StarDoctorTeam doctorId={doctorId} />
               <div className={classes.sectionHeader}>
                 <span>Appointment History</span>
