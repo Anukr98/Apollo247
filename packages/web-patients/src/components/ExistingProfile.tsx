@@ -236,7 +236,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
               variant="contained"
               color="primary"
             >
-              {loading ? <CircularProgress /> : 'Submit'}
+              {loading ? <CircularProgress size={22} color="secondary" /> : 'Submit'}
             </AphButton>
           )}
         </Mutation>
