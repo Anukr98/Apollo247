@@ -48,8 +48,8 @@ const envToCorsOrigin = {
           const request = requestContext.request;
           const context = (requestContext.context as any) as GatewayContext;
           if (request && request.http) {
-            request.http.headers.set('mobileNumber', context.mobileNumber);
-            request.http.headers.set('firebaseUid', context.firebaseUid);
+            request.http.headers.set('mobilenumber', context.mobileNumber);
+            request.http.headers.set('firebaseuid', context.firebaseUid);
           }
         },
       });
