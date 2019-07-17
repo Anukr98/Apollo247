@@ -1,9 +1,8 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React, { useState } from 'react';
-import { MaterialUiPickersDate } from '@material-ui/pickers';
-import { usePickerState, Calendar } from '@material-ui/pickers';
+import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
+import { AphCalendar } from 'components/AphCalendar';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -18,12 +17,12 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 10,
       display: 'inline-block',
       width: '100%',
+      fontSize: 14,
+      fontWeight: 500,
+      lineHeight: 1.43,
+      letterSpacing: 0.35,
+      color: theme.palette.secondary.light,
       '& p': {
-        fontSize: 14,
-        fontWeight: 500,
-        lineHeight: 1.43,
-        letterSpacing: 0.35,
-        color: theme.palette.secondary.light,
         marginTop: 0,
       },
     },
@@ -65,13 +64,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const OnlineConsult: React.FC = (props) => {
   const classes = useStyles();
-  const [value, handleDateChange1] = useState<MaterialUiPickersDate>(new Date());
-  const { pickerProps } = usePickerState(
-    { value, onChange: handleDateChange1 },
-    {
-      getDefaultFormat: () => 'MM/dd/yyyy',
-    }
-  );
 
   return (
     <div className={classes.root}>
@@ -90,7 +82,7 @@ export const OnlineConsult: React.FC = (props) => {
           </div>
         </div>
         <div className={classes.consultGroup}>
-          <Calendar {...pickerProps} />
+          <AphCalendar />
         </div>
       </div>
       <div className={classes.bottomActions}>
