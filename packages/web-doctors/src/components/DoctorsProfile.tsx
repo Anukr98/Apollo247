@@ -1,6 +1,7 @@
 import React from 'react';
+import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography } from '@material-ui/core';
+import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
@@ -30,7 +31,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     highlightInactive: {
       borderBottom: 'none',
-      opacity: '0.4',
+      opacity: 0.4,
       cursor: 'default',
     },
     profile: {
@@ -83,15 +84,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface DoctorsProfileProps { }
+export interface DoctorsProfileProps {}
 
 export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
   const classes = useStyles();
 
   const [value, setValue] = React.useState(0);
-  const { data, error, loading } = useQuery(GET_DOCTOR_PROFILE, {
-    variables: { mobileNumber: '1234567890' },
-  });
+  const { data, error, loading } = useQuery(GET_DOCTOR_PROFILE);
   const tabsArray = [
     {
       key: 0,
@@ -140,7 +139,9 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
             <div className={classes.tabHeading}>
               <Typography variant="h1">
                 <span>
-                  hi dr. {`${data.getDoctorProfile.firstName} ${data.getDoctorProfile.lastName}`}!
+                  hi dr.{' '}
+                  {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
+                  !
                 </span>
               </Typography>
               <p>

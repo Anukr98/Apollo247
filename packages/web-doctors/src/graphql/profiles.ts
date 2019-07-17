@@ -18,40 +18,44 @@ export const GET_PATIENTS = gql`
   }
 `;
 
-export const IS_DOCTOR = gql`
-  query hasAccess($mobileNumber: String!) {
-    hasAccess(mobileNumber: $mobileNumber)
-  }
-`;
+// export const IS_DOCTOR = gql`
+//   query hasAccess($mobileNumber: String!) {
+//     hasAccess(mobileNumber: $mobileNumber)
+//   }
+// `;
 export const GET_DOCTOR_PROFILE = gql`
-  query getDoctorProfile($mobileNumber: String!) {
-    getDoctorProfile(mobileNumber: $mobileNumber) {
-      id
-      firstName
-      lastName
-      mobileNumber
-      experience
-      speciality
-      specialization
-      isStarDoctor
-      education
-      services
-      languages
-      city
-      awards
-      photoUrl
-      registrationNumber
-      isProfileComplete
-      availableForPhysicalConsultation
-      availableForVirtualConsultation
-      onlineConsultationFees
-      physicalConsultationFees
-      package
+  query getDoctorProfile {
+    getDoctorProfile {
+      profile {
+        id
+        firstName
+        lastName
+        mobileNumber
+        experience
+        speciality
+        specialization
+        isStarDoctor
+        education
+        services
+        languages
+        city
+        awards
+        photoUrl
+        registrationNumber
+        isProfileComplete
+        availableForPhysicalConsultation
+        availableForVirtualConsultation
+        onlineConsultationFees
+        physicalConsultationFees
+        package
+        inviteStatus
+        typeOfConsult
+      }
       paymentDetails {
         accountNumber
         address
       }
-      clinicsList {
+      clinics {
         name
         location
       }

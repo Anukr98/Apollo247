@@ -9,9 +9,8 @@ import StarDoctorSearch from './StarDoctorSearch';
 import { relative } from 'path';
 import {
   getDoctorProfile,
-  getDoctorProfileVariables,
   getDoctorProfile_getDoctorProfile_starDoctorTeam,
-  getDoctorProfile_getDoctorProfile_clinicsList,
+  getDoctorProfile_getDoctorProfile_clinics,
   getDoctorProfile_getDoctorProfile,
 } from 'graphql/types/getDoctorProfile';
 
@@ -235,27 +234,27 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
                 </Typography>
               </div>
             ) : (
-                <div className={classes.posRelative}>
-                  <img alt="" src={require('images/ic_more.svg')} className={classes.moreIcon} />
-                  <Typography variant="h4">
-                    Dr. {item.firstName} {item.lastName}
-                  </Typography>
-                  <Typography variant="h6">
-                    GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
-                  </Typography>
-                  <Typography variant="h5">
-                    MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+              <div className={classes.posRelative}>
+                <img alt="" src={require('images/ic_more.svg')} className={classes.moreIcon} />
+                <Typography variant="h4">
+                  Dr. {item.firstName} {item.lastName}
                 </Typography>
-                </div>
-              )}
+                <Typography variant="h6">
+                  GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
+                </Typography>
+                <Typography variant="h5">
+                  MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+                </Typography>
+              </div>
+            )}
           </div>
         </Grid>
       );
     }
   );
 
-  const clinicsList = data.clinicsList.map(
-    (item: getDoctorProfile_getDoctorProfile_clinicsList, index: number) => {
+  const clinicsList = data.clinics.map(
+    (item: getDoctorProfile_getDoctorProfile_clinics, index: number) => {
       return (
         <Typography variant="h3" key={index.toString()}>
           {item.name}, {item.location}
@@ -279,10 +278,11 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
                 />
               </div>
               <Typography variant="h4">
-                Dr. {data.firstName} {data.lastName}
+                Dr. {data.profile.firstName} {data.profile.lastName}
               </Typography>
               <Typography variant="h6">
-                {data.specialization} <span> | </span> <span> {data.experience}YRS </span>{' '}
+                {data.profile.specialization} <span> | </span>{' '}
+                <span> {data.profile.experience}YRS </span>{' '}
               </Typography>
             </Paper>
           </Grid>
@@ -291,31 +291,31 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Education</Typography>
-                  <Typography variant="h3">{data.education}</Typography>
+                  <Typography variant="h3">{data.profile.education}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Awards</Typography>
-                  <Typography variant="h3">{data.awards}</Typography>
+                  <Typography variant="h3">{data.profile.awards}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Speciality</Typography>
-                  <Typography variant="h3">{data.speciality}</Typography>
+                  <Typography variant="h3">{data.profile.speciality}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Speaks</Typography>
-                  <Typography variant="h3">{data.languages}</Typography>
+                  <Typography variant="h3">{data.profile.languages}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Services</Typography>
-                  <Typography variant="h3">{data.services}</Typography>
+                  <Typography variant="h3">{data.profile.services}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
@@ -327,14 +327,14 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">MCI Number</Typography>
-                  <Typography variant="h3">{data.registrationNumber}</Typography>
+                  <Typography variant="h3">{data.profile.registrationNumber}</Typography>
                 </Paper>
               </Grid>
             </Grid>
           </Grid>
         </Grid>
       </div>
-      {!!data.isStarDoctor && (
+      {!!data.profile.isStarDoctor && (
         <div>
           <Typography variant="h2">Your Star Doctors Team ({starDocNumber})</Typography>
           <Grid container alignItems="flex-start" spacing={0}>

@@ -467,9 +467,9 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
               <Typography variant="h5">What type of consults will you be available for?</Typography>
               <AphButton
                 variant="contained"
-                value={data.availableForPhysicalConsultation}
+                value={data.profile.availableForPhysicalConsultation}
                 classes={
-                  data.availableForPhysicalConsultation
+                  data.profile.availableForPhysicalConsultation
                     ? { root: classes.btnActive }
                     : { root: classes.btnInactive }
                 }
@@ -481,9 +481,9 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
               </AphButton>
               <AphButton
                 variant="contained"
-                value={data.availableForVirtualConsultation}
+                value={data.profile.availableForVirtualConsultation}
                 classes={
-                  data.availableForVirtualConsultation
+                  data.profile.availableForVirtualConsultation
                     ? { root: classes.btnActive }
                     : { root: classes.btnInactive }
                 }

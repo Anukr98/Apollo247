@@ -210,7 +210,7 @@ export const FeesTab: React.FC<Props> = ({ values, proceedHadler, backBtnHandler
   //const [data, setData] = useState(values);
   // const [sp, setsp] = useState<string>('Physical');
 
-  console.log(data);
+  //console.log(data);
 
   return (
     <div className={classes.ProfileContainer}>
@@ -223,11 +223,15 @@ export const FeesTab: React.FC<Props> = ({ values, proceedHadler, backBtnHandler
           <div className={classes.tabContent}>
             <Paper className={classes.serviceItem}>
               <Typography variant="subtitle1">What are your online consultation fees?</Typography>
-              <Typography className={classes.bold}>Rs. {data.onlineConsultationFees}</Typography>
+              <Typography className={classes.bold}>
+                Rs. {data.profile.onlineConsultationFees}
+              </Typography>
               <Typography variant="subtitle1">What are your physical consultation fees?</Typography>
-              <Typography className={classes.bold}>Rs. {data.physicalConsultationFees}</Typography>
+              <Typography className={classes.bold}>
+                Rs. {data.profile.physicalConsultationFees}
+              </Typography>
               <Typography variant="subtitle1">What packages do you offer your patients?</Typography>
-              <Typography className={classes.bold}>{data.package}</Typography>
+              <Typography className={classes.bold}>{data.profile.package}</Typography>
             </Paper>
           </div>
         </Grid>

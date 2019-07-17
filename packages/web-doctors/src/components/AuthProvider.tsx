@@ -8,7 +8,6 @@ import 'firebase/auth';
 import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 import {
   getDoctorProfile,
-  getDoctorProfileVariables,
   getDoctorProfile_getDoctorProfile,
 } from 'graphql/types/getDoctorProfile';
 // import {
@@ -199,10 +198,8 @@ export const AuthProvider: React.FC = (props) => {
 
         setIsSigningIn(true);
         const [signInResult, signInError] = await wait(
-          apolloClient.mutate<getDoctorProfile, getDoctorProfileVariables>({
+          apolloClient.mutate<getDoctorProfile, getDoctorProfile>({
             mutation: GET_DOCTOR_PROFILE,
-            //variables: { jwt },
-            variables: { mobileNumber: '1234567890' },
           })
         );
         console.log(signInResult);
