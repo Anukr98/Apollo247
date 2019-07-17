@@ -3,12 +3,14 @@ import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
 import { createConnection } from 'typeorm';
 import { Patient } from 'profiles-service/entity/patient';
+import { Appointments } from 'profiles-service/entity/appointment';
 import { patientTypeDefs, patientResolvers } from 'profiles-service/resolvers/patientSignIn';
 import {
   updatePatientTypeDefs,
   updatePatientResolvers,
 } from 'profiles-service/resolvers/updatePatient';
 import { getPatientTypeDefs, getPatientResolvers } from 'profiles-service/resolvers/getPatients';
+import { bookAppointmentTypeDefs, bookAppointmentResolvers } from 'profiles-service/resolvers/bookAppointment';
 import { GatewayContext, GatewayHeaders } from 'api-gateway';
 
 export interface ProfilesServiceContext extends GatewayContext {}
@@ -21,7 +23,7 @@ export type Resolver<Parent = any, Args = any> = (
 
 (async () => {
   await createConnection({
-    entities: [Patient],
+    entities: [Patient, Appointments],
     type: 'postgres',
     host: 'profiles-db',
     port: 5432,
@@ -55,6 +57,10 @@ export type Resolver<Parent = any, Args = any> = (
       {
         typeDefs: getPatientTypeDefs,
         resolvers: getPatientResolvers,
+      },
+      {
+        typeDefs: bookAppointmentTypeDefs,
+        resolvers: bookAppointmentResolvers,
       },
     ]),
   });
