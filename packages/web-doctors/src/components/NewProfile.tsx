@@ -7,7 +7,7 @@ import { AphTextField } from '@aph/web-ui-components';
 import { Gender, Relation } from 'graphql/types/globalTypes';
 import React, { useState, useEffect } from 'react';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import { isNameValid, isEmailValid, isDobValid } from '@aph/universal/validators';
+import { isNameValid, isEmailValid, isDateValid } from '@aph/universal/aphValidators';
 import _includes from 'lodash/includes';
 import { Mutation } from 'react-apollo';
 import { updatePatientVariables, updatePatient } from 'graphql/types/updatePatient';
@@ -135,7 +135,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
     firstName.trim().length > 0 &&
     isNameValid(firstName) &&
     (lastName.trim().length > 0 && isNameValid(lastName)) &&
-    (dateOfBirth.trim().length === 10 && isDobValid(dateOfBirth)) &&
+    (dateOfBirth.trim().length === 10 && isDateValid(dateOfBirth)) &&
     (emailAddress.trim().length === 0 || (emailAddress.length > 0 && isEmailValid(emailAddress))) &&
     _includes(genders, selectedGender)
       ? false
@@ -143,7 +143,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
 
   const showFirstNameError = firstName.trim().length > 0 && !isNameValid(firstName);
   const showLastNameError = lastName.trim().length > 0 && !isNameValid(lastName);
-  const showDobError = dateOfBirth.trim().length === 10 && !isDobValid(dateOfBirth);
+  const showDobError = dateOfBirth.trim().length === 10 && !isDateValid(dateOfBirth);
   const showEmailIdError = emailAddress.trim().length > 0 && !isEmailValid(emailAddress);
   const { popupHandler, showSuccess } = props;
 

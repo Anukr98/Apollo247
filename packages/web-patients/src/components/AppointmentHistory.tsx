@@ -1,55 +1,62 @@
-import { Theme } from '@material-ui/core';
+import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import _uniqueId from 'lodash/uniqueId';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    welcome: {
-      paddingTop: 85,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 78,
-      },
+    root: {
+      backgroundColor: theme.palette.common.white,
+      borderRadius: 10,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      marginBottom: 10,
     },
-    booksLink: {
-      color: theme.palette.primary.main,
-      textDecoration: 'underline',
+    appointmentInfo: {
+      padding: 20,
+      clear: 'both',
     },
-    headerSticky: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      top: 0,
+    appointDate: {
+      fontSize: 16,
+      fontWeight: 500,
+      color: '#02475b',
     },
-    container: {
-      maxWidth: 1064,
-      margin: 'auto',
-    },
-    bottomMenuRoot: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      bottom: 0,
-      height: 'auto',
-      [theme.breakpoints.up('sm')]: {
-        display: 'none',
-      },
-      '& button': {
-        padding: '10px 0',
-      },
-    },
-    labelRoot: {
-      width: '100%',
-    },
-    iconLabel: {
+    appointTime: {
       fontSize: 12,
-      color: '#67919d',
-      paddingTop: 10,
-      textTransform: 'uppercase',
+      fontWeight: 500,
+      color: '#0087ba',
     },
-    iconSelected: {
-      fontSize: '12px !important',
-      color: theme.palette.primary.main,
+    appointType: {
+      borderRadius: 10,
+      backgroundColor: 'rgba(2,71,91,0.1)',
+      padding: '6px 12px',
+      minWidth: 116,
+      textAlign: 'center',
+      textTransform: 'uppercase',
+      fontSize: 9,
+      fontWeight: 'bold',
+      letterSpacing: 0.5,
+      color: '#02475b',
+      float: 'right',
+    },
+    appointBooked: {
+      borderTop: '1px solid rgba(1,71,91,0.3)',
+      marginTop: 10,
+      paddingTop: 5,
+      '& ul': {
+        padding: 0,
+        margin: 0,
+        '& li': {
+          borderRadius: 10,
+          backgroundColor: 'rgba(0,135,186,0.08)',
+          listStyleType: 'none',
+          padding: '6px 12px',
+          fontSize: 9,
+          fontWeight: 'bold',
+          color: '#0087ba',
+          marginTop: 5,
+          display: 'inline-block',
+        },
+      },
     },
   };
 });
@@ -62,31 +69,39 @@ export const AppointmentHistory: React.FC = (props) => {
     someKey: {
       appointmentDate: '27 June 2019', // we need to yet know the format of this ts or string.
       appointmentTime: '06.30pm', // we need to yet identify how the time will come from api.
+      appointmentType: 'Online Consult',
       symptoms: ['FEVER', 'COUGH & COLD'],
     },
     someKey1: {
       appointmentDate: '09 April 2019', // we need to yet know the format of this ts or string.
       appointmentTime: '03.00pm', // we need to yet identify how the time will come from api.
+      appointmentType: 'Clinic Visit',
       symptoms: ['HEADACHE', 'SOAR THROAT'],
     },
   };
 
   return (
-    <div className={classes.welcome}>
-      <h1>Appointment History</h1> {/*this must be from either parent or here*/}
+    <Grid container spacing={2}>
       {Object.values(appointments).map((appointment) => {
         return (
-          <div key={_uniqueId('aphistory_')}>
-            <div>{appointment.appointmentDate}</div>
-            <div>{appointment.appointmentTime}</div>
-            <div>
-              {appointment.symptoms.map((symptom: string) => (
-                <p key={_uniqueId('symptom_')}>{symptom}</p>
-              ))}
+          <Grid item sm={3} key={_uniqueId('avagr_')}>
+            <div className={classes.root} key={_uniqueId('aphistory_')}>
+              <div className={classes.appointType}>{appointment.appointmentType}</div>
+              <div className={classes.appointmentInfo}>
+                <div className={classes.appointDate}>{appointment.appointmentDate}</div>
+                <div className={classes.appointTime}>{appointment.appointmentTime}</div>
+                <div className={classes.appointBooked}>
+                  <ul>
+                    {appointment.symptoms.map((symptom: string) => (
+                      <li key={_uniqueId('symptom_')}>{symptom}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
-          </div>
+          </Grid>
         );
       })}
-    </div>
+    </Grid>
   );
 };

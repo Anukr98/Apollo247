@@ -1,6 +1,11 @@
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
-import { ArrowFull, ArrowStep1, ArrowStep2, ArrowStep3 } from 'app/src/components/ui/Icons';
-import { theme } from 'app/src/theme/theme';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import {
+  ArrowFull,
+  ArrowStep1,
+  ArrowStep2,
+  ArrowStep3,
+} from '@aph/mobile-doctors/src/components/ui/Icons';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
@@ -21,7 +26,7 @@ import AppIntroSlider from 'react-native-app-intro-slider';
 import firebase from 'react-native-firebase';
 import { NavigationScreenProps } from 'react-navigation';
 const { height } = Dimensions.get('window');
-import { useAuth } from 'app/src/hooks/authHooks';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 
 const styles = StyleSheet.create({
@@ -122,7 +127,7 @@ const slides: Slide[] = [
     key: 'somethun-dos',
     title: 'easy follow ups',
     text: 'Follow up with your patients virtually  and whenever you want',
-    image: require('app/src/images/onboard/img_onboarding_easy_follow_ups.png'),
+    image: require('@aph/mobile-doctors/src/images/onboard/img_onboarding_easy_follow_ups.png'),
     backgroundColor: '#FBFCFD',
     index: 2,
     icon: <ArrowStep2 style={style} />,
@@ -131,7 +136,7 @@ const slides: Slide[] = [
     key: 'somethun1',
     title: 'anytime anywhere',
     text: ' Consult virtually, at a time of your convenience',
-    image: require('app/src/images/onboard/img_onboarding_anytime_anywhere.png'),
+    image: require('@aph/mobile-doctors/src/images/onboard/img_onboarding_anytime_anywhere.png'),
     backgroundColor: '#FBFCFD',
     index: 3,
     icon: <ArrowStep3 style={style} />,
@@ -140,7 +145,7 @@ const slides: Slide[] = [
     key: 'somethun2',
     title: 'medico-legal assistance',
     text: 'Get immediate help from our expert medico legal team',
-    image: require('app/src/images/onboard/img_onboarding_medico_legal_assistance.png'),
+    image: require('@aph/mobile-doctors/src/images/onboard/img_onboarding_medico_legal_assistance.png'),
     backgroundColor: '#FBFCFD',
     index: 4,
     icon: <ArrowFull style={style} />,

@@ -20,7 +20,6 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 import SmsListener from 'react-native-android-sms-listener';
-import firebase from 'react-native-firebase';
 
 const styles = StyleSheet.create({
   container: {
@@ -74,41 +73,22 @@ const styles = StyleSheet.create({
 export interface LoginProps extends NavigationScreenProps {}
 
 const isPhoneNumberValid = (number: string) => {
-  const isValidNumber =
-    // (number.replace(/^0+/, '').length !== 10 && number.length !== 0) ||
-    !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
+  const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
   return isValidNumber;
 };
 
 let otpString = '';
-let backHandler: any;
 let didBlurSubscription: any;
 
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const { analytics, currentUser, authError, clearCurrentUser } = useAuth();
+  const { analytics, sendOtp, isSendingOtp } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<any>();
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
-    // setVerifyingPhonenNumber(false);
-    console.log('login currentUser', currentUser);
-  }, [analytics, currentUser]);
-
-  useEffect(() => {
-    console.log('login Screen');
-  }, []);
-
-  useEffect(() => {
-    console.log('authError Login', authError);
-    if (authError) {
-      clearCurrentUser();
-      setVerifyingPhonenNumber(false);
-      Alert.alert('Error', 'Unable to connect the server at the moment.');
-    }
-  }, [authError]);
+  }, [, analytics]);
 
   const requestReadSmsPermission = async () => {
     try {
@@ -150,7 +130,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     didBlurSubscription = props.navigation.addListener('didBlur', (payload) => {
       setPhoneNumber('');
     });
-  }, [subscriptionId]);
+  }, [props.navigation, subscriptionId]);
 
   useEffect(() => {
     return () => {
@@ -162,9 +142,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const validateAndSetPhoneNumber = (number: string) => {
     if (/^\d+$/.test(number) || number == '') {
       setPhoneNumber(number);
-      // if (number.length == 10) {
       setPhoneNumberIsValid(isPhoneNumberValid(number));
-      // }
     } else {
       return false;
     }
@@ -195,8 +173,6 @@ export const Login: React.FC<LoginProps> = (props) => {
     } catch (error) {
       console.log(error.message);
     }
-    console.log(isNoBlocked, 'isNoBlocked');
-
     return isNoBlocked;
   };
 
@@ -221,33 +197,21 @@ export const Login: React.FC<LoginProps> = (props) => {
               null;
             } else {
               const isBlocked = await _getTimerData();
-              console.log('isBlocked', isBlocked);
-
               if (isBlocked) {
                 props.navigation.navigate(AppRoutes.OTPVerification, {
-                  phoneNumberVerificationCredential: '',
                   otpString,
-                  phoneNumber: '+91' + phoneNumber,
+                  phoneNumber: phoneNumber,
                 });
               } else {
-                setVerifyingPhonenNumber(true);
-                firebase
-                  .auth()
-                  .signInWithPhoneNumber('+91' + phoneNumber)
+                sendOtp(phoneNumber)
                   .then((confirmResult) => {
-                    setVerifyingPhonenNumber(false);
-                    console.log(confirmResult, 'confirmResult');
-
+                    console.log('confirmResult login', confirmResult);
                     props.navigation.navigate(AppRoutes.OTPVerification, {
-                      phoneNumberVerificationCredential: confirmResult.verificationId,
-                      confirmResult,
                       otpString,
-                      phoneNumber: '+91' + phoneNumber,
+                      phoneNumber: phoneNumber,
                     });
                   })
                   .catch((error) => {
-                    console.log(error, 'error');
-                    setVerifyingPhonenNumber(false);
                     Alert.alert('Error', 'The interaction was cancelled by the user.');
                   });
               }
@@ -284,7 +248,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           </Text>
         </Card>
       </SafeAreaView>
-      {verifyingPhoneNumber ? (
+      {isSendingOtp ? (
         <View
           style={{
             position: 'absolute',
@@ -299,7 +263,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             bottom: 0,
           }}
         >
-          <ActivityIndicator animating={verifyingPhoneNumber} size="large" color="green" />
+          <ActivityIndicator animating={isSendingOtp} size="large" color="green" />
         </View>
       ) : null}
     </View>

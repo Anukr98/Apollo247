@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, AsyncStorage, Platform, ActivityIndicator, Alert } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, View, AsyncStorage, Platform, ActivityIndicator } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -19,20 +19,10 @@ const styles = StyleSheet.create({
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { currentUser, authError } = useAuth();
-  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
+  const { currentPatient, isSigningIn } = useAuth();
 
   useEffect(() => {
-    console.log('authError Login', authError);
-    if (authError) {
-      setVerifyingPhonenNumber(false);
-      Alert.alert('Error', 'Unable to connect the server at the moment.');
-      props.navigation.replace(AppRoutes.Onboarding);
-    }
-  }, [authError, props.navigation]);
-
-  useEffect(() => {
-    console.log('SplashScreen currentUser', currentUser);
+    console.log('SplashScreen currentUser', currentPatient);
 
     async function fetchData() {
       firebase.analytics().setCurrentScreen('SplashScreen');
@@ -44,32 +34,29 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       console.log('onboarding', onboarding);
       console.log('userLoggedIn', userLoggedIn);
 
-      setVerifyingPhonenNumber(true);
-
       setTimeout(() => {
-        setVerifyingPhonenNumber(false);
-
         if (userLoggedIn == 'true') {
-          if (currentUser) {
+          if (currentPatient) {
             props.navigation.replace(AppRoutes.TabBar);
           }
         } else if (onboarding == 'true') {
           if (signUp == 'true') {
             props.navigation.replace(AppRoutes.SignUp);
           } else if (multiSignUp == 'true') {
-            props.navigation.replace(AppRoutes.MultiSignup);
+            if (currentPatient) {
+              props.navigation.replace(AppRoutes.MultiSignup);
+            }
           } else {
             props.navigation.replace(AppRoutes.Login);
           }
         } else {
           props.navigation.replace(AppRoutes.Onboarding);
         }
-      }, 2500);
+      }, 3500);
     }
     fetchData();
-
     SplashScreenView.hide();
-  }, [currentUser, props.navigation]);
+  }, [currentPatient, props.navigation, isSigningIn]);
 
   return (
     <View style={styles.mainView}>
@@ -85,9 +72,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         }}
         resizeMode="contain"
       />
-      {verifyingPhoneNumber ? (
+      {isSigningIn ? (
         <ActivityIndicator
-          animating={verifyingPhoneNumber}
+          animating={isSigningIn}
           size="large"
           color="green"
           style={{ bottom: 60, position: 'absolute' }}

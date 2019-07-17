@@ -30,6 +30,7 @@
     "@types/react-hot-loader": "^4.1.0",
     "@types/react-router": "^5.0.1",
     "@types/react-router-dom": "^4.3.3",
+    "@types/validator": "^10.11.1",
     "@typescript-eslint/eslint-plugin": "^1.9.0",
     "@typescript-eslint/parser": "^1.9.0",
     "awesome-typescript-loader": "^5.2.1",
@@ -68,6 +69,7 @@
     "date-fns": "^2.0.0-beta.2",
     "firebase": "^6.2.2",
     "firebaseui": "^4.0.0",
+    "formik": "^1.5.8",
     "graphql-tag": "^2.10.1",
     "lodash": "^4.17.11",
     "react": "16.8.6",
@@ -77,6 +79,7 @@
     "react-hot-loader": "^4.9.0",
     "react-router": "^5.0.1",
     "react-router-dom": "^5.0.1",
-    "unfetch": "^4.1.0"
+    "unfetch": "^4.1.0",
+    "validator": "^11.1.0"
   }
 }

@@ -2,30 +2,31 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Gender, ErrorMsgs, Relation } from './globalTypes';
+import { Relation, ErrorMsgs, Gender } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: PatientSignIn
 // ====================================================
 
 export interface PatientSignIn_patientSignIn_patients {
-  __typename: 'Patient';
+  __typename: "Patient";
   id: string;
+  mobileNumber: string | null;
   firstName: string | null;
   lastName: string | null;
-  uhid: string | null;
-  gender: Gender | null;
-  mobileNumber: string | null;
   relation: Relation | null;
+  gender: Gender | null;
+  uhid: string | null;
+  dateOfBirth: string | null;
+  emailAddress: string | null;
 }
-
 export interface PatientSignIn_patientSignIn_errors {
   __typename: 'Error';
   messages: ErrorMsgs[];
 }
 
 export interface PatientSignIn_patientSignIn {
-  __typename: 'PatientSignInResult';
+  __typename: "PatientSignInResult";
   patients: PatientSignIn_patientSignIn_patients[] | null;
   errors: PatientSignIn_patientSignIn_errors | null;
 }

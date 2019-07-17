@@ -1,55 +1,51 @@
-import { Theme } from '@material-ui/core';
+import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import _uniqueId from 'lodash/uniqueId';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    welcome: {
-      paddingTop: 85,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 78,
+    root: {
+      backgroundColor: theme.palette.common.white,
+      borderRadius: 5,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      marginBottom: 10,
+    },
+    clinicImg: {
+      borderRadius: '5px 5px 0 0',
+      overflow: 'hidden',
+      '& img': {
+        verticalAlign: 'middle',
+        maxWidth: '100%',
       },
     },
-    booksLink: {
-      color: theme.palette.primary.main,
-      textDecoration: 'underline',
+    clinicInfo: {
+      padding: 20,
     },
-    headerSticky: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      top: 0,
-    },
-    container: {
-      maxWidth: 1064,
-      margin: 'auto',
-    },
-    bottomMenuRoot: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      bottom: 0,
-      height: 'auto',
-      [theme.breakpoints.up('sm')]: {
-        display: 'none',
-      },
-      '& button': {
-        padding: '10px 0',
-      },
-    },
-    labelRoot: {
-      width: '100%',
-    },
-    iconLabel: {
+    address: {
       fontSize: 12,
-      color: '#67919d',
-      paddingTop: 10,
-      textTransform: 'uppercase',
+      fontWeight: 500,
+      lineHeight: 1.67,
+      color: '#02475b',
+      borderBottom: '1px solid rgba(1,71,91,0.2)',
+      paddingBottom: 10,
     },
-    iconSelected: {
-      fontSize: '12px !important',
-      color: theme.palette.primary.main,
+    availableTimings: {
+      paddingTop: 10,
+      fontSize: 12,
+      fontWeight: 600,
+      letterSpacing: 0.3,
+      color: '#0087ba',
+    },
+    timingsRow: {
+      display: 'flex',
+      alignItems: 'center',
+      '& span:first-child': {
+        textTransform: 'uppercase',
+      },
+      '& span:last-child': {
+        marginLeft: 'auto',
+      },
     },
   };
 });
@@ -97,28 +93,32 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
 
   const clinicsMarkup = (clinicsObj: clinicDetails) => {
     return Object.values(clinicsObj).map((clinicDetails: clinicDetailsType) => (
-      <div key={_uniqueId('clinic_')}>
-        <div>
-          <img src="https://placeimg.com/300/100/any" />
+      <Grid item sm={6} key={_uniqueId('avagr_')}>
+        <div className={classes.root} key={_uniqueId('clinic_')}>
+          <div className={classes.clinicImg}>
+            <img src="https://via.placeholder.com/328x100" />
+          </div>
+          <div className={classes.clinicInfo}>
+            <div className={classes.address}>{clinicDetails.address}</div>
+            <div className={classes.availableTimings}>
+              {Object.keys(clinicDetails.availability).map((index: string) => {
+                return (
+                  <div className={classes.timingsRow} key={_uniqueId('ava_')}>
+                    <span>{index}</span>
+                    <span>{clinicDetails.availability[index]}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
-        <div>{clinicDetails.address}</div>
-        <div>
-          {Object.keys(clinicDetails.availability).map((index: string) => {
-            return (
-              <div key={_uniqueId('ava_')}>
-                <span>{index}</span>: {clinicDetails.availability[index]}
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      </Grid>
     ));
   };
 
   return (
-    <div className={classes.welcome}>
-      <h1>Dr. Rai's Clinics</h1> {/*this must be from either parent or here*/}
+    <Grid container spacing={2}>
       {clinicsMarkup(clinicsObj)}
-    </div>
+    </Grid>
   );
 };
