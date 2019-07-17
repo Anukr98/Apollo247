@@ -158,9 +158,7 @@ export const Calendar: React.FC = () => {
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
+        <Header />
       </div>
       <div className={classes.container}>
         <div className={classes.tabHeading}>

@@ -61,7 +61,7 @@ const useStyles = makeStyles((theme: Theme) => {
       cursor: 'pointer',
     },
     userActive: {
-      backgroundColor: theme.palette.secondary.dark,
+
     },
     loginForm: {
       width: 280,
@@ -75,6 +75,12 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'none',
       boxShadow: 'none',
     },
+    container: {
+      maxWidth: 1044,
+      margin: 'auto',
+      width: 1044,
+      display: 'flex',
+    },
   };
 });
 
@@ -86,74 +92,74 @@ export const Header: React.FC = (props) => {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   return (
     <header className={classes.header}>
-      <div className={classes.logo}>
-        <Link to="/">
-          <img src={require('images/ic_logo.png')} />
-        </Link>
-      </div>
-      {/* {isSignedIn && <Navigation />} */}
-      <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
-        <ProtectedWithLoginPopup>
-          {({ protectWithLoginPopup, isProtected }) => (
-            <div
-              className={`${!isSignedIn ? classes.userCircle : ''} ${
-                !isSignedIn ? classes.userActive : ''
-                }`}
-              onClick={() => (isSignedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
-              ref={avatarRef}
-            >
-              {isSigningIn ? (
-                <CircularProgress />
-              ) : (
-                  <img
-                    src={
-                      !isSignedIn ? require('images/ic_account.svg') : require('images/ic_help.svg')
-                    }
-                  />
-                )}
-            </div>
-          )}
-        </ProtectedWithLoginPopup>
-        {isSignedIn ? (
-          <>
-            <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-              <DialogTitle>Logged In</DialogTitle>
-              <DialogContent>
-                <DialogContentText>
-                  You are successfully Logged in with Apollo 24x7
+      <div className={classes.container}>
+        <div className={classes.logo}>
+          <Link to="/">
+            <img src={require('images/ic_logo.png')} />
+          </Link>
+        </div>
+        {/* {isSignedIn && <Navigation />} */}
+        <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
+          <ProtectedWithLoginPopup>
+            {({ protectWithLoginPopup, isProtected }) => (
+              <div
+                className={`${!isSignedIn ? classes.userCircle : ''}`}
+                onClick={() => (isSignedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
+                ref={avatarRef}
+              >
+                {isSigningIn ? (
+                  <CircularProgress />
+                ) : (
+                    <img
+                      src={
+                        !isSignedIn ? require('images/ic_account.svg') : require('images/ic_help.svg')
+                      }
+                    />
+                  )}
+              </div>
+            )}
+          </ProtectedWithLoginPopup>
+          {isSignedIn ? (
+            <>
+              <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+                <DialogTitle>Logged In</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    You are successfully Logged in with Apollo 24x7
                 </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={() => setIsDialogOpen(false)} color="primary" autoFocus>
-                  Close
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setIsDialogOpen(false)} color="primary" autoFocus>
+                    Close
                 </Button>
-              </DialogActions>
-            </Dialog>
-            {/* <Button variant="text" size="small" onClick={() => signOut()} color="primary">
+                </DialogActions>
+              </Dialog>
+              {/* <Button variant="text" size="small" onClick={() => signOut()} color="primary">
               Sign out
             </Button> */}
-          </>
-        ) : (
-            <Popover
-              open={isLoginPopupVisible}
-              anchorEl={avatarRef.current}
-              onClose={() => setIsLoginPopupVisible(false)}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              classes={{ paper: classes.topPopover }}
-            >
-              <Paper className={classes.loginForm}>
-                <SignIn />
-              </Paper>
-            </Popover>
-          )}
+            </>
+          ) : (
+              <Popover
+                open={isLoginPopupVisible}
+                anchorEl={avatarRef.current}
+                onClose={() => setIsLoginPopupVisible(false)}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                classes={{ paper: classes.topPopover }}
+              >
+                <Paper className={classes.loginForm}>
+                  <SignIn />
+                </Paper>
+              </Popover>
+            )}
+        </div>
       </div>
-    </header>
+    </header >
   );
 };

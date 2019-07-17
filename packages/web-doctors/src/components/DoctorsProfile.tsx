@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 import AppBar from '@material-ui/core/AppBar';
+import { AphButton } from '@aph/web-ui-components';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { Header } from 'components/Header';
@@ -12,6 +13,7 @@ import { AvailabilityTab } from 'components/AvailabilityTab';
 import { FeesTab } from 'components/FeesTab';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
+import { Link } from 'react-router-dom'
 
 function TabContainer(props: any) {
   return (
@@ -59,6 +61,9 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 16,
       },
     },
+    none: {
+      display: 'none',
+    },
     tabHeading: {
       padding: '30px 40px 20px 40px',
       backgroundColor: theme.palette.secondary.contrastText,
@@ -81,10 +86,18 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    saveButton: {
+      minWidth: '240px',
+      margin: theme.spacing(3, 1, 1, 1),
+      padding: '9px 16px',
+      '&:hover': {
+        backgroundColor: '#fcb716',
+      },
+    },
   };
 });
 
-export interface DoctorsProfileProps {}
+export interface DoctorsProfileProps { }
 
 export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
   const classes = useStyles();
@@ -104,14 +117,17 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
       key: 2,
       value: 'Fees',
     },
+    {
+      key: 3,
+      value: '',
+    },
   ];
   const tabsHtml = tabsArray.map((item, index) => {
-    return (
-      <Tab
-        key={item.value}
-        className={value > item.key - 1 ? classes.highlightActive : classes.highlightInactive}
-        label={item.value}
-      />
+    return (<Tab
+      key={item.value}
+      className={value > item.key - 1 ? classes.highlightActive : classes.highlightInactive}
+      label={item.value}
+    />
     );
   });
   // function handleChange(event, newValue) {
@@ -129,31 +145,70 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
   return (
     <div className={classes.profile}>
       <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
+        <Header />
       </div>
       <div className={classes.container}>
         {!!data.getDoctorProfile && (
           <div>
             <div className={classes.tabHeading}>
               <Typography variant="h1">
-                <span>
+                {value === 0 && <span>
                   hi dr.{' '}
                   {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
                   !
-                </span>
+                </span>}
+                {value === 1 && <span>
+                  ok dr.{' '}
+                  {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
+                  !
+                </span>}
+                {value === 2 && <span>
+                  ok dr.{' '}
+                  {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
+                  !
+                </span>}
+                {value === 3 && <span>
+                  thank you, dr.{' '}
+                  {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
+                  :)
+                </span>}
+
               </Typography>
-              <p>
-                It’s great to have you join us! <br /> Here’s what your patients see when they view
-                your profile
+              {value === 0 &&
+                (<p>
+                  It’s great to have you join us! <br /> Here’s what your patients see when they view
+                  your profile
+              </p>)}
+              {value === 1 &&
+                (<p>
+                  Now tell us what hours suit you for online and in-person consults
+              </p>)}
+              {value === 2 &&
+                (<p>
+                  Lastly, some money-related matters like fees, packages and how you take payments
+              </p>)}
+              {value === 3 &&
+                (<div><p>
+                  Let’s go over now to see the Apollo24x7 portal and start consultations!
               </p>
+                  <AphButton
+                    variant="contained"
+                    color="primary"
+                    classes={{ root: classes.saveButton }}
+                    onClick={() => proceedHadler()}
+                  >
+                    <Link to="/calendar">GET STARTED</Link>
+
+                  </AphButton></div>)}
             </div>
-            <AppBar position="static" color="default">
-              <Tabs value={value} indicatorColor="secondary" className={classes.tabBar}>
-                {tabsHtml}
-              </Tabs>
-            </AppBar>
+            {
+              value < 3 &&
+              <AppBar position="static" color="default">
+                <Tabs value={value} indicatorColor="secondary" className={classes.tabBar}>
+                  {tabsHtml}
+                </Tabs>
+              </AppBar>
+            }
             {value === 0 && (
               <TabContainer>
                 {!!data.getDoctorProfile && (
@@ -188,6 +243,13 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
                   />
                 )}
               </TabContainer>
+            )}
+            {value === 3 && (
+              <div className={classes.none}>
+                <TabContainer>
+                  &nbsp;
+                </TabContainer>
+              </div>
             )}
           </div>
         )}

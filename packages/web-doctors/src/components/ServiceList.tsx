@@ -55,6 +55,9 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('sm')]: {
         paddingRight: 0,
       },
+      '& h5': {
+        fontWeight: theme.typography.fontWeightBold,
+      },
     },
     avatarBlock: {
       marginLeft: 'auto',
