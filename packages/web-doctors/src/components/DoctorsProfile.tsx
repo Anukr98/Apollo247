@@ -25,10 +25,13 @@ TabContainer.propTypes = {
 const useStyles = makeStyles((theme: Theme) => {
   return {
     highlightActive: {
-      borderBottom: '2px solid #02475b',
+      borderBottom: '2px solid #0087ba',
+      opacity: 1,
     },
     highlightInactive: {
       borderBottom: 'none',
+      opacity: '0.4',
+      cursor: 'default',
     },
     profile: {
       paddingTop: 68,
@@ -80,7 +83,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface DoctorsProfileProps {}
+export interface DoctorsProfileProps { }
 
 export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
   const classes = useStyles();

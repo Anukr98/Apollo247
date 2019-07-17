@@ -131,7 +131,7 @@ const App: React.FC = () => {
   }, [signInError]);
   return isSignedIn ? (
     <div className={classes.app}>
-      <Route exact path={clientRoutes.welcome()} component={Welcome} />
+      <Route exact path={clientRoutes.welcome()} render={() => <Redirect to="/profile" />} />
       <Route exact path={clientRoutes.patients()} component={PatientsList} />
       <Route exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
       <Route exact path={clientRoutes.calendar()} component={Calendar} />

@@ -126,16 +126,25 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: '30px',
       paddingTop: '15px',
       textAlign: 'right',
+      '& button': {
+        padding: '9px 16px',
+      },
     },
     btnActive: {
       backgroundColor: '#00b38e',
       color: theme.palette.secondary.contrastText,
       margin: theme.spacing(1, 1, 1, 0),
+      '&:hover': {
+        backgroundColor: '#00b38e',
+      },
     },
     btnInactive: {
       backgroundColor: '#fff',
       color: '#00b38e',
       margin: theme.spacing(1, 1, 1, 0),
+      '&:hover': {
+        backgroundColor: '#fff',
+      },
     },
     heading: {
       fontSize: theme.typography.pxToRem(15),
@@ -417,12 +426,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
     (item: getDoctorProfile_getDoctorProfile_consultationHours, index: number) => {
       return (
         <div key={index.toString()} className={classes.tabContent}>
-          <ExpansionPanel
-            className={
-              classes.tabContentPanel +
-              ((item.type && item.type.toLowerCase()) === 'fixed' ? classes.pointerNone : '')
-            }
-          >
+          <ExpansionPanel className={classes.pointerNone}>
             <ExpansionPanelSummary
               expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
               aria-controls="panel1c-content"
@@ -525,7 +529,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
               <AphButton
                 variant="contained"
                 color="primary"
-                classes={{ root: classes.btnAddDoctor }}
+                className={`${classes.btnAddDoctor} ${classes.pointerNone}`}
                 onClick={(e) => setShowOperatingHoursForm(!showOperatingHoursForm)}
               >
                 + ADD CONSULTATION HOURS

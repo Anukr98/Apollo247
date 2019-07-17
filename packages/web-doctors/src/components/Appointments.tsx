@@ -99,6 +99,9 @@ const useStyles = makeStyles((theme: Theme) =>
         display: 'none',
       },
     },
+    future: {
+      border: '1px solid red',
+    },
   })
 );
 let timeOutId: number;
@@ -146,7 +149,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     <div>
       <Stepper activeStep={activeStep} orientation="vertical" className={classes.calendarContent}>
         {appointments.map((appointment, idx) => (
-          <Step key={idx} className={stepsCompleted + 1 === idx ? 'upcoming' : ''}>
+          <Step key={idx} className={stepsCompleted + 1 === idx ? 'upcoming' : 'future'}>
             <StepLabel classes={{ iconContainer: classes.iconContainer }}>
               <Typography variant="h5">
                 <span>

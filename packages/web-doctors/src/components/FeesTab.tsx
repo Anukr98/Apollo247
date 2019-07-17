@@ -131,6 +131,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: '30px',
       paddingTop: '15px',
       textAlign: 'right',
+      '& button': {
+        padding: '9px 16px',
+      },
     },
     btnActive: {
       backgroundColor: '#00b38e !important',
@@ -191,6 +194,9 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       marginLeft: '20px',
     },
+    pointerNone: {
+      pointerEvents: 'none',
+    },
   };
 });
 interface Props {
@@ -234,7 +240,7 @@ export const FeesTab: React.FC<Props> = ({ values, proceedHadler, backBtnHandler
 
           <Grid item lg={10} sm={6} xs={12}>
             <div className={classes.tabContent}>
-              <ExpansionPanel>
+              <ExpansionPanel className={classes.pointerNone}>
                 <ExpansionPanelSummary
                   expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
                   aria-controls="panel1c-content"

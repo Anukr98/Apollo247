@@ -98,19 +98,19 @@ export const Header: React.FC = (props) => {
             <div
               className={`${!isSignedIn ? classes.userCircle : ''} ${
                 !isSignedIn ? classes.userActive : ''
-              }`}
+                }`}
               onClick={() => (isSignedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
               ref={avatarRef}
             >
               {isSigningIn ? (
                 <CircularProgress />
               ) : (
-                <img
-                  src={
-                    !isSignedIn ? require('images/ic_account.svg') : require('images/ic_help.svg')
-                  }
-                />
-              )}
+                  <img
+                    src={
+                      !isSignedIn ? require('images/ic_account.svg') : require('images/ic_help.svg')
+                    }
+                  />
+                )}
             </div>
           )}
         </ProtectedWithLoginPopup>
@@ -134,25 +134,25 @@ export const Header: React.FC = (props) => {
             </Button> */}
           </>
         ) : (
-          <Popover
-            open={isLoginPopupVisible}
-            anchorEl={avatarRef.current}
-            onClose={() => setIsLoginPopupVisible(false)}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            classes={{ paper: classes.topPopover }}
-          >
-            <Paper className={classes.loginForm}>
-              <SignIn />
-            </Paper>
-          </Popover>
-        )}
+            <Popover
+              open={isLoginPopupVisible}
+              anchorEl={avatarRef.current}
+              onClose={() => setIsLoginPopupVisible(false)}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              classes={{ paper: classes.topPopover }}
+            >
+              <Paper className={classes.loginForm}>
+                <SignIn />
+              </Paper>
+            </Popover>
+          )}
       </div>
     </header>
   );

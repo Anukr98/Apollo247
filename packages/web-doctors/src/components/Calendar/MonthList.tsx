@@ -71,40 +71,40 @@ export const MonthList: React.FC<Props> = (props) => {
     <div className={classes.monthList}>
       <Select className={classes.monthListPopup} value={month} onChange={props.onChange}>
         <MenuItem className={classes.monthListItem} value={0}>
-          January
+          Jan
         </MenuItem>
         <MenuItem className={classes.monthListItem} value={1}>
-          February
+          Feb
         </MenuItem>
         <MenuItem className={classes.monthListItem} value={2}>
-          March
+          Mar
         </MenuItem>
         <MenuItem className={classes.monthListItem} value={3}>
-          April
+          Apr
         </MenuItem>
         <MenuItem className={classes.monthListItem} value={4}>
           May
         </MenuItem>
         <MenuItem className={classes.monthListItem} value={5}>
-          June
+          Jun
         </MenuItem>
         <MenuItem className={classes.monthListItem} value={6}>
-          July
+          Jul
         </MenuItem>
         <MenuItem className={classes.monthListItem} value={7}>
-          August
+          Aug
         </MenuItem>
         <MenuItem className={classes.monthListItem} value={8}>
-          September
+          Sep
         </MenuItem>
         <MenuItem className={classes.monthListItem} value={9}>
-          October
+          Oct
         </MenuItem>
         <MenuItem className={classes.monthListItem} value={10}>
-          November
+          Nov
         </MenuItem>
         <MenuItem className={classes.monthListItem} value={11}>
-          December
+          Dec
         </MenuItem>
       </Select>
     </div>

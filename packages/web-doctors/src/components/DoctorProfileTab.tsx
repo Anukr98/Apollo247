@@ -152,6 +152,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: '30px',
       paddingTop: '15px',
       textAlign: 'right',
+      '& button': {
+        padding: '9px 16px',
+      },
     },
     invited: {
       color: '#ff748e',
@@ -232,19 +235,19 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
                 </Typography>
               </div>
             ) : (
-              <div className={classes.posRelative}>
-                <img alt="" src={require('images/ic_more.svg')} className={classes.moreIcon} />
-                <Typography variant="h4">
-                  Dr. {item.firstName} {item.lastName}
+                <div className={classes.posRelative}>
+                  <img alt="" src={require('images/ic_more.svg')} className={classes.moreIcon} />
+                  <Typography variant="h4">
+                    Dr. {item.firstName} {item.lastName}
+                  </Typography>
+                  <Typography variant="h6">
+                    GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
+                  </Typography>
+                  <Typography variant="h5">
+                    MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
                 </Typography>
-                <Typography variant="h6">
-                  GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
-                </Typography>
-                <Typography variant="h5">
-                  MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
-                </Typography>
-              </div>
-            )}
+                </div>
+              )}
           </div>
         </Grid>
       );
