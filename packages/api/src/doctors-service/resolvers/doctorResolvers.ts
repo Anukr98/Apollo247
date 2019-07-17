@@ -78,7 +78,7 @@ type PaymentDetails = {
   address: String;
 };
 
-type Doctor = {
+export type Doctor = {
   id: String;
   firstName: String;
   lastName: String;

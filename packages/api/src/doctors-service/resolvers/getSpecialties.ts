@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'doctors-service/doctors-service';
-import SpecialtiesData from 'doctors-service/data/specialties.json';
+import { specialties } from 'doctors-service/data/specialty';
 
 export const getSpecialtyTypeDefs = gql`
   type Specialty {
@@ -12,13 +12,13 @@ export const getSpecialtyTypeDefs = gql`
   }
 `;
 
-type Specialty = {
+export type Specialty = {
   id: string;
   name: string;
 };
 
-const getSpecialties: Resolver<any> = async (parent, args): Promise<[Specialty]> => {
-  return JSON.parse(JSON.stringify(SpecialtiesData));
+const getSpecialties: Resolver<any> = async (parent, args): Promise<Specialty[]> => {
+  return Promise.resolve(specialties);
 };
 
 export const getSpecialtyResolvers = {
