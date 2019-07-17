@@ -106,7 +106,7 @@ const getCurrentPatients: Resolver<
         return findOrCreatePatient(
           { uhid: data.uhid, mobileNumber },
           {
-            firebaseId: firebaseUid,
+            firebaseUid,
             firstName: data.userName,
             lastName: '',
             gender: undefined,
@@ -119,7 +119,7 @@ const getCurrentPatients: Resolver<
         findOrCreatePatient(
           { uhid: '', mobileNumber },
           {
-            firebaseId: firebaseUid,
+            firebaseUid,
             firstName: '',
             lastName: '',
             gender: undefined,

@@ -26,7 +26,7 @@ export class Patient extends BaseEntity {
   id: string;
 
   @Column()
-  firebaseId: string;
+  firebaseUid: string;
 
   @Column()
   @Validate(NameValidator)
