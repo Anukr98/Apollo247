@@ -1,9 +1,10 @@
-import { ProfileData } from '@aph/mobile-doctors/src/components/ProfileSetup';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SelectableButton } from './ui/SelectableButton';
 import { SquareCardWithTitle } from './ui/SquareCardWithTitle';
+import { DummyQueryResult } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
 
 const styles = StyleSheet.create({
   container: {
@@ -23,31 +24,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginHorizontal: 16,
   },
-  rowSpaceBetween: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 21,
-  },
-  consultationTiming: {
-    ...theme.fonts.IBMPlexSansMedium(20),
-    color: theme.colors.darkBlueColor(),
-    letterSpacing: 0.09,
-  },
-  fixedSlotText: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    lineHeight: 24,
-    color: '#ff748e',
-  },
-  daysText: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: theme.colors.darkBlueColor(),
-    letterSpacing: 0.05,
-    marginBottom: 19,
-    marginHorizontal: 16,
-  },
   addConsultationText: {
     ...theme.fonts.IBMPlexSansBold(14),
     color: '#fc9916',
@@ -57,14 +33,14 @@ const styles = StyleSheet.create({
 });
 
 export interface AvailabilityProps {
-  profileData: ProfileData;
+  profileData: DummyQueryResult['data']['getDoctorProfile'];
 }
 
 export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
   const [consultationType, setConsultationType] = useState({ physical: false, online: false });
   return (
     <View style={styles.container}>
-      {profileData.isStarDoctor ? (
+      {profileData!.profile.isStarDoctor ? (
         <SquareCardWithTitle title="Consultation Type" containerStyle={{ marginTop: 16 }}>
           <Text style={styles.consultDescText}>
             What type of consults will you be available for?
@@ -89,14 +65,19 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
         </SquareCardWithTitle>
       ) : null}
       <SquareCardWithTitle title="Consultation Hours" containerStyle={{ marginTop: 16 }}>
-        <View style={[theme.viewStyles.whiteRoundedCornerCard, { marginTop: 16 }]}>
-          <View style={styles.rowSpaceBetween}>
-            <Text style={styles.consultationTiming}>9:00 AM - 12.30 PM</Text>
-            <Text style={styles.fixedSlotText}>(FIXED)</Text>
-          </View>
-          <Text style={styles.daysText}>Mon, Tue, Wed, Thu, Fri | Online, Physical</Text>
-        </View>
         <Text style={styles.addConsultationText}>+{'  '}ADD CONSULTATION HOURS</Text>
+        {profileData!.consultationHours.map((i, idx) => {
+          return (
+            <ConsultationHoursCard
+              days={i.days}
+              timing={i.timings}
+              isAvailableForOnlineConsultation={i.availableForVirtualConsultation}
+              isAvailableForPhysicalConsultation={i.availableForPhysicalConsultation}
+              key={idx}
+              type="fixed"
+            />
+          );
+        })}
       </SquareCardWithTitle>
     </View>
   );

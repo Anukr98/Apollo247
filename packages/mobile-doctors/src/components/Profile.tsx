@@ -3,8 +3,10 @@ import { Add, Send, Star } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { DummyQueryResult } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { getDoctorsForStarDoctorProgram } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 
 const styles = StyleSheet.create({
   container: {
@@ -80,15 +82,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  addDoctorText: {
+    fontFamily: 'IBMPlexSans',
+    fontSize: 14,
+    fontWeight: 'bold',
+    fontStyle: 'normal',
+    letterSpacing: 0,
+    color: '#fc9916',
+    marginLeft: 10,
+    marginTop: 2,
+  },
 });
 
 export interface ProfileProps {
-  profileData: any;
+  profileData: DummyQueryResult['data']['getDoctorProfile'];
 }
 
-export const Profile: React.FC<ProfileProps> = (profileData) => {
-  console.log('profile', profileData.profileData.getDoctorProfile);
+export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
   const [addshow, setAddShow] = useState<boolean>(false);
+  const [doctorSearchText, setDoctorSearchText] = useState<string>('');
+  const [filteredStarDoctors, setFilteredStarDoctors] = useState<Doctor[]>([]);
+
+  const filterDoctors = (searchText: string) => {
+    setDoctorSearchText(searchText);
+    console.log(searchText);
+    if (searchText == '') return;
+    // do api call
+    getDoctorsForStarDoctorProgram.data.getDoctorsForStarDoctorProgram!(searchText)
+      .then((_data) => {
+        const _f = _data.map((i) => i.profile);
+        console.log('flitered array', _data, _f);
+        setFilteredStarDoctors(_f);
+      })
+      .catch((e) => {
+        Alert.alert('Error occured');
+      });
+  };
 
   const profileRow = (title: string, description: string) => {
     if (!description) return null;
@@ -99,7 +128,6 @@ export const Profile: React.FC<ProfileProps> = (profileData) => {
       </View>
     );
   };
-
   return (
     <View style={styles.container}>
       <SquareCardWithTitle title="Your Profile" containerStyle={{ marginTop: 16 }}>
@@ -107,74 +135,53 @@ export const Profile: React.FC<ProfileProps> = (profileData) => {
           <Image
             style={styles.imageview}
             // source={{
-            //   uri: props.profileObject.uri,
+            //   uri: profileData!.profile.photoUrl,
             // }}
             source={require('../../src/images/doctor/doctor.png')}
           />
-          {profileData.profileData.getDoctorProfile.isStarDoctor ? (
-            <Star style={styles.starIconStyle}></Star>
-          ) : null}
+          {profileData!.profile.isStarDoctor ? <Star style={styles.starIconStyle}></Star> : null}
           <View style={{ flexDirection: 'column', marginLeft: 16 }}>
             <Text style={styles.drname}>
-              {profileData.profileData.getDoctorProfile.firstName +
-                ' ' +
-                profileData.profileData.getDoctorProfile.lastName}
+              {profileData!.profile.firstName + ' ' + profileData!.profile.lastName}
             </Text>
             <Text style={styles.drnametext}>
-              {profileData.profileData.getDoctorProfile.speciality +
-                ' ' +
-                profileData.profileData.getDoctorProfile.experience}
+              {profileData!.profile.speciality + ' ' + profileData!.profile.experience}
               YRS
             </Text>
             <View style={styles.understatusline} />
           </View>
-          {profileRow('Education', profileData.profileData.getDoctorProfile.education)}
-          {profileRow('Speciality', profileData.profileData.getDoctorProfile.speciality)}
-          {profileRow('Services', profileData.profileData.getDoctorProfile.services)}
-          {profileRow('Awards', profileData.profileData.getDoctorProfile.awards)}
-          {profileRow('Speaks', profileData.profileData.getDoctorProfile.languages)}
-          {profileRow('MCI Number', profileData.profileData.getDoctorProfile.registrationNumber)}
+          {profileRow('Education', profileData!.profile.education)}
+          {profileRow('Speciality', profileData!.profile.speciality)}
+          {profileRow('Services', profileData!.profile.services)}
+          {profileRow('Awards', profileData!.profile.awards)}
+          {profileRow('Speaks', profileData!.profile.languages)}
+          {profileRow('MCI Number', profileData!.profile.registrationNumber)}
           {profileRow('In-person Consult Location', 'Homeocare Hospital,Hyderabad')}
         </View>
       </SquareCardWithTitle>
 
       <SquareCardWithTitle
-        title={`Your Star Doctors Team (${profileData.profileData.getDoctorProfile.starDoctorTeam.length})`}
+        title={`Your Star Doctors Team (${profileData!.starDoctorTeam.length})`}
         containerStyle={{ marginTop: 20 }}
       >
         <View style={{ height: 16 }} />
-        {profileData.profileData.getDoctorProfile.starDoctorTeam.map(
-          (starDoctor: any, i: number) => (
-            <DoctorCard
-              key={i}
-              image={starDoctor.uri}
-              doctorName={starDoctor.firstName + ' ' + starDoctor.lastName}
-              experience={starDoctor.experience}
-              specialization={'GENERAL PHYSICIAN '} //{starDoctor.designation}
-              education={'MBBS, Internal Medicine'} //{starDoctor.education}
-              location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.services}
-              inviteStatus={starDoctor.inviteStatus}
-            />
-          )
-        )}
+        {profileData!.starDoctorTeam.map((starDoctor: any, i: number) => (
+          <DoctorCard
+            key={i}
+            image={starDoctor.uri}
+            doctorName={starDoctor.firstName + ' ' + starDoctor.lastName}
+            experience={starDoctor.experience}
+            specialization={'GENERAL PHYSICIAN '} //{starDoctor.designation}
+            education={'MBBS, Internal Medicine'} //{starDoctor.education}
+            location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.services}
+            inviteStatus={starDoctor.inviteStatus}
+          />
+        ))}
         {!addshow ? (
           <View style={{ flexDirection: 'row', margin: 20 }}>
             <Add />
             <TouchableOpacity onPress={() => setAddShow(!addshow)}>
-              <Text
-                style={{
-                  fontFamily: 'IBMPlexSans',
-                  fontSize: 14,
-                  fontWeight: 'bold',
-                  fontStyle: 'normal',
-                  letterSpacing: 0,
-                  color: '#fc9916',
-                  marginLeft: 10,
-                  marginTop: 2,
-                }}
-              >
-                ADD DOCTOR
-              </Text>
+              <Text style={styles.addDoctorText}>ADD DOCTOR</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -186,19 +193,29 @@ export const Profile: React.FC<ProfileProps> = (profileData) => {
               borderRadius: 10,
             }}
           >
-            <View
-              style={{
-                margin: 20,
-              }}
-            >
+            <View style={{ margin: 20 }}>
               <Text style={styles.inputTextStyle}>Add a doctor to your team</Text>
               <View style={{ flexDirection: 'row' }}>
-                <TextInput autoFocus style={styles.inputStyle} />
+                <TextInput
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoFocus
+                  style={styles.inputStyle}
+                  value={doctorSearchText}
+                  onChange={(text) => filterDoctors(text.nativeEvent.text)}
+                />
                 <TouchableOpacity>
                   <Send />
                 </TouchableOpacity>
               </View>
             </View>
+            {filteredStarDoctors.length > 0 ? (
+              <View style={{ height: 150, backgroundColor: '#eee' }}>
+                {filteredStarDoctors.map((item) => {
+                  return <Text>{`Dr. ${item.firstName} ${item.lastName}`}</Text>;
+                })}
+              </View>
+            ) : null}
           </View>
         )}
       </SquareCardWithTitle>

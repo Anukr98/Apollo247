@@ -3,7 +3,7 @@ import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/Squar
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ProfileData } from '@aph/mobile-doctors/src/components/ProfileSetup';
+import { DummyQueryResult } from '@aph/mobile-doctors/src/helpers/commonTypes';
 
 const styles = StyleSheet.create({
   feeeducation: {
@@ -29,17 +29,11 @@ type _ProfileData = {
 };
 
 export interface FeesProps {
-  profileData: ProfileData | any;
+  profileData: DummyQueryResult['data']['getDoctorProfile'];
 }
 
 export const Fees: React.FC<FeesProps> = ({ profileData }) => {
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
-  const _profileObject: _ProfileData = {
-    acnumber: '123456777',
-    acholdername: 'Dr. Simran Rao',
-    ifsccode: 'HDFC0002000',
-    accounttype: 'Savings Account',
-  };
   const renderCard = (title: string, children: Element) => (
     <SquareCardWithTitle title={title} containerStyle={{ marginTop: 16 }}>
       <View
@@ -68,28 +62,28 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
         <View style={{ marginTop: 16 }}>
           {feeprofileRow(
             'What are your online consultation fees?',
-            profileData.getDoctorProfile.onlineConsultationFees
+            profileData!.profile.onlineConsultationFees
           )}
           {feeprofileRow(
             'What are your physical consultation fees?',
-            profileData.getDoctorProfile.physicalConsultationFees
+            profileData!.profile.physicalConsultationFees
           )}
-          {feeprofileRow(
-            'What package do you offer your patients?',
-            profileData.getDoctorProfile.package
-          )}
+          {feeprofileRow('What package do you offer your patients?', profileData!.profile.package)}
         </View>
       )}
       {renderCard(
         'Payment Details',
         <View style={{ flexDirection: 'row', marginTop: 16, justifyContent: 'space-between' }}>
           <View>
-            {feeprofileRow('A/C Number: xxx xxx xxx 7890', _profileObject.acnumber)}
+            {feeprofileRow(
+              'A/C Number: xxx xxx xxx 7890',
+              profileData!.paymentDetails[0].accountNumber
+            )}
             {showPaymentDetails ? (
               <>
-                {feeprofileRow('Account Holder’s Name', _profileObject.acholdername)}
-                {feeprofileRow('IFSC Code', _profileObject.ifsccode)}
-                {feeprofileRow('Account Type', _profileObject.accounttype)}
+                {feeprofileRow('Account Holder’s Name', profileData!.profile.firstName)}
+                {feeprofileRow('IFSC Code', profileData!.profile.ifscCode)}
+                {feeprofileRow('Account Type', profileData!.profile.accountType)}
               </>
             ) : null}
           </View>
