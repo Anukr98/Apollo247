@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm';
-import { Validate, IsDate } from 'class-validator';
+import { Validate, IsDate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
 
 export enum Gender {
@@ -47,6 +47,7 @@ export class Patient extends BaseEntity {
   uhid: string;
 
   @Column({ nullable: true })
+  @IsOptional()
   @Validate(EmailValidator)
   emailAddress: string;
 
