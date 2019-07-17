@@ -3,11 +3,21 @@ import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { ManageProfile } from 'components/ManageProfile';
-import React from 'react';
+import React, { useState } from 'react';
 import { DoctorsFilter } from 'components/DoctorsFilter';
 import { PastSearches } from 'components/PastSearches';
 import { Specialities } from 'components/Specialities';
 import { DoctorCard } from './doctorCard';
+
+import _uniqueId from 'lodash/uniqueId';
+import _map from 'lodash/map';
+import _toLower from 'lodash/toLower';
+import { Query } from 'react-apollo';
+
+import _filter from 'lodash/filter';
+import _startsWith from 'lodash/startsWith';
+
+import { MockedProvider } from 'react-apollo/test-utils';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -97,8 +107,27 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+export interface searchObject {
+  searchKeyword: string;
+  cityName: string | null;
+  experience: string | null;
+  availability: string | null;
+  fees: string | null;
+  gender: string | null;
+  language: string | null;
+}
+
 export const DoctorsLanding: React.FC = (props) => {
   const classes = useStyles();
+  const [filterOptions, setFilterOptions] = useState<searchObject>({
+    searchKeyword: '',
+    cityName: '',
+    experience: '',
+    availability: '',
+    fees: '',
+    gender: '',
+    language: '',
+  });
 
   return (
     <div className={classes.welcome}>

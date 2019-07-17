@@ -11,9 +11,8 @@ import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
-import { DatePicker, MuiPickersUtilsProvider, MaterialUiPickersDate } from '@material-ui/pickers';
-import DateFnsUtils from '@date-io/date-fns';
-import { usePickerState, TimePickerView, Calendar } from '@material-ui/pickers';
+import { MaterialUiPickersDate } from '@material-ui/pickers';
+import { usePickerState, Calendar } from '@material-ui/pickers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -22,10 +21,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingTop: 78,
       },
-    },
-    booksLink: {
-      color: theme.palette.primary.main,
-      textDecoration: 'underline',
     },
     headerSticky: {
       position: 'fixed',
@@ -37,31 +32,42 @@ const useStyles = makeStyles((theme: Theme) => {
       maxWidth: 1064,
       margin: 'auto',
     },
-    bottomMenuRoot: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      bottom: 0,
-      height: 'auto',
-      [theme.breakpoints.up('sm')]: {
-        display: 'none',
-      },
-      '& button': {
-        padding: '10px 0',
-      },
+    doctorDetailsPage: {
+      borderRadius: '0 0 10px 10px',
+      backgroundColor: '#f7f8f5',
     },
-    labelRoot: {
-      width: '100%',
-    },
-    iconLabel: {
-      fontSize: 12,
-      color: '#67919d',
-      paddingTop: 10,
+    breadcrumbs: {
+      marginLeft: 20,
+      marginRight: 20,
+      fontSize: 13,
+      paddingTop: 15,
+      paddingBottom: 10,
+      fontWeight: 600,
+      color: '#02475b',
       textTransform: 'uppercase',
+      borderBottom: '1px solid rgba(1,71,91,0.3)',
     },
-    iconSelected: {
-      fontSize: '12px !important',
-      color: theme.palette.primary.main,
+    doctorProfileSection: {
+      display: 'flex',
+      padding: 20,
+    },
+    searchSection: {
+      width: 'calc(100% - 328px)',
+      paddingLeft: 20,
+    },
+    sectionHeader: {
+      color: '#02475b',
+      fontSize: 14,
+      fontWeight: 500,
+      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      paddingBottom: 10,
+      paddingTop: 10,
+      marginBottom: 20,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    count: {
+      marginLeft: 'auto',
     },
     topPopover: {
       overflow: 'initial',
@@ -96,9 +102,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const doctorId = params.id;
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
-  const [selectedDate, handleDateChange] = useState(new Date());
   const [value, handleDateChange1] = useState<MaterialUiPickersDate>(new Date());
-  const { pickerProps, wrapperProps, inputProps } = usePickerState(
+  const { pickerProps } = usePickerState(
     { value, onChange: handleDateChange1 },
     {
       getDefaultFormat: () => 'MM/dd/yyyy',
@@ -163,7 +168,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     },
   };
 
-  const doctorDetails = detailsObj[doctorId];
+  const doctorDetails = detailsObj[doctorId as '1' | '2'];
 
   return (
     <div className={classes.welcome}>
@@ -172,12 +177,35 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <Header />
         </div>
       </div>
+      <div className={classes.container}>
+        <div className={classes.doctorDetailsPage}>
+          <div className={classes.breadcrumbs}>Doctor Details</div>
+          <div className={classes.doctorProfileSection}>
+            <DoctorProfile
+              doctorDetails={doctorDetails}
+              onBookConsult={() => setIsPopoverOpen(true)}
+            />
+            <div className={classes.searchSection}>
+              <div className={classes.sectionHeader}>
+                <span>Dr. Simran’s Clinic</span>
+                <span className={classes.count}>02</span>
+              </div>
+              <DoctorClinics doctorId={doctorId} />
+              <div className={classes.sectionHeader}>
+                <span>Dr. Simran’s Team</span>
+                <span className={classes.count}>02</span>
+              </div>
+              <StarDoctorTeam doctorId={doctorId} />
+              <div className={classes.sectionHeader}>
+                <span>Appointment History</span>
+                <span className={classes.count}>02</span>
+              </div>
+              <AppointmentHistory />
+            </div>
+          </div>
+        </div>
+      </div>
       <div className={classes.container} ref={popOverRef}>
-        <DoctorProfile doctorDetails={doctorDetails} onBookConsult={() => setIsPopoverOpen(true)} />
-        <DoctorClinics doctorId={doctorId} />
-        <StarDoctorTeam doctorId={doctorId} />
-        <AppointmentHistory />
-
         <Popover
           open={isPopoverOpen}
           anchorEl={popOverRef.current}

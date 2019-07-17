@@ -1,7 +1,6 @@
 const path = require('path');
 const process = require('process');
 const nodeExternals = require('webpack-node-externals');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const NodemonPlugin = require('nodemon-webpack-plugin');
 const webpack = require('webpack');
 
@@ -24,7 +23,6 @@ const plugins = [
       {}
     )
   ),
-  new CleanWebpackPlugin(),
   new NodemonPlugin(),
 ];
 

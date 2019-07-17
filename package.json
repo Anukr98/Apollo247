@@ -47,5 +47,10 @@
     "packages/shared-ui-components/src": "lerna run build --scope @aph/shared-ui-components",
     "packages/universal/src": "lerna run build --scope @aph/universal",
     "packages/web-ui-components/src": "lerna run build --scope @aph/web-ui-components"
+  },
+  "dependencies": {
+    "class-validator": "^0.9.1",
+    "graphql-iso-date": "^3.6.1",
+    "validator": "^11.1.0"
   }
 }

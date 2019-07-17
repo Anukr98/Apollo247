@@ -64,6 +64,7 @@ module.exports = {
     rules: [
       {
         test: /\.(j|t)sx?$/,
+        include: [path.resolve(__dirname, 'src')],
         exclude: [/node_modules/],
         use: isProduction ? [tsLoader] : [rhlBabelLoader, tsLoader],
       },
@@ -78,7 +79,7 @@ module.exports = {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
     modules: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'node_modules')],
     alias:
-      isLocal || isDevelopment
+      isTest || isLocal || isDevelopment
         ? {
             'react-dom': '@hot-loader/react-dom',
           }

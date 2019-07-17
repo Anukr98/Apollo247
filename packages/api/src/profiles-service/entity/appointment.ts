@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm'
-import { Timestamp } from '@google-cloud/firestore';
+import { IsDate } from 'class-validator';
 
-export enum status {
+export enum STATUS {
     INPROGRESS = 'INPROGRESS',
     CONFIRMED = 'CONFIRMED',
     CANCELLED = 'CANCELLED'
@@ -19,6 +19,7 @@ export class Appointments extends BaseEntity {
   doctorId: string;
 
   @Column({type:"date"})
+  @IsDate()
   appointmentDate: Date;
 
   @Column({type:"time"})
@@ -28,7 +29,7 @@ export class Appointments extends BaseEntity {
   appointmentType: string;
 
   @Column()
-  status: status;
+  status: STATUS;
 
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   bookingDate: string;

@@ -1,11 +1,12 @@
 import gql from 'graphql-tag';
-import { Resolver } from 'profiles-service/profiles-service';
-import { Appointments, status } from 'profiles-service/entity/appointment';
+import { Resolver } from 'api-gateway';
+import { Appointments, STATUS } from 'profiles-service/entity/appointment';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { ProfilesServiceContext } from 'profiles-service/profiles-service';
 
 export const bookAppointmentTypeDefs = gql`
-  enum status {
+  enum STATUS {
     INPROGRESS
     CONFIRMED
     CANCELLED
@@ -18,6 +19,7 @@ export const bookAppointmentTypeDefs = gql`
     appointmentTime: String
     appointmentType: String
     hospitalId: String
+    status:STATUS
   }
 
 
@@ -25,25 +27,38 @@ export const bookAppointmentTypeDefs = gql`
     appointmentId: String
     message: String
   }
-r
+
   extend type Mutation {
     bookAppointment(appointmentInput: BookAppointmentInput): BookAppointmentResult!
   }
 `;
 
 type BookAppointmentResult = {
-    appointmentId: String
-    message: String
+    appointmentId: string
+    message: string
   }
 
-type BookAppointmentInput = {appointmentInput: BookAppointmentInput}
+type BookAppointmentInput = {
+  patientId: string
+  doctorId: string
+  appointmentDate: string
+  appointmentTime: string
+  appointmentType: string
+  hospitalId: string
+  status:STATUS
+}
 
-const bookAppointment: Resolver<any> = async (
+type AppointmentInputArgs = {appointmentInput: BookAppointmentInput}
+
+const bookAppointment: Resolver<  null,
+AppointmentInputArgs,
+ProfilesServiceContext,
+BookAppointmentResult> = async (
   parent,
   { appointmentInput }
-): Promise<BookAppointmentResult> => {
+) => {
   const aptinput = appointmentInput;
-  aptinput.status = status.INPROGRESS;
+  aptinput.status = STATUS.INPROGRESS;
   const appt = await Appointments.create(aptinput).save().catch((createErrors) => {
     throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
   });

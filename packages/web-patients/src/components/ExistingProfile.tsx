@@ -4,13 +4,12 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AphButton, AphSelect } from '@aph/web-ui-components';
-import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
 import _camelCase from 'lodash/camelCase';
 import { Relation } from 'graphql/types/globalTypes';
-import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Mutation } from 'react-apollo';
-import { updatePatientVariables, updatePatient } from 'graphql/types/updatePatient';
+import { UpdatePatientVariables, UpdatePatient } from 'graphql/types/UpdatePatient';
 import { UPDATE_PATIENT } from 'graphql/profiles';
+import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -113,10 +112,12 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
+type Patient = GetCurrentPatients_getCurrentPatients_patients;
+
 interface PatientProfileProps {
-  patient: PatientSignIn_patientSignIn_patients;
+  patient: Patient;
   number: number;
-  onUpdatePatient: (patient: PatientSignIn_patientSignIn_patients) => void;
+  onUpdatePatient: (patient: Patient) => void;
 }
 const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   const classes = useStyles();
@@ -161,14 +162,16 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   );
 };
 
-const isPatientInvalid = (patient: PatientSignIn_patientSignIn_patients) =>
-  patient.relation == null;
+const isPatientInvalid = (patient: Patient) => patient.relation == null;
 
-export interface ExistingProfileProps {}
+export interface ExistingProfileProps {
+  patients: NonNullable<Patient[]>;
+  onComplete: () => void;
+}
 export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const classes = useStyles();
-  const [patients, setPatients] = useState(useAllCurrentPatients());
-  if (!patients) return null;
+  const [patients, setPatients] = useState(props.patients);
+  const [loading, setLoading] = useState(false);
   const disabled = patients.some(isPatientInvalid);
 
   return (
@@ -207,29 +210,33 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
         </div>
       </div>
       <div className={classes.actions}>
-        <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
-          {(mutate, { loading }) => (
+        <Mutation<UpdatePatient, UpdatePatientVariables> mutation={UPDATE_PATIENT}>
+          {(mutate) => (
             <AphButton
               type="submit"
               onClick={() => {
-                // WE DONT NEED TO IMPLEMENT THIS UNTIL THE NEXT SPRINT
-                // patients.forEach((patient) => {
-                //   mutate({
-                //     variables: {
-                //       patientInput: {
-                //         id: patient.id,
-                //         relation: patient.relation,
-                //       },
-                //     },
-                //   });
-                // });
+                const updatePatientPromises = patients.map((patient) => {
+                  return mutate({
+                    variables: {
+                      patientInput: {
+                        id: patient.id,
+                        relation: patient.relation,
+                      },
+                    },
+                  });
+                });
+                setLoading(true);
+                Promise.all(updatePatientPromises)
+                  .then(() => props.onComplete())
+                  .catch(() => window.alert('Something went wrong :('))
+                  .finally(() => setLoading(false));
               }}
               disabled={disabled}
               fullWidth
               variant="contained"
               color="primary"
             >
-              {loading ? <CircularProgress /> : 'Submit'}
+              {loading ? <CircularProgress size={22} color="secondary" /> : 'Submit'}
             </AphButton>
           )}
         </Mutation>

@@ -6,8 +6,8 @@ import { AphButton, AphSelect } from '@aph/web-ui-components';
 import MenuItem from '@material-ui/core/MenuItem';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import _isEmpty from 'lodash/isEmpty';
-import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
-import { useAuth } from 'hooks/authHooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -118,9 +118,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+type Patient = GetCurrentPatients_getCurrentPatients_patients;
+
 export const HeroBanner: React.FC = () => {
   const classes = useStyles();
-  const { allCurrentPatients, currentPatient, setCurrentPatient } = useAuth();
+  const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
 
   return (
     <div className={classes.heroBanner}>
@@ -130,23 +132,25 @@ export const HeroBanner: React.FC = () => {
             <span>hello</span>
             <AphSelect
               value={currentPatient.id}
-              onChange={(e) => {
-                const newId = e.target.value as PatientSignIn_patientSignIn_patients['id'];
-                const newCurrentPatient = allCurrentPatients.find((p) => p.id === newId);
-                if (newCurrentPatient) setCurrentPatient(newCurrentPatient);
-              }}
+              onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
               classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
             >
-              {allCurrentPatients.map((patient) => (
-                <MenuItem
-                  selected={patient.id === currentPatient.id}
-                  value={patient.id}
-                  classes={{ selected: classes.menuSelected }}
-                  key={patient.id}
-                >
-                  {patient.firstName}
-                </MenuItem>
-              ))}
+              {allCurrentPatients.map((patient) => {
+                const isSelected = patient.id === currentPatient.id;
+                const name = isSelected
+                  ? (patient.firstName || '').toLocaleLowerCase()
+                  : patient.firstName || '';
+                return (
+                  <MenuItem
+                    selected={isSelected}
+                    value={patient.id}
+                    classes={{ selected: classes.menuSelected }}
+                    key={patient.id}
+                  >
+                    {name}
+                  </MenuItem>
+                );
+              })}
               <MenuItem classes={{ selected: classes.menuSelected }}>
                 <AphButton color="primary" classes={{ root: classes.addMemberBtn }}>
                   Add Member
