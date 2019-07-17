@@ -1,6 +1,7 @@
 import { Theme, Grid, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
+import _uniqueId from 'lodash/uniqueId';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -78,7 +79,7 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
     <Grid container spacing={2}>
       {Object.values(starDoctors).map((starDoctorDetails) => {
         return (
-          <Grid item sm={6}>
+          <Grid item sm={6} key={_uniqueId('startDoctor_')}>
             <div className={classes.root}>
               <Avatar alt="" src={starDoctorDetails.profilePicture} className={classes.bigAvatar} />
               <div className={classes.doctorInfo}>

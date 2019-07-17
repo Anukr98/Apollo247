@@ -84,7 +84,7 @@ export const AppointmentHistory: React.FC = (props) => {
     <Grid container spacing={2}>
       {Object.values(appointments).map((appointment) => {
         return (
-          <Grid item sm={3}>
+          <Grid item sm={3} key={_uniqueId('avagr_')}>
             <div className={classes.root} key={_uniqueId('aphistory_')}>
               <div className={classes.appointType}>{appointment.appointmentType}</div>
               <div className={classes.appointmentInfo}>

@@ -93,7 +93,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
 
   const clinicsMarkup = (clinicsObj: clinicDetails) => {
     return Object.values(clinicsObj).map((clinicDetails: clinicDetailsType) => (
-      <Grid item sm={6}>
+      <Grid item sm={6} key={_uniqueId('avagr_')}>
         <div className={classes.root} key={_uniqueId('clinic_')}>
           <div className={classes.clinicImg}>
             <img src="https://via.placeholder.com/328x100" />
