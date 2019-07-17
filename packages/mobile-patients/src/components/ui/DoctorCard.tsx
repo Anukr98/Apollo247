@@ -1,4 +1,7 @@
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import React from 'react';
 import {
   ImageSourcePropType,
@@ -7,27 +10,23 @@ import {
   StyleSheet,
   Text,
   TextStyle,
+  TouchableOpacity,
   View,
+  ViewStyle,
 } from 'react-native';
-import { string } from '../../strings/string';
+import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../../theme/theme';
 
 const styles = StyleSheet.create({
   doctorView: {
     flex: 1,
     marginHorizontal: 20,
-    backgroundColor: 'white',
-    shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    elevation: 10,
+    ...theme.viewStyles.cardViewStyle,
     marginBottom: 12,
     borderRadius: 10,
   },
   buttonView: {
     height: 44,
-    marginTop: 16,
     backgroundColor: theme.colors.BUTTON_BG,
     alignItems: 'center',
     justifyContent: 'center',
@@ -37,26 +36,12 @@ const styles = StyleSheet.create({
     color: theme.colors.BUTTON_TEXT,
   },
   availableView: {
-    alignItems: 'center',
-    justifyContent: 'center',
     position: 'absolute',
     right: 0,
     top: 0,
-    borderRadius: 10,
-    backgroundColor: '#ff748e',
-  },
-  availableTextStyles: {
-    color: 'white',
-    textAlign: 'center',
-    ...theme.fonts.IBMPlexSansSemiBold(9),
-    letterSpacing: 0.5,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
   },
   imageView: {
     margin: 16,
-    alignContent: 'center',
-    justifyContent: 'center',
   },
   doctorNameStyles: {
     paddingTop: 32,
@@ -68,9 +53,10 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansSemiBold(12),
-    color: theme.colors.CARD_DESCRIPTION,
+    color: theme.colors.SKY_BLUE,
   },
   doctorLocation: {
+    marginBottom: 16,
     paddingTop: 2,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
@@ -78,7 +64,6 @@ const styles = StyleSheet.create({
   },
   consultViewStyles: {
     paddingHorizontal: 0,
-    marginTop: 16,
     alignSelf: 'center',
     justifyContent: 'center',
     width: '100%',
@@ -118,27 +103,29 @@ type rowData = {
   time: string;
 };
 
-export interface doctorCardProps {
+export interface doctorCardProps extends NavigationScreenProps {
   rowData: rowData;
+  displayButton?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const DoctorCard: React.FC<doctorCardProps> = (props) => {
   const rowData = props.rowData;
+  console.log(rowData, 'rowData');
   return (
-    <View style={styles.doctorView}>
+    <TouchableOpacity
+      style={[styles.doctorView, props.style]}
+      onPress={() => props.navigation.navigate(AppRoutes.DoctorDetails)}
+    >
       <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
         <View style={{ flexDirection: 'row' }}>
           {rowData.available ? (
-            <View style={styles.availableView}>
-              <Text style={styles.availableTextStyles}>{string.LocalStrings.availableNow}</Text>
-            </View>
+            <CapsuleView title={string.common.availableNow} style={styles.availableView} />
           ) : null}
           <View style={styles.imageView}>
             {rowData.image}
             {rowData.available ? (
-              <Star
-                style={{ height: 28, width: 28, position: 'absolute', bottom: -10, left: 30 }}
-              />
+              <Star style={{ height: 28, width: 28, position: 'absolute', top: 66, left: 30 }} />
             ) : null}
           </View>
           <View>
@@ -150,19 +137,25 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
             <Text style={styles.doctorLocation}>{rowData.location}</Text>
           </View>
         </View>
-        <View style={{ overflow: 'hidden' }}>
-          {rowData.available ? (
-            <View style={styles.buttonView}>
-              <Text style={styles.buttonText}>{rowData.time}</Text>
-            </View>
-          ) : (
-            <View style={styles.consultViewStyles}>
-              <View style={styles.separatorViewStyles} />
-              <Text style={styles.consultTextStyles}>{rowData.time}</Text>
-            </View>
-          )}
-        </View>
+        {props.displayButton && (
+          <View style={{ overflow: 'hidden' }}>
+            {rowData.available ? (
+              <View style={styles.buttonView}>
+                <Text style={styles.buttonText}>{rowData.time}</Text>
+              </View>
+            ) : (
+              <View style={styles.consultViewStyles}>
+                <View style={styles.separatorViewStyles} />
+                <Text style={styles.consultTextStyles}>{rowData.time}</Text>
+              </View>
+            )}
+          </View>
+        )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
+};
+
+DoctorCard.defaultProps = {
+  displayButton: true,
 };

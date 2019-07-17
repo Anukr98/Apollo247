@@ -4,7 +4,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DropdownGreen, Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { string } from '@aph/mobile-patients/src/strings/string';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import {
@@ -23,7 +23,6 @@ import { MenuProvider } from 'react-native-popup-menu';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import console = require('console');
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -354,8 +353,8 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                 shadowOffset: { width: 0, height: -10 },
                 shadowOpacity: 0.4,
               }}
-              heading={string.LocalStrings.welcome_text}
-              description={showText ? discriptionText : string.LocalStrings.multi_signup_desc}
+              heading={string.login.welcome_text}
+              description={showText ? discriptionText : string.login.multi_signup_desc}
               descriptionTextStyle={{ paddingBottom: 50 }}
             >
               <View style={styles.mascotStyle}>

@@ -70,7 +70,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
     if (text.match(/[0-9]/)) {
       otpText[i] = text;
       setotpText(otpText);
-      handleTextChange(otpText.join(''));
+      handleTextChange && handleTextChange(otpText.join(''));
       if (text.length === 1 && i !== inputCount - 1) {
         arrayRef.current && arrayRef.current[i + 1].focus();
       }
@@ -92,11 +92,12 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
         otpArray[i] = '';
       }
     }
+    props.handleTextChange && props.handleTextChange(otpArray.join(''));
     setotpText(otpArray);
   };
 
   for (let i = 0; i < inputCount; i += 1) {
-    let defaultChars: any = [];
+    const defaultChars: any = [];
     const inputStyle = [styles.textInput, textInputStyle, { borderColor: offTintColor }];
     if (focusedInput === i) {
       inputStyle.push({ borderColor: tintColor });

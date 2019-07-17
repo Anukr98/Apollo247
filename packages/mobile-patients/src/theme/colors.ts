@@ -7,7 +7,10 @@ const darkColor = 'rgb(115, 118, 131)';
 
 const app_green = '#00b38e';
 const APP_Sherpa_Blue = '#01475b';
+const app_light_blue = '#02475b';
+const sky_blue = '#0087ba';
 const tangerine_yellow = '#fc9916';
+const shadowGray = '#808080';
 
 const TabBar = {
   TAB_BAR_ACTIVE_TINT_COLOR: '#02475b',
@@ -21,10 +24,11 @@ const Buttons = {
 };
 
 const Card = {
-  CARD_BG: 'white',
-  CARD_HEADER: '#02475b',
-  CARD_DESCRIPTION: '#0087ba',
-  FILTER_CARD_LABEL: '#02475b',
+  CARD_BG: '#f7f8f5',
+  CARD_HEADER: app_light_blue,
+  CARD_DESCRIPTION: sky_blue,
+  CARD_INFO: tangerine_yellow,
+  FILTER_CARD_LABEL: app_light_blue,
 };
 
 const Common = {
@@ -36,6 +40,11 @@ const Common = {
   SHERPA_BLUE: APP_Sherpa_Blue,
   APP_YELLOW_COLOR: '#fcb716',
   APP_YELLOW: tangerine_yellow,
+  SHADOW_GRAY: shadowGray,
+  LIGHT_BLUE: app_light_blue,
+  SKY_BLUE: sky_blue,
+  SEPARATOR_LINE: 'rgba(2, 71, 91, 0.2)',
+  CLEAR: clear,
 };
 
 const Header = {
@@ -68,21 +77,28 @@ const Texts = {
 };
 
 const TextInput = {
-  INPUT_TEXT: '#02475b',
+  INPUT_TEXT: app_light_blue,
   INPUT_BORDER_SUCCESS: app_green,
   INPUT_BORDER_FAILURE: '#e50000',
-  INPUT_SUCCESS_TEXT: '#02475b',
+  INPUT_SUCCESS_TEXT: app_light_blue,
   INPUT_FAILURE_TEXT: '#890000',
-  INPUT_INFO: '#fc9916',
+  INPUT_INFO: tangerine_yellow,
   placeholderTextColor: 'rgba(1,48,91, 0.3)',
 };
 
 const Search = {
   SEARCH_UNDERLINE_COLOR: '#00b38e',
-  SEARCH_TITLE_COLOR: '#fc9916',
-  SEARCH_DOCTOR_NAME: '#02475b',
+  SEARCH_TITLE_COLOR: tangerine_yellow,
+  SEARCH_DOCTOR_NAME: app_light_blue,
   SEARCH_EDUCATION_COLOR: '#658f9b',
-  SEARCH_CONSULT_COLOR: '#fc9916',
+  SEARCH_CONSULT_COLOR: tangerine_yellow,
+};
+
+const Capsule = {
+  CAPSULE_ACTIVE_BG: '#ff748e',
+  CAPSULE_ACTIVE_TEXT: white,
+  CAPSULE_INACTIVE_BG: 'rgba(0, 135, 186, 0.11)',
+  CAPSULE_INACTIVE_TEXT: app_light_blue,
 };
 
 export const colors = {
@@ -95,4 +111,5 @@ export const colors = {
   ...TextInput,
   ...Search,
   ...TabBar,
+  ...Capsule,
 };

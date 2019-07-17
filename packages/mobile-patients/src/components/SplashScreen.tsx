@@ -46,7 +46,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setTimeout(() => {
         if (userLoggedIn == 'true') {
           if (currentPatient) {
-            props.navigation.replace(AppRoutes.TabBar);
+            if (currentPatient.firstName !== '') {
+              props.navigation.replace(AppRoutes.TabBar);
+            } else {
+              props.navigation.replace(AppRoutes.Login);
+            }
           }
         } else if (onboarding == 'true') {
           if (signUp == 'true') {

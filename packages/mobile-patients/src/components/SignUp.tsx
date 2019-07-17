@@ -6,7 +6,7 @@ import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { string } from '@aph/mobile-patients/src/strings/string';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import {
@@ -179,8 +179,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
               shadowOpacity: 0.35,
               shadowRadius: 20,
             }}
-            heading={string.LocalStrings.welcome_text}
-            description={string.LocalStrings.welcome_desc}
+            heading={string.login.welcome_text}
+            description={string.login.welcome_desc}
             descriptionTextStyle={{ paddingBottom: 45 }}
           >
             <View style={styles.mascotStyle}>

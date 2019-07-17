@@ -20,6 +20,7 @@ import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AsyncStorage } from 'react-native';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
@@ -294,6 +295,9 @@ export const AuthProvider: React.FC = (props) => {
       } else {
         console.log('else ----> me');
         setIsSigningIn(false);
+        AsyncStorage.setItem('userLoggedIn', 'false');
+        AsyncStorage.setItem('signUp', 'false');
+        AsyncStorage.setItem('multiSignUp', 'false');
       }
       // } else {
       //   console.log('else if ----> me');

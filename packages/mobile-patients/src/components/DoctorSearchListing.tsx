@@ -9,9 +9,9 @@ import {
   SortIncreasing,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
-import { string } from '@aph/mobile-patients/src/strings/string';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -23,6 +23,10 @@ import {
   SectionListData,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import axios from 'axios';
 
 const styles = StyleSheet.create({
   topView: {
@@ -44,28 +48,6 @@ const styles = StyleSheet.create({
     color: theme.colors.CARD_DESCRIPTION,
     paddingBottom: 20,
     ...theme.fonts.IBMPlexSansMedium(17),
-  },
-  filterView: {
-    height: 44,
-    flexDirection: 'row',
-    backgroundColor: '#f7f8f5',
-    paddingHorizontal: 20,
-    shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 1,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  filterItemView: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  itemLabelText: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.INPUT_TEXT,
-    paddingRight: 4,
   },
 });
 
@@ -155,10 +137,51 @@ const DoctorsList: doctorsList[] = [
 export interface DoctorSearchListingProps extends NavigationScreenProps {}
 
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
+  const tabs = ['All Consults', 'Online Consults', 'Clinic Visits'];
+  const [selectedTab, setselectedTab] = useState<string>(tabs[0]);
+  const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
+  const [currentLocation, setcurrentLocation] = useState<string>('');
+
+  const fetchCurrentLocation = () => {
+    // setshowLocationpopup(true)
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        console.log(position.coords.latitude);
+        console.warn(position.coords.longitude);
+        // this.setState({
+        //   region: {
+        //     latitude: position.coords.latitude,
+        //     longitude: position.coords.longitude,
+        //     latitudeDelta: 0.001 * 5,
+        //     longitudeDelta: 0.001 * 5,
+        //   },
+        // });
+        const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+        const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
+        axios
+          .get(url)
+          .then((obj) => {
+            console.log(obj);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      },
+      (error) => {
+        console.warn(error.code, error.message);
+      },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+    );
+  };
+
   const RightHeader = () => {
     return (
       <View style={{ flexDirection: 'row' }}>
-        <LocationOff />
+        <TouchableOpacity onPress={() => fetchCurrentLocation()}>
+          <LocationOff />
+        </TouchableOpacity>
         <TouchableOpacity
           style={{ marginLeft: 20 }}
           onPress={() => props.navigation.navigate('FilterScene')}
@@ -180,31 +203,24 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             onPressLeftIcon={() => props.navigation.goBack()}
           />
           <View style={{ paddingHorizontal: 20 }}>
-            <Text style={styles.headingText}>{string.LocalStrings.okay}</Text>
-            <Text style={styles.descriptionText}>
-              {string.LocalStrings.best_general_physicians_text}
-            </Text>
+            <Text style={styles.headingText}>{string.common.okay}</Text>
+            <Text style={styles.descriptionText}>{string.common.best_general_physicians_text}</Text>
           </View>
         </View>
-        <View style={styles.filterView}>
-          <View style={styles.filterItemView}>
-            <Text style={styles.itemLabelText}>{string.LocalStrings.all_consults}</Text>
-            <DropdownGreen />
-          </View>
-          <View style={styles.filterItemView}>
-            <Text style={styles.itemLabelText}>{string.LocalStrings.distance}</Text>
-            <SortIncreasing />
-          </View>
-          <View style={styles.filterItemView}>
-            <Reload />
-          </View>
-        </View>
+        <TabsComponent
+          style={{
+            backgroundColor: theme.colors.CARD_BG,
+          }}
+          data={tabs}
+          onChange={(selectedTab: string) => setselectedTab(selectedTab)}
+          selectedTab={selectedTab}
+        />
       </View>
     );
   };
 
   const renderSearchDoctorResultsRow = (rowData: doctorCardProps['rowData']) => {
-    return <DoctorCard rowData={rowData} />;
+    return <DoctorCard rowData={rowData} navigation={props.navigation} />;
   };
 
   const renderHeader = (rowHeader: SectionListData<{ title: string }>) => {
@@ -221,7 +237,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <SectionList
           contentContainerStyle={{
             flexWrap: 'wrap',
-            marginTop: 12,
+            marginTop: 20,
             marginBottom: 8,
           }}
           bounces={false}
@@ -229,17 +245,83 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onEndReachedThreshold={0.5}
           renderItem={({ item }) => renderSearchDoctorResultsRow(item)}
           keyExtractor={(_, index) => index.toString()}
-          renderSectionHeader={({ section }) => renderHeader(section)}
         />
       </View>
     );
   };
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
-      <ScrollView style={{ flex: 1 }}>
-        {renderTopView()}
-        {renderDoctorSearches()}
+    <SafeAreaView
+      style={{
+        ...theme.viewStyles.container,
+      }}
+    >
+      {renderTopView()}
+
+      <ScrollView style={{ flex: 1 }} bounces={false}>
+        {selectedTab === tabs[0] && (
+          <View>
+            <Card
+              cardContainer={{ marginTop: 64, marginHorizontal: 64 }}
+              heading={'Uh oh! :('}
+              description={
+                'There is no General Physician available for Physical Consult. Please you try Online Consultation.'
+              }
+              descriptionTextStyle={{ fontSize: 14 }}
+              headingTextStyle={{ fontSize: 14 }}
+            />
+          </View>
+        )}
+        {selectedTab === tabs[1] && renderDoctorSearches()}
       </ScrollView>
+      {showLocationpopup && (
+        <View
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 40,
+            alignItems: 'center',
+          }}
+        >
+          <View
+            style={{
+              ...theme.viewStyles.cardViewStyle,
+              width: 230,
+              padding: 16,
+            }}
+          >
+            <Text
+              style={{
+                color: theme.colors.CARD_HEADER,
+                ...theme.fonts.IBMPlexSansMedium(14),
+              }}
+            >
+              Current Location
+            </Text>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ flex: 7 }}>
+                <TextInputComponent
+                  conatinerstyles={{ flex: 1 }}
+                  value={currentLocation}
+                  onChangeText={(value) => {
+                    setcurrentLocation(value);
+                  }}
+                />
+              </View>
+              <View
+                style={{
+                  marginLeft: 20,
+                  alignItems: 'flex-end',
+                  justifyContent: 'center',
+                  marginBottom: 10,
+                }}
+              >
+                <LocationOff />
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };

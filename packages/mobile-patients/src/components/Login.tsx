@@ -1,7 +1,7 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { ArrowDisabled, ArrowYellow } from '@aph/mobile-patients/src/components/ui/Icons';
-import { string } from '@aph/mobile-patients/src/strings/string';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -188,8 +188,8 @@ export const Login: React.FC<LoginProps> = (props) => {
         <View style={{ height: 56 }} />
         <Card
           cardContainer={{ marginTop: 0, height: 270 }}
-          heading={string.LocalStrings.hello}
-          description={string.LocalStrings.please_enter_no}
+          heading={string.login.hello}
+          description={string.login.please_enter_no}
           buttonIcon={
             phoneNumberIsValid && phoneNumber.replace(/^0+/, '').length === 10 ? (
               <ArrowYellow />
@@ -231,7 +231,7 @@ export const Login: React.FC<LoginProps> = (props) => {
               phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
             ]}
           >
-            <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
+            <Text style={styles.inputTextStyle}>{string.login.numberPrefix}</Text>
             <TextInput
               autoFocus
               style={styles.inputStyle}
@@ -249,8 +249,8 @@ export const Login: React.FC<LoginProps> = (props) => {
             }
           >
             {phoneNumber == '' || phoneNumberIsValid
-              ? string.LocalStrings.otp_sent_to
-              : string.LocalStrings.wrong_number}
+              ? string.login.otp_sent_to
+              : string.login.wrong_number}
           </Text>
         </Card>
       </SafeAreaView>

@@ -30,6 +30,7 @@ const styles = StyleSheet.create({
     paddingBottom: 3,
     paddingLeft: Platform.OS === 'ios' ? 0 : -3,
     paddingTop: 0,
+    color: theme.colors.SHERPA_BLUE,
   },
   textview: {
     flexDirection: 'row',
@@ -74,6 +75,7 @@ export const TextInputComponent: React.FC<textInputComponentProps> = (props) => 
           onChangeText={props.onChangeText}
           underlineColorAndroid={props.underlineColorAndroid}
           autoCorrect={props.autoCorrect}
+          selectionColor={theme.colors.INPUT_CURSOR_COLOR}
           {...props.textInputprops}
         />
       )}

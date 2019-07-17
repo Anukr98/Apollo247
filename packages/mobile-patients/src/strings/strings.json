@@ -1,0 +1,185 @@
+{
+  "common": {
+    "add": "Add",
+    "availableNow": "AVAILABLE NOW",
+    "okay": "okay!",
+    "best_general_physicians_text": "Here are our best General Physicians",
+    "all_consults": "All Consults",
+    "distance": "Distance"
+  },
+  "login": {
+    "hello": "hello!",
+    "please_enter_no": "Please enter your mobile number to login",
+    "otp_sent_to": "OTP will be sent to this number",
+    "wrong_number": "This seems like a wrong number",
+    "numberPrefix": "+91",
+    "great": "great!",
+    "type_otp_text": "Now type in the OTP sent to you for authentication",
+    "resend_otp_text": "Type in the OTP that has been resent to your mobile number",
+    "resend_opt": "RESEND OTP",
+    "enter_correct_opt": "Please enter the correct OTP",
+    "welcome_text": "welcome\nto apollo 24/7",
+    "welcome_desc": "Let us quickly get to know you so that we can get you the best help :)",
+    "multi_signup_desc": "We have found 1 account registered with this mobile number. Please tell us who is who? :)",
+    "oops": "oops!",
+    "incorrect_otp_message": "You seem to have entered an incorrect OTP 3 times.",
+    "try_again": "Try again after  —  {0}",
+    "okay": "okay!",
+    "best_general_physicians_text": "Here are our best General Physicians",
+    "all_consults": "All Consults",
+    "distance": "Distance"
+  },
+  "home": {
+    "hi": "hi",
+    "description": "Are you not feeling well today?",
+    "consult_doctor": "CONSULT A DOCTOR",
+    "start_doctor_title": "Learn about Apollo Star Doctor Program",
+    "doctors_label": "Doctors",
+    "patients_enrolled_label": "Patients Enrolled",
+    "need_help": "Need Help?",
+    "arrayTest": [
+      {
+        "id": 1,
+        "title": "Are you looking for a particular doctor?",
+        "descripiton": "SEARCH SPECIALIST",
+        "image": "require('@aph/mobile-patients/src/images/home/doctor.png')"
+      },
+      {
+        "id": 2,
+        "title": "Do you want to buy some medicines?",
+        "descripiton": "SEARCH MEDICINE",
+        "image": "require('@aph/mobile-patients/src/images/home/medicine.png')"
+      },
+      {
+        "id": 3,
+        "title": "Do you want to get some tests done?",
+        "descripiton": "BOOK A TEST",
+        "image": "require('@aph/mobile-patients/src/images/home/test.png')"
+      }
+    ],
+    "startDoctor": [
+      {
+        "name": "Dr. Narayana Rao’s",
+        "status": "AVAILABLE",
+        "Program": "Star Cardiology Program",
+        "doctors": "09",
+        "Patients": "18"
+      },
+      {
+        "name": "Dr. Simran Rao",
+        "status": "AVAILABLE",
+        "Program": "Star Cardiology Program",
+        "doctors": "05",
+        "Patients": "20"
+      },
+      {
+        "name": "Dr. Sekhar Rao’s",
+        "status": "AVAILABLE",
+        "Program": "Star Cardiology Program",
+        "doctors": "12",
+        "Patients": "10"
+      }
+    ],
+    "welcome_popup": {
+      "title": "Congratulations! :)",
+      "description": "Welcome to the Apollo family. You can add more family members any time from ‘MyAccount’.",
+      "cta_label": "OK, GOT IT"
+    }
+  },
+  "consult_room": {
+    "specialities": [
+      {
+        "image": "",
+        "name": "General Physician",
+        "id": 1
+      },
+      {
+        "image": "",
+        "name": "Paediatrician",
+        "id": 2
+      },
+      {
+        "image": "",
+        "name": "Urologist",
+        "id": 3
+      },
+      {
+        "image": "",
+        "name": "Neurologist",
+        "id": 4
+      },
+      {
+        "image": "",
+        "name": "Urologist",
+        "id": 5
+      },
+      {
+        "image": "",
+        "name": "Neurologist",
+        "id": 6
+      }
+    ],
+    "description": "You have no consultations today :) Hope you are doing well?",
+    "things_to_do": {
+      "label": "Things To Do",
+      "data": [
+        {
+          "title": "Your Health Profile is just 30% complete. Update it now!",
+          "description": "UPDATE HEALTH PROFILE"
+        },
+        {
+          "title": "Add your family members and live a tension free life.",
+          "description": "ADD FAMILY MEMBER"
+        }
+      ]
+    },
+    "articles": {
+      "label": "Read a few articles on how to stay healthy",
+      "data": [
+        {
+          "image": "",
+          "title": "5 Simple Daily Yoga Exercises For Good Health!",
+          "link": ""
+        },
+        {
+          "image": "",
+          "title": "Study reveals how much fiber we should eat to prevent disease",
+          "link": ""
+        },
+        {
+          "image": "",
+          "title": "Common BP drug may increase cardiac arrest risk",
+          "link": ""
+        }
+      ]
+    }
+  },
+  "doctor_search_listing": {
+    "filter_data": [
+      {
+        "label": "City",
+        "options": ["Hyderabad", "Chennai"]
+      },
+      {
+        "label": "Experience In Years",
+        "options": ["0 - 5", "6 - 10", "11 - 15", "16+"]
+      },
+      {
+        "label": "Availability",
+        "options": ["Now", "Today", "Tomorrow", "Weekend", "Next 3 Days"]
+      },
+      {
+        "label": "Fees In Rupees",
+        "options": ["100 - 500", "500 - 1000", "1000 - 1500"]
+      },
+      {
+        "label": "Gender",
+        "options": ["Male", "Female"]
+      },
+      {
+        "label": "Language",
+        "options": ["Hindi", "English", "Telugu"]
+      }
+    ]
+  }
+}

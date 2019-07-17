@@ -1,7 +1,7 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { BackArrow, OkText, OkTextDisabled } from '@aph/mobile-patients/src/components/ui/Icons';
-import { string } from '@aph/mobile-patients/src/strings/string';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -341,8 +341,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           <Card
             key={1}
             cardContainer={{ marginTop: 0, height: 270 }}
-            heading={string.LocalStrings.oops}
-            description={string.LocalStrings.incorrect_otp_message}
+            heading={string.login.oops}
+            description={string.login.incorrect_otp_message}
             disableButton={isValidOTP ? false : true}
             descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 0 : 1 }}
           >
@@ -367,10 +367,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           <Card
             key={2}
             cardContainer={{ marginTop: 0, height: 270 }}
-            heading={string.LocalStrings.great}
-            description={
-              isresent ? string.LocalStrings.resend_otp_text : string.LocalStrings.type_otp_text
-            }
+            heading={string.login.great}
+            description={isresent ? string.login.resend_otp_text : string.login.type_otp_text}
             buttonIcon={isValidOTP && otp.length === 6 ? <OkText /> : <OkTextDisabled />}
             onClickButton={onClickOk}
             disableButton={isValidOTP && otp.length === 6 ? false : true}
@@ -405,7 +403,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             )}
             {
               <TouchableOpacity onPress={onClickResend}>
-                <Text style={styles.bottomDescription}>{string.LocalStrings.resend_opt}</Text>
+                <Text style={styles.bottomDescription}>{string.login.resend_opt}</Text>
               </TouchableOpacity>
             }
           </Card>

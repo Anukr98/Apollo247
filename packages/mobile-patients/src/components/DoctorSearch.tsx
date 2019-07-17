@@ -41,30 +41,18 @@ const styles = StyleSheet.create({
   },
   listView: {
     marginBottom: 8,
+    width: 'auto',
     backgroundColor: 'white',
-    shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    elevation: 6,
-    borderRadius: 10,
-    marginLeft: 20,
-    marginTop: 8,
+    shadowOffset: { width: 0, height: 5 },
+    marginHorizontal: 8,
   },
   rowTextStyles: {
     color: theme.colors.SEARCH_TITLE_COLOR,
-    paddingHorizontal: 14,
-    paddingVertical: 16,
+    paddingHorizontal: 12,
     ...theme.fonts.IBMPlexSansSemiBold(14),
   },
   listSpecialistView: {
-    borderRadius: 10,
-    shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    elevation: 6,
-    backgroundColor: 'white',
+    ...theme.viewStyles.cardViewStyle,
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 16,
@@ -97,7 +85,7 @@ const styles = StyleSheet.create({
     elevation: 15,
   },
   titleBtnStyles: {
-    color: '#0087ba',
+    color: theme.colors.SKY_BLUE,
   },
 });
 
@@ -267,13 +255,14 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           <FlatList
             contentContainerStyle={{
               flexWrap: 'wrap',
+              marginHorizontal: 12,
             }}
+            horizontal={true}
             bounces={false}
             data={pastSearches}
             onEndReachedThreshold={0.5}
             renderItem={({ item, index }) => renderRow(item, index)}
             keyExtractor={(_, index) => index.toString()}
-            numColumns={2}
           />
         </View>
       );
@@ -282,9 +271,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const renderRow = (rowData: pastSearches, rowID: number) => {
     return (
-      <View style={styles.listView}>
-        <Text style={styles.rowTextStyles}>{rowData.search.toUpperCase()}</Text>
-      </View>
+      <Button
+        title={rowData.search.toUpperCase()}
+        style={styles.listView}
+        titleTextStyle={styles.rowTextStyles}
+      />
     );
   };
 
@@ -317,7 +308,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     return (
       <TouchableOpacity
         onPress={() => onClickSearch()}
-        style={{ flex: 1, margin: 8 }}
+        style={{
+          flex: 1,
+          margin: 8,
+          marginTop: rowID === 0 || rowID === 1 ? 16 : 8,
+          marginBottom: Specialities.length === rowID + 1 ? 16 : 8,
+        }}
         activeOpacity={1}
       >
         <View style={styles.listSpecialistView}>
@@ -336,7 +332,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     if (needHelp) {
       return (
         <View style={styles.helpView}>
-          <Mascot style={{ height: 72, width: 72 }} />
+          <Mascot style={{ height: 80, width: 80 }} />
           <Button
             title="Need Help?"
             style={styles.needhelpbuttonStyles}
@@ -378,7 +374,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const renderSearchDoctorResultsRow = (rowData: doctorCardProps['rowData']) => {
-    return <DoctorCard rowData={rowData} />;
+    return <DoctorCard rowData={rowData} navigation={props.navigation} />;
   };
 
   return (
