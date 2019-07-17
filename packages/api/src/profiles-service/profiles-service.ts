@@ -13,13 +13,13 @@ import {
   updatePatientResolvers,
 } from 'profiles-service/resolvers/updatePatient';
 import { getPatientTypeDefs, getPatientResolvers } from 'profiles-service/resolvers/getPatients';
-import { GatewayContext, GatewayHeaders } from 'api-gateway';
 import gql from 'graphql-tag';
-import { AphAuthenticationError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { GatewayContext, GatewayHeaders } from 'api-gateway';
+// import { AphAuthenticationError } from 'AphError';
+// import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 
 export interface ProfilesServiceContext extends GatewayContext {
-  currentPatient: Patient;
+  currentPatient: Patient | null;
 }
 
 (async () => {
@@ -40,14 +40,16 @@ export interface ProfilesServiceContext extends GatewayContext {
   const server = new ApolloServer({
     context: async ({ req }) => {
       const headers = req.headers as GatewayHeaders;
-      const mobileNumber = headers.mobilenumber;
       const firebaseUid = headers.firebaseuid;
-      const currentPatient = await Patient.findOneOrFail({ where: { firebaseUid } }).catch(
-        (error) => {
-          throw new AphAuthenticationError(AphErrorMessages.NO_CURRENT_USER);
-        }
-      );
-      const context: ProfilesServiceContext = { mobileNumber, firebaseUid, currentPatient };
+      const mobileNumber = headers.mobilenumber;
+      // const isSignInQuery = req.query === 'getCurrentPatients';
+      // const currentPatient = isSignInQuery
+      //   ? null
+      //   : await Patient.findOneOrFail({ where: { firebaseUid } }).catch(() => {
+      //       throw new AphAuthenticationError(AphErrorMessages.NO_CURRENT_USER);
+      //     });
+      const currentPatient = null;
+      const context: ProfilesServiceContext = { firebaseUid, mobileNumber, currentPatient };
       return context;
     },
     schema: buildFederatedSchema([
