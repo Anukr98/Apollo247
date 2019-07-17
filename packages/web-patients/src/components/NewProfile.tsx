@@ -6,25 +6,27 @@ import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { Gender, Relation } from 'graphql/types/globalTypes';
 import React, { useState } from 'react';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import { isNameValid, isDateValid } from '@aph/universal/aphValidators';
-import isEmail from 'validator/lib/isEmail';
-import _includes from 'lodash/includes';
+import { isNameValid, isDateValid, isEmailValid } from '@aph/universal/aphValidators';
+import _isEmpty from 'lodash/isEmpty';
 import { UpdatePatient, UpdatePatientVariables } from 'graphql/types/UpdatePatient';
-import { Mutation } from 'react-apollo';
 import { UPDATE_PATIENT } from 'graphql/profiles';
 import { ProfileSuccess } from 'components/ProfileSuccess';
 import { parse, format } from 'date-fns';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
+import { Formik, FormikProps, Field, FieldProps, Form } from 'formik';
+import { useMutation } from 'react-apollo-hooks';
 
 const isoDatePattern = 'yyyy-MM-dd';
 const clientDatePattern = 'dd/MM/yyyy';
 
-export const convertClientDateToIsoDate = (ddmmyyyy: string) => {
+export const convertClientDateToIsoDate = (ddmmyyyy: string | null) => {
+  if (!ddmmyyyy) return null;
   const date = parse(ddmmyyyy, clientDatePattern, new Date());
   return format(date, isoDatePattern);
 };
 
-const convertIsoDateToClientDate = (isoDateStr: string) => {
+const convertIsoDateToClientDate = (isoDateStr: string | null) => {
+  if (!isoDateStr) return null;
   const date = parse(isoDateStr, isoDatePattern, new Date());
   return format(date, clientDatePattern);
 };
@@ -94,10 +96,10 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 30,
     },
     showMessage: {
-      display: 'block',
+      opacity: 1.0,
     },
     hideMessage: {
-      display: 'none',
+      opacity: 0,
     },
     btnActive: {
       backgroundColor: '#00b38e !important',
@@ -106,37 +108,26 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
+type Patient = GetCurrentPatients_getCurrentPatients_patients;
+
+interface FormValues {
+  firstName: Patient['firstName'];
+  lastName: Patient['lastName'];
+  dateOfBirth: Patient['dateOfBirth'];
+  emailAddress: Patient['emailAddress'];
+  gender: Patient['gender'];
+}
+
 export interface NewProfileProps {
-  patient: GetCurrentPatients_getCurrentPatients_patients;
+  patient: Patient;
   onClose: () => void;
 }
 
 export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const classes = useStyles();
   const { patient } = props;
-  const genders = Object.values(Gender);
-  const [firstName, setFirstName] = useState<string>(patient.firstName || '');
-  const [lastName, setLastName] = useState<string>(patient.lastName || '');
-  const [dateOfBirth, setDateOfBirth] = useState<string>(
-    patient.dateOfBirth ? convertIsoDateToClientDate(patient.dateOfBirth) : ''
-  );
-  const [emailAddress, setEmailAddress] = useState<string>(patient.emailAddress || '');
-  const [selectedGender, setGender] = useState<Gender | null>(patient.gender);
   const [showProfileSuccess, setShowProfileSuccess] = useState<boolean>(false);
-
-  const submitDisabled =
-    firstName.length > 2 &&
-    lastName.length > 2 &&
-    (dateOfBirth.length === 10 && isDateValid(dateOfBirth)) &&
-    (emailAddress.length === 0 || (emailAddress.length > 0 && isEmail(emailAddress))) &&
-    _includes(genders, selectedGender)
-      ? false
-      : true;
-
-  const showFirstNameError = firstName.length > 0 && !isNameValid(firstName);
-  const showLastNameError = lastName.length > 0 && !isNameValid(lastName);
-  const showDobError = dateOfBirth.length > 0 && !isDateValid(dateOfBirth);
-  const showEmailIdError = emailAddress.length > 0 && !isEmail(emailAddress);
+  const updatePatient = useMutation<UpdatePatient, UpdatePatientVariables>(UPDATE_PATIENT);
 
   if (showProfileSuccess) {
     return <ProfileSuccess onSubmitClick={() => props.onClose()} />;
@@ -144,135 +135,218 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
 
   return (
     <div className={classes.signUpPop}>
-      <div className={classes.mascotIcon}>
-        <img src={require('images/ic_mascot.png')} alt="" />
-      </div>
-      <div className={classes.customScrollBar}>
-        <div className={classes.signinGroup}>
-          <Typography variant="h2">
-            welcome <br /> to apollo 24/7
-          </Typography>
-          <p>Let us quickly get to know you so that we can get you the best help :)</p>
-          <div className={classes.formGroup}>
-            <FormControl className={classes.formControl} fullWidth>
-              <AphTextField
-                label="First Name"
-                placeholder="Example, Jonathan"
-                value={firstName}
-                error={showFirstNameError}
-                onChange={(e) => setFirstName(e.target.value)}
-                inputProps={{ maxLength: 20 }}
-              />
-              <FormHelperText
-                className={showFirstNameError ? classes.showMessage : classes.hideMessage}
-                component="div"
-                error={true}
-              >
-                Invalid first name
-              </FormHelperText>
-            </FormControl>
-            <FormControl className={classes.formControl} fullWidth>
-              <AphTextField
-                label="Last Name"
-                placeholder="Example, Donut"
-                value={lastName}
-                error={showLastNameError}
-                onChange={(e) => setLastName(e.target.value)}
-                inputProps={{ maxLength: 20 }}
-              />
-              <FormHelperText
-                className={showLastNameError ? classes.showMessage : classes.hideMessage}
-                component="div"
-                error={true}
-              >
-                Invalid last name
-              </FormHelperText>
-            </FormControl>
-            <FormControl className={classes.formControl} fullWidth>
-              <AphTextField
-                label="Date Of Birth"
-                placeholder="dd/mm/yyyy"
-                value={dateOfBirth}
-                error={showDobError}
-                onChange={(e) => setDateOfBirth(e.target.value)}
-                inputProps={{ type: 'text', maxLength: 10 }}
-              />
-              <FormHelperText
-                className={showDobError ? classes.showMessage : classes.hideMessage}
-                component="div"
-                error={true}
-              >
-                Invalid date of birth
-              </FormHelperText>
-            </FormControl>
-            <div className={classes.formControl}>
-              <label>Gender</label>
-              <Grid container spacing={2} className={classes.btnGroup}>
-                {Object.values(Gender).map((gender) => (
-                  <Grid item xs={4} sm={4} key={gender}>
-                    <AphButton
-                      variant="contained"
-                      value={gender}
-                      classes={selectedGender === gender ? { root: classes.btnActive } : {}}
-                      onClick={(e) => setGender(e.currentTarget.value as Gender)}
-                    >
-                      {gender}
-                    </AphButton>
-                  </Grid>
-                ))}
-              </Grid>
-            </div>
-            <FormControl className={classes.formControl} fullWidth>
-              <AphTextField
-                label="Email Address (Optional)"
-                placeholder="name@emailaddress.com"
-                value={emailAddress}
-                error={showEmailIdError}
-                onChange={(e) => setEmailAddress(e.target.value)}
-              />
-              <FormHelperText
-                className={showEmailIdError ? classes.showMessage : classes.hideMessage}
-                component="div"
-                error={true}
-              >
-                Invalid email address
-              </FormHelperText>
-            </FormControl>
-          </div>
-        </div>
-      </div>
-      <div className={classes.actions}>
-        <Mutation<UpdatePatient, UpdatePatientVariables>
-          mutation={UPDATE_PATIENT}
-          onCompleted={() => setShowProfileSuccess(true)}
-        >
-          {(mutate, { loading }) => (
-            <AphButton
-              fullWidth
-              disabled={submitDisabled}
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                mutate({
-                  variables: {
-                    patientInput: {
-                      id: patient.id,
-                      firstName: firstName,
-                      lastName: lastName,
-                      gender: selectedGender && Gender[selectedGender],
-                      dateOfBirth: convertClientDateToIsoDate(dateOfBirth),
-                      emailAddress,
-                      relation: Relation.ME,
-                    },
-                  },
-                });
-              }}
-            >
-              {loading ? <CircularProgress /> : 'Submit'}
-            </AphButton>
-          )}
-        </Mutation>
-      </div>
+      <Formik
+        initialValues={{
+          firstName: patient.firstName || '',
+          lastName: patient.lastName || '',
+          dateOfBirth: convertIsoDateToClientDate(patient.dateOfBirth) || '',
+          emailAddress: patient.emailAddress || '',
+          gender: patient.gender || null,
+        }}
+        onSubmit={(values) => {
+          return updatePatient({
+            variables: {
+              patientInput: {
+                id: patient.id,
+                firstName: values.firstName,
+                lastName: values.lastName,
+                gender: values.gender,
+                dateOfBirth: convertClientDateToIsoDate(values.dateOfBirth),
+                emailAddress: _isEmpty(values.emailAddress) ? null : values.emailAddress,
+                relation: Relation.ME,
+              },
+            },
+          })
+            .then(() => setShowProfileSuccess(true))
+            .catch((error) => {
+              console.error(error);
+              window.alert('Something went wrong :(');
+            });
+        }}
+        render={({
+          isSubmitting,
+          dirty,
+          touched,
+          errors,
+          values,
+          setFieldValue,
+          handleSubmit,
+        }: FormikProps<FormValues>) => {
+          const showError = (fieldName: keyof FormValues) =>
+            !_isEmpty(values[fieldName]) && touched[fieldName] && Boolean(errors[fieldName]);
+          const requiredFields: (keyof FormValues)[] = [
+            'firstName',
+            'lastName',
+            'dateOfBirth',
+            'gender',
+          ];
+          const submitIsDisabled =
+            !dirty ||
+            requiredFields.some((field) => _isEmpty(values[field]) || Boolean(errors[field]));
+          return (
+            <Form>
+              <div className={classes.mascotIcon}>
+                <img src={require('images/ic_mascot.png')} alt="" />
+              </div>
+              <div className={classes.customScrollBar}>
+                <div className={classes.signinGroup}>
+                  <Typography variant="h2">
+                    welcome <br /> to apollo 24/7
+                  </Typography>
+                  <p>Let us quickly get to know you so that we can get you the best help :)</p>
+                  <div className={classes.formGroup}>
+                    <Field
+                      name="firstName"
+                      validate={(name: string) =>
+                        isNameValid(name) ? undefined : 'Invalid first name'
+                      }
+                      render={({ field }: FieldProps<{ firstName: string }>) => (
+                        <FormControl className={classes.formControl} fullWidth>
+                          <AphTextField
+                            {...field}
+                            label="First Name"
+                            placeholder="Example, Jonathan"
+                            error={showError('firstName')}
+                            inputProps={{ maxLength: 20 }}
+                          />
+                          <FormHelperText
+                            className={
+                              showError('firstName') ? classes.showMessage : classes.hideMessage
+                            }
+                            component="div"
+                            error={true}
+                          >
+                            {errors.firstName}
+                          </FormHelperText>
+                        </FormControl>
+                      )}
+                    />
+
+                    <Field
+                      name="lastName"
+                      validate={(name: string) =>
+                        isNameValid(name) ? undefined : 'Invalid last name'
+                      }
+                      render={({ field }: FieldProps<{ firstName: string }>) => (
+                        <FormControl className={classes.formControl} fullWidth>
+                          <AphTextField
+                            {...field}
+                            label="Last Name"
+                            placeholder="Example, Donut"
+                            error={showError('lastName')}
+                            inputProps={{ maxLength: 20 }}
+                          />
+                          <FormHelperText
+                            className={
+                              showError('lastName') ? classes.showMessage : classes.hideMessage
+                            }
+                            component="div"
+                            error={true}
+                          >
+                            {errors.lastName}
+                          </FormHelperText>
+                        </FormControl>
+                      )}
+                    />
+
+                    <Field
+                      name="dateOfBirth"
+                      validate={(dob: string) =>
+                        isDateValid(dob) ? undefined : 'Invalid date of birth'
+                      }
+                      render={({ field }: FieldProps<{ firstName: string }>) => (
+                        <FormControl className={classes.formControl} fullWidth>
+                          <AphTextField
+                            {...field}
+                            label="Date Of Birth"
+                            placeholder="dd/mm/yyyy"
+                            error={showError('dateOfBirth')}
+                            inputProps={{ type: 'text', maxLength: 10 }}
+                          />
+                          <FormHelperText
+                            className={
+                              showError('dateOfBirth') ? classes.showMessage : classes.hideMessage
+                            }
+                            component="div"
+                            error={true}
+                          >
+                            {errors.dateOfBirth}
+                          </FormHelperText>
+                        </FormControl>
+                      )}
+                    />
+
+                    <Field
+                      name="gender"
+                      render={({ field }: FieldProps<{ gender: Gender }>) => (
+                        <FormControl className={classes.formControl}>
+                          <label>Gender</label>
+                          <Grid container spacing={2} className={classes.btnGroup}>
+                            {Object.values(Gender).map((gender) => (
+                              <Grid item xs={4} sm={4} key={gender}>
+                                <AphButton
+                                  variant="contained"
+                                  value={gender}
+                                  classes={
+                                    values.gender === gender ? { root: classes.btnActive } : {}
+                                  }
+                                  onClick={(e) =>
+                                    setFieldValue('gender', e.currentTarget.value as Gender)
+                                  }
+                                >
+                                  {gender}
+                                </AphButton>
+                              </Grid>
+                            ))}
+                          </Grid>
+                        </FormControl>
+                      )}
+                    />
+
+                    <Field
+                      name="emailAddress"
+                      validate={(email: string) =>
+                        _isEmpty(email) || isEmailValid(email) ? undefined : 'Invalid email address'
+                      }
+                      render={({ field }: FieldProps<{ emailAddress: string }>) => (
+                        <FormControl className={classes.formControl} fullWidth>
+                          <AphTextField
+                            {...field}
+                            label="Email Address (Optional)"
+                            placeholder="name@emailaddress.com"
+                            error={showError('emailAddress')}
+                          />
+                          <FormHelperText
+                            className={
+                              showError('emailAddress') ? classes.showMessage : classes.hideMessage
+                            }
+                            component="div"
+                            error={true}
+                          >
+                            {errors.emailAddress}
+                          </FormHelperText>
+                        </FormControl>
+                      )}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className={classes.actions}>
+                <AphButton
+                  fullWidth
+                  type="submit"
+                  disabled={submitIsDisabled}
+                  variant="contained"
+                  color="primary"
+                >
+                  {isSubmitting ? <CircularProgress /> : 'Submit'}
+                </AphButton>
+              </div>
+            </Form>
+          );
+        }}
+      />
     </div>
   );
 };
