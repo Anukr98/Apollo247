@@ -57,6 +57,7 @@ export const doctorTypeDefs = gql`
     getDoctors: [DoctorProfile]
     getDoctorProfile: DoctorProfile
     getDoctorProfileById(id: String): DoctorProfile
+    getDoctorsForStarDoctorProgram(searchString: String): [DoctorProfile]
   }
 `;
 
@@ -138,10 +139,24 @@ const getDoctorProfileById: Resolver<any, { id: String }> = async (
   return <DoctorProfile>doctor;
 };
 
+const getDoctorsForStarDoctorProgram: Resolver<any, { searchString: string }> = async (
+  parent,
+  args
+): Promise<JSON> => {
+  const result = DoctorsData.filter(
+    (obj) =>
+      obj.profile.firstName.match(args.searchString) &&
+      !obj.profile.isStarDoctor &&
+      obj.profile.inviteStatus !== 'accepted'
+  );
+  return JSON.parse(JSON.stringify(result));
+};
+
 export const doctorResolvers = {
   Query: {
     getDoctors,
     getDoctorProfile,
+    getDoctorsForStarDoctorProgram,
     getDoctorProfileById,
   },
 };
