@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface textInputComponentProps {
+export interface TextInputComponentProps {
   conatinerstyles?: StyleProp<ViewStyle>;
   label?: string;
   noInput?: boolean;
@@ -55,7 +55,7 @@ export interface textInputComponentProps {
   textInputprops?: TextInputProps;
 }
 
-export const TextInputComponent: React.FC<textInputComponentProps> = (props) => {
+export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => {
   return (
     <View style={[styles.mainveiw, props.conatinerstyles]}>
       {props.label && (
@@ -76,6 +76,7 @@ export const TextInputComponent: React.FC<textInputComponentProps> = (props) => 
           underlineColorAndroid={props.underlineColorAndroid}
           autoCorrect={props.autoCorrect}
           selectionColor={theme.colors.INPUT_CURSOR_COLOR}
+          underlineColorAndroid="rgba(0,0,0,0)"
           {...props.textInputprops}
         />
       )}

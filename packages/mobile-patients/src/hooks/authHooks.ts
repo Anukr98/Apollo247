@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { AuthContext, AuthContextProps } from '@aph/mobile-patients/src/components/AuthProvider';
+import { AuthContext } from '@aph/mobile-patients/src/components/AuthProvider';
 
 const useAuthContext = () => useContext(AuthContext);
 
@@ -26,14 +26,7 @@ export const useAuth = () => {
   const isSigningIn = useAuthContext().isSigningIn;
   const signOut = useAuthContext().signOut!;
 
-  const signInWithPhoneNumber = useAuthContext().signInWithPhoneNumber!;
-
   const analytics = useAnalytics();
-  const confirmResult = useAuthContext().confirmResult!;
-  const authProvider = useAuthContext().authProvider!;
-  const authError = useAuthContext().authError!;
-  const setAuthError = useAuthContext().setAuthError!;
-  const updatePatient = useAuthContext().updatePatient!;
 
   return {
     currentPatient,
@@ -53,14 +46,6 @@ export const useAuth = () => {
     isSigningIn,
     signOut,
 
-    signInWithPhoneNumber,
-
     analytics,
-    confirmResult,
-
-    authProvider,
-    authError,
-    setAuthError,
-    updatePatient,
   };
 };

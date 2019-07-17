@@ -52,19 +52,19 @@ type rightText = {
   onPress?: TextProps['onPress'];
 };
 
-export interface headerProps {
+export interface HeaderProps {
   leftText?: leftText;
   rightText?: rightText;
   title?: string;
   leftIcon?: string;
   rightIcon?: string;
-  rightComponent?: React.ReactNode;
+  rightComponent?: any;
   container?: StyleProp<ViewStyle>;
   onPress?: TouchableOpacityProps['onPress'];
   onPressLeftIcon?: TouchableOpacityProps['onPress'];
 }
 
-export const Header: React.FC<headerProps> = (props) => {
+export const Header: React.FC<HeaderProps> = (props) => {
   const { rightText, title, leftIcon, rightIcon } = props;
 
   return (

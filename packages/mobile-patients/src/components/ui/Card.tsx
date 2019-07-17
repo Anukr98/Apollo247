@@ -4,11 +4,11 @@ import {
   StyleProp,
   StyleSheet,
   Text,
+  TextStyle,
   TouchableOpacity,
   TouchableOpacityProps,
   View,
   ViewStyle,
-  TextStyle,
 } from 'react-native';
 
 const styles = StyleSheet.create({

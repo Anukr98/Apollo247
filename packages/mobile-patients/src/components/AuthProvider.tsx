@@ -1,34 +1,27 @@
-import { InMemoryCache } from 'apollo-cache-inmemory';
-import { ApolloClient } from 'apollo-client';
-import { setContext } from 'apollo-link-context';
-import { ErrorResponse, onError } from 'apollo-link-error';
-import { createHttpLink } from 'apollo-link-http';
-import firebase, { RNFirebase, AuthCredential } from 'react-native-firebase';
-import { PATIENT_SIGN_IN, UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
+import { PATIENT_SIGN_IN } from '@aph/mobile-patients/src/graphql/profiles';
+import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   PatientSignIn,
   PatientSignInVariables,
   PatientSignIn_patientSignIn_patients,
 } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
-import {
-  updatePatient_updatePatient_patient,
-  updatePatient,
-  updatePatientVariables,
-} from '@aph/mobile-patients/src/graphql/types/updatePatient';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { ApolloClient } from 'apollo-client';
+import { setContext } from 'apollo-link-context';
+import { onError } from 'apollo-link-error';
+import { createHttpLink } from 'apollo-link-http';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
-import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AsyncStorage } from 'react-native';
+import firebase, { RNFirebase } from 'react-native-firebase';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
 }
 
-export interface AuthContextProps<
-  Patient = PatientSignIn_patientSignIn_patients | updatePatient_updatePatient_patient
-> {
+export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients> {
   analytics: RNFirebase.Analytics | null;
 
   currentPatient: Patient | null;
@@ -46,12 +39,6 @@ export interface AuthContextProps<
   signInError: boolean;
   isSigningIn: boolean;
   signOut: (() => Promise<void>) | null;
-
-  authError: boolean;
-  setAuthError: ((authError: boolean) => void) | null;
-  updatePatient: ((patientDetails: updatePatient_updatePatient_patient) => Promise<unknown>) | null;
-
-  authProvider: (() => Promise<unknown>) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -72,22 +59,20 @@ export const AuthContext = React.createContext<AuthContextProps>({
   signOut: null,
 
   analytics: null,
-
-  authError: false,
-  setAuthError: null,
-
-  updatePatient: null,
-  authProvider: null,
 });
 
 let apolloClient: ApolloClient<any>;
-const buildApolloClient = (authToken: string, failureFunction: () => void) => {
-  const errorLink = onError(({ networkError, operation, forward }: ErrorResponse) => {
-    // There's a bug in the apollo typedefs and `statusCode` is not recognized, but it's there
-    if (networkError && (networkError as any).statusCode === 401) {
-      console.log(networkError, operation);
+const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
+  const errorLink = onError((error) => {
+    const { graphQLErrors, operation, forward } = error;
+    if (graphQLErrors) {
+      const unauthenticatedError = graphQLErrors.some(
+        (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
+      );
+      if (unauthenticatedError) {
+        handleUnauthenticated();
+      }
     }
-    failureFunction();
     return forward(operation);
   });
   const authLink = setContext((_, { headers }) => ({
@@ -105,8 +90,7 @@ export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
   const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
 
-  const failureFunction = () => setAuthError(true);
-  apolloClient = buildApolloClient(authToken, failureFunction);
+  apolloClient = buildApolloClient(authToken, () => signOut());
 
   const [allCurrentPatients, setAllCurrentPatients] = useState<
     AuthContextProps['allCurrentPatients']
@@ -119,7 +103,7 @@ export const AuthProvider: React.FC = (props) => {
   const [isVerifyingOtp, setIsVerifyingOtp] = useState<AuthContextProps['isVerifyingOtp']>(false);
   const [verifyOtpError, setVerifyOtpError] = useState<AuthContextProps['verifyOtpError']>(false);
 
-  const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(true);
+  const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(false);
   const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
   const [authError, setAuthError] = useState<AuthContextProps['authError']>(false);
 
@@ -165,108 +149,23 @@ export const AuthProvider: React.FC = (props) => {
 
   const signOut = () => auth.signOut();
 
-  const updatePatient = (patientDetails: updatePatient_updatePatient_patient) => {
-    return new Promise(async (resolve, reject) => {
-      console.log('patientDetails', patientDetails);
-      const [patientUpdateResult, patientUpdateError] = await wait(
-        apolloClient.mutate<updatePatient, updatePatientVariables>({
-          mutation: UPDATE_PATIENT,
-          variables: { patientInput: patientDetails },
-        })
-      );
-
-      if (
-        patientUpdateError ||
-        !patientUpdateResult.data ||
-        !patientUpdateResult.data.updatePatient.patient
-      ) {
-        if (patientUpdateError) console.error(patientUpdateError);
-        reject(patientUpdateResult);
-        return;
-      }
-
-      if (patientUpdateResult.data && patientUpdateResult.data.updatePatient.patient) {
-        const patient = patientUpdateResult.data.updatePatient.patient;
-        resolve(patient);
-      } else {
-        reject(patientUpdateResult);
-      }
-    });
-  };
-
-  const PatientSignIn = async () => {};
-  const authProvider = async () => {
-    // return new Promise((resolve, reject) => {
-    //   let authFlag = true;
-    //   auth.onAuthStateChanged(async (user) => {
-    //     if (authFlag) {
-    //       console.log('if ---> ');
-    //       authFlag = false;
-    //       if (user) {
-    //         const [jwt, jwtError] = await wait(user.getIdToken());
-    //         if (jwtError || !jwt) {
-    //           if (jwtError) console.error(jwtError);
-    //           setIsSigningIn(false);
-    //           setSignInError(true);
-    //           signOut();
-    //           reject(jwtError);
-    //           return;
-    //         }
-    //         if (authToken.length == 0) {
-    //           console.log('authToken ---> ', authToken);
-    //         }
-    //         setAuthToken(jwt);
-    //         console.log('authProvider authProvider me', jwt);
-    //         setIsSigningIn(true);
-    //         const [signInResult, signInError] = await wait(
-    //           apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
-    //             mutation: PATIENT_SIGN_IN,
-    //             variables: { jwt },
-    //           })
-    //         );
-    //         if (signInError || !signInResult.data || !signInResult.data.patientSignIn.patients) {
-    //           if (signInError) console.error(signInError);
-    //           setSignInError(true);
-    //           setIsSigningIn(false);
-    //           reject(signInResult);
-    //           return;
-    //         }
-    //         const patients = signInResult.data.patientSignIn.patients;
-    //         const me = patients.find((p) => p.relation === Relation.ME) || patients[0];
-    //         setAllCurrentPatients(patients);
-    //         setCurrentPatient(me);
-    //         setSignInError(false);
-    //         resolve(me);
-    //         console.log('authProvider authProvider me', me);
-    //       } else {
-    //         console.log('else ---> ');
-    //         setIsSigningIn(false);
-    //         reject();
-    //       }
-    //     } else {
-    //       console.log('else if---> ');
-    //     }
-    //   });
-    // });
-  };
-
   useEffect(() => {
     setAnalytics(firebase.analytics());
-    let authFlag = true;
+    let authStateRegistered = false;
 
     auth.onAuthStateChanged(async (user) => {
-      console.log('if ---> user', user);
-      // if (authFlag) {
-      authFlag = false;
-      console.log('authprovider');
-      if (user) {
+      console.log('authStateChanged', authStateRegistered, user);
+
+      if (user && !authStateRegistered) {
+        authStateRegistered = true;
+        console.log('fetching jwt');
         const [jwt, jwtError] = await wait(user.getIdToken());
         if (jwtError || !jwt) {
           console.log('authprovider jwtError', jwtError);
           if (jwtError) console.error(jwtError);
+          authStateRegistered = false;
           setIsSigningIn(false);
           setSignInError(true);
-          auth.signOut();
           return;
         }
         setAuthToken(jwt);
@@ -281,9 +180,10 @@ export const AuthProvider: React.FC = (props) => {
         );
         if (signInError || !signInResult.data || !signInResult.data.patientSignIn.patients) {
           if (signInError) console.error(signInError);
+          authStateRegistered = false;
           setSignInError(true);
           setIsSigningIn(false);
-          auth.signOut();
+          console.log('authprovider signInError', signInError);
           return;
         }
         const patients = signInResult.data.patientSignIn.patients;
@@ -292,18 +192,13 @@ export const AuthProvider: React.FC = (props) => {
         setCurrentPatient(me);
         setSignInError(false);
         console.log('authprovider me', me);
-      } else {
-        console.log('else ----> me');
         setIsSigningIn(false);
         AsyncStorage.setItem('userLoggedIn', 'false');
         AsyncStorage.setItem('signUp', 'false');
         AsyncStorage.setItem('multiSignUp', 'false');
       }
-      // } else {
-      //   console.log('else if ----> me');
-      // }
     });
-  }, []);
+  }, [auth]);
 
   return (
     <ApolloProvider client={apolloClient}>
@@ -327,13 +222,6 @@ export const AuthProvider: React.FC = (props) => {
             signOut,
 
             analytics,
-
-            authError,
-            setAuthError,
-
-            updatePatient,
-
-            authProvider,
           }}
         >
           {props.children}

@@ -83,18 +83,12 @@ let didBlurSubscription: any;
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const { analytics, authError, setAuthError, sendOtp, isSendingOtp } = useAuth();
+  const { analytics, sendOtp, isSendingOtp } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<any>();
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
-    if (authError) {
-      setVerifyingPhonenNumber(false);
-      setAuthError(false);
-      Alert.alert('Error', 'Unable to connect the server at the moment.');
-    }
-  }, [authError, analytics]);
+  }, [, analytics]);
 
   const requestReadSmsPermission = async () => {
     try {
@@ -136,7 +130,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     didBlurSubscription = props.navigation.addListener('didBlur', (payload) => {
       setPhoneNumber('');
     });
-  }, [subscriptionId]);
+  }, [props.navigation, subscriptionId]);
 
   useEffect(() => {
     return () => {
@@ -254,7 +248,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           </Text>
         </Card>
       </SafeAreaView>
-      {verifyingPhoneNumber || isSendingOtp ? (
+      {isSendingOtp ? (
         <View
           style={{
             position: 'absolute',
@@ -269,11 +263,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             bottom: 0,
           }}
         >
-          <ActivityIndicator
-            animating={verifyingPhoneNumber || isSendingOtp}
-            size="large"
-            color="green"
-          />
+          <ActivityIndicator animating={isSendingOtp} size="large" color="green" />
         </View>
       ) : null}
     </View>

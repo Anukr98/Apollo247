@@ -1,32 +1,25 @@
-import { DoctorCard, doctorCardProps } from '@aph/mobile-patients/src/components/ui/DoctorCard';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { DoctorCard, DoctorCardProps } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  DoctorImage,
-  DropdownGreen,
-  Filter,
-  LocationOff,
-  Reload,
-  SortIncreasing,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { DoctorImage, Filter, LocationOff } from '@aph/mobile-patients/src/components/ui/Icons';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
+import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import axios from 'axios';
 import React, { useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
   SectionList,
+  SectionListData,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  SectionListData,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { Card } from '@aph/mobile-patients/src/components/ui/Card';
-import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import axios from 'axios';
 
 const styles = StyleSheet.create({
   topView: {
@@ -219,7 +212,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     );
   };
 
-  const renderSearchDoctorResultsRow = (rowData: doctorCardProps['rowData']) => {
+  const renderSearchDoctorResultsRow = (rowData: DoctorCardProps['rowData']) => {
     return <DoctorCard rowData={rowData} navigation={props.navigation} />;
   };
 

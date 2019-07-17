@@ -1,33 +1,29 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import {
-  DoctorImage,
-  DoctorPlaceholder,
-  DropdownGreen,
-  Mascot,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { DoctorImage, DropdownGreen, Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
+import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
+import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
+  AsyncStorage,
   Dimensions,
   Image,
+  ImageSourcePropType,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  AsyncStorage,
-  Platform,
-  Alert,
-  ImageSourcePropType,
+  View,
 } from 'react-native';
+import firebase from 'react-native-firebase';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import firebase from 'react-native-firebase';
-import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { width, height } = Dimensions.get('window');
 
@@ -230,16 +226,6 @@ const arrayTest: ArrayTest[] = [
 //   },
 // ];
 
-type currentProfiles = {
-  firstName: string | null;
-  id: string;
-  lastName: string | null;
-  mobileNumber: string | null;
-  gender: string | null;
-  uhid: string | null;
-  relation: string | null;
-};
-
 export interface ConsultRoomProps extends NavigationScreenProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   // const arrayTest = string.home.arrayTest;
@@ -282,7 +268,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }
   fetchFirebase();
 
-  analytics.setCurrentScreen(AppRoutes.ConsultRoom);
+  // analytics.setCurrentScreen(AppRoutes.ConsultRoom);
 
   useEffect(() => {
     let userName =
@@ -290,39 +276,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     userName = userName.toLowerCase();
     setuserName(userName);
 
-    async function fetchFirebase() {
-      if (!userName) {
-        console.log('else');
-
-        // if (!firebaseCalled) {
-        //   firebase.auth().onAuthStateChanged(async (updatedUser) => {
-        //     if (updatedUser) {
-        //       const token = await updatedUser!.getIdToken();
-        //       const patientSign = await callApiWithToken(token);
-        //       const patient = patientSign.data.patientSignIn.patients[0];
-        //       const errMsg =
-        //         patientSign.data.patientSignIn.errors &&
-        //         patientSign.data.patientSignIn.errors.messages[0];
-
-        //       console.log('patient', patient);
-        //       setFirebaseCalled(true);
-
-        //       setTimeout(() => {
-        //         if (errMsg) {
-        //           Alert.alert('Error', errMsg);
-        //         } else {
-        //         }
-        //       }, 1000);
-        //     } else {
-        //       console.log('no new user');
-        //     }
-        //   });
-        // }
-      }
-    }
-    fetchFirebase();
-
-    analytics.setCurrentScreen(AppRoutes.ConsultRoom);
+    // analytics.setCurrentScreen(AppRoutes.ConsultRoom);
   }, [currentPatient, allCurrentPatients, analytics, userName, props.navigation.state.params]);
 
   useEffect(() => {
@@ -373,7 +327,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }}
       >
         {allCurrentPatients &&
-          allCurrentPatients.map((profile: currentProfiles, i: number) => (
+          allCurrentPatients.map((profile: PatientSignIn_patientSignIn_patients, i: number) => (
             <View style={styles.textViewStyle} key={i}>
               <Text
                 style={[

@@ -1,7 +1,7 @@
-import { Mascot } from './Icons';
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { theme } from '../../theme/theme';
+import { Mascot } from './Icons';
 
 const styles = StyleSheet.create({
   showPopUp: {
@@ -38,13 +38,13 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface buttonProps {
+export interface ButtonProps {
   title?: string;
   description?: string;
   children?: React.ReactNode;
 }
 
-export const BottomPopUp: React.FC<buttonProps> = (props) => {
+export const BottomPopUp: React.FC<ButtonProps> = (props) => {
   return (
     <View style={styles.showPopUp}>
       <View style={styles.subViewPopup}>

@@ -108,7 +108,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
 };
 
 const stackConfig: StackNavigatorConfig = {
-  initialRouteName: AppRoutes.SplashScreen,
+  initialRouteName: AppRoutes.TabBar,
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   transitionConfig: () => {

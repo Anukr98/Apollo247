@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, AsyncStorage, Platform, ActivityIndicator, Alert } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, View, AsyncStorage, Platform, ActivityIndicator } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -19,16 +19,7 @@ const styles = StyleSheet.create({
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { currentPatient, authError, isSigningIn, authProvider } = useAuth();
-  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-
-  useEffect(() => {
-    console.log('authError Login', authError);
-    if (authError) {
-      setVerifyingPhonenNumber(false);
-      props.navigation.replace(AppRoutes.Onboarding);
-    }
-  }, [authError, props.navigation]);
+  const { currentPatient, isSigningIn } = useAuth();
 
   useEffect(() => {
     console.log('SplashScreen currentUser', currentPatient);

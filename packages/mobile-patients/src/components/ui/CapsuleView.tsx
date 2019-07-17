@@ -3,10 +3,10 @@ import {
   StyleProp,
   StyleSheet,
   Text,
-  TouchableOpacity,
-  ViewStyle,
-  TouchableOpacityProps,
   TextStyle,
+  TouchableOpacity,
+  TouchableOpacityProps,
+  ViewStyle,
 } from 'react-native';
 import { theme } from '../../theme/theme';
 

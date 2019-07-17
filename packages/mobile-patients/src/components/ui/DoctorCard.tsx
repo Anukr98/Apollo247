@@ -103,13 +103,13 @@ type rowData = {
   time: string;
 };
 
-export interface doctorCardProps extends NavigationScreenProps {
+export interface DoctorCardProps extends NavigationScreenProps {
   rowData: rowData;
   displayButton?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
-export const DoctorCard: React.FC<doctorCardProps> = (props) => {
+export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
   console.log(rowData, 'rowData');
   return (

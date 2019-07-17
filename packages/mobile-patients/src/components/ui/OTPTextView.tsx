@@ -19,7 +19,6 @@ const styles = StyleSheet.create({
 
 export interface OTPTextViewProps {
   defaultValue?: string;
-  cellTextLength?: number;
   inputCount?: number;
   offTintColor?: string;
   tintColor?: string;
@@ -31,12 +30,11 @@ export interface OTPTextViewProps {
 
 export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
   const [focusedInput, setFocusedInput] = useState<number>(0);
-  const [otpText, setotpText] = useState<Array<string>>([]);
+  const [otpText, setotpText] = useState<string[]>([]);
   const arrayRef = useRef([]);
 
   const {
     defaultValue,
-    cellTextLength,
     inputCount = 4,
     offTintColor,
     tintColor,
@@ -51,7 +49,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
     if (otpText.length === 0) {
       arrayRef.current && arrayRef.current[0].focus();
     }
-  }, []);
+  }, [otpText.length]);
 
   useEffect(() => {
     console.log(value, 'value');
@@ -66,7 +64,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
   }, [value]);
 
   const onTextChange = (text: string, i: number) => {
-    const { cellTextLength, inputCount, handleTextChange } = props;
+    const { inputCount = 4, handleTextChange } = props;
     if (text.match(/[0-9]/)) {
       otpText[i] = text;
       setotpText(otpText);

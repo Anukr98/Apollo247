@@ -23,6 +23,12 @@ import { MenuProvider } from 'react-native-popup-menu';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  updatePatientVariables,
+  updatePatient,
+} from '@aph/mobile-patients/src/graphql/types/updatePatient';
+import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
+import { Mutation } from 'react-apollo';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -100,7 +106,7 @@ export interface MultiSignupProps extends NavigationScreenProps {}
 export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [relationIndex, setRelationIndex] = useState<number>(0);
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const { currentPatient, analytics, allCurrentPatients, updatePatient } = useAuth();
+  const { currentPatient, analytics, allCurrentPatients } = useAuth();
   const [profiles, setProfiles] = useState<any>([]);
   const [discriptionText, setDiscriptionText] = useState<string>('');
   const [showText, setShowText] = useState<boolean>(false);
@@ -109,7 +115,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   useEffect(() => {
     setProfiles(allCurrentPatients ? allCurrentPatients : []);
     AsyncStorage.setItem('multiSignUp', 'true');
-  }, []);
+  }, [allCurrentPatients]);
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.MultiSignup);
@@ -301,38 +307,44 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const renderButtons = () => {
     return (
       <StickyBottomComponent>
-        <Button
-          style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
-          title={'SUBMIT'}
-          disabled={isDisabled()}
-          onPress={async () => {
-            setVerifyingPhonenNumber(true);
+        <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
+          {(mutate, { loading, data, error }) => (
+            <Button
+              style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
+              title={'SUBMIT'}
+              disabled={isDisabled()}
+              onPress={async () => {
+                setVerifyingPhonenNumber(true);
 
-            profiles.forEach(async (profile: any) => {
-              const patientsDetails: updatePateint = {
-                id: profile.id || '',
-                relation: profile.relation.toUpperCase() || '',
-              };
-              console.log('patientsDetails', patientsDetails);
-
-              updatePatient(patientsDetails)
-                .then((updatePatient) => {
-                  setVerifyingPhonenNumber(false);
-                  console.log('updatePatient', updatePatient);
-                  AsyncStorage.setItem('userLoggedIn', 'true');
-                  AsyncStorage.setItem('multiSignUp', 'false');
-                  AsyncStorage.setItem('gotIt', 'false');
-                  props.navigation.navigate(AppRoutes.TabBar);
-                })
-                .catch((error) => {
-                  setVerifyingPhonenNumber(false);
-                  const errMsg =
-                    error.data.updatePatient.errors && error.data.updatePatient.errors.messages[0];
-                  Alert.alert('Error', errMsg);
+                profiles.forEach(async (profile: any) => {
+                  const patientsDetails: updatePateint = {
+                    id: profile.id || '',
+                    relation: profile.relation.toUpperCase() || '',
+                  };
+                  console.log('patientsDetails', patientsDetails);
+                  mutate({
+                    variables: {
+                      patientInput: patientsDetails,
+                    },
+                  });
                 });
-            });
-          }}
-        />
+              }}
+            >
+              {data
+                ? (setVerifyingPhonenNumber(false),
+                  console.log('updatePatient', data),
+                  AsyncStorage.setItem('userLoggedIn', 'true'),
+                  AsyncStorage.setItem('multiSignUp', 'false'),
+                  AsyncStorage.setItem('gotIt', 'false'),
+                  props.navigation.navigate(AppRoutes.TabBar))
+                : null}
+              {loading ? setVerifyingPhonenNumber(false) : setVerifyingPhonenNumber(false)}
+              {error
+                ? (setVerifyingPhonenNumber(false), console.log('updatePatient error', error))
+                : setVerifyingPhonenNumber(false)}
+            </Button>
+          )}
+        </Mutation>
       </StickyBottomComponent>
     );
   };

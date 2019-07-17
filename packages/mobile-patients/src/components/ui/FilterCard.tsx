@@ -1,16 +1,11 @@
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import React, { useState, useEffect } from 'react';
+import { CalendarClose, CalendarShow } from '@aph/mobile-patients/src/components/ui/Icons';
+import React, { useEffect, useState } from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { Calendar } from 'react-native-calendars';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../../theme/theme';
-import { TouchableOpacity } from 'react-native-gesture-handler';
-import {
-  Remove,
-  MyHealth,
-  CalendarShow,
-  CalendarClose,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import { Calendar } from 'react-native-calendars';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -60,7 +55,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface filterCardProps extends NavigationScreenProps {
+export interface FilterCardProps extends NavigationScreenProps {
   cardContainer?: StyleProp<ViewStyle>;
   data: {
     label: string;
@@ -70,7 +65,7 @@ export interface filterCardProps extends NavigationScreenProps {
   updateData: (data: any) => void;
 }
 
-export const FilterCard: React.FC<filterCardProps> = (props) => {
+export const FilterCard: React.FC<FilterCardProps> = (props) => {
   const [showCalander, setshowCalander] = useState<boolean>(false);
   const today = new Date().toISOString().slice(0, 10);
   const [dateSelected, setdateSelected] = useState<object>({
@@ -90,7 +85,7 @@ export const FilterCard: React.FC<filterCardProps> = (props) => {
 
   return (
     <View style={{ marginVertical: 20 }}>
-      {data.map(({ label, options, selectedOptions = [] }, index) => (
+      {data.map(({ label, options, selectedOptions = [] }, index: number) => (
         <View style={[styles.cardContainer, props.cardContainer]}>
           <View style={styles.labelView}>
             <Text style={styles.leftText}>{label}</Text>
@@ -142,7 +137,7 @@ export const FilterCard: React.FC<filterCardProps> = (props) => {
             />
           ) : (
             <View style={styles.optionsView}>
-              {options.map((name, index: number) => (
+              {options.map((name: string, i: number) => (
                 <Button
                   title={name}
                   style={[

@@ -1,29 +1,25 @@
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import {
+  Afternoon,
+  AfternoonUnselected,
+  CrossPopup,
+  DropdownGreen,
+  Evening,
+  EveningUnselected,
+  Location,
+  Morning,
+  MorningUnselected,
+  Night,
+  NightUnselected,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { Dimensions, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { Overlay } from 'react-native-elements';
-import { NavigationScreenProps } from 'react-navigation';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { ScrollView } from 'react-native-gesture-handler';
-import { FilterCard } from '@aph/mobile-patients/src/components/ui/FilterCard';
-import {
-  DropdownGreen,
-  LocationOff,
-  Remove,
-  CrossPopup,
-  Morning,
-  MorningUnselected,
-  Afternoon,
-  AfternoonUnselected,
-  Evening,
-  EveningUnselected,
-  Night,
-  NightUnselected,
-  Location,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { NavigationScreenProps } from 'react-navigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -72,8 +68,10 @@ const styles = StyleSheet.create({
 });
 
 export interface ConsultOverlayProps extends NavigationScreenProps {
-  dispalyoverlay: boolean;
+  // dispalyoverlay: boolean;
   setdispalyoverlay: (arg0: boolean) => void;
+  // setdispalyoverlay: () => void;
+  navigation: any;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const tabs = ['Consult Online', 'Visit Clinic'];
@@ -236,7 +234,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     );
   };
 
-  console.log(timeArray, 'timeArray', timeArray[selectedtiming]);
   return (
     <View
       style={{

@@ -1,17 +1,14 @@
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { FilterCard } from '@aph/mobile-patients/src/components/ui/FilterCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { CalendarClose, CalendarShow, Reload } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
-import { Dimensions, SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import firebase from 'react-native-firebase';
+import React, { useState } from 'react';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Calendar } from 'react-native-calendars';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { Reload, CalendarShow, CalendarClose } from '@aph/mobile-patients/src/components/ui/Icons';
-import strings from '@aph/mobile-patients/src/strings/strings.json';
-import { Calendar } from 'react-native-calendars';
-import console = require('console');
 
 const styles = StyleSheet.create({
   container: {
@@ -222,7 +219,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   return (
     <SafeAreaView style={styles.container}>
       {renderTopView()}
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1 }} bounces={false}>
         {filterCardsView()}
         <View style={{ height: 80 }} />
       </ScrollView>

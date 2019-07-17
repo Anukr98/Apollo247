@@ -1,27 +1,17 @@
+import { ConsultOverlay } from '@aph/mobile-patients/src/components/ConsultOverlay';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
+import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { DoctorImage, ShareWhite } from '@aph/mobile-patients/src/components/ui/Icons';
-import string from '@aph/mobile-patients/src/strings/strings.json';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import {
-  Image,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  TouchableHighlight,
-  Dimensions,
-} from 'react-native';
+import { Dimensions, Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { NavigationScreenProps, SectionList, FlatList } from 'react-navigation';
-import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
-import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Overlay } from 'react-native-elements';
-import { ConsultOverlay } from '@aph/mobile-patients/src/components/ConsultOverlay';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   topView: {
@@ -51,9 +41,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   doctorLocation: {
-    // marginBottom: 16,
-    // paddingTop: 2,
-    // paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
     letterSpacing: 0.3,
@@ -71,7 +58,6 @@ const styles = StyleSheet.create({
     width: '100%',
     marginVertical: 8,
     ...theme.viewStyles.cardContainer,
-    // backgroundColor: 'white',
   },
   labelView: {
     flexDirection: 'row',
@@ -303,15 +289,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <Text style={styles.labelStyle}>{doctorDetails.nickName}’s Star Doctor Team</Text>
           <Text style={styles.labelStyle}>{DoctorsList.length} Doctors</Text>
         </View>
-        <ScrollView
-          horizontal
-          style={
-            {
-              // padding: 12,
-            }
-          }
-          bounces={false}
-        >
+        <ScrollView horizontal bounces={false}>
           <FlatList
             contentContainerStyle={{ padding: 12 }}
             // horizontal={true}
@@ -436,7 +414,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
       {dispalyoverlay && (
         <ConsultOverlay
-          // dispalyoverlay={dispalyoverlay}
           setdispalyoverlay={() => setdispalyoverlay(false)}
           navigation={props.navigation}
         />

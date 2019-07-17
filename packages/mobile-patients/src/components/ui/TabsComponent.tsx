@@ -27,9 +27,23 @@ const styles = StyleSheet.create({
 });
 
 export interface TabsComponentProps extends NavigationScreenProps {
-  data: string[];
+  data:
+    | string
+    | {
+        title: string;
+        selectedIcon: any;
+        unselectedIcon: any;
+      }[];
   selectedTab: string;
-  onChange: (selectedTab: string) => any;
+  onChange: (
+    title:
+      | string
+      | {
+          title: string;
+          selectedIcon?: any;
+          unselectedIcon?: any;
+        }
+  ) => any;
   style?: StyleProp<ViewStyle>;
   showIcons?: boolean;
 }

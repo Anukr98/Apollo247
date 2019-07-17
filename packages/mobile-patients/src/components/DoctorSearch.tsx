@@ -263,6 +263,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             onEndReachedThreshold={0.5}
             renderItem={({ item, index }) => renderRow(item, index)}
             keyExtractor={(_, index) => index.toString()}
+            showsHorizontalScrollIndicator={false}
           />
         </View>
       );
@@ -380,7 +381,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
       {renderSearch(styles)}
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1 }} bounces={false}>
         {renderPastSearch(styles)}
         {renderSpecialist(styles)}
         {renderHelpView(styles)}

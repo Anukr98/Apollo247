@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, StyleProp, ViewStyle, StyleSheet, Dimensions } from 'react-native';
+import { Dimensions, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { theme } from '../../theme/theme';
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -14,7 +14,6 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     backgroundColor: theme.colors.WHITE,
     height: height === 812 || height === 896 ? 80 : 70,
-    // alignItems: 'center',
     paddingHorizontal: 20,
     shadowColor: theme.colors.WHITE,
     shadowOffset: { width: 0, height: -5 },
@@ -24,14 +23,14 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface stickyBottomProps {
+export interface StickyBottomProps {
   style?: StyleProp<ViewStyle>;
   backgroundColor?: string;
   children: React.ReactNode;
   defaultBG?: boolean;
 }
 
-export const StickyBottomComponent: React.FC<stickyBottomProps> = (props) => {
+export const StickyBottomComponent: React.FC<StickyBottomProps> = (props) => {
   return (
     <View
       style={[
