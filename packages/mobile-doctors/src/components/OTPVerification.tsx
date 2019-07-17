@@ -1,10 +1,10 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { OkText, OkTextDisabled } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { OtpCard } from '@aph/mobile-doctors/src/components/ui/OtpCard';
-import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
 import { setLoggedIn } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import gql from 'graphql-tag';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -26,7 +26,6 @@ import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 import { PhoneNumberVerificationCredential } from './AuthProvider';
 import { OTPTextView } from './ui/OTPTextView';
-import gql from 'graphql-tag';
 
 const styles = StyleSheet.create({
   container: {
@@ -393,13 +392,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               <OTPTextView
                 handleTextChange={(otp: string) => setOtp(otp)}
                 inputCount={6}
-                keyboardType="numeric"
+                textInputProps={{ keyboardType: 'numeric', editable: false }}
                 value={otp}
                 textInputStyle={styles.codeInputStyle}
                 tintColor="rgba(2, 71, 91, 0.3)" //"#4c02475b" //{'rgba(0, 179, 142, 0.4)'}
                 offTintColor="rgba(2, 71, 91, 0.3)" //"#4c02475b" //{'rgba(0, 179, 142, 0.4)'}
                 containerStyle={{ flex: 1 }}
-                editable={false}
               />
             </View>
             <Text style={[styles.errorTextfincal]}>
@@ -427,7 +425,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               <OTPTextView
                 handleTextChange={isOtpValid}
                 inputCount={6}
-                keyboardType="numeric"
+                textInputProps={{ keyboardType: 'numeric', editable: false }}
                 value={otp}
                 textInputStyle={styles.codeInputStyle}
                 tintColor={
@@ -441,7 +439,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                     : theme.colors.INPUT_BORDER_FAILURE
                 }
                 containerStyle={{ flex: 1 }}
-                textContentType={'oneTimeCode'}
+                // textContentType={'oneTimeCode'}
               />
             </View>
             {showErrorMsg && (

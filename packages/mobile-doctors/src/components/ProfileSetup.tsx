@@ -287,8 +287,8 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       </ScrollView>
 
       {modelvisible ? (
-        <View>
-          <Overlay isVisible={modelvisible} height={289} width={280} borderRadius={10}>
+        <Overlay isVisible={modelvisible} height={289} width={280} borderRadius={10}>
+          <View>
             <TouchableOpacity onPress={() => setmodelvisible(false)}>
               <View style={{ alignSelf: 'flex-end', marginBottom: 8 }}>
                 <Cancel />
@@ -337,8 +337,8 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
                 style={styles.buttonview}
               />
             </View>
-          </Overlay>
-        </View>
+          </View>
+        </Overlay>
       ) : null}
     </SafeAreaView>
   );

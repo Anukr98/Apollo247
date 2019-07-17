@@ -8,8 +8,6 @@ import {
   TouchableOpacityProps,
   View,
   ViewStyle,
-  ImageSourcePropType,
-  ImageStyle,
 } from 'react-native';
 import { BackIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 
@@ -54,8 +52,6 @@ export interface OtpCardProps {
   disableButton?: boolean;
   buttonIcon?: React.ReactNode;
   onClickButton?: TouchableOpacityProps['onPress'];
-  image: ImageSourcePropType;
-  imageStyle?: StyleProp<ImageStyle>;
   onPress?: TouchableOpacityProps['onPress'];
 }
 

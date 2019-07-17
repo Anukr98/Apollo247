@@ -168,7 +168,7 @@ export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
             title="CALL ME"
             titleTextStyle={styles.titleTextStyle}
             style={styles.buttonView}
-            //onPress={() => props.navigation.push(AppRoutes.OnBoardingPage)}
+            onPress={() => Alert.alert('Need Help')}
           />
         </OtpCard>
       </SafeAreaView>
