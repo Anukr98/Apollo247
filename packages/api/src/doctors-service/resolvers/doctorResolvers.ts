@@ -5,6 +5,7 @@ export const doctorTypeDefs = gql`
   type clinics {
     name: String
     location: String
+    image: String
   }
 
   type Consultations {
@@ -44,6 +45,7 @@ export const doctorTypeDefs = gql`
     package: String
     typeOfConsult: String
     inviteStatus: String
+    profilePicture: String
   }
 
   type DoctorProfile {
@@ -64,6 +66,7 @@ export const doctorTypeDefs = gql`
 type clinics = {
   name: String;
   location: String;
+  image: String;
 };
 
 type Consultations = {
@@ -103,6 +106,7 @@ export type Doctor = {
   package: String;
   typeOfConsult: String;
   inviteStatus: String;
+  profilePicture: String;
 };
 
 type DoctorProfile = {

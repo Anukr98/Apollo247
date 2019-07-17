@@ -23,7 +23,8 @@
       "physicalConsultationFees": "300",
       "package": "3 Online Consults + 3 Physical Consults @ Rs.999",
       "inviteStatus": "",
-      "typeOfConsult": "24/7"
+      "typeOfConsult": "24/7",
+      "profilePicture": "https://dev.popcornapps.com/apolloImages/doctor.png"
     },
     "paymentDetails": [
       {
@@ -34,11 +35,13 @@
     "clinics": [
       {
         "name": "Homeocare Hospital",
-        "location": "Secunderbad"
+        "location": "Secunderbad",
+        "image": "https://dev.popcornapps.com/apolloImages/clinic.png"
       },
       {
         "name": "Gayathri Hospital",
-        "location": "Madhapur"
+        "location": "Madhapur",
+        "image": "https://dev.popcornapps.com/apolloImages/clinic.png"
       }
     ],
     "starDoctorTeam": [
@@ -47,14 +50,16 @@
         "lastName": "Mcmarrow",
         "experience": "7",
         "typeOfConsult": "24/7",
-        "inviteStatus": "accepted"
+        "inviteStatus": "accepted",
+        "profilePicture": "https://dev.popcornapps.com/apolloImages/doctor.png"
       },
       {
         "firstName": "John",
         "lastName": "Carter",
         "experience": "7",
         "typeOfConsult": "24/7",
-        "inviteStatus": "Not accepted"
+        "inviteStatus": "Not accepted",
+        "profilePicture": "https://dev.popcornapps.com/apolloImages/doctor.png"
       }
     ],
     "consultationHours": [
@@ -81,7 +86,7 @@
       "lastName": "Willams",
       "experience": "7",
       "mobileNumber": "1111111111",
-      "speciality": "Genral Physician",
+      "speciality": "General Physician",
       "specialization": "Physician",
       "isStarDoctor": false,
       "education": "MBBS,MD",
@@ -98,7 +103,8 @@
       "physicalConsultationFees": "300",
       "package": "2 Online Consults + 2 Physical Consults @ Rs.499",
       "inviteStatus": "",
-      "typeOfConsult": "24/7"
+      "typeOfConsult": "24/7",
+      "profilePicture": "https://dev.popcornapps.com/apolloImages/doctor.png"
     },
     "paymentDetails": [
       {
@@ -109,11 +115,13 @@
     "clinics": [
       {
         "name": "City Hospital",
-        "location": "Begumpet"
+        "location": "Begumpet",
+        "image": "https://dev.popcornapps.com/apolloImages/clinic.png"
       },
       {
         "name": "Lotus Hospital",
-        "location": "Hitch city"
+        "location": "Hitch city",
+        "image": "https://dev.popcornapps.com/apolloImages/clinic.png"
       }
     ],
     "starDoctorTeam": [
@@ -122,14 +130,16 @@
         "lastName": "Harvey",
         "experience": "4",
         "typeOfConsult": "Apollo Doctor",
-        "inviteStatus": "accepted"
+        "inviteStatus": "accepted",
+        "profilePicture": "https://dev.popcornapps.com/apolloImages/doctor.png"
       },
       {
         "firstName": "Steve",
         "lastName": "Watson",
         "experience": "3",
         "typeOfConsult": "24/7",
-        "inviteStatus": "Not accepted"
+        "inviteStatus": "Not accepted",
+        "profilePicture": "https://dev.popcornapps.com/apolloImages/doctor.png"
       }
     ],
     "consultationHours": [

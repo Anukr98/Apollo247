@@ -6,6 +6,7 @@ export const getSpecialtyTypeDefs = gql`
   type Specialty {
     id: String
     name: String
+    image: String
   }
   extend type Query {
     getSpecialties: [Specialty!]!
@@ -15,6 +16,7 @@ export const getSpecialtyTypeDefs = gql`
 export type Specialty = {
   id: string;
   name: string;
+  image: string;
 };
 
 const getSpecialties: Resolver<any> = async (parent, args): Promise<Specialty[]> => {

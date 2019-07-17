@@ -24,6 +24,7 @@ export const doctors: Doctor[] = [
     package: '3 Online Consults + 3 Physical Consults @ Rs.999',
     typeOfConsult: '24/7',
     inviteStatus: 'accepted',
+    profilePicture: 'https://dev.popcornapps.com/apolloImages/doctor.png',
   },
   {
     id: 'a6ef960c-fc1f-4a12-878a-12063788d625',
@@ -49,5 +50,6 @@ export const doctors: Doctor[] = [
     package: '2 Online Consults + 2 Physical Consults @ Rs.499',
     typeOfConsult: 'Apollo Doctor',
     inviteStatus: 'accepted',
+    profilePicture: 'https://dev.popcornapps.com/apolloImages/doctor.png',
   },
 ];
