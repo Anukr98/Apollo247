@@ -27,8 +27,6 @@ export const useAuth = () => {
   const signOut = useAuthContext().signOut!;
 
   const analytics = useAnalytics();
-  const authError = useAuthContext().authError!;
-  const setAuthError = useAuthContext().setAuthError!;
 
   return {
     currentPatient,
@@ -49,8 +47,5 @@ export const useAuth = () => {
     signOut,
 
     analytics,
-
-    authError,
-    setAuthError,
   };
 };

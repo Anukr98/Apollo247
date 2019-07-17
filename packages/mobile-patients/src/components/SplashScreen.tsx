@@ -19,14 +19,7 @@ const styles = StyleSheet.create({
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { currentPatient, authError, isSigningIn } = useAuth();
-
-  useEffect(() => {
-    console.log('authError Login', authError);
-    if (authError) {
-      props.navigation.replace(AppRoutes.Onboarding);
-    }
-  }, [authError, props.navigation]);
+  const { currentPatient, isSigningIn } = useAuth();
 
   useEffect(() => {
     console.log('SplashScreen currentUser', currentPatient);

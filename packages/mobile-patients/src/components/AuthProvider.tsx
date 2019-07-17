@@ -38,9 +38,6 @@ export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients
   signInError: boolean;
   isSigningIn: boolean;
   signOut: (() => Promise<void>) | null;
-
-  authError: boolean;
-  setAuthError: ((authError: boolean) => void) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -61,19 +58,20 @@ export const AuthContext = React.createContext<AuthContextProps>({
   signOut: null,
 
   analytics: null,
-
-  authError: false,
-  setAuthError: null,
 });
 
 let apolloClient: ApolloClient<any>;
-const buildApolloClient = (authToken: string, failureFunction: () => void) => {
-  const errorLink = onError(({ networkError, operation, forward }: ErrorResponse) => {
-    // There's a bug in the apollo typedefs and `statusCode` is not recognized, but it's there
-    if (networkError && (networkError as any).statusCode === 401) {
-      console.log(networkError, operation);
+const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
+  const errorLink = onError((error) => {
+    const { graphQLErrors, operation, forward } = error;
+    if (graphQLErrors) {
+      const unauthenticatedError = graphQLErrors.some(
+        (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
+      );
+      if (unauthenticatedError) {
+        handleUnauthenticated();
+      }
     }
-    failureFunction();
     return forward(operation);
   });
   const authLink = setContext((_, { headers }) => ({
@@ -91,11 +89,7 @@ export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
   const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
 
-  const failureFunction = () => {
-    setAuthError(true);
-    setIsSendingOtp(false);
-  };
-  apolloClient = buildApolloClient(authToken, failureFunction);
+  apolloClient = buildApolloClient(authToken, () => signOut());
 
   const [allCurrentPatients, setAllCurrentPatients] = useState<
     AuthContextProps['allCurrentPatients']
@@ -224,9 +218,6 @@ export const AuthProvider: React.FC = (props) => {
             signOut,
 
             analytics,
-
-            authError,
-            setAuthError,
           }}
         >
           {props.children}

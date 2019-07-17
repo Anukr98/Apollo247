@@ -70,15 +70,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [otp, setOtp] = useState<string>('');
   const [isresent, setIsresent] = useState<boolean>(false);
 
-  const {
-    authError,
-    verifyOtp,
-    setAuthError,
-    sendOtp,
-    isSigningIn,
-    currentPatient,
-    isVerifyingOtp,
-  } = useAuth();
+  const { verifyOtp, sendOtp, isSigningIn, currentPatient, isVerifyingOtp } = useAuth();
 
   const startInterval = (timer: number) => {
     const intervalId = setInterval(() => {
@@ -98,7 +90,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     setOtp(otpString);
     console.log('OTPVerification otpString', otpString);
     _getTimerData();
-  }, [_getTimerData, props.navigation.state.params]);
+  }, [props.navigation]);
 
   const _getTimerData = async () => {
     try {
@@ -198,21 +190,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   useEffect(() => {
-    if (authError) {
-      setAuthError(false);
-      Alert.alert('Error', 'Unable to connect the server at the moment.');
-    }
-  }, [authError, setAuthError]);
-
-  useEffect(() => {
     if (currentPatient) {
       if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
-        //   if (currentPatient.relation == null) {
-        props.navigation.replace(AppRoutes.MultiSignup);
-        // } else {
-        //   AsyncStorage.setItem('userLoggedIn', 'true');
-        //   props.navigation.replace(AppRoutes.TabBar);
-        // }
+        if (currentPatient.relation == null) {
+          props.navigation.replace(AppRoutes.MultiSignup);
+        } else {
+          AsyncStorage.setItem('userLoggedIn', 'true');
+          props.navigation.replace(AppRoutes.TabBar);
+        }
       } else {
         if (currentPatient.firstName == null) {
           props.navigation.replace(AppRoutes.SignUp);

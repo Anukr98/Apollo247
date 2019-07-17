@@ -83,16 +83,12 @@ let didBlurSubscription: any;
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const { analytics, authError, setAuthError, sendOtp, isSendingOtp } = useAuth();
+  const { analytics, sendOtp, isSendingOtp } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<any>();
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
-    if (authError) {
-      setAuthError(false);
-      Alert.alert('Error', 'Unable to connect the server at the moment.');
-    }
-  }, [authError, analytics, setAuthError]);
+  }, [, analytics]);
 
   const requestReadSmsPermission = async () => {
     try {
