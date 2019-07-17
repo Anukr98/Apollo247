@@ -11,8 +11,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { theme } from '../../theme/theme';
-import { InviteIcon } from '@aph/mobile-doctors//src/components/ui/Icons';
-import { Button } from '@aph/mobile-doctors//src/components/ui/Button';
+import { InviteIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 
 const styles = StyleSheet.create({
   doctorView: {
