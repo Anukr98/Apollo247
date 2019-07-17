@@ -31,7 +31,7 @@ export const doctors: Doctor[] = [
     lastName: 'Willams',
     experience: '7',
     mobileNumber: '1111111111',
-    speciality: 'Genral Physician',
+    speciality: 'General Physician',
     specialization: 'Physician',
     isStarDoctor: false,
     education: 'MBBS,MD',

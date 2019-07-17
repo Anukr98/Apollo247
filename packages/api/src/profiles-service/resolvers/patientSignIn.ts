@@ -2,7 +2,6 @@ import gql from 'graphql-tag';
 import { Resolver } from 'profiles-service/profiles-service';
 import { Patient } from 'profiles-service/entity/patient';
 import fetch from 'node-fetch';
-import { BaseEntity } from 'typeorm';
 
 import {
   PrismGetAuthTokenResponse,
