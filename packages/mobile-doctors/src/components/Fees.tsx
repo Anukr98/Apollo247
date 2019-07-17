@@ -12,6 +12,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     letterSpacing: 0.3,
   },
+  feeeducationbold: {
+    color: 'rgba(2, 71, 91, 0.5)',
+    fontFamily: 'IBMPlexSans-SemiBold',
+    fontSize: 14,
+    letterSpacing: 0.3,
+  },
   feeeducationtext: {
     ...theme.fonts.IBMPlexSansMedium(14),
     color: '#02475b',
@@ -33,6 +39,10 @@ export interface FeesProps {
 }
 
 export const Fees: React.FC<FeesProps> = ({ profileData }) => {
+  const Feedata: any = profileData!.profile;
+  const BankDetails: any = profileData!.paymentDetails[0];
+  console.log('fee', Feedata);
+  console.log('BankDetails', BankDetails);
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
   const renderCard = (title: string, children: Element) => (
     <SquareCardWithTitle title={title} containerStyle={{ marginTop: 16 }}>
@@ -55,20 +65,37 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
       </View>
     );
   };
+  const feeprofileRowBold = (title: Element, description: string) => {
+    if (!description) return null;
+    return (
+      <View style={{ flexDirection: 'column', marginLeft: 16 }}>
+        {title}
+        <Text style={styles.feeeducationtext}>{description}</Text>
+      </View>
+    );
+  };
   return (
     <View>
       {renderCard(
         'Consultation Fees',
         <View style={{ marginTop: 16 }}>
-          {feeprofileRow(
-            'What are your online consultation fees?',
-            profileData!.profile.onlineConsultationFees
+          {feeprofileRowBold(
+            <Text>
+              <Text style={styles.feeeducation}>What are your</Text>
+              <Text style={styles.feeeducationbold}> online</Text>
+              <Text style={styles.feeeducation}> consultation fees?</Text>
+            </Text>,
+            Feedata.onlineConsultationFees
           )}
-          {feeprofileRow(
-            'What are your physical consultation fees?',
-            profileData!.profile.physicalConsultationFees
+          {feeprofileRowBold(
+            <Text>
+              <Text style={styles.feeeducation}>What are your</Text>
+              <Text style={styles.feeeducationbold}> Physical</Text>
+              <Text style={styles.feeeducation}> consultation fees?</Text>
+            </Text>,
+            Feedata.physicalConsultationFees
           )}
-          {feeprofileRow('What package do you offer your patients?', profileData!.profile.package)}
+          {feeprofileRow('What package do you offer your patients?', Feedata.package)}
         </View>
       )}
       {renderCard(
@@ -81,9 +108,9 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
             )}
             {showPaymentDetails ? (
               <>
-                {feeprofileRow('Account Holder’s Name', profileData!.profile.firstName)}
-                {feeprofileRow('IFSC Code', profileData!.profile.ifscCode)}
-                {feeprofileRow('Account Type', profileData!.profile.accountType)}
+                {feeprofileRow('Account Holder’s Name', Feedata.firstName)}
+                {feeprofileRow('IFSC Code', Feedata.ifscCode)}
+                {feeprofileRow('Account Type', Feedata.accountType)}
               </>
             ) : null}
           </View>

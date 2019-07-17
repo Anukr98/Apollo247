@@ -1,12 +1,12 @@
 import { DoctorCard } from '@aph/mobile-doctors/src/components/ui/DoctorCard';
 import { Add, Send, Star } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
+import { getDoctorsForStarDoctorProgram } from '@aph/mobile-doctors/src/helpers/APIDummyData';
+import { Doctor, DummyQueryResult } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
+import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
-import { DummyQueryResult } from '@aph/mobile-doctors/src/helpers/commonTypes';
-import { getDoctorsForStarDoctorProgram } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 
 const styles = StyleSheet.create({
   container: {

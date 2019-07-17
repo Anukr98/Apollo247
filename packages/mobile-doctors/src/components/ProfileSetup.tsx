@@ -25,7 +25,6 @@ import { Overlay } from 'react-native-elements';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
-import { ApolloClient } from 'apollo-client';
 import { useQuery } from 'react-apollo-hooks';
 import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 import { DummyQueryResult } from '@aph/mobile-doctors/src/helpers/commonTypes';
@@ -275,6 +274,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
                 title={'CALL ME'}
                 titleTextStyle={styles.buttonTextStyle}
                 style={styles.buttonview}
+                onPress={() => Alert.alert('Need Help')}
               />
             </View>
           </View>
