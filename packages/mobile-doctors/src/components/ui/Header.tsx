@@ -1,4 +1,4 @@
-import { ApploLogo } from 'app/src/components/ui/Icons';
+import { ApploLogo } from '@aph/mobile-doctors/src/components/ui/Icons';
 import React from 'react';
 import {
   StyleProp,

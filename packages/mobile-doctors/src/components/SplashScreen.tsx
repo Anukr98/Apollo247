@@ -1,7 +1,7 @@
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
-import { SplashLogo } from 'app/src/components/SplashLogo';
-import { getLocalData } from 'app/src/helpers/localStorage';
-import { useAuth } from 'app/src/hooks/authHooks';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { SplashLogo } from '@aph/mobile-doctors/src/components/SplashLogo';
+import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, StyleSheet, View } from 'react-native';
 import firebase from 'react-native-firebase';

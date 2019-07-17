@@ -1,10 +1,12 @@
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
-import { OkText, OkTextDisabled } from 'app/src/components/ui/Icons';
-import { OtpCard } from 'app/src/components/ui/OtpCard';
-import { setLoggedIn } from 'app/src/helpers/localStorage';
-import { string } from 'app/src/strings/string';
-import { theme } from 'app/src/theme/theme';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { OkText, OkTextDisabled } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { OtpCard } from '@aph/mobile-doctors/src/components/ui/OtpCard';
+import { setLoggedIn } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { string } from '@aph/mobile-doctors/src/strings/string';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import gql from 'graphql-tag';
 import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
   Alert,
@@ -104,11 +106,16 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [intervalId, setIntervalId] = useState<any>(0);
   const [otp, setOtp] = useState<string>('');
   const [isresent, setIsresent] = useState<boolean>(false);
-  const [errorAuth, setErrorAuth] = useState<boolean>(true);
-
-  const { signIn, callApiWithToken, authError, clearCurrentUser } = useAuth();
   const [verifyingOtp, setVerifyingOtp] = useState(false);
-
+  const { signIn, callApiWithToken, authError, clearCurrentUser } = useAuth();
+  const client = useApolloClient();
+  const IS_DOCTOR_EXIST = gql`
+    query getDoctorProfile($mobileNumber: String!) {
+      getDoctorProfile(mobileNumber: $mobileNumber) {
+        id
+      }
+    }
+  `;
   const startInterval = (timer: number) => {
     const intervalId = setInterval(() => {
       timer = timer - 1;
@@ -137,7 +144,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         console.log(timeOutData);
         const { phoneNumber } = props.navigation.state.params!;
 
-        timeOutData.map((obj) => {
+        timeOutData.map((obj: any) => {
           if (obj.phoneNumber === phoneNumber) {
             const t1 = new Date();
             const t2 = new Date(obj.startTime);
@@ -189,7 +196,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     try {
       const { phoneNumber } = props.navigation.state.params!;
       const getData = await AsyncStorage.getItem('timeOutData');
-      let timeOutData: Array<object> = [];
+      let timeOutData: any[] = [];
       if (getData) {
         timeOutData = JSON.parse(getData);
         let index: number = 0;
@@ -227,8 +234,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   useEffect(() => {
-    setErrorAuth(authError);
-    console.log('authError OTPVerification', authError);
     if (authError) {
       clearCurrentUser();
       setVerifyingOtp(false);
@@ -259,43 +264,27 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           if (updatedUser) {
             _removeFromStore();
             const token = await updatedUser!.getIdToken();
-            const patientSign = await callApiWithToken(token);
-            const patient = patientSign.data.patientSignIn.patients[0];
-            const errMsg =
-              patientSign.data.patientSignIn.errors &&
-              patientSign.data.patientSignIn.errors.messages[0];
-
-            AsyncStorage.setItem('onAuthStateChanged', 'false');
-
-            setTimeout(() => {
-              setVerifyingOtp(false);
-              if (errMsg) {
-                Alert.alert('Error', errMsg);
-              } else {
-                if (patient && patient.uhid && patient.uhid !== '') {
-                  if (patient.firstName.relation != 0) {
-                    AsyncStorage.setItem('userLoggedIn', 'true');
-                    props.navigation.replace(AppRoutes.ProfileSetup);
-                  } else {
-                    props.navigation.replace(AppRoutes.ProfileSetup);
-                  }
+            const patientSign = await callApiWithToken!(token);
+            client
+              .query({ query: IS_DOCTOR_EXIST, variables: { mobileNumber: '1234567890' } })
+              .then(({ data }) => {
+                setVerifyingOtp(false);
+                if (data.getDoctorProfile) {
+                  props.navigation.replace(AppRoutes.ProfileSetup);
                 } else {
-                  if (patient.firstName.length != 0) {
-                    AsyncStorage.setItem('userLoggedIn', 'true');
-                    props.navigation.replace(AppRoutes.ProfileSetup);
-                  } else {
-                    props.navigation.replace(AppRoutes.ProfileSetup);
-                  }
+                  Alert.alert(
+                    'Error',
+                    'You are not a registered user. This app is for invite only.'
+                  );
                 }
-              }
-            }, 2000);
-          } else {
-            console.log('no new user');
+              })
+              .catch((_) => {
+                Alert.alert('Error', 'Something went wrong while fetching data');
+              });
           }
         });
       })
       .catch((error: any) => {
-        console.log('error', error);
         setVerifyingOtp(false);
         _storeTimerData(invalidOtpCount + 1);
 
@@ -403,13 +392,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               <OTPTextView
                 handleTextChange={(otp: string) => setOtp(otp)}
                 inputCount={6}
-                keyboardType="numeric"
+                textInputProps={{ keyboardType: 'numeric', editable: false }}
                 value={otp}
                 textInputStyle={styles.codeInputStyle}
                 tintColor="rgba(2, 71, 91, 0.3)" //"#4c02475b" //{'rgba(0, 179, 142, 0.4)'}
                 offTintColor="rgba(2, 71, 91, 0.3)" //"#4c02475b" //{'rgba(0, 179, 142, 0.4)'}
                 containerStyle={{ flex: 1 }}
-                editable={false}
               />
             </View>
             <Text style={[styles.errorTextfincal]}>
@@ -437,7 +425,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               <OTPTextView
                 handleTextChange={isOtpValid}
                 inputCount={6}
-                keyboardType="numeric"
+                textInputProps={{ keyboardType: 'numeric', editable: false }}
                 value={otp}
                 textInputStyle={styles.codeInputStyle}
                 tintColor={
@@ -451,7 +439,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                     : theme.colors.INPUT_BORDER_FAILURE
                 }
                 containerStyle={{ flex: 1 }}
-                textContentType={'oneTimeCode'}
+                // textContentType={'oneTimeCode'}
               />
             </View>
             {showErrorMsg && (

@@ -8,18 +8,18 @@ import { ErrorResponse, onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
 
-import { apiRoutes } from 'app/src/helpers/apiRoutes';
+import { apiRoutes } from '@aph/mobile-doctors/src/helpers/apiRoutes';
 import {
   PatientSignIn,
   PatientSignInVariables,
   PatientSignIn_patientSignIn_patients,
-} from 'app/src/graphql/types/PatientSignIn';
-import { PATIENT_SIGN_IN, UPDATE_PATIENT } from 'app/src/graphql/profiles';
+} from '@aph/mobile-doctors/src/graphql/types/PatientSignIn';
+import { PATIENT_SIGN_IN, UPDATE_PATIENT } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   updatePatient_updatePatient_patient,
   updatePatient,
   updatePatientVariables,
-} from 'app/src/graphql/types/updatePatient';
+} from '@aph/mobile-doctors/src/graphql/types/updatePatient';
 import { AsyncStorage } from 'react-native';
 
 export type PhoneNumberVerificationCredential = RNFirebase.PhoneAuthSnapshot['verificationId'];
