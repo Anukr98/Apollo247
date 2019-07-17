@@ -17,7 +17,7 @@ export const searchDoctorAndSpecialtyTypeDefs = gql`
 `;
 
 type SearchDoctorAndSpecialtyResult = {
-  doctors: Partial<Doctor>[];
+  doctors: Doctor[];
   specialties: Specialty[];
 };
 
