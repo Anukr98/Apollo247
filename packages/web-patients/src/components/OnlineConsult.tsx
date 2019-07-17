@@ -1,13 +1,14 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React from 'react';
+import React, { useState } from 'react';
+import { MaterialUiPickersDate } from '@material-ui/pickers';
+import { usePickerState, Calendar } from '@material-ui/pickers';
 import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      paddingTop: 10,
-      paddingBottom: 10,
+      width: '100%',
     },
     consultGroup: {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
@@ -15,6 +16,8 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 15,
       marginTop: 10,
       marginBottom: 10,
+      display: 'inline-block',
+      width: '100%',
       '& p': {
         fontSize: 14,
         fontWeight: 500,
@@ -49,26 +52,45 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     bottomActions: {
-      padding: '30px 15px 6px 15px',
+      padding: '30px 15px 15px 15px',
+    },
+    customScrollBar: {
+      paddingTop: 10,
+      paddingBottom: 10,
+      height: '50vh',
+      overflow: 'auto',
     },
   };
 });
 
 export const OnlineConsult: React.FC = (props) => {
   const classes = useStyles();
+  const [value, handleDateChange1] = useState<MaterialUiPickersDate>(new Date());
+  const { pickerProps } = usePickerState(
+    { value, onChange: handleDateChange1 },
+    {
+      getDefaultFormat: () => 'MM/dd/yyyy',
+    }
+  );
+
   return (
     <div className={classes.root}>
-      <div className={classes.consultGroup}>
-        <p>
-          Dr. Simran is available in 15mins! Would you like to consult now or schedule for later?
-        </p>
-        <div className={classes.actions}>
-          <AphButton color="secondary" className={`${classes.button} ${classes.buttonActive}`}>
-            Consult Now
-          </AphButton>
-          <AphButton color="secondary" className={classes.button}>
-            Schedule For Later
-          </AphButton>
+      <div className={classes.customScrollBar}>
+        <div className={classes.consultGroup}>
+          <p>
+            Dr. Simran is available in 15mins! Would you like to consult now or schedule for later?
+          </p>
+          <div className={classes.actions}>
+            <AphButton color="secondary" className={`${classes.button} ${classes.buttonActive}`}>
+              Consult Now
+            </AphButton>
+            <AphButton color="secondary" className={classes.button}>
+              Schedule For Later
+            </AphButton>
+          </div>
+        </div>
+        <div className={classes.consultGroup}>
+          <Calendar {...pickerProps} />
         </div>
       </div>
       <div className={classes.bottomActions}>

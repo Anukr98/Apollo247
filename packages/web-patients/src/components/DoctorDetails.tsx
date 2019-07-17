@@ -76,7 +76,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
     },
     modalBox: {
-      maxWidth: 320,
+      maxWidth: 340,
       margin: 'auto',
       marginTop: 88,
       backgroundColor: theme.palette.text.primary,
