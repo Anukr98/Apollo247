@@ -110,7 +110,7 @@ export const Header: React.FC = (props) => {
         {isSignedIn ? (
           <>
             <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-              <DialogTitle></DialogTitle>
+              <DialogTitle>{''}</DialogTitle>
               <DialogContent>
                 <DialogContentText>
                   You are successfully Logged in with Apollo 24x7
