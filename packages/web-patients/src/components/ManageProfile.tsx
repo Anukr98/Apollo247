@@ -1,12 +1,12 @@
-import { Theme } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import Popover from '@material-ui/core/Popover';
 import { createStyles, makeStyles } from '@material-ui/styles';
-import { useCurrentPatient, useAllCurrentPatients } from 'hooks/authHooks';
 import { NewProfile } from 'components/NewProfile';
 import { ExistingProfile } from 'components/ExistingProfile';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import React, { useRef, useEffect } from 'react';
 import _isEmpty from 'lodash/isEmpty';
+import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -46,16 +46,24 @@ const useStyles = makeStyles((theme: Theme) => {
 export const ManageProfile: React.FC = (props) => {
   const classes = useStyles();
   const mascotRef = useRef(null);
-  const currentPatient = useCurrentPatient();
-  const allPatients = useAllCurrentPatients();
+  const { isSigningIn } = useAuth();
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   useEffect(() => {
-    if (allPatients) {
-      const isSomePatientMissingRelation = allPatients.some((p) => _isEmpty(p.relation));
-      if (isSomePatientMissingRelation) setIsPopoverOpen(true);
+    if (allCurrentPatients) {
+      const isSomePatientMissingRelation = allCurrentPatients.some((p) => _isEmpty(p.relation));
+      if (isSomePatientMissingRelation) {
+        // The mascotRef position has maybe not been calculated properly (or something) yet?
+        // So the popup appears, but in the wrong location. Use a setTimeout to avoid this.
+        setTimeout(() => setIsPopoverOpen(true), 0);
+      }
     }
-  }, [allPatients]);
+  }, [allCurrentPatients]);
+
+  const hasExistingProfile =
+    allCurrentPatients && allCurrentPatients.some((p) => !_isEmpty(p.uhid));
+  const defaultNewProfile = allCurrentPatients ? currentPatient || allCurrentPatients[0] : null;
 
   return (
     <ProtectedWithLoginPopup>
@@ -67,9 +75,12 @@ export const ManageProfile: React.FC = (props) => {
             onClick={() => (isProtected ? protectWithLoginPopup() : setIsPopoverOpen(true))}
           >
             <img src={require('images/ic_mascot.png')} alt="" />
+            {isSigningIn && (
+              <CircularProgress style={{ position: 'absolute', top: 17, left: 17 }} />
+            )}
           </div>
           <Popover
-            open={isPopoverOpen}
+            open={!isSigningIn && isPopoverOpen}
             anchorEl={mascotRef.current}
             onClose={() => setIsPopoverOpen(false)}
             className={classes.bottomPopover}
@@ -83,7 +94,14 @@ export const ManageProfile: React.FC = (props) => {
             }}
             classes={{ paper: classes.bottomPopover }}
           >
-            {currentPatient && currentPatient.uhid ? <ExistingProfile /> : <NewProfile />}
+            {hasExistingProfile ? (
+              <ExistingProfile
+                patients={allCurrentPatients!}
+                onComplete={() => setIsPopoverOpen(false)}
+              />
+            ) : defaultNewProfile ? (
+              <NewProfile patient={defaultNewProfile} onClose={() => setIsPopoverOpen(false)} />
+            ) : null}
           </Popover>
         </div>
       )}

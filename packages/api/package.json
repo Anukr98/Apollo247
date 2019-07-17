@@ -18,10 +18,12 @@
     "@aph/prettier-config": "file:../prettier-config",
     "@aph/tsconfig": "file:../tsconfig",
     "@types/graphql": "^14.2.1",
+    "@types/graphql-iso-date": "^3.3.1",
     "@types/lodash": "^4.14.134",
     "@typescript-eslint/eslint-plugin": "^1.9.0",
     "@typescript-eslint/parser": "^1.9.0",
     "awesome-typescript-loader": "^5.2.1",
+    "clean-webpack-plugin": "^3.0.0",
     "eslint": "^5.16.0",
     "eslint-plugin-import": "^2.17.3",
     "lerna": "^3.15.0",
@@ -40,8 +42,11 @@
     "@types/node-fetch": "^2.3.7",
     "apollo-server": "^2.6.3",
     "apollo-server-core": "^2.6.7",
+    "class-validator": "^0.9.1",
+    "date-fns": "^2.0.0-beta.2",
     "firebase-admin": "^8.2.0",
     "graphql": "^14.4.2",
+    "graphql-iso-date": "^3.6.1",
     "graphql-tag": "^2.10.1",
     "lodash": "^4.17.11",
     "mysql2": "^1.6.5",
@@ -51,6 +56,7 @@
     "pg-hstore": "^2.3.3",
     "reflect-metadata": "^0.1.13",
     "sequelize": "^5.8.10",
-    "typeorm": "^0.2.18"
+    "typeorm": "^0.2.18",
+    "validator": "^11.1.0"
   }
 }
