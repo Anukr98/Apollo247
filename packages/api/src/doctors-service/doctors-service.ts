@@ -6,11 +6,14 @@ import {
   getSpecialtyTypeDefs,
   getSpecialtyResolvers,
 } from 'doctors-service/resolvers/getSpecialties';
-
 import {
   searchDoctorAndSpecialtyTypeDefs,
   searchDoctorAndSpecialtyResolvers,
 } from 'doctors-service/resolvers/searchDoctorAndSpecialty';
+import {
+  getSpecialtyDoctorsTypeDefs,
+  getSpecialtyDoctorsResolvers,
+} from 'doctors-service/resolvers/getSpecialtyDoctorsWithFilters';
 
 import { GatewayContext } from 'api-gateway';
 
@@ -36,6 +39,10 @@ export type Resolver<Parent = any, Args = any> = (
       {
         typeDefs: searchDoctorAndSpecialtyTypeDefs,
         resolvers: searchDoctorAndSpecialtyResolvers,
+      },
+      {
+        typeDefs: getSpecialtyDoctorsTypeDefs,
+        resolvers: getSpecialtyDoctorsResolvers,
       },
     ]),
   });
