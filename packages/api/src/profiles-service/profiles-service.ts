@@ -15,8 +15,12 @@ import {
 import { getPatientTypeDefs, getPatientResolvers } from 'profiles-service/resolvers/getPatients';
 import { GatewayContext, GatewayHeaders } from 'api-gateway';
 import gql from 'graphql-tag';
+import { AphAuthenticationError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 
-export interface ProfilesServiceContext extends GatewayContext {}
+export interface ProfilesServiceContext extends GatewayContext {
+  currentPatient: Patient;
+}
 
 (async () => {
   await createConnection({
@@ -34,12 +38,16 @@ export interface ProfilesServiceContext extends GatewayContext {}
   });
 
   const server = new ApolloServer({
-    context: ({ req }) => {
+    context: async ({ req }) => {
       const headers = req.headers as GatewayHeaders;
-      const context: ProfilesServiceContext = {
-        mobileNumber: headers.mobilenumber,
-        firebaseUid: headers.firebaseuid,
-      };
+      const mobileNumber = headers.mobilenumber;
+      const firebaseUid = headers.firebaseuid;
+      const currentPatient = await Patient.findOneOrFail({ where: { firebaseUid } }).catch(
+        (error) => {
+          throw new AphAuthenticationError(AphErrorMessages.NO_CURRENT_USER);
+        }
+      );
+      const context: ProfilesServiceContext = { mobileNumber, firebaseUid, currentPatient };
       return context;
     },
     schema: buildFederatedSchema([
