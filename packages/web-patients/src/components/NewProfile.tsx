@@ -340,7 +340,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                   variant="contained"
                   color="primary"
                 >
-                  {isSubmitting ? <CircularProgress /> : 'Submit'}
+                  {isSubmitting ? <CircularProgress size={22} color="secondary" /> : 'Submit'}
                 </AphButton>
               </div>
             </Form>
