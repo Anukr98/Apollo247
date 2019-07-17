@@ -74,7 +74,7 @@ export const Calendar: React.FC = () => {
   const dummyData: Appointment[] = [
     {
       startTime: Date.now(),
-      endTime: getTime(addMinutes(Date.now(), -1)),
+      endTime: getTime(addMinutes(Date.now(), 1)),
       details: {
         patientName: 'Prateek Sharma',
         checkups: ['Fever', 'Cough & Cold', 'Nausea', 'Sore Eyes'],
@@ -85,8 +85,32 @@ export const Calendar: React.FC = () => {
       type: 'walkin',
     },
     {
-      startTime: Date.now(),
-      endTime: getTime(addMinutes(Date.now(), 2)),
+      startTime: getTime(addMinutes(Date.now(), 3)),
+      endTime: getTime(addMinutes(Date.now(), 5)),
+      details: {
+        patientName: 'George',
+        checkups: ['Fever', 'Cough & Cold', 'Nausea'],
+        avatar:
+          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
+      },
+      isNew: false,
+      type: 'walkin',
+    },
+    {
+      startTime: getTime(addMinutes(Date.now(), 5)),
+      endTime: getTime(addMinutes(Date.now(), 10)),
+      details: {
+        patientName: 'George',
+        checkups: ['Fever', 'Cough & Cold', 'Nausea'],
+        avatar:
+          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
+      },
+      isNew: false,
+      type: 'walkin',
+    },
+    {
+      startTime: getTime(addMinutes(Date.now(), 10)),
+      endTime: getTime(addMinutes(Date.now(), 30)),
       details: {
         patientName: 'George',
         checkups: ['Fever', 'Cough & Cold', 'Nausea'],
