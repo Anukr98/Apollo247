@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { Resolver } from 'doctors-service/doctors-service';
+import { Resolver } from 'api-gateway';
 import { specialties } from 'doctors-service/data/specialty';
 
 export const getSpecialtyTypeDefs = gql`
@@ -19,7 +19,7 @@ export type Specialty = {
   image: string;
 };
 
-const getSpecialties: Resolver<any> = async (parent, args): Promise<Specialty[]> => {
+const getSpecialties: Resolver<null, {}, null, Specialty[]> = async (parent, args) => {
   return Promise.resolve(specialties);
 };
 

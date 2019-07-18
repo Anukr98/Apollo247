@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { Resolver } from 'doctors-service/doctors-service';
+import { Resolver } from 'api-gateway';
 import { doctors } from 'doctors-service/data/doctor';
 import { Doctor } from 'doctors-service/resolvers/doctorResolvers';
 
@@ -33,10 +33,12 @@ type filterInput = {
   language: String[];
 };
 
-const getSpecialtyDoctorsWithFilters: Resolver<any, { filterInput: filterInput }> = async (
-  parent,
-  args
-): Promise<filteredDoctorsResult> => {
+const getSpecialtyDoctorsWithFilters: Resolver<
+  null,
+  { filterInput: filterInput },
+  null,
+  filteredDoctorsResult
+> = async (parent, args) => {
   const mathchedDoctors = doctors.filter(
     (obj) => obj.speciality.toLowerCase() == args.filterInput.specialty.toLowerCase()
   );
