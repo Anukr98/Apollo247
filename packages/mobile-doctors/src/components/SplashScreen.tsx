@@ -54,7 +54,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             props.navigation.replace(AppRoutes.ProfileSetup);
           }
         } else {
-          props.navigation.replace(AppRoutes.LandingPage);
+          if (localData.isOnboardingDone) {
+            props.navigation.push(AppRoutes.Login);
+          } else {
+            props.navigation.push(AppRoutes.LandingPage);
+          }
         }
       }, 2500);
     }

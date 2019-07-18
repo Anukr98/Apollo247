@@ -6,6 +6,8 @@ import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { RoundIcon, Cancel } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+
 import React, { useState } from 'react';
 import {
   Alert,
@@ -32,6 +34,7 @@ const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   footerButtonsContainer: {
+    zIndex: -1,
     justifyContent: 'center',
     paddingTop: 40,
     paddingBottom: 32,
@@ -210,7 +213,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   };
   return (
     <SafeAreaView style={theme.viewStyles.container}>
-      <ScrollView bounces={false}>
+      <KeyboardAwareScrollView bounces={false} keyboardShouldPersistTaps="always">
         {renderHeader}
         {!getDoctorProfile ? (
           <View style={{ flex: 1, alignSelf: 'center', marginTop: height / 3 }}>
@@ -223,8 +226,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
             {renderFooterButtons(activeTabIndex, getDoctorProfile)}
           </>
         )}
-      </ScrollView>
-
+      </KeyboardAwareScrollView>
       {modelvisible ? (
         <Overlay isVisible={modelvisible} height={289} width={280} borderRadius={10}>
           <View>

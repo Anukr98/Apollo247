@@ -118,7 +118,11 @@ const _doctors = [
 
 export const _filterDoctors = (searchString: string): DoctorProfile[] => {
   return _doctors.filter((doctor) => {
-    return (doctor.profile.firstName + ' ' + doctor.profile.lastName).indexOf(searchString) > -1;
+    return (
+      (doctor.profile.firstName + ' ' + doctor.profile.lastName)
+        .toLowerCase()
+        .indexOf(searchString.toLowerCase()) > -1
+    );
   });
 };
 
