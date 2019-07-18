@@ -1,11 +1,11 @@
 import 'reflect-metadata';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
-import { doctorTypeDefs, doctorResolvers } from 'doctors-service/resolvers/doctorResolvers';
+import { doctorTypeDefs, doctorResolvers } from 'doctors-service/resolvers/getDoctors';
 import {
   starDoctorTypeDefs,
-  starDoctorResolvers,
-} from 'doctors-service/resolvers/starDoctorProgramResolver';
+  starDoctorProgramResolvers,
+} from 'doctors-service/resolvers/starDoctorProgram';
 import {
   getSpecialtyTypeDefs,
   getSpecialtyResolvers,
@@ -14,10 +14,6 @@ import {
   searchDoctorAndSpecialtyTypeDefs,
   searchDoctorAndSpecialtyResolvers,
 } from 'doctors-service/resolvers/searchDoctorAndSpecialty';
-import {
-  getSpecialtyDoctorsTypeDefs,
-  getSpecialtyDoctorsResolvers,
-} from 'doctors-service/resolvers/getSpecialtyDoctorsWithFilters';
 
 import { GatewayContext } from 'api-gateway';
 
@@ -45,8 +41,8 @@ export type Resolver<Parent = any, Args = any> = (
         resolvers: searchDoctorAndSpecialtyResolvers,
       },
       {
-        typeDefs: getSpecialtyDoctorsTypeDefs,
-        resolvers: getSpecialtyDoctorsResolvers,
+        typeDefs: starDoctorTypeDefs,
+        resolvers: starDoctorProgramResolvers,
       },
     ]),
   });

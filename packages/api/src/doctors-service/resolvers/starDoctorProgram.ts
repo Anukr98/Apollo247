@@ -1,25 +1,30 @@
 import gql from 'graphql-tag';
-import { Resolver } from 'doctors-service/doctors-service';
-import { DoctorProfile } from 'doctors-service/resolvers/doctorResolvers';
+import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctors-service';
+import DoctorsData from 'doctors-service/data/doctors.json';
 
 export const starDoctorTypeDefs = gql`
-  extend type Query {
+  type DoctorsProfile {
+    profile: Doctor
+    paymentDetails: [PaymentDetails]
+    clinics: [clinics]
+    starDoctorTeam: [Doctor]
+    consultationHours: [Consultations]
+  }
 
-    getDoctorsForStarDoctorProgram(searchString: String): [DoctorProfile]
+  extend type Query {
+    getDoctorsForStarDoctorProgram(searchString: String): [DoctorsProfile]
     addDoctorToStartDoctorProgram(starDoctorId: String, doctorId: String): Boolean
     removeDoctorFromStartDoctorProgram(starDoctorId: String, doctorId: String): Boolean
-  } 
+  }
+`;
 
 const getDoctorsForStarDoctorProgram: Resolver<
-  null, 
+  null,
   { searchString: string },
   DoctorsServiceContext,
   JSON
-  > = async (
-  parent,
-  args
-  ): Promise<JSON> => {
+> = async (parent, args) => {
   const result = DoctorsData.filter(
     (obj) =>
       obj.profile.firstName.match(args.searchString) &&
@@ -34,7 +39,7 @@ const addDoctorToStartDoctorProgram: Resolver<
   { starDoctorId: String; doctorId: String },
   DoctorsServiceContext,
   Boolean
-> = async (parent, args): Promise<Boolean> => {
+> = async (parent, args) => {
   return true;
 };
 
@@ -43,14 +48,14 @@ const removeDoctorFromStartDoctorProgram: Resolver<
   { starDoctorId: String; doctorId: String },
   DoctorsServiceContext,
   Boolean
-> = async (parent, args): Promise<Boolean> => {
+> = async (parent, args) => {
   return true;
 };
 
-  export const starDoctorResolvers = {
-  Query: {     
-    getDoctorsForStarDoctorProgram, 
+export const starDoctorProgramResolvers = {
+  Query: {
+    getDoctorsForStarDoctorProgram,
     addDoctorToStartDoctorProgram,
     removeDoctorFromStartDoctorProgram,
   },
-`;
+};

@@ -4,7 +4,7 @@ import { doctors } from 'doctors-service/data/doctor';
 import { specialties } from 'doctors-service/data/specialty';
 import { DoctorsServiceContext } from 'doctors-service/doctors-service';
 
-import { Doctor } from 'doctors-service/resolvers/doctorResolvers';
+import { Doctor } from 'doctors-service/resolvers/getDoctors';
 import { Specialty } from 'doctors-service/resolvers/getSpecialties';
 
 export const searchDoctorAndSpecialtyTypeDefs = gql`
