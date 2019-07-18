@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctors-service';
-import DoctorsData from 'doctors-service/data/doctors.json';
+import { DoctorsData } from 'doctors-service/data/doctorProfile';
 
 export const starDoctorTypeDefs = gql`
   type DoctorsProfile {
