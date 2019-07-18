@@ -282,7 +282,12 @@ export const FeesTab: React.FC<Props> = ({ values, proceedHadler, backBtnHandler
           >
             BACK
           </AphButton>
-          <AphButton variant="contained" color="primary" classes={{ root: classes.saveButton }} onClick={() => proceedHadler()}>
+          <AphButton
+            variant="contained"
+            color="primary"
+            classes={{ root: classes.saveButton }}
+            onClick={() => proceedHadler()}
+          >
             PROCEED
           </AphButton>
         </Grid>

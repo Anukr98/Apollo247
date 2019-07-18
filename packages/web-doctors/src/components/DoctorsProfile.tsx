@@ -13,7 +13,7 @@ import { AvailabilityTab } from 'components/AvailabilityTab';
 import { FeesTab } from 'components/FeesTab';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom';
 
 function TabContainer(props: any) {
   return (
@@ -97,7 +97,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface DoctorsProfileProps { }
+export interface DoctorsProfileProps {}
 
 export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
   const classes = useStyles();
@@ -123,11 +123,12 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
     },
   ];
   const tabsHtml = tabsArray.map((item, index) => {
-    return (<Tab
-      key={item.value}
-      className={value > item.key - 1 ? classes.highlightActive : classes.highlightInactive}
-      label={item.value}
-    />
+    return (
+      <Tab
+        key={item.value}
+        className={value > item.key - 1 ? classes.highlightActive : classes.highlightInactive}
+        label={item.value}
+      />
     );
   });
   // function handleChange(event, newValue) {
@@ -152,45 +153,52 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
           <div>
             <div className={classes.tabHeading}>
               <Typography variant="h1">
-                {value === 0 && <span>
-                  hi dr.{' '}
-                  {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
-                  !
-                </span>}
-                {value === 1 && <span>
-                  ok dr.{' '}
-                  {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
-                  !
-                </span>}
-                {value === 2 && <span>
-                  ok dr.{' '}
-                  {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
-                  !
-                </span>}
-                {value === 3 && <span>
-                  thank you, dr.{' '}
-                  {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
-                  :)
-                </span>}
-
+                {value === 0 && (
+                  <span>
+                    hi dr.{' '}
+                    {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
+                    !
+                  </span>
+                )}
+                {value === 1 && (
+                  <span>
+                    ok dr.{' '}
+                    {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
+                    !
+                  </span>
+                )}
+                {value === 2 && (
+                  <span>
+                    ok dr.{' '}
+                    {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
+                    !
+                  </span>
+                )}
+                {value === 3 && (
+                  <span>
+                    thank you, dr.{' '}
+                    {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
+                    :)
+                  </span>
+                )}
               </Typography>
-              {value === 0 &&
-                (<p>
-                  It’s great to have you join us! <br /> Here’s what your patients see when they view
-                  your profile
-              </p>)}
-              {value === 1 &&
-                (<p>
-                  Now tell us what hours suit you for online and in-person consults
-              </p>)}
-              {value === 2 &&
-                (<p>
+              {value === 0 && (
+                <p>
+                  It’s great to have you join us! <br /> Here’s what your patients see when they
+                  view your profile
+                </p>
+              )}
+              {value === 1 && (
+                <p>Now tell us what hours suit you for online and in-person consults</p>
+              )}
+              {value === 2 && (
+                <p>
                   Lastly, some money-related matters like fees, packages and how you take payments
-              </p>)}
-              {value === 3 &&
-                (<div><p>
-                  Let’s go over now to see the Apollo24x7 portal and start consultations!
-              </p>
+                </p>
+              )}
+              {value === 3 && (
+                <div>
+                  <p>Let’s go over now to see the Apollo24x7 portal and start consultations!</p>
                   <AphButton
                     variant="contained"
                     color="primary"
@@ -198,17 +206,17 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
                     onClick={() => proceedHadler()}
                   >
                     <Link to="/calendar">GET STARTED</Link>
-
-                  </AphButton></div>)}
+                  </AphButton>
+                </div>
+              )}
             </div>
-            {
-              value < 3 &&
+            {value < 3 && (
               <AppBar position="static" color="default">
                 <Tabs value={value} indicatorColor="secondary" className={classes.tabBar}>
                   {tabsHtml}
                 </Tabs>
               </AppBar>
-            }
+            )}
             {value === 0 && (
               <TabContainer>
                 {!!data.getDoctorProfile && (
@@ -246,9 +254,7 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
             )}
             {value === 3 && (
               <div className={classes.none}>
-                <TabContainer>
-                  &nbsp;
-                </TabContainer>
+                <TabContainer>&nbsp;</TabContainer>
               </div>
             )}
           </div>

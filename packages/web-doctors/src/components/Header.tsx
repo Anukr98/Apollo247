@@ -60,9 +60,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       cursor: 'pointer',
     },
-    userActive: {
-
-    },
+    userActive: {},
     loginForm: {
       width: 280,
       padding: 20,
@@ -110,12 +108,12 @@ export const Header: React.FC = (props) => {
                 {isSigningIn ? (
                   <CircularProgress />
                 ) : (
-                    <img
-                      src={
-                        !isSignedIn ? require('images/ic_account.svg') : require('images/ic_help.svg')
-                      }
-                    />
-                  )}
+                  <img
+                    src={
+                      !isSignedIn ? require('images/ic_account.svg') : require('images/ic_help.svg')
+                    }
+                  />
+                )}
               </div>
             )}
           </ProtectedWithLoginPopup>
@@ -126,12 +124,12 @@ export const Header: React.FC = (props) => {
                 <DialogContent>
                   <DialogContentText>
                     You are successfully Logged in with Apollo 24x7
-                </DialogContentText>
+                  </DialogContentText>
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={() => setIsDialogOpen(false)} color="primary" autoFocus>
                     Close
-                </Button>
+                  </Button>
                 </DialogActions>
               </Dialog>
               {/* <Button variant="text" size="small" onClick={() => signOut()} color="primary">
@@ -139,27 +137,27 @@ export const Header: React.FC = (props) => {
             </Button> */}
             </>
           ) : (
-              <Popover
-                open={isLoginPopupVisible}
-                anchorEl={avatarRef.current}
-                onClose={() => setIsLoginPopupVisible(false)}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                classes={{ paper: classes.topPopover }}
-              >
-                <Paper className={classes.loginForm}>
-                  <SignIn />
-                </Paper>
-              </Popover>
-            )}
+            <Popover
+              open={isLoginPopupVisible}
+              anchorEl={avatarRef.current}
+              onClose={() => setIsLoginPopupVisible(false)}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              classes={{ paper: classes.topPopover }}
+            >
+              <Paper className={classes.loginForm}>
+                <SignIn />
+              </Paper>
+            </Popover>
+          )}
         </div>
       </div>
-    </header >
+    </header>
   );
 };
