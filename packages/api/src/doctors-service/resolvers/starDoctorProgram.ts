@@ -7,7 +7,7 @@ export const starDoctorTypeDefs = gql`
   type DoctorsProfile {
     profile: Doctor
     paymentDetails: [PaymentDetails]
-    clinics: [clinics]
+    clinics: [Clinics]
     starDoctorTeam: [Doctor]
     consultationHours: [Consultations]
   }
