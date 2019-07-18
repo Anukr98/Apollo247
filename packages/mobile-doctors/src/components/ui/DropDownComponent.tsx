@@ -1,5 +1,5 @@
-import { DropdownGreen } from 'app/src/components/ui/Icons';
-import { theme } from 'app/src/theme/theme';
+import { DropdownGreen } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Menu, MenuOption, MenuOptions, MenuTrigger } from 'react-native-popup-menu';

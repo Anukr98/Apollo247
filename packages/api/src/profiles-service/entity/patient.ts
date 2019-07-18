@@ -1,4 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm';
+import { Validate, IsDate, IsOptional } from 'class-validator';
+import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
 
 export enum Gender {
   MALE = 'MALE',
@@ -18,44 +20,41 @@ export enum Relation {
   OTHER = 'OTHER',
 }
 
-export enum ErrorMsgs {
-  INVALID_TOKEN = 'INVALID_TOKEN',
-  INVALID_MOBILE_NUMBER = 'INVALID_MOBILE_NUMBER',
-  PRISM_AUTH_TOKEN_ERROR = 'PRISM_AUTH_TOKEN_ERROR',
-  PRISM_GET_USERS_ERROR = 'PRISM_GET_USERS_ERROR',
-  UPDATE_PROFILE_ERROR = 'UPDATE_PROFILE_ERROR',
-  PRISM_NO_DATA = 'PRISM_NO_DATA',
-}
-
 @Entity()
 export class Patient extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  firebaseId: string;
+  firebaseUid: string;
 
   @Column()
+  @Validate(NameValidator)
   firstName: string;
 
   @Column()
+  @Validate(NameValidator)
   lastName: string;
 
   @Column({ nullable: true })
   gender: Gender;
 
   @Column()
+  @Validate(MobileNumberValidator)
   mobileNumber: string;
 
   @Column({ nullable: true })
   uhid: string;
 
   @Column({ nullable: true })
+  @IsOptional()
+  @Validate(EmailValidator)
   emailAddress: string;
 
   @Column({ nullable: true })
   relation: Relation;
 
   @Column({ nullable: true })
+  @IsDate()
   dateOfBirth: Date;
 }

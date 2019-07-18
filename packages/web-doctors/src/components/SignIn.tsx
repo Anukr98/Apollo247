@@ -15,11 +15,8 @@ import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
-import { isMobileNumberValid, isDigit } from '@aph/universal/validators';
+import { isMobileNumberValid } from '@aph/universal/aphValidators';
 import { AphTextField } from '@aph/web-ui-components';
-//import { useQuery } from 'react-apollo-hooks';
-//import { IS_DOCTOR } from 'graphql/profiles';
-//import { GetPatients } from 'graphql/types/GetPatients';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -201,7 +198,7 @@ export const SignIn: React.FC = (props) => {
           inputProps={{ type: 'tel', maxLength: 10 }}
           value={mobileNumber}
           onPaste={(e) => {
-            if (!isDigit(e.clipboardData.getData('text'))) e.preventDefault();
+            if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
           }}
           onChange={(event) => {
             setMobileNumber(event.currentTarget.value);
@@ -374,7 +371,7 @@ export const SignIn: React.FC = (props) => {
           inputProps={{ type: 'tel', maxLength: 10 }}
           value={mobileNumber}
           onPaste={(e) => {
-            if (!isDigit(e.clipboardData.getData('text'))) e.preventDefault();
+            if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
           }}
           onChange={(event) => {
             setMobileNumber(event.currentTarget.value);

@@ -24,8 +24,6 @@ export interface NewProfileProps {
 
 export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const classes = useStyles();
-  const currentPatient = useCurrentPatient();
-  console.log(currentPatient, 'currentPatient1111111111');
   return (
     <div className={classes.formControl}>hgfhdgshfgjsdgfjhgsdjfgjsdhgfjgsdhfgsdhgjhfgdhsghj</div>
   );

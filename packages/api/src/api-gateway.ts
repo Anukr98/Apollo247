@@ -16,11 +16,17 @@ export interface GatewayHeaders extends IncomingHttpHeaders {
   mobilenumber: string;
 }
 
+export type Resolver<Parent, Args, Context, Result> = (
+  parent: Parent,
+  args: Args,
+  context: Context
+) => AsyncIterator<Result> | Promise<Result>;
+
+const getPortStr = (port: string) => (port === '80' ? '' : `:${port}`);
+
 const env = process.env.NODE_ENV as 'local' | 'development';
-const webPatientsPort =
-  process.env.WEB_PATIENTS_PORT === '80' ? '' : `:${process.env.WEB_PATIENTS_PORT}`;
-const webDoctorsPort =
-  process.env.WEB_DOCTORS_PORT === '80' ? '' : `:${process.env.WEB_DOCTORS_PORT}`;
+const webPatientsPort = getPortStr(process.env.WEB_PATIENTS_PORT!);
+const webDoctorsPort = getPortStr(process.env.WEB_DOCTORS_PORT!);
 
 const envToCorsOrigin = {
   local: [`http://localhost${webPatientsPort}`, `http://localhost${webDoctorsPort}`],
@@ -42,8 +48,8 @@ const envToCorsOrigin = {
           const request = requestContext.request;
           const context = (requestContext.context as any) as GatewayContext;
           if (request && request.http) {
-            request.http.headers.set('mobileNumber', context.mobileNumber);
-            request.http.headers.set('firebaseUid', context.firebaseUid);
+            request.http.headers.set('mobilenumber', context.mobileNumber);
+            request.http.headers.set('firebaseuid', context.firebaseUid);
           }
         },
       });

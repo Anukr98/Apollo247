@@ -1,4 +1,4 @@
-import { theme } from 'app/src/theme/theme';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, TextStyle, View, ViewStyle } from 'react-native';
 import { Text } from 'react-native-elements';

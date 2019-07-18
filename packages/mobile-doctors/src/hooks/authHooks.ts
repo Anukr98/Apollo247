@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { AuthContext } from 'app/src/components/AuthProvider';
+import { AuthContext } from '@aph/mobile-doctors/src/components/AuthProvider';
 
 export const useAnalytics = () => useContext(AuthContext).analytics!;
 export const useIsLoggedIn = () => useCurrentUser() != null;

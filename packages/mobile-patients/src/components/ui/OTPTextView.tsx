@@ -51,7 +51,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
     if (otpText.length === 0) {
       arrayRef.current && arrayRef.current[0].focus();
     }
-  }, []);
+  }, [otpText.length]);
 
   useEffect(() => {
     console.log(value, 'value');
@@ -96,7 +96,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
   };
 
   for (let i = 0; i < inputCount; i += 1) {
-    let defaultChars: any = [];
+    const defaultChars: any = [];
     const inputStyle = [styles.textInput, textInputStyle, { borderColor: offTintColor }];
     if (focusedInput === i) {
       inputStyle.push({ borderColor: tintColor });

@@ -1,5 +1,5 @@
 import { AsyncStorage } from 'react-native';
-import { LocalStorage } from 'app/src/helpers/commonTypes';
+import { LocalStorage } from '@aph/mobile-doctors/src/helpers/commonTypes';
 
 export const getLocalData = async () => {
   const data = await Promise.all([

@@ -7,6 +7,7 @@ import {
   TextInputKeyPressEventData,
   View,
   ViewStyle,
+  TextInputProps,
 } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -27,7 +28,6 @@ const styles = StyleSheet.create({
 });
 
 export interface OTPTextViewProps {
-  defaultValue: string;
   cellTextLength?: number;
   inputCount: number;
   offTintColor?: string;
@@ -36,6 +36,7 @@ export interface OTPTextViewProps {
   textInputStyle?: StyleProp<ViewStyle>;
   handleTextChange?: (otpText: string) => void;
   value?: string;
+  textInputProps: TextInputProps;
 }
 
 export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
@@ -44,14 +45,13 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
   const arrayRef = useRef<any[]>([]);
 
   const {
-    defaultValue,
     inputCount = 4,
     offTintColor,
     tintColor,
     containerStyle,
     textInputStyle,
     value,
-    ...textInputProps
+    textInputProps,
   } = props;
 
   const TextInputs = [];
@@ -101,12 +101,11 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
         otpArray[i] = '';
       }
     }
-    props.handleTextChange(otpArray.join(''));
+    props.handleTextChange && props.handleTextChange(otpArray.join(''));
     setotpText(otpArray);
   };
 
   for (let i = 0; i < inputCount; i += 1) {
-    const defaultChars: string[] = [];
     const inputStyle = [styles.textInput, textInputStyle, { borderColor: offTintColor }];
     if (focusedInput === i) {
       inputStyle.push({ borderColor: tintColor });
@@ -116,7 +115,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
       <TextInput
         ref={(ref) => (arrayRef.current[i] = ref)}
         key={i}
-        defaultValue={defaultValue ? defaultChars[i] : ''}
+        defaultValue={''}
         style={inputStyle}
         maxLength={1}
         onFocus={() => onInputFocus(i)}

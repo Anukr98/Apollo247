@@ -1,10 +1,9 @@
-import { ProfileData } from 'app/src/components/ProfileSetup';
-import { DoctorCard } from 'app/src/components/ui/DoctorCard';
-import { Add, Send, Star } from 'app/src/components/ui/Icons';
-import { SquareCardWithTitle } from 'app/src/components/ui/SquareCardWithTitle';
-import { theme } from 'app/src/theme/theme';
+import { DoctorCard } from '@aph/mobile-doctors/src/components/ui/DoctorCard';
+import { Add, Send, Star } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 
 const styles = StyleSheet.create({
@@ -84,10 +83,11 @@ const styles = StyleSheet.create({
 });
 
 export interface ProfileProps {
-  profileObject: ProfileData;
+  profileData: any;
 }
 
-export const Profile: React.FC<ProfileProps> = (props) => {
+export const Profile: React.FC<ProfileProps> = (profileData) => {
+  console.log('profile', profileData.profileData.getDoctorProfile);
   const [addshow, setAddShow] = useState<boolean>(false);
 
   const profileRow = (title: string, description: string) => {
@@ -106,47 +106,57 @@ export const Profile: React.FC<ProfileProps> = (props) => {
         <View style={styles.cardView}>
           <Image
             style={styles.imageview}
-            source={{
-              uri: props.profileObject.uri,
-            }}
+            // source={{
+            //   uri: props.profileObject.uri,
+            // }}
+            source={require('../../src/images/doctor/doctor.png')}
           />
-          {props.profileObject.isStarDoctor ? <Star style={styles.starIconStyle}></Star> : null}
+          {profileData.profileData.getDoctorProfile.isStarDoctor ? (
+            <Star style={styles.starIconStyle}></Star>
+          ) : null}
           <View style={{ flexDirection: 'column', marginLeft: 16 }}>
             <Text style={styles.drname}>
-              {props.profileObject.firstName + ' ' + props.profileObject.lastName}
+              {profileData.profileData.getDoctorProfile.firstName +
+                ' ' +
+                profileData.profileData.getDoctorProfile.lastName}
             </Text>
             <Text style={styles.drnametext}>
-              {props.profileObject.designation} | {props.profileObject.experience} YRS
+              {profileData.profileData.getDoctorProfile.speciality +
+                ' ' +
+                profileData.profileData.getDoctorProfile.experience}
+              YRS
             </Text>
             <View style={styles.understatusline} />
           </View>
-          {profileRow('Education', props.profileObject.education)}
-          {profileRow('Speciality', props.profileObject.speciality)}
-          {profileRow('Services', props.profileObject.services)}
-          {profileRow('Awards', props.profileObject.awards)}
-          {profileRow('Speaks', props.profileObject.languages)}
-          {profileRow('MCI Number', props.profileObject.mcinumber)}
-          {profileRow('In-person Consult Location', props.profileObject.inpersonconsult)}
+          {profileRow('Education', profileData.profileData.getDoctorProfile.education)}
+          {profileRow('Speciality', profileData.profileData.getDoctorProfile.speciality)}
+          {profileRow('Services', profileData.profileData.getDoctorProfile.services)}
+          {profileRow('Awards', profileData.profileData.getDoctorProfile.awards)}
+          {profileRow('Speaks', profileData.profileData.getDoctorProfile.languages)}
+          {profileRow('MCI Number', profileData.profileData.getDoctorProfile.registrationNumber)}
+          {profileRow('In-person Consult Location', 'Homeocare Hospital,Hyderabad')}
         </View>
       </SquareCardWithTitle>
 
       <SquareCardWithTitle
-        title={`Your Star Doctors Team (${props.profileObject.starDoctorTeam.length})`}
+        title={`Your Star Doctors Team (${profileData.profileData.getDoctorProfile.starDoctorTeam.length})`}
         containerStyle={{ marginTop: 20 }}
       >
         <View style={{ height: 16 }} />
-        {props.profileObject.starDoctorTeam.map((starDoctor, i) => (
-          <DoctorCard
-            key={i}
-            image={starDoctor.uri}
-            doctorName={starDoctor.firstName}
-            experience={starDoctor.experience}
-            specialization={starDoctor.designation}
-            education={starDoctor.education}
-            location={starDoctor.services}
-            inviteStatus={starDoctor.inviteStatus}
-          />
-        ))}
+        {profileData.profileData.getDoctorProfile.starDoctorTeam.map(
+          (starDoctor: any, i: number) => (
+            <DoctorCard
+              key={i}
+              image={starDoctor.uri}
+              doctorName={starDoctor.firstName + ' ' + starDoctor.lastName}
+              experience={starDoctor.experience}
+              specialization={'GENERAL PHYSICIAN '} //{starDoctor.designation}
+              education={'MBBS, Internal Medicine'} //{starDoctor.education}
+              location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.services}
+              inviteStatus={starDoctor.inviteStatus}
+            />
+          )
+        )}
         {!addshow ? (
           <View style={{ flexDirection: 'row', margin: 20 }}>
             <Add />
