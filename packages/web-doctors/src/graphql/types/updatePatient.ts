@@ -5,10 +5,10 @@
 import { UpdatePatientInput, Relation, Gender } from "./globalTypes";
 
 // ====================================================
-// GraphQL mutation operation: updatePatient
+// GraphQL mutation operation: UpdatePatient
 // ====================================================
 
-export interface updatePatient_updatePatient_patient {
+export interface UpdatePatient_updatePatient_patient {
   __typename: "Patient";
   id: string;
   mobileNumber: string | null;
@@ -21,15 +21,15 @@ export interface updatePatient_updatePatient_patient {
   emailAddress: string | null;
 }
 
-export interface updatePatient_updatePatient {
+export interface UpdatePatient_updatePatient {
   __typename: "UpdatePatientResult";
-  patient: updatePatient_updatePatient_patient | null;
+  patient: UpdatePatient_updatePatient_patient | null;
 }
 
-export interface updatePatient {
-  updatePatient: updatePatient_updatePatient;
+export interface UpdatePatient {
+  updatePatient: UpdatePatient_updatePatient;
 }
 
-export interface updatePatientVariables {
+export interface UpdatePatientVariables {
   patientInput: UpdatePatientInput;
 }
