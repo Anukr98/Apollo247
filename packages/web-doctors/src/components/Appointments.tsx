@@ -109,7 +109,7 @@ const useStyles = makeStyles((theme: Theme) =>
     step: {
       border: '1px solid pink',
       '&.upcoming': {
-        border: '1px solid magenta'
+        border: '1px solid magenta',
       },
     },
 
@@ -119,11 +119,11 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#0087ba',
       },
       '& .stepContent': {
-        border: '1px solid red'
+        border: '1px solid red',
       },
       '& .stepIcon': {
-        color: 'blue'
-      }
+        color: 'blue',
+      },
     },
   })
 );
@@ -178,15 +178,15 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             className={stepsCompleted + 1 === idx ? 'upcoming' : ''}
             classes={{
               root: classes.step,
-              completed: classes.completed
+              completed: classes.completed,
             }}
           >
             <StepLabel
               classes={{ iconContainer: classes.iconContainer }}
               StepIconProps={{
                 classes: {
-                  root: 'stepIcon'
-                }
+                  root: 'stepIcon',
+                },
               }}
             >
               <Typography variant="h5">
@@ -198,7 +198,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             </StepLabel>
             <StepContent
               classes={{
-                root: 'stepContent'
+                root: 'stepContent',
               }}
             >
               {/* card view start */}
