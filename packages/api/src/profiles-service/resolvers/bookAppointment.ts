@@ -26,8 +26,14 @@ export const bookAppointmentTypeDefs = gql`
   }
 
   type BookAppointmentResult {
-    id: ID!
-    message: String
+    id: ID
+    patientId: ID
+    doctorId: ID
+    appointmentDate: Date
+    appointmentTime: Time
+    appointmentType: APPOINTMENT_TYPE
+    hospitalId: ID
+    status: STATUS
   }
 
   extend type Mutation {
@@ -37,7 +43,13 @@ export const bookAppointmentTypeDefs = gql`
 
 type BookAppointmentResult = {
   id: string;
-  message: string;
+  patientId: string;
+  doctorId: string;
+  appointmentDate: Date;
+  appointmentTime: Time;
+  appointmentType: APPOINTMENT_TYPE;
+  hospitalId: string;
+  status: STATUS;
 };
 
 type BookAppointmentInput = {
@@ -67,17 +79,15 @@ const bookAppointment: Resolver<
   ProfilesServiceContext,
   BookAppointmentResult
 > = async (parent, { appointmentInput }) => {
-  const appointmentAttrs: Partial<Appointment> = {
+  const appointmentAttrs: Appointment = {
     ...appointmentInput,
     status: STATUS.IN_PROGRESS,
   };
-  const appt = await Appointments.create(appointmentAttrs)
+  return await Appointments.create(appointmentAttrs)
     .save()
     .catch((createErrors) => {
       throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
     });
-
-  return { id: appt.id, message: 'Success' };
 };
 
 export const bookAppointmentResolvers = {
