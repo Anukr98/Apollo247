@@ -1,11 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm';
 import { IsDate } from 'class-validator';
 
 export enum STATUS {
-    INPROGRESS = 'INPROGRESS',
-    CONFIRMED = 'CONFIRMED',
-    CANCELLED = 'CANCELLED'
-  }
+  IN_PROGRESS = 'IN_PROGRESS',
+  CONFIRMED = 'CONFIRMED',
+  CANCELLED = 'CANCELLED',
+}
 
 @Entity()
 export class Appointments extends BaseEntity {
@@ -18,11 +18,11 @@ export class Appointments extends BaseEntity {
   @Column()
   doctorId: string;
 
-  @Column({type:"date"})
+  @Column({ type: 'date' })
   @IsDate()
   appointmentDate: Date;
 
-  @Column({type:"time"})
+  @Column({ type: 'time' })
   appointmentTime: string;
 
   @Column()
@@ -31,11 +31,9 @@ export class Appointments extends BaseEntity {
   @Column()
   status: STATUS;
 
-  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   bookingDate: string;
 
   @Column()
   hospitalId: string;
-
-
 }
