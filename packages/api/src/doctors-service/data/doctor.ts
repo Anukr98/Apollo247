@@ -1,4 +1,4 @@
-import { Doctor } from 'doctors-service/resolvers/doctorResolvers';
+import { Doctor } from 'doctors-service/resolvers/getDoctors';
 export const doctors: Doctor[] = [
   {
     id: 'c4c0f83e-7b8b-4033-8ab7-ab49b07d5771',

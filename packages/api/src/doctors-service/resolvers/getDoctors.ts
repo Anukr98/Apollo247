@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
-import { Resolver } from 'doctors-service/doctors-service';
-import DoctorsData from 'doctors-service/data/doctors.json';
+import { Resolver } from 'api-gateway';
+import { DoctorsData } from 'doctors-service/data/doctorProfile';
+import { DoctorsServiceContext } from 'doctors-service/doctors-service';
 export const doctorTypeDefs = gql`
   type clinics {
     name: String
@@ -59,7 +60,6 @@ export const doctorTypeDefs = gql`
     getDoctors: [DoctorProfile]
     getDoctorProfile: DoctorProfile
     getDoctorProfileById(id: String): DoctorProfile
-    getDoctorsForStarDoctorProgram(searchString: String): [DoctorProfile]
   }
 `;
 
@@ -109,7 +109,7 @@ export type Doctor = {
   profilePicture: String;
 };
 
-type DoctorProfile = {
+export type DoctorProfile = {
   profile: Doctor;
   clinics: clinics[];
   starDoctorTeam: Partial<Doctor>[];
@@ -117,15 +117,15 @@ type DoctorProfile = {
   paymentDetails: PaymentDetails[];
 };
 
-const getDoctors: Resolver<any> = async (parent, args): Promise<JSON> => {
+const getDoctors: Resolver<null, {}, DoctorsServiceContext, JSON> = async (parent, args) => {
   return JSON.parse(JSON.stringify(DoctorsData));
 };
 
-const getDoctorProfile: Resolver<any> = async (
+const getDoctorProfile: Resolver<null, {}, DoctorsServiceContext, DoctorProfile> = async (
   parent,
   args,
   { mobileNumber }
-): Promise<DoctorProfile> => {
+) => {
   mobileNumber = '1234567890';
   const doctor = DoctorsData.find((item) => {
     return item.profile.mobileNumber === mobileNumber;
@@ -133,34 +133,22 @@ const getDoctorProfile: Resolver<any> = async (
   return <DoctorProfile>doctor;
 };
 
-const getDoctorProfileById: Resolver<any, { id: String }> = async (
-  parent,
-  args
-): Promise<DoctorProfile> => {
+const getDoctorProfileById: Resolver<
+  null,
+  { id: String },
+  DoctorsServiceContext,
+  DoctorProfile
+> = async (parent, args) => {
   const doctor = DoctorsData.find((item) => {
     return item.profile.id === args.id;
   });
   return <DoctorProfile>doctor;
 };
 
-const getDoctorsForStarDoctorProgram: Resolver<any, { searchString: string }> = async (
-  parent,
-  args
-): Promise<JSON> => {
-  const result = DoctorsData.filter(
-    (obj) =>
-      obj.profile.firstName.match(args.searchString) &&
-      !obj.profile.isStarDoctor &&
-      obj.profile.inviteStatus !== 'accepted'
-  );
-  return JSON.parse(JSON.stringify(result));
-};
-
 export const doctorResolvers = {
   Query: {
     getDoctors,
     getDoctorProfile,
-    getDoctorsForStarDoctorProgram,
     getDoctorProfileById,
   },
 };
