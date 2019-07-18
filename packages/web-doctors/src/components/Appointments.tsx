@@ -175,10 +175,11 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           <Step
             key={idx}
             active={true}
-            className={stepsCompleted + 1 === idx ? 'upcoming' : ''}
+            className={
+              activeStep === idx ? 'upcoming' : activeStep - 1 >= idx ? classes.completed : ''
+            }
             classes={{
               root: classes.step,
-              completed: classes.completed,
             }}
           >
             <StepLabel
