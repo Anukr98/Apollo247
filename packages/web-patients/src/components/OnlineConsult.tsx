@@ -3,6 +3,7 @@ import { Theme } from '@material-ui/core';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
+import { DayTimeSlots } from 'components/DayTimeSlots';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -59,6 +60,9 @@ const useStyles = makeStyles((theme: Theme) => {
       height: '50vh',
       overflow: 'auto',
     },
+    timeSlots: {
+      paddingTop: 0,
+    },
   };
 });
 
@@ -83,6 +87,9 @@ export const OnlineConsult: React.FC = (props) => {
         </div>
         <div className={classes.consultGroup}>
           <AphCalendar />
+        </div>
+        <div className={`${classes.consultGroup} ${classes.timeSlots}`}>
+          <DayTimeSlots />
         </div>
       </div>
       <div className={classes.bottomActions}>
