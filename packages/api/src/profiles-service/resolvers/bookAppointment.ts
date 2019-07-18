@@ -68,7 +68,6 @@ type Appointment = {
   hospitalId?: string;
   status: STATUS;
 };
-// type AppointmentInput = Omit<Appointment, 'id'>
 
 type AppointmentInputArgs = { appointmentInput: BookAppointmentInput };
 
