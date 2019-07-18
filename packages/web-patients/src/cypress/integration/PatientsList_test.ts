@@ -50,8 +50,9 @@ describe('PatientsList', () => {
     otpInput.each(($el) => {
       cy.wrap($el).type('9');
     });
-    const otpEntry = cy.get('span').contains('OK');
-    otpEntry.click().wait(3000);
+    // const otpEntry = cy.get('span').contains('OK', 1000);
+    const otpEntry = cy.get('form').find('button[type*="submit"]'); //.contains('OK', 1000);
+    otpEntry.click().wait(4000);
     const confirmation = cy.get('p');
     confirmation.within(($p) => {
       expect($p).to.contain('Let us quickly get to know you so that we can get you the best help');
