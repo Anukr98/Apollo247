@@ -3,10 +3,13 @@ import { Resolver } from 'api-gateway';
 import { DoctorsData } from 'doctors-service/data/doctorProfile';
 import { DoctorsServiceContext } from 'doctors-service/doctors-service';
 export const doctorTypeDefs = gql`
-  type clinics {
+  type Clinics {
     name: String
-    location: String
     image: String
+    addressLine1: String
+    addressLine2: String
+    addressLine3: String
+    city: String
   }
 
   type Consultations {
@@ -24,6 +27,7 @@ export const doctorTypeDefs = gql`
 
   type Doctor {
     id: String
+    salutation: String
     firstName: String
     lastName: String
     mobileNumber: String
@@ -44,15 +48,14 @@ export const doctorTypeDefs = gql`
     onlineConsultationFees: String
     physicalConsultationFees: String
     package: String
-    typeOfConsult: String
     inviteStatus: String
-    profilePicture: String
+    address: String
   }
 
   type DoctorProfile {
     profile: Doctor
     paymentDetails: [PaymentDetails]
-    clinics: [clinics]
+    clinics: [Clinics]
     starDoctorTeam: [Doctor]
     consultationHours: [Consultations]
   }
@@ -63,10 +66,13 @@ export const doctorTypeDefs = gql`
   }
 `;
 
-type clinics = {
+type Clinics = {
   name: String;
-  location: String;
   image: String;
+  addressLine1: String;
+  addressLine2: String;
+  addressLine3: String;
+  city: String;
 };
 
 type Consultations = {
@@ -84,6 +90,7 @@ type PaymentDetails = {
 
 export type Doctor = {
   id: String;
+  salutation: String;
   firstName: String;
   lastName: String;
   mobileNumber: String;
@@ -104,14 +111,13 @@ export type Doctor = {
   onlineConsultationFees: String;
   physicalConsultationFees: String;
   package: String;
-  typeOfConsult: String;
   inviteStatus: String;
-  profilePicture: String;
+  address: String;
 };
 
 export type DoctorProfile = {
   profile: Doctor;
-  clinics: clinics[];
+  clinics: Clinics[];
   starDoctorTeam: Partial<Doctor>[];
   consultationHours: Consultations[];
   paymentDetails: PaymentDetails[];
