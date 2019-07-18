@@ -17,14 +17,14 @@ export const bookAppointmentTypeDefs = gql`
   }
 
   type Appointment {
-    id: ID
-    patientId: ID
-    doctorId: ID
-    appointmentDate: Date
-    appointmentTime: Time
-    appointmentType: APPOINTMENT_TYPE
+    id: ID!
+    patientId: ID!
+    doctorId: ID!
+    appointmentDate: Date!
+    appointmentTime: Time!
+    appointmentType: APPOINTMENT_TYPE!
     hospitalId: ID
-    status: STATUS
+    status: STATUS!
   }
 
   input BookAppointmentInput {
