@@ -7,6 +7,11 @@ export enum STATUS {
   CANCELLED = 'CANCELLED',
 }
 
+export enum APPOINTMENT_TYPE {
+  ONLINE = 'ONLINE',
+  PHYSICAL = 'PHYSICAL',
+}
+
 @Entity()
 export class Appointments extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -23,16 +28,16 @@ export class Appointments extends BaseEntity {
   appointmentDate: Date;
 
   @Column({ type: 'time' })
-  appointmentTime: string;
+  appointmentTime: Date;
 
   @Column()
-  appointmentType: string;
+  appointmentType: APPOINTMENT_TYPE;
 
   @Column()
   status: STATUS;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  bookingDate: string;
+  bookingDate: Date;
 
   @Column()
   hospitalId: string;

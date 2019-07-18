@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { Appointments, STATUS } from 'profiles-service/entity/appointment';
+import { Appointments, STATUS, APPOINTMENT_TYPE } from 'profiles-service/entity/appointment';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 import { ProfilesServiceContext } from 'profiles-service/profiles-service';
@@ -11,18 +11,23 @@ export const bookAppointmentTypeDefs = gql`
     CANCELLED
   }
 
+  enum APPOINTMENT_TYPE {
+    ONLINE
+    PHYSICAL
+  }
+
   input BookAppointmentInput {
     patientId: String
     doctorId: String
     appointmentDate: Date
     appointmentTime: Time
-    appointmentType: String
+    appointmentType: APPOINTMENT_TYPE
     hospitalId: String
     status: STATUS
   }
 
   type BookAppointmentResult {
-    appointmentId: String
+    id: ID!
     message: String
   }
 
@@ -32,7 +37,7 @@ export const bookAppointmentTypeDefs = gql`
 `;
 
 type BookAppointmentResult = {
-  appointmentId: string;
+  id: string;
   message: string;
 };
 
@@ -41,7 +46,7 @@ type BookAppointmentInput = {
   doctorId: string;
   appointmentDate: Date;
   appointmentTime: Time;
-  appointmentType: string;
+  appointmentType: APPOINTMENT_TYPE;
   hospitalId: string;
   status: STATUS;
 };
@@ -62,7 +67,7 @@ const bookAppointment: Resolver<
       throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
     });
 
-  return { appointmentId: appt.id, message: 'Success' };
+  return { id: appt.id, message: 'Success' };
 };
 
 export const bookAppointmentResolvers = {
