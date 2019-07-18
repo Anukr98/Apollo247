@@ -27,6 +27,7 @@ export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients
   currentPatient: Patient | null;
   allCurrentPatients: Patient[] | null;
   setCurrentPatient: ((p: Patient) => void) | null;
+  setAllCurrentPatients: ((allCurrentPatients: Patient[]) => void) | null;
 
   sendOtp: ((phoneNumber: string | null) => Promise<unknown>) | null;
   sendOtpError: boolean;
@@ -39,12 +40,14 @@ export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients
   signInError: boolean;
   isSigningIn: boolean;
   signOut: (() => Promise<void>) | null;
+  getUserData: (() => Promise<unknown>) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
   currentPatient: null,
   setCurrentPatient: null,
   allCurrentPatients: null,
+  setAllCurrentPatients: null,
 
   sendOtp: null,
   sendOtpError: false,
@@ -59,6 +62,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
   signOut: null,
 
   analytics: null,
+  getUserData: null,
 });
 
 let apolloClient: ApolloClient<any>;
@@ -147,7 +151,28 @@ export const AuthProvider: React.FC = (props) => {
     });
   };
 
-  const signOut = () => auth.signOut();
+  const getUserData = async () => {
+    const [signInResult, signInError] = await wait(
+      apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
+        mutation: PATIENT_SIGN_IN,
+      })
+    );
+    if (signInError || !signInResult.data || !signInResult.data.patientSignIn.patients) {
+      if (signInError) console.log(signInError);
+      console.log('getUserData signInError', signInError);
+      return;
+    }
+    const patients = signInResult.data.patientSignIn.patients;
+    const me = patients.find((p) => p.relation === Relation.ME) || patients[0];
+    setAllCurrentPatients(patients);
+    setCurrentPatient(me);
+    console.log('getUserData me', me);
+  };
+
+  const signOut = () => {
+    auth.signOut();
+    setCurrentPatient(null);
+  };
 
   useEffect(() => {
     setAnalytics(firebase.analytics());
@@ -162,7 +187,7 @@ export const AuthProvider: React.FC = (props) => {
         const [jwt, jwtError] = await wait(user.getIdToken());
         if (jwtError || !jwt) {
           console.log('authprovider jwtError', jwtError);
-          if (jwtError) console.error(jwtError);
+          if (jwtError) console.log(jwtError);
           authStateRegistered = false;
           setIsSigningIn(false);
           setSignInError(true);
@@ -175,11 +200,10 @@ export const AuthProvider: React.FC = (props) => {
         const [signInResult, signInError] = await wait(
           apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
             mutation: PATIENT_SIGN_IN,
-            variables: { jwt },
           })
         );
         if (signInError || !signInResult.data || !signInResult.data.patientSignIn.patients) {
-          if (signInError) console.error(signInError);
+          if (signInError) console.log(signInError);
           authStateRegistered = false;
           setSignInError(true);
           setIsSigningIn(false);
@@ -193,9 +217,10 @@ export const AuthProvider: React.FC = (props) => {
         setSignInError(false);
         console.log('authprovider me', me);
         setIsSigningIn(false);
-        AsyncStorage.setItem('userLoggedIn', 'false');
-        AsyncStorage.setItem('signUp', 'false');
-        AsyncStorage.setItem('multiSignUp', 'false');
+        authStateRegistered = false;
+        // AsyncStorage.setItem('userLoggedIn', 'false');
+        // AsyncStorage.setItem('signUp', 'false');
+        // AsyncStorage.setItem('multiSignUp', 'false');
       }
     });
   }, [auth]);
@@ -222,6 +247,8 @@ export const AuthProvider: React.FC = (props) => {
             signOut,
 
             analytics,
+            setAllCurrentPatients,
+            getUserData,
           }}
         >
           {props.children}

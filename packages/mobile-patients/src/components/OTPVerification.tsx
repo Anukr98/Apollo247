@@ -70,7 +70,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [otp, setOtp] = useState<string>('');
   const [isresent, setIsresent] = useState<boolean>(false);
 
-  const { verifyOtp, sendOtp, isSigningIn, currentPatient, isVerifyingOtp } = useAuth();
+  const {
+    verifyOtp,
+    sendOtp,
+    isSigningIn,
+    currentPatient,
+    isVerifyingOtp,
+    signInError,
+  } = useAuth();
 
   const startInterval = (timer: number) => {
     const intervalId = setInterval(() => {
@@ -199,7 +206,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           props.navigation.replace(AppRoutes.TabBar);
         }
       } else {
-        if (currentPatient.firstName == null) {
+        if (currentPatient.firstName == '') {
           props.navigation.replace(AppRoutes.SignUp);
         } else {
           AsyncStorage.setItem('userLoggedIn', 'true');
@@ -208,6 +215,13 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       }
     }
   }, [isSigningIn, currentPatient, props.navigation]);
+
+  useEffect(() => {
+    if (signInError) {
+      Alert.alert('Apollo', 'Something went wrong. Please try again.');
+      // props.navigation.replace(AppRoutes.Login);
+    }
+  }, [signInError, props.navigation]);
 
   const onClickOk = async () => {
     console.log('otp OTPVerification', otp);

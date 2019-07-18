@@ -107,8 +107,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const [lastName, setLastName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
-  const { currentPatient } = useAuth();
-  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
+  const { currentPatient, setCurrentPatient, setAllCurrentPatients } = useAuth();
+  const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' ' ? false : value == '' || /^[a-zA-Z ]+$/.test(value) ? true : false;
@@ -281,7 +281,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   if (validationMessage) {
                     Alert.alert('Error', validationMessage);
                   } else {
-                    setVerifyingPhonenNumber(true);
+                    setVerifyingPhoneNumber(true);
 
                     const formatDate = Moment(date, 'DD/MM/YYYY').format('MM/DD/YYYY');
 
@@ -306,15 +306,25 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                 }}
               >
                 {data
-                  ? (setVerifyingPhonenNumber(false),
-                    console.log('data', data),
+                  ? (setVerifyingPhoneNumber(false),
+                    console.log('data', data.updatePatient.patient),
+                    setCurrentPatient(data.updatePatient.patient),
+                    setAllCurrentPatients([data.updatePatient.patient]),
                     AsyncStorage.setItem('userLoggedIn', 'true'),
                     AsyncStorage.setItem('signUp', 'false'),
                     AsyncStorage.setItem('gotIt', 'false'),
                     props.navigation.navigate(AppRoutes.TabBar))
                   : null}
-                {loading ? setVerifyingPhonenNumber(false) : setVerifyingPhonenNumber(false)}
-                {error ? setVerifyingPhonenNumber(false) : setVerifyingPhonenNumber(false)}
+                {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
+                {error
+                  ? (setVerifyingPhoneNumber(false),
+                    Alert.alert('Apollo', error.message),
+                    console.log('updatePatient error', error),
+                    AsyncStorage.setItem('userLoggedIn', 'false'),
+                    AsyncStorage.setItem('multiSignUp', 'false'),
+                    AsyncStorage.setItem('signUp', 'false'),
+                    props.navigation.replace(AppRoutes.Login))
+                  : null}
               </Button>
             )}
           </Mutation>

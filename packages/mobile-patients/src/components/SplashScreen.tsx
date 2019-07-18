@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { currentPatient, isSigningIn } = useAuth();
+  const { currentPatient, isSigningIn, signInError } = useAuth();
 
   useEffect(() => {
     console.log('SplashScreen currentUser', currentPatient);
@@ -61,6 +61,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     fetchData();
     SplashScreenView.hide();
   }, [currentPatient, props.navigation, isSigningIn]);
+
+  useEffect(() => {
+    console.log('SplashScreen signInError', signInError);
+
+    firebase.analytics().setCurrentScreen('SplashScreen');
+
+    if (signInError) {
+      AsyncStorage.setItem('userLoggedIn', 'false');
+      AsyncStorage.setItem('multiSignUp', 'false');
+      AsyncStorage.setItem('signUp', 'false');
+      props.navigation.replace(AppRoutes.Login);
+    }
+
+    SplashScreenView.hide();
+  }, [props.navigation, signInError]);
 
   return (
     <View style={styles.mainView}>

@@ -3,13 +3,11 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DoctorImage, DropdownGreen, Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
-import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
   AsyncStorage,
   Dimensions,
   Image,
@@ -24,7 +22,6 @@ import {
 import firebase from 'react-native-firebase';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -44,38 +41,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: '#fc9916',
   },
-  // showPopUp: {
-  //   backgroundColor: 'rgba(0,0,0,0.2)',
-  //   position: 'absolute',
-  //   width: '100%',
-  //   height: '100%',
-  //   justifyContent: 'flex-end',
-  //   flex: 1,
-  // },
-  // subViewPopup: {
-  //   backgroundColor: 'white',
-  //   width: '100%',
-  //   borderTopLeftRadius: 10,
-  //   borderTopRightRadius: 10,
-  //   shadowColor: '#808080',
-  //   shadowOffset: { width: 0, height: 10 },
-  //   shadowOpacity: 0.5,
-  //   shadowRadius: 10,
-  //   elevation: 15,
-  // },
-  // congratulationsTextStyle: {
-  //   marginHorizontal: 24,
-  //   marginTop: 28,
-  //   color: '#02475b',
-  //   ...theme.fonts.IBMPlexSansSemiBold(18),
-  // },
-  // congratulationsDescriptionStyle: {
-  //   marginHorizontal: 24,
-  //   marginTop: 8,
-  //   color: theme.colors.SKY_BLUE,
-  //   ...theme.fonts.IBMPlexSansMedium(17),
-  //   lineHeight: 24,
-  // },
   hiTextStyle: {
     marginLeft: 20,
     color: '#02475b',
@@ -179,96 +144,14 @@ const arrayTest: ArrayTest[] = [
   },
 ];
 
-// const arrayTest: ArrayTest[] = [
-//   {
-//     title: 'Are you looking for a particular doctor?',
-//     descripiton: 'SEARCH SPECIALIST',
-//   },
-//   {
-//     title: 'Do you want to buy some medicines?',
-//     descripiton: 'SEARCH MEDICINE',
-//   },
-//   {
-//     title: 'Do you want to get some tests done?',
-//     descripiton: 'BOOK A TEST',
-//   },
-// ];
-
-// type ArrayDoctor = {
-//   name: string;
-//   status: string;
-//   Program: string;
-//   doctors: string;
-//   Patients: string;
-// };
-
-// const arrayDoctor: ArrayDoctor[] = [
-//   {
-//     name: 'Dr. Narayana Rao’s',
-//     status: 'AVAILABLE',
-//     Program: 'Star Cardiology Program',
-//     doctors: '09',
-//     Patients: '18',
-//   },
-//   {
-//     name: 'Dr. Simran Rao',
-//     status: 'AVAILABLE',
-//     Program: 'Star Cardiology Program',
-//     doctors: '05',
-//     Patients: '20',
-//   },
-//   {
-//     name: 'Dr. Sekhar Rao’s',
-//     status: 'AVAILABLE',
-//     Program: 'Star Cardiology Program',
-//     doctors: '12',
-//     Patients: '10',
-//   },
-// ];
-
 export interface ConsultRoomProps extends NavigationScreenProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
-  // const arrayTest = string.home.arrayTest;
   const startDoctor = string.home.startDoctor;
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
   const [showPopUp, setshowPopUp] = useState<boolean>(true);
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [userName, setuserName] = useState<string>('');
-  const { currentPatient, analytics, allCurrentPatients } = useAuth();
-  const [firebaseCalled, setFirebaseCalled] = useState<boolean>(false);
-  async function fetchFirebase() {
-    if (!userName) {
-      console.log('else');
-
-      if (!firebaseCalled) {
-        firebase.auth().onAuthStateChanged(async (updatedUser) => {
-          if (updatedUser) {
-            const token = await updatedUser!.getIdToken();
-            const patientSign = await callApiWithToken(token);
-            const patient = patientSign.data.patientSignIn.patients[0];
-            const errMsg =
-              patientSign.data.patientSignIn.errors &&
-              patientSign.data.patientSignIn.errors.messages[0];
-
-            console.log('patient', patient);
-            setFirebaseCalled(true);
-
-            setTimeout(() => {
-              if (errMsg) {
-                Alert.alert('Error', errMsg);
-              } else {
-              }
-            }, 1000);
-          } else {
-            console.log('no new user');
-          }
-        });
-      }
-    }
-  }
-  fetchFirebase();
-
-  // analytics.setCurrentScreen(AppRoutes.ConsultRoom);
+  const { currentPatient, analytics, allCurrentPatients, getUserData } = useAuth();
 
   useEffect(() => {
     let userName =
@@ -284,6 +167,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const userLoggedIn = await AsyncStorage.getItem('gotIt');
       if (userLoggedIn == 'true') {
         setshowPopUp(false);
+        getUserData();
+      } else {
+        getUserData();
       }
     }
     fetchData();

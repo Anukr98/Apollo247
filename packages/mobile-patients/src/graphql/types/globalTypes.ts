@@ -7,21 +7,21 @@
 //==============================================================
 
 export enum Gender {
-  FEMALE = "FEMALE",
-  MALE = "MALE",
-  OTHER = "OTHER",
+  FEMALE = 'FEMALE',
+  MALE = 'MALE',
+  OTHER = 'OTHER',
 }
 
 export enum Relation {
-  BROTHER = "BROTHER",
-  COUSIN = "COUSIN",
-  FATHER = "FATHER",
-  HUSBAND = "HUSBAND",
-  ME = "ME",
-  MOTHER = "MOTHER",
-  OTHER = "OTHER",
-  SISTER = "SISTER",
-  WIFE = "WIFE",
+  BROTHER = 'BROTHER',
+  COUSIN = 'COUSIN',
+  FATHER = 'FATHER',
+  HUSBAND = 'HUSBAND',
+  ME = 'ME',
+  MOTHER = 'MOTHER',
+  OTHER = 'OTHER',
+  SISTER = 'SISTER',
+  WIFE = 'WIFE',
 }
 
 export interface UpdatePatientInput {

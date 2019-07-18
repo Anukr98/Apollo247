@@ -28,6 +28,9 @@ export const useAuth = () => {
 
   const analytics = useAnalytics();
 
+  const setAllCurrentPatients = useAuthContext().setAllCurrentPatients!;
+  const getUserData = useAuthContext().getUserData!;
+
   return {
     currentPatient,
     setCurrentPatient,
@@ -47,5 +50,9 @@ export const useAuth = () => {
     signOut,
 
     analytics,
+
+    setAllCurrentPatients,
+
+    getUserData,
   };
 };
