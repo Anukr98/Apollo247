@@ -22,7 +22,7 @@ export const bookAppointmentTypeDefs = gql`
     appointmentDate: Date!
     appointmentTime: Time!
     appointmentType: APPOINTMENT_TYPE!
-    hospitalId: String
+    hospitalId: ID
     status: STATUS
   }
 
