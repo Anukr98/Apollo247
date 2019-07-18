@@ -203,14 +203,6 @@ export const AuthProvider: React.FC = (props) => {
             mutation: GET_DOCTOR_PROFILE,
           })
         );
-        console.log(signInResult);
-        console.log(signInError);
-        // const [signInResult, signInError] = await wait(
-        //   apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
-        //     mutation: PATIENT_SIGN_IN,
-        //     variables: { jwt },
-        //   })
-        // );
         if (signInError || !signInResult.data || !signInResult.data.getDoctorProfile) {
           if (signInError) console.error(signInError);
           setSignInError(true);
@@ -219,9 +211,6 @@ export const AuthProvider: React.FC = (props) => {
           return;
         }
         const doctors = signInResult.data.getDoctorProfile;
-        console.log(doctors);
-        // const me = patients.find((p) => p.relation === Relation.ME) || patients[0];
-        //setAllCurrentPatients(doctors);
         setCurrentPatient(doctors);
         setSignInError(false);
       }
