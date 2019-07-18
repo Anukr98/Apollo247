@@ -23,7 +23,6 @@ export const bookAppointmentTypeDefs = gql`
     appointmentTime: Time!
     appointmentType: APPOINTMENT_TYPE!
     hospitalId: ID
-    status: STATUS
   }
 
   type BookAppointmentResult {
@@ -48,6 +47,15 @@ type BookAppointmentInput = {
   appointmentTime: Time;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId: string;
+};
+
+type Appointment = {
+  patientId: string;
+  doctorId: string;
+  appointmentDate: Date;
+  appointmentTime: Time;
+  appointmentType: APPOINTMENT_TYPE;
+  hospitalId: string;
   status: STATUS;
 };
 
@@ -59,9 +67,11 @@ const bookAppointment: Resolver<
   ProfilesServiceContext,
   BookAppointmentResult
 > = async (parent, { appointmentInput }) => {
-  const aptinput = appointmentInput;
-  aptinput.status = STATUS.IN_PROGRESS;
-  const appt = await Appointments.create(aptinput)
+  const appointmentAttrs: Partial<Appointment> = {
+    ...appointmentInput,
+    status: STATUS.IN_PROGRESS,
+  };
+  const appt = await Appointments.create(appointmentAttrs)
     .save()
     .catch((createErrors) => {
       throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });

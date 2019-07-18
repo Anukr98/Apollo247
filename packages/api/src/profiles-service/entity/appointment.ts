@@ -39,6 +39,6 @@ export class Appointments extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   bookingDate: Date;
 
-  @Column()
+  @Column({ nullable: true })
   hospitalId: string;
 }
