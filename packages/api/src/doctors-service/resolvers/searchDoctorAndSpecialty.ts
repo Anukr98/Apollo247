@@ -2,6 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { doctors } from 'doctors-service/data/doctor';
 import { specialties } from 'doctors-service/data/specialty';
+import { DoctorsServiceContext } from 'doctors-service/doctors-service';
 
 import { Doctor } from 'doctors-service/resolvers/doctorResolvers';
 import { Specialty } from 'doctors-service/resolvers/getSpecialties';
@@ -24,7 +25,7 @@ type SearchDoctorAndSpecialtyResult = {
 const SearchDoctorAndSpecialty: Resolver<
   null,
   { searchText: string },
-  null,
+  DoctorsServiceContext,
   SearchDoctorAndSpecialtyResult
 > = async (parent, args) => {
   const searchTextLowerCase = args.searchText.toLowerCase();

@@ -2,6 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { doctors } from 'doctors-service/data/doctor';
 import { Doctor } from 'doctors-service/resolvers/doctorResolvers';
+import { DoctorsServiceContext } from 'doctors-service/doctors-service';
 
 export const getSpecialtyDoctorsTypeDefs = gql`
   type filteredDoctorsResult {
@@ -36,7 +37,7 @@ type filterInput = {
 const getSpecialtyDoctorsWithFilters: Resolver<
   null,
   { filterInput: filterInput },
-  null,
+  DoctorsServiceContext,
   filteredDoctorsResult
 > = async (parent, args) => {
   const mathchedDoctors = doctors.filter(
