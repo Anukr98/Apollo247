@@ -16,16 +16,7 @@ export const bookAppointmentTypeDefs = gql`
     PHYSICAL
   }
 
-  input BookAppointmentInput {
-    patientId: ID!
-    doctorId: ID!
-    appointmentDate: Date!
-    appointmentTime: Time!
-    appointmentType: APPOINTMENT_TYPE!
-    hospitalId: ID
-  }
-
-  type BookAppointmentResult {
+  type Appointment {
     id: ID
     patientId: ID
     doctorId: ID
@@ -36,20 +27,26 @@ export const bookAppointmentTypeDefs = gql`
     status: STATUS
   }
 
+  input BookAppointmentInput {
+    patientId: ID!
+    doctorId: ID!
+    appointmentDate: Date!
+    appointmentTime: Time!
+    appointmentType: APPOINTMENT_TYPE!
+    hospitalId: ID
+  }
+
+  type BookAppointmentResult {
+    appointment: Appointment
+  }
+
   extend type Mutation {
     bookAppointment(appointmentInput: BookAppointmentInput): BookAppointmentResult!
   }
 `;
 
 type BookAppointmentResult = {
-  id: string;
-  patientId: string;
-  doctorId: string;
-  appointmentDate: Date;
-  appointmentTime: Time;
-  appointmentType: APPOINTMENT_TYPE;
-  hospitalId: string;
-  status: STATUS;
+  appointment: Appointment;
 };
 
 type BookAppointmentInput = {
@@ -58,18 +55,20 @@ type BookAppointmentInput = {
   appointmentDate: Date;
   appointmentTime: Time;
   appointmentType: APPOINTMENT_TYPE;
-  hospitalId: string;
+  hospitalId?: string;
 };
 
 type Appointment = {
+  id: string;
   patientId: string;
   doctorId: string;
   appointmentDate: Date;
   appointmentTime: Time;
   appointmentType: APPOINTMENT_TYPE;
-  hospitalId: string;
+  hospitalId?: string;
   status: STATUS;
 };
+// type AppointmentInput = Omit<Appointment, 'id'>
 
 type AppointmentInputArgs = { appointmentInput: BookAppointmentInput };
 
@@ -79,15 +78,16 @@ const bookAppointment: Resolver<
   ProfilesServiceContext,
   BookAppointmentResult
 > = async (parent, { appointmentInput }) => {
-  const appointmentAttrs: Appointment = {
+  const appointmentAttrs: Omit<Appointment, 'id'> = {
     ...appointmentInput,
     status: STATUS.IN_PROGRESS,
   };
-  return await Appointments.create(appointmentAttrs)
+  const appointment = await Appointments.create(appointmentAttrs)
     .save()
     .catch((createErrors) => {
       throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
     });
+  return { appointment };
 };
 
 export const bookAppointmentResolvers = {
