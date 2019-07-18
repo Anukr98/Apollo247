@@ -1,9 +1,6 @@
 import { Theme } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import React from 'react';
-
-import { useCurrentPatient } from 'hooks/authHooks';
-
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     formControl: {
@@ -24,7 +21,5 @@ export interface NewProfileProps {
 
 export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const classes = useStyles();
-  return (
-    <div className={classes.formControl}>hgfhdgshfgjsdgfjhgsdjfgjsdhgfjgsdhfgsdhgjhfgdhsghj</div>
-  );
+  return <div className={classes.formControl}>Welcome to Doctors</div>;
 };
