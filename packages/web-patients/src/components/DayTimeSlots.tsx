@@ -44,6 +44,14 @@ const useStyles = makeStyles((theme: Theme) => {
         textTransform: 'none',
       },
     },
+    noSlotsAvailable: {
+      fontSize: 14,
+      color: '#0087ba',
+      fontWeight: 500,
+      lineHeight: 1.71,
+      paddingTop: 15,
+      paddingBottom: 5,
+    },
     buttonActive: {
       backgroundColor: '#00b38e',
       color: theme.palette.common.white,
@@ -103,14 +111,8 @@ export const DayTimeSlots: React.FC = (props) => {
       )}
       {tabValue === 1 && (
         <TabContainer>
-          <div className={classes.timeSlotActions}>
-            <AphButton className={classes.buttonActive} color="secondary">
-              12:00 pm
-            </AphButton>
-            <AphButton color="secondary">12:40 pm</AphButton>
-            <AphButton color="secondary">1:20 pm</AphButton>
-            <AphButton color="secondary">2:00 pm</AphButton>
-            <AphButton color="secondary">2:40 pm</AphButton>
+          <div className={classes.noSlotsAvailable}>
+            Oops! No morning slots available with Dr. Simran :(
           </div>
         </TabContainer>
       )}
