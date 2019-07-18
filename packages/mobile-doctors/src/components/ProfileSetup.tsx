@@ -45,9 +45,35 @@ const styles = StyleSheet.create({
   buttonTextStyle: {
     ...theme.fonts.IBMPlexSansBold(13),
   },
-  buttonview: {
-    width: 200,
+  buttonView: {
     height: 40,
+    borderRadius: 5,
+    backgroundColor: '#fed6a2',
+    width: 200,
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    shadowColor: 'rgba(0,0,0,0.2)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 2,
+    marginTop: 32,
+  },
+  buttonViewfull: {
+    height: 40,
+    borderRadius: 5,
+    backgroundColor: '#fc9916',
+    width: 200,
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    shadowColor: 'rgba(0,0,0,0.2)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 2,
+    marginTop: 12,
   },
   inputTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -278,8 +304,13 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
               <Button
                 title={'CALL ME'}
                 titleTextStyle={styles.buttonTextStyle}
-                style={styles.buttonview}
+                style={
+                  phoneNumber == '' || phoneNumberIsValid
+                    ? styles.buttonViewfull
+                    : styles.buttonView
+                }
                 onPress={() => Alert.alert('Need Help')}
+                disabled={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
               />
             </View>
           </View>

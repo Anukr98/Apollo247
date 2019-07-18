@@ -119,6 +119,7 @@ export interface doctorCardProps {
   location?: string;
   time?: string;
   onPress?: TouchableOpacityProps['onPress'];
+  isMenuOpen?: boolean;
 }
 
 export const DoctorCard: React.FC<doctorCardProps> = (props) => {

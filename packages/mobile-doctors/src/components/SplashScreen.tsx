@@ -30,8 +30,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     console.log('authError Login', authError);
     if (authError) {
       setVerifyingPhonenNumber(false);
-      Alert.alert('Error', 'Unable to connect the server at the moment.');
-      props.navigation.replace(AppRoutes.LandingPage);
+      //Alert.alert('Error', 'Unable to connect the server at the moment.');
+      props.navigation.replace(AppRoutes.Onboarding);
     }
   }, [authError, props.navigation]);
 
@@ -64,7 +64,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
 
     fetchData();
-
     SplashScreenView.hide();
   }, [currentUser, props.navigation]);
 

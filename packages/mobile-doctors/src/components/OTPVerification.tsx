@@ -4,7 +4,6 @@ import { OtpCard } from '@aph/mobile-doctors/src/components/ui/OtpCard';
 import { setLoggedIn } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import gql from 'graphql-tag';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -190,6 +189,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     try {
       const { phoneNumber } = props.navigation.state.params!;
       const getData = await AsyncStorage.getItem('timeOutData');
+      // let timeOutData: Array<object> = [];
       let timeOutData: any[] = [];
       if (getData) {
         timeOutData = JSON.parse(getData);
@@ -233,7 +233,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     if (authError) {
       clearCurrentUser();
       setVerifyingOtp(false);
-      Alert.alert('Error', 'Unable to connect the server at the moment.');
+      //Alert.alert('Error', 'Unable to connect the server at the moment.');
     }
   }, [authError]);
 
@@ -382,7 +382,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         .catch((error) => {
           setVerifyingOtp(false);
           console.log(error, 'error');
-          Alert.alert('Error', 'Unable to connect the server at the moment.');
+          // Alert.alert('Error', 'Unable to connect the server at the moment.');
         });
     }, 50);
   };
@@ -413,7 +413,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               />
             </View>
             <Text style={[styles.errorTextfincal]}>
-              Try again after — {minutes} : {seconds}
+              Try again after {minutes} : {seconds}
             </Text>
             <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.NeedHelp)}>
               <Text style={[styles.gethelpText]}>GET HELP</Text>
@@ -455,7 +455,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             {showErrorMsg && (
               <Text style={styles.errorText}>
                 Incorrect OTP, {3 - invalidOtpCount} attempts{' '}
-                {invalidOtpCount == 2 ? 'left' : 'left'}.
+                {invalidOtpCount == 2 ? 'left' : 'left'}
               </Text>
             )}
             {
