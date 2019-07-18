@@ -1,24 +1,30 @@
 import gql from 'graphql-tag';
-import { Resolver } from 'doctors-service/doctors-service';
-import SpecialtiesData from 'doctors-service/data/specialties.json';
+import { Resolver } from 'api-gateway';
+import { specialties } from 'doctors-service/data/specialty';
+import { DoctorsServiceContext } from 'doctors-service/doctors-service';
 
 export const getSpecialtyTypeDefs = gql`
   type Specialty {
     id: String
     name: String
+    image: String
   }
   extend type Query {
     getSpecialties: [Specialty!]!
   }
 `;
 
-type Specialty = {
+export type Specialty = {
   id: string;
   name: string;
+  image: string;
 };
 
-const getSpecialties: Resolver<any> = async (parent, args): Promise<[Specialty]> => {
-  return JSON.parse(JSON.stringify(SpecialtiesData));
+const getSpecialties: Resolver<null, {}, DoctorsServiceContext, Specialty[]> = async (
+  parent,
+  args
+) => {
+  return Promise.resolve(specialties);
 };
 
 export const getSpecialtyResolvers = {
