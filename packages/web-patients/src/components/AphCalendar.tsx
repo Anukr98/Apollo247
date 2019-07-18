@@ -6,9 +6,28 @@ import { usePickerState, Calendar, MaterialUiPickersDate } from '@material-ui/pi
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      '& button': {
-        backgroundColor: 'transparent',
+      overflow: 'hidden',
+      '& >div:first-child': {
+        '& button': {
+          backgroundColor: 'transparent',
+          padding: 5,
+        },
+        '& >div:first-child': {
+          borderBottom: '1px solid rgba(0,0,0,0.2)',
+          paddingBottom: 3,
+          margin: '0 -5px 12px -5px',
+        },
+        '& >div:last-child': {
+          '& span': {
+            fontSize: 12,
+            fontWeight: 600,
+            textTransform: 'uppercase',
+          },
+        },
       },
+    },
+    transitionContainer: {
+      minHeight: 180,
     },
   };
 });
@@ -53,6 +72,7 @@ export const AphCalendar: React.FC = (props) => {
         <Calendar
           leftArrowIcon={<img src={require('images/ic_arrow_left.svg')} alt="" />}
           rightArrowIcon={<img src={require('images/ic_arrow_right.svg')} alt="" />}
+          classes={{ transitionContainer: classes.transitionContainer }}
           {...pickerProps}
         />
       </ThemeProvider>
