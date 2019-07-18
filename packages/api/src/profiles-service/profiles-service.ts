@@ -1,9 +1,10 @@
 import 'reflect-metadata';
-import { GraphQLDate } from 'graphql-iso-date';
+import { GraphQLDate, GraphQLTime } from 'graphql-iso-date';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
 import { createConnection } from 'typeorm';
 import { Patient } from 'profiles-service/entity/patient';
+import { Appointments } from 'profiles-service/entity/appointment';
 import {
   getCurrentPatientsTypeDefs,
   getCurrentPatientsResolvers,
@@ -13,6 +14,10 @@ import {
   updatePatientResolvers,
 } from 'profiles-service/resolvers/updatePatient';
 import { getPatientTypeDefs, getPatientResolvers } from 'profiles-service/resolvers/getPatients';
+import {
+  bookAppointmentTypeDefs,
+  bookAppointmentResolvers,
+} from 'profiles-service/resolvers/bookAppointment';
 import gql from 'graphql-tag';
 import { GatewayContext, GatewayHeaders } from 'api-gateway';
 // import { AphAuthenticationError } from 'AphError';
@@ -24,7 +29,7 @@ export interface ProfilesServiceContext extends GatewayContext {
 
 (async () => {
   await createConnection({
-    entities: [Patient],
+    entities: [Patient, Appointments],
     type: 'postgres',
     host: 'profiles-db',
     port: 5432,
@@ -56,9 +61,11 @@ export interface ProfilesServiceContext extends GatewayContext {
       {
         typeDefs: gql`
           scalar Date
+          scalar Time
         `,
         resolvers: {
           Date: GraphQLDate,
+          Time: GraphQLTime,
         },
       },
       {
@@ -72,6 +79,10 @@ export interface ProfilesServiceContext extends GatewayContext {
       {
         typeDefs: getPatientTypeDefs,
         resolvers: getPatientResolvers,
+      },
+      {
+        typeDefs: bookAppointmentTypeDefs,
+        resolvers: bookAppointmentResolvers,
       },
     ]),
   });
