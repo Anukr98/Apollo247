@@ -11,9 +11,8 @@ import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
-import { MaterialUiPickersDate } from '@material-ui/pickers';
-import { usePickerState, Calendar } from '@material-ui/pickers';
 import { OnlineConsult } from 'components/OnlineConsult';
+import { VisitClinic } from 'components/VisitClinic';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -138,13 +137,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const doctorId = params.id;
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
-  const [value, handleDateChange1] = useState<MaterialUiPickersDate>(new Date());
-  const { pickerProps } = usePickerState(
-    { value, onChange: handleDateChange1 },
-    {
-      getDefaultFormat: () => 'MM/dd/yyyy',
-    }
-  );
 
   /* this should be a graphql call */
   const detailsObj = {
@@ -269,7 +261,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           )}
           {tabValue === 1 && (
             <TabContainer>
-              <Calendar {...pickerProps} />
+              <VisitClinic />
             </TabContainer>
           )}
         </Paper>
