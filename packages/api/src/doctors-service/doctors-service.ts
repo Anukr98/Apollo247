@@ -3,6 +3,10 @@ import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
 import { doctorTypeDefs, doctorResolvers } from 'doctors-service/resolvers/doctorResolvers';
 import {
+  starDoctorTypeDefs,
+  starDoctorResolvers,
+} from 'doctors-service/resolvers/starDoctorProgramResolver';
+import {
   getSpecialtyTypeDefs,
   getSpecialtyResolvers,
 } from 'doctors-service/resolvers/getSpecialties';
@@ -26,6 +30,10 @@ export type Resolver<Parent = any, Args = any> = (
       {
         typeDefs: getSpecialtyTypeDefs,
         resolvers: getSpecialtyResolvers,
+      },
+      {
+        typeDefs: starDoctorTypeDefs,
+        resolvers: starDoctorResolvers,
       },
     ]),
   });
