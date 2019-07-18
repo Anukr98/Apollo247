@@ -173,7 +173,12 @@ export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
               {profileData!.profile.firstName + ' ' + profileData!.profile.lastName}
             </Text>
             <Text style={styles.drnametext}>
-              {profileData!.profile.speciality + ' ' + profileData!.profile.experience}
+              {profileData!.profile.speciality.toUpperCase() +
+                '    ' +
+                ' | ' +
+                '  ' +
+                +profileData!.profile.experience +
+                ''}
               YRS
             </Text>
             <View style={styles.understatusline} />

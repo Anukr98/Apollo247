@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
   feeeducation: {
     color: 'rgba(2, 71, 91, 0.5)',
     fontFamily: 'IBMPlexSans',
-    fontSize: 14,
+    fontSize: 12,
     letterSpacing: 0.3,
   },
   feeeducationbold: {
@@ -24,6 +24,27 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     letterSpacing: 0.35,
     marginTop: 2,
+  },
+  feeeducationtextname: {
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+    color: 'rgba(2, 71, 91, 0.5)',
+    marginBottom: 16,
+    letterSpacing: 0.35,
+    marginTop: 2,
+  },
+  feeeducationname: {
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansMedium(16),
+    letterSpacing: 0.3,
+  },
+  separator: {
+    height: 1,
+    width: '120%',
+    marginRight: 0,
+    marginLeft: 15,
+    backgroundColor: '#658f9b',
+    opacity: 0.2,
+    marginBottom: 16,
   },
 });
 
@@ -70,7 +91,25 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
     return (
       <View style={{ flexDirection: 'column', marginLeft: 16 }}>
         {title}
+        <Text style={styles.feeeducationtext}>Rs. {description}</Text>
+      </View>
+    );
+  };
+  const feeprofileRowdetails = (title: string, description: string) => {
+    if (!description) return null;
+    return (
+      <View style={{ flexDirection: 'column', marginLeft: 16 }}>
+        <Text style={styles.feeeducation}>{title}</Text>
         <Text style={styles.feeeducationtext}>{description}</Text>
+      </View>
+    );
+  };
+  const feeprofileRowbankname = (title: string, description: string) => {
+    if (!description) return null;
+    return (
+      <View style={{ flexDirection: 'column', marginLeft: 16 }}>
+        <Text style={styles.feeeducationname}>{title}</Text>
+        <Text style={styles.feeeducationtextname}>{description}</Text>
       </View>
     );
   };
@@ -90,7 +129,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
           {feeprofileRowBold(
             <Text>
               <Text style={styles.feeeducation}>What are your</Text>
-              <Text style={styles.feeeducationbold}> Physical</Text>
+              <Text style={styles.feeeducationbold}> physical</Text>
               <Text style={styles.feeeducation}> consultation fees?</Text>
             </Text>,
             Feedata.physicalConsultationFees
@@ -102,15 +141,16 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
         'Payment Details',
         <View style={{ flexDirection: 'row', marginTop: 16, justifyContent: 'space-between' }}>
           <View>
-            {feeprofileRow(
+            {feeprofileRowbankname(
               'A/C Number: xxx xxx xxx 7890',
               profileData!.paymentDetails[0].accountNumber
             )}
             {showPaymentDetails ? (
               <>
-                {feeprofileRow('Account Holder’s Name', Feedata.firstName)}
-                {feeprofileRow('IFSC Code', Feedata.ifscCode)}
-                {feeprofileRow('Account Type', Feedata.accountType)}
+                <View style={styles.separator}></View>
+                {feeprofileRowdetails('Account Holder’s Name', BankDetails.accountNumber)}
+                {feeprofileRowdetails('IFSC Code', BankDetails.address)}
+                {feeprofileRowdetails('Account Type', Feedata.accountType)}
               </>
             ) : null}
           </View>

@@ -13,7 +13,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 16,
     marginTop: 16,
-    marginBottom: 21,
+  },
+  rowSpaceBetweendays: {
+    flexDirection: 'row',
+    // justifyContent: 'space-between',
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginTop: 16,
   },
   consultationTiming: {
     ...theme.fonts.IBMPlexSansMedium(20),
@@ -30,13 +36,15 @@ const styles = StyleSheet.create({
     color: theme.colors.darkBlueColor(),
     letterSpacing: 0.05,
     marginBottom: 19,
-    marginHorizontal: 16,
+    //marginHorizontal: 16,
   },
   separator: {
     height: 16,
     width: 1,
-    marginRight: 7,
-    marginLeft: 8,
+    marginRight: 0,
+    marginLeft: 15,
+    backgroundColor: '#02475b',
+    marginTop: -15,
   },
   consultationText: {
     ...theme.fonts.IBMPlexSansMedium(12),
@@ -71,7 +79,7 @@ export const ConsultationHoursCard: React.FC<ConsultationHoursCardProps> = (prop
         <Text style={styles.consultationTiming}>{props.timing}</Text>
         <Text style={styles.fixedSlotText}>{props.type == 'fixed' ? '(FIXED)' : ''}</Text>
       </View>
-      <View style={[styles.rowSpaceBetween, { justifyContent: 'center' }]}>
+      <View style={[styles.rowSpaceBetweendays]}>
         <Text style={styles.daysText}>{props.days}</Text>
         <View style={styles.separator}></View>
         <Text style={styles.consultationText}>{consultation}</Text>

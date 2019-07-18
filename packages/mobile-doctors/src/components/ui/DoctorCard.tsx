@@ -130,20 +130,26 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
     <View style={styles.doctorView}>
       <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
         {rowData.inviteStatus == 'accepted' ? (
-          <View style={{ flex: 1, marginLeft: 16 }}>
-            <View style={styles.iconview}>
-              <Text style={styles.doctorNameStyles}>{rowData.doctorName}</Text>
-
-              <TouchableOpacity onPress={() => setisMenuHidden(!isMenuHidden)}>
-                <Image
-                  style={styles.imageremovestyles}
-                  source={require('../../images/icons/remove.png')}
-                />
-              </TouchableOpacity>
-            </View>
-            <View style={{ flexDirection: 'row', marginTop: 10 }}>
-              <InviteIcon />
-              <Text style={styles.invitetext}>INVITED</Text>
+          <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
+            <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+              <View style={styles.imageView}>
+                <Image source={require('../../images/doctor/rahul.png')} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <View style={styles.iconview}>
+                  <Text style={styles.doctorNameStyles}>Dr. {rowData.doctorName}</Text>
+                  <TouchableOpacity onPress={() => setisMenuHidden(!isMenuHidden)}>
+                    <Image
+                      style={styles.imageremovestyles}
+                      source={require('../../images/icons/remove.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View style={{ flexDirection: 'row', marginTop: 10 }}>
+                  <InviteIcon />
+                  <Text style={styles.invitetext}>INVITED</Text>
+                </View>
+              </View>
             </View>
           </View>
         ) : (
@@ -154,7 +160,7 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
               </View>
               <View style={{ flex: 1 }}>
                 <View style={styles.iconview}>
-                  <Text style={styles.doctorNameStyles}>{rowData.doctorName}</Text>
+                  <Text style={styles.doctorNameStyles}>Dr. {rowData.doctorName}</Text>
                   <TouchableOpacity onPress={() => setisMenuHidden(!isMenuHidden)}>
                     <Image
                       style={styles.imageremovestyles}

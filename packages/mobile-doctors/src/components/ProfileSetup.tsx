@@ -87,7 +87,7 @@ const headerContent = [
     tab: 'Profile',
     heading: (name: string) => `hi dr. ${name}!`,
     description:
-      "It’s great to have you join us! Here's what your patients see when they view your profile",
+      "It’s great to have you join us! \n Here's what your patients see when they view your profile",
   },
   {
     tab: 'Availibility',
@@ -109,14 +109,19 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
 
-  // const { data, error, loading } = useQuery(GET_DOCTOR_PROFILE, {
-  //   variables: { mobileNumber: '1234567890' },
-  // });
   const {
     data: { getDoctorProfile },
     error,
     loading,
-  } = doctorProfile;
+  } = useQuery(GET_DOCTOR_PROFILE, {
+    variables: { mobileNumber: '1234567890' },
+  }) as any;
+
+  // const {
+  //   data: { getDoctorProfile },
+  //   error,
+  //   loading,
+  // } = doctorProfile;
   if (error) {
     Alert.alert('Error', 'Unable to get the data');
   }
@@ -238,7 +243,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
             <Text
               style={{
                 color: '#02475b',
-                ...theme.fonts.IBMPlexSansBold(36),
+                ...theme.fonts.IBMPlexSansSemiBold(36),
                 marginLeft: 16,
                 marginBottom: 8,
               }}

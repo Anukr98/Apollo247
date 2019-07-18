@@ -16,6 +16,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import SmsListener from 'react-native-android-sms-listener';
@@ -63,10 +64,15 @@ const styles = StyleSheet.create({
   },
   bottomDescription: {
     lineHeight: 24,
-    color: theme.colors.INPUT_FAILURE_TEXT,
-    opacity: 0.6,
+    color: '#890000', //theme.colors.INPUT_FAILURE_TEXT,
+    // opacity: 0.6,
     paddingVertical: 10,
     ...theme.fonts.IBMPlexSansMedium(12),
+  },
+  gethelpText: {
+    marginTop: 22,
+    color: '#fc9916',
+    ...theme.fonts.IBMPlexSansBold(12),
   },
   bottomValidDescription: {
     lineHeight: 24,
@@ -125,7 +131,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     if (authError) {
       clearCurrentUser();
       setVerifyingPhonenNumber(false);
-      Alert.alert('Error', 'Unable to connect the server at the moment.');
+      //Alert.alert('Error', 'Unable to connect the server at the moment.');
     }
   }, [authError]);
 
@@ -302,6 +308,14 @@ export const Login: React.FC<LoginProps> = (props) => {
               ? string.LocalStrings.otp_sent_to
               : string.LocalStrings.wrong_number}
           </Text>
+          {phoneNumber == '' || phoneNumberIsValid ? null : (
+            <TouchableOpacity
+              onPress={() => props.navigation.push(AppRoutes.NeedHelp)}
+              style={{ marginTop: -10 }}
+            >
+              <Text style={[styles.gethelpText]}>{string.LocalStrings.gethelp}</Text>
+            </TouchableOpacity>
+          )}
         </Card>
       </SafeAreaView>
       {verifyingPhoneNumber ? (

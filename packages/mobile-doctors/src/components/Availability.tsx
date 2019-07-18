@@ -65,7 +65,6 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
         </SquareCardWithTitle>
       ) : null}
       <SquareCardWithTitle title="Consultation Hours" containerStyle={{ marginTop: 16 }}>
-        <Text style={styles.addConsultationText}>+{'  '}ADD CONSULTATION HOURS</Text>
         {profileData!.consultationHours.map((i, idx) => {
           return (
             <ConsultationHoursCard
@@ -79,6 +78,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
           );
         })}
       </SquareCardWithTitle>
+      <Text style={styles.addConsultationText}>+{'  '}ADD CONSULTATION HOURS</Text>
     </View>
   );
 };
