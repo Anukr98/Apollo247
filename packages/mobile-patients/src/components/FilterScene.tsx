@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
 export interface FilterSceneProps extends NavigationScreenProps {}
 export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   const filterData = strings.doctor_search_listing.filter_data.map((obj: object) => {
-    obj['selectedOptions'] = [];
+    obj.selectedOptions = [];
     return obj;
   });
   const [data, setData] = useState<any>(filterData);
@@ -198,7 +198,19 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
       <Header
         leftIcon={'close'}
         title="FILTERS"
-        rightComponent={() => <Reload />}
+        rightComponent={() => (
+          <TouchableOpacity
+            onPress={() => {
+              const filterData = data.map((obj: object) => {
+                obj.selectedOptions = [];
+                return obj;
+              });
+              setData(filterData);
+            }}
+          >
+            <Reload />
+          </TouchableOpacity>
+        )}
         onPressLeftIcon={() => props.navigation.goBack()}
       />
     );

@@ -47,15 +47,38 @@ const styles = StyleSheet.create({
 type doctorsList = {
   title: string;
   data: {
-    image: any;
-    doctorName: string;
-    starDoctor: boolean;
-    specialization: string;
-    experience: string;
+    availableForPhysicalConsultation: boolean;
+    availableForVirtualConsultation: boolean;
+    awards: string;
+    city: string;
     education: string;
-    location: string;
-    time: string;
-    available: boolean;
+    experience: string;
+    firstName: string;
+    id: string;
+    inviteStatus: string;
+    isProfileComplete: boolean;
+    isStarDoctor: boolean;
+    languages: string;
+    lastName: string;
+    mobileNumber: string;
+    onlineConsultationFees: string;
+    package: string;
+    photoUrl: string;
+    physicalConsultationFees: string;
+    registrationNumber: string;
+    services: string;
+    speciality: string;
+    specialization: string;
+    typeOfConsult: string;
+    // image: any;
+    // doctorName: string;
+    // starDoctor: boolean;
+    // specialization: string;
+    // experience: string;
+    // education: string;
+    // location: string;
+    // time: string;
+    // available: boolean;
   }[];
 };
 
@@ -65,82 +88,96 @@ const DoctorsList: doctorsList[] = [
     title: 'Our Star Doctors',
     data: [
       {
-        image: <DoctorImage style={style} />,
-        doctorName: 'Dr. Simran Rai',
-        starDoctor: true,
+        availableForPhysicalConsultation: true,
+        availableForVirtualConsultation: true,
+        awards: '',
+        city: 'hyderabad',
+        education: 'MBBS',
+        experience: '7',
+        firstName: 'Simran',
+        id: 'string',
+        inviteStatus: '',
+        isProfileComplete: false,
+        isStarDoctor: true,
+        languages: '',
+        lastName: 'rao',
+        mobileNumber: '',
+        onlineConsultationFees: '800',
+        package: '',
+        photoUrl: '',
+        physicalConsultationFees: '300',
+        registrationNumber: '34567',
+        services: '',
+        speciality: '',
         specialization: 'GENERAL PHYSICIAN',
-        experience: '7 YRS',
-        education: 'MBBS, Internal Medicine',
-        location: 'Apollo Hospitals, Jubilee Hills',
-        time: 'CONSULT NOW',
-        available: true,
+        typeOfConsult: '',
       },
     ],
   },
-  {
-    title: 'From Your Past Consults',
-    data: [
-      {
-        image: <DoctorImage style={style} />,
-        doctorName: 'Dr. Rakhi Sharma',
-        starDoctor: false,
-        specialization: 'GENERAL PHYSICIAN',
-        experience: '4 YRS',
-        education: 'MBBS, Internal Medicine',
-        location: 'Apollo Hospitals, Jubilee Hills',
-        time: 'CONSULT NOW',
-        available: true,
-      },
-    ],
-  },
-  {
-    title: 'More Apollo Doctors In Hyderabad',
-    data: [
-      {
-        image: <DoctorImage style={style} />,
-        doctorName: 'Dr. Rahul Nerlekar',
-        starDoctor: false,
-        specialization: 'GENERAL PHYSICIAN',
-        experience: '4 YRS',
-        education: 'MBBS, Internal Medicine',
-        location: 'Apollo Hospitals, Jubilee Hills',
-        time: 'BOOK APPOINTMENT',
-        available: false,
-      },
-    ],
-  },
-  {
-    title: 'Apollo Doctors In Other Cities',
-    data: [
-      {
-        image: <DoctorImage style={style} />,
-        doctorName: 'Dr. Ranjan Gopal',
-        starDoctor: false,
-        specialization: 'GENERAL PHYSICIAN',
-        experience: '4 YRS',
-        education: 'MBBS, Internal Medicine',
-        location: 'Apollo Hospitals, Jubilee Hills',
-        time: 'BOOK APPOINTMENT',
-        available: true,
-      },
-    ],
-  },
-  {
-    title: 'Apollo Doctors In Other Cities',
-    data: [
-      {
-        image: <DoctorImage style={style} />,
-        doctorName: 'Dr. Ranjan Gopal',
-        starDoctor: false,
-        specialization: 'GENERAL PHYSICIAN',
-        experience: '4 YRS',
-        education: 'MBBS, Internal Medicine',
-        location: 'Apollo Hospitals, Jubilee Hills',
-        time: 'CONSULT NOW',
-        available: true,
-      },
-    ],
-  },
+  // {
+  //   title: 'From Your Past Consults',
+  //   data: [
+  //     {
+  //       image: <DoctorImage style={style} />,
+  //       doctorName: 'Dr. Rakhi Sharma',
+  //       starDoctor: false,
+  //       specialization: 'GENERAL PHYSICIAN',
+  //       experience: '4 YRS',
+  //       education: 'MBBS, Internal Medicine',
+  //       location: 'Apollo Hospitals, Jubilee Hills',
+  //       time: 'CONSULT NOW',
+  //       available: true,
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: 'More Apollo Doctors In Hyderabad',
+  //   data: [
+  //     {
+  //       image: <DoctorImage style={style} />,
+  //       doctorName: 'Dr. Rahul Nerlekar',
+  //       starDoctor: false,
+  //       specialization: 'GENERAL PHYSICIAN',
+  //       experience: '4 YRS',
+  //       education: 'MBBS, Internal Medicine',
+  //       location: 'Apollo Hospitals, Jubilee Hills',
+  //       time: 'BOOK APPOINTMENT',
+  //       available: false,
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: 'Apollo Doctors In Other Cities',
+  //   data: [
+  //     {
+  //       image: <DoctorImage style={style} />,
+  //       doctorName: 'Dr. Ranjan Gopal',
+  //       starDoctor: false,
+  //       specialization: 'GENERAL PHYSICIAN',
+  //       experience: '4 YRS',
+  //       education: 'MBBS, Internal Medicine',
+  //       location: 'Apollo Hospitals, Jubilee Hills',
+  //       time: 'BOOK APPOINTMENT',
+  //       available: true,
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: 'Apollo Doctors In Other Cities',
+  //   data: [
+  //     {
+  //       image: <DoctorImage style={style} />,
+  //       doctorName: 'Dr. Ranjan Gopal',
+  //       starDoctor: false,
+  //       specialization: 'GENERAL PHYSICIAN',
+  //       experience: '4 YRS',
+  //       education: 'MBBS, Internal Medicine',
+  //       location: 'Apollo Hospitals, Jubilee Hills',
+  //       time: 'CONSULT NOW',
+  //       available: true,
+  //     },
+  //   ],
+  // },
 ];
 
 export interface DoctorSearchListingProps extends NavigationScreenProps {}

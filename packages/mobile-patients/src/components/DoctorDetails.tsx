@@ -213,9 +213,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         />
         {doctorDetails && doctorDetails.profile && (
           <View style={styles.detailsViewStyle}>
-            <Text style={styles.doctorNameStyles}>
-              {doctorDetails.profile.firstName.toUpperCase()}
-            </Text>
+            <Text style={styles.doctorNameStyles}>Dr. {doctorDetails.profile.firstName}</Text>
             <View style={styles.separatorStyle} />
             <Text style={styles.doctorSpecializationStyles}>
               {doctorDetails.profile.specialization.toUpperCase()} |{' '}
@@ -261,10 +259,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return (
       <View style={styles.cardView}>
         <View style={styles.labelView}>
-          <Text style={styles.labelStyle}>
-            Simran’s Clinic
-            {/* {doctorDetails.nickName}’s Clinic */}
-          </Text>
+          <Text style={styles.labelStyle}>Dr. {doctorDetails.profile.firstName}’s Clinic</Text>
         </View>
         <View
           style={{
@@ -351,14 +346,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return (
       <View style={styles.cardView}>
         <View style={styles.labelView}>
-          <Text style={styles.labelStyle}>Simran’s Star Doctor Team</Text>
+          <Text style={styles.labelStyle}>
+            Dr. {doctorDetails.profile.firstName}’s Star Doctor Team
+          </Text>
           <Text style={styles.labelStyle}>{DoctorsList.length} Doctors</Text>
         </View>
         <ScrollView horizontal bounces={false}>
           <FlatList
             contentContainerStyle={{ padding: 12 }}
             // horizontal={true}
-            data={DoctorsList}
+            data={doctorDetails.starDoctorTeam ? doctorDetails.starDoctorTeam : []}
             bounces={false}
             numColumns={DoctorsList.length / 2}
             renderItem={({ item }) => (
@@ -478,7 +475,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         />
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderDoctorDetails()}
-          {renderDoctorClinic()}
+          {doctorDetails.profile && renderDoctorClinic()}
           {doctorDetails.starDoctorTeam && renderDoctorTeam()}
           {renderAppointmentHistory()}
           <View style={{ height: 92 }} />
