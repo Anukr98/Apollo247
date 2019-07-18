@@ -1,5 +1,8 @@
-import { DummyQueryResult } from './commonTypes';
-// import { DoctorProfile } from '@aph/mobile-doctors/src/helers/commonTypes';
+import {
+  DoctorProfile,
+  DummyQueryResult,
+  Doctor,
+} from '@aph/mobile-doctors/src/helpers/commonTypes';
 
 export const doctorProfile: DummyQueryResult = {
   error: null,

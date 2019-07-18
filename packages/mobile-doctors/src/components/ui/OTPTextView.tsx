@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
 });
 
 export interface OTPTextViewProps {
-  defaultValue: string;
+  defaultValue?: string;
   cellTextLength?: number;
   inputCount: number;
   offTintColor?: string;
@@ -36,6 +36,7 @@ export interface OTPTextViewProps {
   textInputStyle?: StyleProp<ViewStyle>;
   handleTextChange: (otpText: string) => void;
   value?: string;
+  editable?: boolean;
 }
 
 export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {

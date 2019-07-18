@@ -29,6 +29,7 @@ const login = {
   distance: 'Distance',
   needhelp: 'need help?',
   callback: 'You can request a call back for us to resolve your issue ASAP',
+  gethelp: 'GET HELP',
 };
 
 export const LocalStrings = {

@@ -31,7 +31,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     if (authError) {
       setVerifyingPhonenNumber(false);
       Alert.alert('Error', 'Unable to connect the server at the moment.');
-      props.navigation.replace(AppRoutes.Onboarding);
+      props.navigation.replace(AppRoutes.LandingPage);
     }
   }, [authError, props.navigation]);
 

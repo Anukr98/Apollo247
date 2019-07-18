@@ -4,32 +4,30 @@ import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer
 import { Profile } from '@aph/mobile-doctors/src/components/Profile';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import { RoundIcon, Cancel } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Cancel, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-
-import React, { useState } from 'react';
-import {
-  Alert,
-  SafeAreaView,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  Platform,
-  ActivityIndicator,
-  Dimensions,
-} from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
+import { DummyQueryResult } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
-import { Overlay } from 'react-native-elements';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
+import React, { useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
-import { DummyQueryResult } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Overlay } from 'react-native-elements';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { NavigationScreenProps } from 'react-navigation';
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
