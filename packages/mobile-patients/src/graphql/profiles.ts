@@ -17,19 +17,17 @@ export const GET_PATIENTS = gql`
 `;
 
 export const PATIENT_SIGN_IN = gql`
-  mutation PatientSignIn($jwt: String!) {
-    patientSignIn(jwt: $jwt) {
+  mutation PatientSignIn {
+    patientSignIn {
       patients {
         id
+        mobileNumber
         firstName
         lastName
-        uhid
-        gender
-        mobileNumber
         relation
-      }
-      errors {
-        messages
+        gender
+        uhid
+        dateOfBirth
       }
     }
   }
@@ -49,8 +47,86 @@ export const UPDATE_PATIENT = gql`
         dateOfBirth
         emailAddress
       }
-      errors {
-        messages
+    }
+  }
+`;
+
+export const GET_SPECIALTIES = gql`
+  query getSpecialties {
+    getSpecialties {
+      id
+      name
+    }
+  }
+`;
+
+export const GET_DOCTOR_PROFILE_BY_ID = gql`
+  query getDoctorProfileById($id: String!) {
+    getDoctorProfileById(id: $id) {
+      profile {
+        id
+        firstName
+        lastName
+        mobileNumber
+        experience
+        speciality
+        specialization
+        isStarDoctor
+        education
+        services
+        languages
+        city
+        awards
+        photoUrl
+        registrationNumber
+        isProfileComplete
+        availableForPhysicalConsultation
+        availableForVirtualConsultation
+        onlineConsultationFees
+        physicalConsultationFees
+        package
+        typeOfConsult
+        inviteStatus
+      }
+      paymentDetails {
+        accountNumber
+        address
+      }
+      clinics {
+        name
+        location
+      }
+      starDoctorTeam {
+        id
+        firstName
+        lastName
+        mobileNumber
+        experience
+        speciality
+        specialization
+        isStarDoctor
+        education
+        services
+        languages
+        city
+        awards
+        photoUrl
+        registrationNumber
+        isProfileComplete
+        availableForPhysicalConsultation
+        availableForVirtualConsultation
+        onlineConsultationFees
+        physicalConsultationFees
+        package
+        typeOfConsult
+        inviteStatus
+      }
+      consultationHours {
+        days
+        timings
+        availableForPhysicalConsultation
+        availableForVirtualConsultation
+        type
       }
     }
   }

@@ -10,6 +10,8 @@ import React, { useState } from 'react';
 import { Dimensions, Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { useQuery } from 'react-apollo-hooks';
+import { GET_DOCTOR_PROFILE_BY_ID } from '@aph/mobile-patients/src/graphql/profiles';
 
 const { height } = Dimensions.get('window');
 
@@ -89,35 +91,35 @@ const styles = StyleSheet.create({
 });
 const style = { width: 80, height: 80 };
 
-type DoctorDetails = {
-  image: any;
-  doctorName: string;
-  nickName: string;
-  starDoctor: boolean;
-  specialization: string;
-  experience: string;
-  education: string;
-  awards: string;
-  location: string;
-  time: string;
-  available: boolean;
-  languages: string[];
-};
+// type DoctorDetails = {
+//   image: any;
+//   doctorName: string;
+//   nickName: string;
+//   starDoctor: boolean;
+//   specialization: string;
+//   experience: string;
+//   education: string;
+//   awards: string;
+//   location: string;
+//   time: string;
+//   available: boolean;
+//   languages: string[];
+// };
 
-const doctorDetails: DoctorDetails = {
-  image: <DoctorImage style={style} />,
-  doctorName: 'Dr. Simran Rai',
-  nickName: 'Dr. Simran',
-  starDoctor: true,
-  specialization: 'GENERAL PHYSICIAN',
-  experience: '7 YRS',
-  education: 'MS (Surgery), MBBS (Internal Medicine)',
-  awards: 'Dr. B.C.Roy Award (2009)',
-  location: 'Apollo Hospitals, Jubilee Hills',
-  time: 'CONSULT NOW',
-  available: true,
-  languages: ['English', 'Telugu', 'Hindi'],
-};
+// const doctorDetails: DoctorDetails = {
+//   image: <DoctorImage style={style} />,
+//   doctorName: 'Dr. Simran Rai',
+//   nickName: 'Dr. Simran',
+//   starDoctor: true,
+//   specialization: 'GENERAL PHYSICIAN',
+//   experience: '7 YRS',
+//   education: 'MS (Surgery), MBBS (Internal Medicine)',
+//   awards: 'Dr. B.C.Roy Award (2009)',
+//   location: 'Apollo Hospitals, Jubilee Hills',
+//   time: 'CONSULT NOW',
+//   available: true,
+//   languages: ['English', 'Telugu', 'Hindi'],
+// };
 
 type doctorsList = {
   image: any;
@@ -200,6 +202,7 @@ const Appointments: Appointments[] = [
 export interface DoctorDetailsProps extends NavigationScreenProps {}
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [dispalyoverlay, setdispalyoverlay] = useState<boolean>(false);
+  const [doctorDetails, setDoctorDetails] = useState<object>({});
 
   const renderDoctorDetails = () => {
     return (
@@ -208,37 +211,48 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           source={require('@aph/mobile-patients/src/images/onboard/onboard.png')}
           style={{ height: 160, width: '100%' }}
         />
-        <View style={styles.detailsViewStyle}>
-          <Text style={styles.doctorNameStyles}>{doctorDetails.doctorName}</Text>
-          <View style={styles.separatorStyle} />
-          <Text style={styles.doctorSpecializationStyles}>
-            {doctorDetails.specialization} | {doctorDetails.experience}
-          </Text>
-          <Text style={styles.educationTextStyles}>{doctorDetails.education}</Text>
-          <Text style={[styles.educationTextStyles, { paddingBottom: 12 }]}>
-            {doctorDetails.awards}
-          </Text>
+        {doctorDetails && doctorDetails.profile && (
+          <View style={styles.detailsViewStyle}>
+            <Text style={styles.doctorNameStyles}>
+              {doctorDetails.profile.firstName.toUpperCase()}
+            </Text>
+            <View style={styles.separatorStyle} />
+            <Text style={styles.doctorSpecializationStyles}>
+              {doctorDetails.profile.specialization.toUpperCase()} |{' '}
+              {doctorDetails.profile.experience} YRS
+            </Text>
+            <Text style={styles.educationTextStyles}>{doctorDetails.profile.education}</Text>
+            <Text style={[styles.educationTextStyles, { paddingBottom: 12 }]}>
+              {doctorDetails.profile.awards}
+            </Text>
 
-          <View style={styles.separatorStyle} />
-          <Text style={[styles.doctorLocation, { paddingTop: 11 }]}>{doctorDetails.location}</Text>
-          <Text style={[styles.doctorLocation, { paddingBottom: 11, paddingTop: 4 }]}>
-            {doctorDetails.languages.join(' | ')}
-          </Text>
-          <View style={styles.separatorStyle} />
-          <View style={styles.onlineConsultView}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.onlineConsultLabel}>Online Consult</Text>
-              <Text style={styles.onlineConsultAmount}>Rs. 299</Text>
-              <CapsuleView title={'AVAILABLE IN 15 MINS'} />
-            </View>
-            <View style={styles.horizontalSeparatorStyle} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.onlineConsultLabel}>Clinic Visit</Text>
-              <Text style={styles.onlineConsultAmount}>Rs. 499</Text>
-              <CapsuleView title={'AVAILABLE IN 27 MINS'} isActive={false} />
+            <View style={styles.separatorStyle} />
+            <Text style={[styles.doctorLocation, { paddingTop: 11 }]}>
+              {doctorDetails.profile.location}
+            </Text>
+            <Text style={[styles.doctorLocation, { paddingBottom: 11, paddingTop: 4 }]}>
+              {doctorDetails.profile.languages.split(',').join(' | ')}
+            </Text>
+            <View style={styles.separatorStyle} />
+            <View style={styles.onlineConsultView}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.onlineConsultLabel}>Online Consult</Text>
+                <Text style={styles.onlineConsultAmount}>
+                  Rs. {doctorDetails.profile.onlineConsultationFees}
+                </Text>
+                <CapsuleView title={'AVAILABLE IN 15 MINS'} />
+              </View>
+              <View style={styles.horizontalSeparatorStyle} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.onlineConsultLabel}>Clinic Visit</Text>
+                <Text style={styles.onlineConsultAmount}>
+                  Rs. {doctorDetails.profile.physicalConsultationFees}
+                </Text>
+                <CapsuleView title={'AVAILABLE IN 27 MINS'} isActive={false} />
+              </View>
             </View>
           </View>
-        </View>
+        )}
       </View>
     );
   };
@@ -247,7 +261,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return (
       <View style={styles.cardView}>
         <View style={styles.labelView}>
-          <Text style={styles.labelStyle}>{doctorDetails.nickName}’s Clinic</Text>
+          <Text style={styles.labelStyle}>
+            Simran’s Clinic
+            {/* {doctorDetails.nickName}’s Clinic */}
+          </Text>
         </View>
         <View
           style={{
@@ -270,10 +287,58 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             />
             <View
               style={{
-                margin: 20,
+                margin: 16,
+                marginTop: 10,
               }}
             >
-              <Text>SLN Terminus, No 18, 2nd Floor, Gachibowli, Hyderabad</Text>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansMedium(14),
+                  color: theme.colors.LIGHT_BLUE,
+                }}
+              >
+                SLN Terminus, No 18, 2nd Floor, Gachibowli
+              </Text>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansMedium(14),
+                  color: theme.colors.LIGHT_BLUE,
+                }}
+              >
+                Hyderabad
+              </Text>
+              {doctorDetails.consultationHours && (
+                <>
+                  <View style={[styles.separatorStyle, { marginVertical: 8 }]} />
+
+                  {doctorDetails.consultationHours.map((time) => (
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <Text
+                        style={{
+                          ...theme.fonts.IBMPlexSansSemiBold(12),
+                          color: theme.colors.SKY_BLUE,
+                        }}
+                      >
+                        {time.days}
+                      </Text>
+
+                      <Text
+                        style={{
+                          ...theme.fonts.IBMPlexSansSemiBold(12),
+                          color: theme.colors.SKY_BLUE,
+                        }}
+                      >
+                        {time.timings}
+                      </Text>
+                    </View>
+                  ))}
+                </>
+              )}
             </View>
           </View>
         </View>
@@ -286,7 +351,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return (
       <View style={styles.cardView}>
         <View style={styles.labelView}>
-          <Text style={styles.labelStyle}>{doctorDetails.nickName}’s Star Doctor Team</Text>
+          <Text style={styles.labelStyle}>Simran’s Star Doctor Team</Text>
           <Text style={styles.labelStyle}>{DoctorsList.length} Doctors</Text>
         </View>
         <ScrollView horizontal bounces={false}>
@@ -373,7 +438,22 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       </View>
     );
   };
-  console.log(dispalyoverlay, 'dispalyoverlay');
+  const { data, error } = useQuery(GET_DOCTOR_PROFILE_BY_ID, {
+    variables: { id: 'c4c0f83e-7b8b-4033-8ab7-ab49b07d5771' },
+  });
+  if (error) {
+    console.log('error', error);
+    //Alert.alert('Error', 'Unable to get the data');
+  } else {
+    console.log('data', data);
+    if (data.getDoctorProfileById && doctorDetails !== data.getDoctorProfileById) {
+      setDoctorDetails(data.getDoctorProfileById);
+    }
+
+    // getDoctorProfileById
+  }
+
+  console.log(dispalyoverlay, 'dispalyoverlay', doctorDetails);
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView
@@ -399,7 +479,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderDoctorDetails()}
           {renderDoctorClinic()}
-          {renderDoctorTeam()}
+          {doctorDetails.starDoctorTeam && renderDoctorTeam()}
           {renderAppointmentHistory()}
           <View style={{ height: 92 }} />
         </ScrollView>

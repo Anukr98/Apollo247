@@ -6,31 +6,22 @@
 // START Enums and Input Objects
 //==============================================================
 
-export enum ErrorMsgs {
-  INVALID_MOBILE_NUMBER = 'INVALID_MOBILE_NUMBER',
-  INVALID_TOKEN = 'INVALID_TOKEN',
-  PRISM_AUTH_TOKEN_ERROR = 'PRISM_AUTH_TOKEN_ERROR',
-  PRISM_GET_USERS_ERROR = 'PRISM_GET_USERS_ERROR',
-  PRISM_NO_DATA = 'PRISM_NO_DATA',
-  UPDATE_PROFILE_ERROR = 'UPDATE_PROFILE_ERROR',
-}
-
 export enum Gender {
-  FEMALE = 'FEMALE',
-  MALE = 'MALE',
-  OTHER = 'OTHER',
+  FEMALE = "FEMALE",
+  MALE = "MALE",
+  OTHER = "OTHER",
 }
 
 export enum Relation {
-  BROTHER = 'BROTHER',
-  COUSIN = 'COUSIN',
-  FATHER = 'FATHER',
-  HUSBAND = 'HUSBAND',
-  ME = 'ME',
-  MOTHER = 'MOTHER',
-  OTHER = 'OTHER',
-  SISTER = 'SISTER',
-  WIFE = 'WIFE',
+  BROTHER = "BROTHER",
+  COUSIN = "COUSIN",
+  FATHER = "FATHER",
+  HUSBAND = "HUSBAND",
+  ME = "ME",
+  MOTHER = "MOTHER",
+  OTHER = "OTHER",
+  SISTER = "SISTER",
+  WIFE = "WIFE",
 }
 
 export interface UpdatePatientInput {

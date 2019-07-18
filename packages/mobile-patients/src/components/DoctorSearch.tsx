@@ -23,8 +23,10 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../theme/theme';
-import { DoctorCard, doctorCardProps } from './ui/DoctorCard';
+import { DoctorCard, DoctorCardProps } from './ui/DoctorCard';
 import { Button } from './ui/Button';
+import { useQuery } from 'react-apollo-hooks';
+import { GET_SPECIALTIES } from '@aph/mobile-patients/src/graphql/profiles';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -108,36 +110,11 @@ const pastSearches: pastSearches[] = [
   },
 ];
 
-type Specialities = {
-  name: string;
-  image: any;
-};
-
-const Specialities: Specialities[] = [
-  {
-    image: <GeneralPhysician />,
-    name: 'General Physician',
-  },
-  {
-    image: <Paedatrician />,
-    name: 'Paediatrician',
-  },
-  {
-    image: <Urologist />,
-    name: 'Urologist',
-  },
-  {
-    image: <Neurologist />,
-    name: 'Neurologist',
-  },
-  {
-    image: <Urologist />,
-    name: 'Urologist',
-  },
-  {
-    image: <Neurologist />,
-    name: 'Neurologist',
-  },
+const SpecialityImages: any[] = [
+  <GeneralPhysician />,
+  <Paedatrician />,
+  <Urologist />,
+  <Neurologist />,
 ];
 
 type doctorsList = {
@@ -210,6 +187,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [pastSearch, setPastSearch] = useState<boolean>(true);
   const [needHelp, setNeedHelp] = useState<boolean>(true);
   const [speialistList, setSpeialistList] = useState<boolean>(true);
+  const [Specialities, setSpecialities] = useState<object[]>([]);
 
   const renderSearch = (styles: any) => {
     return (
@@ -253,10 +231,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         <View>
           <SectionHeaderComponent sectionTitle={'Past Searches'} style={{ marginBottom: 8 }} />
           <FlatList
-            contentContainerStyle={{
-              flexWrap: 'wrap',
-              marginHorizontal: 12,
-            }}
+            contentContainerStyle={
+              {
+                // flexWrap: 'wrap',
+                // marginHorizontal: 12,
+              }
+            }
             horizontal={true}
             bounces={false}
             data={pastSearches}
@@ -274,7 +254,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     return (
       <Button
         title={rowData.search.toUpperCase()}
-        style={styles.listView}
+        style={[
+          styles.listView,
+          rowID === 0 ? { marginLeft: 20 } : null,
+          rowID + 1 === pastSearches.length ? { marginRight: 20 } : null,
+        ]}
         titleTextStyle={styles.rowTextStyles}
       />
     );
@@ -290,7 +274,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           />
           <FlatList
             contentContainerStyle={{
-              flexWrap: 'wrap',
+              // flexWrap: 'wrap',
               marginHorizontal: 12,
             }}
             bounces={false}
@@ -305,28 +289,32 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
-  const renderSpecialistRow = (rowData: Specialities, rowID: number) => {
+  const renderSpecialistRow = (rowData: any, rowID: number) => {
     return (
       <TouchableOpacity
-        onPress={() => onClickSearch()}
+        onPress={() => onClickSearch(rowData.name)}
         style={{
-          flex: 1,
-          margin: 8,
+          // flex: 1,
+          width: '50%',
+          paddingHorizontal: 8,
+          marginVertical: 8,
           marginTop: rowID === 0 || rowID === 1 ? 16 : 8,
-          marginBottom: Specialities.length === rowID + 1 ? 16 : 8,
+          marginBottom: 8, //Specialities.length === rowID + 1 ? 16 : 8,
         }}
         activeOpacity={1}
+        key={rowData.id}
       >
         <View style={styles.listSpecialistView}>
-          {rowData.image}
+          {/* {rowData.image} */}
+          {SpecialityImages[rowID % 4]}
           <Text style={styles.rowSpecialistStyles}>{rowData.name.toUpperCase()}</Text>
         </View>
       </TouchableOpacity>
     );
   };
 
-  const onClickSearch = () => {
-    props.navigation.navigate('DoctorSearchListing');
+  const onClickSearch = (speciality: string) => {
+    props.navigation.navigate('DoctorSearchListing', { speciality });
   };
 
   const renderHelpView = (styles: any) => {
@@ -350,7 +338,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         <View>
           <SectionList
             contentContainerStyle={{
-              flexWrap: 'wrap',
+              // flexWrap: 'wrap',
               marginTop: 12,
               marginBottom: 8,
             }}
@@ -374,9 +362,20 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     return <SectionHeaderComponent sectionTitle={sectionTitle} />;
   };
 
-  const renderSearchDoctorResultsRow = (rowData: doctorCardProps['rowData']) => {
+  const renderSearchDoctorResultsRow = (rowData: DoctorCardProps['rowData']) => {
     return <DoctorCard rowData={rowData} navigation={props.navigation} />;
   };
+
+  const { data, error } = useQuery(GET_SPECIALTIES, {});
+  if (error) {
+    console.log('error', error);
+    //Alert.alert('Error', 'Unable to get the data');
+  } else {
+    console.log('data', data);
+    if (Specialities !== data.getSpecialties) {
+      setSpecialities(data.getSpecialties);
+    }
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>

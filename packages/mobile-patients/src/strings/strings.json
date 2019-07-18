@@ -5,7 +5,10 @@
     "okay": "okay!",
     "best_general_physicians_text": "Here are our best General Physicians",
     "all_consults": "All Consults",
-    "distance": "Distance"
+    "distance": "Distance",
+    "consult_now": "CONSULT NOW",
+    "book_apointment": "BOOK APPOINTMENT",
+    "available_in": "AVAILABLE IN"
   },
   "login": {
     "hello": "hello!",
