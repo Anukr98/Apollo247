@@ -184,7 +184,7 @@ export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
             style={
               phoneNumber == '' || phoneNumberIsValid ? styles.buttonViewfull : styles.buttonView
             }
-            onPress={() => Alert.alert('Need Help')}
+            onPress={() => props.navigation.push(AppRoutes.NeedHelpDonePage)}
             disabled={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
           />
         </OtpCard>
