@@ -3,7 +3,7 @@ import { Resolver } from 'api-gateway';
 import { DoctorsData } from 'doctors-service/data/doctorProfile';
 import { DoctorsServiceContext } from 'doctors-service/doctors-service';
 export const doctorTypeDefs = gql`
-  type clinics {
+  type Clinics {
     name: String
     image: String
     addressLine1: String
@@ -55,7 +55,7 @@ export const doctorTypeDefs = gql`
   type DoctorProfile {
     profile: Doctor
     paymentDetails: [PaymentDetails]
-    clinics: [clinics]
+    clinics: [Clinics]
     starDoctorTeam: [Doctor]
     consultationHours: [Consultations]
   }
@@ -66,7 +66,7 @@ export const doctorTypeDefs = gql`
   }
 `;
 
-type clinics = {
+type Clinics = {
   name: String;
   image: String;
   addressLine1: String;
@@ -117,7 +117,7 @@ export type Doctor = {
 
 export type DoctorProfile = {
   profile: Doctor;
-  clinics: clinics[];
+  clinics: Clinics[];
   starDoctorTeam: Partial<Doctor>[];
   consultationHours: Consultations[];
   paymentDetails: PaymentDetails[];
