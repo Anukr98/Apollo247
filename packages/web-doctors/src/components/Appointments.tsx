@@ -8,7 +8,7 @@ import Avatar from '@material-ui/core/Avatar';
 import IconButton from '@material-ui/core/IconButton';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import VideoCallIcon from '@material-ui/icons/VideoCall';
-import { Stepper, Step, StepLabel, Typography } from '@material-ui/core';
+import { Stepper, Step, StepLabel, StepContent, Typography } from '@material-ui/core';
 import { format, getTime, setSeconds, setMilliseconds } from 'date-fns';
 
 export interface Appointment {
@@ -100,7 +100,30 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     future: {
-      border: '1px solid red',
+      '& svg': {
+        color: '#fff !important',
+        border: '1px solid #ff748e',
+        borderRadius: '50%',
+      },
+    },
+    step: {
+      border: '1px solid pink',
+      '&.upcoming': {
+        border: '1px solid magenta'
+      },
+    },
+
+    completed: {
+      border: '1px solid green',
+      '& svg': {
+        color: '#0087ba',
+      },
+      '& .stepContent': {
+        border: '1px solid red'
+      },
+      '& .stepIcon': {
+        color: 'blue'
+      }
     },
   })
 );
@@ -149,14 +172,35 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     <div>
       <Stepper activeStep={activeStep} orientation="vertical" className={classes.calendarContent}>
         {appointments.map((appointment, idx) => (
-          <Step key={idx} className={stepsCompleted + 1 === idx ? 'upcoming' : 'future'}>
-            <StepLabel classes={{ iconContainer: classes.iconContainer }}>
+          <Step
+            key={idx}
+            active={true}
+            className={stepsCompleted + 1 === idx ? 'upcoming' : ''}
+            classes={{
+              root: classes.step,
+              completed: classes.completed
+            }}
+          >
+            <StepLabel
+              classes={{ iconContainer: classes.iconContainer }}
+              StepIconProps={{
+                classes: {
+                  root: 'stepIcon'
+                }
+              }}
+            >
               <Typography variant="h5">
                 <span>
                   {format(appointment.startTime, 'hh:mm')} -{' '}
                   {format(appointment.endTime, 'hh:mm bb')}
                 </span>
               </Typography>
+            </StepLabel>
+            <StepContent
+              classes={{
+                root: 'stepContent'
+              }}
+            >
               {/* card view start */}
               <div className={classes.root}>
                 <Card className={classes.card}>
@@ -229,7 +273,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
                 </Card>
               </div>
               {/* card view end */}
-            </StepLabel>
+            </StepContent>
           </Step>
         ))}
       </Stepper>
