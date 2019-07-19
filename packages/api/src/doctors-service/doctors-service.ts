@@ -20,6 +20,8 @@ import {
 } from 'doctors-service/resolvers/getSpecialtyDoctorsWithFilters';
 
 import { GatewayContext } from 'api-gateway';
+import gql from 'graphql-tag';
+import { GraphQLTime } from 'graphql-iso-date';
 
 export interface DoctorsServiceContext extends GatewayContext {}
 
@@ -32,6 +34,14 @@ export type Resolver<Parent = any, Args = any> = (
 (async () => {
   const server = new ApolloServer({
     schema: buildFederatedSchema([
+      {
+        typeDefs: gql`
+          scalar Time
+        `,
+        resolvers: {
+          Time: GraphQLTime,
+        },
+      },
       {
         typeDefs: doctorTypeDefs,
         resolvers: doctorResolvers,
