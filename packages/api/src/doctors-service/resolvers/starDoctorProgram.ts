@@ -1,10 +1,10 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctors-service';
-import { DoctorsData } from 'doctors-service/data/doctorProfile';
+import { DoctorsData, INVITEDSTATUS } from 'doctors-service/data/doctorProfile';
 
 export const starDoctorTypeDefs = gql`
-  type DoctorsProfile {
+  type StarDoctorProfile {
     profile: Doctor
     paymentDetails: [PaymentDetails]
     clinics: [Clinics]
@@ -13,7 +13,10 @@ export const starDoctorTypeDefs = gql`
   }
 
   extend type Query {
-    getDoctorsForStarDoctorProgram(searchString: String): [DoctorsProfile]
+    getDoctorsForStarDoctorProgram(searchString: String): [StarDoctorProfile]
+  }
+
+  extend type Mutation {
     addDoctorToStartDoctorProgram(starDoctorId: String, doctorId: String): Boolean
     removeDoctorFromStartDoctorProgram(starDoctorId: String, doctorId: String): Boolean
   }
@@ -29,7 +32,7 @@ const getDoctorsForStarDoctorProgram: Resolver<
     (obj) =>
       obj.profile.firstName.match(args.searchString) &&
       !obj.profile.isStarDoctor &&
-      obj.profile.inviteStatus !== 'accepted'
+      obj.profile.inviteStatus !== INVITEDSTATUS.ACCEPTED
   );
   return JSON.parse(JSON.stringify(result));
 };
@@ -55,6 +58,8 @@ const removeDoctorFromStartDoctorProgram: Resolver<
 export const starDoctorProgramResolvers = {
   Query: {
     getDoctorsForStarDoctorProgram,
+  },
+  Mutation: {
     addDoctorToStartDoctorProgram,
     removeDoctorFromStartDoctorProgram,
   },
