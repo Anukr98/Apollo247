@@ -129,7 +129,7 @@ export const DoctorsListing: React.FC = (props) => {
         <div className={classes.doctorListingPage}>
           <div className={classes.breadcrumbs}>Doctors / Specialities</div>
           <div className={classes.doctorListingSection}>
-            <DoctorsFilter />
+            {/* <DoctorsFilter /> */}
             <div className={classes.searchSection}>
               <Typography variant="h2">Okay!</Typography>
               <div className={classes.pageHeader}>
@@ -142,7 +142,7 @@ export const DoctorsListing: React.FC = (props) => {
                   <AphButton className={classes.filterButton}>Clinic Visit</AphButton>
                 </div>
               </div>
-              <Grid container spacing={2}>
+              {/* <Grid container spacing={2}>
                 <Grid item sm={12} md={6}>
                   <DoctorCard />
                 </Grid>
@@ -167,7 +167,7 @@ export const DoctorsListing: React.FC = (props) => {
                 <Grid item sm={12} md={6}>
                   <DoctorCard />
                 </Grid>
-              </Grid>
+              </Grid> */}
             </div>
           </div>
         </div>

@@ -1,7 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
+import { Gender } from 'graphql/types/globalTypes';
+import { SearchObject } from 'components/DoctorsLanding';
+import _filter from 'lodash/filter';
+import _reverse from 'lodash/reverse';
+import _map from 'lodash/map';
+import _uniqueId from 'lodash/uniqueId';
+import FormHelperText from '@material-ui/core/FormHelperText';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -43,6 +50,12 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: 5,
       marginTop: 5,
     },
+    showMessage: {
+      opacity: 1.0,
+    },
+    hideMessage: {
+      opacity: 0,
+    },
     buttonActive: {
       backgroundColor: '#00b38e',
       color: theme.palette.common.white,
@@ -54,105 +67,243 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const DoctorsFilter: React.FC = (props) => {
+export interface DoctorsFilterProps {
+  handleFilterOptions: (filterOptions: SearchObject) => void;
+  existingFilters: SearchObject;
+  disableFilters: boolean;
+  showError: boolean;
+}
+
+export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   const classes = useStyles();
+
+  const { handleFilterOptions, existingFilters, disableFilters, showError } = props;
+
+  const filterCities = { hyderabad: 'HYDERABAD', chennai: 'CHENNAI' };
+  const filterExperiences = { '0_5': '0-5', '6_10': '6-10', '11_15': '11-15', '16_99': '16+' };
+  const filterAvailability = { now: 'NOW', today: 'TODAY', tomorrow: 'TOMORROW' };
+  const filterFees = { '100_500': '100-500', '500_1000': '500-1000', '1000_1500': '1000-1500' };
+  const filterGenders = _reverse(_filter(Object.values(Gender), (gender) => gender !== 'OTHER')); // show MALE, FEMALE instead of FEMALE, MALE
+  const filterLanguages = { Hindi: 'HINDI', English: 'ENGLISH', Telugu: 'TELUGU' };
+
+  const [searchKeyword, setSearchKeyword] = useState<string>(
+    existingFilters.searchKeyword ? existingFilters.searchKeyword : ''
+  );
+  const [cityName, setCityName] = useState<string>(
+    existingFilters.cityName ? existingFilters.cityName : ''
+  );
+  const [experience, setExperience] = useState<string>(
+    existingFilters.experience ? existingFilters.experience : ''
+  );
+  const [availability, setAvailability] = useState<string>(
+    existingFilters.availability ? existingFilters.availability : ''
+  );
+  const [fees, setFees] = useState<string>(existingFilters.fees ? existingFilters.fees : '');
+  const [gender, setGender] = useState<string>(
+    existingFilters.gender ? existingFilters.gender : ''
+  );
+  const [language, setLanguage] = useState<string>(
+    existingFilters.language ? existingFilters.language : ''
+  );
+
+  // console.log('filter status...', disabled);
+
+  const filterOptions = {
+    searchKeyword: searchKeyword,
+    cityName: cityName,
+    experience: experience,
+    availability: availability,
+    fees: fees,
+    gender: gender,
+    language: language,
+  };
+
   return (
     <div className={classes.root}>
       <AphTextField
         classes={{ root: classes.searchInput }}
         placeholder="Search doctors or specialities"
+        onChange={(event) => {
+          setSearchKeyword(event.target.value);
+          filterOptions.searchKeyword = event.currentTarget.value;
+          handleFilterOptions(filterOptions);
+        }}
+        value={existingFilters.searchKeyword ? existingFilters.searchKeyword : ''}
+        error={showError}
       />
+      <FormHelperText
+        className={showError ? classes.showMessage : classes.hideMessage}
+        component="div"
+        error={showError}
+      >
+        Sorry, we couldn't find what you are looking for :(
+      </FormHelperText>
       <div className={classes.filterSection}>
         <div className={classes.customScroll}>
           <div className={classes.filterBox}>
             <div className={classes.filterType}>City</div>
             <div className={classes.boxContent}>
-              <AphButton
-                color="secondary"
-                size="small"
-                className={`${classes.button} ${classes.buttonActive}`}
-              >
-                Hyderabad
-              </AphButton>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                Chennai
-              </AphButton>
+              {_map(filterCities, (filterCityName, index) => {
+                return (
+                  <AphButton
+                    color="secondary"
+                    size="small"
+                    className={
+                      index === cityName
+                        ? `${classes.button} ${classes.buttonActive}`
+                        : `${classes.button}`
+                    }
+                    value={index}
+                    onClick={(e) => {
+                      setCityName(e.currentTarget.value);
+                      filterOptions.cityName = e.currentTarget.value;
+                      handleFilterOptions(filterOptions);
+                    }}
+                    key={_uniqueId('cityName_')}
+                    disabled={disableFilters}
+                  >
+                    {filterCityName}
+                  </AphButton>
+                );
+              })}
             </div>
           </div>
           <div className={classes.filterBox}>
             <div className={classes.filterType}>Experience In Years</div>
             <div className={classes.boxContent}>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                0 - 5
-              </AphButton>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                6 - 10
-              </AphButton>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                11 - 15
-              </AphButton>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                16+
-              </AphButton>
+              {_map(filterExperiences, (filterExperience, index) => {
+                return (
+                  <AphButton
+                    color="secondary"
+                    size="small"
+                    className={
+                      index === experience
+                        ? `${classes.button} ${classes.buttonActive}`
+                        : `${classes.button}`
+                    }
+                    value={index}
+                    onClick={(e) => {
+                      setExperience(e.currentTarget.value);
+                      filterOptions.experience = e.currentTarget.value;
+                      handleFilterOptions(filterOptions);
+                    }}
+                    key={_uniqueId('exp_')}
+                    disabled={disableFilters}
+                  >
+                    {filterExperience}
+                  </AphButton>
+                );
+              })}
             </div>
           </div>
           <div className={classes.filterBox}>
             <div className={classes.filterType}>Availability</div>
             <div className={classes.boxContent}>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                Now
-              </AphButton>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                Today
-              </AphButton>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                Tomorrow
-              </AphButton>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                Weekend
-              </AphButton>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                Next 3 Days
-              </AphButton>
+              {_map(filterAvailability, (filterAvailability, index) => {
+                return (
+                  <AphButton
+                    color="secondary"
+                    size="small"
+                    className={
+                      index === availability
+                        ? `${classes.button} ${classes.buttonActive}`
+                        : `${classes.button}`
+                    }
+                    value={index}
+                    onClick={(e) => {
+                      setAvailability(e.currentTarget.value);
+                      filterOptions.availability = e.currentTarget.value;
+                      handleFilterOptions(filterOptions);
+                    }}
+                    key={_uniqueId('ava_')}
+                    disabled={disableFilters}
+                  >
+                    {filterAvailability}
+                  </AphButton>
+                );
+              })}
             </div>
           </div>
           <div className={classes.filterBox}>
             <div className={classes.filterType}>Fees In Rupees</div>
             <div className={classes.boxContent}>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                100 - 500
-              </AphButton>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                500 - 1000
-              </AphButton>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                1000 - 1500
-              </AphButton>
+              {_map(filterFees, (filterFee, index) => {
+                return (
+                  <AphButton
+                    color="secondary"
+                    size="small"
+                    className={
+                      index === fees
+                        ? `${classes.button} ${classes.buttonActive}`
+                        : `${classes.button}`
+                    }
+                    value={index}
+                    onClick={(e) => {
+                      setFees(e.currentTarget.value);
+                      filterOptions.fees = e.currentTarget.value;
+                      handleFilterOptions(filterOptions);
+                    }}
+                    key={_uniqueId('fees_')}
+                    disabled={disableFilters}
+                  >
+                    {filterFee}
+                  </AphButton>
+                );
+              })}
             </div>
           </div>
           <div className={classes.filterBox}>
             <div className={classes.filterType}>Gender</div>
             <div className={classes.boxContent}>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                Male
-              </AphButton>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                Female
-              </AphButton>
+              {_map(filterGenders, (filterGender) => {
+                return (
+                  <AphButton
+                    color="secondary"
+                    size="small"
+                    value={Gender[filterGender]}
+                    onClick={(e) => {
+                      setGender(Gender[e.currentTarget.value as Gender]);
+                    }}
+                    className={
+                      gender === filterGender
+                        ? `${classes.button} ${classes.buttonActive}`
+                        : `${classes.button}`
+                    }
+                    key={_uniqueId('gender_')}
+                    disabled={disableFilters}
+                  >
+                    {filterGender}
+                  </AphButton>
+                );
+              })}
             </div>
           </div>
           <div className={classes.filterBox}>
             <div className={classes.filterType}>Language</div>
             <div className={classes.boxContent}>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                Hindi
-              </AphButton>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                English
-              </AphButton>
-              <AphButton color="secondary" size="small" className={`${classes.button}`}>
-                Telugu
-              </AphButton>
+              {_map(filterLanguages, (filterLanguage, index) => {
+                return (
+                  <AphButton
+                    color="secondary"
+                    size="small"
+                    className={
+                      index === language
+                        ? `${classes.button} ${classes.buttonActive}`
+                        : `${classes.button}`
+                    }
+                    value={index}
+                    onClick={(e) => {
+                      setLanguage(e.currentTarget.value);
+                      filterOptions.language = e.currentTarget.value;
+                      handleFilterOptions(filterOptions);
+                    }}
+                    key={_uniqueId('lang_')}
+                    disabled={disableFilters}
+                  >
+                    {filterLanguage}
+                  </AphButton>
+                );
+              })}
             </div>
           </div>
         </div>

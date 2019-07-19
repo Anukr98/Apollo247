@@ -13,8 +13,9 @@ import { AphThemeProvider, aphTheme } from '@aph/web-ui-components';
 import { DoctorDetails } from 'components/DoctorDetails';
 import { DatePicker, MuiPickersUtilsProvider, MaterialUiPickersDate } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
-import { DoctorsListing } from './DoctorsListing';
-import { DoctorsLanding } from './DoctorsLanding';
+import { DoctorsListing } from 'components/DoctorsListing';
+import { DoctorsLanding } from 'components/DoctorsLanding';
+import { AuthRouted } from 'components/AuthRouted';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -39,9 +40,9 @@ const App: React.FC = () => {
     <div className={classes.app}>
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
       <Route exact path={clientRoutes.patients()} component={PatientsList} />
-      <Route exact path={clientRoutes.doctorDetails()} component={DoctorDetails} />
-      <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
-      <Route exact path={clientRoutes.doctorsListing()} component={DoctorsListing} />
+      <AuthRouted exact path={clientRoutes.doctorDetails()} component={DoctorDetails} />
+      <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
+      <AuthRouted exact path={clientRoutes.doctorsListing()} component={DoctorsListing} />
     </div>
   );
 };

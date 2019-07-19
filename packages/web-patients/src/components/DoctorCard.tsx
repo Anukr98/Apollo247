@@ -2,6 +2,9 @@ import React from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Avatar } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
+import { SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors as DoctorDetails } from 'graphql/types/SearchDoctorAndSpecialty';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -89,27 +92,42 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const DoctorCard: React.FC = (props) => {
+interface DoctorCardProps {
+  doctorDetails: DoctorDetails;
+}
+
+export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles();
+
+  const { doctorDetails } = props;
 
   return (
     <div className={classes.root}>
       <div className={classes.topContent}>
         <Avatar
-          alt=""
-          src={require('images/ic_placeholder.png')}
+          alt={doctorDetails.firstName || ''}
+          src={
+            doctorDetails.photoUrl || '' !== ''
+              ? doctorDetails.photoUrl
+              : require('images/ic_placeholder.png')
+          }
           className={classes.doctorAvatar}
         />
         <div className={classes.doctorInfo}>
           <div className={`${classes.availability} ${classes.availableNow}`}>
             Available in 15 mins
           </div>
-          <div className={classes.doctorName}>Dr. Gennifer Ghosh</div>
+          <div className={classes.doctorName}>
+            <Link
+              to={`/doctor-details/${doctorDetails.id}`}
+            >{`${doctorDetails.firstName} ${doctorDetails.lastName}`}</Link>
+          </div>
           <div className={classes.doctorType}>
-            General Physician <span className={classes.doctorExp}>7 YRS</span>
+            {doctorDetails.speciality}{' '}
+            <span className={classes.doctorExp}>{doctorDetails.experience} YRS</span>
           </div>
           <div className={classes.doctorDetails}>
-            <p>MBBS, Internal Medicine</p>
+            <p>{doctorDetails.education}</p>
             <p>Apollo Hospitals, Jubilee Hills</p>
           </div>
         </div>

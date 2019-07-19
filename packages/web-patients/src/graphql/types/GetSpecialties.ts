@@ -10,6 +10,7 @@ export interface GetSpecialties_getSpecialties {
   __typename: "Specialty";
   id: string | null;
   name: string | null;
+  image: string | null;
 }
 
 export interface GetSpecialties {
