@@ -16,7 +16,6 @@ import { DoctorsProfile } from 'components/DoctorsProfile';
 import { Calendar } from 'components/Calendar';
 import { AuthProvider } from 'components/AuthProvider';
 import { useAuth } from 'hooks/authHooks';
-
 const muiTheme = createMuiTheme({
   spacing: 10,
   palette: {
