@@ -60,6 +60,24 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(15),
     color: theme.colors.BUTTON_TEXT,
   },
+  splashview: {
+    width: 76,
+    height: 56,
+    marginLeft: 20,
+    marginBottom: 30,
+    ...Platform.select({
+      android: {
+        top: 16,
+      },
+      ios: {
+        top: 16,
+      },
+    }),
+  },
+  landpageview: {
+    width: '100%',
+    height: 243,
+  },
 });
 
 export interface LandingPageProps extends NavigationScreenProps {}
@@ -82,23 +100,7 @@ export const LandingPage: React.FC<LandingPageProps> = (props) => {
     <View style={styles.mainView}>
       <View style={styles.statusBarBg} />
       <View style={{ backgroundColor: '#FFF' }}>
-        <SplashLogo
-          style={{
-            width: 76,
-            height: 56,
-            marginLeft: 20,
-            marginBottom: 30,
-            ...Platform.select({
-              android: {
-                top: 16,
-              },
-              ios: {
-                top: 16,
-              },
-            }),
-          }}
-          resizeMode="stretch"
-        />
+        <SplashLogo style={styles.splashview} resizeMode="stretch" />
         <View style={{ margin: 20 }}>
           <Text style={styles.landingText}>
             The best way to connect with your {'\n'}patients, grow your practice and {'\n'}enhance
@@ -107,13 +109,7 @@ export const LandingPage: React.FC<LandingPageProps> = (props) => {
           </Text>
         </View>
         <View style={{ marginTop: 15 }}>
-          <LandingPageImage
-            style={{
-              width: '100%',
-              height: 243,
-            }}
-            resizeMode="stretch"
-          />
+          <LandingPageImage style={styles.landpageview} resizeMode="stretch" />
         </View>
       </View>
       <Button

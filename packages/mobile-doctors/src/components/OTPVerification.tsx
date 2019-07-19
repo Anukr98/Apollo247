@@ -84,6 +84,18 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     paddingBottom: 3,
   },
+  otpbuttonview: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0, 0.2)',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
 });
 
 let timer = 900;
@@ -189,8 +201,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     try {
       const { phoneNumber } = props.navigation.state.params!;
       const getData = await AsyncStorage.getItem('timeOutData');
-      // let timeOutData: Array<object> = [];
-      let timeOutData: any[] = [];
+      let timeOutData: Array<object> = [];
+      //let timeOutData: any[] = [];
       if (getData) {
         timeOutData = JSON.parse(getData);
         let index: number = 0;
@@ -251,67 +263,69 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       phoneNumberVerificationCredential,
       otp
     );
+    console.log('credential', credential);
+    props.navigation.replace(AppRoutes.ProfileSetup);
+    // signIn(credential)
+    //   .then((otpCredenntial: void) => {
+    //     console.log('otpCredenntial', otpCredenntial);
+    //     firebase.auth().onAuthStateChanged(async (updatedUser) => {
+    //       console.log('updatedUser', updatedUser);
+    //       setLoggedIn(true);
+    //       if (updatedUser) {
+    //         _removeFromStore();
+    //         const token = await updatedUser!.getIdToken();
+    //         const patientSign = await callApiWithToken!(token);
+    //         const patient = patientSign.data.patientSignIn.patients[0];
+    //         const errMsg =
+    //           patientSign.data.patientSignIn.errors &&
+    //           patientSign.data.patientSignIn.errors.messages[0];
 
-    signIn(credential)
-      .then((otpCredenntial: void) => {
-        console.log('otpCredenntial', otpCredenntial);
-        firebase.auth().onAuthStateChanged(async (updatedUser) => {
-          setLoggedIn(true);
-          if (updatedUser) {
-            _removeFromStore();
-            const token = await updatedUser!.getIdToken();
-            const patientSign = await callApiWithToken!(token);
-            const patient = patientSign.data.patientSignIn.patients[0];
-            const errMsg =
-              patientSign.data.patientSignIn.errors &&
-              patientSign.data.patientSignIn.errors.messages[0];
+    //         AsyncStorage.setItem('onAuthStateChanged', 'false');
 
-            AsyncStorage.setItem('onAuthStateChanged', 'false');
+    //         setTimeout(() => {
+    //           setVerifyingOtp(false);
+    //           if (errMsg) {
+    //             Alert.alert('Error', errMsg);
+    //           } else {
+    //             if (patient && patient.uhid && patient.uhid !== '') {
+    //               if (patient.firstName.relation != 0) {
+    //                 AsyncStorage.setItem('userLoggedIn', 'true');
+    //                 props.navigation.replace(AppRoutes.ProfileSetup);
+    //               } else {
+    //                 props.navigation.replace(AppRoutes.ProfileSetup);
+    //               }
+    //             } else {
+    //               if (patient.firstName.length != 0) {
+    //                 AsyncStorage.setItem('userLoggedIn', 'true');
+    //                 props.navigation.replace(AppRoutes.ProfileSetup);
+    //               } else {
+    //                 props.navigation.replace(AppRoutes.ProfileSetup);
+    //               }
+    //             }
+    //           }
+    //         }, 2000);
+    //       } else {
+    //         console.log('no new user');
+    //       }
+    //     });
+    //   })
+    //   .catch((error: any) => {
+    //     console.log('error', error);
+    //     setVerifyingOtp(false);
+    //     _storeTimerData(invalidOtpCount + 1);
 
-            setTimeout(() => {
-              setVerifyingOtp(false);
-              if (errMsg) {
-                Alert.alert('Error', errMsg);
-              } else {
-                if (patient && patient.uhid && patient.uhid !== '') {
-                  if (patient.firstName.relation != 0) {
-                    AsyncStorage.setItem('userLoggedIn', 'true');
-                    props.navigation.replace(AppRoutes.ProfileSetup);
-                  } else {
-                    props.navigation.replace(AppRoutes.ProfileSetup);
-                  }
-                } else {
-                  if (patient.firstName.length != 0) {
-                    AsyncStorage.setItem('userLoggedIn', 'true');
-                    props.navigation.replace(AppRoutes.ProfileSetup);
-                  } else {
-                    props.navigation.replace(AppRoutes.ProfileSetup);
-                  }
-                }
-              }
-            }, 2000);
-          } else {
-            console.log('no new user');
-          }
-        });
-      })
-      .catch((error: any) => {
-        console.log('error', error);
-        setVerifyingOtp(false);
-        _storeTimerData(invalidOtpCount + 1);
-
-        if (invalidOtpCount + 1 === 3) {
-          setShowErrorMsg(true);
-          setIsValidOTP(false);
-          startInterval(timer);
-          setIntervalId(intervalId);
-        } else {
-          setShowErrorMsg(true);
-          setIsValidOTP(true);
-        }
-        setInvalidOtpCount(invalidOtpCount + 1);
-        setOtp('');
-      });
+    //     if (invalidOtpCount + 1 === 3) {
+    //       setShowErrorMsg(true);
+    //       setIsValidOTP(false);
+    //       startInterval(timer);
+    //       setIntervalId(intervalId);
+    //     } else {
+    //       setShowErrorMsg(true);
+    //       setIsValidOTP(true);
+    //     }
+    //     setInvalidOtpCount(invalidOtpCount + 1);
+    //     setOtp('');
+    //   });
   };
 
   const minutes = Math.floor(remainingTime / 60);
@@ -467,20 +481,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         )}
       </SafeAreaView>
       {verifyingOtp ? (
-        <View
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0, 0.2)',
-            alignSelf: 'center',
-            justifyContent: 'center',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-          }}
-        >
+        <View style={styles.otpbuttonview}>
           <ActivityIndicator animating={verifyingOtp} size="large" color="green" />
         </View>
       ) : null}

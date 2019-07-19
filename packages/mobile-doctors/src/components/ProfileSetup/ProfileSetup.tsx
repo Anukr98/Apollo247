@@ -28,6 +28,7 @@ import {
 import { Overlay } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
+import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -133,19 +134,19 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
 
-  const {
-    data: { getDoctorProfile },
-    error,
-    loading,
-  } = useQuery(GET_DOCTOR_PROFILE, {
-    variables: { mobileNumber: '1234567890' },
-  }) as any;
-
   // const {
   //   data: { getDoctorProfile },
   //   error,
   //   loading,
-  // } = doctorProfile;
+  // } = useQuery(GET_DOCTOR_PROFILE, {
+  //   variables: { mobileNumber: '1234567890' },
+  // }) as any;
+
+  const {
+    data: { getDoctorProfile },
+    error,
+    loading,
+  } = doctorProfile;
   if (error) {
     Alert.alert('Error', 'Unable to get the data');
   }

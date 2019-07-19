@@ -29,6 +29,10 @@ const styles = StyleSheet.create({
       }
     ),
   },
+  needdataview: {
+    marginTop: 0,
+    height: 300,
+  },
 });
 
 export interface NeedHelpDonePageProps extends NavigationScreenProps {}
@@ -41,7 +45,7 @@ export const NeedHelpDonePage: React.FC<NeedHelpDonePageProps> = (props) => {
         <View style={{ height: 56 }} />
         <OtpCard
           isModelCard={true}
-          cardContainer={{ marginTop: 0, height: 300 }}
+          cardContainer={styles.needdataview}
           heading="done!"
           description="You will receive a call from us shortly."
           onPress={() => props.navigation.goBack()}

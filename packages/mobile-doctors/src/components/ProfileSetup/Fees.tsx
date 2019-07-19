@@ -3,7 +3,7 @@ import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/Squar
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { DummyQueryResult } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { DummyQueryResult, DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 
 const styles = StyleSheet.create({
   feeeducation: {
@@ -46,14 +46,16 @@ const styles = StyleSheet.create({
     opacity: 0.2,
     marginBottom: 16,
   },
+  paymentbutton: {
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+    marginRight: 20,
+  },
+  commonView: {
+    flexDirection: 'column',
+    marginLeft: 16,
+  },
 });
-
-type _ProfileData = {
-  acnumber: string;
-  acholdername: string;
-  ifsccode: string;
-  accounttype: string;
-};
 
 export interface FeesProps {
   profileData: DoctorProfile;
@@ -80,7 +82,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
   const feeprofileRow = (title: string, description: string) => {
     if (!description) return null;
     return (
-      <View style={{ flexDirection: 'column', marginLeft: 16 }}>
+      <View style={styles.commonView}>
         <Text style={styles.feeeducation}>{title}</Text>
         <Text style={styles.feeeducationtext}>{description}</Text>
       </View>
@@ -89,7 +91,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
   const feeprofileRowBold = (title: Element, description: string) => {
     if (!description) return null;
     return (
-      <View style={{ flexDirection: 'column', marginLeft: 16 }}>
+      <View style={styles.commonView}>
         {title}
         <Text style={styles.feeeducationtext}>Rs. {description}</Text>
       </View>
@@ -98,7 +100,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
   const feeprofileRowdetails = (title: string, description: string) => {
     if (!description) return null;
     return (
-      <View style={{ flexDirection: 'column', marginLeft: 16 }}>
+      <View style={styles.commonView}>
         <Text style={styles.feeeducation}>{title}</Text>
         <Text style={styles.feeeducationtext}>{description}</Text>
       </View>
@@ -107,7 +109,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
   const feeprofileRowbankname = (title: string, description: string) => {
     if (!description) return null;
     return (
-      <View style={{ flexDirection: 'column', marginLeft: 16 }}>
+      <View style={styles.commonView}>
         <Text style={styles.feeeducationname}>{title}</Text>
         <Text style={styles.feeeducationtextname}>{description}</Text>
       </View>
@@ -156,11 +158,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
           </View>
           <View>
             <TouchableOpacity
-              style={{
-                justifyContent: 'flex-end',
-                alignItems: 'flex-end',
-                marginRight: 20,
-              }}
+              style={styles.paymentbutton}
               onPress={() => setShowPaymentDetails(!showPaymentDetails)}
             >
               {showPaymentDetails ? <Up /> : <Down />}

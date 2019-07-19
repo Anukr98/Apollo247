@@ -189,7 +189,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     if (/^\d+$/.test(number) || number == '') {
       setPhoneNumber(number);
       // if (number.length == 10) {
-      setPhoneNumberIsValid(isPhoneNumberValid(number));
+      setPhoneNumberIsValid(isMobileNumberValid(number));
       // }
     } else {
       return false;
