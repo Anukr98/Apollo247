@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profiles-service';
-import { searchData } from 'profiles-service/mockData/searchData';
+import { searchData, SEARCH_TYPE } from 'profiles-service/mockData/searchData';
 
 export const getPastSearchesTypeDefs = gql`
   enum SEARCH_TYPE {
@@ -9,7 +9,7 @@ export const getPastSearchesTypeDefs = gql`
     SPECIALTY
   }
   type SearchData {
-    searchType: String
+    searchType: SEARCH_TYPE
     typeId: String
     name: String
     image: String
@@ -20,7 +20,7 @@ export const getPastSearchesTypeDefs = gql`
 `;
 
 export type SearchData = {
-  searchType: String;
+  searchType: SEARCH_TYPE;
   typeId: String;
   name: String;
   image: String;
