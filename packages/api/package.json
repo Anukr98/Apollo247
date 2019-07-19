@@ -5,6 +5,7 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
+    "apollo:download": "apollo schema:download ./node_modules/@aph/api-schema/schema.json --endpoint=http://localhost:${API_GATEWAY_PORT}/graphql",
     "start:api-gateway": "webpack --config webpack.config.api-gateway.js",
     "start:profiles-service": "webpack --config webpack.config.profiles-service.js",
     "start:doctors-service": "webpack --config webpack.config.doctors-service.js",
@@ -14,6 +15,7 @@
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx"
   },
   "devDependencies": {
+    "@aph/api-schema": "file:../api-schema",
     "@aph/eslint-config": "file:../eslint-config",
     "@aph/prettier-config": "file:../prettier-config",
     "@aph/tsconfig": "file:../tsconfig",
@@ -22,6 +24,7 @@
     "@types/lodash": "^4.14.134",
     "@typescript-eslint/eslint-plugin": "^1.9.0",
     "@typescript-eslint/parser": "^1.9.0",
+    "apollo": "^2.16.0",
     "awesome-typescript-loader": "^5.2.1",
     "clean-webpack-plugin": "^3.0.0",
     "eslint": "^5.16.0",
@@ -36,6 +39,7 @@
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
+    "@aph/api-schema": "file:../api-schema",
     "@aph/universal": "file:../universal",
     "@apollo/federation": "^0.6.4",
     "@apollo/gateway": "^0.6.12",

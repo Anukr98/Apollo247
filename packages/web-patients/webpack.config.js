@@ -1,8 +1,19 @@
 const path = require('path');
 const process = require('process');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const DotenvWebpack = require('dotenv-webpack');
 const webpack = require('webpack');
 
+const envFile = path.resolve(__dirname, '../../.env');
+const setEnvVars = () => {
+  const dotenv = require('dotenv');
+  const config = dotenv.config({ path: envFile });
+  if (config.error) {
+    throw config.error;
+  }
+  Object.values(config).forEach((val, KEY) => (process.env[KEY] = val));
+};
+setEnvVars();
 const isTest = process.env.NODE_ENV === 'test';
 const isLocal = process.env.NODE_ENV === 'local';
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -11,15 +22,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 const distDir = path.resolve(__dirname, 'dist');
 
 const plugins = [
-  new webpack.DefinePlugin(
-    ['NODE_ENV', 'WEB_PATIENTS_PORT', 'API_GATEWAY_PORT', 'FIREBASE_PROJECT_ID'].reduce(
-      (result, VAR) => ({
-        ...result,
-        [`process.env.${VAR}`]: JSON.stringify(process.env[VAR].trim()),
-      }),
-      {}
-    )
-  ),
+  new DotenvWebpack({ path: envFile }),
   new HtmlWebpackPlugin({
     filename: 'index.html',
     chunks: ['index'],
@@ -104,10 +107,7 @@ module.exports = {
           hot: true,
           inline: true,
           historyApiFallback: true,
-          // We have to poll for changes bc we're running inside a docker container :(
           watchOptions: {
-            aggregateTimeout: 300,
-            poll: 1000,
             ignored: [/node_modules([\\]+|\/)+(?!@aph)/],
           },
         }
