@@ -8,6 +8,7 @@ import { DoctorsFilter } from 'components/DoctorsFilter';
 import { PastSearches } from 'components/PastSearches';
 import { Specialities } from 'components/Specialities';
 import { DoctorCard } from './doctorCard';
+import { DoctorsListing } from 'components/DoctorsListing';
 import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
 
@@ -147,6 +148,8 @@ export const DoctorsLanding: React.FC = (props) => {
     }
   }, [specialitySelected]);
 
+  console.log('speciality selected......', specialitySelected);
+
   const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY, {
     variables: { searchText: filterOptions.searchKeyword },
   });
@@ -158,7 +161,8 @@ export const DoctorsLanding: React.FC = (props) => {
     !loading &&
     matchingDoctors === 0 &&
     matchingSpecialities === 0 &&
-    filterOptions.searchKeyword.length > 0
+    filterOptions.searchKeyword.length > 0 &&
+    specialitySelected.length === 0
   )
     showError = true;
 
@@ -181,55 +185,67 @@ export const DoctorsLanding: React.FC = (props) => {
             />
 
             <div className={classes.searchSection}>
-              {filterOptions.searchKeyword.length <= 0 ? (
+              {filterOptions.searchKeyword.length <= 0 && specialitySelected.length === 0 ? (
                 <>
                   <div className={classes.sectionHeader}>Your Past Searches</div>
                   <PastSearches />
                 </>
               ) : null}
 
-              {data && data.SearchDoctorAndSpecialty && filterOptions.searchKeyword.length > 0 ? (
+              {specialitySelected.length > 0 ? (
+                <DoctorsListing filter={filterOptions} />
+              ) : (
                 <>
+                  {data &&
+                  data.SearchDoctorAndSpecialty &&
+                  filterOptions.searchKeyword.length > 0 ? (
+                    <>
+                      <div className={classes.sectionHeader}>
+                        <span>Matching Doctors</span>
+                        <span className={classes.count}>
+                          {matchingDoctors > 0 && matchingDoctors < 10
+                            ? `0${matchingDoctors}`
+                            : matchingDoctors}
+                        </span>
+                      </div>
+                      <Grid spacing={2} container>
+                        {_map(data.SearchDoctorAndSpecialty.doctors, (doctorDetails) => {
+                          return (
+                            <Grid item sm={6} key={_uniqueId('doctor_')}>
+                              <DoctorCard doctorDetails={doctorDetails} />
+                            </Grid>
+                          );
+                        })}
+                      </Grid>
+                    </>
+                  ) : null}
                   <div className={classes.sectionHeader}>
-                    <span>Matching Doctors</span>
+                    <span>
+                      {filterOptions.searchKeyword !== ''
+                        ? 'Matching Specialities'
+                        : 'Specialities'}
+                    </span>
                     <span className={classes.count}>
-                      {matchingDoctors > 0 && matchingDoctors < 10
-                        ? `0${matchingDoctors}`
-                        : matchingDoctors}
+                      {filterOptions.searchKeyword !== ''
+                        ? matchingSpecialities > 0 && matchingSpecialities < 10
+                          ? `0${matchingSpecialities}`
+                          : matchingSpecialities
+                        : ''}
                     </span>
                   </div>
-                  <Grid spacing={2} container>
-                    {_map(data.SearchDoctorAndSpecialty.doctors, (doctorDetails) => {
-                      return (
-                        <Grid item sm={6} key={_uniqueId('doctor_')}>
-                          <DoctorCard doctorDetails={doctorDetails} />
-                        </Grid>
-                      );
-                    })}
-                  </Grid>
+                  <Specialities
+                    keyword={filterOptions.searchKeyword}
+                    matched={(matchingSpecialities) =>
+                      setMatchingSpecialities(matchingSpecialities)
+                    }
+                    speciality={(specialitySelected) => setSpecialitySelected(specialitySelected)}
+                    disableFilter={(disableFilters) => {
+                      setDisableFilters(disableFilters);
+                    }}
+                  />
+                  }
                 </>
-              ) : null}
-
-              <div className={classes.sectionHeader}>
-                <span>
-                  {filterOptions.searchKeyword !== '' ? 'Matching Specialities' : 'Specialities'}
-                </span>
-                <span className={classes.count}>
-                  {filterOptions.searchKeyword !== ''
-                    ? matchingSpecialities > 0 && matchingSpecialities < 10
-                      ? `0${matchingSpecialities}`
-                      : matchingSpecialities
-                    : ''}
-                </span>
-              </div>
-              <Specialities
-                keyword={filterOptions.searchKeyword}
-                matched={(matchingSpecialities) => setMatchingSpecialities(matchingSpecialities)}
-                speciality={(specialitySelected) => setSpecialitySelected(specialitySelected)}
-                disableFilter={(disableFilters) => {
-                  setDisableFilters(disableFilters);
-                }}
-              />
+              )}
             </div>
           </div>
         </div>

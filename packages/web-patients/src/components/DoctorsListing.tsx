@@ -1,12 +1,14 @@
-import { BottomNavigation, Theme, Typography, Grid } from '@material-ui/core';
-import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
+import { Theme, Typography, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { Header } from 'components/Header';
-import { ManageProfile } from 'components/ManageProfile';
 import React from 'react';
-import { DoctorsFilter } from 'components/DoctorsFilter';
 import { DoctorCard } from './doctorCard';
 import { AphButton } from '@aph/web-ui-components';
+import _uniqueId from 'lodash/uniqueId';
+import _map from 'lodash/map';
+
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { FILTER_DOCTORS } from 'graphql/doctors';
+import { SearchObject } from 'components/DoctorsLanding';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -115,102 +117,58 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const DoctorsListing: React.FC = (props) => {
+interface DoctorsListingProps {
+  filter: SearchObject;
+}
+
+export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const classes = useStyles();
 
+  const { filter } = props;
+
+  const apiVairables = {
+    specialty: filter.searchKeyword,
+    city: filter.cityName,
+    experience: filter.experience,
+    availability: filter.availability,
+    gender: filter.gender,
+    language: filter.language,
+  };
+
+  const { data, loading, error } = useQueryWithSkip(FILTER_DOCTORS, {
+    variables: { filterInput: apiVairables },
+  });
+
+  console.log('apivars.....', apiVairables);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  if (error) {
+    return <div>Error! {error.message}</div>;
+  }
+
   return (
-    <div className={classes.welcome}>
-      <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
+    <>
+      <Typography variant="h2">Okay!</Typography>
+      <div className={classes.pageHeader}>
+        <div>Here are our best General Physicians</div>
+        <div className={classes.filterSection}>
+          <AphButton className={`${classes.filterButton} ${classes.buttonActive}`}>
+            All Consults
+          </AphButton>
+          <AphButton className={classes.filterButton}>Online Consult</AphButton>
+          <AphButton className={classes.filterButton}>Clinic Visit</AphButton>
         </div>
       </div>
-      <div className={classes.container}>
-        <div className={classes.doctorListingPage}>
-          <div className={classes.breadcrumbs}>Doctors / Specialities</div>
-          <div className={classes.doctorListingSection}>
-            {/* <DoctorsFilter /> */}
-            <div className={classes.searchSection}>
-              <Typography variant="h2">Okay!</Typography>
-              <div className={classes.pageHeader}>
-                <div>Here are our best General Physicians</div>
-                <div className={classes.filterSection}>
-                  <AphButton className={`${classes.filterButton} ${classes.buttonActive}`}>
-                    All Consults
-                  </AphButton>
-                  <AphButton className={classes.filterButton}>Online Consult</AphButton>
-                  <AphButton className={classes.filterButton}>Clinic Visit</AphButton>
-                </div>
-              </div>
-              {/* <Grid container spacing={2}>
-                <Grid item sm={12} md={6}>
-                  <DoctorCard />
-                </Grid>
-                <Grid item sm={12} md={6}>
-                  <DoctorCard />
-                </Grid>
-                <Grid item sm={12} md={6}>
-                  <DoctorCard />
-                </Grid>
-                <Grid item sm={12} md={6}>
-                  <DoctorCard />
-                </Grid>
-                <Grid item sm={12} md={6}>
-                  <DoctorCard />
-                </Grid>
-                <Grid item sm={12} md={6}>
-                  <DoctorCard />
-                </Grid>
-                <Grid item sm={12} md={6}>
-                  <DoctorCard />
-                </Grid>
-                <Grid item sm={12} md={6}>
-                  <DoctorCard />
-                </Grid>
-              </Grid> */}
-            </div>
-          </div>
-        </div>
-      </div>
-      <BottomNavigation showLabels className={classes.bottomMenuRoot}>
-        <BottomNavigationAction
-          label="Consult Room"
-          icon={<img src={require('images/ic_consultroom.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-        <BottomNavigationAction
-          label="Health Records"
-          icon={<img src={require('images/ic_myhealth.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-        <BottomNavigationAction
-          label="Tests & Medicines"
-          icon={<img src={require('images/ic_orders.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-        <BottomNavigationAction
-          label="My Account"
-          icon={<img src={require('images/ic_account_dark.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-      </BottomNavigation>
-      <ManageProfile />
-    </div>
+
+      <Grid container spacing={2}>
+        <Grid item sm={12} md={6}>
+          {_map(data.getSpecialtyDoctorsWithFilters.doctors, (doctorDetails) => {
+            return <DoctorCard doctorDetails={doctorDetails} key={_uniqueId('dcListing_')} />;
+          })}
+        </Grid>
+      </Grid>
+    </>
   );
 };

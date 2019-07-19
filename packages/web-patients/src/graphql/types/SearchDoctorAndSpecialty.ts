@@ -14,6 +14,8 @@ export interface SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors {
   speciality: string | null;
   experience: string | null;
   education: string | null;
+  availableForPhysicalConsultation: boolean | null;
+  availableForVirtualConsultation: boolean | null;
   photoUrl: string | null;
 }
 

@@ -78,11 +78,31 @@ export const SEARCH_DOCTORS_AND_SPECIALITY = gql`
         speciality
         experience
         education
+        availableForPhysicalConsultation
+        availableForVirtualConsultation
         photoUrl
       }
       specialties {
         name
         image
+      }
+    }
+  }
+`;
+
+export const FILTER_DOCTORS = gql`
+  query getSpecialtyDoctorsWithFilters($filterInput: filterInput) {
+    getSpecialtyDoctorsWithFilters(filterInput: $filterInput) {
+      doctors {
+        id
+        firstName
+        lastName
+        speciality
+        availableForPhysicalConsultation
+        availableForVirtualConsultation
+        education
+        city
+        photoUrl
       }
     }
   }

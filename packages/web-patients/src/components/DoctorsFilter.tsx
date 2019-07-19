@@ -82,7 +82,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   const filterCities = { hyderabad: 'HYDERABAD', chennai: 'CHENNAI' };
   const filterExperiences = { '0_5': '0-5', '6_10': '6-10', '11_15': '11-15', '16_99': '16+' };
   const filterAvailability = { now: 'NOW', today: 'TODAY', tomorrow: 'TOMORROW' };
-  const filterFees = { '100_500': '100-500', '500_1000': '500-1000', '1000_1500': '1000-1500' };
+  const filterFees = { '100_500': '100-500', '501_1000': '501-1000', '1001_1500': '1001-1500' };
   const filterGenders = _reverse(_filter(Object.values(Gender), (gender) => gender !== 'OTHER')); // show MALE, FEMALE instead of FEMALE, MALE
   const filterLanguages = { Hindi: 'HINDI', English: 'ENGLISH', Telugu: 'TELUGU' };
 
