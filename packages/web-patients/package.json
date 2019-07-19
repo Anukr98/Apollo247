@@ -6,17 +6,17 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
-    "start": "npm run apollo:codegen:watch & webpack-dev-server",
+    "start": "npm run apollo:codegen & webpack-dev-server",
+    "test": "cypress open --project src",
     "build": "webpack",
     "format": "prettier --list-different '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "format:fix": "prettier --write '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
-    "apollo:download": "apollo schema:download ./src/graphql/schema.json --endpoint=http://api-gateway:${API_GATEWAY_PORT}/graphql",
-    "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./src/graphql/schema.json --target=typescript --queries=./src/graphql/**.ts",
-    "apollo:codegen:watch": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./src/graphql/schema.json --target=typescript --queries=./src/graphql/**.ts --watch"
+    "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./node_modules/@aph/api-schema/schema.json --target=typescript --queries=./src/graphql/**.ts --watch"
   },
   "devDependencies": {
+    "@aph/api-schema": "file:../api-schema",
     "@aph/eslint-config": "file:../eslint-config",
     "@aph/prettier-config": "file:../prettier-config",
     "@aph/tsconfig": "file:../tsconfig",
@@ -36,7 +36,9 @@
     "awesome-typescript-loader": "^5.2.1",
     "babel-loader": "^8.0.6",
     "clean-webpack-plugin": "^3.0.0",
-    "cypress": "^3.3.1",
+    "cypress": "^3.4.0",
+    "dotenv": "^8.0.0",
+    "dotenv-webpack": "^1.7.0",
     "eslint": "^5.16.0",
     "eslint-plugin-import": "^2.17.3",
     "eslint-plugin-react": "^7.13.0",

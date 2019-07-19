@@ -15,6 +15,7 @@
     "react": "16.8.6"
   },
   "devDependencies": {
+    "@aph/api-schema": "file:../api-schema",
     "@aph/eslint-config": "file:../eslint-config",
     "@aph/prettier-config": "file:../prettier-config",
     "@aph/tsconfig": "file:../tsconfig",
