@@ -8,6 +8,7 @@ export const doctorTypeDefs = gql`
     ACCEPTED
     REJECTED
     NOTAPPLICABLE
+    NONE
   }
 
   type Clinics {

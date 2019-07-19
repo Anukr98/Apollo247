@@ -3,6 +3,7 @@ export enum INVITEDSTATUS {
   ACCEPTED = 'ACCEPTED',
   REJECTED = 'REJECTED',
   NOTAPPLICABLE = 'NOTAPPLICABLE',
+  NONE = 'NONE',
 }
 export const DoctorsData: DoctorProfile[] = [
   {
