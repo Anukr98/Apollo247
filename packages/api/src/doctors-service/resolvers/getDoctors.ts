@@ -7,7 +7,7 @@ export const doctorTypeDefs = gql`
   enum INVITEDSTATUS {
     ACCEPTED
     REJECTED
-    ONETWO
+    NOTAPPLICABLE
   }
 
   type Clinics {
