@@ -17,7 +17,7 @@ export interface GetCurrentPatients_getCurrentPatients_patients {
   relation: Relation | null;
   gender: Gender | null;
   uhid: string | null;
-  dateOfBirth: string | null;
+  dateOfBirth: any | null;
   emailAddress: string | null;
 }
 
