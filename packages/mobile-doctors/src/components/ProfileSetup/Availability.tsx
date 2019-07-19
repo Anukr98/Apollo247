@@ -1,8 +1,8 @@
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { SelectableButton } from './ui/SelectableButton';
-import { SquareCardWithTitle } from './ui/SquareCardWithTitle';
+import { SelectableButton } from '../ui/SelectableButton';
+import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
 import { DummyQueryResult } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
 
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
 });
 
 export interface AvailabilityProps {
-  profileData: DummyQueryResult['data']['getDoctorProfile'];
+  profileData: DoctorProfile;
 }
 
 export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {

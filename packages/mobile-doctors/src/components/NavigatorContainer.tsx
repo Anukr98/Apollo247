@@ -9,7 +9,7 @@ import { Onboarding } from '@aph/mobile-doctors/src/components/Onboarding';
 import { OnBoardingPage } from '@aph/mobile-doctors/src/components/OnBoardingPage';
 import { OTPVerification } from '@aph/mobile-doctors/src/components/OTPVerification';
 import { Patients } from '@aph/mobile-doctors/src/components/Patients';
-import { ProfileSetup } from '@aph/mobile-doctors/src/components/ProfileSetup';
+import { ProfileSetup } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileSetup';
 import { TabBar } from '@aph/mobile-doctors/src/components/TabBar';
 import { TransitionPage } from '@aph/mobile-doctors/src/components/TransitionPage';
 import { NeedHelpDonePage } from '@aph/mobile-doctors/src/components/NeedHelpDonePage';
@@ -96,7 +96,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
 };
 
 const stackConfig: StackNavigatorConfig = {
-  initialRouteName: AppRoutes.SplashScreen,
+  initialRouteName: AppRoutes.ProfileSetup,
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   transitionConfig: () => {

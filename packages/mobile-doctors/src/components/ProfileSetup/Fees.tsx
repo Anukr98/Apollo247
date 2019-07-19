@@ -56,7 +56,7 @@ type _ProfileData = {
 };
 
 export interface FeesProps {
-  profileData: DummyQueryResult['data']['getDoctorProfile'];
+  profileData: DoctorProfile;
 }
 
 export const Fees: React.FC<FeesProps> = ({ profileData }) => {

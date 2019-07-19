@@ -1,7 +1,7 @@
-import { Availability } from '@aph/mobile-doctors/src/components/Availability';
-import { Fees } from '@aph/mobile-doctors/src/components/Fees';
+import { Availability } from '@aph/mobile-doctors/src/components/ProfileSetup/Availability';
+import { Fees } from '@aph/mobile-doctors/src/components/ProfileSetup/Fees';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { Profile } from '@aph/mobile-doctors/src/components/Profile';
+import { Profile } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/Profile';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { Cancel, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
@@ -173,7 +173,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       activeTabIndex={tabIndex}
     />
   );
-  const renderComponent = (tabIndex: number, data: DummyQueryResult['data']['getDoctorProfile']) =>
+  const renderComponent = (tabIndex: number, data: DoctorProfile) =>
     tabIndex == 0 ? (
       <Profile profileData={data} />
     ) : tabIndex == 1 ? (

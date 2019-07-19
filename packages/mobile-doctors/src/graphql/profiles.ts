@@ -1,28 +1,5 @@
 import gql from 'graphql-tag';
 
-export const GET_PATIENTS = gql`
-  query GetPatients {
-    getPatients {
-      patients {
-        id
-        mobileNumber
-        firstName
-        lastName
-        relation
-        gender
-        uhid
-        dateOfBirth
-        emailAddress
-      }
-    }
-  }
-`;
-
-// export const IS_DOCTOR = gql`
-//   query hasAccess($mobileNumber: String!) {
-//     hasAccess(mobileNumber: $mobileNumber)
-//   }
-// `;
 export const GET_DOCTOR_PROFILE = gql`
   query getDoctorProfile {
     getDoctorProfile {
@@ -58,6 +35,7 @@ export const GET_DOCTOR_PROFILE = gql`
       clinics {
         name
         location
+        image
       }
       starDoctorTeam {
         id
@@ -90,6 +68,62 @@ export const GET_DOCTOR_PROFILE = gql`
         availableForPhysicalConsultation
         availableForVirtualConsultation
         type
+      }
+    }
+  }
+`;
+
+/**
+ * @returns {DoctorProfile}
+ * @param {String} searchString
+ */
+export const GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM = gql`
+  query getDoctorsForStarDoctorProgram {
+    getDoctorsForStarDoctorProgram(searchString: $searchString) {
+      profile {
+        id
+        firstName
+        lastName
+      }
+    }
+  }
+`;
+
+/**
+ * @returns {boolean}
+ * @param {String} starDoctorId
+ * @param {String} doctorId
+ */
+export const ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM = gql`
+  query addDoctorToStartDoctorProgram {
+    addDoctorToStartDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
+  }
+`;
+
+/**
+ * @returns {boolean}
+ * @param {String} starDoctorId
+ * @param {String} doctorId
+ */
+export const REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM = gql`
+  query removeDoctorFromStartDoctorProgram {
+    removeDoctorFromStartDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
+  }
+`;
+
+export const GET_PATIENTS = gql`
+  query GetPatients {
+    getPatients {
+      patients {
+        id
+        mobileNumber
+        firstName
+        lastName
+        relation
+        gender
+        uhid
+        dateOfBirth
+        emailAddress
       }
     }
   }
