@@ -70,7 +70,7 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 40,
         [theme.breakpoints.between('sm', 'md')]: {
           marginRight: 5,
-          padding: '10px 5px'
+          padding: '10px 5px',
         },
       },
     },
@@ -217,7 +217,8 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             >
               {/* card view start */}
               <div>
-                <Card className={classes.card}
+                <Card
+                  className={classes.card}
                   classes={{
                     root: 'cardRow',
                   }}
