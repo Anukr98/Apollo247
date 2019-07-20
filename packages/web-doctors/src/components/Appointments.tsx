@@ -2,29 +2,47 @@ import React, { useState, useEffect } from 'react';
 import { Stepper, Step, StepLabel, Typography } from '@material-ui/core';
 import { format, getTime, setSeconds, setMilliseconds } from 'date-fns';
 
-interface Props {
-  values: Array<any>;
+export interface Appointment {
+  startTime: number;
+  endTime: number;
+  isNew: boolean;
+  type: string;
+  details: {
+    patientName: string;
+    checkups: string[];
+  };
 }
 
-let timeOutId;
-const udpateActiveStep = (appointments, activeStep, setActiveStep) => {
+export interface AppointmentsProps {
+  values: Appointment[];
+}
+
+let timeOutId: number;
+const udpateActiveStep = (
+  appointments: Appointment[],
+  activeStep: number,
+  setActiveStep: React.Dispatch<number>
+) => {
   if (appointments.length && checkIfComplete(appointments[activeStep].endTime)) {
     activeStep += 1;
     setActiveStep(activeStep);
   }
 
   if (activeStep < appointments.length) {
-    timeOutId = setTimeout(() => udpateActiveStep(appointments, activeStep, setActiveStep), 1000);
+    timeOutId = window.setTimeout(
+      () => udpateActiveStep(appointments, activeStep, setActiveStep),
+      1000
+    );
   }
 };
-const checkIfComplete = (appointmentEndTime) =>
+const checkIfComplete = (appointmentEndTime: number) =>
   getTime(setSeconds(setMilliseconds(appointmentEndTime, 0), 0)) <=
   getTime(setSeconds(setMilliseconds(Date.now(), 0), 0));
 
-const getActiveStep = (appointments) =>
+const getActiveStep = (appointments: Appointment[]) =>
   appointments.findIndex((appointment) => checkIfComplete(appointment.endTime));
 
-export const Appointments: React.FC<Props> = (props) => {
+export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [appointments, setAppointments] = useState(props.values);
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState(stepsCompleted < 0 ? 0 : stepsCompleted);

@@ -244,8 +244,8 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
       selected: false,
     },
   ];
-  const [consultType, setVonsultType] = useState<consultItem>(consultTypeArr);
-  const consultTypeHtml = consultType.map((item, index) => {
+  const [consultType, setVonsultType] = useState<consultItem[]>(consultTypeArr);
+  const consultTypeHtml = consultType.map((item: consultItem, index: number) => {
     return (
       <AphButton
         key={item.key.toString()}
@@ -310,9 +310,9 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
       selected: false,
     },
   ];
-  const [week, setWeek] = useState<weekItem>(weekArr);
-  const dayClickHandler = (key) => {
-    const updatedWeekArr = weekArr.map((day) => {
+  const [week, setWeek] = useState<weekItem[]>(weekArr);
+  const dayClickHandler = (key: number) => {
+    const updatedWeekArr = weekArr.map((day: weekItem) => {
       if (day.key === key) {
         console.log(day.selected, !day.selected);
         day.selected = !day.selected;
@@ -321,7 +321,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
     });
     setWeek(updatedWeekArr);
   };
-  const weekHtml = week.map((item, index) => {
+  const weekHtml = week.map((item: weekItem, index: number) => {
     return (
       <AphButton
         key={item.key.toString()}
@@ -435,7 +435,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
               <div className={classes.addAvailabilitydetails}>
                 {getDetails()}
                 <Divider />
-                <div display="flex" className={classes.footerButtons}>
+                <div className={classes.footerButtons}>
                   <Button
                     size="small"
                     className={classes.cancelBtn}
@@ -470,7 +470,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
             variant="contained"
             color="primary"
             classes={{ root: classes.saveButton }}
-            onClick={proceedHadler()}
+            onClick={() => proceedHadler()}
           >
             SAVE AND PROCEED
           </AphButton>
