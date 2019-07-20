@@ -4,7 +4,8 @@ const path = require('path');
 const webpackPreprocessor = require('@cypress/webpack-preprocessor');
 
 module.exports = (cypressConfig) => {
-  const webpackConfig = require('../../../webpack.config');
+  const env = 'test';
+  const webpackConfig = require('../../../webpack.config')(env);
 
   // For some reason, cypress won't work with the `awesome-typescript-loader` our app's
   // webpack config uses. Override the `module` key to use the vanilla `ts-loader`
