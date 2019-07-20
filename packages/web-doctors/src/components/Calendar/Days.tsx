@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { startOfWeek, endOfWeek, eachDay, getDate, getDay, isToday } from 'date-fns';
+import { startOfWeek, endOfWeek, eachDayOfInterval, getDate, getDay, isToday } from 'date-fns';
 import { fontSize } from '@material-ui/system';
 
 const days: Array<string> = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
@@ -32,20 +32,20 @@ interface Props {
 }
 
 export const Days: React.FC<Props> = (props) => {
-  const today: any = props.date;
+  const today: Date = props.date;
   const weekStart: Date = startOfWeek(today, { weekStartsOn: 0 });
   const weekEnd: Date = endOfWeek(today);
-  const [range, setRange] = useState(eachDay(weekStart, weekEnd));
+  const [range, setRange] = useState(eachDayOfInterval({start: weekStart, end: weekEnd}));
   const classes = useStyles();
 
   useEffect(() => {
-    setRange(eachDay(startOfWeek(props.date, { weekStartsOn: 0 }), endOfWeek(props.date)));
+    setRange(eachDayOfInterval({start: startOfWeek(props.date, { weekStartsOn: 0 }), end: endOfWeek(props.date)}));
   }, [props.date]);
 
   return (
     <div className={props.classes}>
       <ul className={classes.reset}>
-        {range.map((date, idx) => (
+        {range.map((date: Date, idx: number) => (
           <li
             className={classes.days + (isToday(date) ? ' highlight' : '')}
             key={idx}
