@@ -64,7 +64,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           <Step key={idx}>
             <StepLabel>
               <Typography>
-                {format(appointment.startTime, 'hh:mm')} - {format(appointment.endTime, 'hh:mm A')}
+                {format(appointment.startTime, 'hh:mm')} - {format(appointment.endTime, 'hh:mm bb')}
                 <span>{appointment.details.patientName}</span>
               </Typography>
             </StepLabel>
