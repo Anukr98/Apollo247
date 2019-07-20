@@ -5,6 +5,7 @@ import { DoctorCard } from './doctorCard';
 import { AphButton } from '@aph/web-ui-components';
 import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { FILTER_DOCTORS } from 'graphql/doctors';
@@ -145,17 +146,17 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   // console.log('speciality in listing...', specialityName);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LinearProgress variant="query" />;
   }
   if (error) {
-    return <div>Error! {error.message}</div>;
+    return <LinearProgress color="secondary" variant="query" />;
   }
 
   return (
     <>
       <Typography variant="h2">Okay!</Typography>
       <div className={classes.pageHeader}>
-        <div>Here are our best General Physicians</div>
+        <div>Here are our best {specialityName}</div>
         <div className={classes.filterSection}>
           <AphButton className={`${classes.filterButton} ${classes.buttonActive}`}>
             All Consults

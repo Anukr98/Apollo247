@@ -103,6 +103,7 @@ export const FILTER_DOCTORS = gql`
         education
         city
         photoUrl
+        experience
       }
     }
   }

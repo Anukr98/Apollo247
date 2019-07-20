@@ -19,6 +19,7 @@ export interface getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_d
   education: string | null;
   city: string | null;
   photoUrl: string | null;
+  experience: string | null;
 }
 
 export interface getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters {
