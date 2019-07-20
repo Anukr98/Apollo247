@@ -13,11 +13,10 @@ import { useQuery } from 'react-apollo-hooks';
 import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 
 export interface TabContainerProps {
-  component: string;
   children: React.ReactNode;
 }
 
-function TabContainer<TabContainerProps>(props: TabContainerProps) {
+function TabContainer(props: TabContainerProps) {
   return (
     <Typography component="div" style={{ padding: 8 * 3 }}>
       {props.children}
