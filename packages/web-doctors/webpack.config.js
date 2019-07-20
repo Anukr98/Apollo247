@@ -101,7 +101,7 @@ module.exports = {
           publicPath: '/', // URL path where the webpack files are served from
           contentBase: distDir, // A directory to serve files non-webpack files from (Absolute path)
           host: '0.0.0.0',
-          port: process.env.WEB_PATIENTS_PORT,
+          port: process.env.WEB_DOCTORS_PORT,
           disableHostCheck: true,
           hot: true,
           inline: true,
