@@ -15,6 +15,7 @@ _Note to windows users: Run the following steps on a Windows 10 Pro machine in a
 - Add the `firebase-secrets.json` to the `packages/api` folder (ask someone on the dev team for a copy)
 - Copy and rename `local.env` to `.env` in the root
 - Run `npm install`
+- Optional: Install [lazydocker](https://github.com/jesseduffield/lazydocker/) to manage your docker containers
 
 ## Web
 
