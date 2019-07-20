@@ -30,13 +30,13 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       width: '100%',
-      // maxWidth: 360,
       backgroundColor: theme.palette.background.paper,
     },
     card: {
       width: '100%',
       border: 'solid 1px rgba(2, 71, 91, 0.3)',
       backgroundColor: '#f0f4f5',
+      boxShadow: 'none',
     },
     cardContent: {
       width: '90%',
@@ -44,12 +44,15 @@ const useStyles = makeStyles((theme: Theme) =>
     chip: {
       marginRight: theme.spacing(1),
       backgroundColor: 'rgba(0,135,186,0.1)',
-      minWidth: '60px',
-      padding: '10px',
-      borderRadius: '5px',
+      minWidth: 60,
+      padding: 10,
+      borderRadius: 5,
       color: '#0087ba',
       fontSize: 12,
       fontWeight: 700,
+      [theme.breakpoints.between('sm', 'md')]: {
+        marginTop: 5,
+      },
     },
     section1: {
       margin: theme.spacing(0, 2),
@@ -59,23 +62,30 @@ const useStyles = makeStyles((theme: Theme) =>
     section2: {
       margin: theme.spacing(0, 2),
       color: '#02475b',
+      [theme.breakpoints.between('sm', 'md')]: {
+        margin: '0 2px',
+      },
       '& button': {
         color: '#02475b',
-        marginRight: '40px',
+        marginRight: 40,
         [theme.breakpoints.between('sm', 'md')]: {
-          marginRight: '5px',
+          marginRight: 5,
+          padding: '10px 5px'
         },
       },
     },
     subHeading: {
       color: '#ff748e',
       fontWeight: 700,
-      fontSize: '14px',
+      fontSize: 14,
     },
     mainHeading: {
       color: '#02475b',
       fontWeight: 700,
-      fontSize: '20px',
+      fontSize: 20,
+      [theme.breakpoints.between('sm', 'md')]: {
+        fontSize: 18,
+      },
     },
     section3: {
       margin: theme.spacing(3, 1, 1),
@@ -87,6 +97,7 @@ const useStyles = makeStyles((theme: Theme) =>
     valign: {
       display: 'flex',
       alignItems: 'center',
+      padding: '0 !important',
     },
     bold: {
       fontWeight: 700,
@@ -99,30 +110,32 @@ const useStyles = makeStyles((theme: Theme) =>
         display: 'none',
       },
     },
-    future: {
-      '& svg': {
-        color: '#fff !important',
-        border: '1px solid #ff748e',
+    step: {
+      '& .stepIcon': {
+        color: '#fff',
+        border: '2px solid #0087ba',
         borderRadius: '50%',
       },
-    },
-    step: {
-      border: '1px solid pink',
+      '& .cardRow': {
+        border: '2px solid #0087ba',
+        backgroundColor: '#fff',
+      },
       '&.upcoming': {
-        border: '1px solid magenta',
+        '& .stepIcon': {
+          color: '#fff',
+          border: '2px solid #ff748e',
+          borderRadius: '50%',
+        },
+        '& .cardRow': {
+          border: '2px solid #ff748e',
+          backgroundColor: '#fff',
+        },
       },
     },
-
     completed: {
-      border: '1px solid green',
-      '& svg': {
-        color: '#0087ba',
-      },
-      '& .stepContent': {
-        border: '1px solid red',
-      },
       '& .stepIcon': {
-        color: 'blue',
+        color: '#0087ba',
+        border: 'none',
       },
     },
   })
@@ -203,8 +216,12 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
               }}
             >
               {/* card view start */}
-              <div className={classes.root}>
-                <Card className={classes.card}>
+              <div>
+                <Card className={classes.card}
+                  classes={{
+                    root: 'cardRow',
+                  }}
+                >
                   <CardContent>
                     <Grid item xs={12}>
                       <Grid item container spacing={2}>
@@ -258,10 +275,10 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
                             </div>
                           </Grid>
                         )}
-                        <Grid lg={3} sm={2} xs={3} key={3} item>
+                        <Grid lg={3} sm={2} xs={3} key={3} className={classes.valign} item>
                           <div className={classes.section2}>
                             <IconButton aria-label="Video call">
-                              <VideoCallIcon />
+                              <img src={require('images/ic_video.svg')} alt="" />
                             </IconButton>
                             <IconButton aria-label="Navigate next">
                               <NavigateNextIcon />
