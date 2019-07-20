@@ -12,7 +12,7 @@ _Note to windows users: Run the following steps on a Windows 10 Pro machine in a
 
 - Install docker and docker-compose
 - Install [nvm](https://nvm.sh), run `nvm use` (now you may have to run an `nvm install` command, read the output)
-- Add the `firebase-secrets.json` to the `packages/api/src/profiles-service` and `packages/api/src/` folders (ask someone on the dev team for a copy)
+- Add the `firebase-secrets.json` to the `packages/api/src/` folder (ask someone on the dev team for a copy)
 - Copy and rename `local.env` to `.env` in the root
 - Run `npm install`
 
@@ -28,11 +28,17 @@ _Note to windows users: Run the following steps on a Windows 10 Pro machine in a
 - Start the api-gateway `docker-compose up api-gateway`, graphql playground will be on http://localhost:4000
 - Navigate to either `mobile-patients` or `mobile-odctors` and run `npm run start`
 
-## Web Testing
+## Testing
 
-We use [Cypress](cypress.io) for web testing. Just run `npm run test` (on your host!!) to get started.
+### Web
 
-## Mobile Testing
+We use [Cypress](cypress.io) for web testing. Just run `npm run test` (on your host!) to get started.
+
+### Mobile
+
+Using jest. Run `npm run test`
+
+### API
 
 Using jest. Run `npm run test`
 
