@@ -72,12 +72,23 @@ export interface DoctorsFilterProps {
   existingFilters: SearchObject;
   disableFilters: boolean;
   showError: boolean;
+  showNormal: (showNormal: boolean) => void;
+  emptySpeciality: (specialitySelected: string) => void;
+  manageFilter: (disableFilters: boolean) => void;
 }
 
 export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   const classes = useStyles();
 
-  const { handleFilterOptions, existingFilters, disableFilters, showError } = props;
+  const {
+    handleFilterOptions,
+    existingFilters,
+    disableFilters,
+    showError,
+    showNormal,
+    emptySpeciality,
+    manageFilter,
+  } = props;
 
   const filterCities = { hyderabad: 'HYDERABAD', chennai: 'CHENNAI' };
   const filterExperiences = { '0_5': '0-5', '6_10': '6-10', '11_15': '11-15', '16_99': '16+' };
@@ -86,37 +97,28 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   const filterGenders = _reverse(_filter(Object.values(Gender), (gender) => gender !== 'OTHER')); // show MALE, FEMALE instead of FEMALE, MALE
   const filterLanguages = { Hindi: 'HINDI', English: 'ENGLISH', Telugu: 'TELUGU' };
 
-  const [searchKeyword, setSearchKeyword] = useState<string>(
-    existingFilters.searchKeyword ? existingFilters.searchKeyword : ''
-  );
-  const [cityName, setCityName] = useState<string>(
-    existingFilters.cityName ? existingFilters.cityName : ''
-  );
-  const [experience, setExperience] = useState<string>(
-    existingFilters.experience ? existingFilters.experience : ''
-  );
-  const [availability, setAvailability] = useState<string>(
-    existingFilters.availability ? existingFilters.availability : ''
-  );
-  const [fees, setFees] = useState<string>(existingFilters.fees ? existingFilters.fees : '');
-  const [gender, setGender] = useState<string>(
-    existingFilters.gender ? existingFilters.gender : ''
-  );
-  const [language, setLanguage] = useState<string>(
-    existingFilters.language ? existingFilters.language : ''
-  );
+  const [searchKeyword, setSearchKeyword] = useState<string>(existingFilters.searchKeyword || '');
+  const [cityName, setCityName] = useState<string>(existingFilters.cityName || '');
+  const [experience, setExperience] = useState<string>(existingFilters.experience || '');
+  const [availability, setAvailability] = useState<string>(existingFilters.availability || '');
+  const [fees, setFees] = useState<string>(existingFilters.fees || '');
+  const [gender, setGender] = useState<string>(existingFilters.gender || '');
+  const [language, setLanguage] = useState<string>(existingFilters.language || '');
 
+  // console.log(searchKeyword, '---------');
   // console.log('filter status...', disabled);
 
   const filterOptions = {
-    searchKeyword: searchKeyword,
-    cityName: cityName,
-    experience: experience,
-    availability: availability,
-    fees: fees,
-    gender: gender,
-    language: language,
+    searchKeyword: existingFilters.searchKeyword,
+    cityName: existingFilters.cityName,
+    experience: existingFilters.experience,
+    availability: existingFilters.availability,
+    fees: existingFilters.fees,
+    gender: existingFilters.gender,
+    language: existingFilters.language,
   };
+
+  // console.log(filterOptions, 'in filters........', existingFilters);
 
   return (
     <div className={classes.root}>
@@ -126,9 +128,15 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
         onChange={(event) => {
           setSearchKeyword(event.target.value);
           filterOptions.searchKeyword = event.currentTarget.value;
+          if (event.target.value.length === 0) {
+            filterOptions.searchKeyword = '';
+            showNormal(true);
+            emptySpeciality('');
+            manageFilter(true);
+          }
           handleFilterOptions(filterOptions);
         }}
-        value={existingFilters.searchKeyword ? existingFilters.searchKeyword : ''}
+        value={existingFilters.searchKeyword || ''}
         error={showError}
       />
       <FormHelperText

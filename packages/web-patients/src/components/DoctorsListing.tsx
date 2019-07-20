@@ -119,15 +119,16 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface DoctorsListingProps {
   filter: SearchObject;
+  specialityName: string;
 }
 
 export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const classes = useStyles();
 
-  const { filter } = props;
+  const { filter, specialityName } = props;
 
   const apiVairables = {
-    specialty: filter.searchKeyword,
+    specialty: specialityName,
     city: filter.cityName,
     experience: filter.experience,
     availability: filter.availability,
@@ -139,7 +140,9 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     variables: { filterInput: apiVairables },
   });
 
-  console.log('apivars.....', apiVairables);
+  // console.log('apivars.....', apiVairables);
+  // console.log('filtervars....', filter);
+  // console.log('speciality in listing...', specialityName);
 
   if (loading) {
     return <div>Loading...</div>;

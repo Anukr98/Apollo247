@@ -121,6 +121,7 @@ const searchObject = {
   fees: '',
   gender: '',
   language: '',
+  specialitySelected: '',
 };
 
 export const DoctorsLanding: React.FC = (props) => {
@@ -130,6 +131,7 @@ export const DoctorsLanding: React.FC = (props) => {
   const [matchingSpecialities, setMatchingSpecialities] = useState<number>(0);
   const [specialitySelected, setSpecialitySelected] = useState<string>('');
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
+  const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
 
   let showError = false;
   let matchingDoctors = 0;
@@ -145,10 +147,11 @@ export const DoctorsLanding: React.FC = (props) => {
         gender: '',
         language: '',
       });
+      setShowSearchAndPastSearch(false);
     }
   }, [specialitySelected]);
 
-  console.log('speciality selected......', specialitySelected);
+  console.log(showSearchAndPastSearch, 'ex.......', specialitySelected);
 
   const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY, {
     variables: { searchText: filterOptions.searchKeyword },
@@ -182,10 +185,19 @@ export const DoctorsLanding: React.FC = (props) => {
               existingFilters={filterOptions}
               disableFilters={disableFilters}
               showError={showError}
+              showNormal={(showSearchAndPastSearch) => {
+                setShowSearchAndPastSearch(showSearchAndPastSearch);
+              }}
+              emptySpeciality={(specialitySelected) => setSpecialitySelected(specialitySelected)}
+              manageFilter={(disableFilters) => {
+                setDisableFilters(disableFilters);
+              }}
             />
 
             <div className={classes.searchSection}>
-              {filterOptions.searchKeyword.length <= 0 && specialitySelected.length === 0 ? (
+              {filterOptions.searchKeyword.length <= 0 &&
+              specialitySelected.length === 0 &&
+              showSearchAndPastSearch ? (
                 <>
                   <div className={classes.sectionHeader}>Your Past Searches</div>
                   <PastSearches />
@@ -193,12 +205,13 @@ export const DoctorsLanding: React.FC = (props) => {
               ) : null}
 
               {specialitySelected.length > 0 ? (
-                <DoctorsListing filter={filterOptions} />
+                <DoctorsListing filter={filterOptions} specialityName={specialitySelected} />
               ) : (
                 <>
                   {data &&
                   data.SearchDoctorAndSpecialty &&
-                  filterOptions.searchKeyword.length > 0 ? (
+                  filterOptions.searchKeyword.length > 0 &&
+                  showSearchAndPastSearch ? (
                     <>
                       <div className={classes.sectionHeader}>
                         <span>Matching Doctors</span>
@@ -221,7 +234,7 @@ export const DoctorsLanding: React.FC = (props) => {
                   ) : null}
                   <div className={classes.sectionHeader}>
                     <span>
-                      {filterOptions.searchKeyword !== ''
+                      {filterOptions.searchKeyword !== '' && showSearchAndPastSearch
                         ? 'Matching Specialities'
                         : 'Specialities'}
                     </span>

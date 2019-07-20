@@ -11,7 +11,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, createMuiTheme } from '@material-ui/core';
 import { AphThemeProvider, aphTheme } from '@aph/web-ui-components';
 import { DoctorDetails } from 'components/DoctorDetails';
-import { DatePicker, MuiPickersUtilsProvider, MaterialUiPickersDate } from '@material-ui/pickers';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import { DoctorsListing } from 'components/DoctorsListing';
 import { DoctorsLanding } from 'components/DoctorsLanding';
@@ -41,7 +41,7 @@ const App: React.FC = () => {
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
       <Route exact path={clientRoutes.patients()} component={PatientsList} />
       <AuthRouted exact path={clientRoutes.doctorDetails()} component={DoctorDetails} />
-      <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
+      <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
       <AuthRouted exact path={clientRoutes.doctorsListing()} component={DoctorsListing} />
     </div>
   );
