@@ -6,14 +6,15 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
-    "start": "npm run apollo:codegen & webpack-dev-server",
-    "test": "cypress open --project src",
+    "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./node_modules/@aph/api-schema/schema.json --target=typescript --queries=./src/graphql/**.ts --watch",
     "build": "webpack",
     "format": "prettier --list-different '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "format:fix": "prettier --write '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
-    "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./node_modules/@aph/api-schema/schema.json --target=typescript --queries=./src/graphql/**.ts --watch"
+    "start": "npm run apollo:codegen & webpack-dev-server",
+    "test": "cypress open --project src",
+    "typecheck": "tsc --project . --noEmit"
   },
   "devDependencies": {
     "@aph/api-schema": "file:../api-schema",

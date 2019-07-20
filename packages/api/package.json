@@ -6,13 +6,14 @@
   "private": true,
   "scripts": {
     "apollo:download": "apollo schema:download ./node_modules/@aph/api-schema/schema.json --endpoint=http://localhost:${API_GATEWAY_PORT}/graphql",
-    "start:api-gateway": "webpack --config webpack.config.api-gateway.js",
-    "start:profiles-service": "webpack --config webpack.config.profiles-service.js",
-    "start:doctors-service": "webpack --config webpack.config.doctors-service.js",
     "format": "prettier --list-different '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "format:fix": "prettier --write '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
-    "lint": "eslint src --ext .ts,.tsx,.js,.jsx"
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
+    "start:api-gateway": "webpack --config webpack.config.api-gateway.js",
+    "start:profiles-service": "webpack --config webpack.config.profiles-service.js",
+    "start:doctors-service": "webpack --config webpack.config.doctors-service.js",
+    "typecheck": "tsc --project . --noEmit"
   },
   "devDependencies": {
     "@aph/api-schema": "file:../api-schema",
