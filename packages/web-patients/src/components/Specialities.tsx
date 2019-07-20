@@ -1,5 +1,4 @@
 import React from 'react';
-import { useQuery } from 'react-apollo-hooks';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Grid, Avatar } from '@material-ui/core';
 import _uniqueId from 'lodash/uniqueId';
@@ -10,6 +9,7 @@ import _toLower from 'lodash/toLower';
 import { GET_SPECIALITIES } from 'graphql/specialities';
 import { GetSpecialties } from 'graphql/types/GetSpecialties';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -41,7 +41,7 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-interface SpecialitiesProps {
+export interface SpecialitiesProps {
   keyword: string;
   matched: (matchedSpecialities: number) => void;
   speciality: (specialitySelected: string) => void;
@@ -54,8 +54,9 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
   const { keyword, matched, speciality, disableFilter } = props;
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LinearProgress variant="query" />;
   }
+
   if (error) {
     return <div>Error! {error.message}</div>;
   }
@@ -64,7 +65,7 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
     const filteredValues = _filter(specialities, (specialityDetails) =>
       _startsWith(_toLower(specialityDetails.name || ''), _toLower(keyword))
     );
-    console.log(filteredValues, keyword);
+    // console.log(filteredValues, keyword);
     matched(filteredValues.length);
     return filteredValues;
   };
@@ -105,6 +106,6 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
       </div>
     );
   } else {
-    return <Grid>Loading...</Grid>;
+    return <LinearProgress variant="query" />;
   }
 };

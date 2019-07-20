@@ -133,6 +133,12 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
             showNormal(true);
             emptySpeciality('');
             manageFilter(true);
+            setCityName('');
+            setGender('');
+            setExperience('');
+            setAvailability('');
+            setFees('');
+            setLanguage('');
           }
           handleFilterOptions(filterOptions);
         }}
