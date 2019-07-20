@@ -35,11 +35,16 @@ export const Days: React.FC<Props> = (props) => {
   const today: Date = props.date;
   const weekStart: Date = startOfWeek(today, { weekStartsOn: 0 });
   const weekEnd: Date = endOfWeek(today);
-  const [range, setRange] = useState(eachDayOfInterval({start: weekStart, end: weekEnd}));
+  const [range, setRange] = useState(eachDayOfInterval({ start: weekStart, end: weekEnd }));
   const classes = useStyles();
 
   useEffect(() => {
-    setRange(eachDayOfInterval({start: startOfWeek(props.date, { weekStartsOn: 0 }), end: endOfWeek(props.date)}));
+    setRange(
+      eachDayOfInterval({
+        start: startOfWeek(props.date, { weekStartsOn: 0 }),
+        end: endOfWeek(props.date),
+      })
+    );
   }, [props.date]);
 
   return (
