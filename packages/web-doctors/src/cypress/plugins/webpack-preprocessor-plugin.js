@@ -4,10 +4,6 @@ const path = require('path');
 const webpackPreprocessor = require('@cypress/webpack-preprocessor');
 
 module.exports = (cypressConfig) => {
-  // We need to make sure to set these `process.env` vars _before_ requiring the `webpack.config`!
-  ['NODE_ENV', 'WEB_DOCTORS_PORT', 'API_GATEWAY_PORT', 'FIREBASE_PROJECT_ID'].forEach(
-    (VAR) => (process.env[VAR] = cypressConfig.env[VAR])
-  );
   const webpackConfig = require('../../../webpack.config');
 
   // For some reason, cypress won't work with the `awesome-typescript-loader` our app's
