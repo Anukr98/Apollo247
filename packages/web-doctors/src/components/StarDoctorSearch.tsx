@@ -8,7 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import MenuItem from '@material-ui/core/MenuItem';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
-interface DoctorsName {
+export interface DoctorsName {
   label: string;
   typeOfConsult: string;
   experience: string;
@@ -167,7 +167,14 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
+export interface IntegrationAutosuggestProps {
+  addDoctorHadler: (doctor: DoctorsName) => void;
+  isReset: boolean;
+}
+
+export default function IntegrationAutosuggest(props: IntegrationAutosuggestProps) {
+  let { addDoctorHadler, isReset } = props;
+
   const classes = useStyles();
   const [state, setState] = React.useState({
     single: '',
@@ -183,7 +190,7 @@ export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
     setSuggestions([]);
   };
   const onSuggestionSelected = (
-    event,
+    event: React.MouseEvent,
     { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }
   ) => {
     setDoctor(suggestion);

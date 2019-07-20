@@ -90,7 +90,7 @@ export const CalendarStrip: React.FC<Props> = (props) => {
     }
   }, [date, prevDate]);
 
-  const next = (e) => {
+  const next = (e: React.MouseEvent) => {
     setPrevDate(date);
 
     const newDate = addWeeks(date, 1);
@@ -101,7 +101,7 @@ export const CalendarStrip: React.FC<Props> = (props) => {
     }
   };
 
-  const previous = (e) => {
+  const previous = (e: React.MouseEvent) => {
     setPrevDate(date);
 
     const newDate = subWeeks(date, 1);
@@ -112,8 +112,8 @@ export const CalendarStrip: React.FC<Props> = (props) => {
     }
   };
 
-  const onMonthSelect = (e) => {
-    const monthSelected = e.target.value;
+  const onMonthSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const monthSelected: number = (e.target.value as unknown) as number;
     const newDate = new Date(getYear(date), monthSelected, 1, 0, 0, 0);
 
     setDate(newDate);
@@ -124,7 +124,7 @@ export const CalendarStrip: React.FC<Props> = (props) => {
     }
   };
 
-  const dayClickHandler = (e, date) => {
+  const dayClickHandler = (e: React.MouseEvent<HTMLLIElement>, date: Date) => {
     setMonth(getMonth(date));
 
     if (typeof props.dayClickHandler === 'function') {

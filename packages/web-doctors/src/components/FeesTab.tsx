@@ -138,12 +138,12 @@ const useStyles = makeStyles((theme: Theme) => {
     heading: {
       fontSize: theme.typography.pxToRem(15),
       color: '#02475b',
-      fontWeight: '700',
+      fontWeight: '700' as React.CSSProperties['fontWeight'],
     },
     secondaryHeading: {
       fontSize: theme.typography.pxToRem(15),
       color: '#658f9b',
-      fontWeight: '700',
+      fontWeight: '700' as React.CSSProperties['fontWeight'],
     },
     icon: {
       verticalAlign: 'bottom',
@@ -244,7 +244,7 @@ export const FeesTab: React.FC<Props> = ({ values, proceedHadler }) => {
                 <div className={classes.columnAC}>
                   <Typography className={classes.heading}>A/C Number: xxx xxx xxx 7890</Typography>
                 </div>
-                <div className={classes.columnBank}>
+                <div>
                   <Typography className={classes.secondaryHeading}>
                     State Bank of India, Powai
                   </Typography>

@@ -12,7 +12,12 @@ import { FeesTab } from 'components/FeesTab';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 
-function TabContainer(props) {
+export interface TabContainerProps {
+  component: string;
+  children: React.ReactNode;
+}
+
+function TabContainer<TabContainerProps>(props: TabContainerProps) {
   return (
     <Typography component="div" style={{ padding: 8 * 3 }}>
       {props.children}
@@ -84,7 +89,7 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
     variables: { mobileNumber: '1234567890' },
   });
 
-  function handleChange(event, newValue) {
+  function handleChange(event: React.MouseEvent, newValue: number) {
     setValue(newValue);
   }
   const proceedHadler = () => {
