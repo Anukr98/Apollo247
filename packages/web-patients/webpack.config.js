@@ -16,7 +16,6 @@ const setEnvVars = () => {
 setEnvVars();
 const isTest = process.env.NODE_ENV === 'test';
 const isLocal = process.env.NODE_ENV === 'local';
-const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
 
 const distDir = path.resolve(__dirname, 'dist');
@@ -30,7 +29,7 @@ const plugins = [
     inject: true,
   }),
 ];
-if (isLocal || isDevelopment) {
+if (isTest || isLocal) {
   plugins.push(new webpack.HotModuleReplacementPlugin());
 }
 
@@ -82,7 +81,7 @@ module.exports = {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
     modules: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'node_modules')],
     alias:
-      isTest || isLocal || isDevelopment
+      isTest || isLocal
         ? {
             'react-dom': '@hot-loader/react-dom',
           }
@@ -97,7 +96,7 @@ module.exports = {
   },
 
   devServer:
-    isTest || isLocal || isDevelopment
+    isTest || isLocal
       ? {
           publicPath: '/', // URL path where the webpack files are served from
           contentBase: distDir, // A directory to serve files non-webpack files from (Absolute path)
