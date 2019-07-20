@@ -53,11 +53,11 @@ Each microservice's postgres databases is viewable through the web ui, `pgweb`. 
 
 ### Common issues
 
-#### Unable to download new docker images
+#### Timeuots/Unable to download new docker images
 
 Go into your docker network settings and select Automatic DNS
 
-#### Nginx error and/or any kind of 'file not found' error when starting a container
+#### Any kind of 'file not found' error OR Nginx error when starting a container
 
 This usually indicates that volumes are not mounting properly due to permissions issues.
 Go into your docker settings, click on hard drives, and reset the credentials.
