@@ -106,7 +106,7 @@ function renderSuggestion(
   return (
     <MenuItem selected={isHighlighted} component="div">
       <div>
-        {parts.map((part, index) => (
+        {parts.map((part: { text: string; highlight: boolean }, index: number) => (
           <span
             key={index.toString()}
             style={{ fontWeight: part.highlight ? 500 : 400, color: '#000' }}
