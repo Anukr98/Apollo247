@@ -12,7 +12,7 @@ _Note to windows users: Run the following steps on a Windows 10 Pro machine in a
 
 - Install docker and docker-compose
 - Install [nvm](https://nvm.sh), run `nvm use` (now you may have to run an `nvm install` command, read the output)
-- Add the `firebase-secrets.json` to the `packages/api/src/` folder (ask someone on the dev team for a copy)
+- Add the `firebase-secrets.json` to the `packages/api` folder (ask someone on the dev team for a copy)
 - Copy and rename `local.env` to `.env` in the root
 - Run `npm install`
 
