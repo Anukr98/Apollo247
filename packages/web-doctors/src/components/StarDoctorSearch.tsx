@@ -172,14 +172,12 @@ export interface IntegrationAutosuggestProps {
   isReset: boolean;
 }
 
-export default function IntegrationAutosuggest(props: IntegrationAutosuggestProps) {
-  let { addDoctorHadler, isReset } = props;
-
+export function StarDoctorSearch({ addDoctorHadler, isReset }: IntegrationAutosuggestProps) {
   const classes = useStyles();
   const [state, setState] = React.useState({
     single: '',
   });
-  const [doctor, setDoctor] = React.useState({});
+  const [doctor, setDoctor] = React.useState<DoctorsName>({});
   const [stateSuggestions, setSuggestions] = React.useState<DoctorsName[]>([]);
 
   const handleSuggestionsFetchRequested = ({ value }: any) => {
@@ -191,7 +189,19 @@ export default function IntegrationAutosuggest(props: IntegrationAutosuggestProp
   };
   const onSuggestionSelected = (
     event: React.MouseEvent,
-    { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }
+    {
+      suggestion,
+      suggestionValue,
+      suggestionIndex,
+      sectionIndex,
+      method,
+    }: {
+      suggestion: DoctorsName;
+      suggestionValue: string;
+      suggestionIndex: number;
+      sectionIndex: number;
+      method: 'click' | 'enter';
+    }
   ) => {
     setDoctor(suggestion);
   };

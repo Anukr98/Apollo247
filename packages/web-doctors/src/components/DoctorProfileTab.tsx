@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
-import StarDoctorSearch, { DoctorsName } from './StarDoctorSearch';
+import { StarDoctorSearch, DoctorsName } from './StarDoctorSearch';
 import {
   getDoctorProfile_getDoctorProfile_starDoctorTeam,
   getDoctorProfile_getDoctorProfile_clinicsList,

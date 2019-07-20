@@ -7,7 +7,7 @@ import {
   addWeeks,
   subWeeks,
   getMonth,
-  isWithinRange,
+  isWithinInterval,
   endOfMonth,
   startOfWeek,
   endOfWeek,
@@ -84,7 +84,10 @@ export const CalendarStrip: React.FC<Props> = (props) => {
 
   useEffect(() => {
     if (
-      !isWithinRange(endOfMonth(prevDate), startOfWeek(date, { weekStartsOn: 0 }), endOfWeek(date))
+      !isWithinInterval(endOfMonth(prevDate), {
+        start: startOfWeek(date, { weekStartsOn: 0 }),
+        end: endOfWeek(date),
+      })
     ) {
       setMonth(getMonth(date));
     }
