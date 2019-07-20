@@ -177,7 +177,7 @@ export function StarDoctorSearch({ addDoctorHadler, isReset }: IntegrationAutosu
   const [state, setState] = React.useState({
     single: '',
   });
-  const [doctor, setDoctor] = React.useState<DoctorsName>({});
+  const [doctor, setDoctor] = React.useState({} as DoctorsName);
   const [stateSuggestions, setSuggestions] = React.useState<DoctorsName[]>([]);
 
   const handleSuggestionsFetchRequested = ({ value }: any) => {
