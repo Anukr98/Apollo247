@@ -30,7 +30,7 @@ _Note to windows users: Run the following steps on a Windows 10 Pro machine in a
 
 ## Web Testing
 
-We use [Cypress](cypress.io) for web testing. Just run `npm run test` to get started.
+We use [Cypress](cypress.io) for web testing. Just run `npm run test` (on your host!!) to get started.
 
 ## Mobile Testing
 
