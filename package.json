@@ -2,7 +2,6 @@
   "name": "apollo-hospitals",
   "private": true,
   "scripts": {
-    "preinstall": "cp local.env .env",
     "bootstrap": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install && lerna run build --scope @aph/web-ui-components --scope @aph/mobile-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
     "bootstrap:web": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --ignore @aph/mobile* && lerna run build --scope @aph/web-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
     "bootstrap:mobile": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --ignore @aph/web* && lerna run build --scope @aph/mobile-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
