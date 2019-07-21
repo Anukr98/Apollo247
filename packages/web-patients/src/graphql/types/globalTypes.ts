@@ -36,6 +36,15 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
 }
 
+export interface filterInput {
+  specialty: string;
+  city?: (string | null)[] | null;
+  experience?: (string | null)[] | null;
+  availability?: (string | null)[] | null;
+  gender?: (string | null)[] | null;
+  language?: (string | null)[] | null;
+}
+
 //==============================================================
 // END Enums and Input Objects
 //==============================================================

@@ -8,11 +8,26 @@ import _map from 'lodash/map';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { FILTER_DOCTORS } from 'graphql/doctors';
-import { SearchObject } from 'components/DoctorsLanding';
+import { SEARCH_DOCTORS_AND_SPECIALITY } from 'graphql/doctors';
+import { SpecialitiesProps } from 'components/Specialities';
+import { Specialities } from 'components/Specialities';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
+    sectionHeader: {
+      color: '#02475b',
+      fontSize: 14,
+      fontWeight: 500,
+      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      paddingBottom: 10,
+      paddingTop: 10,
+      marginBottom: 20,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    count: {
+      marginLeft: 'auto',
+    },
     welcome: {
       paddingTop: 85,
       [theme.breakpoints.down('xs')]: {
@@ -118,57 +133,51 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface DoctorsListingProps {
-  filter: SearchObject;
-  specialityName: string;
-}
-
-export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
+export const PossibleSpecialitiesAndDoctors: React.FC<SpecialitiesProps> = (props) => {
   const classes = useStyles();
 
-  const { filter, specialityName } = props;
-
-  const apiVairables = {
-    specialty: specialityName,
-    city: filter.cityName,
-    experience: filter.experience,
-    availability: filter.availability,
-    gender: filter.gender,
-    language: filter.language,
-  };
-
-  const { data, loading, error } = useQueryWithSkip(FILTER_DOCTORS, {
-    variables: { filterInput: apiVairables },
+  const { matched, speciality, disableFilter } = props;
+  const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY, {
+    variables: { searchText: '' },
   });
 
   if (loading) {
     return <LinearProgress variant="query" />;
   }
-  if (error) {
-    return <LinearProgress color="secondary" variant="query" />;
-  }
 
-  return (
-    <>
-      <Typography variant="h2">Okay!</Typography>
-      <div className={classes.pageHeader}>
-        <div>Here are our best {specialityName}</div>
-        <div className={classes.filterSection}>
-          <AphButton className={`${classes.filterButton} ${classes.buttonActive}`}>
-            All Consults
-          </AphButton>
-          <AphButton className={classes.filterButton}>Online Consult</AphButton>
-          <AphButton className={classes.filterButton}>Clinic Visit</AphButton>
+  if (data && data.SearchDoctorAndSpecialty && !loading) {
+    const matchingDoctors = data.SearchDoctorAndSpecialty.doctors.length;
+    const matchingSpecialities = data.SearchDoctorAndSpecialty.length;
+    return (
+      <>
+        <div className={classes.sectionHeader}>
+          <span>Possible Doctors</span>
+          <span className={classes.count}>
+            {matchingDoctors > 0 && matchingDoctors < 10 ? `0${matchingDoctors}` : matchingDoctors}
+          </span>
         </div>
-      </div>
-
-      <Grid container spacing={2}>
-        <Grid item sm={12} md={6}>
-          {_map(data.getSpecialtyDoctorsWithFilters.doctors, (doctorDetails) => {
-            return <DoctorCard doctorDetails={doctorDetails} key={_uniqueId('dcListing_')} />;
+        <Grid spacing={2} container>
+          {_map(data.SearchDoctorAndSpecialty.doctors, (doctorDetails) => {
+            return (
+              <Grid item sm={6} key={_uniqueId('doctor_')}>
+                <DoctorCard doctorDetails={doctorDetails} />
+              </Grid>
+            );
           })}
         </Grid>
-      </Grid>
-    </>
-  );
+        <div className={classes.sectionHeader}>
+          <span>Possible Specialities</span>
+          <span className={classes.count}>{matchingSpecialities}</span>
+        </div>
+        <Specialities
+          keyword=""
+          matched={matched}
+          speciality={speciality}
+          disableFilter={disableFilter}
+        />
+      </>
+    );
+  } else {
+    return <></>;
+  }
 };
