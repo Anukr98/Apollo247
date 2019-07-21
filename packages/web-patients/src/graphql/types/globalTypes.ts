@@ -12,6 +12,13 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum INVITEDSTATUS {
+  ACCEPTED = "ACCEPTED",
+  NONE = "NONE",
+  NOTAPPLICABLE = "NOTAPPLICABLE",
+  REJECTED = "REJECTED",
+}
+
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",

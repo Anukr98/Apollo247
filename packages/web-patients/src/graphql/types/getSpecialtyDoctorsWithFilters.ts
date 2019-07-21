@@ -10,13 +10,13 @@ import { filterInput } from "./globalTypes";
 
 export interface getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors {
   __typename: "Doctor";
-  id: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  speciality: string | null;
-  availableForPhysicalConsultation: boolean | null;
-  availableForVirtualConsultation: boolean | null;
-  education: string | null;
+  id: string;
+  firstName: string;
+  lastName: string;
+  speciality: string;
+  availableForPhysicalConsultation: boolean;
+  availableForVirtualConsultation: boolean;
+  education: string;
   city: string | null;
   photoUrl: string | null;
   experience: string | null;

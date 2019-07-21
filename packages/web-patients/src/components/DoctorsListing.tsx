@@ -1,14 +1,15 @@
 import { Theme, Typography, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React from 'react';
+import React, { useState } from 'react';
 import { DoctorCard } from './doctorCard';
 import { AphButton } from '@aph/web-ui-components';
 import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
+import _filter from 'lodash/filter';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { FILTER_DOCTORS } from 'graphql/doctors';
+import { DOCTORS_BY_SPECIALITY } from 'graphql/doctors';
 import { SearchObject } from 'components/DoctorsLanding';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -127,6 +128,8 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const classes = useStyles();
 
   const { filter, specialityName } = props;
+  const [selectedFilterOption, setSelectedFilterOption] = useState<string>('all');
+  const consultOptions = { all: 'All Consults', online: 'Online Consult', clinic: 'Clinic Visit' };
 
   const apiVairables = {
     specialty: specialityName,
@@ -137,7 +140,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     language: filter.language,
   };
 
-  const { data, loading, error } = useQueryWithSkip(FILTER_DOCTORS, {
+  const { data, loading, error } = useQueryWithSkip(DOCTORS_BY_SPECIALITY, {
     variables: { filterInput: apiVairables },
   });
 
@@ -148,27 +151,63 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     return <LinearProgress color="secondary" variant="query" />;
   }
 
-  return (
-    <>
-      <Typography variant="h2">Okay!</Typography>
-      <div className={classes.pageHeader}>
-        <div>Here are our best {specialityName}</div>
-        <div className={classes.filterSection}>
-          <AphButton className={`${classes.filterButton} ${classes.buttonActive}`}>
-            All Consults
-          </AphButton>
-          <AphButton className={classes.filterButton}>Online Consult</AphButton>
-          <AphButton className={classes.filterButton}>Clinic Visit</AphButton>
-        </div>
-      </div>
+  console.log('doctors after query....', data.getSpecialtyDoctorsWithFilters.doctors.length);
 
-      <Grid container spacing={2}>
-        <Grid item sm={12} md={6}>
-          {_map(data.getSpecialtyDoctorsWithFilters.doctors, (doctorDetails) => {
-            return <DoctorCard doctorDetails={doctorDetails} key={_uniqueId('dcListing_')} />;
+  if (data && data.getSpecialtyDoctorsWithFilters.doctors.length > 0) {
+    const doctorsList =
+      selectedFilterOption === 'all'
+        ? data.getSpecialtyDoctorsWithFilters.doctors
+        : _filter(data.getSpecialtyDoctorsWithFilters.doctors, (doctors) => {
+            if (selectedFilterOption === 'online' && doctors.availableForVirtualConsultation) {
+              return true;
+            } else if (
+              selectedFilterOption === 'clinic' &&
+              doctors.availableForPhysicalConsultation
+            ) {
+              return true;
+            }
+            return false;
+          });
+
+    return (
+      <>
+        <Typography variant="h2">Okay!</Typography>
+        <div className={classes.pageHeader}>
+          <div>Here are our best {specialityName}</div>
+          <div className={classes.filterSection}>
+            {_map(consultOptions, (consultName, consultType) => {
+              return (
+                <AphButton
+                  className={
+                    selectedFilterOption === consultType
+                      ? `${classes.filterButton} ${classes.buttonActive}`
+                      : `${classes.filterButton}`
+                  }
+                  onClick={(e) => {
+                    setSelectedFilterOption(e.currentTarget.value);
+                  }}
+                  value={consultType}
+                  key={_uniqueId('cbutton_')}
+                >
+                  {consultName}
+                </AphButton>
+              );
+            })}
+          </div>
+        </div>
+
+        <Grid container spacing={2}>
+          {_map(doctorsList, (doctorDetails) => {
+            return (
+              <Grid item sm={12} md={6} key={_uniqueId('consultGrid_')}>
+                <DoctorCard doctorDetails={doctorDetails} key={_uniqueId('dcListing_')} />
+              </Grid>
+            );
           })}
         </Grid>
-      </Grid>
-    </>
-  );
+      </>
+    );
+  } else {
+    return <></>;
+  }
 };
