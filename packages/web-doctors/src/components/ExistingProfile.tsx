@@ -162,8 +162,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   );
 };
 
-const isPatientInvalid = (patient: PatientSignInPatientSignInPatients) =>
-  patient.relation == null;
+const isPatientInvalid = (patient: PatientSignInPatientSignInPatients) => patient.relation == null;
 
 export interface ExistingProfileProps {
   popupHandler: (popup: boolean) => void;
