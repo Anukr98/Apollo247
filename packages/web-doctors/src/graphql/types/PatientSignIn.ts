@@ -8,7 +8,7 @@ import { Relation, Gender } from "./globalTypes";
 // GraphQL mutation operation: PatientSignIn
 // ====================================================
 
-export interface PatientSignIn_patientSignIn_patients {
+export interface PatientSignInPatientSignInPatients {
   __typename: "Patient";
   id: string;
   mobileNumber: string | null;
@@ -21,13 +21,13 @@ export interface PatientSignIn_patientSignIn_patients {
   emailAddress: string | null;
 }
 
-export interface PatientSignIn_patientSignIn {
+export interface PatientSignInPatientSignIn {
   __typename: "PatientSignInResult";
-  patients: PatientSignIn_patientSignIn_patients[] | null;
+  patients: PatientSignInPatientSignInPatients[] | null;
 }
 
 export interface PatientSignIn {
-  patientSignIn: PatientSignIn_patientSignIn;
+  patientSignIn: PatientSignInPatientSignIn;
 }
 
 export interface PatientSignInVariables {

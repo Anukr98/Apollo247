@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AphButton } from '@aph/web-ui-components';
 import { AphSelect } from '@aph/web-ui-components';
-import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
+import { PatientSignInPatientSignInPatients } from 'graphql/types/PatientSignIn';
 import _camelCase from 'lodash/camelCase';
 import { Relation } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -115,9 +115,9 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface PatientProfileProps {
-  patient: PatientSignIn_patientSignIn_patients; //eslint-disable-line camelcase
+  patient: PatientSignInPatientSignInPatients;
   number: number;
-  onUpdatePatient: (patient: PatientSignIn_patientSignIn_patients) => void; //eslint-disable-line camelcase
+  onUpdatePatient: (patient: PatientSignInPatientSignInPatients) => void;
 }
 const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   const classes = useStyles();
@@ -162,7 +162,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   );
 };
 
-const isPatientInvalid = (patient: PatientSignIn_patientSignIn_patients) => //eslint-disable-line camelcase
+const isPatientInvalid = (patient: PatientSignInPatientSignInPatients) =>
   patient.relation == null;
 
 export interface ExistingProfileProps {
