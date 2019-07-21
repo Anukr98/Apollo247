@@ -8,15 +8,16 @@
 
 export interface SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors {
   __typename: "Doctor";
-  id: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  speciality: string | null;
+  id: string;
+  firstName: string;
+  lastName: string;
+  speciality: string;
   experience: string | null;
-  education: string | null;
-  availableForPhysicalConsultation: boolean | null;
-  availableForVirtualConsultation: boolean | null;
+  education: string;
+  availableForPhysicalConsultation: boolean;
+  availableForVirtualConsultation: boolean;
   photoUrl: string | null;
+  city: string | null;
 }
 
 export interface SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_specialties {

@@ -25,12 +25,15 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         onlineConsultationFees
         physicalConsultationFees
         package
-        typeOfConsult
         inviteStatus
       }
       clinics {
         name
-        location
+        image
+        addressLine1
+        addressLine2
+        addressLine3
+        city
       }
       starDoctorTeam {
         id
@@ -54,12 +57,12 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         onlineConsultationFees
         physicalConsultationFees
         package
-        typeOfConsult
         inviteStatus
       }
       consultationHours {
         days
-        timings
+        startTime
+        endTime
         availableForPhysicalConsultation
         availableForVirtualConsultation
         type
@@ -81,6 +84,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY = gql`
         availableForPhysicalConsultation
         availableForVirtualConsultation
         photoUrl
+        city
       }
       specialties {
         name
@@ -90,7 +94,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY = gql`
   }
 `;
 
-export const FILTER_DOCTORS = gql`
+export const DOCTORS_BY_SPECIALITY = gql`
   query getSpecialtyDoctorsWithFilters($filterInput: filterInput) {
     getSpecialtyDoctorsWithFilters(filterInput: $filterInput) {
       doctors {

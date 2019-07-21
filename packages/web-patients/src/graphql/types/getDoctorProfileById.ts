@@ -2,76 +2,81 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
+import { INVITEDSTATUS } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: getDoctorProfileById
 // ====================================================
 
 export interface getDoctorProfileById_getDoctorProfileById_profile {
   __typename: "Doctor";
-  id: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  mobileNumber: string | null;
+  id: string;
+  firstName: string;
+  lastName: string;
+  mobileNumber: string;
   experience: string | null;
-  speciality: string | null;
+  speciality: string;
   specialization: string | null;
-  isStarDoctor: boolean | null;
-  education: string | null;
+  isStarDoctor: boolean;
+  education: string;
   services: string | null;
   languages: string | null;
   city: string | null;
   awards: string | null;
   photoUrl: string | null;
-  registrationNumber: string | null;
-  isProfileComplete: string | null;
-  availableForPhysicalConsultation: boolean | null;
-  availableForVirtualConsultation: boolean | null;
-  onlineConsultationFees: string | null;
-  physicalConsultationFees: string | null;
+  registrationNumber: string;
+  isProfileComplete: string;
+  availableForPhysicalConsultation: boolean;
+  availableForVirtualConsultation: boolean;
+  onlineConsultationFees: string;
+  physicalConsultationFees: string;
   package: string | null;
-  typeOfConsult: string | null;
-  inviteStatus: string | null;
+  inviteStatus: INVITEDSTATUS | null;
 }
 
 export interface getDoctorProfileById_getDoctorProfileById_clinics {
-  __typename: "clinics";
-  name: string | null;
-  location: string | null;
+  __typename: "Clinics";
+  name: string;
+  image: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  addressLine3: string | null;
+  city: string | null;
 }
 
 export interface getDoctorProfileById_getDoctorProfileById_starDoctorTeam {
   __typename: "Doctor";
-  id: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  mobileNumber: string | null;
+  id: string;
+  firstName: string;
+  lastName: string;
+  mobileNumber: string;
   experience: string | null;
-  speciality: string | null;
+  speciality: string;
   specialization: string | null;
-  isStarDoctor: boolean | null;
-  education: string | null;
+  isStarDoctor: boolean;
+  education: string;
   services: string | null;
   languages: string | null;
   city: string | null;
   awards: string | null;
   photoUrl: string | null;
-  registrationNumber: string | null;
-  isProfileComplete: string | null;
-  availableForPhysicalConsultation: boolean | null;
-  availableForVirtualConsultation: boolean | null;
-  onlineConsultationFees: string | null;
-  physicalConsultationFees: string | null;
+  registrationNumber: string;
+  isProfileComplete: string;
+  availableForPhysicalConsultation: boolean;
+  availableForVirtualConsultation: boolean;
+  onlineConsultationFees: string;
+  physicalConsultationFees: string;
   package: string | null;
-  typeOfConsult: string | null;
-  inviteStatus: string | null;
+  inviteStatus: INVITEDSTATUS | null;
 }
 
 export interface getDoctorProfileById_getDoctorProfileById_consultationHours {
   __typename: "Consultations";
-  days: string | null;
-  timings: string | null;
-  availableForPhysicalConsultation: boolean | null;
-  availableForVirtualConsultation: boolean | null;
+  days: string;
+  startTime: any;
+  endTime: any;
+  availableForPhysicalConsultation: boolean;
+  availableForVirtualConsultation: boolean;
   type: string | null;
 }
 
