@@ -101,7 +101,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const { doctorDetails } = props;
 
-  console.log(doctorDetails);
+  // console.log(doctorDetails);
 
   return (
     <div className={classes.root}>

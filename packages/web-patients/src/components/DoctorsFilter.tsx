@@ -4,11 +4,16 @@ import { Theme } from '@material-ui/core';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { Gender } from 'graphql/types/globalTypes';
 import { SearchObject } from 'components/DoctorsLanding';
+import FormHelperText from '@material-ui/core/FormHelperText';
 import _filter from 'lodash/filter';
 import _reverse from 'lodash/reverse';
 import _map from 'lodash/map';
 import _uniqueId from 'lodash/uniqueId';
-import FormHelperText from '@material-ui/core/FormHelperText';
+import _toLower from 'lodash/toLower';
+import _upperFirst from 'lodash/upperFirst';
+import _find from 'lodash/find';
+import _uniq from 'lodash/uniq';
+import _without from 'lodash/without';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -90,20 +95,25 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     manageFilter,
   } = props;
 
-  const filterCities = { hyderabad: 'HYDERABAD', chennai: 'CHENNAI' };
+  const filterCities = { hyderabad: 'Hyderabad', chennai: 'Chennai' };
   const filterExperiences = { '0_5': '0-5', '6_10': '6-10', '11_15': '11-15', '16_99': '16+' };
-  const filterAvailability = { now: 'NOW', today: 'TODAY', tomorrow: 'TOMORROW' };
-  const filterFees = { '100_500': '100-500', '501_1000': '501-1000', '1001_1500': '1001-1500' };
+  const filterAvailability = {
+    now: 'Now',
+    today: 'Today',
+    tomorrow: 'Tomorrow',
+    next3: 'Next 3 days',
+  };
+  const filterFees = { '100_500': '100-500', '501_1000': '501-1000', '1001_10000': '1000+' };
   const filterGenders = _reverse(_filter(Object.values(Gender), (gender) => gender !== 'OTHER')); // show MALE, FEMALE instead of FEMALE, MALE
-  const filterLanguages = { Hindi: 'HINDI', English: 'ENGLISH', Telugu: 'TELUGU' };
+  const filterLanguages = { hindi: 'Hindi', english: 'English', telugu: 'Telugu' };
 
   const [searchKeyword, setSearchKeyword] = useState<string>(existingFilters.searchKeyword || '');
-  const [cityName, setCityName] = useState<string>(existingFilters.cityName || '');
-  const [experience, setExperience] = useState<string>(existingFilters.experience || '');
-  const [availability, setAvailability] = useState<string>(existingFilters.availability || '');
-  const [fees, setFees] = useState<string>(existingFilters.fees || '');
-  const [gender, setGender] = useState<string>(existingFilters.gender || '');
-  const [language, setLanguage] = useState<string>(existingFilters.language || '');
+  const [cityName, setCityName] = useState<string[]>(existingFilters.cityName || []);
+  const [experience, setExperience] = useState<string[]>(existingFilters.experience || []);
+  const [availability, setAvailability] = useState<string[]>(existingFilters.availability || []);
+  const [fees, setFees] = useState<string[]>(existingFilters.fees || []);
+  const [gender, setGender] = useState<string[]>(existingFilters.gender || []);
+  const [language, setLanguage] = useState<string[]>(existingFilters.language || []);
 
   // console.log(searchKeyword, '---------');
   // console.log('filter status...', disabled);
@@ -118,7 +128,18 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     language: existingFilters.language,
   };
 
-  // console.log(filterOptions, 'in filters........', existingFilters);
+  // console.log('language is....', language);
+
+  // console.log(
+  //   filterOptions,
+  //   'in filters........',
+  //   existingFilters,
+  //   cityName,
+  //   '----------->',
+  //   _filter(cityName, (city)=>{
+  //     return city ===
+  //   })
+  // );
 
   return (
     <div className={classes.root}>
@@ -133,12 +154,12 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
             showNormal(true);
             emptySpeciality('');
             manageFilter(true);
-            setCityName('');
-            setGender('');
-            setExperience('');
-            setAvailability('');
-            setFees('');
-            setLanguage('');
+            setCityName([]);
+            setGender([]);
+            setExperience([]);
+            setAvailability([]);
+            setFees([]);
+            setLanguage([]);
           }
           handleFilterOptions(filterOptions);
         }}
@@ -163,14 +184,21 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                     color="secondary"
                     size="small"
                     className={
-                      index === cityName
+                      cityName.includes(_toLower(filterCityName))
                         ? `${classes.button} ${classes.buttonActive}`
                         : `${classes.button}`
                     }
                     value={index}
                     onClick={(e) => {
-                      setCityName(e.currentTarget.value);
-                      filterOptions.cityName = e.currentTarget.value;
+                      if (cityName.includes(e.currentTarget.value)) {
+                        const newArray = _without(cityName, e.currentTarget.value);
+                        setCityName(newArray);
+                        filterOptions.cityName = newArray;
+                      } else {
+                        cityName.push(e.currentTarget.value);
+                        setCityName(cityName);
+                        filterOptions.cityName = cityName;
+                      }
                       handleFilterOptions(filterOptions);
                     }}
                     key={_uniqueId('cityName_')}
@@ -191,14 +219,21 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                     color="secondary"
                     size="small"
                     className={
-                      index === experience
+                      experience.includes(_toLower(index))
                         ? `${classes.button} ${classes.buttonActive}`
                         : `${classes.button}`
                     }
                     value={index}
                     onClick={(e) => {
-                      setExperience(e.currentTarget.value);
-                      filterOptions.experience = e.currentTarget.value;
+                      if (experience.includes(e.currentTarget.value)) {
+                        const newArray = _without(experience, e.currentTarget.value);
+                        setExperience(newArray);
+                        filterOptions.experience = newArray;
+                      } else {
+                        experience.push(e.currentTarget.value);
+                        setExperience(experience);
+                        filterOptions.experience = experience;
+                      }
                       handleFilterOptions(filterOptions);
                     }}
                     key={_uniqueId('exp_')}
@@ -219,14 +254,21 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                     color="secondary"
                     size="small"
                     className={
-                      index === availability
+                      availability.includes(_toLower(index))
                         ? `${classes.button} ${classes.buttonActive}`
                         : `${classes.button}`
                     }
                     value={index}
                     onClick={(e) => {
-                      setAvailability(e.currentTarget.value);
-                      filterOptions.availability = e.currentTarget.value;
+                      if (availability.includes(e.currentTarget.value)) {
+                        const newArray = _without(availability, e.currentTarget.value);
+                        setAvailability(newArray);
+                        filterOptions.availability = newArray;
+                      } else {
+                        availability.push(e.currentTarget.value);
+                        setAvailability(availability);
+                        filterOptions.availability = availability;
+                      }
                       handleFilterOptions(filterOptions);
                     }}
                     key={_uniqueId('ava_')}
@@ -247,14 +289,21 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                     color="secondary"
                     size="small"
                     className={
-                      index === fees
+                      fees.includes(_toLower(index))
                         ? `${classes.button} ${classes.buttonActive}`
                         : `${classes.button}`
                     }
                     value={index}
                     onClick={(e) => {
-                      setFees(e.currentTarget.value);
-                      filterOptions.fees = e.currentTarget.value;
+                      if (fees.includes(e.currentTarget.value)) {
+                        const newArray = _without(fees, e.currentTarget.value);
+                        setFees(newArray);
+                        filterOptions.fees = newArray;
+                      } else {
+                        fees.push(e.currentTarget.value);
+                        setFees(fees);
+                        filterOptions.fees = fees;
+                      }
                       handleFilterOptions(filterOptions);
                     }}
                     key={_uniqueId('fees_')}
@@ -276,17 +325,26 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                     size="small"
                     value={Gender[filterGender]}
                     onClick={(e) => {
-                      setGender(Gender[e.currentTarget.value as Gender]);
+                      if (gender.includes(e.currentTarget.value)) {
+                        const newArray = _without(gender, e.currentTarget.value);
+                        setGender(newArray);
+                        filterOptions.gender = newArray;
+                      } else {
+                        gender.push(Gender[e.currentTarget.value as Gender]);
+                        setGender(gender);
+                        filterOptions.gender = gender;
+                      }
+                      handleFilterOptions(filterOptions);
                     }}
                     className={
-                      gender === filterGender
+                      gender.includes(filterGender)
                         ? `${classes.button} ${classes.buttonActive}`
                         : `${classes.button}`
                     }
                     key={_uniqueId('gender_')}
                     disabled={disableFilters}
                   >
-                    {filterGender}
+                    {_upperFirst(_toLower(filterGender))}
                   </AphButton>
                 );
               })}
@@ -301,14 +359,21 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                     color="secondary"
                     size="small"
                     className={
-                      index === language
+                      language.includes(_toLower(index))
                         ? `${classes.button} ${classes.buttonActive}`
                         : `${classes.button}`
                     }
                     value={index}
                     onClick={(e) => {
-                      setLanguage(e.currentTarget.value);
-                      filterOptions.language = e.currentTarget.value;
+                      if (language.includes(e.currentTarget.value)) {
+                        const newArray = _without(language, e.currentTarget.value);
+                        setLanguage(newArray);
+                        filterOptions.language = newArray;
+                      } else {
+                        language.push(e.currentTarget.value);
+                        setLanguage(language);
+                        filterOptions.language = language;
+                      }
                       handleFilterOptions(filterOptions);
                     }}
                     key={_uniqueId('lang_')}

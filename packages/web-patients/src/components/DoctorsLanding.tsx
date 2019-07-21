@@ -106,23 +106,22 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export interface SearchObject {
   searchKeyword: string;
-  cityName: string | null;
-  experience: string | null;
-  availability: string | null;
-  fees: string | null;
-  gender: string | null;
-  language: string | null;
+  cityName: string[] | null;
+  experience: string[] | null;
+  availability: string[] | null;
+  fees: string[] | null;
+  gender: string[] | null;
+  language: string[] | null;
 }
 
 const searchObject = {
   searchKeyword: '',
-  cityName: '',
-  experience: '',
-  availability: '',
-  fees: '',
-  gender: '',
-  language: '',
-  specialitySelected: '',
+  cityName: [],
+  experience: [],
+  availability: [],
+  fees: [],
+  gender: [],
+  language: [],
 };
 
 export const DoctorsLanding: React.FC = (props) => {
@@ -142,18 +141,18 @@ export const DoctorsLanding: React.FC = (props) => {
     if (specialitySelected.length > 0) {
       setFilterOptions({
         searchKeyword: specialitySelected,
-        cityName: '',
-        experience: '',
-        availability: '',
-        fees: '',
-        gender: '',
-        language: '',
+        cityName: [],
+        experience: [],
+        availability: [],
+        fees: [],
+        gender: [],
+        language: [],
       });
       setShowSearchAndPastSearch(false);
     }
   }, [specialitySelected]);
 
-  // console.log(showSearchAndPastSearch, 'ex.......', specialitySelected);
+  // console.log(filterOptions);
 
   const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY, {
     variables: { searchText: filterOptions.searchKeyword },
