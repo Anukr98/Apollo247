@@ -7,7 +7,7 @@ import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { Cancel, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
 import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
-import { DummyQueryResult } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { DummyQueryResult, DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -134,21 +134,21 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
 
-  // const {
-  //   data: { getDoctorProfile },
-  //   error,
-  //   loading,
-  // } = useQuery(GET_DOCTOR_PROFILE, {
-  //   variables: { mobileNumber: '1234567890' },
-  // }) as any;
-
   const {
     data: { getDoctorProfile },
     error,
     loading,
-  } = doctorProfile;
+  } = useQuery(GET_DOCTOR_PROFILE) as any;
+
+  // const {
+  //   data: { getDoctorProfile },
+  //   error,
+  //   loading,
+  // } = doctorProfile;
   if (error) {
     Alert.alert('Error', 'Unable to get the data');
+  } else {
+    console.log(getDoctorProfile);
   }
 
   const renderHeader = (

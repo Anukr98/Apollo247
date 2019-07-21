@@ -24,7 +24,7 @@ import firebase from 'react-native-firebase';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
-import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
+// import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
 const styles = StyleSheet.create({
   container: {
@@ -114,7 +114,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const { analytics, currentUser, authError, clearCurrentUser } = useAuth();
+  const { analytics, currentUser } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<any>();
 
   useEffect(() => {
@@ -123,47 +123,34 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
-    // setVerifyingPhonenNumber(false);
-    console.log('login currentUser', currentUser);
   }, [analytics, currentUser]);
 
   useEffect(() => {
-    console.log('authError Login', authError);
-    if (authError) {
-      clearCurrentUser();
-      setVerifyingPhonenNumber(false);
-      //Alert.alert('Error', 'Unable to connect the server at the moment.');
-    }
-  }, [authError]);
-
-  const requestReadSmsPermission = async () => {
-    try {
-      const resuts = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.READ_SMS,
-        PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
-      ]);
-
-      if (resuts[PermissionsAndroid.PERMISSIONS.READ_SMS] !== PermissionsAndroid.RESULTS.GRANTED) {
-        console.log(resuts, 'READ_SMS');
-      }
-      if (
-        resuts[PermissionsAndroid.PERMISSIONS.RECEIVE_SMS] !== PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        console.log(resuts, 'RECEIVE_SMS');
-      }
-
-      if (resuts) {
-        console.log(resuts, 'RECEIVE_SMS');
-      }
-    } catch (error) {
-      console.log('error', error);
-    }
-  };
-
-  useEffect(() => {
-    console.log('didmout');
     Platform.OS === 'android' && requestReadSmsPermission();
   }, []);
+
+  // useEffect(() => {
+  //   console.log('authError Login', authError);
+  //   if (authError) {
+  //     clearCurrentUser();
+  //     setVerifyingPhonenNumber(false);
+  //     //Alert.alert('Error', 'Unable to connect the server at the moment.');
+  //   }
+  // }, [authError, clearCurrentUser]);
+
+  const requestReadSmsPermission = () => {
+    PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.READ_SMS,
+      PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
+    ])
+      .then((results) => {
+        console.log('granted READ_SMS?', results['android.permission.READ_SMS'] == 'granted');
+        console.log('granted RECEIVE_SMS?', results['android.permission.RECEIVE_SMS'] == 'granted');
+      })
+      .catch((e) => {
+        console.log('Android ask permission error', e);
+      });
+  };
 
   useEffect(() => {
     const subscriptionId = SmsListener.addListener((message: any) => {
@@ -189,11 +176,17 @@ export const Login: React.FC<LoginProps> = (props) => {
     if (/^\d+$/.test(number) || number == '') {
       setPhoneNumber(number);
       // if (number.length == 10) {
-      setPhoneNumberIsValid(isMobileNumberValid(number));
+      setPhoneNumberIsValid(isPhoneNumberValid(number));
       // }
     } else {
       return false;
     }
+  };
+
+  type TimeOutData = {
+    phoneNumber: string;
+    startTime: string;
+    invalidAttems: number;
   };
 
   const _getTimerData = async () => {
@@ -201,8 +194,8 @@ export const Login: React.FC<LoginProps> = (props) => {
     try {
       const data = await AsyncStorage.getItem('timeOutData');
       if (data) {
-        const timeOutData = JSON.parse(data);
-        timeOutData.map((obj: any) => {
+        const timeOutData: TimeOutData[] = JSON.parse(data);
+        timeOutData.map((obj) => {
           if (obj.phoneNumber === `+91${phoneNumber}`) {
             const t1 = new Date();
             const t2 = new Date(obj.startTime);

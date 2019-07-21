@@ -66,10 +66,11 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
       return;
     }
     // do api call
-    client.query({
-      query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
-      variables: { searchString: searchText.replace('Dr. ', '') },
-    });
+    // client
+    //   .query({
+    //     query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
+    //     variables: { searchString: searchText.replace('Dr. ', '') },
+    //   })
     getDoctorsForStarDoctorProgram.data.getDoctorsForStarDoctorProgram!(
       searchText.replace('Dr. ', '')
     )
