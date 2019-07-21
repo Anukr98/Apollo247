@@ -1,58 +1,70 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { DoctorsData } from 'doctors-service/data/doctorProfile';
-import { DoctorsServiceContext } from 'doctors-service/doctors-service';
+import { DoctorsData, INVITEDSTATUS } from 'doctors-service/data/doctorProfile';
+import { DoctorsServiceContext } from 'doctors-service/doctors-service'; 
+
 export const doctorTypeDefs = gql`
-  type clinics {
-    name: String
-    location: String
+  enum INVITEDSTATUS {
+    ACCEPTED
+    REJECTED
+    NOTAPPLICABLE
+    NONE
+  }
+
+  type Clinics {
+    name: String!
     image: String
+    addressLine1: String
+    addressLine2: String
+    addressLine3: String
+    city: String
   }
 
   type Consultations {
-    days: String
-    timings: String
-    availableForPhysicalConsultation: Boolean
-    availableForVirtualConsultation: Boolean
+    days: String!
+    startTime: Time!
+    endTime: Time!
+    availableForPhysicalConsultation: Boolean!
+    availableForVirtualConsultation: Boolean!
     type: String
   }
 
   type PaymentDetails {
-    accountNumber: String
+    accountNumber: String!
     address: String
   }
 
   type Doctor {
-    id: String
-    firstName: String
-    lastName: String
-    mobileNumber: String
+    id: ID!
+    salutation: String!
+    firstName: String!
+    lastName: String!
+    mobileNumber: String!
     experience: String
-    speciality: String
+    speciality: String!
     specialization: String
-    isStarDoctor: Boolean
-    education: String
+    isStarDoctor: Boolean!
+    education: String!
     services: String
     languages: String
     city: String
     awards: String
     photoUrl: String
-    registrationNumber: String
-    isProfileComplete: String
-    availableForPhysicalConsultation: Boolean
-    availableForVirtualConsultation: Boolean
-    onlineConsultationFees: String
-    physicalConsultationFees: String
+    registrationNumber: String!
+    isProfileComplete: String!
+    availableForPhysicalConsultation: Boolean!
+    availableForVirtualConsultation: Boolean!
+    onlineConsultationFees: String!
+    physicalConsultationFees: String!
     package: String
-    typeOfConsult: String
-    inviteStatus: String
-    profilePicture: String
+    inviteStatus: INVITEDSTATUS
+    address: String
   }
 
   type DoctorProfile {
     profile: Doctor
     paymentDetails: [PaymentDetails]
-    clinics: [clinics]
+    clinics: [Clinics]
     starDoctorTeam: [Doctor]
     consultationHours: [Consultations]
   }
@@ -63,15 +75,21 @@ export const doctorTypeDefs = gql`
   }
 `;
 
-type clinics = {
+type Clinics = {
   name: String;
-  location: String;
   image: String;
+  addressLine1: String;
+  addressLine2: String;
+  addressLine3: String;
+  city: String;
 };
 
 type Consultations = {
   days: String;
-  timings: String;
+  //@ts-ignore
+  startTime: Time!
+  //@ts-ignore
+  endTime: Time!
   availableForPhysicalConsultation: Boolean;
   availableForVirtualConsultation: Boolean;
   type: String;
@@ -84,6 +102,7 @@ type PaymentDetails = {
 
 export type Doctor = {
   id: String;
+  salutation: String;
   firstName: String;
   lastName: String;
   mobileNumber: String;
@@ -104,14 +123,13 @@ export type Doctor = {
   onlineConsultationFees: String;
   physicalConsultationFees: String;
   package: String;
-  typeOfConsult: String;
-  inviteStatus: String;
-  profilePicture: String;
+  inviteStatus: INVITEDSTATUS;
+  address: String;
 };
 
 export type DoctorProfile = {
   profile: Doctor;
-  clinics: clinics[];
+  clinics: Clinics[];
   starDoctorTeam: Partial<Doctor>[];
   consultationHours: Consultations[];
   paymentDetails: PaymentDetails[];
