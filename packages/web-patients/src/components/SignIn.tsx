@@ -121,8 +121,8 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
   return (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">hi</Typography>
-      <p>Type in the OTP sent to you, to authenticate</p>
-      <form>
+      <p data-cypress="otpInput">Type in the OTP sent to you, to authenticate</p>
+      <form data-cypress="otpForm">
         <Grid container spacing={1}>
           {_times(numOtpDigits, (index) => (
             <Grid item xs={2} key={index}>
@@ -174,6 +174,7 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
           <Fab
             type="submit"
             color="primary"
+            data-cypress="okButton"
             disabled={isSendingOtp || otp.join('').length !== numOtpDigits}
             onClick={(e) => {
               e.preventDefault();
@@ -226,7 +227,7 @@ export const SignIn: React.FC = (props) => {
       render={({ touched, dirty, errors, values }: FormikProps<{ mobileNumber: string }>) => {
         if (displayOtpInput) return <OtpInput mobileNumber={values.mobileNumber} />;
         return (
-          <div className={classes.loginFormWrap}>
+          <div className={classes.loginFormWrap} data-cypress="mobileLoginFormWrap">
             <Typography variant="h2">hi</Typography>
             <p>Please enter your mobile number to login</p>
             <Form>
@@ -248,7 +249,11 @@ export const SignIn: React.FC = (props) => {
                       <AphInput
                         {...field}
                         autoFocus
-                        inputProps={{ type: 'tel', maxLength: 10 }}
+                        inputProps={{
+                          type: 'tel',
+                          maxLength: 10,
+                          'data-cypress': 'mobileNumberInput',
+                        }}
                         error={showValidationError}
                         onKeyPress={(e) => {
                           if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
@@ -279,6 +284,7 @@ export const SignIn: React.FC = (props) => {
                   type="submit"
                   color="primary"
                   aria-label="Sign in"
+                  data-cypress="signIn"
                   disabled={Boolean(errors.mobileNumber) || !dirty}
                 >
                   {isSendingOtp ? (
