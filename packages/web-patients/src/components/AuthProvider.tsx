@@ -94,8 +94,6 @@ const app = firebase.initializeApp({
   storageBucket: '',
 });
 
-firebase.auth().settings.appVerificationDisabledForTesting = true; //ADDED FOR TESTING
-
 let otpVerifier: firebase.auth.ConfirmationResult;
 
 export const AuthProvider: React.FC = (props) => {
