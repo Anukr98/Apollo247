@@ -151,7 +151,18 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     return <LinearProgress color="secondary" variant="query" />;
   }
 
-  console.log('doctors after query....', data.getSpecialtyDoctorsWithFilters.doctors.length);
+  const consultErrorMessage = () => {
+    const selectedConsultName =
+      selectedFilterOption === 'online' ? 'Online Consultation' : 'Clinic Visit';
+    const suggestedConsultName =
+      selectedFilterOption === 'online' ? 'Clinic Visit' : 'Online Consultation';
+    return (
+      <div className={classes.pageHeader}>
+        There is no {specialityName} available for {selectedConsultName}. Please try
+        {suggestedConsultName}
+      </div>
+    );
+  };
 
   if (data && data.getSpecialtyDoctorsWithFilters.doctors.length > 0) {
     const doctorsList =
@@ -196,18 +207,22 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           </div>
         </div>
 
-        <Grid container spacing={2}>
-          {_map(doctorsList, (doctorDetails) => {
-            return (
-              <Grid item sm={12} md={6} key={_uniqueId('consultGrid_')}>
-                <DoctorCard doctorDetails={doctorDetails} key={_uniqueId('dcListing_')} />
-              </Grid>
-            );
-          })}
-        </Grid>
+        {doctorsList.length > 0 ? (
+          <Grid container spacing={2}>
+            {_map(doctorsList, (doctorDetails) => {
+              return (
+                <Grid item sm={12} md={6} key={_uniqueId('consultGrid_')}>
+                  <DoctorCard doctorDetails={doctorDetails} key={_uniqueId('dcListing_')} />
+                </Grid>
+              );
+            })}
+          </Grid>
+        ) : (
+          consultErrorMessage()
+        )}
       </>
     );
   } else {
-    return <></>;
+    return <div>Sorry, we couldn't find Doctors with this speciality :(</div>;
   }
 };
