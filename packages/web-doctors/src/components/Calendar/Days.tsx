@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { startOfWeek, endOfWeek, eachDayOfInterval, getDate, getDay, isToday } from 'date-fns';
-import { fontSize } from '@material-ui/system';
 
-const days: Array<string> = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+const days: string[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
 const useStyles = makeStyles({
   reset: {

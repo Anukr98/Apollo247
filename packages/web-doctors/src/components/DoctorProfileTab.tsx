@@ -7,8 +7,8 @@ import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
 import { StarDoctorSearch, DoctorsName } from './StarDoctorSearch';
 import {
-  getDoctorProfile_getDoctorProfile_starDoctorTeam,
-  getDoctorProfile_getDoctorProfile_clinicsList,
+  getDoctorProfile_getDoctorProfile_starDoctorTeam, //eslint-disable-line camelcase
+  getDoctorProfile_getDoctorProfile_clinicsList, //eslint-disable-line camelcase
 } from 'graphql/types/getDoctorProfile';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -150,7 +150,7 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
   }
   const starDocNumber = data.starDoctorTeam.length;
   const starDoctors = data.starDoctorTeam.map(
-    (item: getDoctorProfile_getDoctorProfile_starDoctorTeam, index: number) => {
+    (item: getDoctorProfile_getDoctorProfile_starDoctorTeam, index: number) => { //eslint-disable-line camelcase
       return (
         <Grid item lg={4} sm={6} xs={12} key={index.toString()}>
           <div className={classes.tabContentStarDoctor}>
@@ -177,7 +177,7 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
   );
 
   const clinicsList = data.clinicsList.map(
-    (item: getDoctorProfile_getDoctorProfile_clinicsList, index: number) => {
+    (item: getDoctorProfile_getDoctorProfile_clinicsList, index: number) => { //eslint-disable-line camelcase
       return (
         <Typography variant="h3" key={index.toString()}>
           {item.name}, {item.location}

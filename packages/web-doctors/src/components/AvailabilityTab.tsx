@@ -7,7 +7,6 @@ import { AphButton } from '@aph/web-ui-components';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
@@ -223,11 +222,10 @@ interface Props {
 }
 export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
   const classes = useStyles();
-  const [data, setData] = useState(values);
-  const [sp, setsp] = useState<string>('Physical');
+  const [sp] = useState<string>('Physical');
   const [showOperatingHoursForm, setShowOperatingHoursForm] = useState<boolean>(false);
 
-  interface consultItem {
+  interface ConsultItem {
     key: string;
     value: string;
     selected: boolean;
@@ -244,8 +242,8 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
       selected: false,
     },
   ];
-  const [consultType, setVonsultType] = useState<consultItem[]>(consultTypeArr);
-  const consultTypeHtml = consultType.map((item: consultItem, index: number) => {
+  const [consultType] = useState<ConsultItem[]>(consultTypeArr);
+  const consultTypeHtml = consultType.map((item: ConsultItem, index: number) => {
     return (
       <AphButton
         key={item.key.toString()}
@@ -268,7 +266,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
       </div>
     );
   }
-  interface weekItem {
+  interface WeekItem {
     key: number;
     value: string;
     selected: boolean;
@@ -310,9 +308,9 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
       selected: false,
     },
   ];
-  const [week, setWeek] = useState<weekItem[]>(weekArr);
+  const [week, setWeek] = useState<WeekItem[]>(weekArr);
   const dayClickHandler = (key: number) => {
-    const updatedWeekArr = weekArr.map((day: weekItem) => {
+    const updatedWeekArr = weekArr.map((day: WeekItem) => {
       if (day.key === key) {
         console.log(day.selected, !day.selected);
         day.selected = !day.selected;
@@ -321,7 +319,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
     });
     setWeek(updatedWeekArr);
   };
-  const weekHtml = week.map((item: weekItem, index: number) => {
+  const weekHtml = week.map((item: WeekItem, index: number) => {
     return (
       <AphButton
         key={item.key.toString()}

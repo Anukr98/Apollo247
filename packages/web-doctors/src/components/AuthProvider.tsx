@@ -9,7 +9,7 @@ import { PATIENT_SIGN_IN } from 'graphql/profiles';
 import {
   PatientSignIn,
   PatientSignInVariables,
-  PatientSignIn_patientSignIn_patients,
+  PatientSignIn_patientSignIn_patients, //eslint-disable-line camelcase
 } from 'graphql/types/PatientSignIn';
 import { apiRoutes } from 'helpers/apiRoutes';
 import React, { useEffect, useState } from 'react';
@@ -22,7 +22,7 @@ function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
 }
 
-export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients> {
+export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients> { //eslint-disable-line camelcase
   currentPatient: Patient | null;
   allCurrentPatients: Patient[] | null;
   setCurrentPatient: ((p: Patient) => void) | null;

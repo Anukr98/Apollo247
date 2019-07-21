@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { BottomNavigation, Theme, Typography } from '@material-ui/core';
-import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { CalendarStrip } from 'components/Calendar/CalendarStrip';
 import { Appointments, Appointment } from 'components/Appointments';
 import { addMinutes, startOfDay, getTime } from 'date-fns';
+import { Theme, Typography } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
