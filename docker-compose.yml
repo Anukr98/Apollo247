@@ -30,7 +30,7 @@ services:
       while ((! curl -s http://profiles-service/graphql) || (! curl -s http://doctors-service/graphql)) > /dev/null;
       do echo waiting for services to start...; sleep 5;
       done;
-      (while ! curl -s http://localhost:4000/graphql > /dev/null;
+      (while ! curl -s http://localhost:${API_GATEWAY_PORT}/graphql > /dev/null;
       do echo waiting for gateway to start...; sleep 5;
       done;
       npm run apollo:download) &
