@@ -4,7 +4,6 @@ import { Theme, Avatar } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors as DoctorDetails } from 'graphql/types/SearchDoctorAndSpecialty';
 import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
