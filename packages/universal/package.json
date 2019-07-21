@@ -5,11 +5,12 @@
   "types": "",
   "scripts": {
     "build": "tsc --project .",
-    "start": "tsc --project . -w",
     "format": "prettier --list-different src/**/*.js src/**/*.jsx src/**/*.ts src/**/*.tsx src/**/*.json",
     "format:fix": "prettier --write src/**/*.js src/**/*.jsx src/**/*.ts src/**/*.tsx src/**/*.json",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
-    "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix"
+    "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
+    "start": "tsc --project . -w",
+    "typecheck": "tsc --project . --noEmit"
   },
   "peerDependencies": {
     "validator": "^11.1.0"
