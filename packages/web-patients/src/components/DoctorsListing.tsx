@@ -141,10 +141,6 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     variables: { filterInput: apiVairables },
   });
 
-  // console.log('apivars.....', apiVairables);
-  // console.log('filtervars....', filter);
-  // console.log('speciality in listing...', specialityName);
-
   if (loading) {
     return <LinearProgress variant="query" />;
   }

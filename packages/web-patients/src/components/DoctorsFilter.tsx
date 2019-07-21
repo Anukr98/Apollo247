@@ -115,9 +115,6 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   const [gender, setGender] = useState<string[]>(existingFilters.gender || []);
   const [language, setLanguage] = useState<string[]>(existingFilters.language || []);
 
-  // console.log(searchKeyword, '---------');
-  // console.log('filter status...', disabled);
-
   const filterOptions = {
     searchKeyword: existingFilters.searchKeyword,
     cityName: existingFilters.cityName,
@@ -127,19 +124,6 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     gender: existingFilters.gender,
     language: existingFilters.language,
   };
-
-  // console.log('language is....', language);
-
-  // console.log(
-  //   filterOptions,
-  //   'in filters........',
-  //   existingFilters,
-  //   cityName,
-  //   '----------->',
-  //   _filter(cityName, (city)=>{
-  //     return city ===
-  //   })
-  // );
 
   return (
     <div className={classes.root}>

@@ -136,7 +136,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const PossibleSpecialitiesAndDoctors: React.FC<SpecialitiesProps> = (props) => {
   const classes = useStyles();
 
-  const { keyword, matched, speciality, disableFilter } = props;
+  const { matched, speciality, disableFilter } = props;
   const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY, {
     variables: { searchText: '' },
   });
@@ -145,12 +145,7 @@ export const PossibleSpecialitiesAndDoctors: React.FC<SpecialitiesProps> = (prop
     return <LinearProgress variant="query" />;
   }
 
-  // console.log('apivars.....', apiVairables);
-  // console.log('filtervars....', filter);
-  // console.log('speciality in listing...', specialityName);
-
   if (data && data.SearchDoctorAndSpecialty && !loading) {
-    // console.log(data, '.........');
     const matchingDoctors = data.SearchDoctorAndSpecialty.doctors.length;
     const matchingSpecialities = data.SearchDoctorAndSpecialty.length;
     return (

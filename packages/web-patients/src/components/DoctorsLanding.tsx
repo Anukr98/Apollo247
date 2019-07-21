@@ -152,8 +152,6 @@ export const DoctorsLanding: React.FC = (props) => {
     }
   }, [specialitySelected]);
 
-  // console.log(filterOptions);
-
   const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY, {
     variables: { searchText: filterOptions.searchKeyword },
   });
@@ -171,8 +169,6 @@ export const DoctorsLanding: React.FC = (props) => {
     specialitySelected.length === 0
   )
     showError = true;
-
-  // console.log('matching......', matchingDoctors, matchingSpecialities);
 
   return (
     <div className={classes.welcome}>
