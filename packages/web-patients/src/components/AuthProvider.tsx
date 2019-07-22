@@ -5,19 +5,18 @@ import { onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
-import { PATIENT_SIGN_IN } from 'graphql/profiles';
-import { PatientSignIn, PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn';
 import { apiRoutes } from 'helpers/apiRoutes';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
-import { Relation } from 'graphql/types/globalTypes';
+import _isEmpty from 'lodash/isEmpty';
 import _uniqueId from 'lodash/uniqueId';
+import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
+import { GET_CURRENT_PATIENTS } from 'graphql/profiles';
 
-export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients> {
-  currentPatient: Patient | null;
-  allCurrentPatients: Patient[] | null;
-  setCurrentPatient: ((p: Patient) => void) | null;
+export interface AuthContextProps {
+  currentPatientId: string | null;
+  setCurrentPatientId: ((pid: string | null) => void) | null;
 
   sendOtp: ((phoneNumber: string, captchaPlacement: HTMLElement | null) => Promise<unknown>) | null;
   sendOtpError: boolean;
@@ -29,6 +28,7 @@ export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients
 
   signInError: boolean;
   isSigningIn: boolean;
+  hasAuthToken: boolean;
   signOut: (() => Promise<void>) | null;
 
   isLoginPopupVisible: boolean;
@@ -36,9 +36,8 @@ export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
-  currentPatient: null,
-  setCurrentPatient: null,
-  allCurrentPatients: null,
+  currentPatientId: null,
+  setCurrentPatientId: null,
 
   sendOtp: null,
   sendOtpError: false,
@@ -50,6 +49,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
   signInError: false,
   isSigningIn: true,
+  hasAuthToken: false,
   signOut: null,
 
   isLoginPopupVisible: false,
@@ -98,12 +98,12 @@ let otpVerifier: firebase.auth.ConfirmationResult;
 
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
+  const hasAuthToken = !_isEmpty(authToken);
   apolloClient = buildApolloClient(authToken, () => signOut());
 
-  const [allCurrentPatients, setAllCurrentPatients] = useState<
-    AuthContextProps['allCurrentPatients']
-  >(null);
-  const [currentPatient, setCurrentPatient] = useState<AuthContextProps['currentPatient']>(null);
+  const [currentPatientId, setCurrentPatientId] = useState<AuthContextProps['currentPatientId']>(
+    null
+  );
 
   const [isSendingOtp, setIsSendingOtp] = useState<AuthContextProps['isSendingOtp']>(false);
   const [sendOtpError, setSendOtpError] = useState<AuthContextProps['sendOtpError']>(false);
@@ -126,6 +126,7 @@ export const AuthProvider: React.FC = (props) => {
 
   const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
     return new Promise((resolve, reject) => {
+      setVerifyOtpError(false);
       if (!captchaPlacement) {
         setSendOtpError(true);
         reject();
@@ -135,6 +136,7 @@ export const AuthProvider: React.FC = (props) => {
       // Create a new unique captcha every time because (apparently) captcha.clear() is flaky,
       // and can eventually result in a 'recaptcha already assigned to this element' error.
       const captchaContainer = document.createElement('div');
+      captchaContainer.style.display = 'none';
       const captchaId = _uniqueId('captcha-container');
       captchaContainer.id = captchaId;
       captchaPlacement.parentNode!.insertBefore(captchaContainer, captchaPlacement.nextSibling);
@@ -176,7 +178,7 @@ export const AuthProvider: React.FC = (props) => {
     const otpAuthResult = await otpVerifier.confirm(otp).catch((error) => {
       setVerifyOtpError(true);
     });
-    if (!otpAuthResult) setVerifyOtpError(true);
+    if (!otpAuthResult || !otpAuthResult.user) setVerifyOtpError(true);
     setIsVerifyingOtp(false);
   };
 
@@ -186,29 +188,17 @@ export const AuthProvider: React.FC = (props) => {
         const jwt = await user.getIdToken().catch((error) => {
           setIsSigningIn(false);
           setSignInError(true);
+          setAuthToken('');
           throw error;
         });
-        setAuthToken(jwt);
 
-        setIsSigningIn(true);
-        const signInResult = await apolloClient
-          .mutate<PatientSignIn>({ mutation: PATIENT_SIGN_IN })
-          .catch((error) => {
-            setSignInError(true);
-            setIsSigningIn(false);
-            console.error(error);
-            throw error;
-          });
-        if (!signInResult.data || !signInResult.data.patientSignIn.patients) {
-          setSignInError(true);
-          setIsSigningIn(false);
-          throw new Error('no data returned from sign in call');
-        }
-        const patients = signInResult.data.patientSignIn.patients;
-        const me = patients.find((p) => p.relation === Relation.ME) || patients[0];
-        setAllCurrentPatients(patients);
-        setCurrentPatient(me);
-        setSignInError(false);
+        setAuthToken(jwt);
+        apolloClient = buildApolloClient(jwt, () => signOut());
+
+        await apolloClient
+          .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
+          .then(() => setSignInError(false))
+          .catch(() => setSignInError(true));
       }
       setIsSigningIn(false);
     });
@@ -219,9 +209,8 @@ export const AuthProvider: React.FC = (props) => {
       <ApolloHooksProvider client={apolloClient}>
         <AuthContext.Provider
           value={{
-            currentPatient,
-            setCurrentPatient,
-            allCurrentPatients,
+            currentPatientId,
+            setCurrentPatientId,
 
             sendOtp,
             sendOtpError,
@@ -231,8 +220,9 @@ export const AuthProvider: React.FC = (props) => {
             verifyOtpError,
             isVerifyingOtp,
 
-            signInError,
+            hasAuthToken,
             isSigningIn,
+            signInError,
             signOut,
 
             isLoginPopupVisible,

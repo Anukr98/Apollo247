@@ -1,7 +1,7 @@
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
-import { Button } from 'app/src/components/ui/Button';
-import { clearUserData } from 'app/src/helpers/localStorage';
-import { useAuth } from 'app/src/hooks/authHooks';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import { clearUserData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import React from 'react';
 import { Alert, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';

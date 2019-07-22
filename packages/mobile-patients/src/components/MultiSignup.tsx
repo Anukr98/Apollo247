@@ -21,7 +21,7 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MenuProvider } from 'react-native-popup-menu';
 import { NavigationScreenProps } from 'react-navigation';
-import { useAuth } from '../hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from '../hooks/authHooks';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updatePatientVariables,
@@ -106,17 +106,12 @@ export interface MultiSignupProps extends NavigationScreenProps {}
 export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [relationIndex, setRelationIndex] = useState<number>(0);
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const {
-    currentPatient,
-    analytics,
-    allCurrentPatients,
-    setCurrentPatient,
-    setAllCurrentPatients,
-  } = useAuth();
+  const { analytics, signOut } = useAuth();
   const [profiles, setProfiles] = useState<any>([]);
   const [discriptionText, setDiscriptionText] = useState<string>('');
   const [showText, setShowText] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   useEffect(() => {
     setProfiles(allCurrentPatients ? allCurrentPatients : []);
@@ -339,8 +334,9 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               {data
                 ? (setVerifyingPhoneNumber(false),
                   console.log('data', data.updatePatient.patient),
-                  setCurrentPatient(data.updatePatient.patient),
-                  setAllCurrentPatients([data.updatePatient.patient]),
+                  signOut(),
+                  // setCurrentPatient(data.updatePatient.patient),
+                  // setAllCurrentPatients([data.updatePatient.patient]),
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),

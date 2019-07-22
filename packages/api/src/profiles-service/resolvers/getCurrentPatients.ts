@@ -1,8 +1,7 @@
 import gql from 'graphql-tag';
-import { Resolver } from 'profiles-service/profiles-service';
+import { ProfilesServiceContext } from 'profiles-service/profiles-service';
 import { Patient } from 'profiles-service/entity/patient';
 import fetch from 'node-fetch';
-import { BaseEntity } from 'typeorm';
 
 import {
   PrismGetAuthTokenResponse,
@@ -12,8 +11,9 @@ import {
 } from 'types/prism';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { Resolver } from 'api-gateway';
 
-export const patientTypeDefs = gql`
+export const getCurrentPatientsTypeDefs = gql`
   enum Gender {
     MALE
     FEMALE
@@ -40,28 +40,29 @@ export const patientTypeDefs = gql`
     gender: Gender
     uhid: String
     emailAddress: String
-    dateOfBirth: String
+    dateOfBirth: Date
     relation: Relation
   }
 
-  type PatientSignInResult {
-    patients: [Patient!]
+  type GetCurrentPatientsResult {
+    patients: [Patient!]!
   }
 
-  extend type Mutation {
-    patientSignIn: PatientSignInResult!
+  extend type Query {
+    getCurrentPatients: GetCurrentPatientsResult
   }
 `;
 
-type PatientSignInResult = {
+type GetCurrentPatientsResult = {
   patients: Patient[] | null;
 };
 
-const patientSignIn: Resolver<any> = async (
-  parent,
-  args,
-  { firebaseUid, mobileNumber }
-): Promise<PatientSignInResult> => {
+const getCurrentPatients: Resolver<
+  null,
+  {},
+  ProfilesServiceContext,
+  GetCurrentPatientsResult
+> = async (parent, args, { firebaseUid, mobileNumber }) => {
   const prismBaseUrl = 'http://blue.phrdemo.com/ui/data';
   const prismHeaders = { method: 'get', headers: { Host: 'blue.phrdemo.com' } };
 
@@ -105,7 +106,7 @@ const patientSignIn: Resolver<any> = async (
         return findOrCreatePatient(
           { uhid: data.uhid, mobileNumber },
           {
-            firebaseId: firebaseUid,
+            firebaseUid,
             firstName: data.userName,
             lastName: '',
             gender: undefined,
@@ -118,7 +119,7 @@ const patientSignIn: Resolver<any> = async (
         findOrCreatePatient(
           { uhid: '', mobileNumber },
           {
-            firebaseId: firebaseUid,
+            firebaseUid,
             firstName: '',
             lastName: '',
             gender: undefined,
@@ -134,8 +135,8 @@ const patientSignIn: Resolver<any> = async (
   return { patients };
 };
 
-export const patientResolvers = {
-  Mutation: {
-    patientSignIn,
+export const getCurrentPatientsResolvers = {
+  Query: {
+    getCurrentPatients,
   },
 };

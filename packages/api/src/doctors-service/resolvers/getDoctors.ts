@@ -1,55 +1,70 @@
 import gql from 'graphql-tag';
-import { Resolver } from 'doctors-service/doctors-service';
-import DoctorsData from 'doctors-service/data/doctors.json';
+import { Resolver } from 'api-gateway';
+import { DoctorsData, INVITEDSTATUS } from 'doctors-service/data/doctorProfile';
+import { DoctorsServiceContext } from 'doctors-service/doctors-service'; 
+
 export const doctorTypeDefs = gql`
-  type clinics {
-    name: String
-    location: String
+  enum INVITEDSTATUS {
+    ACCEPTED
+    REJECTED
+    NOTAPPLICABLE
+    NONE
+  }
+
+  type Clinics {
+    name: String!
+    image: String
+    addressLine1: String
+    addressLine2: String
+    addressLine3: String
+    city: String
   }
 
   type Consultations {
-    days: String
-    timings: String
-    availableForPhysicalConsultation: Boolean
-    availableForVirtualConsultation: Boolean
+    days: String!
+    startTime: Time!
+    endTime: Time!
+    availableForPhysicalConsultation: Boolean!
+    availableForVirtualConsultation: Boolean!
     type: String
   }
 
   type PaymentDetails {
-    accountNumber: String
+    accountNumber: String!
     address: String
   }
 
   type Doctor {
-    id: String
-    firstName: String
-    lastName: String
-    mobileNumber: String
+    id: ID!
+    salutation: String!
+    firstName: String!
+    lastName: String!
+    mobileNumber: String!
     experience: String
-    speciality: String
+    speciality: String!
     specialization: String
-    isStarDoctor: Boolean
-    education: String
+    isStarDoctor: Boolean!
+    education: String!
     services: String
     languages: String
     city: String
     awards: String
     photoUrl: String
-    registrationNumber: String
-    isProfileComplete: String
-    availableForPhysicalConsultation: Boolean
-    availableForVirtualConsultation: Boolean
-    onlineConsultationFees: String
-    physicalConsultationFees: String
+    registrationNumber: String!
+    isProfileComplete: String!
+    availableForPhysicalConsultation: Boolean!
+    availableForVirtualConsultation: Boolean!
+    onlineConsultationFees: String!
+    physicalConsultationFees: String!
     package: String
-    typeOfConsult: String
-    inviteStatus: String
+    inviteStatus: INVITEDSTATUS
+    address: String
   }
 
   type DoctorProfile {
     profile: Doctor
     paymentDetails: [PaymentDetails]
-    clinics: [clinics]
+    clinics: [Clinics]
     starDoctorTeam: [Doctor]
     consultationHours: [Consultations]
   }
@@ -57,18 +72,24 @@ export const doctorTypeDefs = gql`
     getDoctors: [DoctorProfile]
     getDoctorProfile: DoctorProfile
     getDoctorProfileById(id: String): DoctorProfile
-    getDoctorsForStarDoctorProgram(searchString: String): [DoctorProfile]
   }
 `;
 
-type clinics = {
+type Clinics = {
   name: String;
-  location: String;
+  image: String;
+  addressLine1: String;
+  addressLine2: String;
+  addressLine3: String;
+  city: String;
 };
 
 type Consultations = {
   days: String;
-  timings: String;
+  //@ts-ignore
+  startTime: Time!
+  //@ts-ignore
+  endTime: Time!
   availableForPhysicalConsultation: Boolean;
   availableForVirtualConsultation: Boolean;
   type: String;
@@ -79,8 +100,9 @@ type PaymentDetails = {
   address: String;
 };
 
-type Doctor = {
+export type Doctor = {
   id: String;
+  salutation: String;
   firstName: String;
   lastName: String;
   mobileNumber: String;
@@ -101,27 +123,27 @@ type Doctor = {
   onlineConsultationFees: String;
   physicalConsultationFees: String;
   package: String;
-  typeOfConsult: String;
-  inviteStatus: String;
+  inviteStatus: INVITEDSTATUS;
+  address: String;
 };
 
-type DoctorProfile = {
+export type DoctorProfile = {
   profile: Doctor;
-  clinics: clinics[];
+  clinics: Clinics[];
   starDoctorTeam: Partial<Doctor>[];
   consultationHours: Consultations[];
   paymentDetails: PaymentDetails[];
 };
 
-const getDoctors: Resolver<any> = async (parent, args): Promise<JSON> => {
+const getDoctors: Resolver<null, {}, DoctorsServiceContext, JSON> = async (parent, args) => {
   return JSON.parse(JSON.stringify(DoctorsData));
 };
 
-const getDoctorProfile: Resolver<any> = async (
+const getDoctorProfile: Resolver<null, {}, DoctorsServiceContext, DoctorProfile> = async (
   parent,
   args,
   { mobileNumber }
-): Promise<DoctorProfile> => {
+) => {
   mobileNumber = '1234567890';
   const doctor = DoctorsData.find((item) => {
     return item.profile.mobileNumber === mobileNumber;
@@ -129,34 +151,22 @@ const getDoctorProfile: Resolver<any> = async (
   return <DoctorProfile>doctor;
 };
 
-const getDoctorProfileById: Resolver<any, { id: String }> = async (
-  parent,
-  args
-): Promise<DoctorProfile> => {
+const getDoctorProfileById: Resolver<
+  null,
+  { id: String },
+  DoctorsServiceContext,
+  DoctorProfile
+> = async (parent, args) => {
   const doctor = DoctorsData.find((item) => {
     return item.profile.id === args.id;
   });
   return <DoctorProfile>doctor;
 };
 
-const getDoctorsForStarDoctorProgram: Resolver<any, { searchString: string }> = async (
-  parent,
-  args
-): Promise<JSON> => {
-  const result = DoctorsData.filter(
-    (obj) =>
-      obj.profile.firstName.match(args.searchString) &&
-      !obj.profile.isStarDoctor &&
-      obj.profile.inviteStatus !== 'accepted'
-  );
-  return JSON.parse(JSON.stringify(result));
-};
-
 export const doctorResolvers = {
   Query: {
     getDoctors,
     getDoctorProfile,
-    getDoctorsForStarDoctorProgram,
     getDoctorProfileById,
   },
 };

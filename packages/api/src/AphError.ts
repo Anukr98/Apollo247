@@ -1,5 +1,5 @@
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
-import { ApolloError, AuthenticationError } from 'apollo-server';
+import { ApolloError, AuthenticationError, UserInputError } from 'apollo-server';
 
 export class AphError {
   constructor(message: AphErrorMessages, code?: string, properties?: Record<string, any>) {
@@ -10,5 +10,11 @@ export class AphError {
 export class AphAuthenticationError {
   constructor(message: AphErrorMessages) {
     return new AuthenticationError(message);
+  }
+}
+
+export class AphUserInputError {
+  constructor(message: AphErrorMessages, properties?: Record<string, any>) {
+    return new UserInputError(message, properties);
   }
 }

@@ -1,9 +1,9 @@
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
-import { Button } from 'app/src/components/ui/Button';
-import { Header } from 'app/src/components/ui/Header';
-import { ProfileTabHeader } from 'app/src/components/ui/ProfileTabHeader';
-import { colors } from 'app/src/theme/colors';
-import { theme } from 'app/src/theme/theme';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
+import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
+import { colors } from '@aph/mobile-doctors/src/theme/colors';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';

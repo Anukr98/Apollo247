@@ -1,10 +1,15 @@
-import { Appointments } from 'app/src/components/Appointments';
-import { Inbox } from 'app/src/components/Inbox';
-import { MyAccount } from 'app/src/components/MyAccount';
-import { AppRoute } from 'app/src/components/NavigatorContainer';
-import { Patients } from 'app/src/components/Patients';
-import { ConsultationRoom, InboxIcon, MyHealth, Person } from 'app/src/components/ui/Icons';
-import { theme } from 'app/src/theme/theme';
+import { Appointments } from '@aph/mobile-doctors/src/components/Appointments';
+import { Inbox } from '@aph/mobile-doctors/src/components/Inbox';
+import { MyAccount } from '@aph/mobile-doctors/src/components/MyAccount';
+import { AppRoute } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { Patients } from '@aph/mobile-doctors/src/components/Patients';
+import {
+  ConsultationRoom,
+  InboxIcon,
+  MyHealth,
+  Person,
+} from '@aph/mobile-doctors/src/components/ui/Icons';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigation';
 

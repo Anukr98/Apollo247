@@ -1,7 +1,7 @@
-import { Theme, Popover } from '@material-ui/core';
+import { Theme, Modal } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'hooks/routerHooks';
 import { DoctorProfile } from 'components/DoctorProfile';
 import { DoctorClinics } from 'components/DoctorClinics';
@@ -11,9 +11,8 @@ import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
-import { DatePicker, MuiPickersUtilsProvider, MaterialUiPickersDate } from '@material-ui/pickers';
-import DateFnsUtils from '@date-io/date-fns';
-import { usePickerState, TimePickerView, Calendar } from '@material-ui/pickers';
+import { OnlineConsult } from 'components/OnlineConsult';
+import { VisitClinic } from 'components/VisitClinic';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -22,10 +21,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingTop: 78,
       },
-    },
-    booksLink: {
-      color: theme.palette.primary.main,
-      textDecoration: 'underline',
     },
     headerSticky: {
       position: 'fixed',
@@ -37,36 +32,87 @@ const useStyles = makeStyles((theme: Theme) => {
       maxWidth: 1064,
       margin: 'auto',
     },
-    bottomMenuRoot: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      bottom: 0,
-      height: 'auto',
-      [theme.breakpoints.up('sm')]: {
-        display: 'none',
-      },
-      '& button': {
-        padding: '10px 0',
-      },
+    doctorDetailsPage: {
+      borderRadius: '0 0 10px 10px',
+      backgroundColor: theme.palette.text.primary,
     },
-    labelRoot: {
-      width: '100%',
-    },
-    iconLabel: {
-      fontSize: 12,
-      color: '#67919d',
-      paddingTop: 10,
+    breadcrumbs: {
+      marginLeft: 20,
+      marginRight: 20,
+      fontSize: 13,
+      paddingTop: 15,
+      paddingBottom: 10,
+      fontWeight: 600,
+      color: theme.palette.secondary.dark,
       textTransform: 'uppercase',
+      borderBottom: '1px solid rgba(1,71,91,0.3)',
     },
-    iconSelected: {
-      fontSize: '12px !important',
-      color: theme.palette.primary.main,
+    doctorProfileSection: {
+      display: 'flex',
+      padding: 20,
+    },
+    searchSection: {
+      width: 'calc(100% - 328px)',
+      paddingLeft: 20,
+    },
+    sectionHeader: {
+      color: theme.palette.secondary.dark,
+      fontSize: 14,
+      fontWeight: 500,
+      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      paddingBottom: 10,
+      paddingTop: 10,
+      marginBottom: 20,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    count: {
+      marginLeft: 'auto',
     },
     topPopover: {
       overflow: 'initial',
       backgroundColor: 'none',
       boxShadow: 'none',
+    },
+    modalBox: {
+      maxWidth: 340,
+      margin: 'auto',
+      marginTop: 88,
+      backgroundColor: theme.palette.text.primary,
+      position: 'relative',
+    },
+    tabsRoot: {
+      backgroundColor: theme.palette.common.white,
+      borderRadius: '10px 10px 0 0',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+    },
+    tabRoot: {
+      fontSize: 16,
+      fontWeight: 500,
+      textAlign: 'center',
+      color: 'rgba(2,71,91,0.5)',
+      padding: '14px 10px',
+      textTransform: 'none',
+    },
+    tabSelected: {
+      color: theme.palette.secondary.dark,
+    },
+    tabsIndicator: {
+      backgroundColor: '#00b38e',
+      height: 4,
+    },
+    rootTabContainer: {
+      padding: 0,
+    },
+    modalBoxClose: {
+      position: 'absolute',
+      right: -48,
+      top: 0,
+      width: 28,
+      height: 28,
+      borderRadius: '50%',
+      backgroundColor: theme.palette.common.white,
+      cursor: 'pointer',
     },
   };
 });
@@ -82,28 +128,15 @@ interface TabContainerProps {
 }
 
 const TabContainer: React.FC = (props) => {
-  return (
-    <Typography component="div" style={{ padding: 8 * 3 }}>
-      {props.children}
-    </Typography>
-  );
+  return <Typography component="div">{props.children}</Typography>;
 };
 
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const classes = useStyles();
   const params = useParams<Params>();
-  const popOverRef = useRef(null);
   const doctorId = params.id;
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
-  const [selectedDate, handleDateChange] = useState(new Date());
-  const [value, handleDateChange1] = useState<MaterialUiPickersDate>(new Date());
-  const { pickerProps, wrapperProps, inputProps } = usePickerState(
-    { value, onChange: handleDateChange1 },
-    {
-      getDefaultFormat: () => 'MM/dd/yyyy',
-    }
-  );
 
   /* this should be a graphql call */
   const detailsObj = {
@@ -172,46 +205,67 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <Header />
         </div>
       </div>
-      <div className={classes.container} ref={popOverRef}>
-        <DoctorProfile doctorDetails={doctorDetails} onBookConsult={() => setIsPopoverOpen(true)} />
-        <DoctorClinics doctorId={doctorId} />
-        <StarDoctorTeam doctorId={doctorId} />
-        <AppointmentHistory />
-
-        <Popover
-          open={isPopoverOpen}
-          anchorEl={popOverRef.current}
-          onClose={() => setIsPopoverOpen(false)}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'center',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'center',
-          }}
-          classes={{ paper: classes.topPopover }}
-        >
-          <Paper>
-            <Tabs
-              value={tabValue}
-              onChange={(e, newValue) => {
-                setTabValue(newValue);
-                console.log('new tab is...', newValue);
-              }}
-            >
-              <Tab label="Consult Online" />
-              <Tab label="Visit Clinic" />
-            </Tabs>
-            {tabValue === 0 && (
-              <TabContainer>
-                <Calendar {...pickerProps} />
-              </TabContainer>
-            )}
-            {tabValue === 1 && <TabContainer>Item Two</TabContainer>}
-          </Paper>
-        </Popover>
+      <div className={classes.container}>
+        <div className={classes.doctorDetailsPage}>
+          <div className={classes.breadcrumbs}>Doctor Details</div>
+          <div className={classes.doctorProfileSection}>
+            <DoctorProfile
+              doctorDetails={doctorDetails}
+              onBookConsult={() => setIsPopoverOpen(true)}
+            />
+            <div className={classes.searchSection}>
+              <div className={classes.sectionHeader}>
+                <span>Dr. Simran’s Clinic</span>
+                <span className={classes.count}>02</span>
+              </div>
+              <DoctorClinics doctorId={doctorId} />
+              <div className={classes.sectionHeader}>
+                <span>Dr. Simran’s Team</span>
+                <span className={classes.count}>02</span>
+              </div>
+              <StarDoctorTeam doctorId={doctorId} />
+              <div className={classes.sectionHeader}>
+                <span>Appointment History</span>
+                <span className={classes.count}>02</span>
+              </div>
+              <AppointmentHistory />
+            </div>
+          </div>
+        </div>
       </div>
+      <Modal open={isPopoverOpen} onClose={() => setIsPopoverOpen(false)}>
+        <Paper className={classes.modalBox}>
+          <div className={classes.modalBoxClose} onClick={() => setIsPopoverOpen(false)}>
+            <img src={require('images/ic_cross_popup.svg')} alt="" />
+          </div>
+          <Tabs
+            value={tabValue}
+            classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+            onChange={(e, newValue) => {
+              setTabValue(newValue);
+            }}
+          >
+            <Tab
+              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+              label="Consult Online"
+            />
+            <Tab
+              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+              label="Visit Clinic"
+            />
+          </Tabs>
+          {tabValue === 0 && (
+            <TabContainer>
+              <OnlineConsult />
+            </TabContainer>
+          )}
+          {tabValue === 1 && (
+            <TabContainer>
+              <VisitClinic />
+            </TabContainer>
+          )}
+        </Paper>
+      </Modal>
     </div>
   );
 };

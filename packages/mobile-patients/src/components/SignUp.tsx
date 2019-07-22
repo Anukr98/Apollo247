@@ -23,7 +23,7 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
 import Moment from 'moment';
-import { useAuth } from '../hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from '../hooks/authHooks';
 import {
   updatePatient_updatePatient_patient,
   updatePatientVariables,
@@ -107,8 +107,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const [lastName, setLastName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
-  const { currentPatient, setCurrentPatient, setAllCurrentPatients } = useAuth();
+  const { currentPatient } = useAllCurrentPatients();
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
+  const { signOut } = useAuth();
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' ' ? false : value == '' || /^[a-zA-Z ]+$/.test(value) ? true : false;
@@ -283,7 +284,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   } else {
                     setVerifyingPhoneNumber(true);
 
-                    const formatDate = Moment(date, 'DD/MM/YYYY').format('MM/DD/YYYY');
+                    const formatDate = Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+                    console.log('signup currentPatient', currentPatient);
 
                     const patientsDetails: updatePatient_updatePatient_patient = {
                       id: currentPatient ? currentPatient.id : '',
@@ -296,7 +298,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       dateOfBirth: formatDate,
                       emailAddress: email,
                     };
-
+                    console.log('patientsDetails', patientsDetails);
                     mutate({
                       variables: {
                         patientInput: patientsDetails,
@@ -308,8 +310,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                 {data
                   ? (setVerifyingPhoneNumber(false),
                     console.log('data', data.updatePatient.patient),
-                    setCurrentPatient(data.updatePatient.patient),
-                    setAllCurrentPatients([data.updatePatient.patient]),
+                    signOut(),
+                    // setCurrentPatient(data.updatePatient.patient),
+                    // setAllCurrentPatients([data.updatePatient.patient]),
                     AsyncStorage.setItem('userLoggedIn', 'true'),
                     AsyncStorage.setItem('signUp', 'false'),
                     AsyncStorage.setItem('gotIt', 'false'),

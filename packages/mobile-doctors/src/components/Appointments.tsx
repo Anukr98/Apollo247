@@ -1,7 +1,7 @@
-import { Header } from 'app/src/components/ui/Header';
-import React from 'react';
+import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
+import * as React from 'react';
 import { SafeAreaView } from 'react-native';
-import { theme } from 'app/src/theme/theme';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 
 export interface AppointmentsProps {}
 
