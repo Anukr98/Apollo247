@@ -334,18 +334,15 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               {data
                 ? (setVerifyingPhoneNumber(false),
                   console.log('data', data.updatePatient.patient),
-                  signOut(),
-                  // setCurrentPatient(data.updatePatient.patient),
-                  // setAllCurrentPatients([data.updatePatient.patient]),
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
-                  props.navigation.navigate(AppRoutes.TabBar))
+                  props.navigation.replace(AppRoutes.TabBar))
                 : null}
-              {/* {loading ? setVerifyingPhonenNumber(false) : setVerifyingPhonenNumber(false)} */}
               {error
                 ? (setVerifyingPhoneNumber(false),
                   Alert.alert('Apollo', error.message),
+                  signOut(),
                   console.log('updatePatient error', error),
                   AsyncStorage.setItem('userLoggedIn', 'false'),
                   AsyncStorage.setItem('multiSignUp', 'false'),

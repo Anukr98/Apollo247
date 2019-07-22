@@ -19,7 +19,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import firebase from 'react-native-firebase';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 const { width, height } = Dimensions.get('window');
@@ -160,18 +159,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
-
-    // analytics.setCurrentScreen(AppRoutes.ConsultRoom);
-  }, [currentPatient, allCurrentPatients, analytics, userName, props.navigation.state.params]);
+    console.log('consult room', currentPatient);
+    analytics.setCurrentScreen(AppRoutes.ConsultRoom);
+  }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
   useEffect(() => {
     async function fetchData() {
       const userLoggedIn = await AsyncStorage.getItem('gotIt');
       if (userLoggedIn == 'true') {
         setshowPopUp(false);
-        // getUserData();
-      } else {
-        // getUserData();
       }
     }
     fetchData();

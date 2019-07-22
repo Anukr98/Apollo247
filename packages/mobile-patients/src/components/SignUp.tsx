@@ -310,17 +310,15 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                 {data
                   ? (setVerifyingPhoneNumber(false),
                     console.log('data', data.updatePatient.patient),
-                    signOut(),
-                    // setCurrentPatient(data.updatePatient.patient),
-                    // setAllCurrentPatients([data.updatePatient.patient]),
                     AsyncStorage.setItem('userLoggedIn', 'true'),
                     AsyncStorage.setItem('signUp', 'false'),
                     AsyncStorage.setItem('gotIt', 'false'),
-                    props.navigation.navigate(AppRoutes.TabBar))
+                    props.navigation.replace(AppRoutes.TabBar))
                   : null}
                 {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
                 {error
                   ? (setVerifyingPhoneNumber(false),
+                    signOut(),
                     Alert.alert('Apollo', error.message),
                     console.log('updatePatient error', error),
                     AsyncStorage.setItem('userLoggedIn', 'false'),
