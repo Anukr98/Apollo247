@@ -19,7 +19,7 @@ export const doctorTypeDefs = gql`
     addressLine2: String
     addressLine3: String
     city: String
-    isClinic: boolean
+    isClinic: Boolean
   }
 
   type Consultations {
@@ -85,7 +85,7 @@ type Clinics = {
   addressLine2: String;
   addressLine3: String;
   city: String;
-  isClinic: boolean;
+  isClinic: Boolean;
 };
 
 type Consultations = {
