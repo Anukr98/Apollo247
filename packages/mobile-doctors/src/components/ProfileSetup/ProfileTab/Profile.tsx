@@ -5,6 +5,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 
 const styles = StyleSheet.create({
   container: {

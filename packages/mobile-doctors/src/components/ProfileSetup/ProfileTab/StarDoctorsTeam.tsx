@@ -11,6 +11,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { DoctorProfile, Doctor } from '@aph/mobile-doctors/src/helpers/commonTypes';
 
 const styles = StyleSheet.create({
   inputTextStyle: {
