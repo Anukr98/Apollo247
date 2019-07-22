@@ -103,11 +103,7 @@ export const Header: React.FC = (props) => {
               onClick={() => (isSignedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
               ref={avatarRef}
             >
-              {isSigningIn ? (
-                <CircularProgress />
-              ) : (
-                <img src={require('images/ic_account.svg')} data-cypress="User Circle" />
-              )}
+              {isSigningIn ? <CircularProgress /> : <img src={require('images/ic_account.svg')} />}
             </div>
           )}
         </ProtectedWithLoginPopup>
