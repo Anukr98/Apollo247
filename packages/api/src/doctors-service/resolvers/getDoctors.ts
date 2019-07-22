@@ -12,12 +12,14 @@ export const doctorTypeDefs = gql`
   }
 
   type Clinics {
+    id: ID!
     name: String!
     image: String
     addressLine1: String
     addressLine2: String
     addressLine3: String
     city: String
+    isClinic: boolean
   }
 
   type Consultations {
@@ -76,12 +78,14 @@ export const doctorTypeDefs = gql`
 `;
 
 type Clinics = {
+  id: String;
   name: String;
   image: String;
   addressLine1: String;
   addressLine2: String;
   addressLine3: String;
   city: String;
+  isClinic: boolean;
 };
 
 type Consultations = {
