@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { GraphQLDate, GraphQLTime } from 'graphql-iso-date';
+import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
 import { createConnection } from 'typeorm';
@@ -14,6 +14,10 @@ import {
   updatePatientResolvers,
 } from 'profiles-service/resolvers/updatePatient';
 import { getPatientTypeDefs, getPatientResolvers } from 'profiles-service/resolvers/getPatients';
+import {
+  getAppointmentHistoryTypeDefs,
+  getAppointmentHistoryResolvers,
+} from 'profiles-service/resolvers/getAppointmentHistory';
 import {
   bookAppointmentTypeDefs,
   bookAppointmentResolvers,
@@ -62,10 +66,12 @@ export interface ProfilesServiceContext extends GatewayContext {
         typeDefs: gql`
           scalar Date
           scalar Time
+          scalar DateTime
         `,
         resolvers: {
           Date: GraphQLDate,
           Time: GraphQLTime,
+          DateTime: GraphQLDateTime,
         },
       },
       {
@@ -83,6 +89,10 @@ export interface ProfilesServiceContext extends GatewayContext {
       {
         typeDefs: bookAppointmentTypeDefs,
         resolvers: bookAppointmentResolvers,
+      },
+      {
+        typeDefs: getAppointmentHistoryTypeDefs,
+        resolvers: getAppointmentHistoryResolvers,
       },
     ]),
   });
