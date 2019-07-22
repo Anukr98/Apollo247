@@ -60,6 +60,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
 let apolloClient: ApolloClient<any>;
 const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
+  console.log('buildApolloClient', authToken);
   const errorLink = onError((error) => {
     const { graphQLErrors, operation, forward } = error;
     if (graphQLErrors) {
@@ -135,7 +136,7 @@ export const AuthProvider: React.FC = (props) => {
       const [otpAuthResult, otpError] = await wait(otpVerifier.confirm(otp));
       setVerifyOtpError(Boolean(otpError || !otpAuthResult));
       if (otpAuthResult) {
-        console.log('otpAuthResult', otpAuthResult);
+        // console.log('otpAuthResult', otpAuthResult);
         resolve(otpAuthResult);
       } else {
         reject(otpError);
@@ -145,47 +146,9 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   const signOut = () => {
-    auth.signOut(), setAuthToken('');
+    auth.signOut(), setAuthToken(''), setCurrentPatientId(null);
     console.log('authprovider signOut');
   };
-
-  // const callAuthProvider = () => {
-  //   let authStateRegistered = false;
-  //   console.log('authprovider');
-
-  //   auth.onAuthStateChanged(async (user) => {
-  //     console.log('authprovider', authStateRegistered, user);
-
-  //     if (user && !authStateRegistered) {
-  //       authStateRegistered = true;
-
-  //       const jwt = await user.getIdToken().catch((error) => {
-  //         setIsSigningIn(false);
-  //         setSignInError(true);
-  //         setAuthToken('');
-  //         authStateRegistered = false;
-  //         throw error;
-  //       });
-
-  //       setAuthToken(jwt);
-  //       apolloClient = buildApolloClient(jwt, () => signOut());
-
-  //       console.log('authprovider jwt', jwt);
-
-  //       await apolloClient
-  //         .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
-  //         .then((data) => {
-  //           setSignInError(false);
-  //           console.log('data', data);
-  //         })
-  //         .catch((error) => {
-  //           setSignInError(true);
-  //           console.log('error', error);
-  //         });
-  //     }
-  //     setIsSigningIn(false);
-  //   });
-  // };
 
   useEffect(() => {
     setAnalytics(firebase.analytics());
@@ -203,25 +166,29 @@ export const AuthProvider: React.FC = (props) => {
       console.log('authprovider', authStateRegistered, user);
 
       if (user && !authStateRegistered) {
-        authStateRegistered = true;
+        console.log('authprovider login');
         setIsSigningIn(true);
+        authStateRegistered = true;
 
         const jwt = await user.getIdToken().catch((error) => {
           setIsSigningIn(false);
           setSignInError(true);
           setAuthToken('');
           authStateRegistered = false;
+          console.log('authprovider error', error);
           throw error;
         });
 
-        setAuthToken(jwt);
-        apolloClient = buildApolloClient(jwt, () => authHandler());
-
         console.log('authprovider jwt', jwt);
 
+        apolloClient = buildApolloClient(jwt, () => authHandler());
+        authStateRegistered = false;
+
+        // setTimeout(async () => {
         await apolloClient
           .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
           .then((data) => {
+            setAuthToken(jwt);
             setSignInError(false);
             console.log('data', data);
           })
@@ -229,6 +196,7 @@ export const AuthProvider: React.FC = (props) => {
             setSignInError(true);
             console.log('error', error);
           });
+        // }, 2000);
       }
       setIsSigningIn(false);
     });

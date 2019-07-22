@@ -92,7 +92,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     setOtp(otpString);
     console.log('OTPVerification otpString', otpString);
     _getTimerData();
-  }, [_getTimerData, props.navigation]);
+  }, [props.navigation]);
 
   const _getTimerData = async () => {
     try {
@@ -192,10 +192,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   useEffect(() => {
-    console.log('OTPVerify allCurrentPatients', allCurrentPatients);
-
-    console.log('OTPVerify currentPatient', currentPatient);
-
     if (currentPatient) {
       if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
         if (currentPatient.relation == null) {
@@ -228,11 +224,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
     verifyOtp(otp)
       .then((result) => {
-        console.log('result OTPVerification', result);
+        // console.log('result OTPVerification', result);
         _removeFromStore();
       })
       .catch((error) => {
-        console.log('error', error);
+        // console.log('error', error);
         _storeTimerData(invalidOtpCount + 1);
 
         if (invalidOtpCount + 1 === 3) {
