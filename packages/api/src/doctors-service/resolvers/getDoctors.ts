@@ -1,10 +1,18 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { DoctorsData } from 'doctors-service/data/doctorProfile';
+import { DoctorsData, INVITEDSTATUS } from 'doctors-service/data/doctorProfile';
 import { DoctorsServiceContext } from 'doctors-service/doctors-service';
+
 export const doctorTypeDefs = gql`
+  enum INVITEDSTATUS {
+    ACCEPTED
+    REJECTED
+    NOTAPPLICABLE
+    NONE
+  }
+
   type Clinics {
-    name: String
+    name: String!
     image: String
     addressLine1: String
     addressLine2: String
@@ -13,42 +21,43 @@ export const doctorTypeDefs = gql`
   }
 
   type Consultations {
-    days: String
-    timings: String
-    availableForPhysicalConsultation: Boolean
-    availableForVirtualConsultation: Boolean
+    days: String!
+    startTime: Time!
+    endTime: Time!
+    availableForPhysicalConsultation: Boolean!
+    availableForVirtualConsultation: Boolean!
     type: String
   }
 
   type PaymentDetails {
-    accountNumber: String
+    accountNumber: String!
     address: String
   }
 
   type Doctor {
-    id: String
-    salutation: String
-    firstName: String
-    lastName: String
-    mobileNumber: String
+    id: ID!
+    salutation: String!
+    firstName: String!
+    lastName: String!
+    mobileNumber: String!
     experience: String
-    speciality: String
+    speciality: String!
     specialization: String
-    isStarDoctor: Boolean
-    education: String
+    isStarDoctor: Boolean!
+    education: String!
     services: String
     languages: String
     city: String
     awards: String
     photoUrl: String
-    registrationNumber: String
-    isProfileComplete: String
-    availableForPhysicalConsultation: Boolean
-    availableForVirtualConsultation: Boolean
-    onlineConsultationFees: String
-    physicalConsultationFees: String
+    registrationNumber: String!
+    isProfileComplete: String!
+    availableForPhysicalConsultation: Boolean!
+    availableForVirtualConsultation: Boolean!
+    onlineConsultationFees: String!
+    physicalConsultationFees: String!
     package: String
-    inviteStatus: String
+    inviteStatus: INVITEDSTATUS
     address: String
   }
 
@@ -77,7 +86,8 @@ type Clinics = {
 
 type Consultations = {
   days: String;
-  timings: String;
+  startTime: any;
+  endTime: any;
   availableForPhysicalConsultation: Boolean;
   availableForVirtualConsultation: Boolean;
   type: String;
@@ -111,7 +121,7 @@ export type Doctor = {
   onlineConsultationFees: String;
   physicalConsultationFees: String;
   package: String;
-  inviteStatus: String;
+  inviteStatus: INVITEDSTATUS;
   address: String;
 };
 

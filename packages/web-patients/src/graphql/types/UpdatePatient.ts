@@ -17,7 +17,7 @@ export interface UpdatePatient_updatePatient_patient {
   relation: Relation | null;
   gender: Gender | null;
   uhid: string | null;
-  dateOfBirth: string | null;
+  dateOfBirth: any | null;
   emailAddress: string | null;
 }
 

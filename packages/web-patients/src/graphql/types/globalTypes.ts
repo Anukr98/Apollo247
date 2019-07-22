@@ -12,6 +12,13 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum INVITEDSTATUS {
+  ACCEPTED = "ACCEPTED",
+  NONE = "NONE",
+  NOTAPPLICABLE = "NOTAPPLICABLE",
+  REJECTED = "REJECTED",
+}
+
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
@@ -34,6 +41,15 @@ export interface UpdatePatientInput {
   emailAddress?: string | null;
   dateOfBirth?: any | null;
   relation?: Relation | null;
+}
+
+export interface filterInput {
+  specialty: string;
+  city?: (string | null)[] | null;
+  experience?: (string | null)[] | null;
+  availability?: (string | null)[] | null;
+  gender?: (string | null)[] | null;
+  language?: (string | null)[] | null;
 }
 
 //==============================================================

@@ -44,11 +44,11 @@ type AppointmentHistory = {
   patientId: string;
   doctorId: string;
   appointmentDate: Date;
-  appointmentTime: Time;
+  appointmentTime: Date;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId?: string;
   status: STATUS;
-  bookingDate: DateTime;
+  bookingDate: Date;
 };
 
 type AppointmentInputArgs = { appointmentHistoryInput: AppointmentHistoryInput };
@@ -65,7 +65,6 @@ const getAppointmentHistory: Resolver<
       patientId: appointmentHistoryInput.patientId,
     },
   });
-  console.log(appointmentsHistory);
   return { appointmentsHistory };
 };
 
