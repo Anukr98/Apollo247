@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { DoctorsFilter } from 'components/DoctorsFilter';
 import { PastSearches } from 'components/PastSearches';
 import { Specialities } from 'components/Specialities';
-import { DoctorCard } from './doctorCard';
+import { DoctorCard } from 'components/DoctorCard';
 import { DoctorsListing } from 'components/DoctorsListing';
 import { PossibleSpecialitiesAndDoctors } from 'components/PossibleSpecialitiesAndDoctors';
 import _uniqueId from 'lodash/uniqueId';

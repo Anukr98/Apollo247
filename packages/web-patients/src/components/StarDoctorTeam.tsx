@@ -53,8 +53,6 @@ export interface StarDoctorTeamProps {
 export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
   const classes = useStyles();
 
-  const { doctorId } = props;
-
   /* this should be a graphql call */
   const starDoctors = {
     'star-doctor-1': {
