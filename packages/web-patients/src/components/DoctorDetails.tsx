@@ -17,7 +17,7 @@ import { VisitClinic } from 'components/VisitClinic';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
-      paddingTop: 85,
+      paddingTop: 88,
       [theme.breakpoints.down('xs')]: {
         paddingTop: 78,
       },
@@ -40,8 +40,8 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 20,
       marginRight: 20,
       fontSize: 13,
-      paddingTop: 15,
-      paddingBottom: 10,
+      paddingTop: 17,
+      paddingBottom: 11,
       fontWeight: 600,
       color: theme.palette.secondary.dark,
       textTransform: 'uppercase',
