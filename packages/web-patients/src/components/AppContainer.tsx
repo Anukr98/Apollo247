@@ -16,6 +16,9 @@ import { DoctorsLanding } from 'components/DoctorsLanding';
 import { AuthRouted } from 'components/AuthRouted';
 
 declare global {
+  interface Window {
+    __TEST__: boolean;
+  }
   namespace NodeJS {
     interface ProcessEnv {
       NODE_ENV: 'local' | 'dev';
@@ -23,6 +26,7 @@ declare global {
       API_GATEWAY_PORT: string;
       GOOGLE_APPLICATION_CREDENTIALS: string;
       FIREBASE_PROJECT_ID: string;
+      TEST: string;
     }
   }
 }
