@@ -201,7 +201,12 @@ export const DoctorsLanding: React.FC = (props) => {
               showSearchAndPastSearch ? (
                 <>
                   <div className={classes.sectionHeader}>Your Past Searches</div>
-                  <PastSearches />
+                  <PastSearches
+                    speciality={(specialitySelected) => setSpecialitySelected(specialitySelected)}
+                    disableFilter={(disableFilters) => {
+                      setDisableFilters(disableFilters);
+                    }}
+                  />
                 </>
               ) : null}
 

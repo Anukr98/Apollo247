@@ -31,6 +31,11 @@ export enum Relation {
   WIFE = "WIFE",
 }
 
+export enum SEARCH_TYPE {
+  DOCTOR = "DOCTOR",
+  SPECIALTY = "SPECIALTY",
+}
+
 export interface UpdatePatientInput {
   id: string;
   firstName?: string | null;
