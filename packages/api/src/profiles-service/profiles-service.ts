@@ -15,6 +15,10 @@ import {
 } from 'profiles-service/resolvers/updatePatient';
 import { getPatientTypeDefs, getPatientResolvers } from 'profiles-service/resolvers/getPatients';
 import {
+  getPastSearchesTypeDefs,
+  getPastSearchesResolvers,
+} from 'profiles-service/resolvers/getPastSearches';
+import {
   getAppointmentHistoryTypeDefs,
   getAppointmentHistoryResolvers,
 } from 'profiles-service/resolvers/getAppointmentHistory';
@@ -89,6 +93,10 @@ export interface ProfilesServiceContext extends GatewayContext {
       {
         typeDefs: bookAppointmentTypeDefs,
         resolvers: bookAppointmentResolvers,
+      },
+      {
+        typeDefs: getPastSearchesTypeDefs,
+        resolvers: getPastSearchesResolvers,
       },
       {
         typeDefs: getAppointmentHistoryTypeDefs,
