@@ -14,6 +14,7 @@ import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import { DoctorsLanding } from 'components/DoctorsLanding';
 import { AuthRouted } from 'components/AuthRouted';
+import { PatientsList } from 'components/PatientsList';
 
 declare global {
   interface Window {
