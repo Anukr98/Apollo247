@@ -93,6 +93,7 @@ const app = firebase.initializeApp({
   messagingSenderId: '537093214409',
   storageBucket: '',
 });
+if (window.__TEST__) app.auth().settings.appVerificationDisabledForTesting = true;
 
 let otpVerifier: firebase.auth.ConfirmationResult;
 
@@ -177,6 +178,12 @@ export const AuthProvider: React.FC = (props) => {
     if (!otpAuthResult || !otpAuthResult.user) setVerifyOtpError(true);
     setIsVerifyingOtp(false);
   };
+
+  useEffect(() => {
+    if (window.__TEST__) {
+      setAuthToken('test');
+    }
+  }, []);
 
   useEffect(() => {
     app.auth().onAuthStateChanged(async (user) => {
