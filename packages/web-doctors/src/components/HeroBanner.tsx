@@ -1,16 +1,8 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
-import Typography from '@material-ui/core/Typography';
 import { AphButton } from '@aph/web-ui-components';
-import MenuItem from '@material-ui/core/MenuItem';
-import { AphSelect } from '@aph/web-ui-components';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
-import _isEmpty from 'lodash/isEmpty';
-import _startCase from 'lodash/startCase';
-import _toLower from 'lodash/lowerCase';
-import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
-import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -137,7 +129,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const HeroBanner: React.FC = () => {
   const classes = useStyles();
-  const { currentPatient, setCurrentPatient } = useAuth();
 
   return (
     <div className={classes.heroBanner}>

@@ -15,11 +15,10 @@ import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
-import { isMobileNumberValid, isDigit } from '@aph/universal/validators';
+import { isMobileNumberValid } from '@aph/universal/aphValidators';
 import { AphTextField } from '@aph/web-ui-components';
-//import { useQuery } from 'react-apollo-hooks';
-//import { IS_DOCTOR } from 'graphql/profiles';
-//import { GetPatients } from 'graphql/types/GetPatients';
+import { HelpPopup } from 'components/Help';
+import isNumeric from 'validator/lib/isNumeric';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -136,7 +135,8 @@ export const SignIn: React.FC = (props) => {
   const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
   const [submitCount, setSubmitCount] = useState(0);
   const [showTimer, setShowTimer] = useState(false);
-  let [timer, setTimer] = useState(179);
+  const timer = 179;
+
   const placeRecaptchaAfterMe = useRef(null);
 
   const {
@@ -159,29 +159,14 @@ export const SignIn: React.FC = (props) => {
 
   useEffect(() => {
     if (submitCount > 0) {
-      if (submitCount <= 3) {
-        console.log('submitCount ' + submitCount);
-      }
-
       if (submitCount === 3) {
         setShowTimer(true);
-
-        let intervalId = setInterval(() => {
-          timer = timer - 1;
-          setTimer(timer);
-          if (timer === 0) {
-            clearInterval(intervalId);
-            setSubmitCount(0);
-            setShowTimer(false);
-            setTimer(179);
-          }
-        }, 1000);
       }
     }
   }, [submitCount]);
 
   return displayGetHelp ? (
-    <div className={`${classes.loginFormWrap} ${classes.helpWrap}`}>
+    <div>
       <Button
         className={classes.backButton}
         onClick={() => {
@@ -194,55 +179,7 @@ export const SignIn: React.FC = (props) => {
       >
         {'<'}
       </Button>
-      <Typography variant="h2">need help?</Typography>
-      <p>You can request a call back for us to resolve your issue ASAP</p>
-      <FormControl fullWidth>
-        <AphInput
-          autoFocus
-          inputProps={{ type: 'tel', maxLength: 10 }}
-          value={mobileNumber}
-          onPaste={(e) => {
-            if (!isDigit(e.clipboardData.getData('text'))) e.preventDefault();
-          }}
-          onChange={(event) => {
-            setMobileNumber(event.currentTarget.value);
-            if (event.currentTarget.value !== '') {
-              if (isMobileNumberValid(event.currentTarget.value)) {
-                setPhoneMessage(validPhoneMessage);
-                setShowErrorMessage(false);
-              } else {
-                setPhoneMessage(invalidPhoneMessage);
-                setShowErrorMessage(true);
-              }
-            } else {
-              setPhoneMessage(validPhoneMessage);
-              setShowErrorMessage(false);
-            }
-          }}
-          error={mobileNumber.trim() !== '' && !isMobileNumberValid(mobileNumber)}
-          onKeyPress={(e) => {
-            if (isNaN(parseInt(e.key, 10))) {
-              e.preventDefault();
-            }
-          }}
-          startAdornment={
-            <InputAdornment className={classes.inputAdornment} position="start">
-              {mobileNumberPrefix}
-            </InputAdornment>
-          }
-        />
-      </FormControl>
-      <Button
-        variant="contained"
-        color="primary"
-        disabled={!isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10}
-        className={classes.needHelp}
-        onClick={() => {
-          alert('call pro');
-        }}
-      >
-        CALL ME
-      </Button>
+      <HelpPopup />
     </div>
   ) : displayOtpInput ? (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
@@ -376,7 +313,7 @@ export const SignIn: React.FC = (props) => {
           inputProps={{ type: 'tel', maxLength: 10 }}
           value={mobileNumber}
           onPaste={(e) => {
-            if (!isDigit(e.clipboardData.getData('text'))) e.preventDefault();
+            if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
           }}
           onChange={(event) => {
             setMobileNumber(event.currentTarget.value);

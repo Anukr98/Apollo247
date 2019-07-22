@@ -25,6 +25,7 @@ export interface Appointment {
 export interface AppointmentsProps {
   values: Appointment[];
 }
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -139,6 +140,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   })
 );
+
 let timeOutId: number;
 const udpateActiveStep = (
   appointments: Appointment[],

@@ -57,9 +57,7 @@ export interface DoctorClinicsProps {
 export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
   const classes = useStyles();
 
-  const { doctorId } = props;
-
-  interface clinicDetailsType {
+  interface ClinicDetailsType {
     id: string;
     address: string;
     availability: {
@@ -67,8 +65,8 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
     };
   }
 
-  interface clinicDetails {
-    [key: string]: clinicDetailsType;
+  interface ClinicDetails {
+    [key: string]: ClinicDetailsType;
   }
 
   /* this should be a graphql call */
@@ -91,8 +89,8 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
     },
   };
 
-  const clinicsMarkup = (clinicsObj: clinicDetails) => {
-    return Object.values(clinicsObj).map((clinicDetails: clinicDetailsType) => (
+  const clinicsMarkup = (clinicsObj: ClinicDetails) => {
+    return Object.values(clinicsObj).map((clinicDetails: ClinicDetailsType) => (
       <Grid item sm={6} key={_uniqueId('avagr_')}>
         <div className={classes.root} key={_uniqueId('clinic_')}>
           <div className={classes.clinicImg}>

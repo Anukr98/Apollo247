@@ -2,18 +2,15 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React, { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
+import Popover from '@material-ui/core/Popover';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
-import StarDoctorSearch from './StarDoctorSearch';
-import { relative } from 'path';
 import {
-  getDoctorProfile,
-  getDoctorProfile_getDoctorProfile_starDoctorTeam,
-  getDoctorProfile_getDoctorProfile_clinics,
-  getDoctorProfile_getDoctorProfile,
+  GetDoctorProfile_getDoctorProfile_starDoctorTeam,
+  GetDoctorProfile_getDoctorProfile_clinics,
 } from 'graphql/types/getDoctorProfile';
-
+import Button from '@material-ui/core/Button';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
@@ -44,6 +41,12 @@ const useStyles = makeStyles((theme: Theme) => {
           padding: '0 2px',
         },
       },
+    },
+    removeDoctor: {
+      padding: theme.spacing(1),
+      color: '#951717',
+      fontSize: 15,
+      fontWeight: theme.typography.fontWeightMedium,
     },
     tabContent: {
       borderRadius: 10,
@@ -80,6 +83,8 @@ const useStyles = makeStyles((theme: Theme) => {
     avatarBlock: {
       overflow: 'hidden',
       borderRadius: '10px 0 0 0',
+      position: 'relative',
+      paddingBottom: '20px',
     },
     bigAvatar: {
       width: '100%',
@@ -100,6 +105,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: '10px',
       '& h4': {
         borderBottom: 'none',
+        fontSize: 18,
       },
     },
     addStarDoctor: {
@@ -175,13 +181,29 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       top: 0,
       right: 0,
+      padding: theme.spacing(0),
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      minWidth: 20,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    none: {
+      display: 'none',
+    },
+    starImg: {
+      position: 'absolute',
+      bottom: '7px',
+      right: '15px',
+      width: '40px',
     },
   };
 });
 
-interface Props {
+interface DoctorProfileTabProps {
   values: any;
-  proceedHadler: () => void;
+  onNext: () => void;
 }
 interface DoctorsName {
   label: string;
@@ -192,22 +214,30 @@ interface DoctorsName {
   lastName: string;
 }
 
-export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => {
+export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNext }) => {
   const classes = useStyles();
-  const [data, setData] = useState(values);
+  const [userData, setData] = useState(values);
   const [showAddDoc, setShowAddDoc] = useState(false);
-  function addDoctorHadler(obj: DoctorsName) {
-    if (obj.label) {
-      setData({ ...data, starDoctorTeam: data.starDoctorTeam.concat(obj) });
-      setShowAddDoc(false);
-    }
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  function handleClick(event: any) {
+    setAnchorEl(event.currentTarget);
   }
-  // function removeDoctor() {
-  //   alert('delete');
-  // }
-  const starDocNumber = data.starDoctorTeam.length;
-  const starDoctors = data.starDoctorTeam.map(
-    (item: getDoctorProfile_getDoctorProfile_starDoctorTeam, index: number) => {
+
+  function handleClose() {
+    setAnchorEl(null);
+  }
+
+  const open = Boolean(anchorEl);
+  function removeDoctor(doctor: any) {
+    const starDoctorTeam = userData.starDoctorTeam.filter(
+      (object: DoctorsName) => object.firstName !== doctor.firstName
+    );
+    setData({ ...userData, starDoctorTeam: starDoctorTeam });
+  }
+  const starDocNumber = userData.starDoctorTeam.length;
+  const starDoctors = userData.starDoctorTeam.map(
+    (item: GetDoctorProfile_getDoctorProfile_starDoctorTeam, index: number) => {
       return (
         <Grid item lg={4} sm={6} xs={12} key={index.toString()}>
           <div className={classes.tabContentStarDoctor}>
@@ -218,13 +248,39 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
                 className={classes.profileImg}
               />
             </div>
-            {!(item.inviteStatus === 'accepted') ? (
+            {!item.inviteStatus ? (
               <div className={classes.posRelative}>
-                <img
-                  alt="more.svg"
-                  src={require('images/ic_more.svg')}
+                <Button
+                  aria-describedby={open ? 'simple-popover' : undefined}
+                  variant="contained"
                   className={classes.moreIcon}
-                />
+                  onClick={handleClick}
+                >
+                  <img
+                    alt="more.svg"
+                    src={require('images/ic_more.svg')}
+
+                    // onClick={() => removeDoctor(item)}
+                  />
+                </Button>
+                <Popover
+                  id={open ? 'simple-popover' : undefined}
+                  open={open}
+                  anchorEl={anchorEl}
+                  onClose={handleClose}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'center',
+                  }}
+                >
+                  <Typography className={classes.removeDoctor} onClick={() => removeDoctor(item)}>
+                    Remove Doctor
+                  </Typography>
+                </Popover>
                 <Typography variant="h4">
                   Dr. {item.firstName} {item.lastName}
                 </Typography>
@@ -235,7 +291,36 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
               </div>
             ) : (
               <div className={classes.posRelative}>
-                <img alt="" src={require('images/ic_more.svg')} className={classes.moreIcon} />
+                <Button
+                  aria-describedby={open ? 'simple-popover' : undefined}
+                  variant="contained"
+                  className={classes.moreIcon}
+                  onClick={handleClick}
+                >
+                  <img
+                    alt=""
+                    src={require('images/ic_more.svg')}
+                    // onClick={() => removeDoctor(item)}
+                  />
+                </Button>
+                <Popover
+                  id={open ? 'simple-popover' : undefined}
+                  open={open}
+                  anchorEl={anchorEl}
+                  onClose={handleClose}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'center',
+                  }}
+                >
+                  <Typography className={classes.removeDoctor} onClick={() => removeDoctor(item)}>
+                    Remove Doctor
+                  </Typography>
+                </Popover>
                 <Typography variant="h4">
                   Dr. {item.firstName} {item.lastName}
                 </Typography>
@@ -253,11 +338,12 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
     }
   );
 
-  const clinicsList = data.clinics.map(
-    (item: getDoctorProfile_getDoctorProfile_clinics, index: number) => {
+  const clinicsList = userData.clinics.map(
+    (item: GetDoctorProfile_getDoctorProfile_clinics, index: number) => {
       return (
-        <Typography variant="h3" key={index.toString()}>
-          {item.name}, {item.location}
+        <Typography variant="h3" key={index.toString()} className={index > 0 ? classes.none : ''}>
+          {item.name}, {item.addressLine1}, {item.addressLine2}
+          {item.addressLine3}, {item.city}
         </Typography>
       );
     }
@@ -276,13 +362,14 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
                   src={require('images/doctor-profile.jpg')}
                   className={classes.bigAvatar}
                 />
+                <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
               </div>
               <Typography variant="h4">
-                Dr. {data.profile.firstName} {data.profile.lastName}
+                Dr. {userData.profile.firstName} {userData.profile.lastName}
               </Typography>
               <Typography variant="h6">
-                {data.profile.specialization} <span> | </span>{' '}
-                <span> {data.profile.experience}YRS </span>{' '}
+                {userData.profile.specialization} <span> | </span>{' '}
+                <span> {userData.profile.experience}YRS </span>{' '}
               </Typography>
             </Paper>
           </Grid>
@@ -291,31 +378,31 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Education</Typography>
-                  <Typography variant="h3">{data.profile.education}</Typography>
+                  <Typography variant="h3">{userData.profile.education}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Awards</Typography>
-                  <Typography variant="h3">{data.profile.awards}</Typography>
+                  <Typography variant="h3">{userData.profile.awards}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Speciality</Typography>
-                  <Typography variant="h3">{data.profile.speciality}</Typography>
+                  <Typography variant="h3">{userData.profile.speciality}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Speaks</Typography>
-                  <Typography variant="h3">{data.profile.languages}</Typography>
+                  <Typography variant="h3">{userData.profile.languages}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Services</Typography>
-                  <Typography variant="h3">{data.profile.services}</Typography>
+                  <Typography variant="h3">{userData.profile.services}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
@@ -327,16 +414,18 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">MCI Number</Typography>
-                  <Typography variant="h3">{data.profile.registrationNumber}</Typography>
+                  <Typography variant="h3">{userData.profile.registrationNumber}</Typography>
                 </Paper>
               </Grid>
             </Grid>
           </Grid>
         </Grid>
       </div>
-      {!!data.profile.isStarDoctor && (
+      {!!userData.profile.isStarDoctor && (
         <div>
-          <Typography variant="h2">Your Star Doctors Team ({starDocNumber})</Typography>
+          <Typography variant="h2" className={starDocNumber === 0 ? classes.none : ''}>
+            Your Star Doctors Team ({starDocNumber})
+          </Typography>
           <Grid container alignItems="flex-start" spacing={0}>
             {starDoctors}
             {!!showAddDoc && (
@@ -344,7 +433,7 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
                 <div className={classes.addStarDoctor}>
                   <Typography variant="h5">
                     Add doctor to your team
-                    <StarDoctorSearch addDoctorHadler={addDoctorHadler} />
+                    {/* <StarDoctorSearch addDoctorHadler={addDoctorHadler} /> */}
                   </Typography>
                 </div>
               </Grid>
@@ -369,7 +458,7 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
             variant="contained"
             color="primary"
             classes={{ root: classes.saveButton }}
-            onClick={() => proceedHadler()}
+            onClick={() => onNext()}
           >
             SAVE AND PROCEED
           </AphButton>

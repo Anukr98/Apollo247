@@ -199,18 +199,14 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-interface Props {
+interface FeesProps {
   values: any;
-  proceedHadler: () => void;
-  backBtnHandler: () => void;
+  onNext: () => void;
+  onBack: () => void;
 }
-export const FeesTab: React.FC<Props> = ({ values, proceedHadler, backBtnHandler }) => {
+export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
   const classes = useStyles();
   const data = values;
-  //const [data, setData] = useState(values);
-  // const [sp, setsp] = useState<string>('Physical');
-
-  //console.log(data);
 
   return (
     <div className={classes.ProfileContainer}>
@@ -247,8 +243,6 @@ export const FeesTab: React.FC<Props> = ({ values, proceedHadler, backBtnHandler
               <ExpansionPanel className={classes.pointerNone}>
                 <ExpansionPanelSummary
                   expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-                  aria-controls="panel1c-content"
-                  id="panel1c-header"
                 >
                   <div className={classes.columnAC}>
                     <Typography className={classes.heading}>
@@ -278,7 +272,7 @@ export const FeesTab: React.FC<Props> = ({ values, proceedHadler, backBtnHandler
             variant="contained"
             color="primary"
             classes={{ root: classes.backButton }}
-            onClick={() => backBtnHandler()}
+            onClick={() => onBack()}
           >
             BACK
           </AphButton>
@@ -286,7 +280,7 @@ export const FeesTab: React.FC<Props> = ({ values, proceedHadler, backBtnHandler
             variant="contained"
             color="primary"
             classes={{ root: classes.saveButton }}
-            onClick={() => proceedHadler()}
+            onClick={() => onNext()}
           >
             PROCEED
           </AphButton>

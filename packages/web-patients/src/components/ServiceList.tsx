@@ -7,6 +7,7 @@ import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Avatar from '@material-ui/core/Avatar';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -125,7 +126,7 @@ export const ServiceList: React.FC = (props) => {
     {
       title: 'You know which doctor you are looking for?',
       content: `Let's get you connected with them.`,
-      action: { link: '', content: 'Find specialist' },
+      action: { link: clientRoutes.doctorsLanding(), content: 'Find specialist' },
     },
     {
       title: `Just want to buy medicines? It’s easy!`,

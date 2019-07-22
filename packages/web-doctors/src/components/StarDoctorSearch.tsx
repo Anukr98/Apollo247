@@ -105,7 +105,6 @@ function renderSuggestion(
 ) {
   const matches = match(suggestion.label, query);
   const parts = parse(suggestion.label, matches);
-  console.log(parts, 'parts');
   return (
     <MenuItem selected={isHighlighted} component="div">
       <div>
@@ -184,7 +183,7 @@ const useStyles = makeStyles((theme: Theme) =>
 interface Suggestprops {
   addDoctorHadler: () => void;
 }
-export default function IntegrationAutosuggest({ addDoctorHadler }: any) {
+export function IntegrationAutosuggest({ addDoctorHadler }: any) {
   const classes = useStyles();
   const [state, setState] = React.useState({
     single: '',
@@ -200,7 +199,6 @@ export default function IntegrationAutosuggest({ addDoctorHadler }: any) {
     setSuggestions([]);
   };
   const onSuggestionSelected = (event: any, { suggestion }: any) => {
-    console.log(suggestion);
     setDoctor(suggestion);
   };
   const handleChange = (name: keyof typeof state) => (

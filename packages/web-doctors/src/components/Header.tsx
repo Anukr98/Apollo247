@@ -6,14 +6,9 @@ import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import { SignIn } from 'components/SignIn';
-//import { Navigation } from 'components/Navigatiion';
+import { HelpPopup } from 'components/Help';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -79,15 +74,22 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 1044,
       display: 'flex',
     },
+    cross: {
+      position: 'absolute',
+      right: 0,
+      top: '10px',
+      fontSize: '18px',
+      color: '#02475b',
+    },
   };
 });
 
 export const Header: React.FC = (props) => {
   const classes = useStyles();
   const avatarRef = useRef(null);
-  const { signOut, isSigningIn, isSignedIn } = useAuth();
+  const { isSigningIn, isSignedIn } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isHelpPopupOpen, setIsHelpPopupOpen] = React.useState(false);
   return (
     <header className={classes.header}>
       <div className={classes.container}>
@@ -102,7 +104,7 @@ export const Header: React.FC = (props) => {
             {({ protectWithLoginPopup, isProtected }) => (
               <div
                 className={`${!isSignedIn ? classes.userCircle : ''}`}
-                onClick={() => (isSignedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
+                onClick={() => (isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true))}
                 ref={avatarRef}
               >
                 {isSigningIn ? (
@@ -118,24 +120,27 @@ export const Header: React.FC = (props) => {
             )}
           </ProtectedWithLoginPopup>
           {isSignedIn ? (
-            <>
-              <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-                <DialogTitle>Logged In</DialogTitle>
-                <DialogContent>
-                  <DialogContentText>
-                    You are successfully Logged in with Apollo 24x7
-                  </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={() => setIsDialogOpen(false)} color="primary" autoFocus>
-                    Close
-                  </Button>
-                </DialogActions>
-              </Dialog>
-              {/* <Button variant="text" size="small" onClick={() => signOut()} color="primary">
-              Sign out
-            </Button> */}
-            </>
+            <Popover
+              open={isHelpPopupOpen}
+              anchorEl={avatarRef.current}
+              onClose={() => setIsHelpPopupOpen(false)}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              classes={{ paper: classes.topPopover }}
+            >
+              <Paper className={classes.loginForm}>
+                <Button onClick={() => setIsHelpPopupOpen(false)} className={classes.cross}>
+                  {'x'}
+                </Button>
+                <HelpPopup />
+              </Paper>
+            </Popover>
           ) : (
             <Popover
               open={isLoginPopupVisible}

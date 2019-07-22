@@ -15,7 +15,10 @@ import { useQuery } from 'react-apollo-hooks';
 import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 import { Link } from 'react-router-dom';
 
-function TabContainer(props: any) {
+export interface TabContainerProps {
+  children: React.ReactNode;
+}
+function TabContainer(props: TabContainerProps) {
   return (
     <Typography component="div" style={{ padding: 8 * 3 }}>
       {props.children}
@@ -99,82 +102,59 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export interface DoctorsProfileProps {}
 
-export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
+export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) => {
   const classes = useStyles();
 
-  const [value, setValue] = React.useState(0);
-  const { data, error, loading } = useQuery(GET_DOCTOR_PROFILE);
-  const tabsArray = [
-    {
-      key: 0,
-      value: 'Profile',
-    },
-    {
-      key: 1,
-      value: 'Availability',
-    },
-    {
-      key: 2,
-      value: 'Fees',
-    },
-    {
-      key: 3,
-      value: '',
-    },
-  ];
+  const [selectedTabIndex, setselectedTabIndex] = React.useState(0);
+  const { data } = useQuery(GET_DOCTOR_PROFILE);
+  const tabsArray = ['Profile', 'Availability', 'Fees', ''];
   const tabsHtml = tabsArray.map((item, index) => {
     return (
       <Tab
-        key={item.value}
-        className={value > item.key - 1 ? classes.highlightActive : classes.highlightInactive}
-        label={item.value}
+        key={item}
+        className={
+          selectedTabIndex > index - 1 ? classes.highlightActive : classes.highlightInactive
+        }
+        label={item}
       />
     );
   });
-  // function handleChange(event, newValue) {
-  //   setValue(newValue);
-  // }
-  const proceedHadler = () => {
-    setValue(value + 1);
+  const onNext = () => {
+    setselectedTabIndex(selectedTabIndex + 1);
   };
-  const backBtnHandler = () => {
-    setValue(value - 1);
+  const onBack = () => {
+    setselectedTabIndex(selectedTabIndex - 1);
   };
-  if (loading) console.log('loading');
-  if (error) console.log('Error');
-  //if (data) console.log('data', data);
   return (
     <div className={classes.profile}>
       <div className={classes.headerSticky}>
         <Header />
       </div>
       <div className={classes.container}>
-        {!!data.getDoctorProfile && (
+        {data && data.getDoctorProfile && (
           <div>
             <div className={classes.tabHeading}>
               <Typography variant="h1">
-                {value === 0 && (
+                {selectedTabIndex === 0 && (
                   <span>
-                    hi dr.{' '}
-                    {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
-                    !
+                    {`hi dr ${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName} !`}
                   </span>
                 )}
-                {value === 1 && (
+                {selectedTabIndex === 1 && (
                   <span>
                     ok dr.{' '}
                     {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
                     !
                   </span>
                 )}
-                {value === 2 && (
+                {selectedTabIndex === 2 && (
                   <span>
                     ok dr.{' '}
                     {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
                     !
                   </span>
                 )}
-                {value === 3 && (
+                {selectedTabIndex === 3 && (
                   <span>
                     thank you, dr.{' '}
                     {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
@@ -182,77 +162,83 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
                   </span>
                 )}
               </Typography>
-              {value === 0 && (
+              {selectedTabIndex === 0 && (
                 <p>
                   It’s great to have you join us! <br /> Here’s what your patients see when they
                   view your profile
                 </p>
               )}
-              {value === 1 && (
+              {selectedTabIndex === 1 && (
                 <p>Now tell us what hours suit you for online and in-person consults</p>
               )}
-              {value === 2 && (
+              {selectedTabIndex === 2 && (
                 <p>
                   Lastly, some money-related matters like fees, packages and how you take payments
                 </p>
               )}
-              {value === 3 && (
+              {selectedTabIndex === 3 && (
                 <div>
                   <p>Let’s go over now to see the Apollo24x7 portal and start consultations!</p>
-                  <AphButton
-                    variant="contained"
-                    color="primary"
-                    classes={{ root: classes.saveButton }}
-                    onClick={() => proceedHadler()}
-                  >
-                    <Link to="/calendar">GET STARTED</Link>
-                  </AphButton>
+
+                  <Link to="/calendar">
+                    <AphButton
+                      variant="contained"
+                      color="primary"
+                      classes={{ root: classes.saveButton }}
+                    >
+                      GET STARTED
+                    </AphButton>
+                  </Link>
                 </div>
               )}
             </div>
-            {value < 3 && (
+            {selectedTabIndex < 3 && (
               <AppBar position="static" color="default">
-                <Tabs value={value} indicatorColor="secondary" className={classes.tabBar}>
+                <Tabs
+                  value={selectedTabIndex}
+                  indicatorColor="secondary"
+                  className={classes.tabBar}
+                >
                   {tabsHtml}
                 </Tabs>
               </AppBar>
             )}
-            {value === 0 && (
+            {selectedTabIndex === 0 && (
               <TabContainer>
                 {!!data.getDoctorProfile && (
                   <DoctorProfileTab
                     values={data.getDoctorProfile}
-                    proceedHadler={() => proceedHadler()}
+                    onNext={() => onNext()}
                     key={1}
                   />
                 )}
               </TabContainer>
             )}
-            {value === 1 && (
+            {selectedTabIndex === 1 && (
               <TabContainer>
                 {!!data.getDoctorProfile && (
                   <AvailabilityTab
                     values={data.getDoctorProfile}
-                    proceedHadler={() => proceedHadler()}
-                    backBtnHandler={() => backBtnHandler()}
+                    onNext={() => onNext()}
+                    onBack={() => onBack()}
                     key={2}
                   />
                 )}
               </TabContainer>
             )}
-            {value === 2 && (
+            {selectedTabIndex === 2 && (
               <TabContainer>
                 {!!data.getDoctorProfile && (
                   <FeesTab
                     values={data.getDoctorProfile}
-                    proceedHadler={() => proceedHadler()}
-                    backBtnHandler={() => backBtnHandler()}
+                    onNext={() => onNext()}
+                    onBack={() => onBack()}
                     key={3}
                   />
                 )}
               </TabContainer>
             )}
-            {value === 3 && (
+            {selectedTabIndex === 3 && (
               <div className={classes.none}>
                 <TabContainer>&nbsp;</TabContainer>
               </div>

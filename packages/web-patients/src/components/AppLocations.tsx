@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Popover } from '@material-ui/core';
-import { RoomSharp } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -43,7 +42,7 @@ export const AppLocations: React.FC = (props) => {
         ref={locationRef}
         onClick={() => setIsLocationPopoverOpen(true)}
       >
-        <RoomSharp className={classes.locationIcon} />
+        <img className={classes.locationIcon} src={require('images/ic_location_on.svg')} alt="" />
         <div className={classes.selectedLocation}>Madhapur</div>
       </div>
       <Popover

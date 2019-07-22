@@ -95,10 +95,10 @@ interface ServiceItemProps {
 
 const ServiceItem: React.FC<ServiceItemProps> = (props) => {
   const classes = useStyles();
-  const { title, content, action, image } = props.item;
+  const { title, content, image } = props.item;
   return (
     <ProtectedWithLoginPopup>
-      {({ protectWithLoginPopup, isProtected }) => (
+      {() => (
         <Grid item lg={3} sm={6} xs={12}>
           <Paper className={classes.serviceItem}>
             <div className={classes.serviceInfo}>
@@ -115,7 +115,7 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
   );
 };
 
-export const ServiceList: React.FC = (props) => {
+export const ServiceList: React.FC = () => {
   const classes = useStyles();
   const serviceItems: ServiceItem[] = [
     {

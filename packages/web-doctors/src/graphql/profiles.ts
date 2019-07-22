@@ -17,17 +17,12 @@ export const GET_PATIENTS = gql`
     }
   }
 `;
-
-// export const IS_DOCTOR = gql`
-//   query hasAccess($mobileNumber: String!) {
-//     hasAccess(mobileNumber: $mobileNumber)
-//   }
-// `;
 export const GET_DOCTOR_PROFILE = gql`
-  query getDoctorProfile {
+  query GetDoctorProfile {
     getDoctorProfile {
       profile {
         id
+        salutation
         firstName
         lastName
         mobileNumber
@@ -49,7 +44,6 @@ export const GET_DOCTOR_PROFILE = gql`
         physicalConsultationFees
         package
         inviteStatus
-        typeOfConsult
       }
       paymentDetails {
         accountNumber
@@ -57,18 +51,21 @@ export const GET_DOCTOR_PROFILE = gql`
       }
       clinics {
         name
-        location
+        addressLine1
+        addressLine2
+        addressLine3
+        city
       }
       starDoctorTeam {
         firstName
         lastName
         experience
-        typeOfConsult
         inviteStatus
       }
       consultationHours {
         days
-        timings
+        startTime
+        endTime
         availableForPhysicalConsultation
         availableForVirtualConsultation
         type
@@ -76,27 +73,8 @@ export const GET_DOCTOR_PROFILE = gql`
     }
   }
 `;
-
-export const PATIENT_SIGN_IN = gql`
-  mutation PatientSignIn {
-    patientSignIn {
-      patients {
-        id
-        mobileNumber
-        firstName
-        lastName
-        relation
-        gender
-        uhid
-        dateOfBirth
-        emailAddress
-      }
-    }
-  }
-`;
-
 export const UPDATE_PATIENT = gql`
-  mutation updatePatient($patientInput: UpdatePatientInput!) {
+  mutation UpdatePatient($patientInput: UpdatePatientInput!) {
     updatePatient(patientInput: $patientInput) {
       patient {
         id

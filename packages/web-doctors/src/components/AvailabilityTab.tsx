@@ -4,15 +4,11 @@ import React, { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import { AphButton } from '@aph/web-ui-components';
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-//import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions';
-import { getDoctorProfile_getDoctorProfile_consultationHours } from 'graphql/types/getDoctorProfile';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import Button from '@material-ui/core/Button';
+import { ConsultationHours } from 'components/ConsultationHours';
+import { GetDoctorProfile_getDoctorProfile } from 'graphql/types/getDoctorProfile';
 import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -243,23 +239,15 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-interface Props {
-  values: any;
-  proceedHadler: () => void;
-  backBtnHandler: () => void;
+interface AvailabilityTabProps {
+  values: GetDoctorProfile_getDoctorProfile;
+  onNext: () => void;
+  onBack: () => void;
 }
-export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBtnHandler }) => {
+export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext, onBack }) => {
   const classes = useStyles();
   const data = values;
-  //const [data, setData] = useState(values);
-  //const [sp, setsp] = useState<string>('Physical');
   const [showOperatingHoursForm, setShowOperatingHoursForm] = useState<boolean>(false);
-
-  // interface consultItem {
-  //   key: string;
-  //   value: string;
-  //   selected: boolean;
-  // }
   const consultTypeArr = [
     {
       key: 'physical',
@@ -279,23 +267,12 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
         variant="contained"
         value={item.value}
         classes={item.selected ? { root: classes.btnActive } : { root: classes.btnInactive }}
-        onClick={(e) => {
-          console.log(e);
-        }}
       >
         {item.value}
       </AphButton>
     );
   });
-  function getConsultTypeHTML() {
-    return (
-      <div>
-        <Typography variant="h5">What type of consults will you be available for?</Typography>
-        {consultTypeHtml}
-      </div>
-    );
-  }
-  interface weekItem {
+  interface WeekItem {
     key: number;
     value: string;
     selected: boolean;
@@ -337,44 +314,17 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
       selected: false,
     },
   ];
-  const [week, setWeek] = useState<weekItem>(weekArr);
-  console.log(week);
-  const dayClickHandler = (key: number) => {
-    console.log(key);
-    // const updatedWeekArr = week.map((day) => {
-    //   if (day.key === key) {
-    //     console.log(day.selected, !day.selected);
-    //     day.selected = !day.selected;
-    //   }
-    //   return day;
-    // });
-    // setWeek(updatedWeekArr);
-  };
-  const weekHtml = weekArr.map((item: weekItem, index: number) => {
+  const weekHtml = weekArr.map((item: WeekItem, index: number) => {
     return (
       <AphButton
         key={item.key.toString()}
         variant="contained"
-        //value={item.value}
         classes={item.selected ? { root: classes.btnActive } : { root: classes.btnInactive }}
-        onClick={() => {
-          dayClickHandler(item.key);
-        }}
       >
         {item.value}
       </AphButton>
     );
   });
-  function getWeekHTML() {
-    return (
-      <div>
-        <Typography variant="h5" className={classes.timeForm}>
-          Which days you wish to apply these hours to?
-        </Typography>
-        {weekHtml}
-      </div>
-    );
-  }
   function getDetails() {
     return (
       <div>
@@ -412,8 +362,16 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
           </Typography>
         </div>
         <div>
-          <div>{getWeekHTML()}</div>
-          <div>{getConsultTypeHTML()}</div>
+          <div>
+            <Typography variant="h5" className={classes.timeForm}>
+              Which days you wish to apply these hours to?
+            </Typography>
+            {weekHtml}
+          </div>
+          <div>
+            <Typography variant="h5">What type of consults will you be available for?</Typography>
+            {consultTypeHtml}
+          </div>
           <Typography className={classes.instructions}>
             Note: Any addition or modification to your consultation hours will take effect only
             after 24 hours.
@@ -422,39 +380,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
       </div>
     );
   }
-  const AvailabilityHtml = data.consultationHours.map(
-    (item: getDoctorProfile_getDoctorProfile_consultationHours, index: number) => {
-      return (
-        <div key={index.toString()} className={classes.tabContent}>
-          <ExpansionPanel className={classes.pointerNone}>
-            <ExpansionPanelSummary
-              expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-              aria-controls="panel1c-content"
-              id="panel1c-header"
-            >
-              <div className={classes.columnTime}>
-                <Typography className={classes.primaryHeading}>{item.timings}</Typography>
-              </div>
-              <div className={classes.columnDays}>
-                <Typography className={classes.heading}>
-                  {item.days} | {item.availableForPhysicalConsultation && 'Physical'},{' '}
-                  {item.availableForVirtualConsultation && 'Online'}
-                </Typography>
-              </div>
-              {item.type && item.type !== '' && <div className={classes.columnType}>(Fixed)</div>}
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails className={classes.details}>
-              {getDetails()}
-            </ExpansionPanelDetails>
-            <Divider />
-          </ExpansionPanel>
-        </div>
-      );
-    }
-  );
-  function getAvailabilityHtml() {
-    return AvailabilityHtml;
-  }
+
   return (
     <div className={classes.ProfileContainer}>
       <Grid container className={classes.availabletabContent} alignItems="flex-start">
@@ -467,29 +393,26 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
               <Typography variant="h5">What type of consults will you be available for?</Typography>
               <AphButton
                 variant="contained"
-                value={data.profile.availableForPhysicalConsultation}
                 classes={
-                  data.profile.availableForPhysicalConsultation
+                  data && data.profile && data.profile.availableForPhysicalConsultation
                     ? { root: classes.btnActive }
                     : { root: classes.btnInactive }
                 }
-                onClick={(e) => {
-                  console.log(e);
-                }}
               >
                 Physical
               </AphButton>
               <AphButton
                 variant="contained"
-                value={data.profile.availableForVirtualConsultation}
+                // className={
+                //   data && data.profile && data.profile.availableForVirtualConsultation
+                //     ? classes.btnActive
+                //     : classes.btnInactive
+                // }
                 classes={
-                  data.profile.availableForVirtualConsultation
+                  data && data.profile && data.profile.availableForVirtualConsultation
                     ? { root: classes.btnActive }
                     : { root: classes.btnInactive }
                 }
-                onClick={(e) => {
-                  console.log(e);
-                }}
               >
                 Online
               </AphButton>
@@ -502,7 +425,9 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
           <Typography variant="h2">Consultation Hours</Typography>
         </Grid>
         <Grid item lg={10} sm={6} xs={12}>
-          {data.consultationHours && data.consultationHours.length && getAvailabilityHtml()}
+          {data.consultationHours && data.consultationHours.length && (
+            <ConsultationHours values={data} />
+          )}
 
           {showOperatingHoursForm && (
             <div className={classes.tabContent}>
@@ -544,7 +469,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
             variant="contained"
             color="primary"
             classes={{ root: classes.backButton }}
-            onClick={() => backBtnHandler()}
+            onClick={() => onBack()}
           >
             BACK
           </AphButton>
@@ -552,7 +477,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler, backBt
             variant="contained"
             color="primary"
             classes={{ root: classes.saveButton }}
-            onClick={() => proceedHadler()}
+            onClick={() => onNext()}
           >
             SAVE AND PROCEED
           </AphButton>

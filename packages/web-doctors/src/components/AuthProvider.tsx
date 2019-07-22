@@ -7,27 +7,20 @@ import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 import {
-  getDoctorProfile,
-  getDoctorProfile_getDoctorProfile,
+  GetDoctorProfile,
+  GetDoctorProfile_getDoctorProfile,
 } from 'graphql/types/getDoctorProfile';
-// import {
-//   PatientSignIn,
-//   PatientSignInVariables,
-//   PatientSignIn_patientSignIn_patients,
-// } from 'graphql/types/PatientSignIn';
 import { apiRoutes } from 'helpers/apiRoutes';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
-//import { Relation } from 'graphql/types/globalTypes';
 import _uniqueId from 'lodash/uniqueId';
-//import { IS_DOCTOR } from 'graphql/profiles';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
 }
 
-export interface AuthContextProps<Doctor = getDoctorProfile_getDoctorProfile> {
+export interface AuthContextProps<Doctor = GetDoctorProfile_getDoctorProfile> {
   currentPatient: Doctor | null;
   //allCurrentPatients: Patient[] | null;
   setCurrentPatient: ((p: Doctor) => void) | null;
@@ -103,10 +96,6 @@ let otpVerifier: firebase.auth.ConfirmationResult;
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
   apolloClient = buildApolloClient(authToken);
-
-  // const [allCurrentPatients, setAllCurrentPatients] = useState<
-  //   AuthContextProps['allCurrentPatients']
-  // >(null);
   const [currentPatient, setCurrentPatient] = useState<AuthContextProps['currentPatient']>(null);
 
   const [isSendingOtp, setIsSendingOtp] = useState<AuthContextProps['isSendingOtp']>(false);
@@ -199,7 +188,7 @@ export const AuthProvider: React.FC = (props) => {
 
         setIsSigningIn(true);
         const [signInResult, signInError] = await wait(
-          apolloClient.mutate<getDoctorProfile, getDoctorProfile>({
+          apolloClient.mutate<GetDoctorProfile, GetDoctorProfile>({
             mutation: GET_DOCTOR_PROFILE,
           })
         );

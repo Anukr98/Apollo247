@@ -11,6 +11,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Welcome } from 'components/Welcome';
+import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
 import { DoctorsProfile } from 'components/DoctorsProfile';
 import { Calendar } from 'components/Calendar';
@@ -131,10 +132,10 @@ const App: React.FC = () => {
   }, [signInError]);
   return isSignedIn ? (
     <div className={classes.app}>
-      <Route exact path={clientRoutes.welcome()} render={() => <Redirect to="/profile" />} />
-      <Route exact path={clientRoutes.patients()} component={PatientsList} />
-      <Route exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
-      <Route exact path={clientRoutes.calendar()} component={Calendar} />
+      <AuthRouted exact path={clientRoutes.welcome()} render={() => <Redirect to="/profile" />} />
+      <AuthRouted exact path={clientRoutes.patients()} component={PatientsList} />
+      <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
+      <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
     </div>
   ) : (
     <div className={classes.app}>
