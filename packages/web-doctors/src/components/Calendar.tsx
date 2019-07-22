@@ -146,13 +146,6 @@ export const Calendar: React.FC = () => {
     setData(startOfWeekDate);
   };
 
-  const onNext = (e: React.MouseEvent, date: Date, startOfWeekDate: Date) => {
-    setData(startOfWeekDate);
-  };
-
-  const onPrev = (e: React.MouseEvent, date: Date, startOfWeekDate: Date) => {
-    setData(startOfWeekDate);
-  };
   const classes = useStyles();
 
   return (
@@ -171,8 +164,12 @@ export const Calendar: React.FC = () => {
             <CalendarStrip
               dayClickHandler={onDayClick}
               monthChangeHandler={onMonthChange}
-              onNext={onNext}
-              onPrev={onPrev}
+              onNext={(e, date, startOfWeekDate) => {
+                setData(startOfWeekDate);
+              }}
+              onPrev={(e, date, startOfWeekDate) => {
+                setData(startOfWeekDate);
+              }}
             />
           </div>
 
