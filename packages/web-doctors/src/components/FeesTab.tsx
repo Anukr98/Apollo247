@@ -243,8 +243,6 @@ export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
               <ExpansionPanel className={classes.pointerNone}>
                 <ExpansionPanelSummary
                   expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-                  aria-controls="panel1c-content"
-                  id="panel1c-header"
                 >
                   <div className={classes.columnAC}>
                     <Typography className={classes.heading}>

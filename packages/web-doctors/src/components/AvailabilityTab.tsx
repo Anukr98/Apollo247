@@ -5,6 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import { AphButton } from '@aph/web-ui-components';
 import { ConsultationHours } from 'components/ConsultationHours';
+import { GetDoctorProfile_getDoctorProfile } from 'graphql/types/getDoctorProfile';
 import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
@@ -239,7 +240,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 interface AvailabilityTabProps {
-  values: any;
+  values: GetDoctorProfile_getDoctorProfile;
   onNext: () => void;
   onBack: () => void;
 }
@@ -392,9 +393,8 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
               <Typography variant="h5">What type of consults will you be available for?</Typography>
               <AphButton
                 variant="contained"
-                value={data.profile.availableForPhysicalConsultation}
                 classes={
-                  data.profile.availableForPhysicalConsultation
+                  data && data.profile && data.profile.availableForPhysicalConsultation
                     ? { root: classes.btnActive }
                     : { root: classes.btnInactive }
                 }
@@ -403,9 +403,13 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
               </AphButton>
               <AphButton
                 variant="contained"
-                value={data.profile.availableForVirtualConsultation}
+                // className={
+                //   data && data.profile && data.profile.availableForVirtualConsultation
+                //     ? classes.btnActive
+                //     : classes.btnInactive
+                // }
                 classes={
-                  data.profile.availableForVirtualConsultation
+                  data && data.profile && data.profile.availableForVirtualConsultation
                     ? { root: classes.btnActive }
                     : { root: classes.btnInactive }
                 }

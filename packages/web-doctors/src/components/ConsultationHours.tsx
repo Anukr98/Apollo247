@@ -2,6 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
+import { DaySelector } from 'components/DaySelector';
 import { AphButton } from '@aph/web-ui-components';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
@@ -251,6 +252,7 @@ interface ConsultItem {
   value: string;
   selected: boolean;
 }
+interface DaySelectorProps {}
 export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) => {
   const classes = useStyles();
   const data = values;
@@ -272,60 +274,6 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
         key={item.key}
         variant="contained"
         value={item.value}
-        classes={item.selected ? { root: classes.btnActive } : { root: classes.btnInactive }}
-      >
-        {item.value}
-      </AphButton>
-    );
-  });
-
-  interface WeekItem {
-    key: number;
-    value: string;
-    selected: boolean;
-  }
-  const weekArr: any = [
-    {
-      key: 0,
-      value: 'SUN',
-      selected: true,
-    },
-    {
-      key: 1,
-      value: 'MON',
-      selected: true,
-    },
-    {
-      key: 2,
-      value: 'TUE',
-      selected: false,
-    },
-    {
-      key: 3,
-      value: 'WED',
-      selected: false,
-    },
-    {
-      key: 4,
-      value: 'THU',
-      selected: false,
-    },
-    {
-      key: 5,
-      value: 'FRI',
-      selected: false,
-    },
-    {
-      key: 6,
-      value: 'SAT',
-      selected: false,
-    },
-  ];
-  const weekHtml = weekArr.map((item: WeekItem, index: number) => {
-    return (
-      <AphButton
-        key={item.key.toString()}
-        variant="contained"
         classes={item.selected ? { root: classes.btnActive } : { root: classes.btnInactive }}
       >
         {item.value}
@@ -397,7 +345,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                           <Typography variant="h5" className={classes.timeForm}>
                             Which days you wish to apply these hours to?
                           </Typography>
-                          {weekHtml}
+                          <DaySelector />
                         </div>
                         <div>
                           <Typography variant="h5">
