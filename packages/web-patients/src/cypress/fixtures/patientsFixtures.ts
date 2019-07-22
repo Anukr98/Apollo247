@@ -23,7 +23,7 @@ export const getCurrentPatientsFixture: QueryResultFixture<GetCurrentPatients> =
           },
           {
             __typename: 'Patient',
-            id: '1',
+            id: '2',
             uhid: '',
             firstName: 'John',
             lastName: 'Doe',
