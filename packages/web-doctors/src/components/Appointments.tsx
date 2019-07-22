@@ -7,7 +7,6 @@ import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
 import IconButton from '@material-ui/core/IconButton';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
-import VideoCallIcon from '@material-ui/icons/VideoCall';
 import { Stepper, Step, StepLabel, StepContent, Typography } from '@material-ui/core';
 import { format, getTime, setSeconds, setMilliseconds } from 'date-fns';
 
@@ -165,24 +164,24 @@ const checkIfComplete = (appointmentEndTime: number) =>
 const getActiveStep = (appointments: Appointment[]) =>
   appointments.findIndex((appointment) => checkIfComplete(appointment.endTime));
 
-export const Appointments: React.FC<AppointmentsProps> = (props) => {
+export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
   const classes = useStyles();
-  const [appointments, setAppointments] = useState(props.values);
+  const [appointments, setAppointments] = useState(values);
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState(stepsCompleted < 0 ? 0 : stepsCompleted);
 
   useEffect(() => {
-    let activeStep = getActiveStep(props.values);
+    let activeStep = getActiveStep(values);
     activeStep = activeStep < 0 ? 0 : activeStep;
 
-    setAppointments(props.values);
+    setAppointments(values);
     setActiveStep(activeStep);
     clearTimeout(timeOutId);
-    udpateActiveStep(props.values, activeStep, setActiveStep);
-  }, [props.values]);
+    udpateActiveStep(values, activeStep, setActiveStep);
+  }, [values]);
 
   return (
-    <div>
+    <div >
       <Stepper activeStep={activeStep} orientation="vertical" className={classes.calendarContent}>
         {appointments.map((appointment, idx) => (
           <Step
@@ -288,7 +287,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
                         </Grid>
                       </Grid>
                     </Grid>
-                  </CardContent>
+                  </CardContent >
                 </Card>
               </div>
               {/* card view end */}

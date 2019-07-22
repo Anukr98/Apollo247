@@ -31,23 +31,23 @@ export interface DaysProps {
   handler: (e: React.MouseEvent<HTMLLIElement>, date?: Date) => void;
 }
 
-export const Days: React.FC<DaysProps> = (props) => {
-  const today: Date = props.date;
+export const Days: React.FC<DaysProps> = ({ date, classes, handler }) => {
+  const today: Date = date;
   const weekStart: Date = startOfWeek(today, { weekStartsOn: 0 });
   const weekEnd: Date = endOfWeek(today);
   const [range, setRange] = useState(eachDayOfInterval({ start: weekStart, end: weekEnd }));
   const [selected, setSelected] = useState();
-  const classes = useStyles();
+  const klasses = useStyles();
 
   useEffect(() => {
     !firstLoad &&
       setRange(
         eachDayOfInterval({
-          start: startOfWeek(props.date, { weekStartsOn: 0 }),
-          end: endOfWeek(props.date),
+          start: startOfWeek(date, { weekStartsOn: 0 }),
+          end: endOfWeek(date),
         })
       );
-  }, [props.date]);
+  }, [date]);
 
   useEffect(() => {
     let todayIdx: number;
@@ -58,16 +58,16 @@ export const Days: React.FC<DaysProps> = (props) => {
   }, [range]);
 
   return (
-    <div className={props.classes}>
-      <ul className={classes.reset}>
+    <div className={classes}>
+      <ul className={klasses.reset}>
         {range.map((date: Date, idx: number) => (
           <li
-            className={classes.days + (selected === idx ? ' highlight' : '')}
+            className={`${klasses.days} ${(selected === idx) ? 'highlight' : ''}`}
             key={idx}
-            onClick={(e) => (setSelected(idx), props.handler(e, date))}
+            onClick={(e) => (setSelected(idx), handler(e, date))}
           >
-            <span className={classes.day}>{isToday(date) ? 'today' : days[getDay(date)]}</span>
-            <span className={classes.date}>{getDate(date)}</span>
+            <span className={klasses.day}>{isToday(date) ? 'today' : days[getDay(date)]}</span>
+            <span className={klasses.date}>{getDate(date)}</span>
           </li>
         ))}
       </ul>

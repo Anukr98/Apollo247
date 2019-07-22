@@ -80,7 +80,7 @@ export interface CalendarStripProps {
   onPrev?: (e: React.MouseEvent, newDate: Date, startOfWeek: Date) => void;
 }
 
-export const CalendarStrip: React.FC<CalendarStripProps> = (props) => {
+export const CalendarStrip: React.FC<CalendarStripProps> = ({ onNext, onPrev, monthChangeHandler, dayClickHandler }) => {
   const classes = useStyles();
   const today = startOfToday();
   const [prevDate, setPrevDate] = useState(today);
@@ -104,8 +104,8 @@ export const CalendarStrip: React.FC<CalendarStripProps> = (props) => {
     const newDate = addWeeks(date, 1);
     setDate(newDate);
 
-    if (typeof props.onNext === 'function') {
-      props.onNext(e, newDate, startOfWeek(startOfDay(newDate)));
+    if (typeof onNext === 'function') {
+      onNext(e, newDate, startOfWeek(startOfDay(newDate)));
     }
   };
 
@@ -115,8 +115,8 @@ export const CalendarStrip: React.FC<CalendarStripProps> = (props) => {
     const newDate = subWeeks(date, 1);
     setDate(newDate);
 
-    if (typeof props.onPrev === 'function') {
-      props.onPrev(e, newDate, startOfWeek(startOfDay(newDate)));
+    if (typeof onPrev === 'function') {
+      onPrev(e, newDate, startOfWeek(startOfDay(newDate)));
     }
   };
 
@@ -127,16 +127,16 @@ export const CalendarStrip: React.FC<CalendarStripProps> = (props) => {
     setDate(newDate);
     setMonth(monthSelected);
 
-    if (typeof props.monthChangeHandler === 'function') {
-      props.monthChangeHandler(e, monthSelected, startOfWeek(startOfDay(newDate)));
+    if (typeof monthChangeHandler === 'function') {
+      monthChangeHandler(e, monthSelected, startOfWeek(startOfDay(newDate)));
     }
   };
 
-  const dayClickHandler = (e: React.MouseEvent<HTMLLIElement>, date: Date) => {
+  const onDayClickHandler = (e: React.MouseEvent<HTMLLIElement>, date: Date) => {
     setMonth(getMonth(date));
 
-    if (typeof props.dayClickHandler === 'function') {
-      props.dayClickHandler(e, date);
+    if (typeof dayClickHandler === 'function') {
+      dayClickHandler(e, date);
     }
   };
 
@@ -147,7 +147,7 @@ export const CalendarStrip: React.FC<CalendarStripProps> = (props) => {
         {' '}
         &lt;{' '}
       </div>
-      <Days classes={classes.daysList} date={date} handler={dayClickHandler} />
+      <Days classes={classes.daysList} date={date} handler={onDayClickHandler} />
       <div className={classes.nextBtn} onClick={next}>
         {' '}
         >{' '}
