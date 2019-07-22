@@ -1,12 +1,13 @@
 import { clientBaseUrl, clientRoutes } from 'helpers/clientRoutes';
-import { apiRoutes } from 'helpers/apiRoutes';
+// import { apiRoutes } from 'helpers/apiRoutes';
 
-describe('Home page Elements', () => {
+describe('Home page', () => {
+  beforeEach(() => cy.signOut());
+
   it('Launch the Application', () => {
-    cy.visit(`${clientBaseUrl()}${clientRoutes.welcome()}`, {
-      onLoad: () => console.log('*** PAGE IS LOADED ***'),
-    });
+    cy.visit(`${clientBaseUrl()}${clientRoutes.welcome()}`);
   });
+
   it('Apollo logo displayed', () => {
     cy.get('header').find('img');
   });
@@ -16,16 +17,19 @@ describe('Home page Elements', () => {
   //   cy.get('header').contains('Health Records');
   //   cy.get('header').contains('Tests & Medicines');
   // });
-  it('profile icon displayed', () => {
-    const header = cy.get('header');
-    const userAccount = header.find('[ data-cypress="userAccountImg"]');
-    expect(userAccount).to.exist;
-  });
+
+  // it('profile icon displayed', () => {
+  //   const header = cy.get('header');
+  //   const userAccount = header.find('[ data-cypress="userAccountImg"]');
+  //   expect(userAccount).to.exist;
+  // });
+
   // it('Name of the logged in user should be visible beside Hello', () => {
   //   cy.get('h1')
   //     .contains('there!')
   //     .should('exist');
   // });
+
   it('Are you not feeling well', () => {
     cy.contains('p', 'Not feeling well today').should('exist');
   });
@@ -35,16 +39,19 @@ describe('Home page Elements', () => {
   //   cy.contains('Surj').should('exist');
   //   cy.contains('Preeti').should('exist');
   // });
+
   // it('Add member option verified', () => {
   //   cy.get('span')
   //     .contains('Add Member')
   //     .should('exist');
   // });
+
   it('Button for consult a doctor', () => {
     cy.get('span')
       .contains('Consult a doctor')
       .should('exist');
   });
+
   it('links of search specialist & star doctors in horizontal', () => {
     cy.get('a').contains('Find specialist');
     cy.get('a').contains('Search Medicine');

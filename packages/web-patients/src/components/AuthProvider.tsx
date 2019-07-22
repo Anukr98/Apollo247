@@ -13,6 +13,7 @@ import _isEmpty from 'lodash/isEmpty';
 import _uniqueId from 'lodash/uniqueId';
 import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
 import { GET_CURRENT_PATIENTS } from 'graphql/profiles';
+import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
 
 export interface AuthContextProps {
   currentPatientId: string | null;
@@ -93,6 +94,7 @@ const app = firebase.initializeApp({
   messagingSenderId: '537093214409',
   storageBucket: '',
 });
+if (isFirebaseLoginTest()) app.auth().settings.appVerificationDisabledForTesting = true;
 
 firebase.auth().settings.appVerificationDisabledForTesting = true; //ADDED FOR TESTING
 
@@ -120,11 +122,7 @@ export const AuthProvider: React.FC = (props) => {
     AuthContextProps['isLoginPopupVisible']
   >(false);
 
-  const signOut = () =>
-    app
-      .auth()
-      .signOut()
-      .then(() => window.location.reload());
+  const signOut = () => app.auth().signOut();
 
   const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
     return new Promise((resolve, reject) => {
@@ -183,6 +181,12 @@ export const AuthProvider: React.FC = (props) => {
     if (!otpAuthResult || !otpAuthResult.user) setVerifyOtpError(true);
     setIsVerifyingOtp(false);
   };
+
+  useEffect(() => {
+    if (isTest() && !isFirebaseLoginTest()) {
+      setAuthToken('test');
+    }
+  }, []);
 
   useEffect(() => {
     app.auth().onAuthStateChanged(async (user) => {

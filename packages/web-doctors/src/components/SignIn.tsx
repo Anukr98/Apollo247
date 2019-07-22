@@ -141,7 +141,7 @@ export const SignIn: React.FC = (props) => {
   const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
   const [submitCount, setSubmitCount] = useState(0);
   const [showTimer, setShowTimer] = useState(false);
-  let [timer, setTimer] = useState(179);
+  let [timer, setTimer] = useState(179); //eslint-disable-line
   const placeRecaptchaAfterMe = useRef(null);
 
   const {
@@ -172,7 +172,7 @@ export const SignIn: React.FC = (props) => {
       if (submitCount === 3) {
         setShowTimer(true);
 
-        let intervalId = setInterval(() => {
+        const intervalId = setInterval(() => {
           timer = timer - 1;
           setTimer(timer);
           if (timer === 0) {

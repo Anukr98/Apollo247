@@ -1,26 +1,14 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React, { useState } from 'react';
+import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
-import MenuItem from '@material-ui/core/MenuItem';
-import { AphSelect } from '@aph/web-ui-components';
-import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
-import _isEmpty from 'lodash/isEmpty';
-import _startCase from 'lodash/startCase';
-import _toLower from 'lodash/lowerCase';
-import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
-import { useAuth } from 'hooks/authHooks';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import Button from '@material-ui/core/Button';
-import Divider from '@material-ui/core/Divider';
-import TextField from '@material-ui/core/TextField';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -138,12 +126,12 @@ const useStyles = makeStyles((theme: Theme) => {
     heading: {
       fontSize: theme.typography.pxToRem(15),
       color: '#02475b',
-      fontWeight: '700',
+      fontWeight: '700' as React.CSSProperties['fontWeight'],
     },
     secondaryHeading: {
       fontSize: theme.typography.pxToRem(15),
       color: '#658f9b',
-      fontWeight: '700',
+      fontWeight: '700' as React.CSSProperties['fontWeight'],
     },
     icon: {
       verticalAlign: 'bottom',
@@ -200,10 +188,6 @@ interface Props {
 }
 export const FeesTab: React.FC<Props> = ({ values, proceedHadler }) => {
   const classes = useStyles();
-  const [data, setData] = useState(values);
-  const [sp, setsp] = useState<string>('Physical');
-
-  console.log(data);
 
   return (
     <div className={classes.ProfileContainer}>
@@ -244,7 +228,7 @@ export const FeesTab: React.FC<Props> = ({ values, proceedHadler }) => {
                 <div className={classes.columnAC}>
                   <Typography className={classes.heading}>A/C Number: xxx xxx xxx 7890</Typography>
                 </div>
-                <div className={classes.columnBank}>
+                <div>
                   <Typography className={classes.secondaryHeading}>
                     State Bank of India, Powai
                   </Typography>

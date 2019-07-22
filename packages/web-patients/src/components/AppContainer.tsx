@@ -4,7 +4,6 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Route } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Welcome } from 'components/Welcome';
-import { PatientsList } from 'components/PatientsList';
 import { AuthProvider } from 'components/AuthProvider';
 import { useAuth } from 'hooks/authHooks';
 import { makeStyles } from '@material-ui/styles';
@@ -13,11 +12,14 @@ import { AphThemeProvider, aphTheme } from '@aph/web-ui-components';
 import { DoctorDetails } from 'components/DoctorDetails';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
-import { DoctorsListing } from 'components/DoctorsListing';
 import { DoctorsLanding } from 'components/DoctorsLanding';
 import { AuthRouted } from 'components/AuthRouted';
+import { PatientsList } from 'components/PatientsList';
 
 declare global {
+  interface Window {
+    __TEST__: string;
+  }
   namespace NodeJS {
     interface ProcessEnv {
       NODE_ENV: 'local' | 'dev';
@@ -25,6 +27,7 @@ declare global {
       API_GATEWAY_PORT: string;
       GOOGLE_APPLICATION_CREDENTIALS: string;
       FIREBASE_PROJECT_ID: string;
+      TEST: string;
     }
   }
 }
@@ -51,6 +54,7 @@ const App: React.FC = () => {
   return (
     <div className={classes.app}>
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
+      <Route exact path={clientRoutes.patients()} component={PatientsList} />
       <AuthRouted exact path={clientRoutes.doctorDetails()} component={DoctorDetails} />
       <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
     </div>

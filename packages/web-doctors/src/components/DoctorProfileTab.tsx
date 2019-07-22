@@ -5,7 +5,11 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
-import StarDoctorSearch from './StarDoctorSearch';
+import { StarDoctorSearch, DoctorsName } from './StarDoctorSearch';
+import {
+  getDoctorProfileGetDoctorProfileStarDoctorTeam,
+  getDoctorProfileGetDoctorProfileClinicsList,
+} from 'graphql/types/getDoctorProfile';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -138,41 +142,49 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
   const classes = useStyles();
   const [data, setData] = useState(values);
   const [showAddDoc, setShowAddDoc] = useState(false);
-  function addDoctorHadler(obj) {
+  function addDoctorHadler(obj: DoctorsName) {
     if (obj.label) {
       setData({ ...data, starDoctorTeam: data.starDoctorTeam.concat(obj) });
       setShowAddDoc(false);
     }
   }
   const starDocNumber = data.starDoctorTeam.length;
-  const starDoctors = data.starDoctorTeam.map((item, index) => {
-    return (
-      <Grid item lg={4} sm={6} xs={12} key={index.toString()}>
-        <div className={classes.tabContentStarDoctor}>
-          <div className={classes.starDoctors}>
-            <img alt="" src={require('images/doctor-profile.jpg')} className={classes.profileImg} />
+  const starDoctors = data.starDoctorTeam.map(
+    (item: getDoctorProfileGetDoctorProfileStarDoctorTeam, index: number) => {
+      return (
+        <Grid item lg={4} sm={6} xs={12} key={index.toString()}>
+          <div className={classes.tabContentStarDoctor}>
+            <div className={classes.starDoctors}>
+              <img
+                alt=""
+                src={require('images/doctor-profile.jpg')}
+                className={classes.profileImg}
+              />
+            </div>
+            <Typography variant="h4">
+              Dr. {item.firstName} {item.lastName}
+            </Typography>
+            <Typography variant="h6">
+              GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
+            </Typography>
+            <Typography variant="h5">
+              MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+            </Typography>
           </div>
-          <Typography variant="h4">
-            Dr. {item.firstName} {item.lastName}
-          </Typography>
-          <Typography variant="h6">
-            GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
-          </Typography>
-          <Typography variant="h5">
-            MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
-          </Typography>
-        </div>
-      </Grid>
-    );
-  });
+        </Grid>
+      );
+    }
+  );
 
-  const clinicsList = data.clinicsList.map((item, index) => {
-    return (
-      <Typography variant="h3" key={index.toString()}>
-        {item.name}, {item.location}
-      </Typography>
-    );
-  });
+  const clinicsList = data.clinicsList.map(
+    (item: getDoctorProfileGetDoctorProfileClinicsList, index: number) => {
+      return (
+        <Typography variant="h3" key={index.toString()}>
+          {item.name}, {item.location}
+        </Typography>
+      );
+    }
+  );
 
   return (
     <div className={classes.ProfileContainer}>
@@ -279,7 +291,7 @@ export const DoctorProfileTab: React.FC<Props> = ({ values, proceedHadler }) => 
             variant="contained"
             color="primary"
             classes={{ root: classes.saveButton }}
-            onClick={proceedHadler()}
+            onClick={() => proceedHadler()}
           >
             SAVE AND PROCEED
           </AphButton>

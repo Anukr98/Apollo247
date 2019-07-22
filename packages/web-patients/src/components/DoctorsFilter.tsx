@@ -11,8 +11,6 @@ import _map from 'lodash/map';
 import _uniqueId from 'lodash/uniqueId';
 import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';
-import _find from 'lodash/find';
-import _uniq from 'lodash/uniq';
 import _without from 'lodash/without';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -116,7 +114,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   const [language, setLanguage] = useState<string[]>(existingFilters.language || []);
 
   const filterOptions = {
-    searchKeyword: existingFilters.searchKeyword,
+    searchKeyword: existingFilters.searchKeyword || searchKeyword,
     cityName: existingFilters.cityName,
     experience: existingFilters.experience,
     availability: existingFilters.availability,

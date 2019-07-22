@@ -8,7 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import MenuItem from '@material-ui/core/MenuItem';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
-interface DoctorsName {
+export interface DoctorsName {
   label: string;
   typeOfConsult: string;
   experience: string;
@@ -106,7 +106,7 @@ function renderSuggestion(
   return (
     <MenuItem selected={isHighlighted} component="div">
       <div>
-        {parts.map((part, index) => (
+        {parts.map((part: { text: string; highlight: boolean }, index: number) => (
           <span
             key={index.toString()}
             style={{ fontWeight: part.highlight ? 500 : 400, color: '#000' }}
@@ -167,12 +167,17 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
+export interface IntegrationAutosuggestProps {
+  addDoctorHadler: (doctor: DoctorsName) => void;
+  isReset: boolean;
+}
+
+export function StarDoctorSearch({ addDoctorHadler, isReset }: IntegrationAutosuggestProps) {
   const classes = useStyles();
   const [state, setState] = React.useState({
     single: '',
   });
-  const [doctor, setDoctor] = React.useState({});
+  const [doctor, setDoctor] = React.useState({} as DoctorsName);
   const [stateSuggestions, setSuggestions] = React.useState<DoctorsName[]>([]);
 
   const handleSuggestionsFetchRequested = ({ value }: any) => {
@@ -183,8 +188,20 @@ export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
     setSuggestions([]);
   };
   const onSuggestionSelected = (
-    event,
-    { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }
+    event: React.MouseEvent,
+    {
+      suggestion,
+      suggestionValue,
+      suggestionIndex,
+      sectionIndex,
+      method,
+    }: {
+      suggestion: DoctorsName;
+      suggestionValue: string;
+      suggestionIndex: number;
+      sectionIndex: number;
+      method: 'click' | 'enter';
+    }
   ) => {
     setDoctor(suggestion);
   };

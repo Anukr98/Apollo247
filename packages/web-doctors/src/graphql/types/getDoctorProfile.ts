@@ -6,13 +6,13 @@
 // GraphQL query operation: getDoctorProfile
 // ====================================================
 
-export interface getDoctorProfile_getDoctorProfile_clinicsList {
+export interface getDoctorProfileGetDoctorProfileClinicsList {
   __typename: "clinicsList";
   name: string | null;
   location: string | null;
 }
 
-export interface getDoctorProfile_getDoctorProfile_starDoctorTeam {
+export interface getDoctorProfileGetDoctorProfileStarDoctorTeam {
   __typename: "starDoctorTeam";
   firstName: string | null;
   lastName: string | null;
@@ -21,7 +21,7 @@ export interface getDoctorProfile_getDoctorProfile_starDoctorTeam {
   inviteStatus: string | null;
 }
 
-export interface getDoctorProfile_getDoctorProfile {
+export interface getDoctorProfileGetDoctorProfile {
   __typename: "DoctorProfile";
   id: string | null;
   firstName: string | null;
@@ -35,12 +35,12 @@ export interface getDoctorProfile_getDoctorProfile {
   languages: string | null;
   city: string | null;
   awards: string | null;
-  clinicsList: (getDoctorProfile_getDoctorProfile_clinicsList | null)[] | null;
-  starDoctorTeam: (getDoctorProfile_getDoctorProfile_starDoctorTeam | null)[] | null;
+  clinicsList: (getDoctorProfileGetDoctorProfileClinicsList | null)[] | null;
+  starDoctorTeam: (getDoctorProfileGetDoctorProfileStarDoctorTeam | null)[] | null;
 }
 
 export interface getDoctorProfile {
-  getDoctorProfile: getDoctorProfile_getDoctorProfile | null;
+  getDoctorProfile: getDoctorProfileGetDoctorProfile | null;
 }
 
 export interface getDoctorProfileVariables {

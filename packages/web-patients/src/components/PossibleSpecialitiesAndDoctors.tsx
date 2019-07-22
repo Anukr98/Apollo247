@@ -1,8 +1,7 @@
-import { Theme, Typography, Grid } from '@material-ui/core';
+import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
-import { DoctorCard } from './doctorCard';
-import { AphButton } from '@aph/web-ui-components';
+import { DoctorCard } from 'components/DoctorCard';
 import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
 import LinearProgress from '@material-ui/core/LinearProgress';
