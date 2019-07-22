@@ -96,8 +96,6 @@ const app = firebase.initializeApp({
 });
 if (isFirebaseLoginTest()) app.auth().settings.appVerificationDisabledForTesting = true;
 
-firebase.auth().settings.appVerificationDisabledForTesting = true; //ADDED FOR TESTING
-
 let otpVerifier: firebase.auth.ConfirmationResult;
 
 export const AuthProvider: React.FC = (props) => {
