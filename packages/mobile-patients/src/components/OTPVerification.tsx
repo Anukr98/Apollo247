@@ -19,7 +19,8 @@ import {
 import SmsListener from 'react-native-android-sms-listener';
 import { OTPTextView } from './ui/OTPTextView';
 import { NavigationScreenProps } from 'react-navigation';
-import { useAuth } from '../hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from '../hooks/authHooks';
+import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   container: {
@@ -70,14 +71,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [otp, setOtp] = useState<string>('');
   const [isresent, setIsresent] = useState<boolean>(false);
 
-  const {
-    verifyOtp,
-    sendOtp,
-    isSigningIn,
-    currentPatient,
-    isVerifyingOtp,
-    signInError,
-  } = useAuth();
+  const { verifyOtp, sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
 
   const startInterval = (timer: number) => {
     const intervalId = setInterval(() => {
@@ -197,6 +192,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   useEffect(() => {
+    console.log('OTPVerify allCurrentPatients', allCurrentPatients);
+
+    console.log('OTPVerify currentPatient', currentPatient);
+
     if (currentPatient) {
       if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
         if (currentPatient.relation == null) {
@@ -214,7 +213,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         }
       }
     }
-  }, [isSigningIn, currentPatient, props.navigation]);
+  }, [isSigningIn, props.navigation, allCurrentPatients, currentPatient]);
 
   useEffect(() => {
     if (signInError) {

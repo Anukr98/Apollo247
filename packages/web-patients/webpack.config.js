@@ -64,6 +64,7 @@ module.exports = {
     rules: [
       {
         test: /\.(j|t)sx?$/,
+        include: [path.resolve(__dirname, 'src')],
         exclude: [/node_modules/],
         use: isProduction ? [tsLoader] : [rhlBabelLoader, tsLoader],
       },

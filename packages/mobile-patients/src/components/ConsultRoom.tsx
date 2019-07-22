@@ -3,7 +3,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DoctorImage, DropdownGreen, Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
-import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -23,6 +23,7 @@ import firebase from 'react-native-firebase';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 const { width, height } = Dimensions.get('window');
+import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
 
 const styles = StyleSheet.create({
   viewName: {
@@ -151,7 +152,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(true);
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [userName, setuserName] = useState<string>('');
-  const { currentPatient, analytics, allCurrentPatients, getUserData } = useAuth();
+  const { analytics } = useAuth();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   useEffect(() => {
     let userName =
@@ -167,9 +169,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const userLoggedIn = await AsyncStorage.getItem('gotIt');
       if (userLoggedIn == 'true') {
         setshowPopUp(false);
-        getUserData();
+        // getUserData();
       } else {
-        getUserData();
+        // getUserData();
       }
     }
     fetchData();

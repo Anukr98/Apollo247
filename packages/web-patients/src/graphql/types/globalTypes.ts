@@ -32,7 +32,7 @@ export interface UpdatePatientInput {
   gender?: Gender | null;
   uhid?: string | null;
   emailAddress?: string | null;
-  dateOfBirth?: string | null;
+  dateOfBirth?: any | null;
   relation?: Relation | null;
 }
 

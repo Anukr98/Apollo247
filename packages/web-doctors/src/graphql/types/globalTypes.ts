@@ -6,15 +6,6 @@
 // START Enums and Input Objects
 //==============================================================
 
-export enum ErrorMsgs {
-  INVALID_MOBILE_NUMBER = "INVALID_MOBILE_NUMBER",
-  INVALID_TOKEN = "INVALID_TOKEN",
-  PRISM_AUTH_TOKEN_ERROR = "PRISM_AUTH_TOKEN_ERROR",
-  PRISM_GET_USERS_ERROR = "PRISM_GET_USERS_ERROR",
-  PRISM_NO_DATA = "PRISM_NO_DATA",
-  UPDATE_PROFILE_ERROR = "UPDATE_PROFILE_ERROR",
-}
-
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
