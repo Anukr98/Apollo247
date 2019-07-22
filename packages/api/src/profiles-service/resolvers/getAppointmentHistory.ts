@@ -22,7 +22,7 @@ export const getAppointmentHistoryTypeDefs = gql`
   }
 
   type AppointmentResult {
-    appointmentsHistory: [AppointmentHistory]
+    appointmentsHistory: [AppointmentHistory!]
   }
 
   extend type Query {
