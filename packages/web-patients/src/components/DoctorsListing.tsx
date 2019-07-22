@@ -1,7 +1,7 @@
 import { Theme, Typography, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { useState } from 'react';
-import { DoctorCard } from './doctorCard';
+import { DoctorCard } from 'components/DoctorCard';
 import { AphButton } from '@aph/web-ui-components';
 import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
