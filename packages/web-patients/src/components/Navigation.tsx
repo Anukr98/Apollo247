@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const Navigation: React.FC = (props) => {
   const classes = useStyles();
   return (
-    <div className={classes.appNavigation}>
+    <div className={classes.appNavigation} data-cypress="Navigation">
       <Link to={clientRoutes.consultRoom()}>Consult Room</Link>
       <Link to={clientRoutes.healthRecords()}>Health Records</Link>
       <Link to={clientRoutes.testsAndMedicine()}>Tests &amp; Medicines</Link>
