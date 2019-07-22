@@ -5,12 +5,12 @@ import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AphButton } from '@aph/web-ui-components';
 import { AphSelect } from '@aph/web-ui-components';
-import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
+import { PatientSignInPatientSignInPatients } from 'graphql/types/PatientSignIn';
 import _camelCase from 'lodash/camelCase';
 import { Relation } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Mutation } from 'react-apollo';
-import { updatePatientVariables, updatePatient } from 'graphql/types/updatePatient';
+import { UpdatePatientVariables, UpdatePatient } from 'graphql/types/updatePatient';
 import { UPDATE_PATIENT } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -115,9 +115,9 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface PatientProfileProps {
-  patient: PatientSignIn_patientSignIn_patients;
+  patient: PatientSignInPatientSignInPatients;
   number: number;
-  onUpdatePatient: (patient: PatientSignIn_patientSignIn_patients) => void;
+  onUpdatePatient: (patient: PatientSignInPatientSignInPatients) => void;
 }
 const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   const classes = useStyles();
@@ -162,8 +162,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   );
 };
 
-const isPatientInvalid = (patient: PatientSignIn_patientSignIn_patients) =>
-  patient.relation == null;
+const isPatientInvalid = (patient: PatientSignInPatientSignInPatients) => patient.relation == null;
 
 export interface ExistingProfileProps {
   popupHandler: (popup: boolean) => void;
@@ -212,7 +211,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
         </div>
       </div>
       <div className={classes.actions}>
-        <Mutation<updatePatient, updatePatientVariables>
+        <Mutation<UpdatePatient, UpdatePatientVariables>
           mutation={UPDATE_PATIENT}
           onCompleted={() => {
             popupHandler(false);

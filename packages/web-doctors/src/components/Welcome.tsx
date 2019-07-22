@@ -3,7 +3,6 @@ import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { HeroBanner } from 'components/HeroBanner';
-import { ManageProfile } from 'components/ManageProfile';
 import { ServiceList } from 'components/ServiceList';
 import React from 'react';
 
@@ -110,7 +109,6 @@ export const Welcome: React.FC = (props) => {
           }}
         />
       </BottomNavigation>
-      {/* <ManageProfile /> */}
     </div>
   );
 };
