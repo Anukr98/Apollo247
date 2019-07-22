@@ -1,4 +1,4 @@
-import { Appointments } from '@aph/mobile-doctors/src/components/Appointments';
+import { Appointments } from '@aph/mobile-doctors/src/components/Appointments/Appointments';
 import { Inbox } from '@aph/mobile-doctors/src/components/Inbox';
 import { MyAccount } from '@aph/mobile-doctors/src/components/MyAccount';
 import { AppRoute } from '@aph/mobile-doctors/src/components/NavigatorContainer';

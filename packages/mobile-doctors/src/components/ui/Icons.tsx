@@ -250,12 +250,12 @@ export const Notification: React.FC<IconProps> = (props) => (
   />
 );
 
-export const RemoveDot: React.FC<IconProps> = (props) => (
-  <IconBase
-    style={{ height: 24, width: 24, resizeMode: 'contain' }}
-    {...props}
-    source={require('../../images/icons/remove.png')}
-  />
+export const CalendarTodayIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_calendar_today.png')} />
+);
+
+export const CalendarIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_calendar.png')} />
 );
 
 export const Cancel: React.FC<IconProps> = (props) => (
