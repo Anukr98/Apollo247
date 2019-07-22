@@ -10,7 +10,6 @@ module.exports = {
     '@typescript-eslint/class-name-casing': 'warn',
     '@typescript-eslint/no-array-constructor': 'warn',
     '@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
-    camelcase: 'warn',
     'import/no-default-export': 'warn',
     'import/no-extraneous-dependencies': 'error',
     'import/no-relative-parent-imports': 'warn',
