@@ -19,7 +19,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, FlatList } from 'react-navigation';
+import { useQuery } from 'react-apollo-hooks';
+import {
+  SEARCH_DOCTOR_AND_SPECIALITY,
+  SPECIALITY_DOCTOR_FILTERS,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 
 const styles = StyleSheet.create({
   topView: {
@@ -82,111 +88,64 @@ type doctorsList = {
   }[];
 };
 
-const style = { width: 80, height: 80 };
-const DoctorsList: doctorsList[] = [
-  {
-    title: 'Our Star Doctors',
-    data: [
-      {
-        availableForPhysicalConsultation: true,
-        availableForVirtualConsultation: true,
-        awards: '',
-        city: 'hyderabad',
-        education: 'MBBS',
-        experience: '7',
-        firstName: 'Simran',
-        id: 'string',
-        inviteStatus: '',
-        isProfileComplete: false,
-        isStarDoctor: true,
-        languages: '',
-        lastName: 'rao',
-        mobileNumber: '',
-        onlineConsultationFees: '800',
-        package: '',
-        photoUrl: '',
-        physicalConsultationFees: '300',
-        registrationNumber: '34567',
-        services: '',
-        speciality: '',
-        specialization: 'GENERAL PHYSICIAN',
-        typeOfConsult: '',
-      },
-    ],
-  },
-  // {
-  //   title: 'From Your Past Consults',
-  //   data: [
-  //     {
-  //       image: <DoctorImage style={style} />,
-  //       doctorName: 'Dr. Rakhi Sharma',
-  //       starDoctor: false,
-  //       specialization: 'GENERAL PHYSICIAN',
-  //       experience: '4 YRS',
-  //       education: 'MBBS, Internal Medicine',
-  //       location: 'Apollo Hospitals, Jubilee Hills',
-  //       time: 'CONSULT NOW',
-  //       available: true,
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: 'More Apollo Doctors In Hyderabad',
-  //   data: [
-  //     {
-  //       image: <DoctorImage style={style} />,
-  //       doctorName: 'Dr. Rahul Nerlekar',
-  //       starDoctor: false,
-  //       specialization: 'GENERAL PHYSICIAN',
-  //       experience: '4 YRS',
-  //       education: 'MBBS, Internal Medicine',
-  //       location: 'Apollo Hospitals, Jubilee Hills',
-  //       time: 'BOOK APPOINTMENT',
-  //       available: false,
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: 'Apollo Doctors In Other Cities',
-  //   data: [
-  //     {
-  //       image: <DoctorImage style={style} />,
-  //       doctorName: 'Dr. Ranjan Gopal',
-  //       starDoctor: false,
-  //       specialization: 'GENERAL PHYSICIAN',
-  //       experience: '4 YRS',
-  //       education: 'MBBS, Internal Medicine',
-  //       location: 'Apollo Hospitals, Jubilee Hills',
-  //       time: 'BOOK APPOINTMENT',
-  //       available: true,
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: 'Apollo Doctors In Other Cities',
-  //   data: [
-  //     {
-  //       image: <DoctorImage style={style} />,
-  //       doctorName: 'Dr. Ranjan Gopal',
-  //       starDoctor: false,
-  //       specialization: 'GENERAL PHYSICIAN',
-  //       experience: '4 YRS',
-  //       education: 'MBBS, Internal Medicine',
-  //       location: 'Apollo Hospitals, Jubilee Hills',
-  //       time: 'CONSULT NOW',
-  //       available: true,
-  //     },
-  //   ],
-  // },
-];
-
 export interface DoctorSearchListingProps extends NavigationScreenProps {}
 
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
   const tabs = ['All Consults', 'Online Consults', 'Clinic Visits'];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0]);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
+  const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
+  const [doctorsList, setDoctorsList] = useState<[]>([]);
+  const [FilterData, setFilterData] = useState<[]>([]);
+
+  const filterInput: any = {
+    specialty: props.navigation.state.params!.speciality,
+    // city: [],
+    // experience: [],
+    // availability: [],
+    // gender: [],
+    // language: [],
+  };
+  FilterData.map((obj: { label: string; options: []; selectedOptions: [] }) => {
+    if (obj.selectedOptions.length > 0) {
+      filterInput[obj.label.toLowerCase().split(' ')[0]] = obj.selectedOptions;
+    }
+  });
+
+  // {
+  //   specialty: 'general physician',
+  //   city: [],
+  //   experience: [],
+  //   availability: [],
+  //   gender: [],
+  //   language: [],
+  // },
+  console.log(
+    props.navigation.state.params,
+    'speciality',
+    FilterData,
+    'FilterDataFilterDataFilterData',
+    filterInput
+  );
+  const { data, error } = useQuery(SPECIALITY_DOCTOR_FILTERS, {
+    variables: {
+      filterInput,
+    },
+  });
+  if (error) {
+    console.log('error', error);
+    //Alert.alert('Error', 'Unable to get the data');
+  } else {
+    console.log('data', data);
+    if (
+      data.getSpecialtyDoctorsWithFilters &&
+      data.getSpecialtyDoctorsWithFilters.doctors &&
+      doctorsList !== data.getSpecialtyDoctorsWithFilters.doctors
+    ) {
+      setDoctorsList(data.getSpecialtyDoctorsWithFilters.doctors);
+    }
+  }
 
   const fetchCurrentLocation = () => {
     // setshowLocationpopup(true)
@@ -225,13 +184,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const RightHeader = () => {
     return (
       <View style={{ flexDirection: 'row' }}>
-        <TouchableOpacity onPress={() => fetchCurrentLocation()}>
+        {/* <TouchableOpacity onPress={() => fetchCurrentLocation()}>
           <LocationOff />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{ marginLeft: 20 }}
-          onPress={() => props.navigation.navigate('FilterScene')}
-        >
+        </TouchableOpacity> */}
+        <TouchableOpacity style={{ marginLeft: 20 }} onPress={() => setDisplayFilter(true)}>
           <Filter />
         </TouchableOpacity>
       </View>
@@ -250,7 +206,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           />
           <View style={{ paddingHorizontal: 20 }}>
             <Text style={styles.headingText}>{string.common.okay}</Text>
-            <Text style={styles.descriptionText}>{string.common.best_general_physicians_text}</Text>
+            <Text style={styles.descriptionText}>
+              {string.common.best_doctor_text}
+              {props.navigation.state.params!.speciality}
+            </Text>
           </View>
         </View>
         <TabsComponent
@@ -269,29 +228,47 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     return <DoctorCard rowData={rowData} navigation={props.navigation} />;
   };
 
-  const renderHeader = (rowHeader: SectionListData<{ title: string }>) => {
-    let sectionTitle = rowHeader.title;
-    if (sectionTitle === 'Matching Doctors') {
-      sectionTitle = sectionTitle + ' — ' + rowHeader.data.length;
-    }
-    return <SectionHeaderComponent sectionTitle={sectionTitle} />;
-  };
+  // const renderHeader = (rowHeader: SectionListData<{ title: string }>) => {
+  //   let sectionTitle = rowHeader.title;
+  //   if (sectionTitle === 'Matching Doctors') {
+  //     sectionTitle = sectionTitle + ' — ' + rowHeader.data.length;
+  //   }
+  //   return <SectionHeaderComponent sectionTitle={sectionTitle} />;
+  // };
 
-  const renderDoctorSearches = () => {
+  const renderDoctorSearches = (filter: string) => {
+    console.log(doctorsList, 'doctorsList');
+    const doctors = filter ? doctorsList.filter((obj) => obj[filter] === true) : doctorsList;
     return (
       <View>
-        <SectionList
-          contentContainerStyle={{
-            flexWrap: 'wrap',
-            marginTop: 20,
-            marginBottom: 8,
-          }}
-          bounces={false}
-          sections={DoctorsList}
-          onEndReachedThreshold={0.5}
-          renderItem={({ item }) => renderSearchDoctorResultsRow(item)}
-          keyExtractor={(_, index) => index.toString()}
-        />
+        {doctors.length > 0 && (
+          <FlatList
+            contentContainerStyle={{
+              // flexWrap: 'wrap',
+              marginTop: 20,
+              marginBottom: 8,
+            }}
+            bounces={false}
+            data={doctors}
+            onEndReachedThreshold={0.5}
+            renderItem={({ item }: { item: any }) => renderSearchDoctorResultsRow(item)}
+            // keyExtractor={(_, index) => index.toString()}
+            // numColumns={2}
+          />
+
+          // <SectionList
+          //   contentContainerStyle={{
+          //     flexWrap: 'wrap',
+          //     marginTop: 20,
+          //     marginBottom: 8,
+          //   }}
+          //   bounces={false}
+          //   sections={doctorsList}
+          //   onEndReachedThreshold={0.5}
+          //   renderItem={({ item }) => renderSearchDoctorResultsRow(item)}
+          //   keyExtractor={(_, index) => index.toString()}
+          // />
+        )}
       </View>
     );
   };
@@ -304,20 +281,23 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       {renderTopView()}
 
       <ScrollView style={{ flex: 1 }} bounces={false}>
-        {selectedTab === tabs[0] && (
-          <View>
-            <Card
-              cardContainer={{ marginTop: 64, marginHorizontal: 64 }}
-              heading={'Uh oh! :('}
-              description={
-                'There is no General Physician available for Physical Consult. Please you try Online Consultation.'
-              }
-              descriptionTextStyle={{ fontSize: 14 }}
-              headingTextStyle={{ fontSize: 14 }}
-            />
-          </View>
-        )}
-        {selectedTab === tabs[1] && renderDoctorSearches()}
+        {selectedTab === tabs[0] && renderDoctorSearches()
+        //  (
+        // <View>
+        //   <Card
+        //     cardContainer={{ marginTop: 64, marginHorizontal: 64 }}
+        //     heading={'Uh oh! :('}
+        //     description={
+        //       'There is no General Physician available for Physical Consult. Please you try Online Consultation.'
+        //     }
+        //     descriptionTextStyle={{ fontSize: 14 }}
+        //     headingTextStyle={{ fontSize: 14 }}
+        //   />
+        // </View>
+        // )
+        }
+        {selectedTab === tabs[1] && renderDoctorSearches('availableForVirtualConsultation')}
+        {selectedTab === tabs[2] && renderDoctorSearches('availableForPhysicalConsultation')}
       </ScrollView>
       {showLocationpopup && (
         <View
@@ -367,6 +347,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             </View>
           </View>
         </View>
+      )}
+
+      {displayFilter && (
+        <FilterScene
+          onClickClose={(data: []) => {
+            setDisplayFilter(false);
+            setFilterData(data);
+          }}
+        />
       )}
     </SafeAreaView>
   );

@@ -12,6 +12,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_DOCTOR_PROFILE_BY_ID } from '@aph/mobile-patients/src/graphql/profiles';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const { height } = Dimensions.get('window');
 
@@ -204,16 +205,23 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [dispalyoverlay, setdispalyoverlay] = useState<boolean>(false);
   const [doctorDetails, setDoctorDetails] = useState<object>({});
 
+  const { currentPatient } = useAllCurrentPatients();
+
   const renderDoctorDetails = () => {
     return (
       <View style={styles.topView}>
-        <Image
-          source={require('@aph/mobile-patients/src/images/onboard/onboard.png')}
-          style={{ height: 160, width: '100%' }}
-        />
+        {doctorDetails.profile && doctorDetails.profile.photoUrl && (
+          <Image
+            source={{ uri: doctorDetails.profile.photoUrl }}
+            style={{ height: 160, width: '100%' }}
+          />
+        )}
+
         {doctorDetails && doctorDetails.profile && (
           <View style={styles.detailsViewStyle}>
-            <Text style={styles.doctorNameStyles}>Dr. {doctorDetails.profile.firstName}</Text>
+            <Text style={styles.doctorNameStyles}>
+              Dr. {doctorDetails.profile.firstName} {doctorDetails.profile.lastName}
+            </Text>
             <View style={styles.separatorStyle} />
             <Text style={styles.doctorSpecializationStyles}>
               {doctorDetails.profile.specialization.toUpperCase()} |{' '}
@@ -256,89 +264,96 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const renderDoctorClinic = () => {
-    return (
-      <View style={styles.cardView}>
-        <View style={styles.labelView}>
-          <Text style={styles.labelStyle}>Dr. {doctorDetails.profile.firstName}’s Clinic</Text>
-        </View>
-        <View
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            margin: 20,
-          }}
-        >
+    if (doctorDetails.clinics && doctorDetails.clinics.length > 0) {
+      const clinic = doctorDetails.clinics[0];
+
+      return (
+        <View style={styles.cardView}>
+          <View style={styles.labelView}>
+            <Text style={styles.labelStyle}>Dr. {doctorDetails.profile.firstName}’s Clinic</Text>
+          </View>
           <View
             style={{
-              overflow: 'hidden',
-              borderRadius: 10,
+              ...theme.viewStyles.cardViewStyle,
+              margin: 20,
             }}
           >
-            <Image
-              source={require('@aph/mobile-patients/src/images/onboard/onboard.png')}
-              style={{
-                height: 136,
-                width: '100%',
-              }}
-            />
             <View
               style={{
-                margin: 16,
-                marginTop: 10,
+                overflow: 'hidden',
+                borderRadius: 10,
               }}
             >
-              <Text
+              <Image
+                source={{ uri: clinic.image }}
                 style={{
-                  ...theme.fonts.IBMPlexSansMedium(14),
-                  color: theme.colors.LIGHT_BLUE,
+                  height: 136,
+                  width: '100%',
+                }}
+              />
+              <View
+                style={{
+                  margin: 16,
+                  marginTop: 10,
                 }}
               >
-                SLN Terminus, No 18, 2nd Floor, Gachibowli
-              </Text>
-              <Text
-                style={{
-                  ...theme.fonts.IBMPlexSansMedium(14),
-                  color: theme.colors.LIGHT_BLUE,
-                }}
-              >
-                Hyderabad
-              </Text>
-              {doctorDetails.consultationHours && (
-                <>
-                  <View style={[styles.separatorStyle, { marginVertical: 8 }]} />
+                <Text
+                  style={{
+                    ...theme.fonts.IBMPlexSansMedium(14),
+                    color: theme.colors.LIGHT_BLUE,
+                  }}
+                >
+                  {clinic.addressLine1}
+                  {clinic.addressLine2
+                    ? `${clinic.addressLine1 ? ', ' : ''}${clinic.addressLine2}`
+                    : ''}
+                </Text>
+                <Text
+                  style={{
+                    ...theme.fonts.IBMPlexSansMedium(14),
+                    color: theme.colors.LIGHT_BLUE,
+                  }}
+                >
+                  {clinic.city}
+                </Text>
+                {doctorDetails.consultationHours && (
+                  <>
+                    <View style={[styles.separatorStyle, { marginVertical: 8 }]} />
 
-                  {doctorDetails.consultationHours.map((time) => (
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Text
+                    {doctorDetails.consultationHours.map((time) => (
+                      <View
                         style={{
-                          ...theme.fonts.IBMPlexSansSemiBold(12),
-                          color: theme.colors.SKY_BLUE,
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
                         }}
                       >
-                        {time.days}
-                      </Text>
+                        <Text
+                          style={{
+                            ...theme.fonts.IBMPlexSansSemiBold(12),
+                            color: theme.colors.SKY_BLUE,
+                          }}
+                        >
+                          {time.days}
+                        </Text>
 
-                      <Text
-                        style={{
-                          ...theme.fonts.IBMPlexSansSemiBold(12),
-                          color: theme.colors.SKY_BLUE,
-                        }}
-                      >
-                        {time.timings}
-                      </Text>
-                    </View>
-                  ))}
-                </>
-              )}
+                        <Text
+                          style={{
+                            ...theme.fonts.IBMPlexSansSemiBold(12),
+                            color: theme.colors.SKY_BLUE,
+                          }}
+                        >
+                          {time.startTime} - {time.endTime}
+                        </Text>
+                      </View>
+                    ))}
+                  </>
+                )}
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    );
+      );
+    }
   };
 
   const renderDoctorTeam = () => {
@@ -346,12 +361,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return (
       <View style={styles.cardView}>
         <View style={styles.labelView}>
-          <Text style={styles.labelStyle}>
-            Dr. {doctorDetails.profile.firstName}’s Star Doctor Team
-          </Text>
+          <Text style={styles.labelStyle}>Dr. {doctorDetails.profile.firstName}’s Team</Text>
           <Text style={styles.labelStyle}>{DoctorsList.length} Doctors</Text>
         </View>
-        <ScrollView horizontal bounces={false}>
+        <ScrollView horizontal bounces={false} showsHorizontalScrollIndicator={false}>
           <FlatList
             contentContainerStyle={{ padding: 12 }}
             // horizontal={true}
@@ -435,14 +448,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       </View>
     );
   };
+  // console.log(props.navigation.state.params!.doctorId, 'doctorIddoctorIddoctorId');
   const { data, error } = useQuery(GET_DOCTOR_PROFILE_BY_ID, {
-    variables: { id: 'c4c0f83e-7b8b-4033-8ab7-ab49b07d5771' },
+    // variables: { id: 'a6ef960c-fc1f-4a12-878a-12063788d625' },
+    variables: { id: props.navigation.state.params!.doctorId },
   });
   if (error) {
     console.log('error', error);
     //Alert.alert('Error', 'Unable to get the data');
   } else {
-    console.log('data', data);
+    console.log('data details', data);
     if (data.getDoctorProfileById && doctorDetails !== data.getDoctorProfileById) {
       setDoctorDetails(data.getDoctorProfileById);
     }
@@ -493,6 +508,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <ConsultOverlay
           setdispalyoverlay={() => setdispalyoverlay(false)}
           navigation={props.navigation}
+          doctorId={doctorDetails.profile ? doctorDetails.profile.id : ''}
+          patientId={currentPatient ? currentPatient.id : ''}
         />
       )}
     </View>

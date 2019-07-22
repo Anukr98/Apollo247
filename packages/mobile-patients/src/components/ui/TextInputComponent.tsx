@@ -48,6 +48,7 @@ export interface TextInputComponentProps {
   numberOfLines?: number;
   placeholderTextColor?: TextInputProps['placeholderTextColor'];
   onFocus?: TextInputProps['onFocus'];
+  onBlur?: TextInputProps['onBlur'];
   onChangeText?: TextInputProps['onChangeText'];
   underlineColorAndroid?: string;
   autoCorrect?: boolean;
@@ -72,6 +73,7 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
           numberOfLines={props.numberOfLines}
           placeholderTextColor={theme.colors.placeholderTextColor || props.placeholderTextColor}
           onFocus={props.onFocus}
+          onBlur={props.onBlur}
           onChangeText={props.onChangeText}
           underlineColorAndroid={props.underlineColorAndroid}
           autoCorrect={props.autoCorrect}

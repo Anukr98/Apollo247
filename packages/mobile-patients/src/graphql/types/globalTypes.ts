@@ -6,17 +6,15 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum APPOINTMENT_TYPE {
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+}
+
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
   OTHER = "OTHER",
-}
-
-export enum INVITEDSTATUS {
-  ACCEPTED = "ACCEPTED",
-  NONE = "NONE",
-  NOTAPPLICABLE = "NOTAPPLICABLE",
-  REJECTED = "REJECTED",
 }
 
 export enum Relation {
@@ -31,6 +29,21 @@ export enum Relation {
   WIFE = "WIFE",
 }
 
+export enum STATUS {
+  CANCELLED = "CANCELLED",
+  CONFIRMED = "CONFIRMED",
+  IN_PROGRESS = "IN_PROGRESS",
+}
+
+export interface BookAppointmentInput {
+  patientId: string;
+  doctorId: string;
+  appointmentDate: any;
+  appointmentTime: any;
+  appointmentType: APPOINTMENT_TYPE;
+  hospitalId?: string | null;
+}
+
 export interface UpdatePatientInput {
   id: string;
   firstName?: string | null;
@@ -41,6 +54,15 @@ export interface UpdatePatientInput {
   emailAddress?: string | null;
   dateOfBirth?: any | null;
   relation?: Relation | null;
+}
+
+export interface filterInput {
+  specialty: string;
+  city?: (string | null)[] | null;
+  experience?: (string | null)[] | null;
+  availability?: (string | null)[] | null;
+  gender?: (string | null)[] | null;
+  language?: (string | null)[] | null;
 }
 
 //==============================================================

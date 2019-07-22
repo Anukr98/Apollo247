@@ -3,7 +3,7 @@
     "add": "Add",
     "availableNow": "AVAILABLE NOW",
     "okay": "okay!",
-    "best_general_physicians_text": "Here are our best General Physicians",
+    "best_doctor_text": "Here are our best ",
     "all_consults": "All Consults",
     "distance": "Distance",
     "consult_now": "CONSULT NOW",
@@ -165,15 +165,15 @@
       },
       {
         "label": "Experience In Years",
-        "options": ["0 - 5", "6 - 10", "11 - 15", "16+"]
+        "options": ["0 - 5", "6 - 10", "11 - 15", "15+"]
       },
       {
         "label": "Availability",
-        "options": ["Now", "Today", "Tomorrow", "Weekend", "Next 3 Days"]
+        "options": ["Now", "Today", "Tomorrow", "Next 3 Days"]
       },
       {
         "label": "Fees In Rupees",
-        "options": ["100 - 500", "500 - 1000", "1000 - 1500"]
+        "options": ["100 - 500", "501 - 1000", "1000+"]
       },
       {
         "label": "Gender",

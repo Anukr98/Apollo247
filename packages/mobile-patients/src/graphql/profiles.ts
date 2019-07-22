@@ -52,11 +52,29 @@ export const UPDATE_PATIENT = gql`
   }
 `;
 
+export const BOOK_APPOINTMENT = gql`
+  mutation bookAppointment($appointmentInput: BookAppointmentInput!) {
+    bookAppointment(appointmentInput: $appointmentInput) {
+      appointment {
+        id
+        patientId
+        doctorId
+        appointmentDate
+        appointmentTime
+        appointmentType
+        hospitalId
+        status
+      }
+    }
+  }
+`;
+
 export const GET_SPECIALTIES = gql`
   query getSpecialties {
     getSpecialties {
       id
       name
+      image
     }
   }
 `;
@@ -69,7 +87,6 @@ export const GET_DOCTOR_PROFILE_BY_ID = gql`
         salutation
         firstName
         lastName
-        mobileNumber
         experience
         speciality
         specialization
@@ -78,6 +95,7 @@ export const GET_DOCTOR_PROFILE_BY_ID = gql`
         services
         languages
         city
+        address
         awards
         photoUrl
         registrationNumber
@@ -86,8 +104,6 @@ export const GET_DOCTOR_PROFILE_BY_ID = gql`
         availableForVirtualConsultation
         onlineConsultationFees
         physicalConsultationFees
-        package
-        inviteStatus
       }
       paymentDetails {
         accountNumber
@@ -95,6 +111,7 @@ export const GET_DOCTOR_PROFILE_BY_ID = gql`
       }
       clinics {
         name
+        image
         addressLine1
         addressLine2
         addressLine3
@@ -102,27 +119,16 @@ export const GET_DOCTOR_PROFILE_BY_ID = gql`
       }
       starDoctorTeam {
         id
+        salutation
         firstName
         lastName
-        mobileNumber
         experience
         speciality
         specialization
-        isStarDoctor
         education
-        services
-        languages
         city
-        awards
+        address
         photoUrl
-        registrationNumber
-        isProfileComplete
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        onlineConsultationFees
-        physicalConsultationFees
-        package
-        inviteStatus
       }
       consultationHours {
         days
@@ -131,6 +137,59 @@ export const GET_DOCTOR_PROFILE_BY_ID = gql`
         availableForPhysicalConsultation
         availableForVirtualConsultation
         type
+      }
+    }
+  }
+`;
+
+export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
+  query SearchDoctorAndSpecialty($searchText: String!) {
+    SearchDoctorAndSpecialty(searchText: $searchText) {
+      doctors {
+        id
+        salutation
+        firstName
+        lastName
+        experience
+        speciality
+        specialization
+        isStarDoctor
+        education
+        services
+        languages
+        city
+        address
+        photoUrl
+      }
+      specialties {
+        id
+        name
+        image
+      }
+    }
+  }
+`;
+
+export const SPECIALITY_DOCTOR_FILTERS = gql`
+  query getSpecialtyDoctorsWithFilters($filterInput: filterInput) {
+    getSpecialtyDoctorsWithFilters(filterInput: $filterInput) {
+      doctors {
+        id
+        salutation
+        firstName
+        lastName
+        experience
+        speciality
+        specialization
+        isStarDoctor
+        education
+        services
+        languages
+        city
+        address
+        photoUrl
+        availableForPhysicalConsultation
+        availableForVirtualConsultation
       }
     }
   }

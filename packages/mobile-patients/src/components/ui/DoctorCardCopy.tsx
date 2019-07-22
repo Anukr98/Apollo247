@@ -1,6 +1,6 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
-import { Star, DoctorImage } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import React from 'react';
 import {
@@ -13,7 +13,6 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  Image,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../../theme/theme';
@@ -92,29 +91,17 @@ const styles = StyleSheet.create({
 });
 
 type rowData = {
-  availableForPhysicalConsultation: boolean;
-  availableForVirtualConsultation: boolean;
-  awards: string;
-  city: string;
-  education: string;
-  experience: string;
-  firstName: string;
-  id: string;
-  inviteStatus: string;
-  isProfileComplete: boolean;
-  isStarDoctor: boolean;
-  languages: string;
-  lastName: string;
-  mobileNumber: string;
-  onlineConsultationFees: string;
-  package: string;
-  photoUrl: string;
-  physicalConsultationFees: string;
-  registrationNumber: string;
-  services: string;
-  speciality: string;
+  available: boolean;
+  doctorName: string;
   specialization: string;
-  typeOfConsult: string;
+  image: ImageSourcePropType;
+  imageStyle?: StyleProp<ImageStyle>;
+  titleStyle?: StyleProp<TextStyle>;
+  experience: string;
+  education: string;
+  location: string;
+  time: string;
+  starDoctor?: boolean;
 };
 
 export interface DoctorCardProps extends NavigationScreenProps {
@@ -128,50 +115,42 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   return (
     <TouchableOpacity
       style={[styles.doctorView, props.style]}
-      onPress={() => props.navigation.navigate(AppRoutes.DoctorDetails, { doctorId: rowData.id })}
+      onPress={() => props.navigation.navigate(AppRoutes.DoctorDetails)}
     >
       <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
         <View style={{ flexDirection: 'row' }}>
-          {(rowData.availableForPhysicalConsultation || rowData.availableForVirtualConsultation) &&
-          props.displayButton ? (
-            <CapsuleView title={string.common.availableNow} style={styles.availableView} />
-          ) : null}
+          {/* {rowData.availableIn ? ( */}
+          <CapsuleView title={string.common.availableNow} style={styles.availableView} />
+          {/* ) : null} */}
           <View style={styles.imageView}>
-            {/* {rowData.image} */}
-            <Image
-              style={{ width: 80, height: 80, borderRadius: 40 }}
-              source={{ uri: rowData.photoUrl }}
-            />
-            {rowData.isStarDoctor ? (
+            {rowData.image}
+            {rowData.starDoctor ? (
               <Star style={{ height: 28, width: 28, position: 'absolute', top: 66, left: 30 }} />
             ) : null}
           </View>
           <View>
-            <Text style={styles.doctorNameStyles}>
-              Dr. {rowData.firstName} {rowData.lastName}
-            </Text>
+            <Text style={styles.doctorNameStyles}>{rowData.doctorName}</Text>
             <Text style={styles.doctorSpecializationStyles}>
-              {rowData.specialization} | {rowData.experience} YRS
+              {rowData.specialization} | {rowData.experience}
             </Text>
             <Text style={styles.educationTextStyles}>{rowData.education}</Text>
-            <Text style={styles.doctorLocation}>{rowData.city}</Text>
+            <Text style={styles.doctorLocation}>{rowData.location}</Text>
           </View>
         </View>
-        {props.displayButton && (
-          <View style={{ overflow: 'hidden' }}>
-            {/* {rowData.available ? ( */}
-            <View style={styles.buttonView}>
-              {/* <Text style={styles.buttonText}>{rowData.time}</Text> */}
-              <Text style={styles.buttonText}>{string.common.consult_now}</Text>
-            </View>
-            {/* // ) : (
+        {/* {props.displayButton && ( */}
+        <View style={{ overflow: 'hidden' }}>
+          {/* {rowData.available ? ( */}
+          <View style={styles.buttonView}>
+            <Text style={styles.buttonText}>{rowData.time}</Text>
+          </View>
+          {/* // ) : (
             //   <View style={styles.consultViewStyles}>
             //     <View style={styles.separatorViewStyles} />
             //     <Text style={styles.consultTextStyles}>{rowData.time}</Text>
             //   </View>
             // )} */}
-          </View>
-        )}
+        </View>
+        {/* )} */}
       </View>
     </TouchableOpacity>
   );

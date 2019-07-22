@@ -20,13 +20,17 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../theme/theme';
 import { DoctorCard, DoctorCardProps } from './ui/DoctorCard';
 import { Button } from './ui/Button';
 import { useQuery } from 'react-apollo-hooks';
-import { GET_SPECIALTIES } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_SPECIALTIES,
+  SEARCH_DOCTOR_AND_SPECIALITY,
+} from '@aph/mobile-patients/src/graphql/profiles';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -117,67 +121,67 @@ const SpecialityImages: any[] = [
   <Neurologist />,
 ];
 
-type doctorsList = {
-  title: string;
-  data: {
-    image: any;
-    doctorName: string;
-    starDoctor: boolean;
-    specialization: string;
-    experience: string;
-    education: string;
-    location: string;
-    time: string;
-    available: boolean;
-  }[];
-};
+// type doctorsList = {
+//   title: string;
+//   data: {
+//     image: any;
+//     doctorName: string;
+//     starDoctor: boolean;
+//     specialization: string;
+//     experience: string;
+//     education: string;
+//     location: string;
+//     time: string;
+//     available: boolean;
+//   }[];
+// };
 
-const style = { height: 80, width: 80 };
-const doctorsList: doctorsList[] = [
-  {
-    title: 'Matching Doctors',
-    data: [
-      {
-        image: <DoctorImage style={style} />,
-        doctorName: 'Dr. Simran Rai',
-        starDoctor: true,
-        specialization: 'GENERAL PHYSICIAN',
-        experience: '7 YRS',
-        education: 'MBBS, Internal Medicine',
-        location: 'Apollo Hospitals, Jubilee Hills',
-        time: 'CONSULT NOW',
-        available: true,
-      },
-    ],
-  },
-  {
-    title: 'Other Suggested Doctors',
-    data: [
-      {
-        image: <DoctorImage style={style} />,
-        doctorName: 'Dr. Jayanth Reddy',
-        starDoctor: true,
-        specialization: 'GENERAL PHYSICIAN',
-        experience: '5 YRS',
-        education: 'MBBS, Internal Medicine',
-        location: 'Apollo Hospitals, Jubilee Hills',
-        time: 'CONSULT IN 27 MINS',
-        available: false,
-      },
-      {
-        image: <DoctorImage style={style} />,
-        doctorName: 'Dr. Rakhi Sharma',
-        starDoctor: false,
-        specialization: 'GENERAL PHYSICIAN',
-        experience: '4 YRS',
-        education: 'MBBS, Internal Medicine',
-        location: 'Apollo Hospitals, Jubilee Hills',
-        time: 'CONSULT IN 36 MINS',
-        available: false,
-      },
-    ],
-  },
-];
+// const style = { height: 80, width: 80 };
+// const doctorsList: doctorsList[] = [
+//   {
+//     title: 'Matching Doctors',
+//     data: [
+//       {
+//         image: <DoctorImage style={style} />,
+//         doctorName: 'Dr. Simran Rai',
+//         starDoctor: true,
+//         specialization: 'GENERAL PHYSICIAN',
+//         experience: '7 YRS',
+//         education: 'MBBS, Internal Medicine',
+//         location: 'Apollo Hospitals, Jubilee Hills',
+//         time: 'CONSULT NOW',
+//         available: true,
+//       },
+//     ],
+//   },
+//   {
+//     title: 'Other Suggested Doctors',
+//     data: [
+//       {
+//         image: <DoctorImage style={style} />,
+//         doctorName: 'Dr. Jayanth Reddy',
+//         starDoctor: true,
+//         specialization: 'GENERAL PHYSICIAN',
+//         experience: '5 YRS',
+//         education: 'MBBS, Internal Medicine',
+//         location: 'Apollo Hospitals, Jubilee Hills',
+//         time: 'CONSULT IN 27 MINS',
+//         available: false,
+//       },
+//       {
+//         image: <DoctorImage style={style} />,
+//         doctorName: 'Dr. Rakhi Sharma',
+//         starDoctor: false,
+//         specialization: 'GENERAL PHYSICIAN',
+//         experience: '4 YRS',
+//         education: 'MBBS, Internal Medicine',
+//         location: 'Apollo Hospitals, Jubilee Hills',
+//         time: 'CONSULT IN 36 MINS',
+//         available: false,
+//       },
+//     ],
+//   },
+// ];
 
 export interface DoctorSearchProps extends NavigationScreenProps {}
 
@@ -188,6 +192,48 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [needHelp, setNeedHelp] = useState<boolean>(true);
   const [speialistList, setSpeialistList] = useState<boolean>(true);
   const [Specialities, setSpecialities] = useState<object[]>([]);
+  const [seatchSpecialities, setseatchSpecialities] = useState<object[]>([]);
+
+  const [doctorsList, setdoctorsList] = useState<object[]>([]);
+
+  const { data, error } = useQuery(SEARCH_DOCTOR_AND_SPECIALITY, {
+    variables: { searchText: searchText },
+  });
+  if (error) {
+    console.log('error', error);
+    //Alert.alert('Error', 'Unable to get the data');
+  } else {
+    console.log('data doctor', data);
+    if (data.SearchDoctorAndSpecialty && doctorsList !== data.SearchDoctorAndSpecialty.doctors) {
+      setdoctorsList(data.SearchDoctorAndSpecialty.doctors);
+    }
+    if (
+      data.SearchDoctorAndSpecialty &&
+      seatchSpecialities !== data.SearchDoctorAndSpecialty.specialties
+    ) {
+      console.log(
+        data.SearchDoctorAndSpecialty.specialties,
+        'data.SearchDoctorAndSpecialty.specialties'
+      );
+      setseatchSpecialities(data.SearchDoctorAndSpecialty.specialties);
+    }
+  }
+
+  const getData = useQuery(GET_SPECIALTIES, {});
+  if (getData.error) {
+    console.log('getData.error', getData.error);
+    //Alert.alert('Error', 'Unable to get the data');
+  } else {
+    if (
+      getData.data &&
+      getData.data.getSpecialties &&
+      Specialities !== getData.data.getSpecialties
+    ) {
+      console.log('getData.data', getData.data.getSpecialties);
+
+      setSpecialities(getData.data.getSpecialties);
+    }
+  }
 
   const renderSearch = (styles: any) => {
     return (
@@ -218,6 +264,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               setPastSearch(false);
               setNeedHelp(false);
               setSpeialistList(false);
+            }}
+            onBlur={() => {
+              if (searchText === '') {
+                setPastSearch(true);
+                setNeedHelp(true);
+                setSpeialistList(true);
+              }
             }}
           />
         </View>
@@ -265,11 +318,17 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const renderSpecialist = (styles: any) => {
-    if (speialistList) {
+    const SpecialitiesList = searchText.length > 0 ? seatchSpecialities : Specialities;
+    console.log(SpecialitiesList, 'SpecialitiesList');
+    if (SpecialitiesList.length > 0) {
       return (
         <View>
           <SectionHeaderComponent
-            sectionTitle={'Specialities'}
+            sectionTitle={
+              searchText.length > 0
+                ? `Matching Specialities — ${seatchSpecialities.length}`
+                : 'Specialities'
+            }
             style={{ marginBottom: 8, marginTop: 16 }}
           />
           <FlatList
@@ -278,7 +337,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               marginHorizontal: 12,
             }}
             bounces={false}
-            data={Specialities}
+            data={SpecialitiesList}
             onEndReachedThreshold={0.5}
             renderItem={({ item, index }) => renderSpecialistRow(item, index)}
             keyExtractor={(_, index) => index.toString()}
@@ -305,8 +364,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         key={rowData.id}
       >
         <View style={styles.listSpecialistView}>
-          {/* {rowData.image} */}
-          {SpecialityImages[rowID % 4]}
+          <Image source={{ uri: rowData.image }} style={{ height: 44, width: 44 }} />
+          {/* {SpecialityImages[rowID % 4]} */}
           <Text style={styles.rowSpecialistStyles}>{rowData.name.toUpperCase()}</Text>
         </View>
       </TouchableOpacity>
@@ -333,10 +392,25 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const renderDoctorSearches = (styles: any) => {
-    if (doctorName) {
+    if (searchText.length > 0 && doctorsList.length > 0) {
       return (
         <View>
-          <SectionList
+          <SectionHeaderComponent
+            sectionTitle={'Matching Doctors — ' + doctorsList.length}
+            style={{ marginBottom: 8 }}
+          />
+
+          <FlatList
+            contentContainerStyle={{
+              marginTop: 20,
+              marginBottom: 8,
+            }}
+            bounces={false}
+            data={doctorsList}
+            onEndReachedThreshold={0.5}
+            renderItem={({ item }: { item: any }) => renderSearchDoctorResultsRow(item)}
+          />
+          {/* <SectionList
             contentContainerStyle={{
               // flexWrap: 'wrap',
               marginTop: 12,
@@ -348,7 +422,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             renderItem={({ item }) => renderSearchDoctorResultsRow(item)}
             keyExtractor={(_, index) => index.toString()}
             renderSectionHeader={({ section }) => renderHeader(section)}
-          />
+          /> */}
         </View>
       );
     }
@@ -366,25 +440,14 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     return <DoctorCard rowData={rowData} navigation={props.navigation} />;
   };
 
-  const { data, error } = useQuery(GET_SPECIALTIES, {});
-  if (error) {
-    console.log('error', error);
-    //Alert.alert('Error', 'Unable to get the data');
-  } else {
-    console.log('data', data);
-    if (Specialities !== data.getSpecialties) {
-      setSpecialities(data.getSpecialties);
-    }
-  }
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
       {renderSearch(styles)}
       <ScrollView style={{ flex: 1 }} bounces={false}>
         {renderPastSearch(styles)}
+        {renderDoctorSearches(styles)}
         {renderSpecialist(styles)}
         {renderHelpView(styles)}
-        {renderDoctorSearches(styles)}
       </ScrollView>
     </SafeAreaView>
   );

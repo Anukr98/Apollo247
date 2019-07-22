@@ -92,7 +92,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     setOtp(otpString);
     console.log('OTPVerification otpString', otpString);
     _getTimerData();
-  }, [_getTimerData, props.navigation]);
+  }, [props.navigation]);
 
   const _getTimerData = async () => {
     try {
@@ -213,10 +213,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         }
       }
     }
-  }, [isSigningIn, props.navigation, allCurrentPatients, currentPatient]);
+  }, [props.navigation, currentPatient]);
 
   useEffect(() => {
-    if (signInError) {
+    if (signInError && otp.length === 6) {
       Alert.alert('Apollo', 'Something went wrong. Please try again.');
       // props.navigation.replace(AppRoutes.Login);
     }
@@ -311,7 +311,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         Alert.alert('Error', 'The interaction was cancelled by the user.');
       });
   };
-
+  // console.log(isSigningIn, currentPatient, isVerifyingOtp);
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>

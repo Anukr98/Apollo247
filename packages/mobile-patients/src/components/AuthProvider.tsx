@@ -48,14 +48,12 @@ export const AuthContext = React.createContext<AuthContextProps>({
   verifyOtp: null,
   verifyOtpError: false,
   isVerifyingOtp: false,
-
+  hasAuthToken: false,
   signInError: false,
   isSigningIn: true,
   signOut: null,
 
   analytics: null,
-
-  hasAuthToken: false,
 });
 
 let apolloClient: ApolloClient<any>;
@@ -85,8 +83,9 @@ let otpVerifier: RNFirebase.ConfirmationResult;
 
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
-  const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
   const hasAuthToken = !_isEmpty(authToken);
+
+  const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
 
   apolloClient = buildApolloClient(authToken, () => signOut());
 
@@ -232,8 +231,14 @@ export const AuthProvider: React.FC = (props) => {
       }
       setIsSigningIn(false);
     });
+    // });
   }, [auth]);
 
+  // useEffect(() => {
+  //   app.auth().onAuthStateChanged(async (user) => {
+
+  //   });
+  // }, []);
   return (
     <ApolloProvider client={apolloClient}>
       <ApolloHooksProvider client={apolloClient}>

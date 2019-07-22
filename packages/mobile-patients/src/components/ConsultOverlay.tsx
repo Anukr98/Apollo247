@@ -20,6 +20,15 @@ import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { Calendar } from 'react-native-calendars';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
+import { Mutation } from 'react-apollo';
+import { BOOK_APPOINTMENT } from '@aph/mobile-patients/src/graphql/profiles';
+import moment from 'moment';
+
+import {
+  bookAppointment,
+  bookAppointmentVariables,
+  bookAppointment_bookAppointment_appointment,
+} from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 
 const { width, height } = Dimensions.get('window');
 
@@ -72,6 +81,8 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   setdispalyoverlay: (arg0: boolean) => void;
   // setdispalyoverlay: () => void;
   navigation: any;
+  patientId: string;
+  doctorId: string;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const tabs = ['Consult Online', 'Visit Clinic'];
@@ -407,7 +418,36 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             marginTop: 10,
           }}
         >
-          <Button title="PAY Rs. 299" onPress={() => props.setdispalyoverlay(false)} />
+          <Mutation<bookAppointment, bookAppointmentVariables> mutation={BOOK_APPOINTMENT}>
+            {(mutate, { loading, data, error }) => (
+              <Button
+                title="PAY Rs. 299"
+                onPress={() => {
+                  // props.setdispalyoverlay(false);
+                  const formatDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
+
+                  const appointmentInput: bookAppointment_bookAppointment_appointment = {
+                    patientId: props.patientId,
+                    doctorId: props.doctorId,
+                    appointmentDate: formatDate,
+                    appointmentTime: '',
+                    appointmentType: selectedTab === tabs[0] ? 'ONLINE' : 'PHYSICAL',
+                    hospitalId: '23456789',
+                    status: 'IN_PROGRESS',
+                  };
+                  mutate({
+                    variables: {
+                      appointmentInput: appointmentInput,
+                    },
+                  });
+                }}
+              >
+                {data ? console.log('bookAppointment data', data) : null}
+                {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
+                {error ? console.log('bookAppointment error', error) : null}
+              </Button>
+            )}
+          </Mutation>
         </StickyBottomComponent>
       </View>
     </View>

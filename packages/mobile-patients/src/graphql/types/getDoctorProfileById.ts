@@ -2,8 +2,6 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { INVITEDSTATUS } from "./globalTypes";
-
 // ====================================================
 // GraphQL query operation: getDoctorProfileById
 // ====================================================
@@ -14,7 +12,6 @@ export interface getDoctorProfileById_getDoctorProfileById_profile {
   salutation: string;
   firstName: string;
   lastName: string;
-  mobileNumber: string;
   experience: string | null;
   speciality: string;
   specialization: string | null;
@@ -23,6 +20,7 @@ export interface getDoctorProfileById_getDoctorProfileById_profile {
   services: string | null;
   languages: string | null;
   city: string | null;
+  address: string | null;
   awards: string | null;
   photoUrl: string | null;
   registrationNumber: string;
@@ -31,8 +29,6 @@ export interface getDoctorProfileById_getDoctorProfileById_profile {
   availableForVirtualConsultation: boolean;
   onlineConsultationFees: string;
   physicalConsultationFees: string;
-  package: string | null;
-  inviteStatus: INVITEDSTATUS | null;
 }
 
 export interface getDoctorProfileById_getDoctorProfileById_paymentDetails {
@@ -44,6 +40,7 @@ export interface getDoctorProfileById_getDoctorProfileById_paymentDetails {
 export interface getDoctorProfileById_getDoctorProfileById_clinics {
   __typename: "Clinics";
   name: string;
+  image: string | null;
   addressLine1: string | null;
   addressLine2: string | null;
   addressLine3: string | null;
@@ -53,27 +50,16 @@ export interface getDoctorProfileById_getDoctorProfileById_clinics {
 export interface getDoctorProfileById_getDoctorProfileById_starDoctorTeam {
   __typename: "Doctor";
   id: string;
+  salutation: string;
   firstName: string;
   lastName: string;
-  mobileNumber: string;
   experience: string | null;
   speciality: string;
   specialization: string | null;
-  isStarDoctor: boolean;
   education: string;
-  services: string | null;
-  languages: string | null;
   city: string | null;
-  awards: string | null;
+  address: string | null;
   photoUrl: string | null;
-  registrationNumber: string;
-  isProfileComplete: string;
-  availableForPhysicalConsultation: boolean;
-  availableForVirtualConsultation: boolean;
-  onlineConsultationFees: string;
-  physicalConsultationFees: string;
-  package: string | null;
-  inviteStatus: INVITEDSTATUS | null;
 }
 
 export interface getDoctorProfileById_getDoctorProfileById_consultationHours {

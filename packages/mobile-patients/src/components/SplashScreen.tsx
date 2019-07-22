@@ -34,33 +34,36 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       console.log('userLoggedIn', userLoggedIn);
       console.log('splash screen', currentPatient);
 
-      setTimeout(() => {
-        if (userLoggedIn == 'true') {
-          if (currentPatient) {
-            if (currentPatient.firstName !== '') {
-              props.navigation.replace(AppRoutes.TabBar);
-            } else {
-              props.navigation.replace(AppRoutes.Login);
-            }
-          }
-        } else if (onboarding == 'true') {
-          if (signUp == 'true') {
-            props.navigation.replace(AppRoutes.SignUp);
-          } else if (multiSignUp == 'true') {
-            if (currentPatient) {
-              props.navigation.replace(AppRoutes.MultiSignup);
-            }
+      // setTimeout(() => {
+      console.log(currentPatient, 'currentPatient');
+      if (userLoggedIn == 'true') {
+        if (currentPatient) {
+          if (currentPatient.firstName !== '') {
+            props.navigation.replace(AppRoutes.TabBar);
           } else {
             props.navigation.replace(AppRoutes.Login);
           }
         } else {
-          props.navigation.replace(AppRoutes.Onboarding);
+          props.navigation.replace(AppRoutes.Login);
         }
-      }, 3500);
+      } else if (onboarding == 'true') {
+        if (signUp == 'true') {
+          props.navigation.replace(AppRoutes.SignUp);
+        } else if (multiSignUp == 'true') {
+          if (currentPatient) {
+            props.navigation.replace(AppRoutes.MultiSignup);
+          }
+        } else {
+          props.navigation.replace(AppRoutes.Login);
+        }
+      } else {
+        props.navigation.replace(AppRoutes.Onboarding);
+      }
+      // }, 3500);
     }
     fetchData();
     SplashScreenView.hide();
-  }, [currentPatient, props.navigation, isSigningIn]);
+  }, [currentPatient]);
 
   useEffect(() => {
     console.log('SplashScreen signInError', signInError);
