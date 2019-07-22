@@ -62,7 +62,7 @@ export const Days: React.FC<DaysProps> = ({ date, classes, handler }) => {
       <ul className={klasses.reset}>
         {range.map((date: Date, idx: number) => (
           <li
-            className={`${klasses.days} ${(selected === idx) ? 'highlight' : ''}`}
+            className={`${klasses.days} ${selected === idx ? 'highlight' : ''}`}
             key={idx}
             onClick={(e) => (setSelected(idx), handler(e, date))}
           >

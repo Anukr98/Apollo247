@@ -183,7 +183,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
   }, [values]);
 
   return (
-    <div >
+    <div>
       <Stepper activeStep={activeStep} orientation="vertical" className={classes.calendarContent}>
         {appointments.map((appointment, idx) => (
           <Step
@@ -289,7 +289,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
                         </Grid>
                       </Grid>
                     </Grid>
-                  </CardContent >
+                  </CardContent>
                 </Card>
               </div>
               {/* card view end */}

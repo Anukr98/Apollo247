@@ -80,7 +80,12 @@ export interface CalendarStripProps {
   onPrev?: (e: React.MouseEvent, newDate: Date, startOfWeek: Date) => void;
 }
 
-export const CalendarStrip: React.FC<CalendarStripProps> = ({ onNext, onPrev, monthChangeHandler, dayClickHandler }) => {
+export const CalendarStrip: React.FC<CalendarStripProps> = ({
+  onNext,
+  onPrev,
+  monthChangeHandler,
+  dayClickHandler,
+}) => {
   const classes = useStyles();
   const today = startOfToday();
   const [prevDate, setPrevDate] = useState(today);
