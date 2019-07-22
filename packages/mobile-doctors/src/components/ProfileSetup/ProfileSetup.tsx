@@ -112,17 +112,18 @@ const headerContent = [
     tab: 'Profile',
     heading: (name: string) => `hi dr. ${name}!`,
     description:
-      "It’s great to have you join us! \n Here's what your patients see when they view your profile",
+      "It’s great to have you join us! \nHere's what your patients see when they view your profile",
   },
   {
-    tab: 'Availibility',
+    tab: 'Availability',
     heading: (name: string) => `ok dr. ${name}!`,
-    description: 'Now tell us what hours suit you for online and in-person consults',
+    description: 'Now tell us what hours suit you for online \nand in-person consults',
   },
   {
     tab: 'Fees',
     heading: (name: string) => `ok dr. ${name}!`,
-    description: 'Lastly, some money-related matters like fees, packages and how you take payments',
+    description:
+      'Lastly, some money-related matters like \nfees, packages and how you take payments',
   },
 ];
 
@@ -138,7 +139,8 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   //   data: { getDoctorProfile },
   //   error,
   //   loading,
-  // } = useQuery(GET_DOCTOR_PROFILE) as any
+  // } = useQuery(GET_DOCTOR_PROFILE) as any;
+
   const {
     data: { getDoctorProfile },
     error,

@@ -442,7 +442,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             </View>
             {showErrorMsg && (
               <Text style={styles.errorText}>
-                Incorrect OTP, {3 - invalidOtpCount} attempts{' '}
+                Incorrect OTP, {3 - invalidOtpCount} attempt{3 - invalidOtpCount > 1 ? 's' : ''}{' '}
                 {invalidOtpCount == 2 ? 'left' : 'left'}
               </Text>
             )}

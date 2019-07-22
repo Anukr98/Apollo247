@@ -8,11 +8,36 @@ import {
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useRef, useState } from 'react';
-import { Alert, SafeAreaView, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  SafeAreaView,
+  TouchableOpacity,
+  View,
+  ScrollView,
+  Text,
+  StyleSheet,
+} from 'react-native';
 import { CalendarHeader } from './CalendarHeader';
 import { MonthDropDown } from './MonthDropDown';
+import { CalenderCard } from '@aph/mobile-doctors/src/components/Appointments/CalenderCard';
+import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
+import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 
-export interface AppointmentsProps {}
+const styles = StyleSheet.create({
+  containerStyle: {
+    ...theme.viewStyles.whiteRoundedCornerCard,
+    marginTop: 6,
+    marginLeft: 48,
+    marginRight: 20,
+    backgroundColor: '#f0f4f5',
+    borderWidth: 1,
+    borderColor: 'rgba(2, 71, 91, 0.1)',
+    borderRadius: 10,
+  },
+});
+export interface AppointmentsProps {
+  profileData: DoctorProfile;
+}
 
 export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [date, setDate] = useState<Date>(new Date());
@@ -27,6 +52,51 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       <DropdownGreen />
     </TouchableOpacity>
   );
+
+  // const {
+  //   data: { getDoctorProfile },
+  //   error,
+  //   loading,
+  // } = useQuery(GET_DOCTOR_PROFILE) as any;
+
+  const {
+    data: { getDoctorProfile },
+    error,
+    loading,
+  } = doctorProfile as any;
+  if (error) {
+    Alert.alert('Error', 'Unable to get the data');
+  } else {
+    console.log('Calender', getDoctorProfile.appointments);
+  }
+  const showText = (apdata: any) => {
+    return (
+      <View>
+        <Text
+          style={[
+            {
+              color:
+                apdata.timeslottype == 'MISSED'
+                  ? '#890000'
+                  : apdata.timeslottype == 'UP NEXT'
+                  ? '#ff748e'
+                  : apdata.timeslottype == ''
+                  ? '#0087ba'
+                  : '#0087ba',
+              marginLeft: 50,
+              marginTop: 20,
+            },
+            apdata.timeslottype == ''
+              ? theme.fonts.IBMPlexSansMedium(12)
+              : theme.fonts.IBMPlexSansBold(12),
+            ,
+          ]}
+        >
+          {apdata.timings}
+        </Text>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={theme.viewStyles.container}>
@@ -70,10 +140,62 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           setDate(date);
         }}
       />
-      <MonthDropDown
+      {/* <MonthDropDown
         monthIndex={date.getMonth()}
         onPress={(monthIndex) => setDate(updateMonth(date, monthIndex))}
-      />
+      /> */}
+      <ScrollView bounces={false}>
+        <View style={{ backgroundColor: '#f7f7f7', flex: 1 }}>
+          {getDoctorProfile.appointments.map((i: any) => {
+            return (
+              <View>
+                {showText(i)}
+                {i.timeslottype == 'MISSED' ? (
+                  <CalenderCard
+                    doctorname={i.doctorname}
+                    type={i.type}
+                    containerStyle={{
+                      borderColor: '#e50000',
+                      borderWidth: 1,
+                      backgroundColor: '#f0f4f5',
+                    }}
+                  />
+                ) : i.timeslottype == 'UP NEXT' ? (
+                  <CalenderCard
+                    doctorname={i.doctorname}
+                    type={i.type}
+                    containerStyle={{
+                      borderColor: '#ff748e',
+                      borderWidth: 2,
+                      backgroundColor: '#ffffff',
+                    }}
+                  />
+                ) : i.timeslottype == 'OLD' ? (
+                  <CalenderCard
+                    doctorname={i.doctorname}
+                    type={i.type}
+                    containerStyle={{
+                      borderColor: '#0087ba',
+                      borderWidth: 2,
+                      backgroundColor: '#ffffff',
+                    }}
+                  />
+                ) : (
+                  <CalenderCard
+                    doctorname={i.doctorname}
+                    type={i.type}
+                    containerStyle={{
+                      borderColor: 'rgba(2, 71, 91, 0.1)',
+                      borderWidth: 1,
+                      backgroundColor: '#f0f4f5',
+                    }}
+                  />
+                )}
+              </View>
+            );
+          })}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };

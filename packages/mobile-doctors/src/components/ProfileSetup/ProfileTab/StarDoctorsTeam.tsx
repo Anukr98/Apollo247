@@ -73,6 +73,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
     //     query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
     //     variables: { searchString: searchText.replace('Dr. ', '') },
     //   })
+    //   ;
     getDoctorsForStarDoctorProgram.data.getDoctorsForStarDoctorProgram!(
       searchText.replace('Dr. ', '')
     )
@@ -83,7 +84,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
       })
       .catch((e) => {
         console.log('Error occured while searching for Doctors', e);
-        Alert.alert('Error', 'Error occured while searching for Doctors');
+        //Alert.alert('Error', 'Error occured while searching for Doctors');
       });
   };
 

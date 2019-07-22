@@ -25,6 +25,7 @@ export type DoctorProfile = {
   clinics: clinics[];
   starDoctorTeam: Doctor[];
   consultationHours: Consultations[];
+  appointments: Appointments[];
 };
 
 export type Doctor = {
@@ -69,4 +70,12 @@ export type Consultations = {
   availableForPhysicalConsultation: boolean;
   availableForVirtualConsultation: boolean;
   type: string; //=> 'accepted' | 'Not accepted'
+};
+
+export type Appointments = {
+  doctorname: string;
+  timings: string;
+  disease: string;
+  type: string; //=> 'MISSED' | 'UP NEXT'
+  timeslottype: string;
 };

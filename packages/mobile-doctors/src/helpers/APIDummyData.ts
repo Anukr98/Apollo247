@@ -84,6 +84,36 @@ export const doctorProfile: DummyQueryResult = {
           type: 'fixed',
         },
       ],
+      appointments: [
+        {
+          doctorname: 'Seema Singh',
+          timings: '11:10 - 11:25 AM ',
+          disease: 'FEVER',
+          type: 'audio',
+          timeslottype: '',
+        },
+        {
+          doctorname: 'Prateek Sharma',
+          timings: '11:30 - 11.45 AM ',
+          disease: 'FEVER',
+          type: 'video',
+          timeslottype: 'MISSED',
+        },
+        {
+          doctorname: 'Joseph George',
+          timings: '11:30 - 11:45 AM ',
+          disease: 'FEVER',
+          type: 'audio',
+          timeslottype: 'UP NEXT',
+        },
+        {
+          doctorname: 'Joseph George',
+          timings: '11:30 - 11:45 AM ',
+          disease: 'FEVER',
+          type: 'video',
+          timeslottype: 'OLD',
+        },
+      ],
     },
   },
 };

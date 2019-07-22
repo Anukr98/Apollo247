@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.09,
   },
   fixedSlotText: {
-    ...theme.fonts.IBMPlexSansBold(13),
+    ...theme.fonts.IBMPlexSansMedium(13),
     lineHeight: 24,
     color: '#ff748e',
   },

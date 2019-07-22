@@ -265,3 +265,18 @@ export const Cancel: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/clear.png')}
   />
 );
+
+export const Video: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/video.png')}
+  />
+);
+export const Audio: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/clinic.png')}
+  />
+);

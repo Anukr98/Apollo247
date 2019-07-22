@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   },
   highlightedViewStyle: {
     width: 48,
-    backgroundColor: theme.colors.darkBlueColor(),
+    backgroundColor: '#00b38e', //theme.colors.darkBlueColor(),
   },
   textStyle: {
     ...theme.fonts.IBMPlexSansMedium(12),
