@@ -13,6 +13,7 @@ import _isEmpty from 'lodash/isEmpty';
 import _uniqueId from 'lodash/uniqueId';
 import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
 import { GET_CURRENT_PATIENTS } from 'graphql/profiles';
+import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
 
 export interface AuthContextProps {
   currentPatientId: string | null;
@@ -93,7 +94,7 @@ const app = firebase.initializeApp({
   messagingSenderId: '537093214409',
   storageBucket: '',
 });
-if (window.__TEST__) app.auth().settings.appVerificationDisabledForTesting = true;
+if (isFirebaseLoginTest()) app.auth().settings.appVerificationDisabledForTesting = true;
 
 let otpVerifier: firebase.auth.ConfirmationResult;
 
@@ -180,7 +181,7 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (window.__TEST__) {
+    if (isTest() && !isFirebaseLoginTest()) {
       setAuthToken('test');
     }
   }, []);
