@@ -19,7 +19,7 @@ import { SEARCH_DOCTORS_AND_SPECIALITY } from 'graphql/doctors';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
-      paddingTop: 85,
+      paddingTop: 88,
       [theme.breakpoints.down('xs')]: {
         paddingTop: 78,
       },
@@ -72,8 +72,8 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 20,
       marginRight: 20,
       fontSize: 13,
-      paddingTop: 15,
-      paddingBottom: 10,
+      paddingTop: 17,
+      paddingBottom: 11,
       fontWeight: 600,
       color: '#02475b',
       textTransform: 'uppercase',
