@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { DoctorProfile, Doctor } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import Highlighter from 'react-native-highlight-words';
 
 const styles = StyleSheet.create({
   inputTextStyle: {
@@ -127,6 +128,23 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
       });
   };
 
+  const formatSuggestionsText = (text: string, searchKey: string) => {
+    return (
+      <Highlighter
+        style={{
+          color: theme.colors.darkBlueColor(),
+          ...theme.fonts.IBMPlexSansMedium(18),
+        }}
+        highlightStyle={{
+          color: theme.colors.darkBlueColor(),
+          ...theme.fonts.IBMPlexSansBold(18),
+        }}
+        searchWords={[searchKey]}
+        textToHighlight={text}
+      />
+    );
+  };
+
   return (
     <SquareCardWithTitle
       title={`Your Star Doctors Team (${profileData!.starDoctorTeam.length})`}
@@ -144,14 +162,14 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
           doctorName={`${starDoctor.firstName} ${starDoctor.lastName}`}
           experience={starDoctor.experience}
           // specialization={'GENERAL PHYSICIAN '} //{starDoctor.designation}
-          specialization={starDoctor.specialization}
+          specialization={starDoctor.specialization.toUpperCase()}
           education={starDoctor.education}
           location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
           inviteStatus={starDoctor.inviteStatus == 'accepted' ? 'accepted' : 'Not accepted'}
         />
       ))}
       {!addshow ? (
-        <View style={{ flexDirection: 'row', margin: 20 }}>
+        <View style={{ flexDirection: 'row', margin: 20, marginTop: 7 }}>
           <Add />
           <TouchableOpacity onPress={() => setAddShow(!addshow)}>
             <Text style={styles.addDoctorText}>ADD DOCTOR</Text>
@@ -201,6 +219,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
               }}
             >
               {filteredStarDoctors.map((item, i) => {
+                const drName = `Dr. ${item.firstName} ${item.lastName}`;
                 return (
                   <TouchableOpacity
                     onPress={() =>
@@ -209,12 +228,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
                     style={{ marginHorizontal: 16 }}
                     key={i}
                   >
-                    <Text
-                      style={{
-                        color: theme.colors.darkBlueColor(),
-                        ...theme.fonts.IBMPlexSansMedium(18),
-                      }}
-                    >{`Dr. ${item.firstName} ${item.lastName}`}</Text>
+                    {formatSuggestionsText(drName, doctorSearchText)}
                     {i < filteredStarDoctors.length - 1 ? (
                       <View
                         style={{

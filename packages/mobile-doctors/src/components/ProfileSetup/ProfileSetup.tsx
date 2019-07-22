@@ -134,18 +134,17 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
 
-  const {
-    data: { getDoctorProfile },
-    error,
-    loading,
-  } = useQuery(GET_DOCTOR_PROFILE) as any;
-
   // const {
   //   data: { getDoctorProfile },
   //   error,
   //   loading,
-  // } = doctorProfile;
-  if (error) {
+  // } = useQuery(GET_DOCTOR_PROFILE) as any
+  const {
+    data: { getDoctorProfile },
+    error,
+    loading,
+  } = doctorProfile;
+  if (!loading && error) {
     Alert.alert('Error', 'Unable to get the data');
   } else {
     console.log(getDoctorProfile);
@@ -245,16 +244,18 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
     <SafeAreaView style={theme.viewStyles.container}>
       <KeyboardAwareScrollView bounces={false} keyboardShouldPersistTaps="always">
         {renderHeader}
-        {!getDoctorProfile ? (
+        {loading ? (
           <View style={{ flex: 1, alignSelf: 'center', marginTop: height / 3 }}>
             <ActivityIndicator size="large" color="green" />
           </View>
         ) : (
-          <>
-            {renderProgressBar(activeTabIndex, getDoctorProfile)}
-            {renderComponent(activeTabIndex, getDoctorProfile)}
-            {renderFooterButtons(activeTabIndex, getDoctorProfile)}
-          </>
+          !!getDoctorProfile && (
+            <>
+              {renderProgressBar(activeTabIndex, getDoctorProfile)}
+              {renderComponent(activeTabIndex, getDoctorProfile)}
+              {renderFooterButtons(activeTabIndex, getDoctorProfile)}
+            </>
+          )
         )}
       </KeyboardAwareScrollView>
       {modelvisible ? (

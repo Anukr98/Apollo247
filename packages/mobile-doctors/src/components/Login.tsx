@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   gethelpText: {
     marginTop: 22,
     color: '#fc9916',
-    ...theme.fonts.IBMPlexSansBold(12),
+    ...theme.fonts.IBMPlexSansSemiBold(12),
   },
   bottomValidDescription: {
     lineHeight: 24,

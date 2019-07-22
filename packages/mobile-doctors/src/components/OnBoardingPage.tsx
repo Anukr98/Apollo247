@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     color: 'rgba(0,0,0,0.4)',
     textAlign: 'center',
-    marginHorizontal: 50,
+    marginHorizontal: 40,
     lineHeight: 20,
     ...theme.fonts.IBMPlexSansMedium(14),
     paddingBottom: 50,
@@ -116,7 +116,7 @@ const slides: Slide[] = [
   {
     key: 'somethun',
     title: 'higher revenues',
-    text: 'Get more patients and higher utilisation',
+    text: 'Get more patients and higher\nutilisation',
     image: require('../images/onboard/img_onboarding_higher_revenues.png'),
     titleStyle: styles.titleStyle,
     backgroundColor: 'red',

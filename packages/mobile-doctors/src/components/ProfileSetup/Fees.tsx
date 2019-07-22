@@ -63,7 +63,7 @@ export interface FeesProps {
 
 export const Fees: React.FC<FeesProps> = ({ profileData }) => {
   const Feedata: any = profileData!.profile;
-  const BankDetails: any = profileData!.paymentDetails[0];
+  const BankDetails = profileData!.paymentDetails[0];
   console.log('fee', Feedata);
   console.log('BankDetails', BankDetails);
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
@@ -145,13 +145,13 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
           <View>
             {feeprofileRowbankname(
               'A/C Number: xxx xxx xxx 7890',
-              profileData!.paymentDetails[0].accountNumber
+              profileData!.paymentDetails[0].address
             )}
             {showPaymentDetails ? (
               <>
                 <View style={styles.separator}></View>
-                {feeprofileRowdetails('Account Holder’s Name', BankDetails.accountNumber)}
-                {feeprofileRowdetails('IFSC Code', BankDetails.address)}
+                {feeprofileRowdetails('Account Holder’s Name', 'Dr. Simran Rao')}
+                {feeprofileRowdetails('IFSC Code', '000 123 456 7890')}
                 {feeprofileRowdetails('Account Type', Feedata.accountType)}
               </>
             ) : null}

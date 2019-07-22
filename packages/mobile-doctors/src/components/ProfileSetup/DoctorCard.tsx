@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 5,
     elevation: 10,
-    marginBottom: 12,
+    marginBottom: 16,
     borderRadius: 10,
   },
   imageView: {
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     height: 24,
     width: 24,
     marginTop: 16,
-    marginRight: 16,
+    marginRight: 12,
   },
   doctorSpecializationStyles: {
     paddingTop: 4,

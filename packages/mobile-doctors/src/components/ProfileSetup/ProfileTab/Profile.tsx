@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
     width: '95%',
     backgroundColor: '#02475b',
     marginTop: 11,
-    opacity: 0.3,
+    opacity: 0.1,
     marginBottom: 16,
     ...ifIphoneX(
       {
