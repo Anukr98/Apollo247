@@ -17,7 +17,7 @@ import { AuthRouted } from 'components/AuthRouted';
 
 declare global {
   interface Window {
-    __TEST__: boolean;
+    __TEST__: string;
   }
   namespace NodeJS {
     interface ProcessEnv {
