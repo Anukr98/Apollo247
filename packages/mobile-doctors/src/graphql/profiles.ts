@@ -25,7 +25,7 @@ export const GET_DOCTOR_PROFILE = gql`
         onlineConsultationFees
         physicalConsultationFees
         package
-        typeOfConsult
+        # typeOfConsult
         inviteStatus
       }
       paymentDetails {
@@ -34,7 +34,7 @@ export const GET_DOCTOR_PROFILE = gql`
       }
       clinics {
         name
-        location
+        # location
         image
       }
       starDoctorTeam {
@@ -59,12 +59,12 @@ export const GET_DOCTOR_PROFILE = gql`
         onlineConsultationFees
         physicalConsultationFees
         package
-        typeOfConsult
+        # typeOfConsult
         inviteStatus
       }
       consultationHours {
         days
-        timings
+        # timings
         availableForPhysicalConsultation
         availableForVirtualConsultation
         type
@@ -78,7 +78,7 @@ export const GET_DOCTOR_PROFILE = gql`
  * @param {String} searchString
  */
 export const GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM = gql`
-  query getDoctorsForStarDoctorProgram {
+  query getDoctorsForStarDoctorProgram($searchString: String!) {
     getDoctorsForStarDoctorProgram(searchString: $searchString) {
       profile {
         id
@@ -95,7 +95,7 @@ export const GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM = gql`
  * @param {String} doctorId
  */
 export const ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM = gql`
-  query addDoctorToStartDoctorProgram {
+  mutation addDoctorToStartDoctorProgram($starDoctorId: String!, $doctorId: String!) {
     addDoctorToStartDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
   }
 `;
@@ -106,7 +106,7 @@ export const ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM = gql`
  * @param {String} doctorId
  */
 export const REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM = gql`
-  query removeDoctorFromStartDoctorProgram {
+  mutation removeDoctorFromStartDoctorProgram($starDoctorId: String!, $doctorId: String!) {
     removeDoctorFromStartDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
   }
 `;
@@ -130,18 +130,16 @@ export const GET_PATIENTS = gql`
 `;
 
 export const PATIENT_SIGN_IN = gql`
-  mutation PatientSignIn {
-    patientSignIn {
+  query GetPatients {
+    getPatients {
       patients {
         id
         mobileNumber
         firstName
         lastName
-        relation
         gender
         uhid
-        dateOfBirth
-        emailAddress
+        relation
       }
     }
   }
