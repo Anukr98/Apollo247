@@ -24,6 +24,10 @@ const useStyles = makeStyles((theme: Theme) => {
     bannerInfo: {
       [theme.breakpoints.up('lg')]: {
         width: '40%',
+        '& button': {
+          padding: '9px 16px',
+          borderRadius: '5px',
+        },
       },
       '& p': {
         fontSize: 20,

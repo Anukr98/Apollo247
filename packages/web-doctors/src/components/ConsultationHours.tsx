@@ -1,13 +1,18 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React, { useState } from 'react';
+import React from 'react';
 import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
 import { AphButton } from '@aph/web-ui-components';
-import { ConsultationHours } from 'components/ConsultationHours';
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import {
+  GetDoctorProfile_getDoctorProfile_consultationHours,
+  GetDoctorProfile_getDoctorProfile,
+} from 'graphql/types/getDoctorProfile';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -238,15 +243,17 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-interface AvailabilityTabProps {
-  values: any;
-  onNext: () => void;
-  onBack: () => void;
+interface ConsultationHoursProps {
+  values: GetDoctorProfile_getDoctorProfile;
 }
-export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext, onBack }) => {
+interface ConsultItem {
+  key: string;
+  value: string;
+  selected: boolean;
+}
+export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) => {
   const classes = useStyles();
   const data = values;
-  const [showOperatingHoursForm, setShowOperatingHoursForm] = useState<boolean>(false);
   const consultTypeArr = [
     {
       key: 'physical',
@@ -259,7 +266,7 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
       selected: false,
     },
   ];
-  const consultTypeHtml = consultTypeArr.map((item, index) => {
+  const consultTypeHtml = consultTypeArr.map((item: ConsultItem, index: number) => {
     return (
       <AphButton
         key={item.key}
@@ -271,6 +278,7 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
       </AphButton>
     );
   });
+
   interface WeekItem {
     key: number;
     value: string;
@@ -324,161 +332,92 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
       </AphButton>
     );
   });
-  function getDetails() {
-    return (
-      <div>
-        <div className={classes.column}>
-          <Typography variant="h5">
-            <form className={classes.timeForm}>
-              Enter your preferred consult hours:
-              <TextField
-                id="time"
-                type="time"
-                defaultValue="09:30"
-                className={classes.textField}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                inputProps={{
-                  step: 300, // 5 min
-                }}
-              />
-              <span className={classes.timeDivider}> - </span>
-              <TextField
-                id="time"
-                type="time"
-                defaultValue="12:30"
-                className={classes.textField}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                inputProps={{
-                  step: 300, // 5 min
-                }}
-              />
-            </form>
-            <br />
-          </Typography>
-        </div>
-        <div>
-          <div>
-            <Typography variant="h5" className={classes.timeForm}>
-              Which days you wish to apply these hours to?
-            </Typography>
-            {weekHtml}
-          </div>
-          <div>
-            <Typography variant="h5">What type of consults will you be available for?</Typography>
-            {consultTypeHtml}
-          </div>
-          <Typography className={classes.instructions}>
-            Note: Any addition or modification to your consultation hours will take effect only
-            after 24 hours.
-          </Typography>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={classes.ProfileContainer}>
-      <Grid container className={classes.availabletabContent} alignItems="flex-start">
-        <Grid item lg={2} sm={6} xs={12}>
-          <Typography variant="h2">Consultation Type</Typography>
-        </Grid>
-        <Grid item lg={10} sm={6} xs={12}>
-          <div>
-            <div>
-              <Typography variant="h5">What type of consults will you be available for?</Typography>
-              <AphButton
-                variant="contained"
-                value={data.profile.availableForPhysicalConsultation}
-                classes={
-                  data.profile.availableForPhysicalConsultation
-                    ? { root: classes.btnActive }
-                    : { root: classes.btnInactive }
-                }
-              >
-                Physical
-              </AphButton>
-              <AphButton
-                variant="contained"
-                value={data.profile.availableForVirtualConsultation}
-                classes={
-                  data.profile.availableForVirtualConsultation
-                    ? { root: classes.btnActive }
-                    : { root: classes.btnInactive }
-                }
-              >
-                Online
-              </AphButton>
-            </div>
-          </div>
-        </Grid>
-      </Grid>
-      <Grid container className={classes.availabletabContent} alignItems="flex-start">
-        <Grid item lg={2} sm={6} xs={12}>
-          <Typography variant="h2">Consultation Hours</Typography>
-        </Grid>
-        <Grid item lg={10} sm={6} xs={12}>
-          {data.consultationHours && data.consultationHours.length && (
-            <ConsultationHours values={data} />
-          )}
-
-          {showOperatingHoursForm && (
-            <div className={classes.tabContent}>
-              <div className={classes.addAvailabilitydetails}>
-                {getDetails()}
-                <Divider />
-                <div className={classes.footerButtons}>
-                  <Button
-                    size="small"
-                    className={classes.cancelBtn}
-                    onClick={(e) => setShowOperatingHoursForm(!showOperatingHoursForm)}
+  const AvailabilityHtml =
+    data && data.consultationHours
+      ? data.consultationHours.map(
+          (item: GetDoctorProfile_getDoctorProfile_consultationHours, index: number) => {
+            return (
+              <div key={index.toString()} className={classes.tabContent}>
+                <ExpansionPanel className={classes.pointerNone}>
+                  <ExpansionPanelSummary
+                    expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
                   >
-                    Cancel
-                  </Button>
-                  <Button size="small" color="primary">
-                    Save
-                  </Button>
-                </div>
+                    <div className={classes.columnTime}>
+                      <Typography
+                        className={classes.primaryHeading}
+                      >{`${item.startTime} ${item.endTime}`}</Typography>
+                    </div>
+                    <div className={classes.columnDays}>
+                      <Typography className={classes.heading}>
+                        {item.days} | {item.availableForPhysicalConsultation && 'Physical'},
+                        {item.availableForVirtualConsultation && 'Online'}
+                      </Typography>
+                    </div>
+                    {item.type && item.type !== '' && (
+                      <div className={classes.columnType}>(Fixed)</div>
+                    )}
+                  </ExpansionPanelSummary>
+                  <ExpansionPanelDetails className={classes.details}>
+                    <div>
+                      <div className={classes.column}>
+                        <Typography variant="h5">
+                          <form className={classes.timeForm}>
+                            Enter your preferred consult hours:
+                            <TextField
+                              id="time"
+                              type="time"
+                              defaultValue="09:30"
+                              className={classes.textField}
+                              InputLabelProps={{
+                                shrink: true,
+                              }}
+                              inputProps={{
+                                step: 300, // 5 min
+                              }}
+                            />
+                            <span className={classes.timeDivider}> - </span>
+                            <TextField
+                              id="time"
+                              type="time"
+                              defaultValue="12:30"
+                              className={classes.textField}
+                              InputLabelProps={{
+                                shrink: true,
+                              }}
+                              inputProps={{
+                                step: 300, // 5 min
+                              }}
+                            />
+                          </form>
+                          <br />
+                        </Typography>
+                      </div>
+                      <div>
+                        <div>
+                          <Typography variant="h5" className={classes.timeForm}>
+                            Which days you wish to apply these hours to?
+                          </Typography>
+                          {weekHtml}
+                        </div>
+                        <div>
+                          <Typography variant="h5">
+                            What type of consults will you be available for?
+                          </Typography>
+                          {consultTypeHtml}
+                        </div>
+                        <Typography className={classes.instructions}>
+                          Note: Any addition or modification to your consultation hours will take
+                          effect only after 24 hours.
+                        </Typography>
+                      </div>
+                    </div>
+                  </ExpansionPanelDetails>
+                  <Divider />
+                </ExpansionPanel>
               </div>
-            </div>
-          )}
-          {!showOperatingHoursForm && (
-            <div className={classes.addDocter}>
-              <AphButton
-                variant="contained"
-                color="primary"
-                className={`${classes.btnAddDoctor} ${classes.pointerNone}`}
-                onClick={(e) => setShowOperatingHoursForm(!showOperatingHoursForm)}
-              >
-                + ADD CONSULTATION HOURS
-              </AphButton>
-            </div>
-          )}
-        </Grid>
-      </Grid>
-      <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
-        <Grid item lg={12} sm={12} xs={12}>
-          <AphButton
-            variant="contained"
-            color="primary"
-            classes={{ root: classes.backButton }}
-            onClick={() => onBack()}
-          >
-            BACK
-          </AphButton>
-          <AphButton
-            variant="contained"
-            color="primary"
-            classes={{ root: classes.saveButton }}
-            onClick={() => onNext()}
-          >
-            SAVE AND PROCEED
-          </AphButton>
-        </Grid>
-      </Grid>
-    </div>
-  );
+            );
+          }
+        )
+      : '';
+  return <div className={classes.ProfileContainer}> {AvailabilityHtml}</div>;
 };
