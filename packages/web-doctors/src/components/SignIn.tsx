@@ -17,10 +17,8 @@ import _times from 'lodash/times';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
 import { isMobileNumberValid } from '@aph/universal/aphValidators';
 import { AphTextField } from '@aph/web-ui-components';
-import { useQuery } from 'react-apollo-hooks';
-import { IS_DOCTOR } from 'graphql/profiles';
+import { HelpPopup } from 'components/Help';
 import isNumeric from 'validator/lib/isNumeric';
-//import { GetPatients } from 'graphql/types/GetPatients';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -50,7 +48,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: theme.palette.secondary.dark,
         fontSize: 16,
         fontWeight: 600,
-        marginBottom: 4,
+        marginBottom: 9,
       },
     },
     helpText: {
@@ -111,6 +109,9 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
+    loader: {
+      color: '#fff',
+    },
   };
 });
 
@@ -125,13 +126,6 @@ export interface DoctorsProps {
 }
 export const SignIn: React.FC = (props) => {
   const classes = useStyles();
-  const { data, error, loading } = useQuery(IS_DOCTOR, {
-    variables: { mobileNumber: '1234567890' },
-  });
-
-  if (loading) console.log('loading');
-  if (error) console.log('Error');
-  if (data) console.log('data', data);
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
   const [otp, setOtp] = useState<number[]>([]);
@@ -141,7 +135,8 @@ export const SignIn: React.FC = (props) => {
   const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
   const [submitCount, setSubmitCount] = useState(0);
   const [showTimer, setShowTimer] = useState(false);
-  let [timer, setTimer] = useState(179); //eslint-disable-line
+  const timer = 179;
+
   const placeRecaptchaAfterMe = useRef(null);
 
   const {
@@ -155,7 +150,6 @@ export const SignIn: React.FC = (props) => {
 
     isSigningIn,
   } = useAuth();
-
   useEffect(() => {
     _times(numOtpDigits, (index) => {
       const inputRef = createRef<HTMLInputElement>();
@@ -165,88 +159,27 @@ export const SignIn: React.FC = (props) => {
 
   useEffect(() => {
     if (submitCount > 0) {
-      if (submitCount <= 3) {
-        console.log('submitCount ' + submitCount);
-      }
-
       if (submitCount === 3) {
         setShowTimer(true);
-
-        const intervalId = setInterval(() => {
-          timer = timer - 1;
-          setTimer(timer);
-          if (timer === 0) {
-            clearInterval(intervalId);
-            setSubmitCount(0);
-            setShowTimer(false);
-            setTimer(179);
-          }
-        }, 1000);
       }
     }
   }, [submitCount]);
 
   return displayGetHelp ? (
-    <div className={`${classes.loginFormWrap} ${classes.helpWrap}`}>
+    <div>
       <Button
         className={classes.backButton}
         onClick={() => {
           setOtp([]);
           setDisplayOtpInput(false);
           setSubmitCount(0);
+          setDisplayGetHelp(false);
+          setShowTimer(false);
         }}
       >
         {'<'}
       </Button>
-      <Typography variant="h2">need help?</Typography>
-      <p>You can request a call back for us to resolve your issue ASAP</p>
-      <FormControl fullWidth>
-        <AphInput
-          autoFocus
-          inputProps={{ type: 'tel', maxLength: 10 }}
-          value={mobileNumber}
-          onPaste={(e) => {
-            if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
-          }}
-          onChange={(event) => {
-            setMobileNumber(event.currentTarget.value);
-            if (event.currentTarget.value !== '') {
-              if (isMobileNumberValid(event.currentTarget.value)) {
-                setPhoneMessage(validPhoneMessage);
-                setShowErrorMessage(false);
-              } else {
-                setPhoneMessage(invalidPhoneMessage);
-                setShowErrorMessage(true);
-              }
-            } else {
-              setPhoneMessage(validPhoneMessage);
-              setShowErrorMessage(false);
-            }
-          }}
-          error={mobileNumber.trim() !== '' && !isMobileNumberValid(mobileNumber)}
-          onKeyPress={(e) => {
-            if (isNaN(parseInt(e.key, 10))) {
-              e.preventDefault();
-            }
-          }}
-          startAdornment={
-            <InputAdornment className={classes.inputAdornment} position="start">
-              {mobileNumberPrefix}
-            </InputAdornment>
-          }
-        />
-      </FormControl>
-      <Button
-        variant="contained"
-        color="primary"
-        disabled={!isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10}
-        className={classes.needHelp}
-        onClick={() => {
-          alert('call pro');
-        }}
-      >
-        CALL ME
-      </Button>
+      <HelpPopup />
     </div>
   ) : displayOtpInput ? (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
@@ -256,13 +189,14 @@ export const SignIn: React.FC = (props) => {
           setOtp([]);
           setDisplayOtpInput(false);
           setSubmitCount(0);
+          setShowTimer(false);
         }}
       >
         {'<'}
       </Button>
       <Typography variant="h2">
-        {!showTimer && 'great'}
-        {showTimer && 'oops!'}
+        {submitCount != 3 && 'great'}
+        {submitCount == 3 && 'oops!'}
       </Typography>
 
       <p>{submitCount != 3 && 'Enter the OTP sent to you, to authenticate'}</p>
@@ -359,7 +293,7 @@ export const SignIn: React.FC = (props) => {
           disabled={isSendingOtp || otp.join('').length !== numOtpDigits || showTimer}
         >
           {isSigningIn || isSendingOtp || isVerifyingOtp || showTimer ? (
-            <CircularProgress />
+            <CircularProgress className={classes.loader} />
           ) : (
             <img
               onClick={() => setSubmitCount(submitCount + 1)}
@@ -435,7 +369,7 @@ export const SignIn: React.FC = (props) => {
           }
         >
           {isSendingOtp ? (
-            <CircularProgress />
+            <CircularProgress className={classes.loader} />
           ) : (
             <img src={require('images/ic_arrow_forward.svg')} />
           )}
