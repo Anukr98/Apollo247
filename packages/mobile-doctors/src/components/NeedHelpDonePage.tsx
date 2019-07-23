@@ -48,7 +48,7 @@ export const NeedHelpDonePage: React.FC<NeedHelpDonePageProps> = (props) => {
           cardContainer={styles.needdataview}
           heading="done!"
           description="You will receive a call from us shortly."
-          onPress={() => props.navigation.goBack()}
+          onPress={() => props.navigation.pop(2)}
         ></OtpCard>
       </SafeAreaView>
     </View>

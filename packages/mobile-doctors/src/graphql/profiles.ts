@@ -5,6 +5,7 @@ export const GET_DOCTOR_PROFILE = gql`
     getDoctorProfile {
       profile {
         id
+        salutation
         firstName
         lastName
         mobileNumber
@@ -25,8 +26,8 @@ export const GET_DOCTOR_PROFILE = gql`
         onlineConsultationFees
         physicalConsultationFees
         package
-        # typeOfConsult
         inviteStatus
+        address
       }
       paymentDetails {
         accountNumber
@@ -34,37 +35,34 @@ export const GET_DOCTOR_PROFILE = gql`
       }
       clinics {
         name
-        # location
         image
+        addressLine1
+        addressLine2
+        addressLine3
+        city
       }
       starDoctorTeam {
         id
+        salutation
         firstName
         lastName
-        mobileNumber
         experience
         speciality
         specialization
-        isStarDoctor
         education
         services
         languages
         city
         awards
         photoUrl
-        registrationNumber
-        isProfileComplete
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        onlineConsultationFees
-        physicalConsultationFees
         package
-        # typeOfConsult
         inviteStatus
+        address
       }
       consultationHours {
         days
-        # timings
+        startTime
+        endTime
         availableForPhysicalConsultation
         availableForVirtualConsultation
         type

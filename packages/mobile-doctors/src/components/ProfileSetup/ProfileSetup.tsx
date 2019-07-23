@@ -1,13 +1,14 @@
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Availability } from '@aph/mobile-doctors/src/components/ProfileSetup/Availability';
 import { Fees } from '@aph/mobile-doctors/src/components/ProfileSetup/Fees';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Profile } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/Profile';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { Cancel, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
+import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
-import { DummyQueryResult, DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -28,7 +29,6 @@ import {
 import { Overlay } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
-import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -112,7 +112,7 @@ const headerContent = [
     tab: 'Profile',
     heading: (name: string) => `hi dr. ${name}!`,
     description:
-      "It’s great to have you join us! \nHere's what your patients see when they view your profile",
+      "It’s great to have you join us!\nHere's what your patients see when they view your profile",
   },
   {
     tab: 'Availability',
@@ -134,23 +134,35 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [modelvisible, setmodelvisible] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-
-  // const {
-  //   data: { getDoctorProfile },
-  //   error,
-  //   loading,
-  // } = useQuery(GET_DOCTOR_PROFILE) as any;
-
   const {
     data: { getDoctorProfile },
     error,
     loading,
-  } = doctorProfile;
+  } = useQuery(GET_DOCTOR_PROFILE) as any;
+  // const {
+  //   data: { getDoctorProfile },
+  //   error,
+  //   loading,
+  // } = doctorProfile;
   if (!loading && error) {
     Alert.alert('Error', 'Unable to get the data');
   } else {
     console.log(getDoctorProfile);
   }
+
+  const validateAndSetPhoneNumber = (number: string) => {
+    if (/^\d+$/.test(number) || number == '') {
+      setPhoneNumber(number);
+      setPhoneNumberIsValid(isPhoneNumberValid(number));
+    } else {
+      return false;
+    }
+  };
+
+  const isPhoneNumberValid = (number: string) => {
+    const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
+    return isValidNumber;
+  };
 
   const renderHeader = (
     <Header
@@ -162,10 +174,8 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       ]}
     />
   );
-  const renderProgressBar = (
-    tabIndex: number,
-    data: DummyQueryResult['data']['getDoctorProfile']
-  ) => (
+
+  const renderProgressBar = (tabIndex: number, data: DoctorProfile) => (
     <ProfileTabHeader
       title={headerContent[tabIndex].heading(data!.profile.firstName)}
       description={headerContent[tabIndex].description}
@@ -183,39 +193,23 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
     ) : (
       <Fees profileData={data} />
     );
-  const validateAndSetPhoneNumber = (number: string) => {
-    if (/^\d+$/.test(number) || number == '') {
-      setPhoneNumber(number);
-      // if (number.length == 10) {
-      setPhoneNumberIsValid(isPhoneNumberValid(number));
-      // }
-    } else {
-      return false;
-    }
-  };
-  const isPhoneNumberValid = (number: string) => {
-    const isValidNumber =
-      // (number.replace(/^0+/, '').length !== 10 && number.length !== 0) ||
-      !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
-    return isValidNumber;
-  };
-  const renderFooterButtons = (
-    tabIndex: number,
-    data: DummyQueryResult['data']['getDoctorProfile']
-  ) => {
+
+  const renderFooterButtons = (tabIndex: number, data: DoctorProfile) => {
     const onPressProceed = () => {
       const tabsCount = data!.profile.isStarDoctor ? 3 : 2;
-      if (activeTabIndex < tabsCount - 1) {
-        setActiveTabIndex(activeTabIndex + 1);
+      if (tabIndex < tabsCount - 1) {
+        setActiveTabIndex(tabIndex + 1);
       } else {
         setProfileFlowDone(true).finally(() => {
-          props.navigation.navigate(AppRoutes.TransitionPage);
+          props.navigation.navigate(AppRoutes.TransitionPage, {
+            doctorName: data.profile.firstName,
+          });
         });
       }
     };
     return (
       <View style={styles.footerButtonsContainer}>
-        {activeTabIndex == 0 ? (
+        {tabIndex == 0 ? (
           <Button
             onPress={() => onPressProceed()}
             title={data!.profile.isStarDoctor ? 'SAVE AND PROCEED' : 'PROCEED'}
@@ -225,7 +219,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         ) : (
           <>
             <Button
-              onPress={() => setActiveTabIndex(activeTabIndex - 1)}
+              onPress={() => setActiveTabIndex(tabIndex - 1)}
               title="BACK"
               titleTextStyle={styles.buttonTextStyle}
               variant="white"

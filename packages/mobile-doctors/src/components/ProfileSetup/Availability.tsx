@@ -1,15 +1,16 @@
+import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
+import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SelectableButton } from '../ui/SelectableButton';
 import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
-import { DummyQueryResult, DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
-import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
+import { Add } from '@aph/mobile-doctors/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
   consultTypeSelection: {
     flexDirection: 'row',
@@ -19,16 +20,20 @@ const styles = StyleSheet.create({
   },
   consultDescText: {
     ...theme.fonts.IBMPlexSansMedium(14),
-    opacity: 0.5,
-    color: '#02475b',
+    color: theme.colors.darkBlueColor(0.5),
     marginTop: 16,
     marginHorizontal: 16,
   },
-  addConsultationText: {
-    ...theme.fonts.IBMPlexSansBold(14),
-    color: '#fc9916',
+  addConsultationTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 23,
     marginHorizontal: 16,
+  },
+  addConsultationText: {
+    marginLeft: 8,
+    ...theme.fonts.IBMPlexSansBold(14),
+    color: theme.colors.BUTTON_BG,
   },
 });
 
@@ -77,8 +82,11 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
             />
           );
         })}
+        <View style={styles.addConsultationTextContainer}>
+          <Add />
+          <Text style={styles.addConsultationText}>ADD CONSULTATION HOURS</Text>
+        </View>
       </SquareCardWithTitle>
-      <Text style={styles.addConsultationText}>+{'  '}ADD CONSULTATION HOURS</Text>
     </View>
   );
 };

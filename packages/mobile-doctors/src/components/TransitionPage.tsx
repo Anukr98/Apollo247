@@ -32,12 +32,14 @@ const styles = StyleSheet.create({
 export interface TransitionPageProps extends NavigationScreenProps {}
 
 export const TransitionPage: React.FC<TransitionPageProps> = (props) => {
+  const doctorName = props.navigation.state.params && props.navigation.state.params.doctorName;
+
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       <View style={{ backgroundColor: colors.WHITE, flex: 1 }}>
         <Header />
         <ProfileTabHeader
-          title="thank you, dr. rao :)"
+          title={`thank you, dr. ${doctorName} :)`}
           description="Let’s go over now to see the Apollo24x7 portal and start consultations!"
           activeTabIndex={0}
         />

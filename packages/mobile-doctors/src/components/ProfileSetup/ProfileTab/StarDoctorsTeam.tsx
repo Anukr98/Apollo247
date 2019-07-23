@@ -68,18 +68,19 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
       return;
     }
     // do api call
-    // client
-    //   .query({
-    //     query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
-    //     variables: { searchString: searchText.replace('Dr. ', '') },
-    //   })
-    //   ;
-    getDoctorsForStarDoctorProgram.data.getDoctorsForStarDoctorProgram!(
-      searchText.replace('Dr. ', '')
-    )
+    client
+      .query({
+        query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
+        variables: { searchString: searchText.replace('Dr. ', '') },
+      })
+      // getDoctorsForStarDoctorProgram.data.getDoctorsForStarDoctorProgram!(
+      //   searchText.replace('Dr. ', '')
+      // )
       .then((_data: any) => {
         console.log('flitered array', _data);
-        const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
+        const doctorProfile =
+          _data.data.getDoctorsForStarDoctorProgram &&
+          _data.data.getDoctorsForStarDoctorProgram.map((i: DoctorProfile) => i.profile);
         setFilteredStarDoctors(doctorProfile);
       })
       .catch((e) => {
@@ -101,8 +102,8 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
     setDoctorSearchText('');
     setIsSuggestionExist(false);
     client
-      .query({
-        query: ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM,
+      .mutate({
+        mutation: ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM,
         variables: { starDoctorId: '1', doctorId: '2' },
       })
       .then((_data: any | boolean) => {
@@ -116,9 +117,9 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
 
   const removeDoctorFromProgram = (id: string) => {
     client
-      .query({
-        query: REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM,
-        variables: { starDoctorId: id, doctorId: '2' },
+      .mutate({
+        mutation: REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM,
+        variables: { starDoctorId: id || '1', doctorId: '2' },
       })
       .then((_data: any | boolean) => {
         console.log(_data);
@@ -163,7 +164,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
           doctorName={`${starDoctor.firstName} ${starDoctor.lastName}`}
           experience={starDoctor.experience}
           // specialization={'GENERAL PHYSICIAN '} //{starDoctor.designation}
-          specialization={starDoctor.specialization.toUpperCase()}
+          specialization={(starDoctor.specialization || '').toUpperCase()}
           education={starDoctor.education}
           location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
           inviteStatus={starDoctor.inviteStatus == 'accepted' ? 'accepted' : 'Not accepted'}

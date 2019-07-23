@@ -42,9 +42,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   cardView: {
-    ...theme.viewStyles.whiteRoundedCornerCard,
     margin: 16,
-    overflow: 'hidden',
+    ...theme.viewStyles.whiteRoundedCornerCard,
   },
   imageview: {
     height: 141,
@@ -87,26 +86,31 @@ export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
   };
 
   const formatSpecialityAndExperience = (speciality: string, experience: string) =>
-    `${speciality.toUpperCase()}     |   ${experience}YRS`;
+    `${(speciality || '').toUpperCase()}     |   ${experience}YRS`;
 
   return (
     <View style={styles.container}>
       <SquareCardWithTitle title="Your Profile" containerStyle={{ marginTop: 16 }}>
         <View style={styles.cardView}>
-          {profileData!.profile.photoUrl ? (
-            <Image
-              style={styles.imageview}
-              source={{
-                uri: profileData!.profile.photoUrl,
-              }}
-            />
-          ) : (
-            <Image style={styles.imageview} source={require('../../../images/doctor/doctor.png')} />
-          )}
+          <View style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}>
+            {profileData!.profile.photoUrl ? (
+              <Image
+                style={styles.imageview}
+                source={{
+                  uri: profileData!.profile.photoUrl,
+                }}
+              />
+            ) : (
+              <Image
+                style={styles.imageview}
+                source={require('../../../images/doctor/doctor.png')}
+              />
+            )}
+          </View>
           {profileData!.profile.isStarDoctor ? <Star style={styles.starIconStyle}></Star> : null}
           <View style={styles.columnContainer}>
             <Text style={styles.drname}>
-              {`${profileData!.profile.firstName} ${profileData!.profile.lastName}`}
+              {`Dr. ${profileData!.profile.firstName} ${profileData!.profile.lastName}`}
             </Text>
             <Text style={styles.drnametext}>
               {formatSpecialityAndExperience(

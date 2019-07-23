@@ -18,12 +18,8 @@ const styles = StyleSheet.create({
   doctorView: {
     flex: 1,
     marginHorizontal: 20,
-    backgroundColor: 'white',
-    shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.5,
+    ...theme.viewStyles.whiteRoundedCornerCard,
     shadowRadius: 5,
-    elevation: 10,
     marginBottom: 16,
     borderRadius: 10,
   },
@@ -166,7 +162,8 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
                 </View>
 
                 <Text style={styles.doctorSpecializationStyles}>
-                  {props.specialization} | {props.experience} YRS
+                  {props.specialization ? props.specialization + ' | ' : ''}
+                  {props.experience} YRS
                 </Text>
                 <Text style={styles.educationTextStyles}>{props.education}</Text>
                 <Text style={styles.doctorLocation}>{props.location}</Text>
