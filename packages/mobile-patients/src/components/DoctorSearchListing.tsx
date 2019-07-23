@@ -239,6 +239,27 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const renderDoctorSearches = (filter: string) => {
     console.log(doctorsList, 'doctorsList');
     const doctors = filter ? doctorsList.filter((obj) => obj[filter] === true) : doctorsList;
+    if (doctors.length === 0) {
+      return (
+        <View>
+          <Card
+            cardContainer={{ marginTop: 64, marginHorizontal: 64 }}
+            heading={'Uh oh! :('}
+            description={
+              filter === 'availableForPhysicalConsultation'
+                ? `There is no ${
+                    props.navigation.state.params!.speciality
+                  } available for Physical Consult. Please you try Online Consultation.`
+                : `There is no ${
+                    props.navigation.state.params!.speciality
+                  } available to match your filters. Please try again with different filters.`
+            }
+            descriptionTextStyle={{ fontSize: 14 }}
+            headingTextStyle={{ fontSize: 14 }}
+          />
+        </View>
+      );
+    }
     return (
       <View>
         {doctors.length > 0 && (
@@ -281,21 +302,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       {renderTopView()}
 
       <ScrollView style={{ flex: 1 }} bounces={false}>
-        {selectedTab === tabs[0] && renderDoctorSearches()
-        //  (
-        // <View>
-        //   <Card
-        //     cardContainer={{ marginTop: 64, marginHorizontal: 64 }}
-        //     heading={'Uh oh! :('}
-        //     description={
-        //       'There is no General Physician available for Physical Consult. Please you try Online Consultation.'
-        //     }
-        //     descriptionTextStyle={{ fontSize: 14 }}
-        //     headingTextStyle={{ fontSize: 14 }}
-        //   />
-        // </View>
-        // )
-        }
+        {selectedTab === tabs[0] && renderDoctorSearches()}
         {selectedTab === tabs[1] && renderDoctorSearches('availableForVirtualConsultation')}
         {selectedTab === tabs[2] && renderDoctorSearches('availableForPhysicalConsultation')}
       </ScrollView>

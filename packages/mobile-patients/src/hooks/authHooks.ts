@@ -51,7 +51,7 @@ export const useAllCurrentPatients = () => {
   const { loading, data, error } = useQuery<GetCurrentPatients>(GET_CURRENT_PATIENTS, {
     skip: isSigningIn || !hasAuthToken,
   });
-  // console.log('hasAuthToken', hasAuthToken);
+  console.log('hasAuthToken', hasAuthToken);
   // console.log('hasAuthToken error', error);
 
   const setCurrentPatientId = useAuthContext().setCurrentPatientId!;
@@ -62,7 +62,7 @@ export const useAllCurrentPatients = () => {
     ? allCurrentPatients.find((patient) => patient.id === currentPatientId) || allCurrentPatients[0]
     : null;
 
-  // console.log('currentPatient', currentPatient);
+  console.log('currentPatient', currentPatient);
   // console.log('allCurrentPatients', allCurrentPatients);
   useEffect(() => {
     if (!currentPatientId) {

@@ -182,12 +182,11 @@ export const AuthProvider: React.FC = (props) => {
 
         apolloClient = buildApolloClient(jwt, () => authHandler());
         authStateRegistered = false;
+        setAuthToken(jwt);
 
-        // setTimeout(async () => {
         await apolloClient
           .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
           .then((data) => {
-            setAuthToken(jwt);
             setSignInError(false);
             console.log('data', data);
           })
@@ -195,11 +194,9 @@ export const AuthProvider: React.FC = (props) => {
             setSignInError(true);
             console.log('error', error);
           });
-        // }, 2000);
       }
       setIsSigningIn(false);
     });
-    // });
   }, [auth]);
 
   // useEffect(() => {

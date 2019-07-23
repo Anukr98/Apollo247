@@ -430,11 +430,11 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                     patientId: props.patientId,
                     doctorId: props.doctorId,
                     appointmentDate: formatDate,
-                    appointmentTime: '',
+                    appointmentTime: '14:30:00Z',
                     appointmentType: selectedTab === tabs[0] ? 'ONLINE' : 'PHYSICAL',
-                    hospitalId: '23456789',
-                    status: 'IN_PROGRESS',
+                    hospitalId: '1',
                   };
+                  console.log(appointmentInput, 'appointmentInput');
                   mutate({
                     variables: {
                       appointmentInput: appointmentInput,
@@ -442,7 +442,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   });
                 }}
               >
-                {data ? console.log('bookAppointment data', data) : null}
+                {data
+                  ? (console.log('bookAppointment data', data), props.setdispalyoverlay(false))
+                  : null}
                 {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
                 {error ? console.log('bookAppointment error', error) : null}
               </Button>

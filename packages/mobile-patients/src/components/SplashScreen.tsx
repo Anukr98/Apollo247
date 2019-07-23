@@ -20,8 +20,32 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { isSigningIn, signInError } = useAuth();
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
+  const navigator = (userLoggedIn, onboarding, signUp, multiSignUp, currentPatient) => {
+    console.log(currentPatient, 'currentPatientcurrentPatientcurrentPatient');
+    if (userLoggedIn == 'true') {
+      if (currentPatient) {
+        if (currentPatient.firstName !== '') {
+          props.navigation.replace(AppRoutes.TabBar);
+        } else {
+          props.navigation.replace(AppRoutes.Login);
+        }
+      }
+    } else if (onboarding == 'true') {
+      if (signUp == 'true') {
+        props.navigation.replace(AppRoutes.SignUp);
+      } else if (multiSignUp == 'true') {
+        if (currentPatient) {
+          props.navigation.replace(AppRoutes.MultiSignup);
+        }
+      } else {
+        props.navigation.replace(AppRoutes.Login);
+      }
+    } else {
+      props.navigation.replace(AppRoutes.Onboarding);
+    }
+  };
   useEffect(() => {
     async function fetchData() {
       firebase.analytics().setCurrentScreen('SplashScreen');
@@ -33,37 +57,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       console.log('onboarding', onboarding);
       console.log('userLoggedIn', userLoggedIn);
       console.log('splash screen', currentPatient);
+      console.log(allCurrentPatients, 'allCurrentPatients');
 
-      // setTimeout(() => {
-      console.log(currentPatient, 'currentPatient');
-      if (userLoggedIn == 'true') {
-        if (currentPatient) {
-          if (currentPatient.firstName !== '') {
-            props.navigation.replace(AppRoutes.TabBar);
-          } else {
-            props.navigation.replace(AppRoutes.Login);
-          }
-        } else {
-          props.navigation.replace(AppRoutes.Login);
-        }
-      } else if (onboarding == 'true') {
-        if (signUp == 'true') {
-          props.navigation.replace(AppRoutes.SignUp);
-        } else if (multiSignUp == 'true') {
-          if (currentPatient) {
-            props.navigation.replace(AppRoutes.MultiSignup);
-          }
-        } else {
-          props.navigation.replace(AppRoutes.Login);
-        }
-      } else {
-        props.navigation.replace(AppRoutes.Onboarding);
-      }
-      // }, 3500);
+      setTimeout(
+        () => navigator(userLoggedIn, onboarding, signUp, multiSignUp, currentPatient),
+        3500
+      );
     }
     fetchData();
     SplashScreenView.hide();
-  }, [currentPatient]);
+  }, [currentPatient, props.navigation, allCurrentPatients]);
 
   useEffect(() => {
     console.log('SplashScreen signInError', signInError);

@@ -75,10 +75,9 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
           onFocus={props.onFocus}
           onBlur={props.onBlur}
           onChangeText={props.onChangeText}
-          underlineColorAndroid={props.underlineColorAndroid}
+          underlineColorAndroid={'transparent'}
           autoCorrect={props.autoCorrect}
           selectionColor={theme.colors.INPUT_CURSOR_COLOR}
-          underlineColorAndroid="rgba(0,0,0,0)"
           {...props.textInputprops}
         />
       )}

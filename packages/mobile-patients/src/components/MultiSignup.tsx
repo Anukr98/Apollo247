@@ -17,6 +17,7 @@ import {
   AsyncStorage,
   Alert,
   ActivityIndicator,
+  BackHandler,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MenuProvider } from 'react-native-popup-menu';
@@ -29,6 +30,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/updatePatient';
 import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
+import console = require('console');
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -112,6 +114,25 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [showText, setShowText] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+
+  let backPressCount = 0;
+  const handleBackButton = () => {
+    backPressCount += 1;
+    if (backPressCount === 2) {
+      console.log('BackAndroid.exitApp();');
+      BackHandler.exitApp();
+    }
+    console.log('handleBackButton');
+    return true;
+  };
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    console.log(backHandler, 'backHandler');
+    return function cleanup() {
+      backHandler.remove();
+    };
+  }, []);
 
   useEffect(() => {
     setProfiles(allCurrentPatients ? allCurrentPatients : []);
@@ -341,6 +362,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                 : null}
               {error
                 ? (setVerifyingPhoneNumber(false),
+                  signOut(),
                   Alert.alert('Apollo', error.message),
                   signOut(),
                   console.log('updatePatient error', error),

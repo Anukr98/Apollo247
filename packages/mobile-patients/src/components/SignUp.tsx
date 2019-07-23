@@ -19,6 +19,7 @@ import {
   Text,
   ActivityIndicator,
   AsyncStorage,
+  BackHandler,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
@@ -96,7 +97,7 @@ const GenderOptions: genderOptions[] = [
   },
 ];
 
-// let backHandler: any;
+let backHandler: any;
 
 export interface SignUpProps extends NavigationScreenProps {}
 export const SignUp: React.FC<SignUpProps> = (props) => {
@@ -138,15 +139,31 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
     }
   };
 
+  let backPressCount = 0;
+  const handleBackButton = () => {
+    backPressCount += 1;
+    if (backPressCount === 2) {
+      console.log('BackAndroid.exitApp();');
+      BackHandler.exitApp();
+    }
+    console.log('handleBackButton');
+    return true;
+  };
+
   useEffect(() => {
     AsyncStorage.setItem('signUp', 'true');
+    backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    console.log(backHandler, 'backHandler');
+    return function cleanup() {
+      backHandler.remove();
+    };
   }, []);
 
   console.log(isDateTimePickerVisible, 'isDateTimePickerVisible');
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAwareScrollView style={styles.container} extraScrollHeight={50}>
+        <KeyboardAwareScrollView style={styles.container} extraScrollHeight={50} bounces={false}>
           <View style={{ justifyContent: 'center', marginTop: 20, marginLeft: 20 }}>
             <ApolloLogo />
           </View>

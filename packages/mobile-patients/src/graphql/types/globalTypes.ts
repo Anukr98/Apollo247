@@ -29,6 +29,11 @@ export enum Relation {
   WIFE = "WIFE",
 }
 
+export enum SEARCH_TYPE {
+  DOCTOR = "DOCTOR",
+  SPECIALTY = "SPECIALTY",
+}
+
 export enum STATUS {
   CANCELLED = "CANCELLED",
   CONFIRMED = "CONFIRMED",

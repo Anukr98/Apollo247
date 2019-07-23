@@ -194,12 +194,13 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   useEffect(() => {
     if (currentPatient) {
       if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
-        if (currentPatient.relation == null) {
-          props.navigation.replace(AppRoutes.MultiSignup);
-        } else {
-          AsyncStorage.setItem('userLoggedIn', 'true');
-          props.navigation.replace(AppRoutes.TabBar);
-        }
+        // if (currentPatient.relation == null) {
+        props.navigation.replace(AppRoutes.MultiSignup);
+        // }
+        // else {
+        //   AsyncStorage.setItem('userLoggedIn', 'true');
+        //   props.navigation.replace(AppRoutes.TabBar);
+        // }
       } else {
         if (currentPatient.firstName == '') {
           props.navigation.replace(AppRoutes.SignUp);
@@ -252,7 +253,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     const subscriptionId = SmsListener.addListener((message: any) => {
       const newOtp = message.body.match(/-*[0-9]+/);
       const otpString = newOtp ? newOtp[0] : '';
-      setOtp(otpString);
+      console.log(otpString, otpString.length, 'otpString');
+      setOtp(otpString.trim());
       setIsValidOTP(true);
     });
     setSubscriptionId(subscriptionId);

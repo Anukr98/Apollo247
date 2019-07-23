@@ -194,3 +194,14 @@ export const SPECIALITY_DOCTOR_FILTERS = gql`
     }
   }
 `;
+
+export const GET_PAST_SEARCHES = gql`
+  query getPastSearches {
+    getPastSearches {
+      searchType
+      typeId
+      name
+      image
+    }
+  }
+`;

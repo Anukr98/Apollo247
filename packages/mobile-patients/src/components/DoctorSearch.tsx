@@ -30,7 +30,9 @@ import { useQuery } from 'react-apollo-hooks';
 import {
   GET_SPECIALTIES,
   SEARCH_DOCTOR_AND_SPECIALITY,
+  GET_PAST_SEARCHES,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -190,9 +192,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [doctorName, setDoctorName] = useState<boolean>(false);
   const [pastSearch, setPastSearch] = useState<boolean>(true);
   const [needHelp, setNeedHelp] = useState<boolean>(true);
-  const [speialistList, setSpeialistList] = useState<boolean>(true);
+  const [displaySpeialist, setdisplaySpeialist] = useState<boolean>(true);
   const [Specialities, setSpecialities] = useState<object[]>([]);
   const [seatchSpecialities, setseatchSpecialities] = useState<object[]>([]);
+  const [PastSearches, setPastSearches] = useState<object[]>([]);
 
   const [doctorsList, setdoctorsList] = useState<object[]>([]);
 
@@ -201,7 +204,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   });
   if (error) {
     console.log('error', error);
-    //Alert.alert('Error', 'Unable to get the data');
   } else {
     console.log('data doctor', data);
     if (data.SearchDoctorAndSpecialty && doctorsList !== data.SearchDoctorAndSpecialty.doctors) {
@@ -220,9 +222,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   }
 
   const getData = useQuery(GET_SPECIALTIES, {});
+  console.log(getData.loading, 'getData.loading');
   if (getData.error) {
     console.log('getData.error', getData.error);
-    //Alert.alert('Error', 'Unable to get the data');
   } else {
     if (
       getData.data &&
@@ -232,6 +234,21 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       console.log('getData.data', getData.data.getSpecialties);
 
       setSpecialities(getData.data.getSpecialties);
+    }
+  }
+
+  const pastData = useQuery(GET_PAST_SEARCHES, {});
+  if (pastData.error) {
+    console.log('pastData.error', pastData.error);
+  } else {
+    console.log(pastData, 'pastDatapastDatapastData');
+    if (
+      pastData.data &&
+      pastData.data.getPastSearches &&
+      PastSearches !== pastData.data.getPastSearches
+    ) {
+      console.log('pastData.data', pastData.data.getPastSearches);
+      setPastSearches(pastData.data.getPastSearches);
     }
   }
 
@@ -253,23 +270,23 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             underlineColorAndroid="transparent"
             onChangeText={(value) => {
               setSearchText(value);
-              if (value === 'Simran') {
-                setDoctorName(true);
-                setSpeialistList(false);
+              if (value === '') {
+                // setDoctorName(true);
+                setdisplaySpeialist(false);
               } else {
-                setSpeialistList(true);
+                setdisplaySpeialist(true);
               }
             }}
             onFocus={() => {
               setPastSearch(false);
               setNeedHelp(false);
-              setSpeialistList(false);
+              setdisplaySpeialist(false);
             }}
             onBlur={() => {
               if (searchText === '') {
                 setPastSearch(true);
                 setNeedHelp(true);
-                setSpeialistList(true);
+                setdisplaySpeialist(true);
               }
             }}
           />
@@ -292,7 +309,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             }
             horizontal={true}
             bounces={false}
-            data={pastSearches}
+            data={PastSearches}
             onEndReachedThreshold={0.5}
             renderItem={({ item, index }) => renderRow(item, index)}
             keyExtractor={(_, index) => index.toString()}
@@ -306,13 +323,21 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const renderRow = (rowData: pastSearches, rowID: number) => {
     return (
       <Button
-        title={rowData.search.toUpperCase()}
+        title={rowData.name.toUpperCase()}
         style={[
           styles.listView,
           rowID === 0 ? { marginLeft: 20 } : null,
-          rowID + 1 === pastSearches.length ? { marginRight: 20 } : null,
+          rowID + 1 === PastSearches.length ? { marginRight: 20 } : null,
         ]}
         titleTextStyle={styles.rowTextStyles}
+        onPress={() => {
+          if (rowData.searchType === 'DOCTOR') {
+            props.navigation.navigate(AppRoutes.DoctorDetails, { doctorId: rowData.typeId });
+          }
+          if (rowData.searchType === 'SPECIALTY') {
+            props.navigation.navigate('DoctorSearchListing', { speciality: rowData.name });
+          }
+        }}
       />
     );
   };
@@ -320,7 +345,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const renderSpecialist = (styles: any) => {
     const SpecialitiesList = searchText.length > 0 ? seatchSpecialities : Specialities;
     console.log(SpecialitiesList, 'SpecialitiesList');
-    if (SpecialitiesList.length > 0) {
+    if (SpecialitiesList.length > 0 && displaySpeialist) {
       return (
         <View>
           <SectionHeaderComponent
