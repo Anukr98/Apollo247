@@ -32,8 +32,9 @@ const styles = StyleSheet.create({
     color: '#ff748e',
   },
   daysText: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: theme.colors.darkBlueColor(),
+    ...theme.fonts.IBMPlexSansLight(12),
+    fontFamily: 'IBMPlexSans',
+    color: '#02475b',
     letterSpacing: 0.05,
     marginBottom: 19,
     //marginHorizontal: 16,

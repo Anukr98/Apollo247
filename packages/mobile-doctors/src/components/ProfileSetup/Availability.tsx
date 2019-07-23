@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
   },
   consultTypeSelection: {
     flexDirection: 'row',
-    marginHorizontal: 16,
+    marginHorizontal: 20,
     marginTop: 12,
     marginBottom: 20,
   },
@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(14),
     color: theme.colors.darkBlueColor(0.5),
     marginTop: 16,
-    marginHorizontal: 16,
+    marginHorizontal: 20,
   },
   addConsultationTextContainer: {
     flexDirection: 'row',
