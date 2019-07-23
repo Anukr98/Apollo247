@@ -10,7 +10,7 @@ services:
       nginx -t &&
       nginx -g 'daemon off;'"
     ports:
-      - ${API_GATEWAY_PORT}:${API_GATEWAY_PORT}
+      - 80:80
     volumes:
       - ./nginx/log/:/var/log/nginx
       - ./nginx/conf.d/local.conf.template:/etc/nginx/conf.d/local.conf.template/:ro
