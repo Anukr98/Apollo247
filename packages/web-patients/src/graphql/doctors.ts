@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 
 export const GET_DOCTOR_DETAILS_BY_ID = gql`
-  query getDoctorProfileById($id: String!) {
+  query GetDoctorProfileById($id: String!) {
     getDoctorProfileById(id: $id) {
       profile {
         id
@@ -26,6 +26,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         physicalConsultationFees
         package
         inviteStatus
+        address
       }
       clinics {
         name
@@ -37,27 +38,21 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       }
       starDoctorTeam {
         id
+        salutation
         firstName
         lastName
-        mobileNumber
         experience
         speciality
         specialization
-        isStarDoctor
         education
         services
         languages
         city
         awards
         photoUrl
-        registrationNumber
-        isProfileComplete
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        onlineConsultationFees
-        physicalConsultationFees
         package
         inviteStatus
+        address
       }
       consultationHours {
         days
