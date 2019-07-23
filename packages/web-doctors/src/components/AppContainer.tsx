@@ -138,10 +138,10 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
     </div>
   ) : (
-      <div className={classes.app}>
-        <Route exact path={clientRoutes.welcome()} component={Welcome} />
-      </div>
-    );
+    <div className={classes.app}>
+      <Route exact path={clientRoutes.welcome()} component={Welcome} />
+    </div>
+  );
 };
 
 const generator = createGenerateClassName({
