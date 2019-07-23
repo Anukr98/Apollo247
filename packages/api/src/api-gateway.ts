@@ -40,12 +40,13 @@ const isDev = process.env.NODE_ENV == 'dev';
 const getPortStr = (port: string) => (port === '80' ? '' : `:${port}`);
 const webPatientsPort = getPortStr(process.env.WEB_PATIENTS_PORT!);
 const webDoctorsPort = getPortStr(process.env.WEB_DOCTORS_PORT!);
-const envToCorsOrigin: Record<NodeJS.ProcessEnv['NODE_ENV'], string[]> = {
+const envToCorsOrigin: Record<NodeJS.ProcessEnv['NODE_ENV'], string[] | string> = {
   local: [`http://localhost${webPatientsPort}`, `http://localhost${webDoctorsPort}`],
-  dev: [
-    'http://dev.web-patients.aph.popcornapps.com',
-    'http://dev.web-doctors.aph.popcornapps.com',
-  ],
+  dev: '*',
+  // dev: [
+  //   'http://dev.web-patients.aph.popcornapps.com',
+  //   'http://dev.web-doctors.aph.popcornapps.com',
+  // ],
 };
 
 (async () => {
