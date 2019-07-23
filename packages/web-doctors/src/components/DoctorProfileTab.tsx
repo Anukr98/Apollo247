@@ -11,6 +11,8 @@ import {
   GetDoctorProfile_getDoctorProfile_clinics,
 } from 'graphql/types/getDoctorProfile';
 import Button from '@material-ui/core/Button';
+import { useApolloClient } from 'react-apollo-hooks';
+import { REMOVE_STAR_DOCTOR } from 'graphql/profiles';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
@@ -217,8 +219,10 @@ interface DoctorsName {
 export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNext }) => {
   const classes = useStyles();
   const [userData, setData] = useState(values);
+
   const [showAddDoc, setShowAddDoc] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const client = useApolloClient();
 
   function handleClick(event: any) {
     setAnchorEl(event.currentTarget);
@@ -229,11 +233,24 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
   }
 
   const open = Boolean(anchorEl);
-  function removeDoctor(doctor: any) {
-    const starDoctorTeam = userData.starDoctorTeam.filter(
-      (object: DoctorsName) => object.firstName !== doctor.firstName
-    );
-    setData({ ...userData, starDoctorTeam: starDoctorTeam });
+  function removeDoctor(doctor: GetDoctorProfile_getDoctorProfile_starDoctorTeam, index: number) {
+    client
+      .mutate({
+        mutation: REMOVE_STAR_DOCTOR,
+        variables: { starDoctorId: '12345', doctorId: '12345' },
+      })
+      .then(({ data }) => {
+        if (data.removeDoctorFromStartDoctorProgram) {
+          const starDoctorTeam = userData.starDoctorTeam.filter(
+            (object: DoctorsName) => object.firstName !== doctor.firstName
+          );
+          setData({ ...userData, starDoctorTeam: starDoctorTeam });
+        }
+        handleClose();
+      })
+      .catch((_) => {
+        handleClose();
+      });
   }
   const starDocNumber = userData.starDoctorTeam.length;
   const starDoctors = userData.starDoctorTeam.map(
@@ -248,7 +265,7 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
                 className={classes.profileImg}
               />
             </div>
-            {!item.inviteStatus ? (
+            {!((item.inviteStatus && item.inviteStatus.toLowerCase()) === 'accepted') ? (
               <div className={classes.posRelative}>
                 <Button
                   aria-describedby={open ? 'simple-popover' : undefined}
@@ -256,15 +273,10 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
                   className={classes.moreIcon}
                   onClick={handleClick}
                 >
-                  <img
-                    alt="more.svg"
-                    src={require('images/ic_more.svg')}
-
-                    // onClick={() => removeDoctor(item)}
-                  />
+                  <img alt="more.svg" src={require('images/ic_more.svg')} />
                 </Button>
                 <Popover
-                  id={open ? 'simple-popover' : undefined}
+                  id={open ? item.firstName : undefined}
                   open={open}
                   anchorEl={anchorEl}
                   onClose={handleClose}
@@ -274,10 +286,13 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
                   }}
                   transformOrigin={{
                     vertical: 'top',
-                    horizontal: 'center',
+                    horizontal: 'right',
                   }}
                 >
-                  <Typography className={classes.removeDoctor} onClick={() => removeDoctor(item)}>
+                  <Typography
+                    className={classes.removeDoctor}
+                    onClick={() => removeDoctor(item, index)}
+                  >
                     Remove Doctor
                   </Typography>
                 </Popover>
@@ -297,14 +312,10 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
                   className={classes.moreIcon}
                   onClick={handleClick}
                 >
-                  <img
-                    alt=""
-                    src={require('images/ic_more.svg')}
-                    // onClick={() => removeDoctor(item)}
-                  />
+                  <img alt="" src={require('images/ic_more.svg')} />
                 </Button>
                 <Popover
-                  id={open ? 'simple-popover' : undefined}
+                  id={open ? item.firstName : undefined}
                   open={open}
                   anchorEl={anchorEl}
                   onClose={handleClose}
@@ -314,10 +325,13 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
                   }}
                   transformOrigin={{
                     vertical: 'top',
-                    horizontal: 'center',
+                    horizontal: 'right',
                   }}
                 >
-                  <Typography className={classes.removeDoctor} onClick={() => removeDoctor(item)}>
+                  <Typography
+                    className={classes.removeDoctor}
+                    onClick={() => removeDoctor(item, index)}
+                  >
                     Remove Doctor
                   </Typography>
                 </Popover>
@@ -325,7 +339,7 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
                   Dr. {item.firstName} {item.lastName}
                 </Typography>
                 <Typography variant="h6">
-                  GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
+                  GENERAL PHYSICIAN <span> | </span> <span> {item.experience} YRS </span>
                 </Typography>
                 <Typography variant="h5">
                   MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
@@ -368,8 +382,8 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
                 Dr. {userData.profile.firstName} {userData.profile.lastName}
               </Typography>
               <Typography variant="h6">
-                {userData.profile.specialization} <span> | </span>{' '}
-                <span> {userData.profile.experience}YRS </span>{' '}
+                {userData.profile.specialization.toUpperCase()} <span> | </span>
+                <span> {userData.profile.experience}YRS </span>
               </Typography>
             </Paper>
           </Grid>

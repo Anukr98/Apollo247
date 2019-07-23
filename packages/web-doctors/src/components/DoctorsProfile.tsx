@@ -14,7 +14,6 @@ import { FeesTab } from 'components/FeesTab';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 import { Link } from 'react-router-dom';
-
 export interface TabContainerProps {
   children: React.ReactNode;
 }
@@ -104,7 +103,6 @@ export interface DoctorsProfileProps {}
 
 export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) => {
   const classes = useStyles();
-
   const [selectedTabIndex, setselectedTabIndex] = React.useState(0);
   const { data } = useQuery(GET_DOCTOR_PROFILE);
   const tabsArray = ['Profile', 'Availability', 'Fees', ''];
@@ -136,30 +134,16 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
             <div className={classes.tabHeading}>
               <Typography variant="h1">
                 {selectedTabIndex === 0 && (
-                  <span>
-                    {`hi dr ${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName} !`}
-                  </span>
+                  <span>{`hi dr. ${data.getDoctorProfile.profile.lastName.toLowerCase()} !`}</span>
                 )}
                 {selectedTabIndex === 1 && (
-                  <span>
-                    ok dr.{' '}
-                    {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
-                    !
-                  </span>
+                  <span>{` ok dr. ${data.getDoctorProfile.profile.lastName.toLowerCase()}`}!</span>
                 )}
                 {selectedTabIndex === 2 && (
-                  <span>
-                    ok dr.{' '}
-                    {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
-                    !
-                  </span>
+                  <span>{`ok dr. ${data.getDoctorProfile.profile.lastName.toLowerCase()}`}!</span>
                 )}
                 {selectedTabIndex === 3 && (
-                  <span>
-                    thank you, dr.{' '}
-                    {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
-                    :)
-                  </span>
+                  <span>{`thank you, dr. ${data.getDoctorProfile.profile.lastName.toLowerCase()} :)`}</span>
                 )}
               </Typography>
               {selectedTabIndex === 0 && (
