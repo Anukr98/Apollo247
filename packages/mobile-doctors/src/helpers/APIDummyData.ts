@@ -78,7 +78,8 @@ export const doctorProfile: DummyQueryResult = {
       consultationHours: [
         {
           days: 'Tue, Wed',
-          timings: '02:00 PM - 3:30 PM',
+          startTime: '15:15:30Z',
+          endTime: '20:15:30Z',
           availableForPhysicalConsultation: true,
           availableForVirtualConsultation: true,
           type: 'fixed',

@@ -43,6 +43,15 @@ export interface AvailabilityProps {
 
 export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
   const [consultationType, setConsultationType] = useState({ physical: false, online: false });
+  const get12HrsFormat = (timeString: string /* 12:30 */) => {
+    const H = +timeString.substr(0, 2);
+    const h = H % 12 || 12;
+    const ampm = H < 12 ? 'AM' : 'PM';
+    return h + timeString.substr(2, 3) + ' ' + ampm;
+  };
+  const fromatConsultationHours = (startTime: string, endTime: string /* input eg.: 15:15:30Z */) =>
+    `${get12HrsFormat(startTime.replace('Z', ''))} - ${get12HrsFormat(endTime.replace('Z', ''))}`;
+
   return (
     <View style={styles.container}>
       {profileData!.profile.isStarDoctor ? (
@@ -74,7 +83,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
           return (
             <ConsultationHoursCard
               days={i.days}
-              timing={i.timings}
+              timing={fromatConsultationHours(i.startTime, i.endTime)}
               isAvailableForOnlineConsultation={i.availableForVirtualConsultation}
               isAvailableForPhysicalConsultation={i.availableForPhysicalConsultation}
               key={idx}

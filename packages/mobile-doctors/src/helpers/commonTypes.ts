@@ -66,7 +66,8 @@ export type clinics = {
 };
 export type Consultations = {
   days: string;
-  timings: string;
+  startTime: string;
+  endTime: string;
   availableForPhysicalConsultation: boolean;
   availableForVirtualConsultation: boolean;
   type: string; //=> 'accepted' | 'Not accepted'
