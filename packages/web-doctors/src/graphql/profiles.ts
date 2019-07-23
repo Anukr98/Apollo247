@@ -17,63 +17,64 @@ export const GET_PATIENTS = gql`
     }
   }
 `;
-
-export const IS_DOCTOR = gql`
-  query hasAccess($mobileNumber: String!) {
-    hasAccess(mobileNumber: $mobileNumber)
-  }
-`;
-
 export const GET_DOCTOR_PROFILE = gql`
-  query getDoctorProfile($mobileNumber: String!) {
-    getDoctorProfile(mobileNumber: $mobileNumber) {
-      id
-      firstName
-      lastName
-      mobileNumber
-      experience
-      speciality
-      isStarDoctor
-      education
-      services
-      languages
-      city
-      awards
-      clinicsList {
+  query GetDoctorProfile {
+    getDoctorProfile {
+      profile {
+        id
+        salutation
+        firstName
+        lastName
+        mobileNumber
+        experience
+        speciality
+        specialization
+        isStarDoctor
+        education
+        services
+        languages
+        city
+        awards
+        photoUrl
+        registrationNumber
+        isProfileComplete
+        availableForPhysicalConsultation
+        availableForVirtualConsultation
+        onlineConsultationFees
+        physicalConsultationFees
+        package
+        inviteStatus
+      }
+      paymentDetails {
+        accountNumber
+        address
+      }
+      clinics {
         name
-        location
+        addressLine1
+        addressLine2
+        addressLine3
+        city
       }
       starDoctorTeam {
         firstName
         lastName
         experience
-        typeOfConsult
         inviteStatus
       }
-    }
-  }
-`;
-
-export const PATIENT_SIGN_IN = gql`
-  mutation PatientSignIn($jwt: String!) {
-    patientSignIn(jwt: $jwt) {
-      patients {
-        id
-        mobileNumber
-        firstName
-        lastName
-        relation
-        gender
-        uhid
-        dateOfBirth
-        emailAddress
+      consultationHours {
+        days
+        startTime
+        endTime
+        availableForPhysicalConsultation
+        availableForVirtualConsultation
+        type
       }
     }
   }
 `;
-
 export const UPDATE_PATIENT = gql`
-  mutation updatePatient($patientInput: UpdatePatientInput!) {
+  mutation UpdatePatient($patientInput: UpdatePatientInput!) {
     updatePatient(patientInput: $patientInput) {
       patient {
         id

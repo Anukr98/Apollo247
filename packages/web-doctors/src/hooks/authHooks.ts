@@ -4,13 +4,13 @@ import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 const useAuthContext = () => useContext(AuthContext);
 
 export const useCurrentPatient = () => useAuthContext().currentPatient;
-export const useAllCurrentPatients = () => useAuthContext().allCurrentPatients;
-export const useIsSignedIn = () => useAllCurrentPatients() != null;
+// export const useAllCurrentPatients = () => useAuthContext().allCurrentPatients;
+// export const useIsSignedIn = () => useAllCurrentPatients() != null;
 
 export const useAuth = () => {
   const currentPatient = useCurrentPatient();
   const setCurrentPatient = useAuthContext().setCurrentPatient!;
-  const allCurrentPatients = useAllCurrentPatients();
+  // const allCurrentPatients = useAllCurrentPatients();
 
   const verifyOtp = useAuthContext().verifyOtp!;
   const verifyOtpError = useAuthContext().verifyOtpError!;
@@ -20,7 +20,7 @@ export const useAuth = () => {
   const sendOtpError = useAuthContext().sendOtpError;
   const isSendingOtp = useAuthContext().isSendingOtp;
 
-  const isSignedIn = useIsSignedIn();
+  const isSignedIn = useCurrentPatient();
   const signInError = useAuthContext().signInError;
   const isSigningIn = useAuthContext().isSigningIn;
   const signOut = useAuthContext().signOut!;
@@ -28,7 +28,7 @@ export const useAuth = () => {
   return {
     currentPatient,
     setCurrentPatient,
-    allCurrentPatients,
+    //allCurrentPatients,
 
     verifyOtp,
     verifyOtpError,

@@ -5,27 +5,25 @@ import { ErrorResponse, onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
-import { PATIENT_SIGN_IN } from 'graphql/profiles';
+import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 import {
-  PatientSignIn,
-  PatientSignInVariables,
-  PatientSignInPatientSignInPatients,
-} from 'graphql/types/PatientSignIn';
+  GetDoctorProfile,
+  GetDoctorProfile_getDoctorProfile,
+} from 'graphql/types/getDoctorProfile';
 import { apiRoutes } from 'helpers/apiRoutes';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
-import { Relation } from 'graphql/types/globalTypes';
 import _uniqueId from 'lodash/uniqueId';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
 }
 
-export interface AuthContextProps<Patient = PatientSignInPatientSignInPatients> {
-  currentPatient: Patient | null;
-  allCurrentPatients: Patient[] | null;
-  setCurrentPatient: ((p: Patient) => void) | null;
+export interface AuthContextProps<Doctor = GetDoctorProfile_getDoctorProfile> {
+  currentPatient: Doctor | null;
+  //allCurrentPatients: Patient[] | null;
+  setCurrentPatient: ((p: Doctor) => void) | null;
 
   sendOtp: ((phoneNumber: string, captchaPlacement: HTMLElement | null) => Promise<unknown>) | null;
   sendOtpError: boolean;
@@ -46,7 +44,7 @@ export interface AuthContextProps<Patient = PatientSignInPatientSignInPatients> 
 export const AuthContext = React.createContext<AuthContextProps>({
   currentPatient: null,
   setCurrentPatient: null,
-  allCurrentPatients: null,
+  //allCurrentPatients: null,
 
   sendOtp: null,
   sendOtpError: false,
@@ -98,10 +96,6 @@ let otpVerifier: firebase.auth.ConfirmationResult;
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
   apolloClient = buildApolloClient(authToken);
-
-  const [allCurrentPatients, setAllCurrentPatients] = useState<
-    AuthContextProps['allCurrentPatients']
-  >(null);
   const [currentPatient, setCurrentPatient] = useState<AuthContextProps['currentPatient']>(null);
 
   const [isSendingOtp, setIsSendingOtp] = useState<AuthContextProps['isSendingOtp']>(false);
@@ -129,6 +123,7 @@ export const AuthProvider: React.FC = (props) => {
       // Create a new unique captcha every time because (apparently) captcha.clear() is flaky,
       // and can eventually result in a 'recaptcha already assigned to this element' error.
       const captchaContainer = document.createElement('div');
+      captchaContainer.style.display = 'none';
       const captchaId = _uniqueId('captcha-container');
       captchaContainer.id = captchaId;
       captchaPlacement.parentNode!.insertBefore(captchaContainer, captchaPlacement.nextSibling);
@@ -176,7 +171,7 @@ export const AuthProvider: React.FC = (props) => {
     app
       .auth()
       .signOut()
-      .then(() => window.location.reload());
+      .then(() => window.location.replace('/'));
 
   useEffect(() => {
     app.auth().onAuthStateChanged(async (user) => {
@@ -193,28 +188,24 @@ export const AuthProvider: React.FC = (props) => {
 
         setIsSigningIn(true);
         const [signInResult, signInError] = await wait(
-          apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
-            mutation: PATIENT_SIGN_IN,
-            variables: { jwt },
+          apolloClient.mutate<GetDoctorProfile, GetDoctorProfile>({
+            mutation: GET_DOCTOR_PROFILE,
           })
         );
-        if (signInError || !signInResult.data || !signInResult.data.patientSignIn.patients) {
+        if (signInError || !signInResult.data || !signInResult.data.getDoctorProfile) {
           if (signInError) console.error(signInError);
           setSignInError(true);
           setIsSigningIn(false);
           app.auth().signOut();
           return;
         }
-        const patients = signInResult.data.patientSignIn.patients;
-        const me = patients.find((p) => p.relation === Relation.ME) || patients[0];
-        setAllCurrentPatients(patients);
-        setCurrentPatient(me);
+        const doctors = signInResult.data.getDoctorProfile;
+        setCurrentPatient(doctors);
         setSignInError(false);
       }
       setIsSigningIn(false);
     });
   }, []);
-
   return (
     <ApolloProvider client={apolloClient}>
       <ApolloHooksProvider client={apolloClient}>
@@ -222,20 +213,15 @@ export const AuthProvider: React.FC = (props) => {
           value={{
             currentPatient,
             setCurrentPatient,
-            allCurrentPatients,
-
             sendOtp,
             sendOtpError,
             isSendingOtp,
-
             verifyOtp,
             verifyOtpError,
             isVerifyingOtp,
-
             signInError,
             isSigningIn,
             signOut,
-
             isLoginPopupVisible,
             setIsLoginPopupVisible,
           }}
