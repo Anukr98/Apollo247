@@ -14,8 +14,12 @@ import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import { DoctorsLanding } from 'components/DoctorsLanding';
 import { AuthRouted } from 'components/AuthRouted';
+import { PatientsList } from 'components/PatientsList';
 
 declare global {
+  interface Window {
+    __TEST__: string;
+  }
   namespace NodeJS {
     interface ProcessEnv {
       NODE_ENV: 'local' | 'dev';
@@ -23,6 +27,7 @@ declare global {
       API_GATEWAY_PORT: string;
       GOOGLE_APPLICATION_CREDENTIALS: string;
       FIREBASE_PROJECT_ID: string;
+      TEST: string;
     }
   }
 }
@@ -49,6 +54,7 @@ const App: React.FC = () => {
   return (
     <div className={classes.app}>
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
+      <Route exact path={clientRoutes.patients()} component={PatientsList} />
       <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
       <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
     </div>
