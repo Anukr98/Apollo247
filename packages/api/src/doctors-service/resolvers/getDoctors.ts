@@ -2,6 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsData, INVITEDSTATUS } from 'doctors-service/data/doctorProfile';
 import { DoctorsServiceContext } from 'doctors-service/doctors-service';
+import { Gender } from 'profiles-service/entity/patient';
 
 export const doctorTypeDefs = gql`
   enum INVITEDSTATUS {
@@ -9,6 +10,12 @@ export const doctorTypeDefs = gql`
     REJECTED
     NOTAPPLICABLE
     NONE
+  }
+
+  enum Gender {
+    MALE
+    FEMALE
+    OTHER
   }
 
   type Clinics {
@@ -43,6 +50,7 @@ export const doctorTypeDefs = gql`
     lastName: String!
     mobileNumber: String!
     experience: String
+    gender: Gender
     speciality: String!
     specialization: String
     isStarDoctor: Boolean!
@@ -52,6 +60,7 @@ export const doctorTypeDefs = gql`
     city: String
     awards: String
     photoUrl: String
+    profilePhotoUrl: String
     registrationNumber: String!
     isProfileComplete: String!
     availableForPhysicalConsultation: Boolean!
@@ -64,11 +73,11 @@ export const doctorTypeDefs = gql`
   }
 
   type DoctorProfile {
-    profile: Doctor
-    paymentDetails: [PaymentDetails]
-    clinics: [Clinics]
-    starDoctorTeam: [Doctor]
-    consultationHours: [Consultations]
+    profile: Doctor!
+    paymentDetails: [PaymentDetails!]
+    clinics: [Clinics!]
+    starDoctorTeam: [Doctor!]
+    consultationHours: [Consultations!]
   }
   extend type Query {
     getDoctors: [DoctorProfile]
@@ -90,8 +99,8 @@ type Clinics = {
 
 type Consultations = {
   days: String;
-  startTime: any;
-  endTime: any;
+  startTime: String;
+  endTime: String;
   availableForPhysicalConsultation: Boolean;
   availableForVirtualConsultation: Boolean;
   type: String;
@@ -109,6 +118,7 @@ export type Doctor = {
   lastName: String;
   mobileNumber: String;
   experience: String;
+  gender: Gender;
   speciality: String;
   specialization: String;
   isStarDoctor: Boolean;
@@ -118,6 +128,7 @@ export type Doctor = {
   city: String;
   awards: String;
   photoUrl: String;
+  profilePhotoUrl: String;
   registrationNumber: String;
   isProfileComplete: Boolean;
   availableForPhysicalConsultation: Boolean;
