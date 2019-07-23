@@ -2,14 +2,14 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { INVITEDSTATUS } from './globalTypes';
+import { INVITEDSTATUS } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorProfileById
 // ====================================================
 
 export interface GetDoctorProfileById_getDoctorProfileById_profile {
-  __typename: 'Doctor';
+  __typename: "Doctor";
   id: string;
   firstName: string;
   lastName: string;
@@ -36,7 +36,7 @@ export interface GetDoctorProfileById_getDoctorProfileById_profile {
 }
 
 export interface GetDoctorProfileById_getDoctorProfileById_clinics {
-  __typename: 'Clinics';
+  __typename: "Clinics";
   name: string;
   image: string | null;
   addressLine1: string | null;
@@ -46,7 +46,7 @@ export interface GetDoctorProfileById_getDoctorProfileById_clinics {
 }
 
 export interface GetDoctorProfileById_getDoctorProfileById_starDoctorTeam {
-  __typename: 'Doctor';
+  __typename: "Doctor";
   id: string;
   salutation: string;
   firstName: string;
@@ -66,7 +66,7 @@ export interface GetDoctorProfileById_getDoctorProfileById_starDoctorTeam {
 }
 
 export interface GetDoctorProfileById_getDoctorProfileById_consultationHours {
-  __typename: 'Consultations';
+  __typename: "Consultations";
   days: string;
   startTime: any;
   endTime: any;
@@ -76,7 +76,7 @@ export interface GetDoctorProfileById_getDoctorProfileById_consultationHours {
 }
 
 export interface GetDoctorProfileById_getDoctorProfileById {
-  __typename: 'DoctorProfile';
+  __typename: "DoctorProfile";
   profile: GetDoctorProfileById_getDoctorProfileById_profile;
   clinics: GetDoctorProfileById_getDoctorProfileById_clinics[] | null;
   starDoctorTeam: GetDoctorProfileById_getDoctorProfileById_starDoctorTeam[] | null;
