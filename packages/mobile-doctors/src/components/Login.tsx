@@ -24,6 +24,7 @@ import firebase from 'react-native-firebase';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
+import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
 const styles = StyleSheet.create({
   container: {
@@ -243,8 +244,10 @@ export const Login: React.FC<LoginProps> = (props) => {
           }
           onClickButton={async () => {
             Keyboard.dismiss();
-            if (!(phoneNumber.length == 10 && phoneNumberIsValid)) {
-              null;
+            if (
+              !(phoneNumber.length == 10 && phoneNumberIsValid && isMobileNumberValid(phoneNumber))
+            ) {
+              return null;
             } else {
               const isBlocked = await _getTimerData();
               console.log('isBlocked', isBlocked);
