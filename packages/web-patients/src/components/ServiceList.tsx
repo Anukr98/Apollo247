@@ -12,7 +12,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     serviceList: {
-      paddingTop: 145,
+      paddingTop: 162,
       paddingBottom: 40,
       paddingLeft: 20,
       paddingRight: 20,

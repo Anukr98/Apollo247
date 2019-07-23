@@ -82,10 +82,10 @@ export interface getDoctorProfileById_getDoctorProfileById_consultationHours {
 
 export interface getDoctorProfileById_getDoctorProfileById {
   __typename: "DoctorProfile";
-  profile: getDoctorProfileById_getDoctorProfileById_profile | null;
-  clinics: (getDoctorProfileById_getDoctorProfileById_clinics | null)[] | null;
-  starDoctorTeam: (getDoctorProfileById_getDoctorProfileById_starDoctorTeam | null)[] | null;
-  consultationHours: (getDoctorProfileById_getDoctorProfileById_consultationHours | null)[] | null;
+  profile: getDoctorProfileById_getDoctorProfileById_profile;
+  clinics: getDoctorProfileById_getDoctorProfileById_clinics[] | null;
+  starDoctorTeam: getDoctorProfileById_getDoctorProfileById_starDoctorTeam[] | null;
+  consultationHours: getDoctorProfileById_getDoctorProfileById_consultationHours[] | null;
 }
 
 export interface getDoctorProfileById {

@@ -25,6 +25,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.between('sm', 'md')]: {
         paddingTop: 60,
+        borderRadius: 0,
       },
     },
     bannerInfo: {
@@ -56,28 +57,24 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     bannerImg: {
-      marginBottom: -190,
-      textAlign: 'right',
+      position: 'absolute',
       [theme.breakpoints.up('lg')]: {
-        width: '50%',
-        marginLeft: 'auto',
-        position: 'absolute',
         right: 32,
         top: 30,
       },
       [theme.breakpoints.between('sm', 'md')]: {
         width: 400,
-        position: 'absolute',
-        right: 40,
-        bottom: 0,
-        marginBottom: -150,
+        right: 32,
+        top: 90,
+      },
+      [theme.breakpoints.down('xs')]: {
+        right: 20,
+        bottom: -175,
       },
       '& img': {
-        marginTop: -15,
         maxWidth: '100%',
         [theme.breakpoints.down('xs')]: {
           maxWidth: 281,
-          marginTop: -50,
         },
       },
     },
