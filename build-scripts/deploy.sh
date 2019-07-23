@@ -3,10 +3,6 @@
 
 ./build-scripts/build.sh $1
 
-# echo -e "\n scping build artifact and sshing into $1.aph.popcornapps.com..."
-# scp aph-$1.tar.gz "$1.api.aph.popcornapps.com:/srv"
-# ssh $1.aph.popcornapps.com "cd /srv && tar -xzvf aph-$1.tar.gz && ./apollo-hospitals/build-scripts/start.sh \"$1\""
-rm -rf tmp
-mkdir tmp
-mv aph-$1.tar.gz tmp/
-./build-scripts/start.sh $1
+echo -e "\nscping build artifact aph-$1-tar.gz and sshing into $1.api.aph.popcornapps.com..."
+scp aph-$1.tar.gz "apollodev@$1.api.aph.popcornapps.com:/home/apollodev"
+ssh apollodev@$1.api.aph.popcornapps.com "cd /home/apollodev && tar -xzvf aph-$1.tar.gz && ./apollo-hospitals/build-scripts/start.sh $1"

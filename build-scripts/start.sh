@@ -2,10 +2,9 @@
 # $1 refers the environment: 'local' | 'dev' | 'qa' | 'production'
 # This script should run while ssh'ed into the remote server
 
-cd tmp
 docker-compose stop
-tar -xzvf aph-$1.tar.gz
+rm -rf apollo-hospitals
+tar -xzf aph-$1.tar.gz
+mv -v aph-$1.tar.gz aph-$1-$(date +%Y-%m-%d_%H-%M-%S).tar.gz
 cd apollo-hospitals
-pwd
-ls
-docker-compose up
+docker-compose up -d
