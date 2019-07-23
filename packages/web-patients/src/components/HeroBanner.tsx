@@ -15,6 +15,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '0 0 10px 10px',
       backgroundColor: theme.palette.text.primary,
       padding: 40,
+      paddingTop: 46,
       position: 'relative',
       [theme.breakpoints.up('lg')]: {
         display: 'flex',
@@ -24,6 +25,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.between('sm', 'md')]: {
         paddingTop: 60,
+        borderRadius: 0,
       },
     },
     bannerInfo: {
@@ -55,25 +57,24 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     bannerImg: {
-      marginBottom: -190,
-      textAlign: 'right',
+      position: 'absolute',
       [theme.breakpoints.up('lg')]: {
-        width: '50%',
-        marginLeft: 'auto',
+        right: 32,
+        top: 30,
       },
       [theme.breakpoints.between('sm', 'md')]: {
         width: 400,
-        position: 'absolute',
-        right: 40,
-        bottom: 0,
-        marginBottom: -150,
+        right: 32,
+        top: 90,
+      },
+      [theme.breakpoints.down('xs')]: {
+        right: 20,
+        bottom: -175,
       },
       '& img': {
-        marginTop: -15,
         maxWidth: '100%',
         [theme.breakpoints.down('xs')]: {
           maxWidth: 281,
-          marginTop: -50,
         },
       },
     },
@@ -87,6 +88,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#00b38e !important',
     },
     selectMenuRoot: {
+      paddingRight: 55,
       '& svg': {
         color: '#00b38e',
         fontSize: 30,
@@ -109,8 +111,9 @@ const useStyles = makeStyles((theme: Theme) => {
     addMemberBtn: {
       boxShadow: 'none',
       backgroundColor: 'transparent',
-      minWidth: 100,
       marginLeft: 30,
+      paddingBottom: 0,
+      paddingRight: 0,
       '&:hover': {
         backgroundColor: 'transparent',
       },
