@@ -77,10 +77,10 @@ export interface GetDoctorProfileById_getDoctorProfileById_consultationHours {
 
 export interface GetDoctorProfileById_getDoctorProfileById {
   __typename: "DoctorProfile";
-  profile: GetDoctorProfileById_getDoctorProfileById_profile | null;
-  clinics: (GetDoctorProfileById_getDoctorProfileById_clinics | null)[] | null;
-  starDoctorTeam: (GetDoctorProfileById_getDoctorProfileById_starDoctorTeam | null)[] | null;
-  consultationHours: (GetDoctorProfileById_getDoctorProfileById_consultationHours | null)[] | null;
+  profile: GetDoctorProfileById_getDoctorProfileById_profile;
+  clinics: GetDoctorProfileById_getDoctorProfileById_clinics[] | null;
+  starDoctorTeam: GetDoctorProfileById_getDoctorProfileById_starDoctorTeam[] | null;
+  consultationHours: GetDoctorProfileById_getDoctorProfileById_consultationHours[] | null;
 }
 
 export interface GetDoctorProfileById {

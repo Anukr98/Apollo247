@@ -107,3 +107,20 @@ export const DOCTORS_BY_SPECIALITY = gql`
     }
   }
 `;
+
+export const PATIENT_APPOINTMENT_HISTORY = gql`
+  query AppointmentHistory($appointmentHistoryInput: AppointmentHistoryInput) {
+    getAppointmentHistory(appointmentHistoryInput: $appointmentHistoryInput) {
+      appointmentsHistory {
+        patientId
+        doctorId
+        appointmentDate
+        appointmentTime
+        appointmentType
+        hospitalId
+        status
+        bookingDate
+      }
+    }
+  }
+`;
