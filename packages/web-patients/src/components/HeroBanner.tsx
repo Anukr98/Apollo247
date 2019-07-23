@@ -15,6 +15,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '0 0 10px 10px',
       backgroundColor: theme.palette.text.primary,
       padding: 40,
+      paddingTop: 46,
       position: 'relative',
       [theme.breakpoints.up('lg')]: {
         display: 'flex',
@@ -60,6 +61,9 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('lg')]: {
         width: '50%',
         marginLeft: 'auto',
+        position: 'absolute',
+        right: 32,
+        top: 30,
       },
       [theme.breakpoints.between('sm', 'md')]: {
         width: 400,
@@ -87,6 +91,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#00b38e !important',
     },
     selectMenuRoot: {
+      paddingRight: 55,
       '& svg': {
         color: '#00b38e',
         fontSize: 30,
@@ -109,8 +114,9 @@ const useStyles = makeStyles((theme: Theme) => {
     addMemberBtn: {
       boxShadow: 'none',
       backgroundColor: 'transparent',
-      minWidth: 100,
       marginLeft: 30,
+      paddingBottom: 0,
+      paddingRight: 0,
       '&:hover': {
         backgroundColor: 'transparent',
       },
