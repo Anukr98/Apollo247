@@ -118,17 +118,27 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
                   </div>
                   <div className={classes.clinicInfo}>
                     <div className={classes.address}>
-                      {(clinicDetails && clinicDetails.addressLine1) || ''}
+                      {(clinicDetails && clinicDetails.addressLine1) || ''}&nbsp;
+                      {(clinicDetails && clinicDetails.addressLine2) || ''}&nbsp;
+                      {(clinicDetails && clinicDetails.addressLine3) || ''}
                     </div>
                     <div className={classes.availableTimings}>
                       {consultationHours.map((consultationDetails) => {
+                        const startTime =
+                          consultationDetails && consultationDetails.startTime
+                            ? consultationDetails.startTime.substring(0, 5)
+                            : null;
+                        const endTime =
+                          consultationDetails && consultationDetails.endTime
+                            ? consultationDetails.endTime.substring(0, 5)
+                            : null;
                         return (
                           <div className={classes.timingsRow} key={_uniqueId('ava_')}>
                             <span>{(consultationDetails && consultationDetails.days) || ''}</span>
                             <span>
-                              {(consultationDetails && consultationDetails.startTime) || ''}
+                              {startTime ? startTime : ''}
                               &nbsp;-&nbsp;
-                              {(consultationDetails && consultationDetails.endTime) || ''}
+                              {endTime ? endTime : ''}
                             </span>
                           </div>
                         );

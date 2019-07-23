@@ -14,6 +14,7 @@ import Typography from '@material-ui/core/Typography';
 import { OnlineConsult } from 'components/OnlineConsult';
 import { VisitClinic } from 'components/VisitClinic';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import {
   GetDoctorProfileById,
@@ -140,6 +141,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const doctorId = params.id;
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
+  const { allCurrentPatients } = useAllCurrentPatients();
+
+  const currentUserId = (allCurrentPatients && allCurrentPatients[0].id) || '';
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorProfileById,
@@ -165,6 +169,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         ? doctorDetails.getDoctorProfileById.profile.isStarDoctor
         : false;
 
+    const doctorId =
+      doctorDetails &&
+      doctorDetails.getDoctorProfileById &&
+      doctorDetails.getDoctorProfileById.profile
+        ? doctorDetails.getDoctorProfileById.profile.id
+        : '';
+
     return (
       <div className={classes.welcome}>
         <div className={classes.headerSticky}>
@@ -183,11 +194,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <div className={classes.searchSection}>
                 <DoctorClinics doctorDetails={doctorDetails} />
                 {isStarDoctor && <StarDoctorTeam doctorDetails={doctorDetails} />}
-                <div className={classes.sectionHeader}>
-                  <span>Appointment History</span>
-                  <span className={classes.count}>02</span>
-                </div>
-                <AppointmentHistory />
+                <AppointmentHistory doctorId={doctorId} patientId={currentUserId} />
               </div>
             </div>
           </div>

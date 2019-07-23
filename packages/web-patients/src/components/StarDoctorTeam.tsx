@@ -3,6 +3,8 @@ import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import _uniqueId from 'lodash/uniqueId';
 import { GetDoctorProfileById as DoctorDetails } from 'graphql/types/getDoctorProfileById';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -103,10 +105,12 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
                     className={classes.bigAvatar}
                   />
                   <div className={classes.doctorInfo}>
-                    <div className={classes.doctorName}>
-                      {(doctorDetails && doctorDetails.firstName) || ''}{' '}
-                      {(doctorDetails && doctorDetails.lastName) || ''}
-                    </div>
+                    <Link to={clientRoutes.doctorDetails(doctorDetails.id)}>
+                      <div className={classes.doctorName}>
+                        {(doctorDetails && doctorDetails.firstName) || ''}&nbsp;
+                        {(doctorDetails && doctorDetails.lastName) || ''}
+                      </div>
+                    </Link>
                     <div className={classes.speciality}>
                       {(doctorDetails && doctorDetails.speciality) || ''}
                       <span className={classes.doctorExp}>
