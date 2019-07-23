@@ -43,7 +43,7 @@ const webDoctorsPort = getPortStr(process.env.WEB_DOCTORS_PORT!);
 const envToCorsOrigin: Record<NodeJS.ProcessEnv['NODE_ENV'], string[]> = {
   local: [`http://localhost${webPatientsPort}`, `http://localhost${webDoctorsPort}`],
   dev: [
-    'http://dev.web-patienst.aph.popcornapps.com',
+    'http://dev.web-patients.aph.popcornapps.com',
     'http://dev.web-doctors.aph.popcornapps.com',
   ],
 };
