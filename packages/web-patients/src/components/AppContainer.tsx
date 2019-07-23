@@ -77,8 +77,11 @@ const AppContainer: React.FC = () => {
   );
 };
 
-const rhlConfig = ({ hotHooks: true } as any) as Partial<Config>;
-setConfig(rhlConfig);
-const HotAppContainer = hot(AppContainer);
+let HotAppContainer = AppContainer;
+if (process.env.NODE_ENV === 'local') {
+  const rhlConfig = ({ hotHooks: true } as any) as Partial<Config>;
+  setConfig(rhlConfig);
+  HotAppContainer = hot(AppContainer);
+}
 
 export { HotAppContainer as AppContainer };
