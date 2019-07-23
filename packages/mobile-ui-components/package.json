@@ -5,17 +5,23 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rm -rf dist/* && tsc --project . && create-index dist && cp dist/index.js dist/index.d.ts",
+    "format": "prettier --list-different '**/*.{js,jsx,ts,tsx,json,htm,html}'",
+    "format:fix": "prettier --write '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
-    "start": "npm run build && tsc --project . -w"
+    "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
+    "start": "npm run build && tsc --project . -w",
+    "typecheck": "tsc --project . --noEmit"
   },
   "peerDependencies": {
     "react": "16.8.6"
   },
   "devDependencies": {
+    "@aph/api-schema": "file:../api-schema",
     "@aph/eslint-config": "file:../eslint-config",
     "@aph/prettier-config": "file:../prettier-config",
     "@aph/tsconfig": "file:../tsconfig",
     "@types/react": "^16.8.19",
+    "@types/react-native": "^0.60.0",
     "@typescript-eslint/eslint-plugin": "^1.9.0",
     "@typescript-eslint/parser": "^1.9.0",
     "create-index": "^2.4.0",
@@ -24,6 +30,7 @@
     "eslint-plugin-react": "^7.13.0",
     "eslint-plugin-react-hooks": "^1.6.0",
     "eslint-plugin-react-native": "^3.7.0",
+    "prettier": "^1.18.2",
     "react": "16.8.6",
     "react-native": "0.59.9",
     "typescript": "^3.5.2"

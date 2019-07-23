@@ -1,19 +1,16 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React from 'react';
+import React, { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
+import Popover from '@material-ui/core/Popover';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
-import MenuItem from '@material-ui/core/MenuItem';
-import { AphSelect } from '@aph/web-ui-components';
-import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
-import _isEmpty from 'lodash/isEmpty';
-import _startCase from 'lodash/startCase';
-import _toLower from 'lodash/lowerCase';
-import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
-import { useAuth } from 'hooks/authHooks';
-
+import {
+  GetDoctorProfile_getDoctorProfile_starDoctorTeam,
+  GetDoctorProfile_getDoctorProfile_clinics,
+} from 'graphql/types/getDoctorProfile';
+import Button from '@material-ui/core/Button';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
@@ -44,6 +41,12 @@ const useStyles = makeStyles((theme: Theme) => {
           padding: '0 2px',
         },
       },
+    },
+    removeDoctor: {
+      padding: theme.spacing(1),
+      color: '#951717',
+      fontSize: 15,
+      fontWeight: theme.typography.fontWeightMedium,
     },
     tabContent: {
       borderRadius: 10,
@@ -80,6 +83,8 @@ const useStyles = makeStyles((theme: Theme) => {
     avatarBlock: {
       overflow: 'hidden',
       borderRadius: '10px 0 0 0',
+      position: 'relative',
+      paddingBottom: '20px',
     },
     bigAvatar: {
       width: '100%',
@@ -93,16 +98,46 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '10px',
       position: 'relative',
       paddingLeft: '90px',
+      minHeight: '130px',
+      flexGrow: 1,
+      boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
+      marginBottom: '30px',
+      marginRight: '10px',
+      '& h4': {
+        borderBottom: 'none',
+        fontSize: 18,
+      },
+    },
+    addStarDoctor: {
+      borderRadius: 10,
+      backgroundColor: theme.palette.primary.contrastText,
+      padding: '10px',
+      position: 'relative',
+      paddingLeft: '10px',
       minHeight: '100px',
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
       marginBottom: '30px',
       marginRight: '10px',
+      '& input': {
+        // borderBottom: '2px solid #f00',
+      },
     },
     saveButton: {
       minWidth: '300px',
-      marginTop: '20px',
-      float: 'right',
+      margin: theme.spacing(1),
+      '&:hover': {
+        backgroundColor: '#fcb716',
+      },
+    },
+    backButton: {
+      minWidth: '120px',
+      color: '#fc9916',
+      backgroundColor: '#fff',
+      margin: theme.spacing(1),
+      '&:hover': {
+        backgroundColor: '#fff',
+      },
     },
     addDocter: {
       marginTop: '20px',
@@ -117,15 +152,202 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
-    btmContainer: {
+    btnContainer: {
       borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
       marginTop: '30px',
+      paddingTop: '15px',
+      textAlign: 'right',
+      '& button': {
+        padding: '9px 16px',
+      },
+    },
+    invited: {
+      color: '#ff748e',
+      fontSize: 15,
+      fontWeight: theme.typography.fontWeightMedium,
+      marginTop: '10px',
+      textTransform: 'uppercase',
+      '& img': {
+        position: 'relative',
+        top: '4px',
+        marginRight: '15px',
+        marginLeft: '15px',
+      },
+    },
+    posRelative: {
+      position: 'relative',
+    },
+    moreIcon: {
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      padding: theme.spacing(0),
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      minWidth: 20,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    none: {
+      display: 'none',
+    },
+    starImg: {
+      position: 'absolute',
+      bottom: '7px',
+      right: '15px',
+      width: '40px',
     },
   };
 });
 
-export const DoctorProfileTab: React.FC = () => {
+interface DoctorProfileTabProps {
+  values: any;
+  onNext: () => void;
+}
+interface DoctorsName {
+  label: string;
+  typeOfConsult: string;
+  experience: string;
+  firstName: string;
+  inviteStatus: string;
+  lastName: string;
+}
+
+export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNext }) => {
   const classes = useStyles();
+  const [userData, setData] = useState(values);
+  const [showAddDoc, setShowAddDoc] = useState(false);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  function handleClick(event: any) {
+    setAnchorEl(event.currentTarget);
+  }
+
+  function handleClose() {
+    setAnchorEl(null);
+  }
+
+  const open = Boolean(anchorEl);
+  function removeDoctor(doctor: any) {
+    const starDoctorTeam = userData.starDoctorTeam.filter(
+      (object: DoctorsName) => object.firstName !== doctor.firstName
+    );
+    setData({ ...userData, starDoctorTeam: starDoctorTeam });
+  }
+  const starDocNumber = userData.starDoctorTeam.length;
+  const starDoctors = userData.starDoctorTeam.map(
+    (item: GetDoctorProfile_getDoctorProfile_starDoctorTeam, index: number) => {
+      return (
+        <Grid item lg={4} sm={6} xs={12} key={index.toString()}>
+          <div className={classes.tabContentStarDoctor}>
+            <div className={classes.starDoctors}>
+              <img
+                alt=""
+                src={require('images/doctor-profile.jpg')}
+                className={classes.profileImg}
+              />
+            </div>
+            {!item.inviteStatus ? (
+              <div className={classes.posRelative}>
+                <Button
+                  aria-describedby={open ? 'simple-popover' : undefined}
+                  variant="contained"
+                  className={classes.moreIcon}
+                  onClick={handleClick}
+                >
+                  <img
+                    alt="more.svg"
+                    src={require('images/ic_more.svg')}
+
+                    // onClick={() => removeDoctor(item)}
+                  />
+                </Button>
+                <Popover
+                  id={open ? 'simple-popover' : undefined}
+                  open={open}
+                  anchorEl={anchorEl}
+                  onClose={handleClose}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'center',
+                  }}
+                >
+                  <Typography className={classes.removeDoctor} onClick={() => removeDoctor(item)}>
+                    Remove Doctor
+                  </Typography>
+                </Popover>
+                <Typography variant="h4">
+                  Dr. {item.firstName} {item.lastName}
+                </Typography>
+                <Typography className={classes.invited}>
+                  <img alt="" src={require('images/ic_invite.svg')} />
+                  Invited
+                </Typography>
+              </div>
+            ) : (
+              <div className={classes.posRelative}>
+                <Button
+                  aria-describedby={open ? 'simple-popover' : undefined}
+                  variant="contained"
+                  className={classes.moreIcon}
+                  onClick={handleClick}
+                >
+                  <img
+                    alt=""
+                    src={require('images/ic_more.svg')}
+                    // onClick={() => removeDoctor(item)}
+                  />
+                </Button>
+                <Popover
+                  id={open ? 'simple-popover' : undefined}
+                  open={open}
+                  anchorEl={anchorEl}
+                  onClose={handleClose}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'center',
+                  }}
+                >
+                  <Typography className={classes.removeDoctor} onClick={() => removeDoctor(item)}>
+                    Remove Doctor
+                  </Typography>
+                </Popover>
+                <Typography variant="h4">
+                  Dr. {item.firstName} {item.lastName}
+                </Typography>
+                <Typography variant="h6">
+                  GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
+                </Typography>
+                <Typography variant="h5">
+                  MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+                </Typography>
+              </div>
+            )}
+          </div>
+        </Grid>
+      );
+    }
+  );
+
+  const clinicsList = userData.clinics.map(
+    (item: GetDoctorProfile_getDoctorProfile_clinics, index: number) => {
+      return (
+        <Typography variant="h3" key={index.toString()} className={index > 0 ? classes.none : ''}>
+          {item.name}, {item.addressLine1}, {item.addressLine2}
+          {item.addressLine3}, {item.city}
+        </Typography>
+      );
+    }
+  );
 
   return (
     <div className={classes.ProfileContainer}>
@@ -140,10 +362,14 @@ export const DoctorProfileTab: React.FC = () => {
                   src={require('images/doctor-profile.jpg')}
                   className={classes.bigAvatar}
                 />
+                <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
               </div>
-              <Typography variant="h4">Dr. Simran Rai</Typography>
+              <Typography variant="h4">
+                Dr. {userData.profile.firstName} {userData.profile.lastName}
+              </Typography>
               <Typography variant="h6">
-                GENERAL PHYSICIAN <span> | </span> <span> 7YRS </span>{' '}
+                {userData.profile.specialization} <span> | </span>{' '}
+                <span> {userData.profile.experience}YRS </span>{' '}
               </Typography>
             </Paper>
           </Grid>
@@ -152,98 +378,88 @@ export const DoctorProfileTab: React.FC = () => {
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Education</Typography>
-                  <Typography variant="h3">MS (Surgery), MBBS (Internal Medicine)</Typography>
+                  <Typography variant="h3">{userData.profile.education}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Awards</Typography>
-                  <Typography variant="h3">Dr. B.C.Roy Award (2009)</Typography>
+                  <Typography variant="h3">{userData.profile.awards}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Speciality</Typography>
-                  <Typography variant="h3">Specialization 1, Specialization 2</Typography>
+                  <Typography variant="h3">{userData.profile.speciality}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Speaks</Typography>
-                  <Typography variant="h3">English, Telugu, Hindi</Typography>
+                  <Typography variant="h3">{userData.profile.languages}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Services</Typography>
-                  <Typography variant="h3">Consultation, Surgery, Physio</Typography>
+                  <Typography variant="h3">{userData.profile.services}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">In-person Consult Location</Typography>
-                  <Typography variant="h3">
-                    20 Orchard Avenue, Hiranandani, Powai, Mumbai 400076
-                  </Typography>
+                  {clinicsList}
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">MCI Number</Typography>
-                  <Typography variant="h3">123456</Typography>
+                  <Typography variant="h3">{userData.profile.registrationNumber}</Typography>
                 </Paper>
               </Grid>
             </Grid>
           </Grid>
         </Grid>
       </div>
-      <Typography variant="h2">Your Star Doctors Team (2)</Typography>
-      <Grid container alignItems="flex-start" spacing={0}>
-        <Grid item lg={4} sm={6} xs={12}>
-          <div className={classes.tabContentStarDoctor}>
-            <div className={classes.starDoctors}>
-              <img
-                alt=""
-                src={require('images/doctor-profile.jpg')}
-                className={classes.profileImg}
-              />
-            </div>
-            <Typography variant="h4">Dr. Simran Rai</Typography>
-            <Typography variant="h6">
-              GENERAL PHYSICIAN <span> | </span> <span> 7YRS </span>{' '}
-            </Typography>
-            <Typography variant="h5">
-              MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
-            </Typography>
+      {!!userData.profile.isStarDoctor && (
+        <div>
+          <Typography variant="h2" className={starDocNumber === 0 ? classes.none : ''}>
+            Your Star Doctors Team ({starDocNumber})
+          </Typography>
+          <Grid container alignItems="flex-start" spacing={0}>
+            {starDoctors}
+            {!!showAddDoc && (
+              <Grid item lg={4} sm={6} xs={12}>
+                <div className={classes.addStarDoctor}>
+                  <Typography variant="h5">
+                    Add doctor to your team
+                    {/* <StarDoctorSearch addDoctorHadler={addDoctorHadler} /> */}
+                  </Typography>
+                </div>
+              </Grid>
+            )}
+          </Grid>
+          <div className={classes.addDocter}>
+            <AphButton
+              variant="contained"
+              color="primary"
+              classes={{ root: classes.btnAddDoctor }}
+              onClick={(e) => setShowAddDoc(!showAddDoc)}
+            >
+              + ADD DOCTOR
+            </AphButton>
           </div>
-        </Grid>
-        <Grid item lg={4} sm={6} xs={12}>
-          <div className={classes.tabContentStarDoctor}>
-            <div className={classes.starDoctors}>
-              <img
-                alt=""
-                src={require('images/doctor-profile.jpg')}
-                className={classes.profileImg}
-              />
-            </div>
-            <Typography variant="h4">Dr. Rakhi Sharma</Typography>
-            <Typography variant="h6">
-              GENERAL PHYSICIAN <span> | </span> <span> 7YRS </span>{' '}
-            </Typography>
-            <Typography variant="h5">
-              MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
-            </Typography>
-          </div>
-        </Grid>
-      </Grid>
-      <div className={classes.addDocter}>
-        <AphButton variant="contained" color="primary" classes={{ root: classes.btnAddDoctor }}>
-          + ADD DOCTOR
-        </AphButton>
-      </div>
-      <Grid container alignItems="flex-start" spacing={0} className={classes.btmContainer}>
+        </div>
+      )}
+
+      <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
         <Grid item lg={12} sm={12} xs={12}>
-          <AphButton variant="contained" color="primary" classes={{ root: classes.saveButton }}>
+          <AphButton
+            variant="contained"
+            color="primary"
+            classes={{ root: classes.saveButton }}
+            onClick={() => onNext()}
+          >
             SAVE AND PROCEED
           </AphButton>
         </Grid>

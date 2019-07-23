@@ -1,4 +1,4 @@
-import { ApploLogo, IconBaseProps } from 'app/src/components/ui/Icons';
+import { ApploLogo } from '@aph/mobile-doctors/src/components/ui/Icons';
 import React from 'react';
 import {
   StyleProp,
@@ -33,18 +33,16 @@ export type HeaderRightIconProps = {
 export interface HeaderProps {
   rightIcons?: HeaderRightIconProps[];
   iconMarginRight?: number;
+  leftComponent?: React.ReactNode;
   rightComponent?: React.ReactNode;
   containerStyle?: StyleProp<ViewStyle>;
 }
 
 export const Header: React.FC<HeaderProps> = (props) => {
-  const { rightIcons, rightComponent, containerStyle, iconMarginRight } = props;
-
+  const { rightIcons, leftComponent, rightComponent, containerStyle, iconMarginRight } = props;
   return (
     <View style={[styles.container, containerStyle]}>
-      <View>
-        <ApploLogo />
-      </View>
+      <View>{leftComponent ? leftComponent : <ApploLogo />}</View>
       {rightComponent ? (
         rightComponent
       ) : (

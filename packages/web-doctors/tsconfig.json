@@ -4,7 +4,6 @@
     "outDir": "dist",
     "baseUrl": "src",
     "traceResolution": false,
-    "noImplicitAny": false,
     "jsx": "react",
     "lib": ["dom", "dom.iterable", "es5", "es6", "scripthost"]
   },

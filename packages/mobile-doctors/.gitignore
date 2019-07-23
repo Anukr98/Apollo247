@@ -19,3 +19,4 @@ Crashlytics.framework/
 Fabric.framework/
 
 ios/assets
+*.iml

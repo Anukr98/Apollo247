@@ -1,58 +1,71 @@
 # apollo-hospitals (@aph)
 
-_Note to windows users: Run the following steps on a Windows 10 Pro machine in an Ubuntu 18 WSL_
+## Windows users only
+
+- Install [Ubuntu 18 WSL](https://www.microsoft.com/en-us/p/ubuntu-1804-lts/9n9tngvndl3q)
+- Enable [developer mode](https://docs.microsoft.com/en-us/windows/uwp/get-started/enable-your-device-for-development)
+- Disable [fast startup mode](https://www.windowscentral.com/how-disable-windows-10-fast-startup)
 
 ## Getting started
 
-1. Install docker and docker-compose
-2. Install [lazydocker](https://github.com/jesseduffield/lazydocker)
-3. Install [nvm](https://nvm.sh), run `nvm use` (now you may have to run an `nvm install` command, read the output)
-4. Add the `firebase-secrets.json` to the `packages/api/src/profiles-service` and `packages/api/src/` folders (ask someone on the dev team for a copy)
+_Note to windows users: Run the following steps on a Windows 10 Pro machine in an Ubuntu 18 WSL_
+
+- Install docker and docker-compose
+- Install [nvm](https://nvm.sh), run `nvm use` (now you may have to run an `nvm install` command, read the output)
+- Add the `firebase-secrets.json` to the `packages/api` folder (ask someone on the dev team for a copy)
+- Copy and rename `local.env` to `.env` in the root (this file is gitignored, so you may change any variables/ports/etc as needed)
+- Run `npm install`
+- Optional: Install [lazydocker](https://github.com/jesseduffield/lazydocker/) to manage your docker containers
 
 ## Web
 
-4. Run `npm install`
-5. Run `npm run bootstrap:web`
-6. Start the containers (-d for daemon mode) `docker-compose up api-gateway web-patients -d`
-7. Run `lazydocker` to manage containers
-8. web-patients app will be running on http://localhost:3000, graphql playground on http://localhost:4000
-
-## Doctor Web
-
-* To get doctor web running start the containers (-d for daemon mode) `docker-compose up -d web-doctors`
-* web-doctors app will be running on http://localhost:3001
+- Run `npm run bootstrap:web`
+- Start the api-gateway `docker-compose up api-gateway`, graphql playground will be on http://localhost:4000
+- Navigate to either `web-patients` or `web-doctors` and run `npm run start`, patients app will be running on http://localhost:3000, web-doctors on http://localhost:3001
 
 ## Mobile
 
-* Run `npm install`
-* Run `npm run bootstrap:mobile`
-* Start the api-gateway `docker-compose up -d api-gateway`
-* Run `lazydocker` to manage containers
-* For Doctors mobile run `npm install` inside mobile-doctors folder
-* Run mobile-doctors from xcode or android studio
+- Run `npm run bootstrap:mobile`
+- Start the api-gateway `docker-compose up api-gateway`, graphql playground will be on http://localhost:4000
+- Navigate to either `mobile-patients` or `mobile-odctors` and run `npm run start`
+
+## Testing
+
+### Web
+
+We use [Cypress](cypress.io) for web testing. Just run `npm run test` (on your host!) to get started.
+
+### Mobile
+
+Using jest. Run `npm run test`
+
+### API
+
+Using jest. Run `npm run test`
 
 ## Database viewer
 
 Each microservice's postgres databases is viewable through the web ui, `pgweb`. Run `docker-compose up pgweb`, navigate to http://localhost:8081, and type in the connection details for the database you want to view. The hostname is the name of the service as specified in `docker-compose.yml` (convention: `<service-name>-db`, eg `profiles-db`). Leave the database entry blank to view all databases for the chosen service, and once logged in, switch between them in the upper left corner (initially the internal `postgres` database will be selected, which is not very useful)
 
-## Web Testing
-
-We use [Cypress](cypress.io) for web testing. Please download their gui binary to your host machine and point it at the `web` folder to the to run the tests.
-
-## Mobile Testing
-
-Using jest. Execute `npm run test`
-
 ## Troubleshooting
-* `docker-compose stop`
-* `git pull`
-* `npm run clean`
-* `rm -rf node_modules`
-* `npm i`
-* `npm run bootstrap` [ for windows run: `npm run bootstrap:web` ]
 
-* `docker-compose stop`
-* `docker-compose up api-gateway`
-* `docker-compose up web-doctors`
-* `docker-compose up web-patients`
-* Make sure `firebase-secrets.json` is copied to `packages/api/src/` folders (ask someone on the dev team for a copy)
+### General reset
+
+- `docker-compose stop`
+- `git pull`
+- `git status` - make sure you have no changes and are on the latest development branch!
+- `npm run clean`
+- `rm -rf node_modules`
+- Now, start from the top of the readme ;)
+
+### Common issues
+
+#### Timeuots/Unable to download new docker images
+
+Go into your docker network settings and select Automatic DNS
+
+#### Any kind of 'file not found' error OR Nginx error when starting a container
+
+This usually indicates that volumes are not mounting properly due to permissions issues.
+Go into your docker settings, click on hard drives, and reset the credentials.
+Then close and reopen your Ubuntu WSL

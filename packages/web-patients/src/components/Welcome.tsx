@@ -10,7 +10,7 @@ import React from 'react';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
-      paddingTop: 85,
+      paddingTop: 88,
       [theme.breakpoints.down('xs')]: {
         paddingTop: 78,
       },

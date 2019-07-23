@@ -1,13 +1,14 @@
-import React from 'react';
-import { StyleSheet, View, Platform, Text } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import { SplashLogo } from 'app/src/components/SplashLogo';
-import { LandingPageImage } from 'app/src/components/LandingPageImage';
-import { fonts } from 'app/src/theme/fonts';
-import { Button } from 'app/src/components/ui/Button';
-import { theme } from '././../theme/theme';
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
+import { LandingPageImage } from '@aph/mobile-doctors/src/components/LandingPageImage';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { SplashLogo } from '@aph/mobile-doctors/src/components/SplashLogo';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { fonts } from '@aph/mobile-doctors/src/theme/fonts';
+import * as React from 'react';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { NavigationScreenProps } from 'react-navigation';
+import { theme } from '././../theme/theme';
 
 const styles = StyleSheet.create({
   mainView: {
@@ -64,6 +65,19 @@ const styles = StyleSheet.create({
 export interface LandingPageProps extends NavigationScreenProps {}
 
 export const LandingPage: React.FC<LandingPageProps> = (props) => {
+  const navigateToNextScreen = () => {
+    getLocalData()
+      .then((localData) => {
+        if (localData.isOnboardingDone) {
+          props.navigation.push(AppRoutes.Login);
+        } else {
+          props.navigation.push(AppRoutes.OnBoardingPage);
+        }
+      })
+      .catch((_) => {
+        props.navigation.push(AppRoutes.OnBoardingPage);
+      });
+  };
   return (
     <View style={styles.mainView}>
       <View style={styles.statusBarBg} />
@@ -106,7 +120,7 @@ export const LandingPage: React.FC<LandingPageProps> = (props) => {
         title="GET STARTED"
         titleTextStyle={styles.titleTextStyle}
         style={styles.buttonView}
-        onPress={() => props.navigation.push(AppRoutes.OnBoardingPage)}
+        onPress={() => navigateToNextScreen()}
       />
     </View>
   );

@@ -6,19 +6,17 @@
 // START Enums and Input Objects
 //==============================================================
 
-export enum ErrorMsgs {
-  INVALID_MOBILE_NUMBER = "INVALID_MOBILE_NUMBER",
-  INVALID_TOKEN = "INVALID_TOKEN",
-  PRISM_AUTH_TOKEN_ERROR = "PRISM_AUTH_TOKEN_ERROR",
-  PRISM_GET_USERS_ERROR = "PRISM_GET_USERS_ERROR",
-  PRISM_NO_DATA = "PRISM_NO_DATA",
-  UPDATE_PROFILE_ERROR = "UPDATE_PROFILE_ERROR",
-}
-
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
   OTHER = "OTHER",
+}
+
+export enum INVITEDSTATUS {
+  ACCEPTED = "ACCEPTED",
+  NONE = "NONE",
+  NOTAPPLICABLE = "NOTAPPLICABLE",
+  REJECTED = "REJECTED",
 }
 
 export enum Relation {
@@ -33,6 +31,11 @@ export enum Relation {
   WIFE = "WIFE",
 }
 
+export enum SEARCH_TYPE {
+  DOCTOR = "DOCTOR",
+  SPECIALTY = "SPECIALTY",
+}
+
 export interface UpdatePatientInput {
   id: string;
   firstName?: string | null;
@@ -41,8 +44,17 @@ export interface UpdatePatientInput {
   gender?: Gender | null;
   uhid?: string | null;
   emailAddress?: string | null;
-  dateOfBirth?: string | null;
+  dateOfBirth?: any | null;
   relation?: Relation | null;
+}
+
+export interface filterInput {
+  specialty: string;
+  city?: (string | null)[] | null;
+  experience?: (string | null)[] | null;
+  availability?: (string | null)[] | null;
+  gender?: (string | null)[] | null;
+  language?: (string | null)[] | null;
 }
 
 //==============================================================

@@ -13,7 +13,7 @@
 #import <Firebase.h>
 //#import <Fabric/Fabric.h>
 //#import <Crashlytics/Crashlytics.h>
-//#import "RNSplashScreen.h"  // here
+#import "RNSplashScreen.h"
 
 @implementation AppDelegate
 
@@ -31,9 +31,8 @@
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
-//  [RNSplashScreen show];  // here
- // [RNSplashScreen showSplash:@"LaunchScreen" inRootView:rootView];
-
+//  [RNSplashScreen show];
+  [RNSplashScreen showSplash:@"LaunchScreen" inRootView:rootView];
   [FIRApp configure];
 //  [Fabric with:@[[Crashlytics class]]];
 

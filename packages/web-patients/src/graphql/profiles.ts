@@ -17,9 +17,9 @@ export const GET_PATIENTS = gql`
   }
 `;
 
-export const PATIENT_SIGN_IN = gql`
-  mutation PatientSignIn($jwt: String!) {
-    patientSignIn(jwt: $jwt) {
+export const GET_CURRENT_PATIENTS = gql`
+  query GetCurrentPatients {
+    getCurrentPatients {
       patients {
         id
         mobileNumber
@@ -29,16 +29,14 @@ export const PATIENT_SIGN_IN = gql`
         gender
         uhid
         dateOfBirth
-      }
-      errors {
-        messages
+        emailAddress
       }
     }
   }
 `;
 
 export const UPDATE_PATIENT = gql`
-  mutation updatePatient($patientInput: UpdatePatientInput!) {
+  mutation UpdatePatient($patientInput: UpdatePatientInput!) {
     updatePatient(patientInput: $patientInput) {
       patient {
         id
@@ -49,6 +47,7 @@ export const UPDATE_PATIENT = gql`
         gender
         uhid
         dateOfBirth
+        emailAddress
       }
     }
   }

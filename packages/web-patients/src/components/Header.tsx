@@ -15,6 +15,7 @@ import { Navigation } from 'components/Navigatiion';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
+import { AppLocations } from './AppLocations';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -92,6 +93,7 @@ export const Header: React.FC = (props) => {
           <img src={require('images/ic_logo.png')} />
         </Link>
       </div>
+      <AppLocations />
       {isSignedIn && <Navigation />}
       <div className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin}`}>
         <ProtectedWithLoginPopup>
@@ -108,21 +110,21 @@ export const Header: React.FC = (props) => {
         {isSignedIn ? (
           <>
             <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-              <DialogTitle>Logged In</DialogTitle>
+              <DialogTitle>{''}</DialogTitle>
               <DialogContent>
                 <DialogContentText>
                   You are successfully Logged in with Apollo 24x7
                 </DialogContentText>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => setIsDialogOpen(false)} color="primary" autoFocus>
+                <Button color="primary" onClick={() => signOut()}>
+                  Sign out
+                </Button>
+                <Button color="primary" onClick={() => setIsDialogOpen(false)} autoFocus>
                   Close
                 </Button>
               </DialogActions>
             </Dialog>
-            <Button variant="text" size="small" onClick={() => signOut()}>
-              Sign out
-            </Button>
           </>
         ) : (
           <Popover

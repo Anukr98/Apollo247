@@ -3,16 +3,15 @@ import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { HeroBanner } from 'components/HeroBanner';
-import { ManageProfile } from 'components/ManageProfile';
 import { ServiceList } from 'components/ServiceList';
 import React from 'react';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
-      paddingTop: 85,
+      paddingTop: 68,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 78,
+        paddingTop: 68,
       },
     },
     booksLink: {
@@ -64,9 +63,7 @@ export const Welcome: React.FC = (props) => {
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
+        <Header />
       </div>
       <div className={classes.container}>
         <HeroBanner />
@@ -110,7 +107,6 @@ export const Welcome: React.FC = (props) => {
           }}
         />
       </BottomNavigation>
-      {/* <ManageProfile /> */}
     </div>
   );
 };

@@ -1,79 +1,81 @@
-import firebase, { RNFirebase, AuthCredential } from 'react-native-firebase';
-import React, { useState, useEffect } from 'react';
-import { ApolloProvider } from 'react-apollo';
-import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloClient } from 'apollo-client';
+import { setContext } from 'apollo-link-context';
 import { ErrorResponse, onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
-import { setContext } from 'apollo-link-context';
-
-import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
+import firebase, { RNFirebase } from 'react-native-firebase';
+import { PATIENT_SIGN_IN } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   PatientSignIn,
   PatientSignInVariables,
   PatientSignIn_patientSignIn_patients,
 } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
-import { PATIENT_SIGN_IN, UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  updatePatient_updatePatient_patient,
-  updatePatient,
-  updatePatientVariables,
-} from '@aph/mobile-patients/src/graphql/types/updatePatient';
-import { AsyncStorage } from 'react-native';
+import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
+import React, { useEffect, useState } from 'react';
+import { ApolloProvider } from 'react-apollo';
+import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
+import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
-export type PhoneNumberVerificationCredential = RNFirebase.PhoneAuthSnapshot['verificationId'];
-export type OtpVerificationCredential = AuthCredential;
-
-export interface AuthProviderProps {
-  analytics: RNFirebase.Analytics | null;
-  currentUser: PatientSignIn_patientSignIn_patients | updatePatient_updatePatient_patient | null;
-  currentProfiles: object | null;
-  isAuthenticating: boolean;
-  callApiWithToken: ((updatedToken: string) => Promise<any>) | null;
-  verifyPhoneNumber: ((mobileNumber: string) => Promise<PhoneNumberVerificationCredential>) | null;
-  verifyOtp:
-    | ((
-        token: PhoneNumberVerificationCredential,
-        otp: string
-      ) => Promise<OtpVerificationCredential>)
-    | null;
-  signIn: ((token: OtpVerificationCredential) => Promise<void>) | null;
-  signOut: (() => any) | null;
-  clearCurrentUser: (() => any) | null;
-  callUpdatePatient: ((patientDetails: updatePatient_updatePatient_patient) => Promise<any>) | null;
-  authError: boolean;
+function wait<R, E>(promise: Promise<R>): [R, E] {
+  return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
 }
 
-const userIsValid = (user: RNFirebase.User | null) => user && user.phoneNumber;
+export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients> {
+  analytics: RNFirebase.Analytics | null;
 
-export const AuthContext = React.createContext<AuthProviderProps>({
-  currentUser: null,
-  isAuthenticating: true,
-  verifyPhoneNumber: null,
+  currentPatient: Patient | null;
+  allCurrentPatients: Patient[] | null;
+  setCurrentPatient: ((p: Patient) => void) | null;
+
+  sendOtp: ((phoneNumber: string | null) => Promise<unknown>) | null;
+  sendOtpError: boolean;
+  isSendingOtp: boolean;
+
+  verifyOtp: ((otp: string) => Promise<unknown>) | null;
+  verifyOtpError: boolean;
+  isVerifyingOtp: boolean;
+
+  signInError: boolean;
+  isSigningIn: boolean;
+  signOut: (() => Promise<void>) | null;
+}
+
+export const AuthContext = React.createContext<AuthContextProps>({
+  currentPatient: null,
+  setCurrentPatient: null,
+  allCurrentPatients: null,
+
+  sendOtp: null,
+  sendOtpError: false,
+  isSendingOtp: false,
+
   verifyOtp: null,
-  signIn: null,
+  verifyOtpError: false,
+  isVerifyingOtp: false,
+
+  signInError: false,
+  isSigningIn: true,
   signOut: null,
+
   analytics: null,
-  currentProfiles: null,
-  clearCurrentUser: null,
-  callApiWithToken: null,
-  callUpdatePatient: null,
-  authError: false,
 });
 
 let apolloClient: ApolloClient<any>;
-const buildApolloClient = (authToken: string, failureFunction: () => void) => {
-  const errorLink = onError(({ networkError, operation, forward }: ErrorResponse) => {
-    console.log(networkError, operation);
-    failureFunction();
+const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
+  const errorLink = onError((error) => {
+    const { graphQLErrors, operation, forward } = error;
+    if (graphQLErrors) {
+      const unauthenticatedError = graphQLErrors.some(
+        (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
+      );
+      if (unauthenticatedError) {
+        handleUnauthenticated();
+      }
+    }
     return forward(operation);
   });
   const authLink = setContext((_, { headers }) => ({
-    headers: {
-      ...headers,
-      Authorization: authToken,
-    },
+    headers: { ...headers, Authorization: authToken },
   }));
   const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
   const link = errorLink.concat(authLink).concat(httpLink);
@@ -81,194 +83,141 @@ const buildApolloClient = (authToken: string, failureFunction: () => void) => {
   return new ApolloClient({ link, cache });
 };
 
+let otpVerifier: RNFirebase.ConfirmationResult;
+
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
-  const [authError, setAuthError] = useState(false);
-  const [authCalled, setAuthCalled] = useState<boolean>(false);
-  const failureFunction = () => setAuthError(true);
-  apolloClient = buildApolloClient(authToken, failureFunction);
+  const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
 
-  const [currentUser, setCurrentUser] = useState<AuthProviderProps['currentUser']>(null);
-  const [currentProfiles, setcurrentProfiles] = useState<AuthProviderProps['currentProfiles']>(
-    null
-  );
-  const [isAuthenticating, setIsAuthenticating] = useState<AuthProviderProps['isAuthenticating']>(
-    true
-  );
-  const [verifyPhoneNumber, setVerifyPhoneNumber] = useState<
-    AuthProviderProps['verifyPhoneNumber']
+  apolloClient = buildApolloClient(authToken, () => signOut());
+
+  const [allCurrentPatients, setAllCurrentPatients] = useState<
+    AuthContextProps['allCurrentPatients']
   >(null);
-  const [verifyOtp, setVerifyOtp] = useState<AuthProviderProps['verifyOtp']>(null);
-  const [signIn, setSignIn] = useState<AuthProviderProps['signIn']>(null);
-  const [signOut, setSignOut] = useState<AuthProviderProps['signOut']>(null);
-  const [analytics, setAnalytics] = useState<AuthProviderProps['analytics']>(null);
-  const [clearCurrentUser, setClearCurrentUser] = useState<AuthProviderProps['clearCurrentUser']>(
-    null
-  );
-  const [callApiWithToken, setCallApiWithToken] = useState<AuthProviderProps['callApiWithToken']>(
-    null
-  );
-  const [callUpdatePatient, setCallUpdatePatient] = useState<
-    AuthProviderProps['callUpdatePatient']
-  >(null);
-  useEffect(() => {
-    setAnalytics(firebase.analytics());
+  const [currentPatient, setCurrentPatient] = useState<AuthContextProps['currentPatient']>(null);
 
-    const auth = firebase.auth();
+  const [isSendingOtp, setIsSendingOtp] = useState<AuthContextProps['isSendingOtp']>(false);
+  const [sendOtpError, setSendOtpError] = useState<AuthContextProps['sendOtpError']>(false);
 
-    const verifyPhoneNumberFunc = () => async (mobileNumber: string) => {
-      const phoneAuthSnapshot = await auth.verifyPhoneNumber(mobileNumber);
-      const phoneCredential = phoneAuthSnapshot.verificationId;
-      return phoneCredential;
-    };
-    setVerifyPhoneNumber(verifyPhoneNumberFunc);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState<AuthContextProps['isVerifyingOtp']>(false);
+  const [verifyOtpError, setVerifyOtpError] = useState<AuthContextProps['verifyOtpError']>(false);
 
-    const verifyOtpFunc = () => async (
-      phoneCredential: PhoneNumberVerificationCredential,
-      otp: string
-    ) => {
-      const otpCredenntial = await firebase.auth.PhoneAuthProvider.credential(phoneCredential, otp);
-      return otpCredenntial;
-    };
-    setVerifyOtp(verifyOtpFunc);
+  const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(false);
+  const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
+  const [authError, setAuthError] = useState<AuthContextProps['authError']>(false);
 
-    const signInFunc = () => (otpCredenntial: OtpVerificationCredential) => {
-      setIsAuthenticating(true);
-      return auth.signInWithCredential(otpCredenntial).then(() => {});
-    };
-    setSignIn(signInFunc);
+  const auth = firebase.auth();
 
-    const signOutFunc = () => () => {
-      auth.signOut();
-    };
-    setSignOut(signOutFunc);
+  const sendOtp = (phoneNumber: string) => {
+    return new Promise(async (resolve, reject) => {
+      setIsSendingOtp(true);
 
-    const clearCurrentUserFunc = () => () => {
-      setAuthError(false);
-    };
-    setClearCurrentUser(clearCurrentUserFunc);
-
-    const callAPIFunc = () => async (updatedToken: string) => {
-      const patientSignInResult = await apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
-        mutation: PATIENT_SIGN_IN,
-        variables: { jwt: updatedToken },
-      });
-
-      console.log('updatedToken', updatedToken);
-
-      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.errors) {
-        const errMsg = patientSignInResult.data.patientSignIn.errors.messages[0];
-        console.log(errMsg);
-      }
-
-      if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
-        const patient = patientSignInResult.data.patientSignIn.patients[0];
-        const patientProfiles = patientSignInResult.data.patientSignIn.patients;
-
-        setCurrentUser(patient);
-        setcurrentProfiles(patientProfiles);
-        setIsAuthenticating(false);
-      } else {
-        setCurrentUser(null);
-        setcurrentProfiles(null);
-        setIsAuthenticating(false);
-      }
-
-      return patientSignInResult;
-    };
-    setCallApiWithToken(callAPIFunc);
-
-    const callUpdatePatientFunc = () => async (
-      patientDetails: updatePatient_updatePatient_patient
-    ) => {
-      console.log('patientDetails', patientDetails);
-      const patientUpdateResult = await apolloClient.mutate<updatePatient, updatePatientVariables>({
-        mutation: UPDATE_PATIENT,
-        variables: { patientInput: patientDetails },
-      });
-
-      console.log('patientUpdateResult', patientUpdateResult);
-
-      if (patientUpdateResult.data && patientUpdateResult.data.updatePatient.patient) {
-        const patient = patientUpdateResult.data.updatePatient.patient;
-
-        setCurrentUser(patient);
-        setcurrentProfiles([patient]);
-      } else {
-        setCurrentUser(null);
-        setcurrentProfiles(null);
-      }
-
-      return patientUpdateResult;
-    };
-    setCallUpdatePatient(callUpdatePatientFunc);
-
-    auth.onAuthStateChanged(async (updatedUser) => {
-      // There is no hook to know when firebase is loading, but we know this fires when it has attempted
-      // (whether automated from an existing cache or from an actual user-initiated sign in click)
-      // Set the default `authenticating` value to true, and clear it out in all cases here
-      // (but not until all the async requests here are finished )
-      if (!userIsValid(updatedUser)) {
-        setCurrentUser(null);
-        setcurrentProfiles(null);
-        setIsAuthenticating(false);
+      const [phoneAuthResult, phoneAuthError] = await wait(
+        auth.signInWithPhoneNumber('+91' + phoneNumber)
+      );
+      setIsSendingOtp(false);
+      if (phoneAuthError) {
+        setSendOtpError(true);
+        reject(phoneAuthError);
         return;
       }
+      otpVerifier = phoneAuthResult;
+      setSendOtpError(false);
+      resolve(phoneAuthResult);
+    });
+  };
 
-      const updatedToken = await updatedUser!.getIdToken();
-      setAuthToken(updatedToken);
-      setIsAuthenticating(false);
-
-      const authStateChanged = await AsyncStorage.getItem('onAuthStateChanged');
-      if (authStateChanged == 'true') {
-        setAuthCalled(true);
-        console.log('patientUpdateResult authStateChanged');
+  const verifyOtp = async (otp: string) => {
+    return new Promise(async (resolve, reject) => {
+      if (!otpVerifier) {
+        setSendOtpError(true);
+        reject();
+        return;
+      }
+      setIsVerifyingOtp(true);
+      const [otpAuthResult, otpError] = await wait(otpVerifier.confirm(otp));
+      setVerifyOtpError(Boolean(otpError || !otpAuthResult));
+      if (otpAuthResult) {
+        resolve(otpAuthResult);
       } else {
-        if (!authCalled) {
-          setAuthCalled(true);
-          console.log('patientUpdateResult onAuthStateChanged', updatedToken);
+        reject(otpError);
+      }
+      setIsVerifyingOtp(false);
+    });
+  };
 
-          const patientSignInResult = await apolloClient.mutate<
-            PatientSignIn,
-            PatientSignInVariables
-          >({
-            mutation: PATIENT_SIGN_IN,
-            variables: { jwt: updatedToken },
-          });
+  const signOut = () => auth.signOut();
 
-          if (patientSignInResult.data && patientSignInResult.data.patientSignIn.patients) {
-            const patient = patientSignInResult.data.patientSignIn.patients[0];
-            const patientProfiles = patientSignInResult.data.patientSignIn.patients;
-            setCurrentUser(patient);
-            setcurrentProfiles(patientProfiles);
-            setIsAuthenticating(false);
-          } else {
-            setCurrentUser(null);
-            setcurrentProfiles(null);
-            setIsAuthenticating(false);
-          }
+  useEffect(() => {
+    setAnalytics(firebase.analytics());
+    let authStateRegistered = false;
+
+    auth.onAuthStateChanged(async (user) => {
+      console.log('authStateChanged', authStateRegistered, user);
+
+      if (user && !authStateRegistered) {
+        authStateRegistered = true;
+        console.log('fetching jwt');
+        const [jwt, jwtError] = await wait(user.getIdToken());
+        if (jwtError || !jwt) {
+          console.log('authprovider jwtError', jwtError);
+          if (jwtError) console.error(jwtError);
+          authStateRegistered = false;
+          setIsSigningIn(false);
+          setSignInError(true);
+          return;
         }
+        setAuthToken(jwt);
+        console.log('authprovider jwt', jwt);
+
+        setIsSigningIn(true);
+        const [signInResult, signInError] = await wait(
+          apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
+            mutation: PATIENT_SIGN_IN,
+            variables: { jwt },
+          })
+        );
+        if (signInError || !signInResult.data || !signInResult.data.patientSignIn.patients) {
+          if (signInError) console.error(signInError);
+          authStateRegistered = false;
+          setSignInError(true);
+          setIsSigningIn(false);
+          console.log('authprovider signInError', signInError);
+          return;
+        }
+        const patients = signInResult.data.patientSignIn.patients;
+        const me = patients.find((p) => p.relation === Relation.ME) || patients[0];
+        setAllCurrentPatients(patients);
+        setCurrentPatient(me);
+        setSignInError(false);
+        console.log('authprovider me', me);
+        setIsSigningIn(false);
       }
     });
-  }, []);
+  }, [auth]);
 
   return (
     <ApolloProvider client={apolloClient}>
       <ApolloHooksProvider client={apolloClient}>
         <AuthContext.Provider
           value={{
-            authError,
-            analytics,
-            currentUser,
-            isAuthenticating,
-            verifyPhoneNumber,
+            currentPatient,
+            setCurrentPatient,
+            allCurrentPatients,
+
+            sendOtp,
+            sendOtpError,
+            isSendingOtp,
+
             verifyOtp,
-            signIn,
+            verifyOtpError,
+            isVerifyingOtp,
+
+            signInError,
+            isSigningIn,
             signOut,
-            currentProfiles,
-            clearCurrentUser,
-            callApiWithToken,
-            callUpdatePatient,
+
+            analytics,
           }}
         >
           {props.children}

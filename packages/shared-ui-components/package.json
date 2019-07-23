@@ -6,7 +6,8 @@
   "scripts": {
     "build": "rm -rf dist/* && tsc --project . && create-index dist && cp dist/index.js dist/index.d.ts",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
-    "start": "npm run build && tsc --project . -w"
+    "start": "npm run build && tsc --project . -w",
+    "typecheck": "tsc --project . --noEmit"
   },
   "peerDependencies": {
     "react": "16.8.6"

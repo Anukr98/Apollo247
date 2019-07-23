@@ -1,22 +1,25 @@
 {
-  "name": "app",
+  "name": "@aph/mobile-doctors",
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./node_modules/@aph/api-schema/schema.json --target=typescript --queries=./src/graphql/**.ts --watch",
+    "build": "npm run build:android & npm run build:ios",
     "build:android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "build:ios": "rm -rf ios/bundle/; mkdir ios/bundle; react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/bundle/main.jsbundle --assets-dest ios/bundle",
-    "start:dev": "npm run apollo:download & npm run apollo:codegen:watch & npm run lint & npm run format:check & react-native start",
-    "start:ios": "node_modules/.bin/react-native run-ios",
+    "format": "prettier --list-different '**/*.{js,jsx,ts,tsx,json,htm,html}'",
+    "format:fix": "prettier --write '**/*.{js,jsx,ts,tsx,json,htm,html}'",
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
+    "start": "react-native start",
     "test": "jest",
-    "format:fix": "prettier --write **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
-    "format:check": "prettier --list-different **/*.js **/*.jsx **/*.ts **/*.tsx **/*.json",
-    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
-    "apollo:download": "apollo schema:download ./src/graphql/schema.json --endpoint=http://localhost:4000/graphql",
-    "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./src/graphql/schema.json --target=typescript --queries=./src/graphql/**.ts",
-    "apollo:codegen:watch": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./src/graphql/schema.json --target=typescript --queries=./src/graphql/**.ts --watch"
+    "typecheck": "tsc --project . --noEmit"
   },
   "devDependencies": {
+    "@aph/api-schema": "file:../api-schema",
+    "@aph/eslint-config": "file:../eslint-config",
+    "@aph/prettier-config": "file:../prettier-config",
+    "@aph/tsconfig": "file:../tsconfig",
     "@types/graphql": "^14.2.1",
     "@types/lodash": "^4.14.134",
     "@types/react": "^16.8.19",
@@ -40,6 +43,9 @@
     "typescript": "^3.5.2"
   },
   "dependencies": {
+    "@aph/universal": "file:../universal",
+    "@aph/mobile-ui-components": "file:../mobile-ui-components",
+    "@aph/shared-ui-components": "file:../shared-ui-components",
     "@types/jest": "^24.0.15",
     "apollo": "^2.13.1",
     "apollo-cache-inmemory": "^1.6.2",
@@ -66,6 +72,7 @@
     "react-native-modal-datetime-picker": "^7.4.2",
     "react-native-otp-textinput": "0.0.6",
     "react-native-popup-menu": "^0.15.6",
+    "react-native-splash-screen": "^3.2.0",
     "react-native-vector-icons": "^6.5.0",
     "react-navigation": "^3.11.0"
   },

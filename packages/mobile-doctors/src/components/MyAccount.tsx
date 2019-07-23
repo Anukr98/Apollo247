@@ -1,9 +1,10 @@
-import { Button } from 'app/src/components/ui/Button';
-import { useAuth } from 'app/src/hooks/authHooks';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import { clearUserData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import React from 'react';
-import { View, AsyncStorage } from 'react-native';
+import { Alert, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { AppRoutes } from 'app/src/components/NavigatorContainer';
 
 export interface MyAccountProps extends NavigationScreenProps {}
 
@@ -18,10 +19,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         title="LOGOUT"
         onPress={() => {
           signOut();
-          AsyncStorage.setItem('userLoggedIn', 'false');
-          AsyncStorage.setItem('multiSignUp', 'false');
-          AsyncStorage.setItem('signUp', 'false');
-          props.navigation.replace(AppRoutes.Login);
+          clearUserData()
+            .then(() => {
+              props.navigation.replace(AppRoutes.Login);
+            })
+            .catch((_) => {
+              Alert.alert('Error', 'Something went wrong while signing you out.');
+            });
         }}
       />
     </View>

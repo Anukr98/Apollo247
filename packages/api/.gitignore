@@ -2,5 +2,5 @@ dist
 node_modules
 .npm-cache
 .Trash*
-**/*/*secrets.json
+**/*secrets.json
 .DS_Store

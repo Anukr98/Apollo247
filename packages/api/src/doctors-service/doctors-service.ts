@@ -1,26 +1,66 @@
 import 'reflect-metadata';
-import _merge from 'lodash/merge';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
-import * as firebaseAdmin from 'firebase-admin';
-import { doctorTypeDefs, doctorResolvers } from 'doctors-service/resolvers/doctorResolvers';
+import { doctorTypeDefs, doctorResolvers } from 'doctors-service/resolvers/getDoctors';
+import {
+  starDoctorTypeDefs,
+  starDoctorProgramResolvers,
+} from 'doctors-service/resolvers/starDoctorProgram';
+import {
+  getSpecialtyTypeDefs,
+  getSpecialtyResolvers,
+} from 'doctors-service/resolvers/getSpecialties';
+import {
+  searchDoctorAndSpecialtyTypeDefs,
+  searchDoctorAndSpecialtyResolvers,
+} from 'doctors-service/resolvers/searchDoctorAndSpecialty';
+import {
+  getSpecialtyDoctorsTypeDefs,
+  getSpecialtyDoctorsResolvers,
+} from 'doctors-service/resolvers/getSpecialtyDoctorsWithFilters';
 
-export interface Context {
-  firebase: firebaseAdmin.app.App;
-}
+import { GatewayContext } from 'api-gateway';
+import gql from 'graphql-tag';
+import { GraphQLTime } from 'graphql-iso-date';
+
+export interface DoctorsServiceContext extends GatewayContext {}
 
 export type Resolver<Parent = any, Args = any> = (
   parent: Parent,
   args: Args,
-  context: Context
+  context: DoctorsServiceContext
 ) => any;
 
 (async () => {
   const server = new ApolloServer({
     schema: buildFederatedSchema([
       {
+        typeDefs: gql`
+          scalar Time
+        `,
+        resolvers: {
+          Time: GraphQLTime,
+        },
+      },
+      {
         typeDefs: doctorTypeDefs,
-        resolvers: _merge(doctorResolvers),
+        resolvers: doctorResolvers,
+      },
+      {
+        typeDefs: getSpecialtyDoctorsTypeDefs,
+        resolvers: getSpecialtyDoctorsResolvers,
+      },
+      {
+        typeDefs: getSpecialtyTypeDefs,
+        resolvers: getSpecialtyResolvers,
+      },
+      {
+        typeDefs: searchDoctorAndSpecialtyTypeDefs,
+        resolvers: searchDoctorAndSpecialtyResolvers,
+      },
+      {
+        typeDefs: starDoctorTypeDefs,
+        resolvers: starDoctorProgramResolvers,
       },
     ]),
   });

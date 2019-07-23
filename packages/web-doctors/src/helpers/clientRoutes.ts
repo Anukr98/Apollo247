@@ -1,6 +1,6 @@
 export const clientBaseUrl = () => {
   const env = process.env.NODE_ENV;
-  const port = process.env.WEB_CLIENT_PORT === '80' ? '' : `:${process.env.WEB_CLIENT_PORT}`;
+  const port = process.env.WEB_DOCTORS_PORT === '80' ? '' : `:${process.env.WEB_DOCTORS_PORT}`;
   if (env === 'test') return `//localhost${port}`;
   if (env === 'local') return `//localhost${port}`;
   if (env === 'development') return `//patients-web.aph.popcornapps.com${port}`;
@@ -14,5 +14,5 @@ export const clientRoutes = {
   consultRoom: () => '#',
   testsAndMedicine: () => '#',
   healthRecords: () => '#',
-  calendar: () => '/calendar'
+  calendar: () => '/calendar',
 };

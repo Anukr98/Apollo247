@@ -1,11 +1,9 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
-import { Link } from 'react-router-dom';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import Avatar from '@material-ui/core/Avatar';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -94,19 +92,15 @@ interface ServiceItemProps {
 
 const ServiceItem: React.FC<ServiceItemProps> = (props) => {
   const classes = useStyles();
-  const { title, content, action, image } = props.item;
+  const { title, content, image } = props.item;
   return (
     <ProtectedWithLoginPopup>
-      {({ protectWithLoginPopup, isProtected }) => (
+      {() => (
         <Grid item lg={3} sm={6} xs={12}>
           <Paper className={classes.serviceItem}>
             <div className={classes.serviceInfo}>
               <div className={classes.avatarBlock}>
-                <img
-                  alt=""
-                  src={image}
-                  className={classes.bigAvatar}
-                />
+                <img alt="" src={image} className={classes.bigAvatar} />
               </div>
               <Typography variant="h5">{title}</Typography>
               <p>{content}</p>
@@ -118,7 +112,7 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
   );
 };
 
-export const ServiceList: React.FC = (props) => {
+export const ServiceList: React.FC = () => {
   const classes = useStyles();
   const serviceItems: ServiceItem[] = [
     {

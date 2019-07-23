@@ -15,7 +15,8 @@ import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
-import { isMobileNumberValid } from '@aph/universal/validators';
+import { Formik, FormikProps, Form, Field, FieldProps } from 'formik';
+import { isMobileNumberValid } from '@aph/universal/aphValidators';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -53,29 +54,20 @@ const useStyles = makeStyles((theme: Theme) => {
         marginRight: -40,
       },
     },
-    otpAction: {
-      display: 'flex',
-      '& button': {
-        marginLeft: 'auto',
-        marginRight: -40,
-        backgroundColor: '#FED984',
-        fontSize: 16,
-        fontWeight: 500,
-      },
-      '& >div': {
-        height: 0,
-        opacity: 0,
-        width: 0,
-      },
-    },
-    captcha: {
-      transform: 'scale(0.8)',
-      transformOrigin: 'top left',
-      marginTop: 10,
-    },
     otpFormWrap: {
       '& input': {
         textAlign: 'center',
+      },
+    },
+    resendBtn: {
+      padding: 0,
+      color: '#fc9916',
+      fontSize: 12,
+      fontWeight: 600,
+      textTransform: 'uppercase',
+      marginTop: 10,
+      '&:hover': {
+        backgroundColor: 'transparent',
       },
     },
   };
@@ -83,161 +75,211 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
-const otpInputRefs: RefObject<HTMLInputElement>[] = [];
-const validPhoneMessage = 'OTP will be sent to this number';
-const invalidPhoneMessage = 'This seems like a wrong number';
 
-export const SignIn: React.FC = (props) => {
+const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
   const classes = useStyles();
-
-  const [mobileNumber, setMobileNumber] = useState<string>('');
+  const { mobileNumber } = props;
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
+
+  const [otpInputRefs, setOtpInputRefs] = useState<RefObject<HTMLInputElement>[]>([]);
   const [otp, setOtp] = useState<number[]>([]);
-  const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
-  const [phoneMessage, setPhoneMessage] = useState<string>(validPhoneMessage);
-  const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
   const placeRecaptchaAfterMe = useRef(null);
 
   const {
     sendOtp,
-    sendOtpError,
     isSendingOtp,
-
     verifyOtp,
     verifyOtpError,
     isVerifyingOtp,
-
     isSigningIn,
   } = useAuth();
 
   useEffect(() => {
+    const refs: RefObject<HTMLInputElement>[] = [];
     _times(numOtpDigits, (index) => {
       const inputRef = createRef<HTMLInputElement>();
-      otpInputRefs[index] = inputRef;
+      refs[index] = inputRef;
     });
+    setOtpInputRefs(refs);
   }, []);
 
-  return displayOtpInput ? (
+  return (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">hi</Typography>
       <p>Type in the OTP sent to you, to authenticate</p>
-      <Grid container spacing={1}>
-        {_times(numOtpDigits, (index) => (
-          <Grid item xs={2} key={index}>
-            <AphTextField
-              autoFocus={index === 0}
-              inputRef={otpInputRefs[index]}
-              value={_isNumber(otp[index]) ? otp[index] : ''}
-              inputProps={{ type: 'tel', maxLength: 1 }}
-              onChange={(e) => {
-                const newOtp = [...otp];
-                const num = parseInt(e.currentTarget.value, 10);
-                if (isNaN(num)) {
-                  delete newOtp[index];
-                } else {
-                  newOtp[index] = num;
-                  const nextInput = otpInputRefs[index + 1];
-                  if (nextInput && nextInput.current) {
-                    nextInput.current.focus();
+      <form>
+        <Grid container spacing={1}>
+          {_times(numOtpDigits, (index) => (
+            <Grid item xs={2} key={index}>
+              <AphTextField
+                autoFocus={index === 0}
+                inputRef={otpInputRefs[index]}
+                value={_isNumber(otp[index]) ? otp[index] : ''}
+                inputProps={{ type: 'tel', maxLength: 1 }}
+                onChange={(e) => {
+                  const newOtp = [...otp];
+                  const num = parseInt(e.currentTarget.value, 10);
+                  if (isNaN(num)) {
+                    delete newOtp[index];
+                  } else {
+                    newOtp[index] = num;
+                    const nextInput = otpInputRefs[index + 1];
+                    if (nextInput && nextInput.current) {
+                      nextInput.current.focus();
+                    }
                   }
-                }
-                setOtp(newOtp);
-              }}
-              onKeyDown={(e) => {
-                const backspaceWasPressed = e.key === 'Backspace';
-                const currentInputIsEmpty = otp[index] == null;
-                const focusPreviousInput = () => {
-                  const prevInput = otpInputRefs[index - 1];
-                  if (prevInput && prevInput.current) {
-                    prevInput.current.focus();
+                  setOtp(newOtp);
+                }}
+                onKeyDown={(e) => {
+                  const backspaceWasPressed = e.key === 'Backspace';
+                  const currentInputIsEmpty = otp[index] == null;
+                  const focusPreviousInput = () => {
+                    const prevInput = otpInputRefs[index - 1];
+                    if (prevInput && prevInput.current) {
+                      prevInput.current.focus();
+                    }
+                  };
+                  if (backspaceWasPressed && currentInputIsEmpty) {
+                    focusPreviousInput();
                   }
-                };
-                if (backspaceWasPressed && currentInputIsEmpty) {
-                  focusPreviousInput();
-                }
-              }}
-            />
-          </Grid>
-        ))}
-      </Grid>
-      {verifyOtpError && 'Invalid OTP'}
-      <div className={classes.otpAction}>
-        <Fab
-          color="primary"
-          onClick={() => verifyOtp(otp.join(''))}
-          disabled={isSendingOtp || otp.join('').length !== numOtpDigits}
-        >
-          {isSigningIn || isSendingOtp || isVerifyingOtp ? <CircularProgress /> : 'OK'}
-        </Fab>
-      </div>
-      <Button
-        variant="text"
-        disabled={isSendingOtp}
-        onClick={() => sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current)}
-      >
-        Resend OTP
-      </Button>
-      <div ref={placeRecaptchaAfterMe} />
-    </div>
-  ) : (
-    <div className={classes.loginFormWrap}>
-      <Typography variant="h2">hi</Typography>
-      <p>Please enter your mobile number to login</p>
-      <FormControl fullWidth>
-        <AphInput
-          autoFocus
-          inputProps={{ type: 'tel', maxLength: 10 }}
-          value={mobileNumber}
-          onChange={(event) => {
-            setMobileNumber(event.currentTarget.value);
-            if (event.currentTarget.value !== '') {
-              if (isMobileNumberValid(event.currentTarget.value)) {
-                setPhoneMessage(validPhoneMessage);
-                setShowErrorMessage(false);
-              } else {
-                setPhoneMessage(invalidPhoneMessage);
-                setShowErrorMessage(true);
-              }
-            } else {
-              setPhoneMessage(validPhoneMessage);
-              setShowErrorMessage(false);
-            }
+                }}
+              />
+            </Grid>
+          ))}
+        </Grid>
+        {verifyOtpError && (
+          <FormHelperText
+            component="div"
+            className={classes.helpText}
+            error={verifyOtpError}
+            style={{ opacity: verifyOtpError ? 1.0 : 0 }}
+          >
+            Incorrect OTP
+          </FormHelperText>
+        )}
+        <Button
+          variant="text"
+          disabled={isSendingOtp}
+          className={classes.resendBtn}
+          onClick={(e) => {
+            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
+            setOtp([]);
+            const firstInput = otpInputRefs[0].current;
+            if (firstInput) firstInput.focus();
           }}
-          error={!isMobileNumberValid(mobileNumber)}
-          onKeyPress={(e) => {
-            if (isNaN(parseInt(e.key, 10))) {
+        >
+          Resend OTP
+        </Button>
+        <div className={classes.action}>
+          <Fab
+            type="submit"
+            color="primary"
+            disabled={isSendingOtp || otp.join('').length !== numOtpDigits}
+            onClick={(e) => {
               e.preventDefault();
-            }
-          }}
-          startAdornment={
-            <InputAdornment className={classes.inputAdornment} position="start">
-              {mobileNumberPrefix}
-            </InputAdornment>
-          }
-        />
-        <FormHelperText component="div" className={classes.helpText} error={showErrorMessage}>
-          {sendOtpError ? 'Error sending OTP' : phoneMessage}
-        </FormHelperText>
-      </FormControl>
-      <div className={classes.action}>
-        <Fab
-          color="primary"
-          aria-label="Sign in"
-          disabled={!isMobileNumberValid(mobileNumber)}
-          onClick={() =>
-            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
-              setDisplayOtpInput(true)
-            )
-          }
-        >
-          {isSendingOtp ? (
-            <CircularProgress />
-          ) : (
-            <img src={require('images/ic_arrow_forward.svg')} />
-          )}
-        </Fab>
-      </div>
+              verifyOtp(otp.join(''));
+            }}
+          >
+            {isSigningIn || isSendingOtp || isVerifyingOtp ? (
+              <CircularProgress color="secondary" />
+            ) : (
+              <img src={require('images/ic_arrow_forward.svg')} />
+            )}
+          </Fab>
+        </div>
+      </form>
       <div ref={placeRecaptchaAfterMe} />
     </div>
+  );
+};
+
+export const SignIn: React.FC = (props) => {
+  const classes = useStyles();
+
+  const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
+  const placeRecaptchaAfterMe = useRef(null);
+
+  const { sendOtp, sendOtpError, isSendingOtp } = useAuth();
+
+  return (
+    <Formik
+      initialValues={{ mobileNumber: '' }}
+      onSubmit={(values) => {
+        const mobileNumberWithPrefix = `${mobileNumberPrefix}${values.mobileNumber}`;
+        sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
+          setDisplayOtpInput(true)
+        );
+      }}
+      render={({ touched, dirty, errors, values }: FormikProps<{ mobileNumber: string }>) => {
+        if (displayOtpInput) return <OtpInput mobileNumber={values.mobileNumber} />;
+        return (
+          <div className={classes.loginFormWrap}>
+            <Typography variant="h2">hi</Typography>
+            <p>Please enter your mobile number to login</p>
+            <Form>
+              <Field
+                name="mobileNumber"
+                validate={(val: string) =>
+                  isMobileNumberValid(val) ? undefined : 'This seems like a wrong number'
+                }
+                render={({ field }: FieldProps<{ mobileNumber: string }>) => {
+                  const finishedTyping = field.value.length === 10;
+                  const showValidationError =
+                    dirty &&
+                    !sendOtpError &&
+                    Boolean(errors.mobileNumber) &&
+                    (finishedTyping || touched.mobileNumber);
+                  const showSendOtpError = sendOtpError;
+                  return (
+                    <FormControl fullWidth>
+                      <AphInput
+                        {...field}
+                        autoFocus
+                        inputProps={{ type: 'tel', maxLength: 10 }}
+                        error={showValidationError}
+                        onKeyPress={(e) => {
+                          if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+                        }}
+                        startAdornment={
+                          <InputAdornment className={classes.inputAdornment} position="start">
+                            {mobileNumberPrefix}
+                          </InputAdornment>
+                        }
+                      />
+                      <FormHelperText
+                        component="div"
+                        className={classes.helpText}
+                        error={showValidationError || showSendOtpError}
+                      >
+                        {showValidationError
+                          ? errors.mobileNumber
+                          : showSendOtpError
+                          ? 'Error sending OTP'
+                          : 'OTP will be sent to this number'}
+                      </FormHelperText>
+                    </FormControl>
+                  );
+                }}
+              />
+              <div className={classes.action}>
+                <Fab
+                  type="submit"
+                  color="primary"
+                  aria-label="Sign in"
+                  disabled={Boolean(errors.mobileNumber) || !dirty}
+                >
+                  {isSendingOtp ? (
+                    <CircularProgress color="secondary" />
+                  ) : (
+                    <img src={require('images/ic_arrow_forward.svg')} />
+                  )}
+                </Fab>
+              </div>
+            </Form>
+            <div ref={placeRecaptchaAfterMe} />
+          </div>
+        );
+      }}
+    />
   );
 };

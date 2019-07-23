@@ -7,36 +7,85 @@ import {
   addWeeks,
   subWeeks,
   getMonth,
-  isWithinRange,
+  isWithinInterval,
   endOfMonth,
   startOfWeek,
   endOfWeek,
   startOfDay,
-  getYear
+  getYear,
 } from 'date-fns';
 
 const useStyles = makeStyles({
   float: {
-    display: "inline-block"
+    display: 'inline-block',
   },
   container: {
-    display: "flex",
-    "flex-wrap": "nowrap",
-    "justify-content": "space-between"
+    display: 'flex',
+    'flex-wrap': 'nowrap',
+    'justify-content': 'space-between',
   },
   daysList: {
-    width: "80%"
-  }
+    width: '70%',
+    display: 'inline-block',
+    verticalAlign: 'middle',
+    '& li': {
+      width: '14%',
+      padding: '10px 0 10px 0',
+      '&.highlight': {
+        backgroundColor: '#02475b',
+        color: '#fff',
+      },
+    },
+  },
+  weekView: {
+    backgroundColor: '#fff',
+    borderRadius: '10px',
+    width: '86%',
+    margin: 'auto',
+    padding: '0 15px',
+    textAlign: 'center',
+    boxShadow: '-4px 0px 10px 2px rgba(0, 0, 0, 0.1)',
+  },
+  monthPopup: {
+    fontSize: 21,
+    display: 'inline-block',
+    width: '15%',
+  },
+  prevBtn: {
+    width: '7%',
+    display: 'inline-block',
+    fontWeight: 600,
+    fontSize: 25,
+    color: '#658f9b',
+    cursor: 'pointer',
+  },
+  nextBtn: {
+    width: '7%',
+    display: 'inline-block',
+    fontWeight: 600,
+    fontSize: 25,
+    color: '#658f9b',
+    cursor: 'pointer',
+  },
 });
 
-interface Props {
-  dayClickHandler?: Function,
-  monthChangeHandler?: Function,
-  onNext?: Function,
-  onPrev?: Function
+export interface CalendarStripProps {
+  dayClickHandler?: (e: React.MouseEvent, date: Date) => void;
+  monthChangeHandler?: (
+    e: React.ChangeEvent<HTMLSelectElement>,
+    monthSelected: number,
+    startOfWeek: Date
+  ) => void;
+  onNext?: (e: React.MouseEvent, newDate: Date, startOfWeek: Date) => void;
+  onPrev?: (e: React.MouseEvent, newDate: Date, startOfWeek: Date) => void;
 }
 
-export const CalendarStrip: React.FC<Props> = (props) => {
+export const CalendarStrip: React.FC<CalendarStripProps> = ({
+  onNext,
+  onPrev,
+  monthChangeHandler,
+  dayClickHandler,
+}) => {
   const classes = useStyles();
   const today = startOfToday();
   const [prevDate, setPrevDate] = useState(today);
@@ -44,67 +93,70 @@ export const CalendarStrip: React.FC<Props> = (props) => {
   const [month, setMonth] = useState(getMonth(today));
 
   useEffect(() => {
-    if (!isWithinRange(endOfMonth(prevDate), startOfWeek(date, { weekStartsOn: 0 }), endOfWeek(date))) {
+    if (
+      !isWithinInterval(endOfMonth(prevDate), {
+        start: startOfWeek(date, { weekStartsOn: 0 }),
+        end: endOfWeek(date),
+      })
+    ) {
       setMonth(getMonth(date));
     }
   }, [date, prevDate]);
 
-  const next = e => {
+  const next = (e: React.MouseEvent) => {
     setPrevDate(date);
 
     const newDate = addWeeks(date, 1);
     setDate(newDate);
 
-    if (typeof props.onNext === "function") {
-      props.onNext(e, newDate, startOfWeek(startOfDay(newDate)));
+    if (typeof onNext === 'function') {
+      onNext(e, newDate, startOfWeek(startOfDay(newDate)));
     }
-  }
+  };
 
-  const previous = e => {
+  const previous = (e: React.MouseEvent) => {
     setPrevDate(date);
 
     const newDate = subWeeks(date, 1);
     setDate(newDate);
 
-    if (typeof props.onPrev === "function") {
-      props.onPrev(e, newDate, startOfWeek(startOfDay(newDate)));
+    if (typeof onPrev === 'function') {
+      onPrev(e, newDate, startOfWeek(startOfDay(newDate)));
     }
-  }
+  };
 
-  const onMonthSelect = e => {
-    const monthSelected = e.target.value;
+  const onMonthSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const monthSelected: number = (e.target.value as unknown) as number;
     const newDate = new Date(getYear(date), monthSelected, 1, 0, 0, 0);
 
     setDate(newDate);
     setMonth(monthSelected);
 
-    if (typeof props.monthChangeHandler === "function") {
-      props.monthChangeHandler(e, monthSelected, startOfWeek(startOfDay(newDate)));
+    if (typeof monthChangeHandler === 'function') {
+      monthChangeHandler(e, monthSelected, startOfWeek(startOfDay(newDate)));
     }
-  }
+  };
 
-  const dayClickHandler = (e, date) => {
+  const onDayClickHandler = (e: React.MouseEvent<HTMLLIElement>, date: Date) => {
     setMonth(getMonth(date));
 
-    if (typeof props.dayClickHandler === "function") {
-      props.dayClickHandler(e, date);
+    if (typeof dayClickHandler === 'function') {
+      dayClickHandler(e, date);
     }
-  }
+  };
 
   return (
-    <div className={classes.container}>
-      <MonthList
-        classes={classes.float}
-        month={month}
-        onChange={onMonthSelect}
-      />
-      <div className={classes.float} onClick={previous}>Previous</div>
-      <Days
-        classes={classes.daysList}
-        date={date}
-        handler={dayClickHandler}
-      />
-      <div className={classes.float} onClick={next}>Next</div>
+    <div className={classes.weekView}>
+      <MonthList classes={classes.monthPopup} month={month} onChange={onMonthSelect} />
+      <div className={classes.prevBtn} onClick={previous}>
+        {' '}
+        &lt;{' '}
+      </div>
+      <Days classes={classes.daysList} date={date} handler={onDayClickHandler} />
+      <div className={classes.nextBtn} onClick={next}>
+        {' '}
+        >{' '}
+      </div>
     </div>
   );
 };
