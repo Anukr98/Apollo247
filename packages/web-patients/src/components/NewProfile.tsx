@@ -193,9 +193,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                   <Typography variant="h2">
                     welcome <br /> to apollo 24/7
                   </Typography>
-                  <p data-cypress="confirmationGreeting">
-                    Let us quickly get to know you so that we can get you the best help :)
-                  </p>
+                  <p>Let us quickly get to know you so that we can get you the best help :)</p>
                   <div className={classes.formGroup}>
                     <Field
                       name="firstName"
