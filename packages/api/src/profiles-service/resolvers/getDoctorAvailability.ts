@@ -41,9 +41,9 @@ const getDoctorAvailableSlots: Resolver<
     const availableSlots = Array(12).fill(0).map(function(){
         const stTime = startTime
         startTime =  addMinutes(startTime,15)
-        const stTimeHours = stTime.getHours().toString().length === 1 ? "0"+stTime.getHours().toString() : stTime.getHours().toString()
-        const stTimeMins = stTime.getMinutes().toString().length === 1 ? "0"+stTime.getMinutes().toString() : stTime.getMinutes().toString()
-        return stTimeHours+":"+stTimeMins
+        const stTimeHours = stTime.getHours().toString().padStart(2,'0')
+        const stTimeMins = stTime.getMinutes().toString().padStart(2,'0')
+        return `${stTimeHours}:${stTimeMins}`
     })
   return { availableSlots };
 };
