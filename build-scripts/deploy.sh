@@ -4,5 +4,5 @@
 ./build-scripts/build.sh $1
 
 echo -e "\nscping build artifact aph-$1-tar.gz and sshing into $1.api.aph.popcornapps.com..."
-scp aph-$1.tar.gz "apollodev@$1.api.aph.popcornapps.com:/home/apollodev"
-ssh apollodev@$1.api.aph.popcornapps.com "cd /home/apollodev && tar -xzf aph-$1.tar.gz && ./apollo-hospitals/build-scripts/start.sh $1"
+scp aph-$1.tar.gz start.sh "apollodev@$1.api.aph.popcornapps.com:/home/apollodev"
+ssh apollodev@$1.api.aph.popcornapps.com "cd /home/apollodev && ./start.sh $1"
