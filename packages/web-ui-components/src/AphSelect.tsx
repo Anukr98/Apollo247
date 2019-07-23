@@ -15,10 +15,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '&:hover': {
         '&:before': {
-          borderBottom: '2px solid #00b38e',
+          borderBottom: '2px solid #00b38e !important',
         },
         '&:after': {
-          borderBottom: '2px solid #00b38e',
+          borderBottom: '2px solid #00b38e !important',
         },
       },
       '&:focus': {
@@ -29,10 +29,15 @@ const useStyles = makeStyles((theme: Theme) => {
           borderBottom: '2px solid #00b38e',
         },
       },
+      '& svg': {
+        color: '#00b38e',
+        top: 'calc(50% - 8px)',
+      },
     },
     selectMenuRoot: {
       '& svg': {
         color: '#00b38e',
+        top: 'calc(50% - 8px)',
       },
     },
     selectMenuItem: {
@@ -46,6 +51,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     menuPopover: {
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.3)',
+      marginLeft: -30,
+      marginTop: 15,
       '& ul': {
         padding: '10px 20px',
         '& li': {
@@ -56,6 +63,7 @@ const useStyles = makeStyles((theme: Theme) => {
           paddingLeft: 0,
           paddingRight: 0,
           borderBottom: '1px solid rgba(1,71,91,0.2)',
+          textTransform: 'capitalize',
           '&:last-child': {
             borderBottom: 'none',
           },
@@ -72,7 +80,14 @@ const AphSelect: React.FC<SelectProps> = (props) => {
       fullWidth
       autoWidth
       classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
-      MenuProps={{ classes: { paper: classes.menuPopover } }}
+      MenuProps={{
+        classes: { paper: classes.menuPopover },
+        getContentAnchorEl: null,
+        anchorOrigin: {
+          vertical: 'top',
+          horizontal: 'right',
+        },
+      }}
       className={classes.selectInputRoot}
       {...props}
     >
