@@ -13,7 +13,8 @@ services:
     ports:
       - 80:80
     volumes:
-      - ./nginx/log/:/var/log/nginx
+      # Docker runs as root and so these files cannot be deleted by our deployment user, just disable for now
+      # - ./nginx/log/:/var/log/nginx
       - ./nginx/conf.d/local.conf.template:/etc/nginx/conf.d/local.conf.template:ro
       - ./nginx/conf.d/dev.conf.template:/etc/nginx/conf.d/dev.conf.template:ro
       - ./packages/web-patients/:/usr/share/nginx/html/web-patients:ro
