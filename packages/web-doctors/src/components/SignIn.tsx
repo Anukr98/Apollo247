@@ -135,7 +135,8 @@ export const SignIn: React.FC = (props) => {
   const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
   const [submitCount, setSubmitCount] = useState(0);
   const [showTimer, setShowTimer] = useState(false);
-  const timer = 179;
+  const countDown = useRef(179);
+  const [timer, setTimer] = useState(179);
 
   const placeRecaptchaAfterMe = useRef(null);
 
@@ -161,6 +162,18 @@ export const SignIn: React.FC = (props) => {
     if (submitCount > 0) {
       if (submitCount === 3) {
         setShowTimer(true);
+
+        const intervalId = setInterval(() => {
+          countDown.current--;
+          setTimer(countDown.current);
+
+          if (countDown.current === 0) {
+            clearInterval(intervalId);
+            setSubmitCount(0);
+            setShowTimer(false);
+            countDown.current = 179;
+          }
+        }, 1000);
       }
     }
   }, [submitCount]);
@@ -285,7 +298,7 @@ export const SignIn: React.FC = (props) => {
         </Button>
       )}
 
-      {/*  <div ref={placeRecaptchaAfterMe} /> */}
+      <div ref={placeRecaptchaAfterMe} />
       <div className={classes.action}>
         <Fab
           color="primary"
