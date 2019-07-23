@@ -9,6 +9,7 @@ cat .env
 echo -e "\nusing docker-compose-$1.yml..."
 
 echo -e "\ncleaning up any old build files..."
+rm -fv aph-$1.tar.gz
 rm -rfv skeleton
 rm -rfv packages/api/dist/*
 rm -rfv packages/web-doctors/dist/*
