@@ -2,47 +2,81 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
+import { INVITEDSTATUS } from "./globalTypes";
+
 // ====================================================
-// GraphQL query operation: getDoctorProfile
+// GraphQL query operation: GetDoctorProfile
 // ====================================================
 
-export interface getDoctorProfileGetDoctorProfileClinicsList {
-  __typename: "clinicsList";
-  name: string | null;
-  location: string | null;
-}
-
-export interface getDoctorProfileGetDoctorProfileStarDoctorTeam {
-  __typename: "starDoctorTeam";
-  firstName: string | null;
-  lastName: string | null;
+export interface GetDoctorProfile_getDoctorProfile_profile {
+  __typename: "Doctor";
+  id: string;
+  salutation: string;
+  firstName: string;
+  lastName: string;
+  mobileNumber: string;
   experience: string | null;
-  typeOfConsult: string | null;
-  inviteStatus: string | null;
-}
-
-export interface getDoctorProfileGetDoctorProfile {
-  __typename: "DoctorProfile";
-  id: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  mobileNumber: string | null;
-  experience: string | null;
-  speciality: string | null;
-  isStarDoctor: boolean | null;
-  education: string | null;
+  speciality: string;
+  specialization: string | null;
+  isStarDoctor: boolean;
+  education: string;
   services: string | null;
   languages: string | null;
   city: string | null;
   awards: string | null;
-  clinicsList: (getDoctorProfileGetDoctorProfileClinicsList | null)[] | null;
-  starDoctorTeam: (getDoctorProfileGetDoctorProfileStarDoctorTeam | null)[] | null;
+  photoUrl: string | null;
+  registrationNumber: string;
+  isProfileComplete: string;
+  availableForPhysicalConsultation: boolean;
+  availableForVirtualConsultation: boolean;
+  onlineConsultationFees: string;
+  physicalConsultationFees: string;
+  package: string | null;
+  inviteStatus: INVITEDSTATUS | null;
 }
 
-export interface getDoctorProfile {
-  getDoctorProfile: getDoctorProfileGetDoctorProfile | null;
+export interface GetDoctorProfile_getDoctorProfile_paymentDetails {
+  __typename: "PaymentDetails";
+  accountNumber: string;
+  address: string | null;
 }
 
-export interface getDoctorProfileVariables {
-  mobileNumber: string;
+export interface GetDoctorProfile_getDoctorProfile_clinics {
+  __typename: "Clinics";
+  name: string;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  addressLine3: string | null;
+  city: string | null;
+}
+
+export interface GetDoctorProfile_getDoctorProfile_starDoctorTeam {
+  __typename: "Doctor";
+  firstName: string;
+  lastName: string;
+  experience: string | null;
+  inviteStatus: INVITEDSTATUS | null;
+}
+
+export interface GetDoctorProfile_getDoctorProfile_consultationHours {
+  __typename: "Consultations";
+  days: string;
+  startTime: any;
+  endTime: any;
+  availableForPhysicalConsultation: boolean;
+  availableForVirtualConsultation: boolean;
+  type: string | null;
+}
+
+export interface GetDoctorProfile_getDoctorProfile {
+  __typename: "DoctorProfile";
+  profile: GetDoctorProfile_getDoctorProfile_profile | null;
+  paymentDetails: (GetDoctorProfile_getDoctorProfile_paymentDetails | null)[] | null;
+  clinics: (GetDoctorProfile_getDoctorProfile_clinics | null)[] | null;
+  starDoctorTeam: (GetDoctorProfile_getDoctorProfile_starDoctorTeam | null)[] | null;
+  consultationHours: (GetDoctorProfile_getDoctorProfile_consultationHours | null)[] | null;
+}
+
+export interface GetDoctorProfile {
+  getDoctorProfile: GetDoctorProfile_getDoctorProfile | null;
 }

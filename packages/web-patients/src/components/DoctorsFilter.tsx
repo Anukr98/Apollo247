@@ -11,9 +11,8 @@ import _map from 'lodash/map';
 import _uniqueId from 'lodash/uniqueId';
 import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';
-import _find from 'lodash/find';
-import _uniq from 'lodash/uniq';
 import _without from 'lodash/without';
+import { AphCalendar } from 'components/AphCalendar';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -28,8 +27,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 15,
     },
     customScroll: {
-      height: '70vh',
-      overflow: 'auto',
+      width: '100%',
     },
     searchInput: {
       paddingLeft: 20,
@@ -47,27 +45,75 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       paddingBottom: 5,
       borderBottom: '1px solid rgba(1,71,91,0.3)',
+      display: 'flex',
+      alignItems: 'center',
+    },
+    calendarIcon: {
+      marginLeft: 'auto',
+      cursor: 'pointer',
+      '& img': {
+        maxWidth: 20,
+        verticalAlign: 'bottom',
+      },
     },
     boxContent: {
       paddingTop: 5,
+      '& button:last-child': {
+        marginRight: 0,
+      },
     },
     button: {
       marginRight: 5,
       marginTop: 5,
+      minWidth: 'auto',
+      color: '#00b38e !important',
+      letterSpacing: -0.27,
     },
-    showMessage: {
-      opacity: 1.0,
-    },
-    hideMessage: {
-      opacity: 0,
+    helpText: {
+      paddingLeft: 20,
+      paddingRight: 20,
     },
     buttonActive: {
       backgroundColor: '#00b38e',
-      color: theme.palette.common.white,
+      color: theme.palette.common.white + '!important',
       '&:hover': {
         backgroundColor: '#00b38e',
-        color: theme.palette.common.white,
+        color: theme.palette.common.white + '!important',
       },
+    },
+    filterSectionDisabled: {
+      opacity: 0.3,
+    },
+    calendarView: {
+      display: 'none',
+      '& p': {
+        fontSize: 12,
+        lineHeight: '26px',
+      },
+      '& >div': {
+        '& >div:first-child': {
+          '& >div:first-child': {
+            marginBottom: 8,
+          },
+          '& >div:last-child': {
+            '& span': {
+              fontSize: 10,
+            },
+          },
+        },
+        '& >div:last-child': {
+          minHeight: 160,
+          marginTop: 5,
+          '& button': {
+            height: 32,
+            width: 32,
+            margin: '0 0 0 6px',
+          },
+        },
+      },
+    },
+    showCalendar: {
+      display: 'block',
     },
   });
 });
@@ -114,9 +160,10 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   const [fees, setFees] = useState<string[]>(existingFilters.fees || []);
   const [gender, setGender] = useState<string[]>(existingFilters.gender || []);
   const [language, setLanguage] = useState<string[]>(existingFilters.language || []);
+  const [showCalendar, setShowCalendar] = useState<boolean>(false);
 
   const filterOptions = {
-    searchKeyword: existingFilters.searchKeyword,
+    searchKeyword: existingFilters.searchKeyword || searchKeyword,
     cityName: existingFilters.cityName,
     experience: existingFilters.experience,
     availability: existingFilters.availability,
@@ -150,14 +197,18 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
         value={existingFilters.searchKeyword || ''}
         error={showError}
       />
-      <FormHelperText
-        className={showError ? classes.showMessage : classes.hideMessage}
-        component="div"
-        error={showError}
+      {showError ? (
+        <FormHelperText className={classes.helpText} component="div" error={showError}>
+          Sorry, we couldn't find what you are looking for :(
+        </FormHelperText>
+      ) : (
+        ''
+      )}
+      <div
+        className={`${classes.filterSection} ${
+          disableFilters ? classes.filterSectionDisabled : ''
+        }`}
       >
-        Sorry, we couldn't find what you are looking for :(
-      </FormHelperText>
-      <div className={classes.filterSection}>
         <div className={classes.customScroll}>
           <div className={classes.filterBox}>
             <div className={classes.filterType}>City</div>
@@ -230,10 +281,31 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
             </div>
           </div>
           <div className={classes.filterBox}>
-            <div className={classes.filterType}>Availability</div>
+            <div className={classes.filterType}>
+              Availability
+              <div
+                className={classes.calendarIcon}
+                onClick={(e) => {
+                  !disableFilters ? setShowCalendar(showCalendar ? false : true) : false;
+                }}
+              >
+                <img
+                  src={
+                    showCalendar
+                      ? require('images/ic_calendar_close.svg')
+                      : require('images/ic_calendar_show.svg')
+                  }
+                />
+              </div>
+            </div>
             <div className={classes.boxContent}>
+              <div
+                className={`${classes.calendarView} ${showCalendar ? classes.showCalendar : ''}`}
+              >
+                <AphCalendar />
+              </div>
               {_map(filterAvailability, (filterAvailability, index) => {
-                return (
+                return !showCalendar ? (
                   <AphButton
                     color="secondary"
                     size="small"
@@ -260,7 +332,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                   >
                     {filterAvailability}
                   </AphButton>
-                );
+                ) : null;
               })}
             </div>
           </div>
