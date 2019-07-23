@@ -27,7 +27,7 @@ export class Appointments extends BaseEntity {
   @IsDate()
   appointmentDate: Date;
 
-  @Column({ type: 'time' })
+  @Column({ type: 'timestamp' })
   appointmentTime: Date;
 
   @Column()

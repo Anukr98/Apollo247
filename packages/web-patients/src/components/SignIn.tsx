@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme: Theme) => {
     helpText: {
       fontSize: 12,
       fontWeight: 500,
-      color: theme.palette.secondary.dark,
+      color: 'rgba(2,71,91,0.6)',
       marginTop: 10,
       lineHeight: 2,
     },
@@ -50,6 +50,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 0,
       display: 'flex',
       '& button': {
+        boxShadow: '0 2px 5px rgba(0,0,0,0.2) !important',
         marginLeft: 'auto',
         marginRight: -40,
       },

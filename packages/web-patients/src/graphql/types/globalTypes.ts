@@ -31,6 +31,11 @@ export enum Relation {
   WIFE = "WIFE",
 }
 
+export enum SEARCH_TYPE {
+  DOCTOR = "DOCTOR",
+  SPECIALTY = "SPECIALTY",
+}
+
 export interface UpdatePatientInput {
   id: string;
   firstName?: string | null;
@@ -48,8 +53,10 @@ export interface filterInput {
   city?: (string | null)[] | null;
   experience?: (string | null)[] | null;
   availability?: (string | null)[] | null;
+  fees?: (string | null)[] | null;
   gender?: (string | null)[] | null;
   language?: (string | null)[] | null;
+  location?: string | null;
 }
 
 //==============================================================
