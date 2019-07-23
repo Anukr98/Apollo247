@@ -3,6 +3,7 @@ import { NavigatorContainer } from '@aph/mobile-doctors/src/components/Navigator
 import { AuthProvider } from '@aph/mobile-doctors/src/components/AuthProvider';
 
 export const AppContainer: React.FC = () => {
+  console.disableYellowBox = true;
   return (
     <AuthProvider>
       <NavigatorContainer />
