@@ -42,7 +42,9 @@ services:
     image: node:12.6.0
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
-    command: bash -c "node profiles-service.bundle.js"
+    command: bash -c "
+      while ! < /dev/tcp/profiles-db/5432; do echo waiting for profiles-db...; sleep 5; done;
+      node profiles-service.bundle.js"
     volumes:
       - ./:/apollo-hospitals:cached
     depends_on:
