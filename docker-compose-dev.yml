@@ -14,8 +14,8 @@ services:
     volumes:
       - ./nginx/log/:/var/log/nginx
       - ./nginx/conf.d/local.conf.template:/etc/nginx/conf.d/local.conf.template/:ro
-      - ./packages/web-patients/dist/:/usr/share/nginx/html/web-patients:ro
-      - ./packages/web-doctors/dist/:/usr/share/nginx/html/web-doctors:ro
+      - ./packages/web-patients/:/usr/share/nginx/html/web-patients:ro
+      - ./packages/web-doctors/:/usr/share/nginx/html/web-doctors:ro
 
   pgweb:
     image: sosedoff/pgweb:0.11.2
