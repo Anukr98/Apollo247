@@ -3,7 +3,7 @@ const process = require('process');
 const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const NodemonPlugin = require('nodemon-webpack-plugin');
-const DotenvWebpack = require('dotenv-webpack');
+const DotenvPlugin = require('dotenv-webpack');
 const dotenv = require('dotenv');
 
 const envFile = path.resolve(__dirname, '../../.env');
@@ -14,7 +14,7 @@ const isLocal = process.env.NODE_ENV === 'local';
 // const isDev = process.env.NODE_ENV === 'dev';
 const isProduction = process.env.NODE_ENV === 'production';
 
-const plugins = [new DotenvWebpack({ path: envFile })];
+const plugins = [new DotenvPlugin({ path: envFile })];
 if (isLocal) plugins.push(new NodemonPlugin());
 
 const tsLoader = { loader: 'awesome-typescript-loader' };
