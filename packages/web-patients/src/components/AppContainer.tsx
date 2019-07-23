@@ -54,7 +54,6 @@ const App: React.FC = () => {
   return (
     <div className={classes.app}>
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
-      <Route exact path={clientRoutes.patients()} component={PatientsList} />
       <AuthRouted exact path={clientRoutes.doctorDetails()} component={DoctorDetails} />
       <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
     </div>

@@ -12,6 +12,7 @@ import { Patients } from '@aph/mobile-doctors/src/components/Patients';
 import { ProfileSetup } from '@aph/mobile-doctors/src/components/ProfileSetup';
 import { TabBar } from '@aph/mobile-doctors/src/components/TabBar';
 import { TransitionPage } from '@aph/mobile-doctors/src/components/TransitionPage';
+import { NeedHelpDonePage } from '@aph/mobile-doctors/src/components/NeedHelpDonePage';
 import {
   createAppContainer,
   createStackNavigator,
@@ -34,6 +35,7 @@ export enum AppRoutes {
   NeedHelp = 'NeedHelp',
   ProfileSetup = 'ProfileSetup',
   TransitionPage = 'TransitionPage',
+  NeedHelpDonePage = 'NeedHelpDonePage',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -88,10 +90,13 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.TransitionPage]: {
     screen: TransitionPage,
   },
+  [AppRoutes.NeedHelpDonePage]: {
+    screen: NeedHelpDonePage,
+  },
 };
 
 const stackConfig: StackNavigatorConfig = {
-  initialRouteName: AppRoutes.ProfileSetup,
+  initialRouteName: AppRoutes.SplashScreen,
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   transitionConfig: () => {

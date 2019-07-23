@@ -84,6 +84,21 @@ const styles = StyleSheet.create({
     elevation: 2,
     marginTop: 32,
   },
+  buttonViewfull: {
+    height: 40,
+    borderRadius: 5,
+    backgroundColor: '#fc9916',
+    width: 200,
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    shadowColor: 'rgba(0,0,0,0.2)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 2,
+    marginTop: 32,
+  },
 
   titleTextStyle: {
     ...theme.fonts.IBMPlexSansBold(13),
@@ -121,7 +136,7 @@ export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
     if (authError) {
       clearCurrentUser();
       setVerifyingPhonenNumber(false);
-      Alert.alert('Error', 'Unable to connect the server at the moment.');
+      //Alert.alert('Error', 'Unable to connect the server at the moment.');
     }
   }, [authError]);
 
@@ -146,7 +161,6 @@ export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
           heading={string.LocalStrings.needhelp}
           description={string.LocalStrings.callback}
           onPress={() => props.navigation.goBack()}
-          // disableButton={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
         >
           <View
             style={[
@@ -167,8 +181,11 @@ export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
           <Button
             title="CALL ME"
             titleTextStyle={styles.titleTextStyle}
-            style={styles.buttonView}
-            onPress={() => Alert.alert('Need Help')}
+            style={
+              phoneNumber == '' || phoneNumberIsValid ? styles.buttonViewfull : styles.buttonView
+            }
+            onPress={() => props.navigation.push(AppRoutes.NeedHelpDonePage)}
+            disabled={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
           />
         </OtpCard>
       </SafeAreaView>

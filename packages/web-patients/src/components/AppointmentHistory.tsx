@@ -1,6 +1,13 @@
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { PATIENT_APPOINTMENT_HISTORY } from 'graphql/doctors';
+import {
+  AppointmentHistory as TypeAppointmentHistory,
+  AppointmentHistoryVariables,
+} from 'graphql/types/AppointmentHistory';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import _uniqueId from 'lodash/uniqueId';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -58,50 +65,87 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    sectionHeader: {
+      color: theme.palette.secondary.dark,
+      fontSize: 14,
+      fontWeight: 500,
+      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      paddingBottom: 10,
+      paddingTop: 10,
+      marginBottom: 20,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    count: {
+      marginLeft: 'auto',
+    },
   };
 });
 
-export const AppointmentHistory: React.FC = (props) => {
+interface AppointmentHistoryProps {
+  doctorId: string;
+  patientId: string;
+}
+
+export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => {
   const classes = useStyles();
 
-  /* this should be a graphql call */
-  const appointments = {
-    someKey: {
-      appointmentDate: '27 June 2019', // we need to yet know the format of this ts or string.
-      appointmentTime: '06.30pm', // we need to yet identify how the time will come from api.
-      appointmentType: 'Online Consult',
-      symptoms: ['FEVER', 'COUGH & COLD'],
-    },
-    someKey1: {
-      appointmentDate: '09 April 2019', // we need to yet know the format of this ts or string.
-      appointmentTime: '03.00pm', // we need to yet identify how the time will come from api.
-      appointmentType: 'Clinic Visit',
-      symptoms: ['HEADACHE', 'SOAR THROAT'],
-    },
-  };
+  const { doctorId, patientId } = props;
 
-  return (
-    <Grid container spacing={2}>
-      {Object.values(appointments).map((appointment) => {
-        return (
-          <Grid item sm={3} key={_uniqueId('avagr_')}>
-            <div className={classes.root} key={_uniqueId('aphistory_')}>
-              <div className={classes.appointType}>{appointment.appointmentType}</div>
-              <div className={classes.appointmentInfo}>
-                <div className={classes.appointDate}>{appointment.appointmentDate}</div>
-                <div className={classes.appointTime}>{appointment.appointmentTime}</div>
-                <div className={classes.appointBooked}>
-                  <ul>
-                    {appointment.symptoms.map((symptom: string) => (
-                      <li key={_uniqueId('symptom_')}>{symptom}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+  const { data, loading, error } = useQueryWithSkip<
+    TypeAppointmentHistory,
+    AppointmentHistoryVariables
+  >(PATIENT_APPOINTMENT_HISTORY, {
+    variables: { appointmentHistoryInput: { patientId: patientId, doctorId: doctorId } },
+  });
+
+  if (loading) {
+    return <LinearProgress />;
+  }
+  if (error) {
+    return <div>Error....</div>;
+  }
+
+  if (data && data.getAppointmentHistory && data.getAppointmentHistory.appointmentsHistory) {
+    const previousAppointments = data.getAppointmentHistory.appointmentsHistory;
+    const symptoms = ['FEVER', 'COUGH & COLD'];
+    return (
+      <>
+        {previousAppointments.length > 0 ? (
+          <>
+            <div className={classes.sectionHeader}>
+              <span>Appointment History</span>
+              <span className={classes.count}>
+                {(previousAppointments && previousAppointments.length) || ''}
+              </span>
             </div>
-          </Grid>
-        );
-      })}
-    </Grid>
-  );
+            <Grid container spacing={2}>
+              {previousAppointments.map((appointment) => {
+                return (
+                  <Grid item sm={3} key={_uniqueId('avagr_')}>
+                    <div className={classes.root} key={_uniqueId('aphistory_')}>
+                      <div className={classes.appointType}>{appointment.appointmentType}</div>
+                      <div className={classes.appointmentInfo}>
+                        <div className={classes.appointDate}>{appointment.appointmentDate}</div>
+                        <div className={classes.appointTime}>{appointment.appointmentTime}</div>
+                        <div className={classes.appointBooked}>
+                          <ul>
+                            {symptoms.map((symptom: string) => (
+                              <li key={_uniqueId('symptom_')}>{symptom}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </>
+        ) : null}
+      </>
+    );
+  } else {
+    return <></>;
+  }
 };
