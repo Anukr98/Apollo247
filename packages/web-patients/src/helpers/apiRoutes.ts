@@ -2,7 +2,7 @@ const apiBaseUrl = () => {
   const env = process.env.NODE_ENV;
   const port = process.env.API_GATEWAY_PORT === '80' ? '' : `:${process.env.API_GATEWAY_PORT}`;
   if (env === 'local') return `http://localhost${port}`;
-  if (env === 'dev') return `http://api.aph.popcornapps.com${port}`;
+  if (env === 'dev') return 'http://dev.api.aph.popcornapps.com';
   console.error('Invalid NODE_ENV environment variable configuration');
 };
 
