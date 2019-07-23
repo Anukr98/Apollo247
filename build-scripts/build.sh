@@ -64,7 +64,6 @@ echo -e "\nbuilding aph-$1.tar.gz artifact..."
 tar -czf aph-$1.tar.gz -C skeleton apollo-hospitals
 
 echo -e "\ncleaning up..."
-echo -e "x skeleton"
 rm -rf skeleton
 
 echo -e "\nsuccess! build artifact: aph-$1-tar.gz"
