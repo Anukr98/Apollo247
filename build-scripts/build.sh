@@ -11,6 +11,8 @@ echo -e "\nusing docker-compose-$1.yml..."
 echo -e "\ncleaning up any old build files..."
 rm -rfv skeleton
 rm -rfv packages/api/dist/*
+rm -rfv packages/web-doctors/dist/*
+rm -rfv packages/web-patients/dist/*
 
 echo -e "\nbuilding api-gateway..."
 docker-compose -f docker-compose-$1.yml run --no-deps --rm api-gateway npm run start:api-gateway 
