@@ -221,18 +221,20 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
   const [userData, setData] = useState(values);
 
   const [showAddDoc, setShowAddDoc] = useState(false);
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
+  const [currentDoctor, setCurrentDoctor] = React.useState('');
   const client = useApolloClient();
 
-  function handleClick(event: any) {
+  function handleClick(event: React.MouseEvent<HTMLButtonElement>, id: string) {
     setAnchorEl(event.currentTarget);
+    setCurrentDoctor(id);
   }
 
   function handleClose() {
-    setAnchorEl(null);
+    setAnchorEl((null as unknown) as HTMLButtonElement);
+    setCurrentDoctor('');
   }
 
-  const open = Boolean(anchorEl);
   function removeDoctor(doctor: GetDoctorProfile_getDoctorProfile_starDoctorTeam, index: number) {
     client
       .mutate({
@@ -268,16 +270,16 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
             {!((item.inviteStatus && item.inviteStatus.toLowerCase()) === 'accepted') ? (
               <div className={classes.posRelative}>
                 <Button
-                  aria-describedby={open ? 'simple-popover' : undefined}
+                  aria-describedby={currentDoctor === item.firstName ? item.firstName : undefined}
                   variant="contained"
                   className={classes.moreIcon}
-                  onClick={handleClick}
+                  onClick={(e) => handleClick(e, item.firstName)}
                 >
                   <img alt="more.svg" src={require('images/ic_more.svg')} />
                 </Button>
                 <Popover
-                  id={open ? item.firstName : undefined}
-                  open={open}
+                  id={currentDoctor === item.firstName ? item.firstName : undefined}
+                  open={currentDoctor === item.firstName}
                   anchorEl={anchorEl}
                   onClose={handleClose}
                   anchorOrigin={{
@@ -307,16 +309,16 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
             ) : (
               <div className={classes.posRelative}>
                 <Button
-                  aria-describedby={open ? 'simple-popover' : undefined}
+                  aria-describedby={currentDoctor === item.firstName ? item.firstName : undefined}
                   variant="contained"
                   className={classes.moreIcon}
-                  onClick={handleClick}
+                  onClick={(e) => handleClick(e, item.firstName)}
                 >
                   <img alt="" src={require('images/ic_more.svg')} />
                 </Button>
                 <Popover
-                  id={open ? item.firstName : undefined}
-                  open={open}
+                  id={currentDoctor === item.firstName ? item.firstName : undefined}
+                  open={currentDoctor === item.firstName}
                   anchorEl={anchorEl}
                   onClose={handleClose}
                   anchorOrigin={{
