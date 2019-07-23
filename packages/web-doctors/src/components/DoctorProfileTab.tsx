@@ -21,6 +21,9 @@ import {
   RemoveDoctorFromStarDoctorProgram,
 } from 'graphql/types/removeDoctorFromStarDoctorProgram';
 import { Mutation } from 'react-apollo';
+import Button from '@material-ui/core/Button';
+import { StarDoctorSearch } from './StarDoctorSearch';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
@@ -367,11 +370,11 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                   <span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>
                 </h6>
               ) : (
-                <Typography className={classes.invited}>
-                  <img alt="" src={require('images/ic_invite.svg')} />
-                  Invited
+                  <Typography className={classes.invited}>
+                    <img alt="" src={require('images/ic_invite.svg')} />
+                    Invited
                 </Typography>
-              )}
+                )}
             </div>
           }
           subheader={
@@ -417,6 +420,22 @@ interface DoctorDetailsProps {
 const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { doctor, clinics } = props;
   const classes = useStyles();
+  const clinicsList = userData.clinics.map(
+    (item: GetDoctorProfile_getDoctorProfile_clinics, index: number) => {
+      return (
+        <Typography variant="h3" key={index.toString()} className={index > 0 ? classes.none : ''}>
+          {item.name}, {item.addressLine1}, {item.addressLine2}
+          {item.addressLine3}, {item.city}
+        </Typography>
+      );
+    }
+  );
+  function addDoctorHandler(obj: DoctorsName) {
+    if (obj.label) {
+      setData({ ...userData, starDoctorTeam: userData.starDoctorTeam.concat(obj) });
+      setShowAddDoc(false);
+    }
+  }
 
   return (
     <div>
@@ -530,24 +549,44 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
           <StarDoctorsList starDoctors={starDoctors} />
           <div>
             <AphButton variant="contained" color="primary" classes={{ root: classes.btnAddDoctor }}>
-              + ADD DOCTOR
+              <Grid container alignItems="flex-start" spacing={0}>
+                {starDoctors}
+                {!!showAddDoc && (
+                  <Grid item lg={4} sm={6} xs={12}>
+                    <div className={classes.addStarDoctor}>
+                      <Typography variant="h5">
+                        Add doctor to your team
+                    <StarDoctorSearch addDoctorHandler={addDoctorHandler} />
+                      </Typography>
+                    </div>
+                  </Grid>
+                )}
+              </Grid>
+              <div className={classes.addDocter}>
+                <AphButton
+                  variant="contained"
+                  color="primary"
+                  classes={{ root: classes.btnAddDoctor }}
+                  onClick={(e) => setShowAddDoc(!showAddDoc)}
+                >
+                  + ADD DOCTOR
             </AphButton>
-          </div>
+              </div>
         </div>
-      )}
+            )}
 
       <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
-        <Grid item lg={12} sm={12} xs={12}>
-          <AphButton
-            variant="contained"
-            color="primary"
-            classes={{ root: classes.saveButton }}
-            onClick={() => props.onNext()}
-          >
-            SAVE AND PROCEED
+              <Grid item lg={12} sm={12} xs={12}>
+                <AphButton
+                  variant="contained"
+                  color="primary"
+                  classes={{ root: classes.saveButton }}
+                  onClick={() => props.onNext()}
+                >
+                  SAVE AND PROCEED
           </AphButton>
-        </Grid>
-      </Grid>
-    </div>
-  );
-};
+              </Grid>
+            </Grid>
+          </div>
+          );
+        };

@@ -78,6 +78,34 @@ export const REMOVE_STAR_DOCTOR = gql`
     removeDoctorFromStarDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
   }
 `;
+export const GET_DOCTOR_FOR_STAR_DOCTOR_PROGRAM = gql`
+  query getDoctorsForStarDoctorProgram($searchString: String!) {
+    getDoctorsForStarDoctorProgram(searchString: $searchString) {
+      profile {
+        id
+        firstName
+        lastName
+        inviteStatus
+        typeOfConsult
+        experience
+      }
+      starDoctorTeam {
+        id
+        firstName
+        lastName
+        inviteStatus
+        typeOfConsult
+        experience
+      }
+    }
+  }
+`;
+export const ADD_DOCTOR_TO_STAR_PROGRAM = gql`
+  mutation addDoctorToStartDoctorProgram($starDoctorId: String!, $doctorId: String!) {
+    addDoctorToStartDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
+  }
+`;
+
 export const UPDATE_PATIENT = gql`
   mutation UpdatePatient($patientInput: UpdatePatientInput!) {
     updatePatient(patientInput: $patientInput) {

@@ -1,5 +1,4 @@
 import React from 'react';
-//import deburr from "lodash/deburr";
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -181,26 +180,42 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 interface Suggestprops {
-  addDoctorHadler: () => void;
+  addDoctorHandler: (doctor: DoctorsName) => void;
 }
-export function IntegrationAutosuggest({ addDoctorHadler }: any) {
+export const StarDoctorSearch: React.FC<Suggestprops> = ({ addDoctorHandler }) => {
   const classes = useStyles();
   const [state, setState] = React.useState({
     single: '',
   });
-  const [doctor, setDoctor] = React.useState({ label: '' });
+  const [doctor, setDoctor] = React.useState({} as DoctorsName);
   const [stateSuggestions, setSuggestions] = React.useState<DoctorsName[]>([]);
 
   const handleSuggestionsFetchRequested = ({ value }: any) => {
     setSuggestions(getSuggestions(value));
   };
+  const onSuggestionSelected = (
+    event: React.MouseEvent,
+    {
+      suggestion,
+      suggestionValue,
+      suggestionIndex,
+      sectionIndex,
+      method,
+    }: {
+      suggestion: DoctorsName;
+      suggestionValue: string;
+      suggestionIndex: number;
+      sectionIndex: number;
+      method: 'click' | 'enter';
+    }
+  ) => {
+    setDoctor(suggestion);
+  };
 
   const handleSuggestionsClearRequested = () => {
     setSuggestions([]);
   };
-  const onSuggestionSelected = (event: any, { suggestion }: any) => {
-    setDoctor(suggestion);
-  };
+
   const handleChange = (name: keyof typeof state) => (
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
@@ -239,17 +254,17 @@ export function IntegrationAutosuggest({ addDoctorHadler }: any) {
           suggestionsList: classes.suggestionsList,
           suggestion: classes.suggestion,
         }}
-        renderSuggestionsContainer={(options: any) => (
+        renderSuggestionsContainer={(options) => (
           <Paper {...options.containerProps} square>
             {options.children}
           </Paper>
         )}
       />
       {doctor.label && state.single === doctor.label && (
-        <div className={classes.addBtn} onClick={() => addDoctorHadler(doctor)}>
+        <div className={classes.addBtn} onClick={() => addDoctorHandler(doctor)}>
           <img alt="" src={require('images/add_doctor.svg')} />
         </div>
       )}
     </div>
   );
-}
+};
