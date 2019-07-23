@@ -13,8 +13,10 @@ export const getSpecialtyDoctorsTypeDefs = gql`
     city: [String]
     experience: [String]
     availability: [String]
+    fees: [String]
     gender: [String]
     language: [String]
+    location: String
   }
   extend type Query {
     getSpecialtyDoctorsWithFilters(filterInput: filterInput): filteredDoctorsResult
@@ -30,8 +32,10 @@ type filterInput = {
   city: String[];
   experience: String[];
   availability: String[];
+  fees: String[];
   gender: String[];
   language: String[];
+  location: String;
 };
 
 const getSpecialtyDoctorsWithFilters: Resolver<
