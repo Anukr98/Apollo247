@@ -11,6 +11,7 @@ import {
   GetDoctorProfile_getDoctorProfile_clinics,
 } from 'graphql/types/getDoctorProfile';
 import Button from '@material-ui/core/Button';
+import _toLower from 'lodash/toLower';
 import { useApolloClient } from 'react-apollo-hooks';
 import { REMOVE_STAR_DOCTOR } from 'graphql/profiles';
 const useStyles = makeStyles((theme: Theme) => {
@@ -267,7 +268,7 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
                 className={classes.profileImg}
               />
             </div>
-            {!((item.inviteStatus && item.inviteStatus.toLowerCase()) === 'accepted') ? (
+            {!((item.inviteStatus && _toLower(item.inviteStatus)) === 'accepted') ? (
               <div className={classes.posRelative}>
                 <Button
                   aria-describedby={currentDoctor === item.firstName ? item.firstName : undefined}
