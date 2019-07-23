@@ -62,7 +62,7 @@ module.exports = {
         test: /\.(j|t)sx?$/,
         include: [path.resolve(__dirname, 'src')],
         exclude: [/node_modules/],
-        use: isProduction ? [tsLoader] : [rhlBabelLoader, tsLoader],
+        use: isLocal ? [rhlBabelLoader, tsLoader] : [tsLoader],
       },
       {
         test: /\.(png|jpg|jpeg|svg|gif)$/,
