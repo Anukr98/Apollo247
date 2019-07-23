@@ -6,6 +6,11 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum APPOINTMENT_TYPE {
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+}
+
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
@@ -36,6 +41,17 @@ export enum SEARCH_TYPE {
   SPECIALTY = "SPECIALTY",
 }
 
+export enum STATUS {
+  CANCELLED = "CANCELLED",
+  CONFIRMED = "CONFIRMED",
+  IN_PROGRESS = "IN_PROGRESS",
+}
+
+export interface AppointmentHistoryInput {
+  patientId: string;
+  doctorId: string;
+}
+
 export interface UpdatePatientInput {
   id: string;
   firstName?: string | null;
@@ -53,8 +69,10 @@ export interface filterInput {
   city?: (string | null)[] | null;
   experience?: (string | null)[] | null;
   availability?: (string | null)[] | null;
+  fees?: (string | null)[] | null;
   gender?: (string | null)[] | null;
   language?: (string | null)[] | null;
+  location?: string | null;
 }
 
 //==============================================================

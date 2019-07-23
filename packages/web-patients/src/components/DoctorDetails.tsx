@@ -13,6 +13,20 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import { OnlineConsult } from 'components/OnlineConsult';
 import { VisitClinic } from 'components/VisitClinic';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
+import {
+  GetDoctorProfileById,
+  GetDoctorProfileByIdVariables,
+} from 'graphql/types/getDoctorProfileById';
+import LinearProgress from '@material-ui/core/LinearProgress';
+
+type Params = { id: string };
+
+export interface DoctorDetailsProps {
+  id: string;
+}
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -117,16 +131,6 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type Params = { id: string };
-
-export interface DoctorDetailsProps {
-  id: string;
-}
-
-interface TabContainerProps {
-  children?: React.ReactNode;
-}
-
 const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
@@ -137,135 +141,100 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const doctorId = params.id;
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
+  const { allCurrentPatients } = useAllCurrentPatients();
 
-  /* this should be a graphql call */
-  const detailsObj = {
-    '1': {
-      profilePicture: '',
-      doctorName: 'Dr. Simran Rai',
-      doctorSpeciality: 'GENERAL PHYSICIAN',
-      doctorExperience: '7',
-      doctorQualification: ['MS (Surgery)', 'MBBS (Internal Medicine)'],
-      awards: [
-        'Dr. B.C. Roy Award (2009)',
-        'Wiliam E. Ladd Medical (2013)',
-        'R. D. Birla Award (2014)',
-      ],
-      locations: ['Apollo Hospital, Jubilee Hills', 'Apollo Hospital, Banjara Hills'],
-      languagesKnown: ['English', 'Hindi', 'Telugu'],
-      consultingOptions: {
-        online: {
-          consultType: 'Online Consultation',
-          fees: 299,
-          availableIn: 30,
-        },
-        clinic: {
-          consultType: 'Clinic Visit',
-          fees: 499,
-          availableIn: 27,
-        },
-      },
-      isStarDoctor: true,
-    },
-    '2': {
-      profilePicture: '',
-      doctorName: 'Dr. Mishra',
-      doctorSpeciality: 'GENERAL PHYSICIAN',
-      doctorExperience: '10',
-      doctorQualification: ['MD (Surgery)'],
-      awards: [
-        'Dr. B.C. Roy Award (2009)',
-        'Wiliam E. Ladd Medical (2013)',
-        'R. D. Birla Award (2014)',
-      ],
-      locations: ['SLN Terminus', 'HiTECH City'],
-      languagesKnown: ['English', 'Hindi', 'Telugu'],
-      consultingOptions: {
-        online: {
-          consultType: 'Online Consultation',
-          fees: 399,
-          availableIn: 30,
-        },
-        clinic: {
-          consultType: 'Clinic Visit',
-          fees: 599,
-          availableIn: 27,
-        },
-      },
-      isStarDoctor: false,
-    },
-  };
+  const currentUserId = (allCurrentPatients && allCurrentPatients[0].id) || '';
 
-  const doctorDetails = detailsObj[doctorId as '1' | '2'];
+  const { data, loading, error } = useQueryWithSkip<
+    GetDoctorProfileById,
+    GetDoctorProfileByIdVariables
+  >(GET_DOCTOR_DETAILS_BY_ID, {
+    variables: { id: doctorId },
+  });
 
-  return (
-    <div className={classes.welcome}>
-      <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
+  if (loading) {
+    return <LinearProgress />;
+  }
+  if (error) {
+    return <div>Error....</div>;
+  }
+
+  const doctorDetails = data && data.getDoctorProfileById ? data : null;
+
+  if (doctorDetails) {
+    const isStarDoctor =
+      doctorDetails &&
+      doctorDetails.getDoctorProfileById &&
+      doctorDetails.getDoctorProfileById.profile
+        ? doctorDetails.getDoctorProfileById.profile.isStarDoctor
+        : false;
+
+    const doctorId =
+      doctorDetails &&
+      doctorDetails.getDoctorProfileById &&
+      doctorDetails.getDoctorProfileById.profile
+        ? doctorDetails.getDoctorProfileById.profile.id
+        : '';
+
+    return (
+      <div className={classes.welcome}>
+        <div className={classes.headerSticky}>
+          <div className={classes.container}>
+            <Header />
+          </div>
         </div>
-      </div>
-      <div className={classes.container}>
-        <div className={classes.doctorDetailsPage}>
-          <div className={classes.breadcrumbs}>Doctor Details</div>
-          <div className={classes.doctorProfileSection}>
-            <DoctorProfile
-              doctorDetails={doctorDetails}
-              onBookConsult={() => setIsPopoverOpen(true)}
-            />
-            <div className={classes.searchSection}>
-              <div className={classes.sectionHeader}>
-                <span>Dr. Simran’s Clinic</span>
-                <span className={classes.count}>02</span>
+        <div className={classes.container}>
+          <div className={classes.doctorDetailsPage}>
+            <div className={classes.breadcrumbs}>Doctor Details</div>
+            <div className={classes.doctorProfileSection}>
+              <DoctorProfile
+                doctorDetails={doctorDetails}
+                onBookConsult={() => setIsPopoverOpen(true)}
+              />
+              <div className={classes.searchSection}>
+                <DoctorClinics doctorDetails={doctorDetails} />
+                {isStarDoctor && <StarDoctorTeam doctorDetails={doctorDetails} />}
+                <AppointmentHistory doctorId={doctorId} patientId={currentUserId} />
               </div>
-              <DoctorClinics doctorId={doctorId} />
-              <div className={classes.sectionHeader}>
-                <span>Dr. Simran’s Team</span>
-                <span className={classes.count}>02</span>
-              </div>
-              <StarDoctorTeam doctorId={doctorId} />
-              <div className={classes.sectionHeader}>
-                <span>Appointment History</span>
-                <span className={classes.count}>02</span>
-              </div>
-              <AppointmentHistory />
             </div>
           </div>
         </div>
+        <Modal open={isPopoverOpen} onClose={() => setIsPopoverOpen(false)}>
+          <Paper className={classes.modalBox}>
+            <div className={classes.modalBoxClose} onClick={() => setIsPopoverOpen(false)}>
+              <img src={require('images/ic_cross_popup.svg')} alt="" />
+            </div>
+            <Tabs
+              value={tabValue}
+              classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+              onChange={(e, newValue) => {
+                setTabValue(newValue);
+              }}
+            >
+              <Tab
+                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                label="Consult Online"
+              />
+              <Tab
+                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                label="Visit Clinic"
+              />
+            </Tabs>
+            {tabValue === 0 && (
+              <TabContainer>
+                <OnlineConsult />
+              </TabContainer>
+            )}
+            {tabValue === 1 && (
+              <TabContainer>
+                <VisitClinic />
+              </TabContainer>
+            )}
+          </Paper>
+        </Modal>
       </div>
-      <Modal open={isPopoverOpen} onClose={() => setIsPopoverOpen(false)}>
-        <Paper className={classes.modalBox}>
-          <div className={classes.modalBoxClose} onClick={() => setIsPopoverOpen(false)}>
-            <img src={require('images/ic_cross_popup.svg')} alt="" />
-          </div>
-          <Tabs
-            value={tabValue}
-            classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
-            onChange={(e, newValue) => {
-              setTabValue(newValue);
-            }}
-          >
-            <Tab
-              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-              label="Consult Online"
-            />
-            <Tab
-              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-              label="Visit Clinic"
-            />
-          </Tabs>
-          {tabValue === 0 && (
-            <TabContainer>
-              <OnlineConsult />
-            </TabContainer>
-          )}
-          {tabValue === 1 && (
-            <TabContainer>
-              <VisitClinic />
-            </TabContainer>
-          )}
-        </Paper>
-      </Modal>
-    </div>
-  );
+    );
+  } else {
+    return <LinearProgress />;
+  }
 };

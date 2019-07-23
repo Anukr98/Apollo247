@@ -5,10 +5,10 @@
 import { INVITEDSTATUS } from "./globalTypes";
 
 // ====================================================
-// GraphQL query operation: getDoctorProfileById
+// GraphQL query operation: GetDoctorProfileById
 // ====================================================
 
-export interface getDoctorProfileById_getDoctorProfileById_profile {
+export interface GetDoctorProfileById_getDoctorProfileById_profile {
   __typename: "Doctor";
   id: string;
   firstName: string;
@@ -32,9 +32,10 @@ export interface getDoctorProfileById_getDoctorProfileById_profile {
   physicalConsultationFees: string;
   package: string | null;
   inviteStatus: INVITEDSTATUS | null;
+  address: string | null;
 }
 
-export interface getDoctorProfileById_getDoctorProfileById_clinics {
+export interface GetDoctorProfileById_getDoctorProfileById_clinics {
   __typename: "Clinics";
   name: string;
   image: string | null;
@@ -44,33 +45,27 @@ export interface getDoctorProfileById_getDoctorProfileById_clinics {
   city: string | null;
 }
 
-export interface getDoctorProfileById_getDoctorProfileById_starDoctorTeam {
+export interface GetDoctorProfileById_getDoctorProfileById_starDoctorTeam {
   __typename: "Doctor";
   id: string;
+  salutation: string;
   firstName: string;
   lastName: string;
-  mobileNumber: string;
   experience: string | null;
   speciality: string;
   specialization: string | null;
-  isStarDoctor: boolean;
   education: string;
   services: string | null;
   languages: string | null;
   city: string | null;
   awards: string | null;
   photoUrl: string | null;
-  registrationNumber: string;
-  isProfileComplete: string;
-  availableForPhysicalConsultation: boolean;
-  availableForVirtualConsultation: boolean;
-  onlineConsultationFees: string;
-  physicalConsultationFees: string;
   package: string | null;
   inviteStatus: INVITEDSTATUS | null;
+  address: string | null;
 }
 
-export interface getDoctorProfileById_getDoctorProfileById_consultationHours {
+export interface GetDoctorProfileById_getDoctorProfileById_consultationHours {
   __typename: "Consultations";
   days: string;
   startTime: any;
@@ -80,18 +75,18 @@ export interface getDoctorProfileById_getDoctorProfileById_consultationHours {
   type: string | null;
 }
 
-export interface getDoctorProfileById_getDoctorProfileById {
+export interface GetDoctorProfileById_getDoctorProfileById {
   __typename: "DoctorProfile";
-  profile: getDoctorProfileById_getDoctorProfileById_profile | null;
-  clinics: (getDoctorProfileById_getDoctorProfileById_clinics | null)[] | null;
-  starDoctorTeam: (getDoctorProfileById_getDoctorProfileById_starDoctorTeam | null)[] | null;
-  consultationHours: (getDoctorProfileById_getDoctorProfileById_consultationHours | null)[] | null;
+  profile: GetDoctorProfileById_getDoctorProfileById_profile;
+  clinics: GetDoctorProfileById_getDoctorProfileById_clinics[] | null;
+  starDoctorTeam: GetDoctorProfileById_getDoctorProfileById_starDoctorTeam[] | null;
+  consultationHours: GetDoctorProfileById_getDoctorProfileById_consultationHours[] | null;
 }
 
-export interface getDoctorProfileById {
-  getDoctorProfileById: getDoctorProfileById_getDoctorProfileById | null;
+export interface GetDoctorProfileById {
+  getDoctorProfileById: GetDoctorProfileById_getDoctorProfileById | null;
 }
 
-export interface getDoctorProfileByIdVariables {
+export interface GetDoctorProfileByIdVariables {
   id: string;
 }
