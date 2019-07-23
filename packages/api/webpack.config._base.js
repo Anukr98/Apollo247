@@ -1,30 +1,21 @@
 const path = require('path');
 const process = require('process');
+const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const NodemonPlugin = require('nodemon-webpack-plugin');
-const webpack = require('webpack');
+const DotenvWebpack = require('dotenv-webpack');
+const dotenv = require('dotenv');
 
+const envFile = path.resolve(__dirname, '../../.env');
+const dotEnvConfig = dotenv.config({ path: envFile });
+if (dotEnvConfig.error) throw dotEnvConfig.error;
+Object.values(dotEnvConfig).forEach((val, KEY) => (process.env[KEY] = val));
+const isLocal = process.env.NODE_ENV === 'local';
+// const isDev = process.env.NODE_ENV === 'dev';
 const isProduction = process.env.NODE_ENV === 'production';
 
-const plugins = [
-  new webpack.DefinePlugin(
-    [
-      'NODE_ENV',
-      'WEB_PATIENTS_PORT',
-      'WEB_DOCTORS_PORT',
-      'API_GATEWAY_PORT',
-      'FIREBASE_PROJECT_ID',
-      'GOOGLE_APPLICATION_CREDENTIALS',
-    ].reduce(
-      (result, VAR) => ({
-        ...result,
-        [`process.env.${VAR}`]: JSON.stringify(process.env[VAR] || '').trim(),
-      }),
-      {}
-    )
-  ),
-  new NodemonPlugin(),
-];
+const plugins = [new DotenvWebpack({ path: envFile })];
+if (isLocal) plugins.push(new NodemonPlugin());
 
 const tsLoader = { loader: 'awesome-typescript-loader' };
 
@@ -57,10 +48,10 @@ module.exports = {
     modules: [path.join(__dirname, 'src'), path.resolve(__dirname, 'node_modules')],
   },
 
-  watch: true,
+  watch: isLocal,
   watchOptions: {
     aggregateTimeout: 300,
-    poll: 1000,
+    poll: 1000, // We have to poll bc we're inside a docker container :(
     ignored: [/node_modules([\\]+|\/)+(?!@aph)/],
   },
 
