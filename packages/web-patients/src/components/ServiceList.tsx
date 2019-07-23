@@ -16,6 +16,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 40,
       paddingLeft: 20,
       paddingRight: 20,
+      [theme.breakpoints.up('sm')]: {
+        paddingTop: 131,
+      },
     },
     serviceItem: {
       padding: 20,

@@ -15,6 +15,8 @@ import { parse, format } from 'date-fns';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import { Formik, FormikProps, Field, FieldProps, Form } from 'formik';
 import { useMutation } from 'react-apollo-hooks';
+import _toLower from 'lodash/toLower';
+import _upperFirst from 'lodash/upperFirst';
 
 const isoDatePattern = 'yyyy-MM-dd';
 const clientDatePattern = 'dd/MM/yyyy';
@@ -34,7 +36,8 @@ const convertIsoDateToClientDate = (isoDateStr: string | null) => {
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     formControl: {
-      marginBottom: 20,
+      marginBottom: 25,
+      width: '100%',
       '& label': {
         fontSize: 12,
         fontWeight: 500,
@@ -104,6 +107,14 @@ const useStyles = makeStyles((theme: Theme) => {
     btnActive: {
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
+    },
+    noMargin: {
+      marginBottom: 5,
+    },
+    genderBtns: {
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      padding: '7px 13px 7px 13px',
+      textTransform: 'none',
     },
   });
 });
@@ -201,23 +212,30 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                         isNameValid(name) ? undefined : 'Invalid first name'
                       }
                       render={({ field }: FieldProps<{ firstName: string }>) => (
-                        <FormControl className={classes.formControl} fullWidth>
+                        <FormControl
+                          className={`${classes.formControl} ${classes.noMargin}`}
+                          fullWidth
+                        >
                           <AphTextField
                             {...field}
-                            label="First Name"
-                            placeholder="Example, Jonathan"
+                            label="Full Name"
+                            placeholder="First Name"
                             error={showError('firstName')}
                             inputProps={{ maxLength: 20 }}
                           />
-                          <FormHelperText
-                            className={
-                              showError('firstName') ? classes.showMessage : classes.hideMessage
-                            }
-                            component="div"
-                            error={true}
-                          >
-                            {errors.firstName}
-                          </FormHelperText>
+                          {showError('firstName') ? (
+                            <FormHelperText
+                              className={
+                                showError('firstName') ? classes.showMessage : classes.hideMessage
+                              }
+                              component="div"
+                              error={true}
+                            >
+                              {errors.firstName}
+                            </FormHelperText>
+                          ) : (
+                            ''
+                          )}
                         </FormControl>
                       )}
                     />
@@ -231,20 +249,23 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                         <FormControl className={classes.formControl} fullWidth>
                           <AphTextField
                             {...field}
-                            label="Last Name"
-                            placeholder="Example, Donut"
+                            placeholder="Last Name"
                             error={showError('lastName')}
                             inputProps={{ maxLength: 20 }}
                           />
-                          <FormHelperText
-                            className={
-                              showError('lastName') ? classes.showMessage : classes.hideMessage
-                            }
-                            component="div"
-                            error={true}
-                          >
-                            {errors.lastName}
-                          </FormHelperText>
+                          {showError('lastName') ? (
+                            <FormHelperText
+                              className={
+                                showError('lastName') ? classes.showMessage : classes.hideMessage
+                              }
+                              component="div"
+                              error={true}
+                            >
+                              {errors.lastName}
+                            </FormHelperText>
+                          ) : (
+                            ''
+                          )}
                         </FormControl>
                       )}
                     />
@@ -263,15 +284,19 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                             error={showError('dateOfBirth')}
                             inputProps={{ type: 'text', maxLength: 10 }}
                           />
-                          <FormHelperText
-                            className={
-                              showError('dateOfBirth') ? classes.showMessage : classes.hideMessage
-                            }
-                            component="div"
-                            error={true}
-                          >
-                            {errors.dateOfBirth}
-                          </FormHelperText>
+                          {showError('dateOfBirth') ? (
+                            <FormHelperText
+                              className={
+                                showError('dateOfBirth') ? classes.showMessage : classes.hideMessage
+                              }
+                              component="div"
+                              error={true}
+                            >
+                              {errors.dateOfBirth}
+                            </FormHelperText>
+                          ) : (
+                            ''
+                          )}
                         </FormControl>
                       )}
                     />
@@ -285,16 +310,16 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                             {Object.values(Gender).map((gender) => (
                               <Grid item xs={4} sm={4} key={gender}>
                                 <AphButton
-                                  variant="contained"
+                                  color="secondary"
                                   value={gender}
-                                  classes={
-                                    values.gender === gender ? { root: classes.btnActive } : {}
-                                  }
+                                  className={`${classes.genderBtns} ${
+                                    values.gender === gender ? classes.btnActive : ''
+                                  }`}
                                   onClick={(e) =>
                                     setFieldValue('gender', e.currentTarget.value as Gender)
                                   }
                                 >
-                                  {gender}
+                                  {_upperFirst(_toLower(gender))}
                                 </AphButton>
                               </Grid>
                             ))}
@@ -316,15 +341,21 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                             placeholder="name@emailaddress.com"
                             error={showError('emailAddress')}
                           />
-                          <FormHelperText
-                            className={
-                              showError('emailAddress') ? classes.showMessage : classes.hideMessage
-                            }
-                            component="div"
-                            error={true}
-                          >
-                            {errors.emailAddress}
-                          </FormHelperText>
+                          {showError('emailAddress') ? (
+                            <FormHelperText
+                              className={
+                                showError('emailAddress')
+                                  ? classes.showMessage
+                                  : classes.hideMessage
+                              }
+                              component="div"
+                              error={true}
+                            >
+                              {errors.emailAddress}
+                            </FormHelperText>
+                          ) : (
+                            ''
+                          )}
                         </FormControl>
                       )}
                     />
