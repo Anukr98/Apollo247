@@ -2,13 +2,22 @@
 # $1 refers the environment: 'local' | 'dev' | 'qa' | 'production'
 # This script should run while ssh'ed into the remote server
 
+echo -e "\nstopping old containers..."
 cd apollo-hospitals
 docker-compose stop
 cd ..
+
+echo -e "\nremoving old apollo-hospitals dir..."
 rm -rf apollo-hospitals
+
+echo -e "\nuntaring new artifact..."
 tar -xzf aph-$1.tar.gz 
 mv -v aph-$1.tar.gz aph-$1-$(date +%Y-%m-%d_%H-%M-%S).tar.gz
+
+echo -e "\nstarting newly deployed containers..."
 cd apollo-hospitals
 docker-compose up -d
+
+echo -e "\ncleaning up..."
 cd ..
 rm -f start.sh
