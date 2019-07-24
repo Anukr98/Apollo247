@@ -2,6 +2,7 @@
 # $1 refers the environment: 'local' | 'dev' | 'qa' | 'production'
 
 echo -e "\nusing $1 env..."
+cp -fv .env _original.env
 cp -fv "$1.env" .env
 echo -e ""
 cat .env
@@ -65,5 +66,8 @@ tar -czf aph-$1.tar.gz -C skeleton apollo-hospitals
 
 echo -e "\ncleaning up..."
 rm -rf skeleton
+
+echo -e "\nrestoring original .env..."
+mv -v _original.env .env
 
 echo -e "\nsuccess! build artifact: aph-$1-tar.gz"
