@@ -168,9 +168,9 @@ const getActiveStep = (appointments: Appointment[]) =>
 
 export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
   const classes = useStyles();
-  const [appointments, setAppointments] = useState(values);
+  const [appointments, setAppointments] = useState<Appointment[]>(values);
   const stepsCompleted = getActiveStep(appointments);
-  const [activeStep, setActiveStep] = useState(stepsCompleted < 0 ? 0 : stepsCompleted);
+  const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
 
   useEffect(() => {
     let activeStep = getActiveStep(values);
