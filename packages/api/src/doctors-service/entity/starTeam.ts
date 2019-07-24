@@ -21,10 +21,7 @@ export class StarTeam extends BaseEntity {
   id: String;
 
   @ManyToOne((type) => Doctor, (doctor) => doctor.starTeam)
-  doctor: Doctor;
-
-  @Column()
-  starDoctor: String;
+  starDoctor: Doctor;
 
   @Column({ nullable: true })
   updatedDate: Date;

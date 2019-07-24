@@ -11,16 +11,10 @@ import {
 
 import { Gender } from 'profiles-service/entity/patient';
 import { DoctorSpeciality } from 'doctors-service/entity/doctorSpeciality';
-import { Validate } from 'class-validator';
-import {
-  NameValidator,
-  MobileNumberValidator,
-  EmailValidator,
-  DateValidator,
-} from 'validators/entityValidators';
+import { Validate, IsDate } from 'class-validator';
+import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
 import { StarTeam } from 'doctors-service/entity/starTeam';
 export enum DoctorType {
-  STAR = 'STAR',
   APOLLO = 'APOLLO',
   PAYROLL = 'PAYROLL',
   STAR_APOLLO = 'STAR_APOLLO',
@@ -47,7 +41,7 @@ export class Doctor extends BaseEntity {
   createdDate: Date;
 
   @Column({ nullable: true })
-  @Validate(DateValidator)
+  @IsDate()
   dateOfBirth: Date;
 
   @Column({ nullable: true })

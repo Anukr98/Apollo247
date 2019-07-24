@@ -3,12 +3,7 @@ import {
   ValidatorConstraintInterface,
   ValidationArguments,
 } from 'class-validator';
-import {
-  isNameValid,
-  isEmailValid,
-  isMobileNumberValid,
-  isDateValid,
-} from '@aph/universal/aphValidators';
+import { isNameValid, isEmailValid, isMobileNumberValid } from '@aph/universal/aphValidators';
 
 @ValidatorConstraint({ name: 'name' })
 export class NameValidator implements ValidatorConstraintInterface {
@@ -28,12 +23,5 @@ export class MobileNumberValidator implements ValidatorConstraintInterface {
 export class EmailValidator implements ValidatorConstraintInterface {
   validate(text: string, args: ValidationArguments) {
     return isEmailValid(text);
-  }
-}
-
-@ValidatorConstraint({ name: 'date' })
-export class DateValidator implements ValidatorConstraintInterface {
-  validate(text: string, args: ValidationArguments) {
-    return isDateValid(text);
   }
 }
