@@ -6,7 +6,7 @@ import { SelectInputProps } from '@material-ui/core/Select/SelectInput';
 
 export interface MonthListProps {
   month?: number;
-  classes?: string;
+  className?: string;
   onChange?: SelectInputProps['onChange'];
 }
 const useStyles = makeStyles({

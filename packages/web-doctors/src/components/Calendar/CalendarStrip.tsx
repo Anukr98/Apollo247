@@ -99,7 +99,7 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
   return (
     <div className={classes.weekView}>
       <MonthList
-        classes={classes.monthPopup}
+        className={classes.monthPopup}
         month={month}
         onChange={(e) => {
           const monthSelected: number = (e.target.value as unknown) as number;
@@ -135,7 +135,7 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
         &lt;{' '}
       </div>
       <Days
-        classes={classes.daysList}
+        className={classes.daysList}
         date={date}
         handler={(e, date) => {
           setMonth(getMonth(date));

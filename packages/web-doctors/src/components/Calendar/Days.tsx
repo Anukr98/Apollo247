@@ -36,18 +36,18 @@ const useStyles = makeStyles({
 
 export interface DaysProps {
   date: Date;
-  classes?: string;
+  className?: string;
   highlightStartOfMonth?: boolean;
   handler: (e: React.MouseEvent<HTMLLIElement>, date: Date) => void;
 }
 
-export const Days: React.FC<DaysProps> = ({ date, classes, handler, highlightStartOfMonth }) => {
+export const Days: React.FC<DaysProps> = ({ date, handler, highlightStartOfMonth, className }) => {
   const today: Date = date;
   const weekStart: Date = startOfWeek(today, { weekStartsOn: 0 });
   const weekEnd: Date = endOfWeek(today);
   const [range, setRange] = useState<Date[]>(eachDayOfInterval({ start: weekStart, end: weekEnd }));
   const [selected, setSelected] = useState<number>();
-  const klasses = useStyles();
+  const classes = useStyles();
 
   useEffect(() => {
     !isFirstLoad &&
@@ -82,16 +82,16 @@ export const Days: React.FC<DaysProps> = ({ date, classes, handler, highlightSta
   }, [date, range, highlightStartOfMonth]);
 
   return (
-    <div className={classes}>
-      <ul className={klasses.reset}>
+    <div className={className}>
+      <ul className={classes.reset}>
         {range.map((date, idx) => (
           <li
-            className={`${klasses.days} ${selected === idx ? 'highlight' : ''}`}
+            className={`${classes.days} ${selected === idx ? 'highlight' : ''}`}
             key={idx}
             onClick={(e) => (setSelected(idx), handler(e, date))}
           >
-            <span className={klasses.day}>{isToday(date) ? 'today' : days[getDay(date)]}</span>
-            <span className={klasses.date}>{getDate(date)}</span>
+            <span className={classes.day}>{isToday(date) ? 'today' : days[getDay(date)]}</span>
+            <span className={classes.date}>{getDate(date)}</span>
           </li>
         ))}
       </ul>
