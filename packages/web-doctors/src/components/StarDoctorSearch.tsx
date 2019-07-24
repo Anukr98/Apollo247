@@ -179,34 +179,23 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   })
 );
-interface Suggestprops {
+export interface StarDoctorSearchProps {
   addDoctorHandler: (doctor: DoctorsName) => void;
 }
-export const StarDoctorSearch: React.FC<Suggestprops> = ({ addDoctorHandler }) => {
+export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHandler }) => {
   const classes = useStyles();
   const [state, setState] = React.useState({
     single: '',
   });
-  const [doctor, setDoctor] = React.useState({} as DoctorsName);
+  const [doctor, setDoctor] = React.useState<DoctorsName>({} as DoctorsName);
   const [stateSuggestions, setSuggestions] = React.useState<DoctorsName[]>([]);
 
-  const handleSuggestionsFetchRequested = ({ value }: any) => {
-    setSuggestions(getSuggestions(value));
-  };
   const onSuggestionSelected = (
     event: React.MouseEvent,
     {
       suggestion,
-      suggestionValue,
-      suggestionIndex,
-      sectionIndex,
-      method,
     }: {
       suggestion: DoctorsName;
-      suggestionValue: string;
-      suggestionIndex: number;
-      sectionIndex: number;
-      method: 'click' | 'enter';
     }
   ) => {
     setDoctor(suggestion);
@@ -229,7 +218,9 @@ export const StarDoctorSearch: React.FC<Suggestprops> = ({ addDoctorHandler }) =
   const autosuggestProps = {
     renderInputComponent,
     suggestions: stateSuggestions,
-    onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
+    onSuggestionsFetchRequested: ({ value }: { value: string }) => {
+      setSuggestions(getSuggestions(value));
+    },
     onSuggestionsClearRequested: handleSuggestionsClearRequested,
     getSuggestionValue,
     renderSuggestion,

@@ -430,12 +430,6 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       );
     }
   );
-  function addDoctorHandler(obj: DoctorsName) {
-    if (obj.label) {
-      setData({ ...userData, starDoctorTeam: userData.starDoctorTeam.concat(obj) });
-      setShowAddDoc(false);
-    }
-  }
 
   return (
     <div>
@@ -562,31 +556,31 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
                   </Grid>
                 )}
               </Grid>
-              <div className={classes.addDocter}>
-                <AphButton
-                  variant="contained"
-                  color="primary"
-                  classes={{ root: classes.btnAddDoctor }}
-                  onClick={(e) => setShowAddDoc(!showAddDoc)}
-                >
-                  + ADD DOCTOR
+                    <div className={classes.addDocter}>
+                      <AphButton
+                        variant="contained"
+                        color="primary"
+                        classes={{ root: classes.btnAddDoctor }}
+                        onClick={(e) => setShowAddDoc(!showAddDoc)}
+                      >
+                        + ADD DOCTOR
             </AphButton>
-              </div>
+                    </div>
         </div>
-            )}
-
+                      )}
+          
       <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
-              <Grid item lg={12} sm={12} xs={12}>
-                <AphButton
-                  variant="contained"
-                  color="primary"
-                  classes={{ root: classes.saveButton }}
-                  onClick={() => props.onNext()}
-                >
-                  SAVE AND PROCEED
+                    <Grid item lg={12} sm={12} xs={12}>
+                      <AphButton
+                        variant="contained"
+                        color="primary"
+                        classes={{ root: classes.saveButton }}
+                        onClick={() => props.onNext()}
+                      >
+                        SAVE AND PROCEED
           </AphButton>
-              </Grid>
-            </Grid>
+                    </Grid>
+                  </Grid>
           </div>
-          );
-        };
+                );
+              };
