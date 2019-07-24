@@ -74,8 +74,8 @@ export const GET_DOCTOR_PROFILE = gql`
   }
 `;
 export const REMOVE_STAR_DOCTOR = gql`
-  mutation removeDoctorFromStartDoctorProgram($starDoctorId: String!, $doctorId: String!) {
-    removeDoctorFromStartDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
+  mutation removeDoctorFromStarDoctorProgram($starDoctorId: String!, $doctorId: String!) {
+    removeDoctorFromStarDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
   }
 `;
 export const UPDATE_PATIENT = gql`
