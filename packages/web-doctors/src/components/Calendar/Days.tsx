@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { startOfWeek, endOfWeek, eachDayOfInterval, getDate, getDay, isToday } from 'date-fns';
+import {
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  getDate,
+  getDay,
+  isToday,
+  getTime,
+} from 'date-fns';
+import { startOfMonth } from 'date-fns/esm';
 
 const days: string[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-let firstLoad: boolean = true;
+let isFirstLoad: boolean = true;
 
 const useStyles = makeStyles({
   reset: {
@@ -28,19 +37,20 @@ const useStyles = makeStyles({
 export interface DaysProps {
   date: Date;
   classes?: string;
-  handler: (e: React.MouseEvent<HTMLLIElement>, date?: Date) => void;
+  highlightStartOfMonth?: boolean;
+  handler: (e: React.MouseEvent<HTMLLIElement>, date: Date) => void;
 }
 
-export const Days: React.FC<DaysProps> = ({ date, classes, handler }) => {
+export const Days: React.FC<DaysProps> = ({ date, classes, handler, highlightStartOfMonth }) => {
   const today: Date = date;
   const weekStart: Date = startOfWeek(today, { weekStartsOn: 0 });
   const weekEnd: Date = endOfWeek(today);
-  const [range, setRange] = useState(eachDayOfInterval({ start: weekStart, end: weekEnd }));
-  const [selected, setSelected] = useState();
+  const [range, setRange] = useState<Date[]>(eachDayOfInterval({ start: weekStart, end: weekEnd }));
+  const [selected, setSelected] = useState<number>();
   const klasses = useStyles();
 
   useEffect(() => {
-    !firstLoad &&
+    !isFirstLoad &&
       setRange(
         eachDayOfInterval({
           start: startOfWeek(date, { weekStartsOn: 0 }),
@@ -50,17 +60,31 @@ export const Days: React.FC<DaysProps> = ({ date, classes, handler }) => {
   }, [date]);
 
   useEffect(() => {
-    let todayIdx: number;
-    setSelected(
-      firstLoad && (todayIdx = range.findIndex((date) => isToday(date))) > -1 ? todayIdx : 0
-    );
-    firstLoad && (firstLoad = false);
-  }, [range]);
+    let selectionIndex: number = 0;
+
+    if (highlightStartOfMonth) {
+      selectionIndex = range.findIndex((item) => getTime(startOfMonth(item)) === getTime(date));
+
+      const hasStartOfTheMonth: boolean = selectionIndex > -1;
+      selectionIndex = hasStartOfTheMonth ? selectionIndex : 0;
+    } else {
+      selectionIndex = range.findIndex((item) => isToday(item));
+
+      const isTodayInDateRange: boolean = selectionIndex > -1;
+      selectionIndex = isFirstLoad && isTodayInDateRange ? selectionIndex : 0;
+    }
+
+    setSelected(selectionIndex || 0);
+
+    if (isFirstLoad) {
+      isFirstLoad = false;
+    }
+  }, [date, range, highlightStartOfMonth]);
 
   return (
     <div className={classes}>
       <ul className={klasses.reset}>
-        {range.map((date: Date, idx: number) => (
+        {range.map((date, idx) => (
           <li
             className={`${klasses.days} ${selected === idx ? 'highlight' : ''}`}
             key={idx}

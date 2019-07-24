@@ -121,7 +121,7 @@ export const Calendar: React.FC = () => {
       type: 'walkin',
     },
   ];
-  const [appointments, setAppointments] = useState(dummyData);
+  const [appointments, setAppointments] = useState<Appointment[]>(dummyData);
 
   const setData = (startOfWeekDate: Date) => {
     if (
@@ -132,18 +132,6 @@ export const Calendar: React.FC = () => {
     }
 
     setAppointments([]);
-  };
-
-  const onDayClick = (e: React.MouseEvent, date: Date) => {
-    setData(startOfDay(date));
-  };
-
-  const onMonthChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-    selectedMonth: number,
-    startOfWeekDate: Date
-  ) => {
-    setData(startOfWeekDate);
   };
 
   const classes = useStyles();
@@ -162,8 +150,12 @@ export const Calendar: React.FC = () => {
           <div></div>
           <div className={classes.calendarContainer}>
             <CalendarStrip
-              dayClickHandler={onDayClick}
-              monthChangeHandler={onMonthChange}
+              dayClickHandler={(e, date) => {
+                setData(startOfDay(date));
+              }}
+              monthChangeHandler={(e, selectedMonth, startOfWeekDate) => {
+                setData(startOfWeekDate);
+              }}
               onNext={(e, date, startOfWeekDate) => {
                 setData(startOfWeekDate);
               }}

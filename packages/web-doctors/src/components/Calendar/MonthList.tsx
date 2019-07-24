@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
-import { SelectInputProps } from '@material-ui/core/Select/SelectInput';
 import { makeStyles } from '@material-ui/styles';
+import { SelectInputProps } from '@material-ui/core/Select/SelectInput';
 
 export interface MonthListProps {
   month?: number;
@@ -61,15 +61,10 @@ const useStyles = makeStyles({
 });
 export const MonthList: React.FC<MonthListProps> = ({ month, onChange }) => {
   const classes = useStyles();
-  const [selectedMonth, setMonth] = useState(month);
-
-  useEffect(() => {
-    setMonth(month);
-  }, [month]);
 
   return (
     <div className={classes.monthList}>
-      <Select className={classes.monthListPopup} value={selectedMonth} onChange={onChange}>
+      <Select className={classes.monthListPopup} value={month} onChange={onChange}>
         <MenuItem className={classes.monthListItem} value={0}>
           Jan
         </MenuItem>
