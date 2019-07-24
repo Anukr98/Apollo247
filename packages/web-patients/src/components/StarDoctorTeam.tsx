@@ -15,6 +15,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 10,
       padding: '15px 20px',
       display: 'flex',
+      [theme.breakpoints.down('xs')]: {
+        marginBottom: 0,
+      },
     },
     bigAvatar: {
       width: 80,
@@ -28,6 +31,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#02475b',
       paddingBottom: 3,
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 18,
+        fontWeight: 600,
+      },
     },
     speciality: {
       fontSize: 10,
@@ -35,6 +42,10 @@ const useStyles = makeStyles((theme: Theme) => {
       letterSpacing: 0.25,
       color: '#0087ba',
       textTransform: 'uppercase',
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 12,
+        fontWeight: 600,
+      },
     },
     doctorExp: {
       paddingLeft: 5,
@@ -45,6 +56,10 @@ const useStyles = makeStyles((theme: Theme) => {
       letterSpacing: 0.25,
       color: '#658f9b',
       paddingTop: 10,
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 12,
+        fontWeight: 600,
+      },
     },
     sectionHeader: {
       color: theme.palette.secondary.dark,
@@ -56,9 +71,34 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 20,
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        borderBottom: 'none',
+        padding: 0,
+        fontWeight: 600,
+      },
     },
     count: {
       marginLeft: 'auto',
+    },
+    sectionGroup: {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#f7f8f5',
+        marginTop: 16,
+        marginBottom: 16,
+        padding: 20,
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
+    },
+    gridContainer: {
+      [theme.breakpoints.down('xs')]: {
+        margin: -8,
+        width: 'calc(100% + 16px)',
+      },
+      '& >div': {
+        [theme.breakpoints.down('xs')]: {
+          padding: '8px !important',
+        },
+      },
     },
   };
 });
@@ -87,17 +127,17 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
         : [];
 
     return (
-      <>
+      <div className={classes.sectionGroup}>
         <div className={classes.sectionHeader}>
           <span>
             Dr. {firstName}&nbsp;{lastName}'s Team
           </span>
           <span className={classes.count}>02</span>
         </div>
-        <Grid container spacing={2}>
+        <Grid container className={classes.gridContainer} spacing={2}>
           {team.map((doctorDetails) => {
             return (
-              <Grid item sm={6} key={_uniqueId('startDoctor_')}>
+              <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('startDoctor_')}>
                 <div className={classes.root}>
                   <Avatar
                     alt={(doctorDetails && doctorDetails.firstName) || ''}
@@ -128,7 +168,7 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
             );
           })}
         </Grid>
-      </>
+      </div>
     );
   } else {
     return <div>No Doctors Found...</div>;

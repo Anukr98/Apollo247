@@ -21,10 +21,23 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 10,
       width: 328,
       borderRadius: 5,
+      [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        top: 46,
+        zIndex: 1,
+        borderRadius: 0,
+        paddingTop: 0,
+        width: '100%',
+        paddingBottom: 20,
+        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     filterSection: {
       padding: 20,
       paddingTop: 15,
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
     },
     customScroll: {
       width: '100%',

@@ -16,6 +16,21 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchList: {
       paddingBottom: 20,
+      [theme.breakpoints.down('xs')]: {
+        paddingBottom: 14,
+      },
+      '& >div': {
+        [theme.breakpoints.down('xs')]: {
+          marginLeft: -8,
+          marginRight: -8,
+          width: 'calc(100% + 16px)',
+        },
+        '& >div': {
+          [theme.breakpoints.down('xs')]: {
+            padding: '8px !important',
+          },
+        },
+      },
     },
     contentBox: {
       backgroundColor: theme.palette.common.white,
@@ -28,6 +43,16 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       textAlign: 'center',
       cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 13,
+        color: '#fc9916',
+        fontWeight: 'bold',
+        marginTop: 0,
+        height: '100%',
+        padding: '14px 12px',
+        textTransform: 'uppercase',
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     bigAvatar: {
       width: 48,
@@ -35,6 +60,9 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
       marginTop: -20,
       marginBottom: 5,
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
     },
   });
 });
@@ -60,7 +88,7 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
     data && data.getPastSearches ? (
       data.getPastSearches.map((searchDetails) => {
         return searchDetails && searchDetails.searchType === SEARCH_TYPE.DOCTOR ? (
-          <Grid item xs={3} key={_uniqueId('psearch_doctor_')}>
+          <Grid item xs={6} sm={6} md={4} lg={3} key={_uniqueId('psearch_doctor_')}>
             <Link to={`/doctor-details/${searchDetails.typeId}`}>
               <div className={classes.contentBox}>
                 <Avatar
@@ -75,7 +103,10 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
         ) : (
           <Grid
             item
-            xs={3}
+            xs={6}
+            sm={6}
+            md={4}
+            lg={3}
             title={(searchDetails && searchDetails.name) || ''}
             onClick={(e) => {
               speciality(e.currentTarget.title);
