@@ -13,75 +13,6 @@ import { SearchObject } from 'components/DoctorsLanding';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    welcome: {
-      paddingTop: 88,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 78,
-      },
-    },
-    booksLink: {
-      color: theme.palette.primary.main,
-      textDecoration: 'underline',
-    },
-    headerSticky: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      top: 0,
-    },
-    container: {
-      maxWidth: 1064,
-      margin: 'auto',
-    },
-    bottomMenuRoot: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      bottom: 0,
-      height: 'auto',
-      [theme.breakpoints.up('sm')]: {
-        display: 'none',
-      },
-      '& button': {
-        padding: '10px 0',
-      },
-    },
-    labelRoot: {
-      width: '100%',
-    },
-    iconLabel: {
-      fontSize: 12,
-      color: '#67919d',
-      paddingTop: 10,
-      textTransform: 'uppercase',
-    },
-    iconSelected: {
-      fontSize: '12px !important',
-      color: theme.palette.primary.main,
-    },
-    doctorListingPage: {
-      borderRadius: '0 0 10px 10px',
-      backgroundColor: '#f7f8f5',
-    },
-    breadcrumbs: {
-      marginLeft: 20,
-      marginRight: 20,
-      fontSize: 13,
-      paddingTop: 17,
-      paddingBottom: 11,
-      fontWeight: 600,
-      color: '#02475b',
-      textTransform: 'uppercase',
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
-    },
-    doctorListingSection: {
-      display: 'flex',
-      padding: 20,
-    },
-    searchSection: {
-      width: 'calc(100% - 328px)',
-      paddingLeft: 20,
-    },
     pageHeader: {
       fontSize: 17,
       fontWeight: 500,
@@ -129,6 +60,23 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: 5,
         margin: 0,
         color: '#02475b',
+      },
+    },
+    searchList: {
+      paddingBottom: 20,
+      [theme.breakpoints.down('xs')]: {
+        paddingBottom: 14,
+      },
+      '& >div': {
+        [theme.breakpoints.down('xs')]: {
+          marginLeft: -8,
+          marginRight: -8,
+        },
+        '& >div': {
+          [theme.breakpoints.down('xs')]: {
+            padding: '8px !important',
+          },
+        },
       },
     },
   };
@@ -237,15 +185,17 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       </div>
 
       {doctorsList.length > 0 ? (
-        <Grid container spacing={2}>
-          {_map(doctorsList, (doctorDetails) => {
-            return (
-              <Grid item sm={12} md={6} key={_uniqueId('consultGrid_')}>
-                <DoctorCard doctorDetails={doctorDetails} key={_uniqueId('dcListing_')} />
-              </Grid>
-            );
-          })}
-        </Grid>
+        <div className={classes.searchList}>
+          <Grid container spacing={2}>
+            {_map(doctorsList, (doctorDetails) => {
+              return (
+                <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('consultGrid_')}>
+                  <DoctorCard doctorDetails={doctorDetails} key={_uniqueId('dcListing_')} />
+                </Grid>
+              );
+            })}
+          </Grid>
+        </div>
       ) : (
         consultErrorMessage()
       )}
