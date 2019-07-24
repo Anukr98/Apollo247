@@ -65,6 +65,13 @@ services:
     command: bash -c "npm run start:doctors-service"
     volumes:
       - ./:/apollo-hospitals:cached
+    depends_on:
+      - doctors-db
+
+  doctors-db:
+    image: postgres:10.8-alpine
+    volumes:
+      - ./packages/api/src/doctors-service/init-doctors-db.sql:/docker-entrypoint-initdb.d/init.sql
 
   consults-service:
     image: node:12.6.0
