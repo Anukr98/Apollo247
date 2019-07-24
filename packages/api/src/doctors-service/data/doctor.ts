@@ -30,12 +30,13 @@ export const doctors: Doctor[] = [
     photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_3.png',
     profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
     address: 'Apollo Hospital, Jubilee Hills',
+    availableIn: '27',
   },
   {
     id: 'a6ef960c-fc1f-4a12-878a-12063788d625',
     salutation: 'Dr',
     firstName: 'Nancy',
-    lastName: 'Willams',
+    lastName: 'Williams',
     experience: '7',
     gender: Gender.FEMALE,
     mobileNumber: '1111111111',
@@ -58,6 +59,7 @@ export const doctors: Doctor[] = [
     photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_5.png',
     profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
     address: 'Apollo Hospital, Jubilee Hills',
+    availableIn: '15',
   },
   {
     id: '17d15451-ee28-4f5c-9550-8f794f3938c4',
@@ -86,6 +88,7 @@ export const doctors: Doctor[] = [
     photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_5.png',
     profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
     address: 'Apollo Hospital, Secunderabad',
+    availableIn: '35',
   },
   {
     id: '101f2b01-100f-49f5-9fc7-f0e762a8b40e',
@@ -114,6 +117,7 @@ export const doctors: Doctor[] = [
     photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_2.png',
     profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
     address: 'Apollo Hospital, Jubilee Hills',
+    availableIn: '45',
   },
   {
     id: '648562f4-d868-4890-8168-3a4b138ac29a',
@@ -142,6 +146,7 @@ export const doctors: Doctor[] = [
     photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_1.png',
     profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
     address: 'Apollo Hospital, Hyderguda',
+    availableIn: '55',
   },
   {
     id: 'f69f31b8-c90d-4758-b711-ba9ea21d9fac',
@@ -170,6 +175,7 @@ export const doctors: Doctor[] = [
     photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_6.png',
     profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
     address: 'Apollo Hospital, Secunderabad',
+    availableIn: '45',
   },
   {
     id: '87b12e7e-6838-458e-9798-3a3a800573d2',
@@ -198,6 +204,7 @@ export const doctors: Doctor[] = [
     photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_3.png',
     profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
     address: 'Apollo Hospital, Secunderabad',
+    availableIn: '12',
   },
   {
     id: 'a759f343-7bbf-4bea-8058-f849724b2dda',
@@ -226,6 +233,7 @@ export const doctors: Doctor[] = [
     photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_4.png',
     profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
     address: 'Apollo Hospital, Jubilee Hills',
+    availableIn: '27',
   },
   {
     id: 'e392e6ff-de1b-45a2-8a75-02f46ae703a7',
@@ -254,5 +262,6 @@ export const doctors: Doctor[] = [
     photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_1.png',
     profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
     address: 'Apollo Hospital, Jubilee Hills',
+    availableIn: '35',
   },
 ];
