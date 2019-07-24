@@ -25,6 +25,7 @@
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 // add a custom command cy.foo()
 Cypress.Commands.add('foo', () => 'foo');
+Cypress.Commands.add('signOut', () => window.indexedDB.deleteDatabase('firebaseLocalStorageDb'));
 
 // see more example of adding custom commands to Cypress TS interface
 // in https://github.com/cypress-io/add-cypress-custom-command-in-typescript
@@ -32,5 +33,6 @@ Cypress.Commands.add('foo', () => 'foo');
 declare namespace Cypress {
   interface Chainable {
     foo: () => string;
+    signOut: () => void;
   }
 }
