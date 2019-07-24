@@ -46,7 +46,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
-      [theme.breakpoints.down('sm')]: {
+      [theme.breakpoints.between('sm', 'md')]: {
         marginLeft: 10,
       },
     },

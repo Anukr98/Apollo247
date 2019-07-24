@@ -29,11 +29,25 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       fontWeight: 500,
       color: '#02475b',
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 18,
+        fontWeight: 600,
+      },
     },
     appointTime: {
       fontSize: 12,
       fontWeight: 500,
       color: '#0087ba',
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 18,
+        fontWeight: 600,
+        paddingLeft: 5,
+      },
+    },
+    timeGroup: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'flex',
+      },
     },
     appointType: {
       borderRadius: 10,
@@ -131,7 +145,7 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
     return <LinearProgress />;
   }
   if (error) {
-    return <div>Error....</div>;
+    return <></>;
   }
 
   if (data && data.getAppointmentHistory && data.getAppointmentHistory.appointmentsHistory) {
@@ -154,8 +168,10 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
                     <div className={classes.root} key={_uniqueId('aphistory_')}>
                       <div className={classes.appointType}>{appointment.appointmentType}</div>
                       <div className={classes.appointmentInfo}>
-                        <div className={classes.appointDate}>{appointment.appointmentDate}</div>
-                        <div className={classes.appointTime}>{appointment.appointmentTime}</div>
+                        <div className={classes.timeGroup}>
+                          <div className={classes.appointDate}>{appointment.appointmentDate}</div>
+                          <div className={classes.appointTime}>{appointment.appointmentTime}</div>
+                        </div>
                         <div className={classes.appointBooked}>
                           <ul>
                             {symptoms.map((symptom: string) => (

@@ -31,6 +31,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#02475b',
       paddingBottom: 3,
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 18,
+        fontWeight: 600,
+      },
     },
     speciality: {
       fontSize: 10,
@@ -38,6 +42,10 @@ const useStyles = makeStyles((theme: Theme) => {
       letterSpacing: 0.25,
       color: '#0087ba',
       textTransform: 'uppercase',
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 12,
+        fontWeight: 600,
+      },
     },
     doctorExp: {
       paddingLeft: 5,
@@ -48,6 +56,10 @@ const useStyles = makeStyles((theme: Theme) => {
       letterSpacing: 0.25,
       color: '#658f9b',
       paddingTop: 10,
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 12,
+        fontWeight: 600,
+      },
     },
     sectionHeader: {
       color: theme.palette.secondary.dark,

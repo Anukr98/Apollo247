@@ -21,6 +21,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         verticalAlign: 'middle',
         maxWidth: '100%',
+        width: '100%',
       },
     },
     clinicInfo: {
