@@ -135,6 +135,9 @@ const useStyles = makeStyles((theme: Theme) => {
       color: 'rgba(2,71,91,0.5)',
       padding: '14px 10px',
       textTransform: 'none',
+      [theme.breakpoints.down('xs')]: {
+        width: '50%',
+      },
     },
     tabSelected: {
       color: theme.palette.secondary.dark,
@@ -155,6 +158,10 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '50%',
       backgroundColor: theme.palette.common.white,
       cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        right: 0,
+        top: -48,
+      },
     },
     backArrow: {
       cursor: 'pointer',
