@@ -2,6 +2,9 @@ import { Theme, Grid, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import _uniqueId from 'lodash/uniqueId';
+import { GetDoctorProfileById as DoctorDetails } from 'graphql/types/getDoctorProfileById';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -43,63 +46,91 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#658f9b',
       paddingTop: 10,
     },
+    sectionHeader: {
+      color: theme.palette.secondary.dark,
+      fontSize: 14,
+      fontWeight: 500,
+      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      paddingBottom: 10,
+      paddingTop: 10,
+      marginBottom: 20,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    count: {
+      marginLeft: 'auto',
+    },
   };
 });
 
 export interface StarDoctorTeamProps {
-  doctorId: string;
+  doctorDetails: DoctorDetails;
 }
 
 export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
   const classes = useStyles();
 
-  const { doctorId } = props;
+  const { doctorDetails } = props;
 
-  /* this should be a graphql call */
-  const starDoctors = {
-    'star-doctor-1': {
-      profilePicture: require('images/doctordp_01.png'),
-      doctorName: 'Dr. Gennifer Ghosh',
-      doctorSpeciality: 'GENERAL PHYSICIAN',
-      doctorExperience: '7',
-      doctorQualification: 'MBBS, Internal Medicine',
-      clinicName: 'Apollo Hospitals, Jubileehills',
-    },
-    'star-doctor-2': {
-      profilePicture: require('images/doctordp_02.png'),
-      doctorName: 'Dr. Maya',
-      doctorSpeciality: 'GENERAL PHYSICIAN',
-      doctorExperience: '6',
-      doctorQualification: 'MBBS, Internal Medicine',
-      clinicName: 'Apollo Hospitals, Jubileehills',
-    },
-  };
+  if (
+    doctorDetails &&
+    doctorDetails.getDoctorProfileById &&
+    doctorDetails.getDoctorProfileById.starDoctorTeam &&
+    doctorDetails.getDoctorProfileById.profile
+  ) {
+    const firstName = doctorDetails.getDoctorProfileById.profile.firstName;
+    const lastName = doctorDetails.getDoctorProfileById.profile.lastName;
 
-  return (
-    <Grid container spacing={2}>
-      {Object.values(starDoctors).map((starDoctorDetails) => {
-        return (
-          <Grid item sm={6} key={_uniqueId('startDoctor_')}>
-            <div className={classes.root}>
-              <Avatar alt="" src={starDoctorDetails.profilePicture} className={classes.bigAvatar} />
-              <div className={classes.doctorInfo}>
-                <div className={classes.doctorName}>{starDoctorDetails.doctorName}</div>
-                <div className={classes.speciality}>
-                  {starDoctorDetails.doctorSpeciality}
-                  <span className={classes.doctorExp}>
-                    | {starDoctorDetails.doctorExperience} Yrs
-                  </span>
+    const team =
+      doctorDetails.getDoctorProfileById.starDoctorTeam.length > 0
+        ? doctorDetails.getDoctorProfileById.starDoctorTeam
+        : [];
+
+    return (
+      <>
+        <div className={classes.sectionHeader}>
+          <span>
+            Dr. {firstName}&nbsp;{lastName}'s Team
+          </span>
+          <span className={classes.count}>02</span>
+        </div>
+        <Grid container spacing={2}>
+          {team.map((doctorDetails) => {
+            return (
+              <Grid item sm={6} key={_uniqueId('startDoctor_')}>
+                <div className={classes.root}>
+                  <Avatar
+                    alt={(doctorDetails && doctorDetails.firstName) || ''}
+                    src={(doctorDetails && doctorDetails.photoUrl) || ''}
+                    className={classes.bigAvatar}
+                  />
+                  <div className={classes.doctorInfo}>
+                    <Link to={clientRoutes.doctorDetails(doctorDetails.id)}>
+                      <div className={classes.doctorName}>
+                        {(doctorDetails && doctorDetails.firstName) || ''}&nbsp;
+                        {(doctorDetails && doctorDetails.lastName) || ''}
+                      </div>
+                    </Link>
+                    <div className={classes.speciality}>
+                      {(doctorDetails && doctorDetails.speciality) || ''}
+                      <span className={classes.doctorExp}>
+                        | {doctorDetails && doctorDetails.experience} Yrs
+                      </span>
+                    </div>
+                    <div className={classes.doctorMoreInfo}>
+                      {(doctorDetails && doctorDetails.address) || ''}
+                      <br />
+                      {(doctorDetails && doctorDetails.education) || ''}
+                    </div>
+                  </div>
                 </div>
-                <div className={classes.doctorMoreInfo}>
-                  {starDoctorDetails.clinicName}
-                  <br />
-                  {starDoctorDetails.doctorQualification}
-                </div>
-              </div>
-            </div>
-          </Grid>
-        );
-      })}
-    </Grid>
-  );
+              </Grid>
+            );
+          })}
+        </Grid>
+      </>
+    );
+  } else {
+    return <div>No Doctors Found...</div>;
+  }
 };

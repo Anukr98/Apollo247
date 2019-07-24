@@ -53,7 +53,7 @@ type BookAppointmentInput = {
   patientId: string;
   doctorId: string;
   appointmentDate: Date;
-  appointmentTime: Time;
+  appointmentTime: Date;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId?: string;
 };
@@ -63,7 +63,7 @@ type Appointment = {
   patientId: string;
   doctorId: string;
   appointmentDate: Date;
-  appointmentTime: Time;
+  appointmentTime: Date;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId?: string;
   status: STATUS;

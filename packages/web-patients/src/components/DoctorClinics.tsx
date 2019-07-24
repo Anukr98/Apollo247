@@ -1,6 +1,7 @@
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
+import { GetDoctorProfileById as DoctorDetails } from 'graphql/types/getDoctorProfileById';
 import _uniqueId from 'lodash/uniqueId';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -47,78 +48,111 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: 'auto',
       },
     },
+    sectionHeader: {
+      color: theme.palette.secondary.dark,
+      fontSize: 14,
+      fontWeight: 500,
+      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      paddingBottom: 10,
+      paddingTop: 10,
+      marginBottom: 20,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    count: {
+      marginLeft: 'auto',
+    },
   };
 });
 
-export interface DoctorClinicsProps {
-  doctorId: string;
+interface DoctorClinicsProps {
+  doctorDetails: DoctorDetails;
 }
 
 export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
   const classes = useStyles();
+  const { doctorDetails } = props;
 
-  const { doctorId } = props;
+  if (
+    doctorDetails &&
+    doctorDetails.getDoctorProfileById &&
+    doctorDetails.getDoctorProfileById.clinics &&
+    doctorDetails.getDoctorProfileById.consultationHours &&
+    doctorDetails.getDoctorProfileById.profile
+  ) {
+    const clinics =
+      doctorDetails.getDoctorProfileById.clinics.length > 0
+        ? doctorDetails.getDoctorProfileById.clinics
+        : [];
 
-  interface clinicDetailsType {
-    id: string;
-    address: string;
-    availability: {
-      [key: string]: string;
-    };
-  }
+    const consultationHours =
+      doctorDetails.getDoctorProfileById.consultationHours.length > 0
+        ? doctorDetails.getDoctorProfileById.consultationHours
+        : [];
 
-  interface clinicDetails {
-    [key: string]: clinicDetailsType;
-  }
+    const firstName = doctorDetails.getDoctorProfileById.profile.firstName;
+    const lastName = doctorDetails.getDoctorProfileById.profile.lastName;
 
-  /* this should be a graphql call */
-  const clinicsObj = {
-    clinic1: {
-      id: '1-sln-terminus',
-      address: 'SLN Terminus, No.18, 2nd Floor, Gachibowli, Hyderabad.',
-      availability: {
-        MON: '8:00am - 12:00pm',
-        SAT: '9:00am - 11:00pm',
-      },
-    },
-    clinic2: {
-      id: '2-viraj-complex',
-      address: 'Viraj Complex, No.18, 2nd Floor, Madhapur, Hyderabad.',
-      availability: {
-        MON: '8:00am - 12:00pm',
-        SAT: '9:00am - 11:00pm',
-      },
-    },
-  };
-
-  const clinicsMarkup = (clinicsObj: clinicDetails) => {
-    return Object.values(clinicsObj).map((clinicDetails: clinicDetailsType) => (
-      <Grid item sm={6} key={_uniqueId('avagr_')}>
-        <div className={classes.root} key={_uniqueId('clinic_')}>
-          <div className={classes.clinicImg}>
-            <img src="https://via.placeholder.com/328x100" />
-          </div>
-          <div className={classes.clinicInfo}>
-            <div className={classes.address}>{clinicDetails.address}</div>
-            <div className={classes.availableTimings}>
-              {Object.keys(clinicDetails.availability).map((index: string) => {
-                return (
-                  <div className={classes.timingsRow} key={_uniqueId('ava_')}>
-                    <span>{index}</span>
-                    <span>{clinicDetails.availability[index]}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+    return (
+      <>
+        <div className={classes.sectionHeader}>
+          <span>
+            Dr. {firstName}&nbsp;{lastName}'s Clinic
+          </span>
+          <span className={classes.count}>
+            {clinics.length < 10 ? `0${clinics.length}` : clinics.length}
+          </span>
         </div>
-      </Grid>
-    ));
-  };
-
-  return (
-    <Grid container spacing={2}>
-      {clinicsMarkup(clinicsObj)}
-    </Grid>
-  );
+        <Grid container spacing={2}>
+          {clinics.map((clinicDetails) => {
+            return (
+              <Grid item sm={6} key={_uniqueId('avagr_')}>
+                <div className={classes.root} key={_uniqueId('clinic_')}>
+                  <div className={classes.clinicImg}>
+                    <img
+                      src={
+                        (clinicDetails && clinicDetails.image) ||
+                        'https://via.placeholder.com/328x100'
+                      }
+                    />
+                  </div>
+                  <div className={classes.clinicInfo}>
+                    <div className={classes.address}>
+                      {(clinicDetails && clinicDetails.addressLine1) || ''}&nbsp;
+                      {(clinicDetails && clinicDetails.addressLine2) || ''}&nbsp;
+                      {(clinicDetails && clinicDetails.addressLine3) || ''}
+                    </div>
+                    <div className={classes.availableTimings}>
+                      {consultationHours.map((consultationDetails) => {
+                        const startTime =
+                          consultationDetails && consultationDetails.startTime
+                            ? consultationDetails.startTime.substring(0, 5)
+                            : null;
+                        const endTime =
+                          consultationDetails && consultationDetails.endTime
+                            ? consultationDetails.endTime.substring(0, 5)
+                            : null;
+                        return (
+                          <div className={classes.timingsRow} key={_uniqueId('ava_')}>
+                            <span>{(consultationDetails && consultationDetails.days) || ''}</span>
+                            <span>
+                              {startTime ? startTime : ''}
+                              &nbsp;-&nbsp;
+                              {endTime ? endTime : ''}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </Grid>
+            );
+          })}
+        </Grid>
+      </>
+    );
+  } else {
+    return <div>No Clinics Found...</div>;
+  }
 };

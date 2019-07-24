@@ -4,17 +4,28 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Route } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Welcome } from 'components/Welcome';
-import { PatientsList } from 'components/PatientsList';
 import { AuthProvider } from 'components/AuthProvider';
 import { useAuth } from 'hooks/authHooks';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, createMuiTheme } from '@material-ui/core';
 import { AphThemeProvider, aphTheme } from '@aph/web-ui-components';
 import { DoctorDetails } from 'components/DoctorDetails';
-import { DatePicker, MuiPickersUtilsProvider, MaterialUiPickersDate } from '@material-ui/pickers';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
-import { DoctorsListing } from './DoctorsListing';
-import { DoctorsLanding } from './DoctorsLanding';
+import { DoctorsLanding } from 'components/DoctorsLanding';
+import { AuthRouted } from 'components/AuthRouted';
+
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      NODE_ENV: 'local' | 'dev';
+      WEB_PATIENTS_PORT: string;
+      API_GATEWAY_PORT: string;
+      GOOGLE_APPLICATION_CREDENTIALS: string;
+      FIREBASE_PROJECT_ID: string;
+    }
+  }
+}
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -38,10 +49,8 @@ const App: React.FC = () => {
   return (
     <div className={classes.app}>
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
-      <Route exact path={clientRoutes.patients()} component={PatientsList} />
-      <Route exact path={clientRoutes.doctorDetails()} component={DoctorDetails} />
-      <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
-      <Route exact path={clientRoutes.doctorsListing()} component={DoctorsListing} />
+      <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
+      <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
     </div>
   );
 };

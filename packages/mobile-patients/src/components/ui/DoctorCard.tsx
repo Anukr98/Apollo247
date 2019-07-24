@@ -1,19 +1,16 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
-import { Star, DoctorImage } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import React from 'react';
 import {
-  ImageSourcePropType,
-  ImageStyle,
+  Image,
   StyleProp,
   StyleSheet,
   Text,
-  TextStyle,
   TouchableOpacity,
   View,
   ViewStyle,
-  Image,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../../theme/theme';
@@ -62,26 +59,6 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
-  },
-  consultViewStyles: {
-    paddingHorizontal: 0,
-    alignSelf: 'center',
-    justifyContent: 'center',
-    width: '100%',
-  },
-  separatorViewStyles: {
-    backgroundColor: theme.colors.CARD_HEADER,
-    opacity: 0.3,
-    marginHorizontal: 16,
-    height: 1,
-  },
-  consultTextStyles: {
-    paddingLeft: 0,
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    color: theme.colors.SEARCH_CONSULT_COLOR,
-    textAlign: 'center',
-    paddingVertical: 12,
-    lineHeight: 24,
   },
   educationTextStyles: {
     paddingTop: 12,
@@ -159,17 +136,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         </View>
         {props.displayButton && (
           <View style={{ overflow: 'hidden' }}>
-            {/* {rowData.available ? ( */}
             <View style={styles.buttonView}>
-              {/* <Text style={styles.buttonText}>{rowData.time}</Text> */}
               <Text style={styles.buttonText}>{string.common.consult_now}</Text>
             </View>
-            {/* // ) : (
-            //   <View style={styles.consultViewStyles}>
-            //     <View style={styles.separatorViewStyles} />
-            //     <Text style={styles.consultTextStyles}>{rowData.time}</Text>
-            //   </View>
-            // )} */}
           </View>
         )}
       </View>

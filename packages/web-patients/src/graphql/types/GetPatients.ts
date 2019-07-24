@@ -17,7 +17,7 @@ export interface GetPatients_getPatients_patients {
   relation: Relation | null;
   gender: Gender | null;
   uhid: string | null;
-  dateOfBirth: string | null;
+  dateOfBirth: any | null;
 }
 
 export interface GetPatients_getPatients {

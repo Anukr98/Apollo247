@@ -1,41 +1,26 @@
+import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DoctorCard, DoctorCardProps } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { DoctorImage, Filter, LocationOff } from '@aph/mobile-patients/src/components/ui/Icons';
-import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
+import { Filter, LocationOff } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { SPECIALITY_DOCTOR_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import axios from 'axios';
 import React, { useState } from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  SectionList,
-  SectionListData,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { NavigationScreenProps, FlatList } from 'react-navigation';
 import { useQuery } from 'react-apollo-hooks';
-import {
-  SEARCH_DOCTOR_AND_SPECIALITY,
-  SPECIALITY_DOCTOR_FILTERS,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   topView: {
     height: 155,
     backgroundColor: 'white',
-    shadowColor: '#808080',
+    ...theme.viewStyles.cardViewStyle,
+    borderRadius: 0,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 5,
     borderTopWidth: 0,
   },
   headingText: {
@@ -148,7 +133,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }
 
   const fetchCurrentLocation = () => {
-    // setshowLocationpopup(true)
+    setshowLocationpopup(true);
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -184,9 +169,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const RightHeader = () => {
     return (
       <View style={{ flexDirection: 'row' }}>
-        {/* <TouchableOpacity onPress={() => fetchCurrentLocation()}>
+        <TouchableOpacity onPress={() => fetchCurrentLocation()}>
           <LocationOff />
-        </TouchableOpacity> */}
+        </TouchableOpacity>
         <TouchableOpacity style={{ marginLeft: 20 }} onPress={() => setDisplayFilter(true)}>
           <Filter />
         </TouchableOpacity>
@@ -215,6 +200,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <TabsComponent
           style={{
             backgroundColor: theme.colors.CARD_BG,
+            ...theme.viewStyles.cardViewStyle,
+            borderRadius: 0,
           }}
           data={tabs}
           onChange={(selectedTab: string) => setselectedTab(selectedTab)}
@@ -227,14 +214,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const renderSearchDoctorResultsRow = (rowData: DoctorCardProps['rowData']) => {
     return <DoctorCard rowData={rowData} navigation={props.navigation} />;
   };
-
-  // const renderHeader = (rowHeader: SectionListData<{ title: string }>) => {
-  //   let sectionTitle = rowHeader.title;
-  //   if (sectionTitle === 'Matching Doctors') {
-  //     sectionTitle = sectionTitle + ' — ' + rowHeader.data.length;
-  //   }
-  //   return <SectionHeaderComponent sectionTitle={sectionTitle} />;
-  // };
 
   const renderDoctorSearches = (filter: string) => {
     console.log(doctorsList, 'doctorsList');

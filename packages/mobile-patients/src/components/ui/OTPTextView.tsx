@@ -24,7 +24,7 @@ export interface OTPTextViewProps {
   tintColor?: string;
   containerStyle?: StyleProp<ViewStyle>;
   textInputStyle?: StyleProp<ViewStyle>;
-  handleTextChange?: () => void;
+  handleTextChange?: (org0: string) => void;
   value?: string;
 }
 

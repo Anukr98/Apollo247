@@ -25,11 +25,13 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     paddingTop: 16,
     marginVertical: 4,
+    ...theme.viewStyles.cardViewStyle,
+    borderRadius: 0,
     backgroundColor: '#f7f8f5',
-    shadowColor: '#4c808080',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.2,
-    elevation: 2,
+    // shadowColor: '#4c808080',
+    // shadowOffset: { width: 0, height: 5 },
+    // shadowOpacity: 0.2,
+    // elevation: 2,
   },
   labelView: {
     flexDirection: 'row',
@@ -89,7 +91,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
 
   const filterCardsView = () => {
     return (
-      <View style={{ marginVertical: 20 }}>
+      <View style={{ marginVertical: 16 }}>
         {data.map(
           (
             {
@@ -213,6 +215,10 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   const renderTopView = () => {
     return (
       <Header
+        container={{
+          ...theme.viewStyles.cardViewStyle,
+          borderRadius: 0,
+        }}
         leftIcon={'close'}
         title="FILTERS"
         rightComponent={() => (

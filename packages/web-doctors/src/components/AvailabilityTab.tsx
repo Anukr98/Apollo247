@@ -4,14 +4,11 @@ import React, { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import { AphButton } from '@aph/web-ui-components';
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import Button from '@material-ui/core/Button';
+import { ConsultationHours } from 'components/ConsultationHours';
+import { GetDoctorProfile_getDoctorProfile } from 'graphql/types/getDoctorProfile';
 import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -93,8 +90,19 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     saveButton: {
       minWidth: '300px',
-      marginTop: '20px',
-      float: 'right',
+      margin: theme.spacing(1),
+      '&:hover': {
+        backgroundColor: '#fcb716',
+      },
+    },
+    backButton: {
+      minWidth: '120px',
+      color: '#fc9916',
+      backgroundColor: '#fff',
+      margin: theme.spacing(1),
+      '&:hover': {
+        backgroundColor: '#fff',
+      },
     },
     addDocter: {
       marginTop: '20px',
@@ -112,16 +120,27 @@ const useStyles = makeStyles((theme: Theme) => {
     btnContainer: {
       borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
       marginTop: '30px',
+      paddingTop: '15px',
+      textAlign: 'right',
+      '& button': {
+        padding: '9px 16px',
+      },
     },
     btnActive: {
       backgroundColor: '#00b38e',
       color: theme.palette.secondary.contrastText,
       margin: theme.spacing(1, 1, 1, 0),
+      '&:hover': {
+        backgroundColor: '#00b38e',
+      },
     },
     btnInactive: {
       backgroundColor: '#fff',
       color: '#00b38e',
       margin: theme.spacing(1, 1, 1, 0),
+      '&:hover': {
+        backgroundColor: '#fff',
+      },
     },
     heading: {
       fontSize: theme.typography.pxToRem(15),
@@ -159,7 +178,7 @@ const useStyles = makeStyles((theme: Theme) => {
     columnType: {
       flexBasis: '10%',
       paddingTop: '4px',
-      color: theme.palette.primary.dark,
+      color: '#ff748e',
       fontWeight: theme.typography.fontWeightMedium,
     },
     helper: {
@@ -215,23 +234,20 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightMedium,
       padding: theme.spacing(2, 0, 2, 0),
     },
+    pointerNone: {
+      pointerEvents: 'none',
+    },
   };
 });
-interface Props {
-  values: any;
-  proceedHadler: () => void;
+interface AvailabilityTabProps {
+  values: GetDoctorProfile_getDoctorProfile;
+  onNext: () => void;
+  onBack: () => void;
 }
-export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
+export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext, onBack }) => {
   const classes = useStyles();
-  const [data, setData] = useState(values);
-  const [sp, setsp] = useState<string>('Physical');
+  const data = values;
   const [showOperatingHoursForm, setShowOperatingHoursForm] = useState<boolean>(false);
-
-  interface consultItem {
-    key: string;
-    value: string;
-    selected: boolean;
-  }
   const consultTypeArr = [
     {
       key: 'physical',
@@ -244,31 +260,19 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
       selected: false,
     },
   ];
-  const [consultType, setVonsultType] = useState<consultItem>(consultTypeArr);
-  const consultTypeHtml = consultType.map((item, index) => {
+  const consultTypeHtml = consultTypeArr.map((item, index) => {
     return (
       <AphButton
-        key={item.key.toString()}
+        key={item.key}
         variant="contained"
-        value="Physical"
-        classes={sp === 'Physical' ? { root: classes.btnActive } : {}}
-        onClick={(e) => {
-          console.log(e);
-        }}
+        value={item.value}
+        classes={item.selected ? { root: classes.btnActive } : { root: classes.btnInactive }}
       >
-        Physical
+        {item.value}
       </AphButton>
     );
   });
-  function getConsultTypeHTML() {
-    return (
-      <div>
-        <Typography variant="h5">What type of consults will you be available for?</Typography>
-        {consultTypeHtml}
-      </div>
-    );
-  }
-  interface weekItem {
+  interface WeekItem {
     key: number;
     value: string;
     selected: boolean;
@@ -310,41 +314,17 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
       selected: false,
     },
   ];
-  const [week, setWeek] = useState<weekItem>(weekArr);
-  const dayClickHandler = (key) => {
-    const updatedWeekArr = weekArr.map((day) => {
-      if (day.key === key) {
-        console.log(day.selected, !day.selected);
-        day.selected = !day.selected;
-      }
-      return day;
-    });
-    setWeek(updatedWeekArr);
-  };
-  const weekHtml = week.map((item, index) => {
+  const weekHtml = weekArr.map((item: WeekItem, index: number) => {
     return (
       <AphButton
         key={item.key.toString()}
         variant="contained"
         classes={item.selected ? { root: classes.btnActive } : { root: classes.btnInactive }}
-        onClick={() => {
-          dayClickHandler(item.key);
-        }}
       >
         {item.value}
       </AphButton>
     );
   });
-  function getWeekHTML() {
-    return (
-      <div>
-        <Typography variant="h5" className={classes.timeForm}>
-          Which days you wish to apply these hours to?
-        </Typography>
-        {weekHtml}
-      </div>
-    );
-  }
   function getDetails() {
     return (
       <div>
@@ -382,8 +362,16 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
           </Typography>
         </div>
         <div>
-          <div>{getWeekHTML()}</div>
-          <div>{getConsultTypeHTML()}</div>
+          <div>
+            <Typography variant="h5" className={classes.timeForm}>
+              Which days you wish to apply these hours to?
+            </Typography>
+            {weekHtml}
+          </div>
+          <div>
+            <Typography variant="h5">What type of consults will you be available for?</Typography>
+            {consultTypeHtml}
+          </div>
           <Typography className={classes.instructions}>
             Note: Any addition or modification to your consultation hours will take effect only
             after 24 hours.
@@ -392,6 +380,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
       </div>
     );
   }
+
   return (
     <div className={classes.ProfileContainer}>
       <Grid container className={classes.availabletabContent} alignItems="flex-start">
@@ -399,7 +388,36 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
           <Typography variant="h2">Consultation Type</Typography>
         </Grid>
         <Grid item lg={10} sm={6} xs={12}>
-          <div>{getConsultTypeHTML()}</div>
+          <div>
+            <div>
+              <Typography variant="h5">What type of consults will you be available for?</Typography>
+              <AphButton
+                variant="contained"
+                classes={
+                  data && data.profile && data.profile.availableForPhysicalConsultation
+                    ? { root: classes.btnActive }
+                    : { root: classes.btnInactive }
+                }
+              >
+                Physical
+              </AphButton>
+              <AphButton
+                variant="contained"
+                // className={
+                //   data && data.profile && data.profile.availableForVirtualConsultation
+                //     ? classes.btnActive
+                //     : classes.btnInactive
+                // }
+                classes={
+                  data && data.profile && data.profile.availableForVirtualConsultation
+                    ? { root: classes.btnActive }
+                    : { root: classes.btnInactive }
+                }
+              >
+                Online
+              </AphButton>
+            </div>
+          </div>
         </Grid>
       </Grid>
       <Grid container className={classes.availabletabContent} alignItems="flex-start">
@@ -407,35 +425,16 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
           <Typography variant="h2">Consultation Hours</Typography>
         </Grid>
         <Grid item lg={10} sm={6} xs={12}>
-          <div className={classes.tabContent}>
-            <ExpansionPanel className={classes.tabContentPanel} disabled>
-              <ExpansionPanelSummary
-                expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-                aria-controls="panel1c-content"
-                id="panel1c-header"
-              >
-                <div className={classes.columnTime}>
-                  <Typography className={classes.primaryHeading}>9:00 AM - 12:30 PM</Typography>
-                </div>
-                <div className={classes.columnDays}>
-                  <Typography className={classes.heading}>
-                    Mon, Tue, Wed, Thur, Fri | Online, Physical
-                  </Typography>
-                </div>
-                <div className={classes.columnType}>(Fixed)</div>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.details}>
-                {getDetails()}
-              </ExpansionPanelDetails>
-              <Divider />
-            </ExpansionPanel>
-          </div>
+          {data.consultationHours && data.consultationHours.length && (
+            <ConsultationHours values={data} />
+          )}
+
           {showOperatingHoursForm && (
             <div className={classes.tabContent}>
               <div className={classes.addAvailabilitydetails}>
                 {getDetails()}
                 <Divider />
-                <div display="flex" className={classes.footerButtons}>
+                <div className={classes.footerButtons}>
                   <Button
                     size="small"
                     className={classes.cancelBtn}
@@ -455,7 +454,7 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
               <AphButton
                 variant="contained"
                 color="primary"
-                classes={{ root: classes.btnAddDoctor }}
+                className={`${classes.btnAddDoctor} ${classes.pointerNone}`}
                 onClick={(e) => setShowOperatingHoursForm(!showOperatingHoursForm)}
               >
                 + ADD CONSULTATION HOURS
@@ -469,8 +468,16 @@ export const AvailabilityTab: React.FC<Props> = ({ values, proceedHadler }) => {
           <AphButton
             variant="contained"
             color="primary"
+            classes={{ root: classes.backButton }}
+            onClick={() => onBack()}
+          >
+            BACK
+          </AphButton>
+          <AphButton
+            variant="contained"
+            color="primary"
             classes={{ root: classes.saveButton }}
-            onClick={proceedHadler()}
+            onClick={() => onNext()}
           >
             SAVE AND PROCEED
           </AphButton>

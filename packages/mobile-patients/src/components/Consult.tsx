@@ -2,7 +2,7 @@ import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DoctorPlaceholder, DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
-import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -97,25 +97,25 @@ export interface ConsultProps extends NavigationScreenProps {}
 export const Consult: React.FC<ConsultProps> = (props) => {
   const thingsToDo = string.consult_room.things_to_do.data;
   const articles = string.consult_room.articles.data;
-  const scrollViewWidth = thingsToDo.length * 250 + thingsToDo.length * 20;
-  const [showPopUp, setshowPopUp] = useState<boolean>(true);
+  // const scrollViewWidth = thingsToDo.length * 250 + thingsToDo.length * 20;
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [userName, setuserName] = useState<string>('');
-  const { currentUser, analytics, currentProfiles } = useAuth();
+  const { analytics } = useAuth();
+  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
-    let userName = currentUser && currentUser.firstName ? currentUser.firstName.split(' ')[0] : '';
+    let userName =
+      currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
-
-    // analytics.setCurrentScreen(AppRoutes.ConsultRoom);
-  }, [currentUser, currentProfiles, analytics, userName, props.navigation.state.params]);
+    console.log('consult room', currentPatient);
+    analytics.setCurrentScreen(AppRoutes.ConsultRoom);
+  }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
   useEffect(() => {
     async function fetchData() {
       const userLoggedIn = await AsyncStorage.getItem('gotIt');
       if (userLoggedIn == 'true') {
-        setshowPopUp(false);
       }
     }
     fetchData();

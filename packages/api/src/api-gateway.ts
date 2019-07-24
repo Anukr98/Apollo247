@@ -6,6 +6,18 @@ import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      NODE_ENV: 'local' | 'dev';
+      WEB_PATIENTS_PORT: string;
+      API_GATEWAY_PORT: string;
+      GOOGLE_APPLICATION_CREDENTIALS: string;
+      FIREBASE_PROJECT_ID: string;
+    }
+  }
+}
+
 export interface GatewayContext {
   firebaseUid: string;
   mobileNumber: string;
@@ -22,17 +34,15 @@ export type Resolver<Parent, Args, Context, Result> = (
   context: Context
 ) => AsyncIterator<Result> | Promise<Result>;
 
-const getPortStr = (port: string) => (port === '80' ? '' : `:${port}`);
+const isLocal = process.env.NODE_ENV == 'local';
+const isDev = process.env.NODE_ENV == 'dev';
 
-const env = process.env.NODE_ENV as 'local' | 'development';
+const getPortStr = (port: string) => (port === '80' ? '' : `:${port}`);
 const webPatientsPort = getPortStr(process.env.WEB_PATIENTS_PORT!);
 const webDoctorsPort = getPortStr(process.env.WEB_DOCTORS_PORT!);
-
-const envToCorsOrigin = {
+const envToCorsOrigin: Record<NodeJS.ProcessEnv['NODE_ENV'], string[]> = {
   local: [`http://localhost${webPatientsPort}`, `http://localhost${webDoctorsPort}`],
-  development: '*', // 'http://patients-web.aph.popcornapps.com'
-  // staging: '',
-  // production: ''
+  dev: ['http://web-patienst.aph.popcornapps.com'],
 };
 
 (async () => {
@@ -66,15 +76,13 @@ const envToCorsOrigin = {
   });
 
   const server = new ApolloServer({
-    cors: { origin: envToCorsOrigin[env] },
+    cors: { origin: envToCorsOrigin[process.env.NODE_ENV] },
     schema,
     executor,
     context: async ({ req }) => {
-      const isLocal = process.env.NODE_ENV == 'local';
-      const isDevelopment = process.env.NODE_ENV == 'development';
       const isSchemaIntrospectionQuery = req.body.operationName == 'IntrospectionQuery';
 
-      if ((isLocal || isDevelopment) && isSchemaIntrospectionQuery) {
+      if ((isLocal || isDev) && isSchemaIntrospectionQuery) {
         const gatewayContext: GatewayContext = { firebaseUid: '', mobileNumber: '' };
         return gatewayContext;
       }

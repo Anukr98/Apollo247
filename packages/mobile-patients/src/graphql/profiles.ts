@@ -110,12 +110,14 @@ export const GET_DOCTOR_PROFILE_BY_ID = gql`
         address
       }
       clinics {
+        id
         name
         image
         addressLine1
         addressLine2
         addressLine3
         city
+        isClinic
       }
       starDoctorTeam {
         id
@@ -202,6 +204,24 @@ export const GET_PAST_SEARCHES = gql`
       typeId
       name
       image
+    }
+  }
+`;
+
+export const GET_APPOINTMENT_HISTORY = gql`
+  query getAppointmentHistory($appointmentHistoryInput: AppointmentHistoryInput) {
+    getAppointmentHistory(appointmentHistoryInput: $appointmentHistoryInput) {
+      appointmentsHistory {
+        id
+        patientId
+        doctorId
+        appointmentDate
+        appointmentTime
+        appointmentType
+        hospitalId
+        status
+        bookingDate
+      }
     }
   }
 `;

@@ -1,7 +1,8 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsData, INVITEDSTATUS } from 'doctors-service/data/doctorProfile';
-import { DoctorsServiceContext } from 'doctors-service/doctors-service'; 
+import { DoctorsServiceContext } from 'doctors-service/doctors-service';
+import { Gender } from 'profiles-service/entity/patient';
 
 export const doctorTypeDefs = gql`
   enum INVITEDSTATUS {
@@ -11,13 +12,21 @@ export const doctorTypeDefs = gql`
     NONE
   }
 
+  enum Gender {
+    MALE
+    FEMALE
+    OTHER
+  }
+
   type Clinics {
+    id: ID!
     name: String!
     image: String
     addressLine1: String
     addressLine2: String
     addressLine3: String
     city: String
+    isClinic: Boolean
   }
 
   type Consultations {
@@ -41,6 +50,7 @@ export const doctorTypeDefs = gql`
     lastName: String!
     mobileNumber: String!
     experience: String
+    gender: Gender
     speciality: String!
     specialization: String
     isStarDoctor: Boolean!
@@ -50,6 +60,7 @@ export const doctorTypeDefs = gql`
     city: String
     awards: String
     photoUrl: String
+    profilePhotoUrl: String
     registrationNumber: String!
     isProfileComplete: String!
     availableForPhysicalConsultation: Boolean!
@@ -62,11 +73,11 @@ export const doctorTypeDefs = gql`
   }
 
   type DoctorProfile {
-    profile: Doctor
-    paymentDetails: [PaymentDetails]
-    clinics: [Clinics]
-    starDoctorTeam: [Doctor]
-    consultationHours: [Consultations]
+    profile: Doctor!
+    paymentDetails: [PaymentDetails!]
+    clinics: [Clinics!]
+    starDoctorTeam: [Doctor!]
+    consultationHours: [Consultations!]
   }
   extend type Query {
     getDoctors: [DoctorProfile]
@@ -76,20 +87,20 @@ export const doctorTypeDefs = gql`
 `;
 
 type Clinics = {
+  id: String;
   name: String;
   image: String;
   addressLine1: String;
   addressLine2: String;
   addressLine3: String;
   city: String;
+  isClinic: Boolean;
 };
 
 type Consultations = {
   days: String;
-  //@ts-ignore
-  startTime: Time!
-  //@ts-ignore
-  endTime: Time!
+  startTime: String;
+  endTime: String;
   availableForPhysicalConsultation: Boolean;
   availableForVirtualConsultation: Boolean;
   type: String;
@@ -107,6 +118,7 @@ export type Doctor = {
   lastName: String;
   mobileNumber: String;
   experience: String;
+  gender: Gender;
   speciality: String;
   specialization: String;
   isStarDoctor: Boolean;
@@ -116,6 +128,7 @@ export type Doctor = {
   city: String;
   awards: String;
   photoUrl: String;
+  profilePhotoUrl: String;
   registrationNumber: String;
   isProfileComplete: Boolean;
   availableForPhysicalConsultation: Boolean;

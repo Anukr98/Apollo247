@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme: Theme) => {
     helpText: {
       fontSize: 12,
       fontWeight: 500,
-      color: theme.palette.secondary.dark,
+      color: 'rgba(2,71,91,0.6)',
       marginTop: 10,
       lineHeight: 2,
     },
@@ -50,23 +50,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 0,
       display: 'flex',
       '& button': {
+        boxShadow: '0 2px 5px rgba(0,0,0,0.2) !important',
         marginLeft: 'auto',
         marginRight: -40,
-      },
-    },
-    otpAction: {
-      display: 'flex',
-      '& button': {
-        marginLeft: 'auto',
-        marginRight: -40,
-        backgroundColor: '#FED984',
-        fontSize: 16,
-        fontWeight: 500,
-      },
-      '& >div': {
-        height: 0,
-        opacity: 0,
-        width: 0,
       },
     },
     otpFormWrap: {
@@ -162,31 +148,16 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
             </Grid>
           ))}
         </Grid>
-        <FormHelperText
-          component="div"
-          className={classes.helpText}
-          error={verifyOtpError}
-          style={{ opacity: verifyOtpError ? 1.0 : 0 }}
-        >
-          Incorrect OTP
-        </FormHelperText>
-        <div className={classes.otpAction}>
-          <Fab
-            type="submit"
-            color="primary"
-            disabled={isSendingOtp || otp.join('').length !== numOtpDigits}
-            onClick={(e) => {
-              e.preventDefault();
-              verifyOtp(otp.join(''));
-            }}
+        {verifyOtpError && (
+          <FormHelperText
+            component="div"
+            className={classes.helpText}
+            error={verifyOtpError}
+            style={{ opacity: verifyOtpError ? 1.0 : 0 }}
           >
-            {isSigningIn || isSendingOtp || isVerifyingOtp ? (
-              <CircularProgress color="secondary" />
-            ) : (
-              'OK'
-            )}
-          </Fab>
-        </div>
+            Incorrect OTP
+          </FormHelperText>
+        )}
         <Button
           variant="text"
           disabled={isSendingOtp}
@@ -200,6 +171,23 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
         >
           Resend OTP
         </Button>
+        <div className={classes.action}>
+          <Fab
+            type="submit"
+            color="primary"
+            disabled={isSendingOtp || otp.join('').length !== numOtpDigits}
+            onClick={(e) => {
+              e.preventDefault();
+              verifyOtp(otp.join(''));
+            }}
+          >
+            {isSigningIn || isSendingOtp || isVerifyingOtp ? (
+              <CircularProgress color="secondary" />
+            ) : (
+              <img src={require('images/ic_arrow_forward.svg')} />
+            )}
+          </Fab>
+        </div>
       </form>
       <div ref={placeRecaptchaAfterMe} />
     </div>

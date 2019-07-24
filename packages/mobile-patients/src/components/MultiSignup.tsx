@@ -30,7 +30,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/updatePatient';
 import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
-import console = require('console');
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -114,25 +113,20 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [showText, setShowText] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-
-  let backPressCount = 0;
-  const handleBackButton = () => {
-    backPressCount += 1;
-    if (backPressCount === 2) {
-      console.log('BackAndroid.exitApp();');
-      BackHandler.exitApp();
-    }
-    console.log('handleBackButton');
-    return true;
-  };
+  const [backPressCount, setbackPressCount] = useState<number>(0);
 
   useEffect(() => {
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackButton);
-    console.log(backHandler, 'backHandler');
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      setbackPressCount(backPressCount + 1);
+      if (backPressCount === 1) {
+        BackHandler.exitApp();
+      }
+      return true;
+    });
     return function cleanup() {
       backHandler.remove();
     };
-  }, []);
+  }, [backPressCount]);
 
   useEffect(() => {
     setProfiles(allCurrentPatients ? allCurrentPatients : []);

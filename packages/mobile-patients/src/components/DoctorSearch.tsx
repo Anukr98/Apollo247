@@ -1,38 +1,29 @@
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  DoctorImage,
-  GeneralPhysician,
-  Mascot,
-  Neurologist,
-  Paedatrician,
-  Urologist,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import {
+  GET_PAST_SEARCHES,
+  GET_SPECIALTIES,
+  SEARCH_DOCTOR_AND_SPECIALITY,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import React, { useState } from 'react';
+import { useQuery } from 'react-apollo-hooks';
 import {
   FlatList,
+  Image,
   SafeAreaView,
   ScrollView,
-  SectionList,
-  SectionListData,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Image,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../theme/theme';
-import { DoctorCard, DoctorCardProps } from './ui/DoctorCard';
 import { Button } from './ui/Button';
-import { useQuery } from 'react-apollo-hooks';
-import {
-  GET_SPECIALTIES,
-  SEARCH_DOCTOR_AND_SPECIALITY,
-  GET_PAST_SEARCHES,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { DoctorCard, DoctorCardProps } from './ui/DoctorCard';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -44,14 +35,19 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   searchView: {
-    height: 58,
+    // height: 58,
     paddingHorizontal: 20,
   },
+  searchValueStyle: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.SHERPA_BLUE,
+  },
   listView: {
-    marginBottom: 8,
+    ...theme.viewStyles.cardViewStyle,
+    marginVertical: 16,
     width: 'auto',
     backgroundColor: 'white',
-    shadowOffset: { width: 0, height: 5 },
+    // shadowOffset: { width: 0, height: 5 },
     marginHorizontal: 8,
   },
   rowTextStyles: {
@@ -62,20 +58,17 @@ const styles = StyleSheet.create({
   listSpecialistView: {
     ...theme.viewStyles.cardViewStyle,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     paddingTop: 16,
-    paddingBottom: 12,
+    // paddingBottom: 12,
   },
   rowSpecialistStyles: {
     ...theme.fonts.IBMPlexSansSemiBold(13),
     paddingHorizontal: 9,
-    paddingVertical: 12,
+    paddingTop: 11,
+    paddingBottom: 12,
     color: theme.colors.SEARCH_TITLE_COLOR,
     textAlign: 'center',
-  },
-  searchValueStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.SHERPA_BLUE,
   },
   helpView: {
     width: '100%',
@@ -116,80 +109,10 @@ const pastSearches: pastSearches[] = [
   },
 ];
 
-const SpecialityImages: any[] = [
-  <GeneralPhysician />,
-  <Paedatrician />,
-  <Urologist />,
-  <Neurologist />,
-];
-
-// type doctorsList = {
-//   title: string;
-//   data: {
-//     image: any;
-//     doctorName: string;
-//     starDoctor: boolean;
-//     specialization: string;
-//     experience: string;
-//     education: string;
-//     location: string;
-//     time: string;
-//     available: boolean;
-//   }[];
-// };
-
-// const style = { height: 80, width: 80 };
-// const doctorsList: doctorsList[] = [
-//   {
-//     title: 'Matching Doctors',
-//     data: [
-//       {
-//         image: <DoctorImage style={style} />,
-//         doctorName: 'Dr. Simran Rai',
-//         starDoctor: true,
-//         specialization: 'GENERAL PHYSICIAN',
-//         experience: '7 YRS',
-//         education: 'MBBS, Internal Medicine',
-//         location: 'Apollo Hospitals, Jubilee Hills',
-//         time: 'CONSULT NOW',
-//         available: true,
-//       },
-//     ],
-//   },
-//   {
-//     title: 'Other Suggested Doctors',
-//     data: [
-//       {
-//         image: <DoctorImage style={style} />,
-//         doctorName: 'Dr. Jayanth Reddy',
-//         starDoctor: true,
-//         specialization: 'GENERAL PHYSICIAN',
-//         experience: '5 YRS',
-//         education: 'MBBS, Internal Medicine',
-//         location: 'Apollo Hospitals, Jubilee Hills',
-//         time: 'CONSULT IN 27 MINS',
-//         available: false,
-//       },
-//       {
-//         image: <DoctorImage style={style} />,
-//         doctorName: 'Dr. Rakhi Sharma',
-//         starDoctor: false,
-//         specialization: 'GENERAL PHYSICIAN',
-//         experience: '4 YRS',
-//         education: 'MBBS, Internal Medicine',
-//         location: 'Apollo Hospitals, Jubilee Hills',
-//         time: 'CONSULT IN 36 MINS',
-//         available: false,
-//       },
-//     ],
-//   },
-// ];
-
 export interface DoctorSearchProps extends NavigationScreenProps {}
 
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [searchText, setSearchText] = useState<string>('');
-  const [doctorName, setDoctorName] = useState<boolean>(false);
   const [pastSearch, setPastSearch] = useState<boolean>(true);
   const [needHelp, setNeedHelp] = useState<boolean>(true);
   const [displaySpeialist, setdisplaySpeialist] = useState<boolean>(true);
@@ -263,6 +186,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         />
         <View style={styles.searchView}>
           <TextInputComponent
+            conatinerstyles={{ paddingBottom: 19 }}
             inputStyle={styles.searchValueStyle}
             autoCorrect={false}
             value={searchText}
@@ -299,7 +223,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     if (pastSearch) {
       return (
         <View>
-          <SectionHeaderComponent sectionTitle={'Past Searches'} style={{ marginBottom: 8 }} />
+          <SectionHeaderComponent sectionTitle={'Past Searches'} style={{ marginBottom: 0 }} />
           <FlatList
             contentContainerStyle={
               {
@@ -354,7 +278,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 ? `Matching Specialities — ${seatchSpecialities.length}`
                 : 'Specialities'
             }
-            style={{ marginBottom: 8, marginTop: 16 }}
+            style={{
+              marginBottom: 0,
+              marginTop: searchText.length > 0 && doctorsList.length === 0 ? 24 : 8,
+            }}
           />
           <FlatList
             contentContainerStyle={{
@@ -364,7 +291,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             bounces={false}
             data={SpecialitiesList}
             onEndReachedThreshold={0.5}
-            renderItem={({ item, index }) => renderSpecialistRow(item, index)}
+            renderItem={({ item, index }) => renderSpecialistRow(item, index, SpecialitiesList)}
             keyExtractor={(_, index) => index.toString()}
             numColumns={2}
           />
@@ -373,7 +300,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
-  const renderSpecialistRow = (rowData: any, rowID: number) => {
+  const renderSpecialistRow = (rowData: any, rowID: number, Specialities: any) => {
     return (
       <TouchableOpacity
         onPress={() => onClickSearch(rowData.name)}
@@ -383,7 +310,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           paddingHorizontal: 8,
           marginVertical: 8,
           marginTop: rowID === 0 || rowID === 1 ? 16 : 8,
-          marginBottom: 8, //Specialities.length === rowID + 1 ? 16 : 8,
+          marginBottom:
+            Specialities.length === rowID + 1 || (Specialities.length - 1) % 2 === 1 ? 16 : 8,
+          height: 100,
         }}
         activeOpacity={1}
         key={rowData.id}
@@ -422,7 +351,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         <View>
           <SectionHeaderComponent
             sectionTitle={'Matching Doctors — ' + doctorsList.length}
-            style={{ marginBottom: 8 }}
+            style={{ marginBottom: 0 }}
           />
 
           <FlatList
@@ -451,14 +380,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         </View>
       );
     }
-  };
-
-  const renderHeader = (rowHeader: SectionListData<{ title: string }>) => {
-    let sectionTitle = rowHeader.title;
-    if (sectionTitle === 'Matching Doctors') {
-      sectionTitle = sectionTitle + ' — ' + rowHeader.data.length;
-    }
-    return <SectionHeaderComponent sectionTitle={sectionTitle} />;
   };
 
   const renderSearchDoctorResultsRow = (rowData: DoctorCardProps['rowData']) => {

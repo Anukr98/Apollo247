@@ -110,6 +110,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
+  const [backPressCount, setbackPressCount] = useState<number>(0);
+
   const { signOut } = useAuth();
 
   const isSatisfyingNameRegex = (value: string) =>
@@ -139,25 +141,19 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
     }
   };
 
-  let backPressCount = 0;
-  const handleBackButton = () => {
-    backPressCount += 1;
-    if (backPressCount === 2) {
-      console.log('BackAndroid.exitApp();');
-      BackHandler.exitApp();
-    }
-    console.log('handleBackButton');
-    return true;
-  };
-
   useEffect(() => {
     AsyncStorage.setItem('signUp', 'true');
-    backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackButton);
-    console.log(backHandler, 'backHandler');
+    backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      setbackPressCount(backPressCount + 1);
+      if (backPressCount === 1) {
+        BackHandler.exitApp();
+      }
+      return true;
+    });
     return function cleanup() {
       backHandler.remove();
     };
-  }, []);
+  }, [backPressCount]);
 
   console.log(isDateTimePickerVisible, 'isDateTimePickerVisible');
   return (

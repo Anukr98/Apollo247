@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface buttonProps {
+export interface ButtonProps {
   style?: StyleProp<ViewStyle>;
   titleTextStyle?: StyleProp<TextStyle>;
   title?: string;
@@ -42,7 +42,7 @@ export interface buttonProps {
   disabled?: boolean;
 }
 
-export const Button: React.FC<buttonProps> = (props) => {
+export const Button: React.FC<ButtonProps> = (props) => {
   return (
     <TouchableOpacity
       style={[styles.containerStyles, props.style, props.disabled ? styles.disabledStyle : null]}

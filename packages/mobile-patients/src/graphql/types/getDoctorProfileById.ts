@@ -39,12 +39,14 @@ export interface getDoctorProfileById_getDoctorProfileById_paymentDetails {
 
 export interface getDoctorProfileById_getDoctorProfileById_clinics {
   __typename: "Clinics";
+  id: string;
   name: string;
   image: string | null;
   addressLine1: string | null;
   addressLine2: string | null;
   addressLine3: string | null;
   city: string | null;
+  isClinic: boolean | null;
 }
 
 export interface getDoctorProfileById_getDoctorProfileById_starDoctorTeam {
@@ -74,11 +76,11 @@ export interface getDoctorProfileById_getDoctorProfileById_consultationHours {
 
 export interface getDoctorProfileById_getDoctorProfileById {
   __typename: "DoctorProfile";
-  profile: getDoctorProfileById_getDoctorProfileById_profile | null;
-  paymentDetails: (getDoctorProfileById_getDoctorProfileById_paymentDetails | null)[] | null;
-  clinics: (getDoctorProfileById_getDoctorProfileById_clinics | null)[] | null;
-  starDoctorTeam: (getDoctorProfileById_getDoctorProfileById_starDoctorTeam | null)[] | null;
-  consultationHours: (getDoctorProfileById_getDoctorProfileById_consultationHours | null)[] | null;
+  profile: getDoctorProfileById_getDoctorProfileById_profile;
+  paymentDetails: getDoctorProfileById_getDoctorProfileById_paymentDetails[] | null;
+  clinics: getDoctorProfileById_getDoctorProfileById_clinics[] | null;
+  starDoctorTeam: getDoctorProfileById_getDoctorProfileById_starDoctorTeam[] | null;
+  consultationHours: getDoctorProfileById_getDoctorProfileById_consultationHours[] | null;
 }
 
 export interface getDoctorProfileById {

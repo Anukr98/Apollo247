@@ -8,7 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import MenuItem from '@material-ui/core/MenuItem';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
-interface DoctorsName {
+export interface DoctorsName {
   label: string;
   typeOfConsult: string;
   experience: string;
@@ -16,7 +16,10 @@ interface DoctorsName {
   inviteStatus: string;
   lastName: string;
 }
-
+interface Search {
+  text: string;
+  highlight: boolean;
+}
 const suggestions: DoctorsName[] = [
   {
     label: 'Dr Sunita Rao',
@@ -102,14 +105,13 @@ function renderSuggestion(
 ) {
   const matches = match(suggestion.label, query);
   const parts = parse(suggestion.label, matches);
-
   return (
     <MenuItem selected={isHighlighted} component="div">
       <div>
-        {parts.map((part, index) => (
+        {parts.map((part: Search, index: number) => (
           <span
             key={index.toString()}
-            style={{ fontWeight: part.highlight ? 500 : 400, color: '#000' }}
+            style={{ fontWeight: part.highlight ? 400 : 400, color: '#000' }}
           >
             {part.text}
           </span>
@@ -149,6 +151,10 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: theme.spacing(1),
       left: 0,
       right: 0,
+      borderRadius: '10px',
+      '& li': {
+        borderBottom: '1px solid rgba(2,71,91,0.2)',
+      },
     },
     suggestion: {
       display: 'block',
@@ -164,15 +170,25 @@ const useStyles = makeStyles((theme: Theme) =>
     input: {
       color: '#000',
     },
+    posRelative: {
+      position: 'relative',
+    },
+    addBtn: {
+      position: 'absolute',
+      right: 0,
+      top: '20px',
+    },
   })
 );
-
-export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
+interface Suggestprops {
+  addDoctorHadler: () => void;
+}
+export function IntegrationAutosuggest({ addDoctorHadler }: any) {
   const classes = useStyles();
   const [state, setState] = React.useState({
     single: '',
   });
-  const [doctor, setDoctor] = React.useState({});
+  const [doctor, setDoctor] = React.useState({ label: '' });
   const [stateSuggestions, setSuggestions] = React.useState<DoctorsName[]>([]);
 
   const handleSuggestionsFetchRequested = ({ value }: any) => {
@@ -182,10 +198,7 @@ export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
   const handleSuggestionsClearRequested = () => {
     setSuggestions([]);
   };
-  const onSuggestionSelected = (
-    event,
-    { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }
-  ) => {
+  const onSuggestionSelected = (event: any, { suggestion }: any) => {
     setDoctor(suggestion);
   };
   const handleChange = (name: keyof typeof state) => (
@@ -205,11 +218,11 @@ export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
     onSuggestionsClearRequested: handleSuggestionsClearRequested,
     getSuggestionValue,
     renderSuggestion,
-    onSuggestionSelected: onSuggestionSelected,
+    onSuggestionSelected,
   };
 
   return (
-    <div className={classes.root}>
+    <div className={`${classes.root} ${classes.posRelative}`}>
       <Autosuggest
         {...autosuggestProps}
         inputProps={{
@@ -226,15 +239,16 @@ export default function IntegrationAutosuggest({ addDoctorHadler, isReset }) {
           suggestionsList: classes.suggestionsList,
           suggestion: classes.suggestion,
         }}
-        renderSuggestionsContainer={(options) => (
+        renderSuggestionsContainer={(options: any) => (
           <Paper {...options.containerProps} square>
             {options.children}
           </Paper>
         )}
       />
-
       {doctor.label && state.single === doctor.label && (
-        <button onClick={() => addDoctorHadler(doctor)}>Add</button>
+        <div className={classes.addBtn} onClick={() => addDoctorHadler(doctor)}>
+          <img alt="" src={require('images/add_doctor.svg')} />
+        </div>
       )}
     </div>
   );

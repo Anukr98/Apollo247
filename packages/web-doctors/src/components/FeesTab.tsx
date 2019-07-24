@@ -1,26 +1,14 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React, { useState } from 'react';
+import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
-import MenuItem from '@material-ui/core/MenuItem';
-import { AphSelect } from '@aph/web-ui-components';
-import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
-import _isEmpty from 'lodash/isEmpty';
-import _startCase from 'lodash/startCase';
-import _toLower from 'lodash/lowerCase';
-import { PatientSignIn_patientSignIn_patients } from 'graphql/types/PatientSignIn'; // eslint-disable-line camelcase
-import { useAuth } from 'hooks/authHooks';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import Button from '@material-ui/core/Button';
-import Divider from '@material-ui/core/Divider';
-import TextField from '@material-ui/core/TextField';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -111,8 +99,19 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     saveButton: {
       minWidth: '300px',
-      marginTop: '20px',
-      float: 'right',
+      margin: theme.spacing(1),
+      '&:hover': {
+        backgroundColor: '#fcb716',
+      },
+    },
+    backButton: {
+      minWidth: '120px',
+      color: '#fc9916',
+      backgroundColor: '#fff',
+      margin: theme.spacing(1),
+      '&:hover': {
+        backgroundColor: '#fff',
+      },
     },
     addDocter: {
       marginTop: '20px',
@@ -130,6 +129,11 @@ const useStyles = makeStyles((theme: Theme) => {
     btnContainer: {
       borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
       marginTop: '30px',
+      paddingTop: '15px',
+      textAlign: 'right',
+      '& button': {
+        padding: '9px 16px',
+      },
     },
     btnActive: {
       backgroundColor: '#00b38e !important',
@@ -138,12 +142,12 @@ const useStyles = makeStyles((theme: Theme) => {
     heading: {
       fontSize: theme.typography.pxToRem(15),
       color: '#02475b',
-      fontWeight: '700',
+      fontWeight: 700,
     },
     secondaryHeading: {
       fontSize: theme.typography.pxToRem(15),
       color: '#658f9b',
-      fontWeight: '700',
+      fontWeight: 700,
     },
     icon: {
       verticalAlign: 'bottom',
@@ -185,25 +189,24 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 140,
       color: '#02475b',
     },
-    timeForm: {},
-    timeDivider: {},
     bold: {
       fontWeight: theme.typography.fontWeightBold,
       color: '#02475b',
       marginLeft: '20px',
     },
+    pointerNone: {
+      pointerEvents: 'none',
+    },
   };
 });
-interface Props {
+interface FeesProps {
   values: any;
-  proceedHadler: () => void;
+  onNext: () => void;
+  onBack: () => void;
 }
-export const FeesTab: React.FC<Props> = ({ values, proceedHadler }) => {
+export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
   const classes = useStyles();
-  const [data, setData] = useState(values);
-  const [sp, setsp] = useState<string>('Physical');
-
-  console.log(data);
+  const data = values;
 
   return (
     <div className={classes.ProfileContainer}>
@@ -216,54 +219,70 @@ export const FeesTab: React.FC<Props> = ({ values, proceedHadler }) => {
           <div className={classes.tabContent}>
             <Paper className={classes.serviceItem}>
               <Typography variant="subtitle1">What are your online consultation fees?</Typography>
-              <Typography className={classes.bold}>Rs. 399</Typography>
-              <Typography variant="subtitle1">What are your physical consultation fees?</Typography>
-              <Typography className={classes.bold}>Rs. 399</Typography>
-              <Typography variant="subtitle1">What packages do you offer your patients?</Typography>
               <Typography className={classes.bold}>
-                3 Online Consults + 3 Physical Consults @ Rs. 999
+                Rs. {data.profile.onlineConsultationFees}
               </Typography>
+              <Typography variant="subtitle1">What are your physical consultation fees?</Typography>
+              <Typography className={classes.bold}>
+                Rs. {data.profile.physicalConsultationFees}
+              </Typography>
+              <Typography variant="subtitle1">What packages do you offer your patients?</Typography>
+              <Typography className={classes.bold}>{data.profile.package}</Typography>
             </Paper>
           </div>
         </Grid>
       </Grid>
+      {data.paymentDetails && data.paymentDetails.length > 0 && (
+        <Grid container alignItems="flex-start" spacing={0}>
+          <Grid item lg={2} sm={6} xs={12}>
+            <Typography variant="h2">Payment Method</Typography>
+          </Grid>
 
-      <Grid container alignItems="flex-start" spacing={0}>
-        <Grid item lg={2} sm={6} xs={12}>
-          <Typography variant="h2">Payment Method</Typography>
+          <Grid item lg={10} sm={6} xs={12}>
+            <div className={classes.tabContent}>
+              <ExpansionPanel className={classes.pointerNone}>
+                <ExpansionPanelSummary
+                  expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+                >
+                  <div className={classes.columnAC}>
+                    <Typography className={classes.heading}>
+                      A/C Number: {data.paymentDetails[0].accountNumber}
+                    </Typography>
+                  </div>
+                  <div>
+                    <Typography className={classes.secondaryHeading}>
+                      {data.paymentDetails[0].address}
+                    </Typography>
+                  </div>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails className={classes.details}>
+                  <div className={classes.column}>
+                    <Typography variant="h5">More bank details.</Typography>
+                  </div>
+                </ExpansionPanelDetails>
+              </ExpansionPanel>
+            </div>
+          </Grid>
         </Grid>
-
-        <Grid item lg={10} sm={6} xs={12}>
-          <div className={classes.tabContent}>
-            <ExpansionPanel>
-              <ExpansionPanelSummary
-                expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-                aria-controls="panel1c-content"
-                id="panel1c-header"
-              >
-                <div className={classes.columnAC}>
-                  <Typography className={classes.heading}>A/C Number: xxx xxx xxx 7890</Typography>
-                </div>
-                <div className={classes.columnBank}>
-                  <Typography className={classes.secondaryHeading}>
-                    State Bank of India, Powai
-                  </Typography>
-                </div>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.details}>
-                <div className={classes.column}>
-                  <Typography variant="h5">More bank details.</Typography>
-                </div>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-          </div>
-        </Grid>
-      </Grid>
+      )}
 
       <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
         <Grid item lg={12} sm={12} xs={12}>
-          <AphButton variant="contained" color="primary" classes={{ root: classes.saveButton }}>
-            SAVE AND PROCEED
+          <AphButton
+            variant="contained"
+            color="primary"
+            classes={{ root: classes.backButton }}
+            onClick={() => onBack()}
+          >
+            BACK
+          </AphButton>
+          <AphButton
+            variant="contained"
+            color="primary"
+            classes={{ root: classes.saveButton }}
+            onClick={() => onNext()}
+          >
+            PROCEED
           </AphButton>
         </Grid>
       </Grid>

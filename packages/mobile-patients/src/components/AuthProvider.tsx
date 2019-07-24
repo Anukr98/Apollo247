@@ -4,7 +4,7 @@ import { ApolloClient } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
 import { onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import firebase, { RNFirebase } from 'react-native-firebase';
@@ -32,7 +32,7 @@ export interface AuthContextProps {
 
   signInError: boolean;
   isSigningIn: boolean;
-  signOut: (() => Promise<void>) | null;
+  signOut: (() => void) | null;
 
   hasAuthToken: boolean;
 }
@@ -144,18 +144,16 @@ export const AuthProvider: React.FC = (props) => {
     });
   };
 
-  const signOut = () => {
-    auth.signOut(), setAuthToken(''), setCurrentPatientId(null);
+  const signOut = useCallback(() => {
+    auth.signOut();
+    setAuthToken('');
+    setCurrentPatientId(null);
     console.log('authprovider signOut');
-  };
+  }, [auth]);
 
   useEffect(() => {
     setAnalytics(firebase.analytics());
   }, [analytics]);
-
-  const authHandler = () => {
-    signOut();
-  };
 
   useEffect(() => {
     let authStateRegistered = false;
@@ -180,7 +178,7 @@ export const AuthProvider: React.FC = (props) => {
 
         console.log('authprovider jwt', jwt);
 
-        apolloClient = buildApolloClient(jwt, () => authHandler());
+        apolloClient = buildApolloClient(jwt, () => signOut());
         authStateRegistered = false;
         setAuthToken(jwt);
 
@@ -197,7 +195,7 @@ export const AuthProvider: React.FC = (props) => {
       }
       setIsSigningIn(false);
     });
-  }, [auth]);
+  }, [auth, signOut]);
 
   // useEffect(() => {
   //   app.auth().onAuthStateChanged(async (user) => {

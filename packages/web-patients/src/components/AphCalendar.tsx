@@ -16,6 +16,10 @@ const useStyles = makeStyles((theme: Theme) => {
           borderBottom: '1px solid rgba(0,0,0,0.2)',
           paddingBottom: 3,
           margin: '0 -5px 12px -5px',
+          '& p': {
+            color: '#02475b',
+            fontWeight: 500,
+          },
         },
         '& >div:last-child': {
           '& span': {

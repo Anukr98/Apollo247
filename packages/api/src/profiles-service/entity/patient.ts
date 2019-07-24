@@ -33,7 +33,7 @@ export class Patient extends BaseEntity {
   firstName: string;
 
   @Column()
-  @Validate(NameValidator)
+  // @Validate(NameValidator)
   lastName: string;
 
   @Column({ nullable: true })
@@ -48,13 +48,13 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true })
   @IsOptional()
-  @Validate(EmailValidator)
+  // @Validate(EmailValidator)
   emailAddress: string;
 
   @Column({ nullable: true })
   relation: Relation;
 
   @Column({ nullable: true })
-  @IsDate()
+  // @IsDate()
   dateOfBirth: Date;
 }

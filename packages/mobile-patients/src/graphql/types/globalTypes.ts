@@ -40,6 +40,11 @@ export enum STATUS {
   IN_PROGRESS = "IN_PROGRESS",
 }
 
+export interface AppointmentHistoryInput {
+  patientId: string;
+  doctorId: string;
+}
+
 export interface BookAppointmentInput {
   patientId: string;
   doctorId: string;
@@ -66,8 +71,10 @@ export interface filterInput {
   city?: (string | null)[] | null;
   experience?: (string | null)[] | null;
   availability?: (string | null)[] | null;
+  fees?: (string | null)[] | null;
   gender?: (string | null)[] | null;
   language?: (string | null)[] | null;
+  location?: string | null;
 }
 
 //==============================================================

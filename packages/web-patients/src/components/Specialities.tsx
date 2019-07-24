@@ -1,6 +1,15 @@
 import React from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Grid, Avatar } from '@material-ui/core';
+import _uniqueId from 'lodash/uniqueId';
+import _map from 'lodash/map';
+import _filter from 'lodash/filter';
+import _startsWith from 'lodash/startsWith';
+import _toLower from 'lodash/toLower';
+import { GET_SPECIALITIES } from 'graphql/specialities';
+import { GetSpecialties } from 'graphql/types/GetSpecialties';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -32,111 +41,71 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const Specialities: React.FC = (props) => {
-  const classes = useStyles();
+export interface SpecialitiesProps {
+  keyword: string;
+  matched: (matchedSpecialities: number) => void;
+  speciality: (specialitySelected: string) => void;
+  disableFilter: (disableFilters: boolean) => void;
+}
 
-  return (
-    <div className={classes.root}>
-      <div className={classes.searchList}>
-        <Grid container spacing={2}>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              General Physician
-            </div>
+export const Specialities: React.FC<SpecialitiesProps> = (props) => {
+  const classes = useStyles();
+  const { loading, error, data } = useQueryWithSkip<GetSpecialties>(GET_SPECIALITIES);
+  const { keyword, matched, speciality, disableFilter } = props;
+
+  if (loading) {
+    return <LinearProgress variant="query" />;
+  }
+
+  if (error) {
+    return <div>Error! {error.message}</div>;
+  }
+
+  const filterValues = (specialities: any) => {
+    const filteredValues = _filter(specialities, (specialityDetails) =>
+      _startsWith(_toLower(specialityDetails.name || ''), _toLower(keyword))
+    );
+    // console.log(filteredValues, keyword);
+    matched(filteredValues.length);
+    return filteredValues;
+  };
+
+  if (data && data.getSpecialties) {
+    const filterSpecialites =
+      keyword !== '' && Object.keys(data) ? filterValues(data.getSpecialties) : data.getSpecialties;
+
+    return (
+      <div className={classes.root}>
+        <div className={classes.searchList}>
+          <Grid container spacing={2}>
+            {_map(filterSpecialites, (specialityDetails) => {
+              return (
+                <Grid
+                  item
+                  xs={3}
+                  key={_uniqueId('special_')}
+                  title={specialityDetails.name}
+                  onClick={(e) => {
+                    speciality(e.currentTarget.title);
+                    disableFilter(false);
+                  }}
+                >
+                  <div className={classes.contentBox}>
+                    <Avatar
+                      alt={specialityDetails.name}
+                      src={specialityDetails.image}
+                      className={classes.bigAvatar}
+                    />
+                    {specialityDetails.name}
+                  </div>
+                </Grid>
+              );
+            })}
           </Grid>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              Pulmonology
-            </div>
-          </Grid>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              Endocrinology
-            </div>
-          </Grid>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              Urology
-            </div>
-          </Grid>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              Dermatology
-            </div>
-          </Grid>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              Paediatrics
-            </div>
-          </Grid>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              Orthopaedics
-            </div>
-          </Grid>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              Gynaecology
-            </div>
-          </Grid>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              General Physician
-            </div>
-          </Grid>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              Pulmonology
-            </div>
-          </Grid>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              Endocrinology
-            </div>
-          </Grid>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              Urology
-            </div>
-          </Grid>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              Dermatology
-            </div>
-          </Grid>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              Paediatrics
-            </div>
-          </Grid>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              Orthopaedics
-            </div>
-          </Grid>
-          <Grid item xs={3}>
-            <div className={classes.contentBox}>
-              <Avatar alt="" src={require('images/ic_mascot.png')} className={classes.bigAvatar} />
-              Gynaecology
-            </div>
-          </Grid>
-        </Grid>
+        </div>
       </div>
-    </div>
-  );
+    );
+  } else {
+    return <LinearProgress variant="query" />;
+  }
 };

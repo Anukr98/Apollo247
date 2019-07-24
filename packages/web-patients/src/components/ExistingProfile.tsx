@@ -10,6 +10,8 @@ import { Mutation } from 'react-apollo';
 import { UpdatePatientVariables, UpdatePatient } from 'graphql/types/UpdatePatient';
 import { UPDATE_PATIENT } from 'graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
+import _toLower from 'lodash/toLower';
+import _upperFirst from 'lodash/upperFirst';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -109,6 +111,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'transparent !important',
       color: '#00b38e !important',
     },
+    menuItemHide: {
+      display: 'none',
+    },
   });
 });
 
@@ -122,8 +127,8 @@ interface PatientProfileProps {
 const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   const classes = useStyles();
   const { patient, number } = props;
-  const [selectedRelation, setSelectedRelation] = React.useState<Relation | ''>(
-    patient.relation || ''
+  const [selectedRelation, setSelectedRelation] = React.useState<Relation | 'relation'>(
+    patient.relation || 'relation'
   );
   return (
     <div className={classes.profileBox}>
@@ -132,7 +137,9 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
         <div className={classes.userId}>{patient.uhid}</div>
       </div>
       <div className={classes.boxContent}>
-        <div className={classes.userName}>{patient.firstName}</div>
+        <div className={classes.userName}>
+          {(patient.firstName && _upperFirst(_toLower(patient.firstName))) || ''}
+        </div>
         <div className={classes.userInfo}>
           {_camelCase(patient.gender || '')}
           {_camelCase(patient.dateOfBirth || '')}
@@ -146,6 +153,9 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
             props.onUpdatePatient(updatedPatient);
           }}
         >
+          <MenuItem className={classes.menuItemHide} value="relation" disabled>
+            Relation
+          </MenuItem>
           {Object.values(Relation).map((relationOption: Relation) => (
             <MenuItem
               selected={relationOption === selectedRelation}
@@ -153,7 +163,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
               classes={{ selected: classes.menuSelected }}
               key={relationOption}
             >
-              {relationOption}
+              {_upperFirst(_toLower(relationOption))}
             </MenuItem>
           ))}
         </AphSelect>

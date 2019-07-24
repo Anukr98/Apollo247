@@ -22,30 +22,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { isSigningIn, signInError } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
-  const navigator = (userLoggedIn, onboarding, signUp, multiSignUp, currentPatient) => {
-    console.log(currentPatient, 'currentPatientcurrentPatientcurrentPatient');
-    if (userLoggedIn == 'true') {
-      if (currentPatient) {
-        if (currentPatient.firstName !== '') {
-          props.navigation.replace(AppRoutes.TabBar);
-        } else {
-          props.navigation.replace(AppRoutes.Login);
-        }
-      }
-    } else if (onboarding == 'true') {
-      if (signUp == 'true') {
-        props.navigation.replace(AppRoutes.SignUp);
-      } else if (multiSignUp == 'true') {
-        if (currentPatient) {
-          props.navigation.replace(AppRoutes.MultiSignup);
-        }
-      } else {
-        props.navigation.replace(AppRoutes.Login);
-      }
-    } else {
-      props.navigation.replace(AppRoutes.Onboarding);
-    }
-  };
   useEffect(() => {
     async function fetchData() {
       firebase.analytics().setCurrentScreen('SplashScreen');
@@ -59,10 +35,29 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       console.log('splash screen', currentPatient);
       console.log(allCurrentPatients, 'allCurrentPatients');
 
-      setTimeout(
-        () => navigator(userLoggedIn, onboarding, signUp, multiSignUp, currentPatient),
-        3500
-      );
+      setTimeout(() => {
+        if (userLoggedIn == 'true') {
+          if (currentPatient) {
+            if (currentPatient.firstName !== '') {
+              props.navigation.replace(AppRoutes.TabBar);
+            } else {
+              props.navigation.replace(AppRoutes.Login);
+            }
+          }
+        } else if (onboarding == 'true') {
+          if (signUp == 'true') {
+            props.navigation.replace(AppRoutes.SignUp);
+          } else if (multiSignUp == 'true') {
+            if (currentPatient) {
+              props.navigation.replace(AppRoutes.MultiSignup);
+            }
+          } else {
+            props.navigation.replace(AppRoutes.Login);
+          }
+        } else {
+          props.navigation.replace(AppRoutes.Onboarding);
+        }
+      }, 3500);
     }
     fetchData();
     SplashScreenView.hide();

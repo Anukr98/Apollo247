@@ -7,14 +7,18 @@ import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Avatar from '@material-ui/core/Avatar';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     serviceList: {
-      paddingTop: 145,
+      paddingTop: 162,
       paddingBottom: 40,
       paddingLeft: 20,
       paddingRight: 20,
+      [theme.breakpoints.up('sm')]: {
+        paddingTop: 131,
+      },
     },
     serviceItem: {
       padding: 20,
@@ -25,6 +29,9 @@ const useStyles = makeStyles((theme: Theme) => {
       height: '100%',
       [theme.breakpoints.down('xs')]: {
         display: 'flex',
+      },
+      [theme.breakpoints.up('sm')]: {
+        paddingBottom: 45,
       },
       '& h5': {
         [theme.breakpoints.up('sm')]: {
@@ -39,6 +46,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: 'rgba(0,0,0,0.5)',
         marginTop: 5,
         marginBottom: 5,
+        paddingRight: 40,
       },
     },
     serviceInfo: {
@@ -66,6 +74,10 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.action.selected,
       lineHeight: 1.85,
       textTransform: 'uppercase',
+      [theme.breakpoints.up('sm')]: {
+        position: 'absolute',
+        bottom: 20,
+      },
     },
   };
 });
@@ -125,7 +137,7 @@ export const ServiceList: React.FC = (props) => {
     {
       title: 'You know which doctor you are looking for?',
       content: `Let's get you connected with them.`,
-      action: { link: '', content: 'Find specialist' },
+      action: { link: clientRoutes.doctorsLanding(), content: 'Find specialist' },
     },
     {
       title: `Just want to buy medicines? It’s easy!`,

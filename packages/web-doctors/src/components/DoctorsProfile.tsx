@@ -1,8 +1,10 @@
 import React from 'react';
+import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography } from '@material-ui/core';
+import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 import AppBar from '@material-ui/core/AppBar';
+import { AphButton } from '@aph/web-ui-components';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { Header } from 'components/Header';
@@ -11,8 +13,12 @@ import { AvailabilityTab } from 'components/AvailabilityTab';
 import { FeesTab } from 'components/FeesTab';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
+import { Link } from 'react-router-dom';
 
-function TabContainer(props) {
+export interface TabContainerProps {
+  children: React.ReactNode;
+}
+function TabContainer(props: TabContainerProps) {
   return (
     <Typography component="div" style={{ padding: 8 * 3 }}>
       {props.children}
@@ -24,10 +30,19 @@ TabContainer.propTypes = {
 };
 const useStyles = makeStyles((theme: Theme) => {
   return {
+    highlightActive: {
+      borderBottom: '2px solid #0087ba',
+      opacity: 1,
+    },
+    highlightInactive: {
+      borderBottom: 'none',
+      opacity: 0.4,
+      cursor: 'default',
+    },
     profile: {
-      paddingTop: 85,
+      paddingTop: 68,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 78,
+        paddingTop: 62,
       },
     },
     headerSticky: {
@@ -48,6 +63,9 @@ const useStyles = makeStyles((theme: Theme) => {
         textTransform: 'capitalize',
         fontSize: 16,
       },
+    },
+    none: {
+      display: 'none',
     },
     tabHeading: {
       padding: '30px 40px 20px 40px',
@@ -71,93 +89,159 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    saveButton: {
+      minWidth: '240px',
+      margin: theme.spacing(3, 1, 1, 1),
+      padding: '9px 16px',
+      '&:hover': {
+        backgroundColor: '#fcb716',
+      },
+    },
   };
 });
 
 export interface DoctorsProfileProps {}
 
-export const DoctorsProfile: React.FC<DoctorsProfileProps> = (props) => {
+export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) => {
   const classes = useStyles();
 
-  const [value, setValue] = React.useState(0);
-  const { data, error, loading } = useQuery(GET_DOCTOR_PROFILE, {
-    variables: { mobileNumber: '1234567890' },
+  const [selectedTabIndex, setselectedTabIndex] = React.useState(0);
+  const { data } = useQuery(GET_DOCTOR_PROFILE);
+  const tabsArray = ['Profile', 'Availability', 'Fees', ''];
+  const tabsHtml = tabsArray.map((item, index) => {
+    return (
+      <Tab
+        key={item}
+        className={
+          selectedTabIndex > index - 1 ? classes.highlightActive : classes.highlightInactive
+        }
+        label={item}
+      />
+    );
   });
-
-  function handleChange(event, newValue) {
-    setValue(newValue);
-  }
-  const proceedHadler = () => {
-    setValue(value + 1);
+  const onNext = () => {
+    setselectedTabIndex(selectedTabIndex + 1);
   };
-  if (loading) console.log('loading');
-  if (error) console.log('Error');
-  //if (data) console.log('data', data);
+  const onBack = () => {
+    setselectedTabIndex(selectedTabIndex - 1);
+  };
   return (
     <div className={classes.profile}>
       <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
+        <Header />
       </div>
       <div className={classes.container}>
-        {!!data.getDoctorProfile && (
+        {data && data.getDoctorProfile && (
           <div>
             <div className={classes.tabHeading}>
               <Typography variant="h1">
-                <span>
-                  hi dr. {`${data.getDoctorProfile.firstName} ${data.getDoctorProfile.lastName}`}!
-                </span>
+                {selectedTabIndex === 0 && (
+                  <span>
+                    {`hi dr ${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName} !`}
+                  </span>
+                )}
+                {selectedTabIndex === 1 && (
+                  <span>
+                    ok dr.{' '}
+                    {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
+                    !
+                  </span>
+                )}
+                {selectedTabIndex === 2 && (
+                  <span>
+                    ok dr.{' '}
+                    {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
+                    !
+                  </span>
+                )}
+                {selectedTabIndex === 3 && (
+                  <span>
+                    thank you, dr.{' '}
+                    {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
+                    :)
+                  </span>
+                )}
               </Typography>
-              <p>
-                It’s great to have you join us! <br /> Here’s what your patients see when they view
-                your profile
-              </p>
+              {selectedTabIndex === 0 && (
+                <p>
+                  It’s great to have you join us! <br /> Here’s what your patients see when they
+                  view your profile
+                </p>
+              )}
+              {selectedTabIndex === 1 && (
+                <p>Now tell us what hours suit you for online and in-person consults</p>
+              )}
+              {selectedTabIndex === 2 && (
+                <p>
+                  Lastly, some money-related matters like fees, packages and how you take payments
+                </p>
+              )}
+              {selectedTabIndex === 3 && (
+                <div>
+                  <p>Let’s go over now to see the Apollo24x7 portal and start consultations!</p>
+
+                  <Link to="/calendar">
+                    <AphButton
+                      variant="contained"
+                      color="primary"
+                      classes={{ root: classes.saveButton }}
+                    >
+                      GET STARTED
+                    </AphButton>
+                  </Link>
+                </div>
+              )}
             </div>
-            <AppBar position="static" color="default">
-              <Tabs
-                value={value}
-                indicatorColor="secondary"
-                className={classes.tabBar}
-                onChange={handleChange}
-              >
-                <Tab label="Profile" />
-                <Tab label="Availability" disabled={value < 1 ? true : false} />
-                <Tab label="Fees" disabled={value < 2 ? true : false} />
-              </Tabs>
-            </AppBar>
-            {value === 0 && (
+            {selectedTabIndex < 3 && (
+              <AppBar position="static" color="default">
+                <Tabs
+                  value={selectedTabIndex}
+                  indicatorColor="secondary"
+                  className={classes.tabBar}
+                >
+                  {tabsHtml}
+                </Tabs>
+              </AppBar>
+            )}
+            {selectedTabIndex === 0 && (
               <TabContainer>
                 {!!data.getDoctorProfile && (
                   <DoctorProfileTab
                     values={data.getDoctorProfile}
-                    proceedHadler={() => proceedHadler}
+                    onNext={() => onNext()}
                     key={1}
                   />
                 )}
               </TabContainer>
             )}
-            {value === 1 && (
+            {selectedTabIndex === 1 && (
               <TabContainer>
                 {!!data.getDoctorProfile && (
                   <AvailabilityTab
                     values={data.getDoctorProfile}
-                    proceedHadler={() => proceedHadler}
+                    onNext={() => onNext()}
+                    onBack={() => onBack()}
                     key={2}
                   />
                 )}
               </TabContainer>
             )}
-            {value === 2 && (
+            {selectedTabIndex === 2 && (
               <TabContainer>
                 {!!data.getDoctorProfile && (
                   <FeesTab
                     values={data.getDoctorProfile}
-                    proceedHadler={() => proceedHadler}
+                    onNext={() => onNext()}
+                    onBack={() => onBack()}
                     key={3}
                   />
                 )}
               </TabContainer>
+            )}
+            {selectedTabIndex === 3 && (
+              <div className={classes.none}>
+                <TabContainer>&nbsp;</TabContainer>
+              </div>
             )}
           </div>
         )}

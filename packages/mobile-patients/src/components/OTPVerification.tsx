@@ -3,24 +3,23 @@ import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { BackArrow, OkText, OkTextDisabled } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
+  AsyncStorage,
+  Keyboard,
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator,
-  Keyboard,
-  Alert,
-  AsyncStorage,
 } from 'react-native';
 import SmsListener from 'react-native-android-sms-listener';
-import { OTPTextView } from './ui/OTPTextView';
 import { NavigationScreenProps } from 'react-navigation';
-import { useAuth, useAllCurrentPatients } from '../hooks/authHooks';
-import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
+import { OTPTextView } from './ui/OTPTextView';
 
 const styles = StyleSheet.create({
   container: {
@@ -72,29 +71,42 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [isresent, setIsresent] = useState<boolean>(false);
 
   const { verifyOtp, sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
-  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
+  const { currentPatient } = useAllCurrentPatients();
 
-  const startInterval = (timer: number) => {
-    const intervalId = setInterval(() => {
-      timer = timer - 1;
-      setRemainingTime(timer);
-      if (timer == 0) {
-        console.log('descriptionTextStyle remainingTime', remainingTime);
-        setRemainingTime(0);
-        setInvalidOtpCount(0);
-        setIsValidOTP(true);
-        clearInterval(intervalId);
+  const startInterval = useCallback(
+    (timer: number) => {
+      const intervalId = setInterval(() => {
+        timer = timer - 1;
+        setRemainingTime(timer);
+        if (timer == 0) {
+          console.log('descriptionTextStyle remainingTime', remainingTime);
+          setRemainingTime(0);
+          setInvalidOtpCount(0);
+          setIsValidOTP(true);
+          clearInterval(intervalId);
+        }
+      }, 1000);
+    },
+    [remainingTime]
+  );
+
+  const _removeFromStore = useCallback(async () => {
+    try {
+      const { phoneNumber } = props.navigation.state.params!;
+      const getData = await AsyncStorage.getItem('timeOutData');
+      if (getData) {
+        const timeOutData = JSON.parse(getData);
+        const filteredData = timeOutData.filter((el: any) => el.phoneNumber !== phoneNumber);
+        console.log(filteredData, 'filteredData');
+        await AsyncStorage.setItem('timeOutData', JSON.stringify(filteredData));
       }
-    }, 1000);
-  };
-  useEffect(() => {
-    const { otpString } = props.navigation.state.params!;
-    setOtp(otpString);
-    console.log('OTPVerification otpString', otpString);
-    _getTimerData();
-  }, [props.navigation]);
+    } catch (error) {
+      console.log(error, 'error');
+      // Error removing data
+    }
+  }, [props.navigation.state.params]);
 
-  const _getTimerData = async () => {
+  const getTimerData = useCallback(async () => {
     try {
       const data = await AsyncStorage.getItem('timeOutData');
       if (data) {
@@ -102,7 +114,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         console.log(timeOutData);
         const { phoneNumber } = props.navigation.state.params!;
 
-        timeOutData.map((obj) => {
+        timeOutData.map((obj: any) => {
           if (obj.phoneNumber === phoneNumber) {
             const t1 = new Date();
             const t2 = new Date(obj.startTime);
@@ -132,23 +144,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       // Error retrieving data
       console.log(error.message);
     }
-  };
+  }, [_removeFromStore, props.navigation.state.params, startInterval]);
 
-  const _removeFromStore = useCallback(async () => {
-    try {
-      const { phoneNumber } = props.navigation.state.params!;
-      const getData = await AsyncStorage.getItem('timeOutData');
-      if (getData) {
-        const timeOutData = JSON.parse(getData);
-        const filteredData = timeOutData.filter((el: any) => el.phoneNumber !== phoneNumber);
-        console.log(filteredData, 'filteredData');
-        await AsyncStorage.setItem('timeOutData', JSON.stringify(filteredData));
-      }
-    } catch (error) {
-      console.log(error, 'error');
-      // Error removing data
-    }
-  }, [props.navigation.state.params]);
+  useEffect(() => {
+    const { otpString } = props.navigation.state.params!;
+    setOtp(otpString);
+    console.log('OTPVerification otpString', otpString);
+    getTimerData();
+  }, [props.navigation, getTimerData]);
 
   const _storeTimerData = async (invalidAttems: number) => {
     try {
@@ -194,13 +197,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   useEffect(() => {
     if (currentPatient) {
       if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
-        // if (currentPatient.relation == null) {
-        props.navigation.replace(AppRoutes.MultiSignup);
-        // }
-        // else {
-        //   AsyncStorage.setItem('userLoggedIn', 'true');
-        //   props.navigation.replace(AppRoutes.TabBar);
-        // }
+        if (currentPatient.relation == null) {
+          props.navigation.replace(AppRoutes.MultiSignup);
+        } else {
+          AsyncStorage.setItem('userLoggedIn', 'true');
+          props.navigation.replace(AppRoutes.TabBar);
+        }
       } else {
         if (currentPatient.firstName == '') {
           props.navigation.replace(AppRoutes.SignUp);
@@ -217,7 +219,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       Alert.alert('Apollo', 'Something went wrong. Please try again.');
       // props.navigation.replace(AppRoutes.Login);
     }
-  }, [signInError, props.navigation]);
+  }, [signInError, props.navigation, otp.length]);
 
   const onClickOk = async () => {
     console.log('otp OTPVerification', otp);

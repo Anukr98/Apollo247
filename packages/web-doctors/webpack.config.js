@@ -1,25 +1,21 @@
 const path = require('path');
 const process = require('process');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const DotenvWebpack = require('dotenv-webpack');
 const webpack = require('webpack');
+const dotenv = require('dotenv');
 
-const isTest = process.env.NODE_ENV === 'test';
+const envFile = path.resolve(__dirname, '../../.env');
+const dotEnvConfig = dotenv.config({ path: envFile });
+if (dotEnvConfig.error) throw dotEnvConfig.error;
+Object.values(dotEnvConfig).forEach((val, KEY) => (process.env[KEY] = val));
 const isLocal = process.env.NODE_ENV === 'local';
-const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
 
 const distDir = path.resolve(__dirname, 'dist');
 
 const plugins = [
-  new webpack.DefinePlugin(
-    ['NODE_ENV', 'WEB_DOCTORS_PORT', 'API_GATEWAY_PORT', 'FIREBASE_PROJECT_ID'].reduce(
-      (result, VAR) => ({
-        ...result,
-        [`process.env.${VAR}`]: JSON.stringify(process.env[VAR].trim()),
-      }),
-      {}
-    )
-  ),
+  new DotenvWebpack({ path: envFile }),
   new HtmlWebpackPlugin({
     filename: 'index.html',
     chunks: ['index'],
@@ -27,7 +23,7 @@ const plugins = [
     inject: true,
   }),
 ];
-if (isLocal || isDevelopment) {
+if (isLocal) {
   plugins.push(new webpack.HotModuleReplacementPlugin());
 }
 
@@ -64,6 +60,7 @@ module.exports = {
     rules: [
       {
         test: /\.(j|t)sx?$/,
+        include: [path.resolve(__dirname, 'src')],
         exclude: [/node_modules/],
         use: isProduction ? [tsLoader] : [rhlBabelLoader, tsLoader],
       },
@@ -77,12 +74,11 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
     modules: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'node_modules')],
-    alias:
-      isLocal || isDevelopment
-        ? {
-            'react-dom': '@hot-loader/react-dom',
-          }
-        : undefined,
+    alias: isLocal
+      ? {
+          'react-dom': '@hot-loader/react-dom',
+        }
+      : undefined,
   },
 
   optimization: {
@@ -92,25 +88,21 @@ module.exports = {
     usedExports: true,
   },
 
-  devServer:
-    isTest || isLocal || isDevelopment
-      ? {
-          publicPath: '/', // URL path where the webpack files are served from
-          contentBase: distDir, // A directory to serve files non-webpack files from (Absolute path)
-          host: '0.0.0.0',
-          port: process.env.WEB_DOCTORS_PORT,
-          disableHostCheck: true,
-          hot: true,
-          inline: true,
-          historyApiFallback: true,
-          // We have to poll for changes bc we're running inside a docker container :(
-          watchOptions: {
-            aggregateTimeout: 300,
-            poll: 1000,
-            ignored: [/node_modules([\\]+|\/)+(?!@aph)/],
-          },
-        }
-      : undefined,
+  devServer: isLocal
+    ? {
+        publicPath: '/', // URL path where the webpack files are served from
+        contentBase: distDir, // A directory to serve files non-webpack files from (Absolute path)
+        host: '0.0.0.0',
+        port: process.env.WEB_DOCTORS_PORT,
+        disableHostCheck: true,
+        hot: true,
+        inline: true,
+        historyApiFallback: true,
+        watchOptions: {
+          ignored: [/node_modules([\\]+|\/)+(?!@aph)/],
+        },
+      }
+    : undefined,
 
   plugins,
 };
