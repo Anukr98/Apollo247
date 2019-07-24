@@ -11,6 +11,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       marginBottom: 10,
+      [theme.breakpoints.down('xs')]: {
+        marginBottom: 0,
+      },
     },
     clinicImg: {
       borderRadius: '5px 5px 0 0',
@@ -58,9 +61,35 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 20,
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        borderBottom: 'none',
+        padding: 0,
+        fontWeight: 600,
+      },
     },
     count: {
       marginLeft: 'auto',
+    },
+    sectionGroup: {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#f7f8f5',
+        marginTop: 16,
+        marginBottom: 16,
+        padding: 20,
+        paddingTop: 16,
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
+    },
+    gridContainer: {
+      [theme.breakpoints.down('xs')]: {
+        margin: -8,
+        width: 'calc(100% + 16px)',
+      },
+      '& >div': {
+        [theme.breakpoints.down('xs')]: {
+          padding: '8px !important',
+        },
+      },
     },
   };
 });
@@ -94,7 +123,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
     const lastName = doctorDetails.getDoctorProfileById.profile.lastName;
 
     return (
-      <>
+      <div className={classes.sectionGroup}>
         <div className={classes.sectionHeader}>
           <span>
             Dr. {firstName}&nbsp;{lastName}'s Clinic
@@ -103,10 +132,10 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
             {clinics.length < 10 ? `0${clinics.length}` : clinics.length}
           </span>
         </div>
-        <Grid container spacing={2}>
+        <Grid className={classes.gridContainer} container spacing={2}>
           {clinics.map((clinicDetails) => {
             return (
-              <Grid item sm={6} key={_uniqueId('avagr_')}>
+              <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('avagr_')}>
                 <div className={classes.root} key={_uniqueId('clinic_')}>
                   <div className={classes.clinicImg}>
                     <img
@@ -150,7 +179,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
             );
           })}
         </Grid>
-      </>
+      </div>
     );
   } else {
     return <div>No Clinics Found...</div>;

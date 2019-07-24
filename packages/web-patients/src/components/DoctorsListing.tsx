@@ -71,6 +71,10 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       fontWeight: 600,
       marginTop: 115,
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 44,
+        backgroundColor: '#f7f8f5',
+      },
       '& h2': {
         fontSize: 18,
         paddingBottom: 5,
@@ -162,7 +166,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
     return (
       <Grid container spacing={2} justify="center">
-        <Grid item sm={12} md={6} key={_uniqueId('consultGrid_')}>
+        <Grid item xs={8} sm={6} md={6} key={_uniqueId('consultGrid_')}>
           <div className={classes.noDataCard}>
             <h2>Uh oh! :(</h2>
             {data && data.getSpecialtyDoctorsWithFilters.doctors.length > 0

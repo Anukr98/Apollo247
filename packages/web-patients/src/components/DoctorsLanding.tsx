@@ -143,6 +143,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up(1220)]: {
         position: 'absolute',
         left: -82,
+        top: 0,
         width: 48,
         height: 48,
         lineHeight: '36px',

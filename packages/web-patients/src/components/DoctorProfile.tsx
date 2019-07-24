@@ -8,10 +8,16 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: 328,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
     },
     doctorProfile: {
       backgroundColor: theme.palette.common.white,
       borderRadius: 5,
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: 0,
+      },
     },
     doctorImage: {
       borderRadius: '5px 5px 0 0',
