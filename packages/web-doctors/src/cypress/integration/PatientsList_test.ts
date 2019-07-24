@@ -1,5 +1,5 @@
 import { clientBaseUrl, clientRoutes } from 'helpers/clientRoutes';
-import { apiRoutes } from 'helpers/apiRoutes';
+import { apiRoutes } from '@aph/universal/aphRoutes';
 import { getPatientsFixture } from 'cypress/fixtures/patientsFixtures';
 
 describe('PatientsList', () => {

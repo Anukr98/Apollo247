@@ -5,6 +5,7 @@ import * as firebaseAdmin from 'firebase-admin';
 import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { webPatientsBaseUrl, webDoctorsBaseUrl } from '@aph/universal/aphRoutes';
 
 declare global {
   namespace NodeJS {
@@ -37,19 +38,12 @@ export type Resolver<Parent, Args, Context, Result> = (
 const isLocal = process.env.NODE_ENV == 'local';
 const isDev = process.env.NODE_ENV == 'dev';
 
-const getPortStr = (port: string) => (port === '80' ? '' : `:${port}`);
-const webPatientsPort = getPortStr(process.env.WEB_PATIENTS_PORT!);
-const webDoctorsPort = getPortStr(process.env.WEB_DOCTORS_PORT!);
-const envToCorsOrigin: Record<NodeJS.ProcessEnv['NODE_ENV'], string[]> = {
-  local: [`http://localhost${webPatientsPort}`, `http://localhost${webDoctorsPort}`],
-  dev: ['http://web-patienst.aph.popcornapps.com'],
-};
-
 (async () => {
   const gateway = new ApolloGateway({
     serviceList: [
       { name: 'profiles', url: 'http://profiles-service/graphql' },
       { name: 'doctors', url: 'http://doctors-service/graphql' },
+      { name: 'consults', url: 'http://consults-service/graphql' },
     ],
     buildService({ name, url }) {
       return new RemoteGraphQLDataSource({
@@ -76,7 +70,7 @@ const envToCorsOrigin: Record<NodeJS.ProcessEnv['NODE_ENV'], string[]> = {
   });
 
   const server = new ApolloServer({
-    cors: { origin: envToCorsOrigin[process.env.NODE_ENV] },
+    cors: { origin: [webDoctorsBaseUrl(), webPatientsBaseUrl()] },
     schema,
     executor,
     context: async ({ req }) => {

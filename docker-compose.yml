@@ -27,7 +27,7 @@ services:
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
     command: bash -c "
-      while ((! curl -s http://profiles-service/graphql) || (! curl -s http://doctors-service/graphql)) > /dev/null;
+      while ((! curl -s http://profiles-service/graphql) || (! curl -s http://doctors-service/graphql) || (! curl -s http://consults-service/graphql)) > /dev/null;
       do echo waiting for services to start...; sleep 5;
       done;
       (while ! curl -s http://localhost:${API_GATEWAY_PORT}/graphql > /dev/null;
@@ -40,6 +40,7 @@ services:
     depends_on:
       - profiles-service
       - doctors-service
+      - consults-service
       - nginx
 
   profiles-service:
@@ -71,3 +72,11 @@ services:
     image: postgres:10.8-alpine
     volumes:
       - ./packages/api/src/doctors-service/init-doctors-db.sql:/docker-entrypoint-initdb.d/init.sql
+
+  consults-service:
+    image: node:12.6.0
+    env_file: .env
+    working_dir: /apollo-hospitals/packages/api
+    command: bash -c "npm run start:consults-service"
+    volumes:
+      - ./:/apollo-hospitals:cached

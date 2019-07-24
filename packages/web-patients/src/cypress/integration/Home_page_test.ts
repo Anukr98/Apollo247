@@ -1,5 +1,4 @@
 import { clientBaseUrl, clientRoutes } from 'helpers/clientRoutes';
-// import { apiRoutes } from 'helpers/apiRoutes';
 
 describe('Home page', () => {
   beforeEach(() => cy.signOut());
