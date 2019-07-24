@@ -32,10 +32,18 @@ export const DaySelector: React.FC<DaySelectorProps> = (selectedDays) => {
   const dayshtml = days.map((day) => (
     <AphButton
       key={day}
-      variant="contained"
       className={
         selectedDays.selectedDays.indexOf(day) > -1 ? classes.btnActive : classes.btnInactive
       }
+      // onClick={() => {
+      //   const newDays = new Set(selectedDays);
+      //   if (selectedDays.has(day)) {
+      //     newDays.delete(day);
+      //   } else {
+      //     newDays.add(day);
+      //   }
+      //   setSelectedDays(newDays);
+      // }}
     >
       {day}
     </AphButton>

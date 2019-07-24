@@ -191,7 +191,7 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
               <TabContainer>
                 {!!data.getDoctorProfile && (
                   <DoctorProfileTab
-                    values={data.getDoctorProfile}
+                    // values={data.getDoctorProfile}
                     onNext={() => onNext()}
                     key={1}
                   />

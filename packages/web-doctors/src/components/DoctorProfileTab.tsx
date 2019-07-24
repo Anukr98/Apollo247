@@ -21,11 +21,9 @@ import {
   GetDoctorProfile_getDoctorProfile_profile,
 } from 'graphql/types/getDoctorProfile';
 import { INVITEDSTATUS } from 'graphql/types/globalTypes';
-import Button from '@material-ui/core/Button';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { REMOVE_STAR_DOCTOR, GET_DOCTOR_PROFILE } from 'graphql/profiles';
 import { MoreVert } from '@material-ui/icons';
-import { number } from 'prop-types';
 import {
   removeDoctorFromStartDoctorProgramVariables,
   removeDoctorFromStartDoctorProgram,
@@ -117,7 +115,6 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.primary.contrastText,
       padding: '10px',
       position: 'relative',
-      paddingLeft: '90px',
       minHeight: '130px',
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
@@ -223,9 +220,10 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export interface StarDoctorCardProps {
   doctor: GetDoctorProfile_getDoctorProfile_starDoctorTeam;
+  indexKey: number;
 }
 const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
-  const { doctor } = props;
+  const { doctor, indexKey } = props;
   const moreButttonRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const client = useApolloClient();
@@ -281,7 +279,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                             existingData.getDoctorProfile.starDoctorTeam) ||
                           [];
                         const newStarDoctorTeam = existingStarDoctorTeam.filter(
-                          (existingDoc) => existingDoc.firstName === doctor.firstName
+                          (existingDoc) => existingDoc.firstName !== doctor.firstName
                         );
                         const dataAfterMutation: GetDoctorProfile = {
                           ...existingData,
@@ -294,7 +292,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                       });
                     }}
                   >
-                    Remove Doctor
+                    Remove Doctor - {indexKey}
                   </Typography>
                 </Popover>
               </>
@@ -302,9 +300,11 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           </Mutation>
         }
         title={`Dr. ${doctor.firstName} ${doctor.lastName}`}
-        subheader={<span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>}
+        //subheader={<span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>}
       />
-      <CardContent>MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills</CardContent>
+      {doctor.inviteStatus === INVITEDSTATUS.ACCEPTED && (
+        <CardContent>MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills</CardContent>
+      )}
     </Card>
   );
 };
@@ -315,12 +315,17 @@ export interface StarDoctorsListProps {
 
 const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
   const { starDoctors } = props;
+  const classes = useStyles();
   return (
-    <div>
-      {starDoctors.map((doctor) => (
-        <StarDoctorCard doctor={doctor} />
+    <Grid container alignItems="flex-start" spacing={0}>
+      {starDoctors.map((doctor, index) => (
+        <Grid item lg={4} sm={6} xs={12} key={index}>
+          <div className={classes.tabContentStarDoctor}>
+            <StarDoctorCard doctor={doctor} indexKey={index} />
+          </div>
+        </Grid>
       ))}
-    </div>
+    </Grid>
   );
 };
 
