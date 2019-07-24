@@ -4,6 +4,7 @@ import { Theme, Avatar } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors as DoctorDetails } from 'graphql/types/SearchDoctorAndSpecialty';
 import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -11,6 +12,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      [theme.breakpoints.down('sm')]: {
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     topContent: {
       padding: 15,
@@ -100,8 +104,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const { doctorDetails } = props;
 
-  // console.log(doctorDetails);
-
   return (
     <div className={classes.root}>
       <div className={classes.topContent}>
@@ -120,7 +122,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           </div>
           <div className={classes.doctorName}>
             <Link
-              to={`/doctor-details/${doctorDetails.id}`}
+              to={clientRoutes.doctorDetails(doctorDetails.id)}
             >{`${doctorDetails.firstName} ${doctorDetails.lastName}`}</Link>
           </div>
           <div className={classes.doctorType}>

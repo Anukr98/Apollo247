@@ -7,3 +7,66 @@ export type LocalStorage = {
   isProfileFlowDone?: boolean;
   isOnboardingDone?: boolean;
 };
+
+export type DummyQueryResult = {
+  error: any;
+  loading: boolean;
+  data: {
+    getDoctorProfile?: DoctorProfile;
+    getDoctorProfileById?: DoctorProfile;
+    getDoctors?: DoctorProfile[];
+    getDoctorsForStarDoctorProgram?(searchString: string): Promise<DoctorProfile[]>;
+  };
+};
+
+export type DoctorProfile = {
+  profile: Doctor;
+  paymentDetails: PaymentDetails[];
+  clinics: clinics[];
+  starDoctorTeam: Doctor[];
+  consultationHours: Consultations[];
+};
+
+export type Doctor = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  mobileNumber: string;
+  experience: string;
+  speciality: string;
+  specialization: string;
+  isStarDoctor: boolean;
+  education: string;
+  services: string;
+  languages: string;
+  city: string;
+  awards: string;
+  photoUrl: string;
+  registrationNumber: string;
+  isProfileComplete: string;
+  availableForPhysicalConsultation: boolean;
+  availableForVirtualConsultation: boolean;
+  onlineConsultationFees: string;
+  physicalConsultationFees: string;
+  package: string;
+  typeOfConsult: string;
+  inviteStatus: string;
+  // Should-add-to-backend
+  ifscCode: string;
+  accountType: string;
+};
+export type PaymentDetails = {
+  accountNumber: string;
+  address: string;
+};
+export type clinics = {
+  name: string;
+  location: string;
+};
+export type Consultations = {
+  days: string;
+  timings: string;
+  availableForPhysicalConsultation: boolean;
+  availableForVirtualConsultation: boolean;
+  type: string; //=> 'accepted' | 'Not accepted'
+};

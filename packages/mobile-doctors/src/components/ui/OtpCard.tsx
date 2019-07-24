@@ -9,7 +9,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { BackIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { BackIcon, Cancel } from '@aph/mobile-doctors/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -53,14 +53,25 @@ export interface OtpCardProps {
   buttonIcon?: React.ReactNode;
   onClickButton?: TouchableOpacityProps['onPress'];
   onPress?: TouchableOpacityProps['onPress'];
+  isModelCard?: boolean;
 }
 
 export const OtpCard: React.FC<OtpCardProps> = (props) => {
   return (
     <View style={[styles.cardContainer, props.cardContainer]}>
-      <TouchableOpacity onPress={props.onPress} style={{}}>
-        <BackIcon style={{ height: 24, width: 24, position: 'absolute' }} />
-      </TouchableOpacity>
+      {props.isModelCard ? (
+        <TouchableOpacity
+          onPress={props.onPress}
+          style={{ alignSelf: 'flex-end', marginRight: 16 }}
+        >
+          <Cancel style={{ height: 24, width: 24, position: 'absolute' }} />
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity onPress={props.onPress} style={{}}>
+          <BackIcon style={{ height: 24, width: 24, position: 'absolute' }} />
+        </TouchableOpacity>
+      )}
+
       <Text style={styles.headingText}>{props.heading}</Text>
       <Text style={[styles.descriptionText, props.descriptionTextStyle]}>{props.description}</Text>
       <TouchableOpacity

@@ -60,6 +60,10 @@ Each microservice's postgres databases is viewable through the web ui, `pgweb`. 
 
 ### Common issues
 
+#### Module '@aph/... cannot be found'
+
+Do `npm run bootstrap:web|mobile` to rebuild the shared modules
+
 #### Timeuots/Unable to download new docker images
 
 Go into your docker network settings and select Automatic DNS
