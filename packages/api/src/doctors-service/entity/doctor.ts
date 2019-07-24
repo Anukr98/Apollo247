@@ -10,10 +10,24 @@ import {
 
 import { Gender } from 'profiles-service/entity/patient';
 import { DoctorSpeciality } from 'doctors-service/entity/doctorSpeciality';
+import { Validate } from 'class-validator';
+import {
+  NameValidator,
+  MobileNumberValidator,
+  EmailValidator,
+  DateValidator,
+} from 'validators/entityValidators';
 export enum DoctorType {
   STAR = 'STAR',
   APOLLO = 'APOLLO',
   PAYROLL = 'PAYROLL',
+  STAR_APOLLO = 'STAR_APOLLO',
+}
+
+export enum Salutation {
+  MR = 'MR',
+  MRS = 'MRS',
+  DR = 'DR',
 }
 
 @Entity()
@@ -31,21 +45,24 @@ export class Doctor extends BaseEntity {
   createdDate: Date;
 
   @Column({ nullable: true })
+  @Validate(DateValidator)
   dateOfBirth: Date;
 
   @Column({ nullable: true })
-  deligateNumber: String;
+  delegateNumber: String;
 
   @Column()
   doctorType: DoctorType;
 
   @Column({ nullable: true, type: 'text' })
+  @Validate(EmailValidator)
   emailAddress: String;
 
   @Column({ nullable: true })
   experience: Number;
 
   @Column()
+  @Validate(NameValidator)
   firstName: String;
 
   @Column({ nullable: true })
@@ -61,9 +78,11 @@ export class Doctor extends BaseEntity {
   languages: String;
 
   @Column()
+  @Validate(NameValidator)
   lastName: String;
 
   @Column()
+  @Validate(MobileNumberValidator)
   mobileNumber: String;
 
   @Column({ type: 'float8' })
@@ -73,13 +92,13 @@ export class Doctor extends BaseEntity {
   physicalConsultationFees: Number;
 
   @Column({ nullable: true, type: 'text' })
-  photoURL: String;
+  photoUrl: String;
 
   @Column({ nullable: true, type: 'text' })
   qualification: String;
 
   @Column({ nullable: true })
-  salutation: String;
+  salutation: Salutation;
 
   @Column()
   registrationNumber: String;

@@ -2093,7 +2093,7 @@
             "deprecationReason": null
           },
           {
-            "name": "addDoctorToStartDoctorProgram",
+            "name": "addDoctorToStarDoctorProgram",
             "description": null,
             "args": [
               {
@@ -2126,7 +2126,7 @@
             "deprecationReason": null
           },
           {
-            "name": "removeDoctorFromStartDoctorProgram",
+            "name": "removeDoctorFromStarDoctorProgram",
             "description": null,
             "args": [
               {
