@@ -1,3 +1,5 @@
+import { webDoctorsBaseUrl } from '@aph/universal/aphRoutes';
+
 export const clientRoutes = {
   welcome: () => '/',
   patients: () => '/patients',
@@ -7,3 +9,5 @@ export const clientRoutes = {
   healthRecords: () => '#',
   calendar: () => '/calendar',
 };
+
+export const clientBaseUrl = () => webDoctorsBaseUrl();
