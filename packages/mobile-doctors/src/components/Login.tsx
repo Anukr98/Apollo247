@@ -24,7 +24,7 @@ import firebase from 'react-native-firebase';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
-// import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
+import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
 const styles = StyleSheet.create({
   container: {

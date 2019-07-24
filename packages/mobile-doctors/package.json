@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./node_modules/@aph/api-schema/schema.json --target=typescript --queries=./src/graphql/**.ts --watch",
-    "apollo:download": "apollo schema:download ./src/graphql/schema.json --endpoint=http://localhost:4000/graphql",
     "build": "npm run build:android & npm run build:ios",
     "build:android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "build:ios": "rm -rf ios/bundle/; mkdir ios/bundle; react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/bundle/main.jsbundle --assets-dest ios/bundle",
@@ -76,7 +75,8 @@
     "react-native-popup-menu": "^0.15.6",
     "react-native-splash-screen": "^3.2.0",
     "react-native-vector-icons": "^6.5.0",
-    "react-navigation": "^3.11.0"
+    "react-navigation": "^3.11.0",
+    "date-fns": "^2.0.0-beta.2"
   },
   "jest": {
     "preset": "react-native",

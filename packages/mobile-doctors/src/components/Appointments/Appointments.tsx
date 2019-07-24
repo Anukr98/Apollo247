@@ -23,26 +23,14 @@ import { CalenderCard } from '@aph/mobile-doctors/src/components/Appointments/Ca
 import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 
-const styles = StyleSheet.create({
-  containerStyle: {
-    ...theme.viewStyles.whiteRoundedCornerCard,
-    marginTop: 6,
-    marginLeft: 48,
-    marginRight: 20,
-    backgroundColor: '#f0f4f5',
-    borderWidth: 1,
-    borderColor: 'rgba(2, 71, 91, 0.1)',
-    borderRadius: 10,
-  },
-});
+const styles = StyleSheet.create({});
 export interface AppointmentsProps {
   profileData: DoctorProfile;
 }
 
 export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [date, setDate] = useState<Date>(new Date());
-  const [data, setData] = useState<any>([]);
-  const CalendarHeaderRef = useRef<any>();
+  const CalendarHeaderRef = useRef<{ scrollToCurrentDate: () => void }>();
 
   const updateMonth = (date: Date, monthIndex: number) =>
     new Date(date.getFullYear(), monthIndex, 1);
@@ -123,7 +111,9 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           {
             icon: <CalendarTodayIcon />,
             onPress: () => {
-              CalendarHeaderRef.current.scrollToCurrentDate();
+              CalendarHeaderRef &&
+                CalendarHeaderRef.current &&
+                CalendarHeaderRef.current.scrollToCurrentDate();
             },
           },
           {

@@ -99,7 +99,11 @@ const styles = StyleSheet.create({
 });
 
 let timer = 900;
-let backHandler: any;
+
+interface ReceivedSmsMessage {
+  originatingAddress: string;
+  body: string;
+}
 
 export interface OTPVerificationProps extends NavigationScreenProps {
   phoneNumberVerificationCredential: PhoneNumberVerificationCredential;
@@ -107,7 +111,7 @@ export interface OTPVerificationProps extends NavigationScreenProps {
   phoneNumber: string;
 }
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
-  const [smsListener, setSmsListener] = useState<any>();
+  const [smsListener, setSmsListener] = useState();
   const [isValidOTP, setIsValidOTP] = useState<boolean>(true);
   const [invalidOtpCount, setInvalidOtpCount] = useState<number>(0);
   const [showErrorMsg, setShowErrorMsg] = useState<boolean>(false);
@@ -138,7 +142,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   // }, [authError]);
 
   useEffect(() => {
-    const smsListener = SmsListener.addListener((message: any) => {
+    const smsListener = SmsListener.addListener((message: ReceivedSmsMessage) => {
       const newOtp = message.body.match(/-*[0-9]+/);
       const otpString = newOtp ? newOtp[0] : '';
       setOtp(otpString);

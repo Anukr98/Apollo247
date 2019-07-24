@@ -31,6 +31,8 @@ import {
   getDoctorProfile_getDoctorProfile,
   getDoctorProfile,
 } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
+
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -154,7 +156,11 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const validateAndSetPhoneNumber = (number: string) => {
     if (/^\d+$/.test(number) || number == '') {
       setPhoneNumber(number);
-      setPhoneNumberIsValid(isPhoneNumberValid(number));
+      if (number.length == 10) {
+        setPhoneNumberIsValid(isMobileNumberValid(phoneNumber));
+      } else {
+        setPhoneNumberIsValid(isPhoneNumberValid(number));
+      }
     } else {
       return false;
     }

@@ -56,17 +56,18 @@ export interface CalendarHeaderProps {
 }
 
 export const CalendarHeader: React.FC<CalendarHeaderProps | any> = forwardRef((props, ref) => {
-  const arrayRef = useRef<any>();
+  const arrayRef = useRef<FlatList<Date> | null>();
 
   useImperativeHandle(ref, () => ({
     // To expose this function to parent component through ref
     scrollToCurrentDate() {
       const date = new Date();
       const scrollIndex = date.getDate() - 1;
-      (arrayRef.current as FlatList<Date>).scrollToIndex({
-        animated: true,
-        index: scrollIndex > 0 ? scrollIndex : 0,
-      });
+      arrayRef.current &&
+        arrayRef.current.scrollToIndex({
+          animated: true,
+          index: scrollIndex > 0 ? scrollIndex : 0,
+        });
       props.onTapDate(date);
     },
   }));

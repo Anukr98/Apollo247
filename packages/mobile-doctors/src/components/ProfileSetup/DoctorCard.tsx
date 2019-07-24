@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { theme } from '../../theme/theme';
+import { INVITEDSTATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
 
 export interface doctorCardProps {
   doctorId: string;
-  inviteStatus?: 'accepted' | 'Not accepted';
+  inviteStatus?: INVITEDSTATUS;
   doctorName?: string;
   specialization?: string;
   image?: string;
@@ -121,7 +122,7 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
   return (
     <View style={styles.doctorView}>
       <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
-        {props.inviteStatus == 'accepted' ? (
+        {props.inviteStatus == INVITEDSTATUS.ACCEPTED ? (
           <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
             <View style={{ flexDirection: 'row', marginBottom: 16 }}>
               <View style={styles.imageView}>
