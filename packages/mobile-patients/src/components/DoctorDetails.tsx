@@ -20,6 +20,8 @@ const styles = StyleSheet.create({
   topView: {
     backgroundColor: theme.colors.WHITE,
     marginBottom: 8,
+    ...theme.viewStyles.cardViewStyle,
+    borderRadius: 0,
   },
   detailsViewStyle: {
     margin: 20,
@@ -90,97 +92,6 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
 });
-const style = { width: 80, height: 80 };
-
-// type DoctorDetails = {
-//   image: any;
-//   doctorName: string;
-//   nickName: string;
-//   starDoctor: boolean;
-//   specialization: string;
-//   experience: string;
-//   education: string;
-//   awards: string;
-//   location: string;
-//   time: string;
-//   available: boolean;
-//   languages: string[];
-// };
-
-// const doctorDetails: DoctorDetails = {
-//   image: <DoctorImage style={style} />,
-//   doctorName: 'Dr. Simran Rai',
-//   nickName: 'Dr. Simran',
-//   starDoctor: true,
-//   specialization: 'GENERAL PHYSICIAN',
-//   experience: '7 YRS',
-//   education: 'MS (Surgery), MBBS (Internal Medicine)',
-//   awards: 'Dr. B.C.Roy Award (2009)',
-//   location: 'Apollo Hospitals, Jubilee Hills',
-//   time: 'CONSULT NOW',
-//   available: true,
-//   languages: ['English', 'Telugu', 'Hindi'],
-// };
-
-type doctorsList = {
-  image: any;
-  doctorName: string;
-  starDoctor: boolean;
-  specialization: string;
-  experience: string;
-  education: string;
-  location: string;
-  time: string;
-  available: boolean;
-};
-
-const DoctorsList: doctorsList[] = [
-  {
-    image: <DoctorImage style={style} />,
-    doctorName: 'Dr. Simran Rai',
-    starDoctor: true,
-    specialization: 'GENERAL PHYSICIAN',
-    experience: '7 YRS',
-    education: 'MBBS, Internal Medicine',
-    location: 'Apollo Hospitals, Jubilee Hills',
-    time: 'CONSULT NOW',
-    available: false,
-  },
-  {
-    image: <DoctorImage style={style} />,
-    doctorName: 'Dr. Rakhi Sharma',
-    starDoctor: false,
-    specialization: 'GENERAL PHYSICIAN',
-    experience: '4 YRS',
-    education: 'MBBS, Internal Medicine',
-    location: 'Apollo Hospitals, Jubilee Hills',
-    time: 'CONSULT NOW',
-    available: false,
-  },
-  {
-    image: <DoctorImage style={style} />,
-    doctorName: 'Dr. Rahul Nerlekar',
-    starDoctor: false,
-    specialization: 'GENERAL PHYSICIAN',
-    experience: '4 YRS',
-    education: 'MBBS, Internal Medicine',
-    location: 'Apollo Hospitals, Jubilee Hills',
-    time: 'CONSULT IN 45 MINS',
-    available: false,
-  },
-  {
-    image: <DoctorImage style={style} />,
-    doctorName: 'Dr. Ranjan Gopal',
-    starDoctor: false,
-    specialization: 'GENERAL PHYSICIAN',
-    experience: '4 YRS',
-    education: 'MBBS, Internal Medicine',
-    location: 'Apollo Hospitals, Jubilee Hills',
-    time: 'CONSULT IN 45 MINS',
-    available: false,
-  },
-];
-
 type Appointments = {
   date: string;
   type: string;
@@ -220,7 +131,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         {doctorDetails && doctorDetails.profile && (
           <View style={styles.detailsViewStyle}>
             <Text style={styles.doctorNameStyles}>
-              Dr. {doctorDetails.profile.firstName} {doctorDetails.profile.lastName}
+              {doctorDetails.profile.salutation}. {doctorDetails.profile.firstName}{' '}
+              {doctorDetails.profile.lastName}
             </Text>
             <View style={styles.separatorStyle} />
             <Text style={styles.doctorSpecializationStyles}>
@@ -270,12 +182,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       return (
         <View style={styles.cardView}>
           <View style={styles.labelView}>
-            <Text style={styles.labelStyle}>Dr. {doctorDetails.profile.firstName}’s Clinic</Text>
+            <Text style={styles.labelStyle}>
+              {doctorDetails.profile.salutation}. {doctorDetails.profile.firstName}’s Clinic
+            </Text>
           </View>
           <View
             style={{
               ...theme.viewStyles.cardViewStyle,
               margin: 20,
+              shadowRadius: 2,
             }}
           >
             <View
@@ -361,16 +276,19 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return (
       <View style={styles.cardView}>
         <View style={styles.labelView}>
-          <Text style={styles.labelStyle}>Dr. {doctorDetails.profile.firstName}’s Team</Text>
-          <Text style={styles.labelStyle}>{DoctorsList.length} Doctors</Text>
+          <Text style={styles.labelStyle}>
+            {doctorDetails.profile.salutation}. {doctorDetails.profile.firstName}’s Team
+          </Text>
+          <Text style={styles.labelStyle}>{doctorDetails.starDoctorTeam.length} Doctors</Text>
         </View>
         <ScrollView horizontal bounces={false} showsHorizontalScrollIndicator={false}>
           <FlatList
+            key={doctorDetails.starDoctorTeam.length / 2}
             contentContainerStyle={{ padding: 12 }}
             // horizontal={true}
             data={doctorDetails.starDoctorTeam ? doctorDetails.starDoctorTeam : []}
             bounces={false}
-            numColumns={DoctorsList.length / 2}
+            numColumns={doctorDetails.starDoctorTeam.length / 2}
             renderItem={({ item }) => (
               <View style={{ width: 320 }}>
                 <DoctorCard
@@ -398,7 +316,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       <View style={styles.cardView}>
         <View style={styles.labelView}>
           <Text style={styles.labelStyle}>Appointment History</Text>
-          <Text style={styles.labelStyle}>{DoctorsList.length} Prior Consults</Text>
+          <Text style={styles.labelStyle}>{Appointments.length} Prior Consults</Text>
         </View>
         <FlatList
           // horizontal={true}
@@ -508,8 +426,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <ConsultOverlay
           setdispalyoverlay={() => setdispalyoverlay(false)}
           navigation={props.navigation}
-          doctorId={doctorDetails.profile ? doctorDetails.profile.id : ''}
+          doctor={doctorDetails.profile ? doctorDetails.profile : {}}
           patientId={currentPatient ? currentPatient.id : ''}
+          clinics={doctorDetails.clinics ? doctorDetails.clinics : []}
         />
       )}
     </View>

@@ -82,7 +82,7 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   // setdispalyoverlay: () => void;
   navigation: any;
   patientId: string;
-  doctorId: string;
+  doctor: {};
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const tabs = ['Consult Online', 'Visit Clinic'];
@@ -120,7 +120,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0]);
   const [selectedCTA, setselectedCTA] = useState<string>(onlineCTA[0]);
-
+  // const [descriptionText, setdescriptionText] = useState<string>(onlineCTA[0]);
   const [dateSelected, setdateSelected] = useState<object>({
     [today]: {
       selected: true,
@@ -128,15 +128,21 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     },
   });
 
+  const descriptionText = `${
+    props.doctor ? `${props.doctor.salutation}. ${props.doctor.firstName}` : 'Doctor'
+  } is available in 15mins!\nWould you like to consult now or schedule for later?`;
+
   const renderCalendar = () => {
     return (
       <Calendar
         style={{
-          backgroundColor: '#f7f8f5',
+          ...theme.viewStyles.cardContainer,
+          backgroundColor: theme.colors.CARD_BG,
+          // marginHorizontal: 0
         }}
         theme={{
-          backgroundColor: '#f7f8f5',
-          calendarBackground: '#f7f8f5',
+          backgroundColor: theme.colors.CARD_BG,
+          calendarBackground: theme.colors.CARD_BG,
           textSectionTitleColor: '#80a3ad',
           selectedDayBackgroundColor: '#00adf5',
           selectedDayTextColor: '#ffffff',
@@ -212,7 +218,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         <View style={{ paddingTop: 5, paddingBottom: 10 }}>
           <TouchableOpacity onPress={() => {}}>
             <View style={styles.placeholderViewStyle}>
-              <Text style={[styles.placeholderTextStyle]}>Apollo Hospital</Text>
+              <Text style={[styles.placeholderTextStyle]}>
+                {props.clinics && props.clinics.length > 0 ? props.clinics[0].name : ''}
+              </Text>
               <DropdownGreen size="sm" />
             </View>
           </TouchableOpacity>
@@ -225,10 +233,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 ...theme.fonts.IBMPlexSansMedium(13),
               }}
             >
-              Road No 72, Film Nagar, Jubilee Hills
+              {props.clinics && props.clinics.length > 0
+                ? `${props.clinics[0].addressLine1}, ${props.clinics[0].addressLine2},\n${props.clinics[0].city}`
+                : ''}
             </Text>
           </View>
-          <View style={styles.horizontalSeparatorStyle} />
+          {/* <View style={styles.horizontalSeparatorStyle} />
           <View style={{ width: 64, alignItems: 'flex-end' }}>
             <Location />
             <Text
@@ -239,7 +249,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             >
               2.7 Kms
             </Text>
-          </View>
+          </View> */}
         </View>
       </View>
     );
@@ -298,6 +308,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         }}
       >
         <TabsComponent
+          style={{
+            ...theme.viewStyles.cardViewStyle,
+            borderRadius: 0,
+          }}
           data={tabs}
           onChange={(selectedTab: string) => setselectedTab(selectedTab)}
           selectedTab={selectedTab}
@@ -317,12 +331,11 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               >
                 <Text
                   style={{
-                    color: 'rgba(	1, 71, 91, 0.5)',
+                    color: theme.colors.SHERPA_BLUE,
                     ...theme.fonts.IBMPlexSansMedium(14),
                   }}
                 >
-                  Dr. Simran is available in 15mins! Would you like to consult now or schedule for
-                  later?
+                  {descriptionText}
                 </Text>
                 <View
                   style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 }}
@@ -389,7 +402,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               <View
                 style={{
                   ...theme.viewStyles.cardContainer,
-                  paddingHorizontal: 16,
+                  paddingHorizontal: 0,
                   marginTop: 20,
                   marginBottom: 16,
                 }}
@@ -428,7 +441,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
                   const appointmentInput: bookAppointment_bookAppointment_appointment = {
                     patientId: props.patientId,
-                    doctorId: props.doctorId,
+                    doctorId: props.doctor ? props.doctor.id : '',
                     appointmentDate: formatDate,
                     appointmentTime: '14:30:00Z',
                     appointmentType: selectedTab === tabs[0] ? 'ONLINE' : 'PHYSICAL',

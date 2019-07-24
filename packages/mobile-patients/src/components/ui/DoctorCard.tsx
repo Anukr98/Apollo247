@@ -119,16 +119,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               style={{ width: 80, height: 80, borderRadius: 40 }}
               source={{ uri: rowData.photoUrl }}
             />
-            {rowData.isStarDoctor ? (
+            {/* {rowData.isStarDoctor ? (
               <Star style={{ height: 28, width: 28, position: 'absolute', top: 66, left: 30 }} />
-            ) : null}
+            ) : null} */}
           </View>
           <View>
             <Text style={styles.doctorNameStyles}>
               Dr. {rowData.firstName} {rowData.lastName}
             </Text>
             <Text style={styles.doctorSpecializationStyles}>
-              {rowData.specialization} | {rowData.experience} YRS
+              {rowData.specialization.toUpperCase()} | {rowData.experience} YRS
             </Text>
             <Text style={styles.educationTextStyles}>{rowData.education}</Text>
             <Text style={styles.doctorLocation}>{rowData.city}</Text>

@@ -199,8 +199,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         </View>
         <TabsComponent
           style={{
-            backgroundColor: theme.colors.CARD_BG,
             ...theme.viewStyles.cardViewStyle,
+            backgroundColor: theme.colors.CARD_BG,
             borderRadius: 0,
           }}
           data={tabs}
