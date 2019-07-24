@@ -16,22 +16,6 @@ import { DoctorsLanding } from 'components/DoctorsLanding';
 import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
 
-declare global {
-  interface Window {
-    __TEST__: string;
-  }
-  namespace NodeJS {
-    interface ProcessEnv {
-      NODE_ENV: 'local' | 'dev';
-      WEB_PATIENTS_PORT: string;
-      API_GATEWAY_PORT: string;
-      GOOGLE_APPLICATION_CREDENTIALS: string;
-      FIREBASE_PROJECT_ID: string;
-      TEST: string;
-    }
-  }
-}
-
 const useStyles = makeStyles((theme: Theme) => {
   return {
     app: {
