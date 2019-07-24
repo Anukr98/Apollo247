@@ -1,11 +1,9 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { Appointments, STATUS } from 'profiles-service/entity/appointment';
-import { ProfilesServiceContext } from 'profiles-service/profiles-service';
-import { addMinutes } from 'date-fns'
+import { ConsultServiceContext } from 'consults-service/consults-service';
+import { addMinutes } from 'date-fns';
 
 export const getAvailableSlotsTypeDefs = gql`
-  
   input DoctorAvailabilityInput {
     availableDate: Date!
     doctorId: ID!
@@ -21,7 +19,7 @@ export const getAvailableSlotsTypeDefs = gql`
 `;
 
 type AvailabilityResult = {
-    availableSlots: string[];
+  availableSlots: string[];
 };
 
 type DoctorAvailabilityInput = {
@@ -34,17 +32,25 @@ type AvailabilityInputArgs = { DoctorAvailabilityInput: DoctorAvailabilityInput 
 const getDoctorAvailableSlots: Resolver<
   null,
   AvailabilityInputArgs,
-  ProfilesServiceContext,
+  ConsultServiceContext,
   AvailabilityResult
 > = async (parent, { DoctorAvailabilityInput }) => {
-    let startTime = new Date(DoctorAvailabilityInput.availableDate.toDateString()+" 09:00")
-    const availableSlots = Array(12).fill(0).map(function(){
-        const stTime = startTime
-        startTime =  addMinutes(startTime,15)
-        const stTimeHours = stTime.getHours().toString().padStart(2,'0')
-        const stTimeMins = stTime.getMinutes().toString().padStart(2,'0')
-        return `${stTimeHours}:${stTimeMins}`
-    })
+  let startTime = new Date(DoctorAvailabilityInput.availableDate.toDateString() + ' 09:00');
+  const availableSlots = Array(12)
+    .fill(0)
+    .map(() => {
+      const stTime = startTime;
+      startTime = addMinutes(startTime, 15);
+      const stTimeHours = stTime
+        .getHours()
+        .toString()
+        .padStart(2, '0');
+      const stTimeMins = stTime
+        .getMinutes()
+        .toString()
+        .padStart(2, '0');
+      return `${stTimeHours}:${stTimeMins}`;
+    });
   return { availableSlots };
 };
 

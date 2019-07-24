@@ -26,10 +26,6 @@ import {
   bookAppointmentTypeDefs,
   bookAppointmentResolvers,
 } from 'profiles-service/resolvers/bookAppointment';
-import {
-  getAvailableSlotsTypeDefs,
-  getAvailableSlotsResolvers,
-} from 'profiles-service/resolvers/getDoctorAvailability';
 import gql from 'graphql-tag';
 import { GatewayContext, GatewayHeaders } from 'api-gateway';
 // import { AphAuthenticationError } from 'AphError';
@@ -106,10 +102,6 @@ export interface ProfilesServiceContext extends GatewayContext {
         typeDefs: getAppointmentHistoryTypeDefs,
         resolvers: getAppointmentHistoryResolvers,
       },
-      {
-        typeDefs: getAvailableSlotsTypeDefs,
-        resolvers: getAvailableSlotsResolvers
-      }
     ]),
   });
 

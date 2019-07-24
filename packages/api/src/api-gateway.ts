@@ -50,6 +50,7 @@ const envToCorsOrigin: Record<NodeJS.ProcessEnv['NODE_ENV'], string[]> = {
     serviceList: [
       { name: 'profiles', url: 'http://profiles-service/graphql' },
       { name: 'doctors', url: 'http://doctors-service/graphql' },
+      { name: 'consults', url: 'http://consults-service/graphql' },
     ],
     buildService({ name, url }) {
       return new RemoteGraphQLDataSource({
