@@ -6,13 +6,13 @@ import {
   GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
   REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM,
 } from '@aph/mobile-doctors/src/graphql/profiles';
-import { getDoctorsForStarDoctorProgram } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { DoctorProfile, Doctor } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import Highlighter from 'react-native-highlight-words';
+import { getDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
 
 const styles = StyleSheet.create({
   inputTextStyle: {
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
 });
 
 export interface StarDoctorsTeamProps {
-  profileData: DoctorProfile;
+  profileData: getDoctorProfile_getDoctorProfile;
 }
 
 export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData }) => {
@@ -76,11 +76,12 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
       // getDoctorsForStarDoctorProgram.data.getDoctorsForStarDoctorProgram!(
       //   searchText.replace('Dr. ', '')
       // )
-      .then((_data: any) => {
+      .then((_data) => {
         console.log('flitered array', _data);
         const doctorProfile =
           _data.data.getDoctorsForStarDoctorProgram &&
           _data.data.getDoctorsForStarDoctorProgram.map((i: DoctorProfile) => i.profile);
+        // const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
         setFilteredStarDoctors(doctorProfile);
       })
       .catch((e) => {
@@ -147,27 +148,77 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
     );
   };
 
+  const renderSuggestionCard = () => (
+    <View style={{ marginTop: 2 }}>
+      {filteredStarDoctors.length > 0 ? (
+        <View
+          style={{
+            paddingTop: 16,
+            paddingBottom: 15,
+            position: 'absolute',
+            top: 0,
+            zIndex: 2,
+            width: '100%',
+            alignSelf: 'center',
+            justifyContent: 'flex-end',
+            ...theme.viewStyles.whiteRoundedCornerCard,
+          }}
+        >
+          <View>
+            {filteredStarDoctors.map((item, i) => {
+              const drName = `Dr. ${item.firstName} ${item.lastName}`;
+              return (
+                <TouchableOpacity
+                  onPress={() =>
+                    onPressDoctorSearchListItem(`Dr. ${item.firstName} ${item.lastName}`)
+                  }
+                  style={{ marginHorizontal: 16 }}
+                  key={i}
+                >
+                  {formatSuggestionsText(drName, doctorSearchText)}
+                  {i < filteredStarDoctors.length - 1 ? (
+                    <View
+                      style={{
+                        marginTop: 8,
+                        marginBottom: 7,
+                        height: 1,
+                        opacity: 0.1,
+                        borderStyle: 'solid',
+                        borderWidth: 0.5,
+                        borderColor: theme.colors.darkBlueColor(),
+                      }}
+                    ></View>
+                  ) : null}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      ) : null}
+    </View>
+  );
+
   return (
     <SquareCardWithTitle
-      title={`Your Star Doctors Team (${profileData!.starDoctorTeam.length})`}
+      title={`Your Star Doctors Team (${profileData!.starDoctorTeam!.length})`}
       containerStyle={{ marginTop: 20 }}
     >
       <View style={{ height: 16 }} />
-      {profileData!.starDoctorTeam.map((starDoctor: Doctor, i) => (
+      {profileData!.starDoctorTeam!.map((starDoctor, i) => (
         <DoctorCard
           onRemove={(id) => {
             removeDoctorFromProgram(id);
           }}
-          doctorId={starDoctor.id}
+          doctorId={starDoctor!.id}
           key={i}
-          image={starDoctor.photoUrl}
-          doctorName={`${starDoctor.firstName} ${starDoctor.lastName}`}
-          experience={starDoctor.experience}
+          image={starDoctor!.photoUrl || ''}
+          doctorName={`${starDoctor!.firstName} ${starDoctor!.lastName}`}
+          experience={starDoctor!.experience || ''}
           // specialization={'GENERAL PHYSICIAN '} //{starDoctor.designation}
-          specialization={(starDoctor.specialization || '').toUpperCase()}
-          education={starDoctor.education}
+          specialization={(starDoctor!.specialization || '').toUpperCase()}
+          education={starDoctor!.education}
           location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
-          inviteStatus={starDoctor.inviteStatus == 'accepted' ? 'accepted' : 'Not accepted'}
+          inviteStatus={starDoctor!.inviteStatus! == 'ACCEPTED' ? 'accepted' : 'Not accepted'}
         />
       ))}
       {!addshow ? (
@@ -188,7 +239,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
         >
           <View style={{ margin: 20 }}>
             <Text style={styles.inputTextStyle}>Add a doctor to your team</Text>
-            <View style={{ flexDirection: 'row' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
               <TextInput
                 maxLength={20}
                 autoCapitalize="none"
@@ -204,51 +255,8 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
                 </TouchableOpacity>
               ) : null}
             </View>
+            {renderSuggestionCard()}
           </View>
-          {filteredStarDoctors.length > 0 ? (
-            <View
-              style={{
-                paddingTop: 16,
-                paddingBottom: 15,
-                position: 'absolute',
-                top: 0,
-                zIndex: 2,
-                marginTop: 85,
-                width: '89%',
-                alignSelf: 'center',
-                justifyContent: 'flex-end',
-                ...theme.viewStyles.whiteRoundedCornerCard,
-              }}
-            >
-              {filteredStarDoctors.map((item, i) => {
-                const drName = `Dr. ${item.firstName} ${item.lastName}`;
-                return (
-                  <TouchableOpacity
-                    onPress={() =>
-                      onPressDoctorSearchListItem(`Dr. ${item.firstName} ${item.lastName}`)
-                    }
-                    style={{ marginHorizontal: 16 }}
-                    key={i}
-                  >
-                    {formatSuggestionsText(drName, doctorSearchText)}
-                    {i < filteredStarDoctors.length - 1 ? (
-                      <View
-                        style={{
-                          marginTop: 8,
-                          marginBottom: 7,
-                          height: 1,
-                          opacity: 0.1,
-                          borderStyle: 'solid',
-                          borderWidth: 0.5,
-                          borderColor: theme.colors.darkBlueColor(),
-                        }}
-                      ></View>
-                    ) : null}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          ) : null}
         </View>
       )}
     </SquareCardWithTitle>

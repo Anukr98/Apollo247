@@ -5,7 +5,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
-import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { getDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
 
 const styles = StyleSheet.create({
   container: {
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
 });
 
 export interface ProfileProps {
-  profileData: DoctorProfile;
+  profileData: getDoctorProfile_getDoctorProfile;
 }
 
 export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
@@ -93,11 +93,11 @@ export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
       <SquareCardWithTitle title="Your Profile" containerStyle={{ marginTop: 16 }}>
         <View style={styles.cardView}>
           <View style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}>
-            {profileData!.profile.photoUrl ? (
+            {profileData!.profile!.photoUrl ? (
               <Image
                 style={styles.imageview}
                 source={{
-                  uri: profileData!.profile.photoUrl,
+                  uri: profileData!.profile!.photoUrl,
                 }}
               />
             ) : (
@@ -107,26 +107,26 @@ export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
               />
             )}
           </View>
-          {profileData!.profile.isStarDoctor ? <Star style={styles.starIconStyle}></Star> : null}
+          {profileData!.profile!.isStarDoctor ? <Star style={styles.starIconStyle}></Star> : null}
           <View style={styles.columnContainer}>
             <Text style={styles.drname}>
-              {`Dr. ${profileData!.profile.firstName} ${profileData!.profile.lastName}`}
+              {`Dr. ${profileData!.profile!.firstName} ${profileData!.profile!.lastName}`}
             </Text>
             <Text style={styles.drnametext}>
               {formatSpecialityAndExperience(
-                profileData!.profile.speciality,
-                profileData!.profile.experience
+                profileData!.profile!.speciality,
+                profileData!.profile!.experience || ''
               )}
             </Text>
             <View style={styles.understatusline} />
           </View>
-          {profileRow('Education', profileData!.profile.education)}
-          {profileRow('Speciality', profileData!.profile.speciality)}
-          {profileRow('Services', profileData!.profile.services)}
-          {profileRow('Awards', profileData!.profile.awards)}
-          {profileRow('Speaks', (profileData!.profile.languages || '').split(',').join(', '))}
-          {profileRow('MCI Number', profileData!.profile.registrationNumber)}
-          {profileRow('In-person Consult Location', profileData!.clinics[0].location)}
+          {profileRow('Education', profileData!.profile!.education)}
+          {profileRow('Speciality', profileData!.profile!.speciality)}
+          {profileRow('Services', profileData!.profile!.services || '')}
+          {profileRow('Awards', profileData!.profile!.awards || '')}
+          {profileRow('Speaks', (profileData!.profile!.languages || '').split(',').join(', '))}
+          {profileRow('MCI Number', profileData!.profile!.registrationNumber)}
+          {profileRow('In-person Consult Location', profileData!.clinics![0]!.location! || '')}
         </View>
       </SquareCardWithTitle>
       <StarDoctorsTeam profileData={profileData} />

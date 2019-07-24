@@ -6,9 +6,7 @@ import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { Cancel, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
-import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
-import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -29,6 +27,10 @@ import {
 import { Overlay } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
+import {
+  getDoctorProfile_getDoctorProfile,
+  getDoctorProfile,
+} from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -134,11 +136,10 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [modelvisible, setmodelvisible] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const {
-    data: { getDoctorProfile },
-    error,
-    loading,
-  } = useQuery(GET_DOCTOR_PROFILE) as any;
+  const { data, error, loading } = useQuery<getDoctorProfile, getDoctorProfile_getDoctorProfile>(
+    GET_DOCTOR_PROFILE
+  );
+  const getDoctorProfile = data && data.getDoctorProfile;
   // const {
   //   data: { getDoctorProfile },
   //   error,
@@ -147,7 +148,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   if (!loading && error) {
     Alert.alert('Error', 'Unable to get the data');
   } else {
-    console.log(getDoctorProfile);
+    console.log('getDoctorProfile', getDoctorProfile);
   }
 
   const validateAndSetPhoneNumber = (number: string) => {
@@ -175,17 +176,18 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
     />
   );
 
-  const renderProgressBar = (tabIndex: number, data: DoctorProfile) => (
+  const renderProgressBar = (tabIndex: number, data: getDoctorProfile_getDoctorProfile) => (
     <ProfileTabHeader
-      title={headerContent[tabIndex].heading(data!.profile.firstName)}
+      title={headerContent[tabIndex].heading(data!.profile!.firstName)}
       description={headerContent[tabIndex].description}
-      tabs={(data!.profile.isStarDoctor ? headerContent : [headerContent[0], headerContent[1]]).map(
-        (content) => content.tab
-      )}
+      tabs={(data!.profile!.isStarDoctor
+        ? headerContent
+        : [headerContent[0], headerContent[1]]
+      ).map((content) => content.tab)}
       activeTabIndex={tabIndex}
     />
   );
-  const renderComponent = (tabIndex: number, data: DoctorProfile) =>
+  const renderComponent = (tabIndex: number, data: getDoctorProfile_getDoctorProfile) =>
     tabIndex == 0 ? (
       <Profile profileData={data} />
     ) : tabIndex == 1 ? (
@@ -194,15 +196,15 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       <Fees profileData={data} />
     );
 
-  const renderFooterButtons = (tabIndex: number, data: DoctorProfile) => {
+  const renderFooterButtons = (tabIndex: number, data: getDoctorProfile_getDoctorProfile) => {
     const onPressProceed = () => {
-      const tabsCount = data!.profile.isStarDoctor ? 3 : 2;
+      const tabsCount = data!.profile!.isStarDoctor ? 3 : 2;
       if (tabIndex < tabsCount - 1) {
         setActiveTabIndex(tabIndex + 1);
       } else {
         setProfileFlowDone(true).finally(() => {
           props.navigation.navigate(AppRoutes.TransitionPage, {
-            doctorName: data.profile.firstName,
+            doctorName: data.profile!.firstName,
           });
         });
       }
@@ -212,7 +214,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         {tabIndex == 0 ? (
           <Button
             onPress={() => onPressProceed()}
-            title={data!.profile.isStarDoctor ? 'SAVE AND PROCEED' : 'PROCEED'}
+            title={data!.profile!.isStarDoctor ? 'SAVE AND PROCEED' : 'PROCEED'}
             titleTextStyle={styles.buttonTextStyle}
             style={{ width: 240 }}
           />
@@ -238,7 +240,12 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   };
   return (
     <SafeAreaView style={theme.viewStyles.container}>
-      <KeyboardAwareScrollView bounces={false} keyboardShouldPersistTaps="always">
+      <KeyboardAwareScrollView
+        enableOnAndroid
+        scrollEnabled
+        bounces={false}
+        keyboardShouldPersistTaps="always"
+      >
         {renderHeader}
         {loading ? (
           <View style={{ flex: 1, alignSelf: 'center', marginTop: height / 3 }}>

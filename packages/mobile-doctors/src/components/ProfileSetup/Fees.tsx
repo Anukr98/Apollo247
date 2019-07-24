@@ -3,7 +3,7 @@ import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/Squar
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { DummyQueryResult, DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { getDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
 
 const styles = StyleSheet.create({
   feeeducation: {
@@ -58,12 +58,12 @@ const styles = StyleSheet.create({
 });
 
 export interface FeesProps {
-  profileData: DoctorProfile;
+  profileData: getDoctorProfile_getDoctorProfile;
 }
 
 export const Fees: React.FC<FeesProps> = ({ profileData }) => {
   const Feedata: any = profileData!.profile;
-  const BankDetails = profileData!.paymentDetails[0];
+  const BankDetails = profileData!.paymentDetails![0];
   console.log('fee', Feedata);
   console.log('BankDetails', BankDetails);
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
@@ -145,7 +145,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
           <View>
             {feeprofileRowbankname(
               'A/C Number: xxx xxx xxx 7890',
-              profileData!.paymentDetails[0].address
+              (profileData!.paymentDetails![0] && profileData!.paymentDetails![0]!.address) || ''
             )}
             {showPaymentDetails ? (
               <>

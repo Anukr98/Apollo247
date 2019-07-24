@@ -1,11 +1,11 @@
 import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
-import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SelectableButton } from '../ui/SelectableButton';
 import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
 import { Add } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { getDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
 
 const styles = StyleSheet.create({
   container: {
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
 });
 
 export interface AvailabilityProps {
-  profileData: DoctorProfile;
+  profileData: getDoctorProfile_getDoctorProfile;
 }
 
 export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
@@ -54,7 +54,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
 
   return (
     <View style={styles.container}>
-      {profileData!.profile.isStarDoctor ? (
+      {profileData!.profile!.isStarDoctor ? (
         <SquareCardWithTitle title="Consultation Type" containerStyle={{ marginTop: 16 }}>
           <Text style={styles.consultDescText}>
             What type of consults will you be available for?
@@ -79,13 +79,13 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
         </SquareCardWithTitle>
       ) : null}
       <SquareCardWithTitle title="Consultation Hours" containerStyle={{ marginTop: 16 }}>
-        {profileData!.consultationHours.map((i, idx) => {
+        {profileData!.consultationHours!.map((i, idx) => {
           return (
             <ConsultationHoursCard
-              days={i.days}
-              timing={fromatConsultationHours(i.startTime, i.endTime)}
-              isAvailableForOnlineConsultation={i.availableForVirtualConsultation}
-              isAvailableForPhysicalConsultation={i.availableForPhysicalConsultation}
+              days={i!.days}
+              timing={fromatConsultationHours(i!.startTime, i!.endTime)}
+              isAvailableForOnlineConsultation={i!.availableForVirtualConsultation}
+              isAvailableForPhysicalConsultation={i!.availableForPhysicalConsultation}
               key={idx}
               type="fixed"
             />
