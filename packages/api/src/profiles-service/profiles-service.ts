@@ -5,6 +5,7 @@ import { buildFederatedSchema } from '@apollo/federation';
 import { createConnection } from 'typeorm';
 import { Patient } from 'profiles-service/entity/patient';
 import { Appointments } from 'profiles-service/entity/appointment';
+import { SearchHistory } from 'profiles-service/entity/searchHistory';
 import {
   getCurrentPatientsTypeDefs,
   getCurrentPatientsResolvers,
@@ -14,6 +15,7 @@ import {
   updatePatientResolvers,
 } from 'profiles-service/resolvers/updatePatient';
 import { getPatientTypeDefs, getPatientResolvers } from 'profiles-service/resolvers/getPatients';
+import { saveSearchTypeDefs, saveSearchResolvers } from 'profiles-service/resolvers/saveSearch';
 import {
   getPastSearchesTypeDefs,
   getPastSearchesResolvers,
@@ -26,6 +28,7 @@ import {
   bookAppointmentTypeDefs,
   bookAppointmentResolvers,
 } from 'profiles-service/resolvers/bookAppointment';
+
 import gql from 'graphql-tag';
 import { GatewayContext, GatewayHeaders } from 'api-gateway';
 // import { AphAuthenticationError } from 'AphError';
@@ -37,7 +40,7 @@ export interface ProfilesServiceContext extends GatewayContext {
 
 (async () => {
   await createConnection({
-    entities: [Patient, Appointments],
+    entities: [Patient, Appointments, SearchHistory],
     type: 'postgres',
     host: 'profiles-db',
     port: 5432,
@@ -101,6 +104,10 @@ export interface ProfilesServiceContext extends GatewayContext {
       {
         typeDefs: getAppointmentHistoryTypeDefs,
         resolvers: getAppointmentHistoryResolvers,
+      },
+      {
+        typeDefs: saveSearchTypeDefs,
+        resolvers: saveSearchResolvers,
       },
     ]),
   });
