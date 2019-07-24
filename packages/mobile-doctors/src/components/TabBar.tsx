@@ -32,8 +32,8 @@ export const TabBar = createBottomTabNavigator(routeConfigMap, {
     tabBarIcon: () => routeToIcon[navigation.state.routeName as AppRoute],
   }),
   tabBarOptions: {
-    activeBackgroundColor: theme.colors.TAB_BAR_ACTIVE_BG_COLOR,
-    activeTintColor: theme.colors.TAB_BAR_ACTIVE_TEXT_COLOR,
+    activeBackgroundColor: '#02475b', //theme.colors.TAB_BAR_ACTIVE_BG_COLOR,
+    activeTintColor: '#ffffff', //theme.colors.TAB_BAR_ACTIVE_TEXT_COLOR,
     inactiveTintColor: theme.colors.TAB_BAR_INACTIVE_TEXT_COLOR,
     labelStyle: {
       opacity: 0.6,

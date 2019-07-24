@@ -43,10 +43,11 @@
     "typescript": "^3.5.2"
   },
   "dependencies": {
-    "@aph/universal": "file:../universal",
     "@aph/mobile-ui-components": "file:../mobile-ui-components",
     "@aph/shared-ui-components": "file:../shared-ui-components",
+    "@aph/universal": "file:../universal",
     "@types/jest": "^24.0.15",
+    "@types/react-native-material-dropdown": "^0.11.0",
     "apollo": "^2.13.1",
     "apollo-cache-inmemory": "^1.6.2",
     "apollo-client": "^2.6.2",
@@ -70,6 +71,7 @@
     "react-native-highlight-words": "^1.0.1",
     "react-native-iphone-x-helper": "^1.2.1",
     "react-native-keyboard-aware-scroll-view": "^0.8.0",
+    "react-native-material-dropdown": "^0.11.1",
     "react-native-modal-datetime-picker": "^7.4.2",
     "react-native-otp-textinput": "0.0.6",
     "react-native-popup-menu": "^0.15.6",

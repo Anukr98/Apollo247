@@ -280,3 +280,11 @@ export const Audio: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/clinic.png')}
   />
 );
+
+export const DotIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/remove.png')}
+  />
+);

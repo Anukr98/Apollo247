@@ -8,7 +8,6 @@ import {
   ViewStyle,
   Image,
   ImageStyle,
-  TouchableOpacity,
   ImageSourcePropType,
 } from 'react-native';
 import { theme } from '../../theme/theme';
@@ -19,7 +18,8 @@ const styles = StyleSheet.create({
   containerStyle: {
     ...theme.viewStyles.whiteRoundedCornerCard,
     marginTop: 6,
-    marginLeft: 48,
+    marginLeft: 8,
+    width: 292,
     marginRight: 20,
     backgroundColor: '#f0f4f5',
     borderWidth: 1,
