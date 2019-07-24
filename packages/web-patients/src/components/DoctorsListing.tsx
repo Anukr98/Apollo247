@@ -17,13 +17,22 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 17,
       fontWeight: 500,
       color: '#0087ba',
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
-      display: 'flex',
-      alignItems: 'center',
       marginBottom: 20,
+      [theme.breakpoints.up('sm')]: {
+        borderBottom: '1px solid rgba(1,71,91,0.3)',
+        display: 'flex',
+        alignItems: 'center',
+      },
     },
     filterSection: {
       marginLeft: 'auto',
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#f7f8f5',
+        marginLeft: -20,
+        marginRight: -20,
+        marginTop: 20,
+        display: 'flex',
+      },
       '& button:last-child': {
         marginRight: 0,
       },
@@ -41,6 +50,13 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 0,
       marginLeft: 10,
       marginRight: 10,
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 0,
+        marginRight: 0,
+        fontSize: 14,
+        fontWeight: 600,
+        width: '33.333%',
+      },
     },
     buttonActive: {
       borderBottom: '5px solid #00b38e',
@@ -69,13 +85,31 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& >div': {
         [theme.breakpoints.down('xs')]: {
-          marginLeft: -8,
-          marginRight: -8,
+          marginLeft: -6,
+          marginRight: -6,
+          width: 'calc(100% + 12px)',
         },
         '& >div': {
           [theme.breakpoints.down('xs')]: {
-            padding: '8px !important',
+            padding: '6px !important',
           },
+        },
+      },
+    },
+    sectionHead: {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: theme.palette.common.white,
+        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+        marginLeft: -20,
+        marginRight: -20,
+        marginTop: -14,
+        paddingLeft: 20,
+        paddingRight: 20,
+        paddingTop: 10,
+      },
+      '& h2': {
+        [theme.breakpoints.down('xs')]: {
+          paddingBottom: 10,
         },
       },
     },
@@ -159,28 +193,30 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   return (
     <>
-      <Typography variant="h2">Okay!</Typography>
-      <div className={classes.pageHeader}>
-        <div>Here are our best {specialityName}</div>
-        <div className={classes.filterSection}>
-          {_map(consultOptions, (consultName, consultType) => {
-            return (
-              <AphButton
-                className={
-                  selectedFilterOption === consultType
-                    ? `${classes.filterButton} ${classes.buttonActive}`
-                    : `${classes.filterButton}`
-                }
-                onClick={(e) => {
-                  setSelectedFilterOption(e.currentTarget.value);
-                }}
-                value={consultType}
-                key={_uniqueId('cbutton_')}
-              >
-                {consultName}
-              </AphButton>
-            );
-          })}
+      <div className={classes.sectionHead}>
+        <Typography variant="h2">Okay!</Typography>
+        <div className={classes.pageHeader}>
+          <div>Here are our best {specialityName}</div>
+          <div className={classes.filterSection}>
+            {_map(consultOptions, (consultName, consultType) => {
+              return (
+                <AphButton
+                  className={
+                    selectedFilterOption === consultType
+                      ? `${classes.filterButton} ${classes.buttonActive}`
+                      : `${classes.filterButton}`
+                  }
+                  onClick={(e) => {
+                    setSelectedFilterOption(e.currentTarget.value);
+                  }}
+                  value={consultType}
+                  key={_uniqueId('cbutton_')}
+                >
+                  {consultName}
+                </AphButton>
+              );
+            })}
+          </div>
         </div>
       </div>
 

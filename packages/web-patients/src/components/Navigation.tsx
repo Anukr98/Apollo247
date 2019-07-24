@@ -19,6 +19,10 @@ const useStyles = makeStyles((theme: Theme) => {
         textTransform: 'uppercase',
         paddingLeft: 20,
         paddingRight: 20,
+        [theme.breakpoints.down('sm')]: {
+          paddingLeft: 10,
+          paddingRight: 10,
+        },
       },
     },
   };
