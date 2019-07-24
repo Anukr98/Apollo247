@@ -8,10 +8,16 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: 328,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
     },
     doctorProfile: {
       backgroundColor: theme.palette.common.white,
       borderRadius: 5,
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: 0,
+      },
     },
     doctorImage: {
       borderRadius: '5px 5px 0 0',
@@ -50,14 +56,23 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorInfoGroup: {
       paddingBottom: 10,
       borderBottom: '1px solid rgba(1,71,91,0.2)',
+      [theme.breakpoints.down('xs')]: {
+        marginBottom: 10,
+      },
     },
     infoRow: {
       display: 'flex',
       paddingTop: 10,
+      [theme.breakpoints.down('xs')]: {
+        paddingTop: 0,
+      },
     },
     iconType: {
       width: 25,
       textAlign: 'center',
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
     },
     details: {
       fontSize: 10,
@@ -65,6 +80,11 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       paddingLeft: 20,
       lineHeight: 1.5,
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 12,
+        paddingLeft: 0,
+        fontWeight: 600,
+      },
       '& p': {
         margin: 0,
       },
@@ -81,6 +101,20 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#02475b',
       lineHeight: 1.5,
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    doctorPriceIn: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#02475b',
+      lineHeight: 1.5,
+      marginTop: 5,
+      marginBottom: 10,
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
     },
     availability: {
       fontSize: 9,
@@ -100,6 +134,24 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     button: {
       marginTop: 20,
+    },
+    consultGroup: {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#f7f8f5',
+        borderRadius: 5,
+        padding: 12,
+        marginBottom: 10,
+      },
+    },
+    consultDoctorInfoGroup: {
+      [theme.breakpoints.down('xs')]: {
+        paddingBottom: 0,
+      },
+    },
+    opacityMobile: {
+      [theme.breakpoints.down('xs')]: {
+        opacity: 0.5,
+      },
     },
   };
 });
@@ -170,7 +222,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                 <div className={classes.details}>{awards}</div>
               </div>
             </div>
-            <div className={classes.doctorInfoGroup}>
+            <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
               <div className={classes.infoRow}>
                 <div className={classes.iconType}>
                   <img src={require('images/ic_home.svg')} alt="" />
@@ -185,37 +237,39 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
               </div>
             </div>
 
-            <div className={classes.doctorInfoGroup}>
+            <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
               {avaForVirtualConsult ? (
-                <>
+                <div className={classes.consultGroup}>
                   <div className={classes.infoRow}>
                     <div className={classes.iconType}>
                       <img src={require('images/ic_home.svg')} alt="" />
                     </div>
                     <div className={classes.details}>
                       Online Consultation
+                      <div className={classes.doctorPriceIn}>Rs.{onlineConsultFees}</div>
                       <div className={`${classes.availability} ${classes.availableNow}`}>
                         Available in 15 mins
                       </div>
                     </div>
                     <div className={classes.doctorPrice}>Rs.{onlineConsultFees}</div>
                   </div>
-                </>
+                </div>
               ) : null}
 
               {avaForPhyConsult ? (
-                <>
+                <div className={classes.consultGroup}>
                   <div className={classes.infoRow}>
                     <div className={classes.iconType}>
                       <img src={require('images/ic_home.svg')} alt="" />
                     </div>
                     <div className={classes.details}>
                       Clinic Visit
+                      <div className={classes.doctorPriceIn}>Rs.{physicalConsultationFees}</div>
                       <div className={`${classes.availability}`}>Available in 27 mins</div>
                     </div>
                     <div className={classes.doctorPrice}>Rs.{physicalConsultationFees}</div>
                   </div>
-                </>
+                </div>
               ) : null}
             </div>
 

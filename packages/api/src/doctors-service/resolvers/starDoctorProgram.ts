@@ -17,8 +17,8 @@ export const starDoctorTypeDefs = gql`
   }
 
   extend type Mutation {
-    addDoctorToStartDoctorProgram(starDoctorId: String, doctorId: String): Boolean
-    removeDoctorFromStartDoctorProgram(starDoctorId: String, doctorId: String): Boolean
+    addDoctorToStarDoctorProgram(starDoctorId: String, doctorId: String): Boolean
+    removeDoctorFromStarDoctorProgram(starDoctorId: String, doctorId: String): Boolean
   }
 `;
 
@@ -37,7 +37,7 @@ const getDoctorsForStarDoctorProgram: Resolver<
   return JSON.parse(JSON.stringify(result));
 };
 
-const addDoctorToStartDoctorProgram: Resolver<
+const addDoctorToStarDoctorProgram: Resolver<
   null,
   { starDoctorId: String; doctorId: String },
   DoctorsServiceContext,
@@ -46,7 +46,7 @@ const addDoctorToStartDoctorProgram: Resolver<
   return true;
 };
 
-const removeDoctorFromStartDoctorProgram: Resolver<
+const removeDoctorFromStarDoctorProgram: Resolver<
   null,
   { starDoctorId: String; doctorId: String },
   DoctorsServiceContext,
@@ -60,7 +60,7 @@ export const starDoctorProgramResolvers = {
     getDoctorsForStarDoctorProgram,
   },
   Mutation: {
-    addDoctorToStartDoctorProgram,
-    removeDoctorFromStartDoctorProgram,
+    addDoctorToStarDoctorProgram,
+    removeDoctorFromStarDoctorProgram,
   },
 };

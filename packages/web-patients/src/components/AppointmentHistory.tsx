@@ -17,6 +17,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       marginBottom: 10,
+      [theme.breakpoints.down('xs')]: {
+        marginBottom: 0,
+      },
     },
     appointmentInfo: {
       padding: 20,
@@ -26,11 +29,25 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       fontWeight: 500,
       color: '#02475b',
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 18,
+        fontWeight: 600,
+      },
     },
     appointTime: {
       fontSize: 12,
       fontWeight: 500,
       color: '#0087ba',
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 18,
+        fontWeight: 600,
+        paddingLeft: 5,
+      },
+    },
+    timeGroup: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'flex',
+      },
     },
     appointType: {
       borderRadius: 10,
@@ -75,9 +92,34 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 20,
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        borderBottom: 'none',
+        padding: 0,
+        fontWeight: 600,
+      },
     },
     count: {
       marginLeft: 'auto',
+    },
+    sectionGroup: {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#f7f8f5',
+        marginTop: 16,
+        marginBottom: 16,
+        padding: 20,
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
+    },
+    gridContainer: {
+      [theme.breakpoints.down('xs')]: {
+        margin: -8,
+        width: 'calc(100% + 16px)',
+      },
+      '& >div': {
+        [theme.breakpoints.down('xs')]: {
+          padding: '8px !important',
+        },
+      },
     },
   };
 });
@@ -103,14 +145,14 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
     return <LinearProgress />;
   }
   if (error) {
-    return <div>Error....</div>;
+    return <></>;
   }
 
   if (data && data.getAppointmentHistory && data.getAppointmentHistory.appointmentsHistory) {
     const previousAppointments = data.getAppointmentHistory.appointmentsHistory;
     const symptoms = ['FEVER', 'COUGH & COLD'];
     return (
-      <>
+      <div className={classes.sectionGroup}>
         {previousAppointments.length > 0 ? (
           <>
             <div className={classes.sectionHeader}>
@@ -119,15 +161,17 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
                 {(previousAppointments && previousAppointments.length) || ''}
               </span>
             </div>
-            <Grid container spacing={2}>
+            <Grid className={classes.gridContainer} container spacing={2}>
               {previousAppointments.map((appointment) => {
                 return (
                   <Grid item sm={3} key={_uniqueId('avagr_')}>
                     <div className={classes.root} key={_uniqueId('aphistory_')}>
                       <div className={classes.appointType}>{appointment.appointmentType}</div>
                       <div className={classes.appointmentInfo}>
-                        <div className={classes.appointDate}>{appointment.appointmentDate}</div>
-                        <div className={classes.appointTime}>{appointment.appointmentTime}</div>
+                        <div className={classes.timeGroup}>
+                          <div className={classes.appointDate}>{appointment.appointmentDate}</div>
+                          <div className={classes.appointTime}>{appointment.appointmentTime}</div>
+                        </div>
                         <div className={classes.appointBooked}>
                           <ul>
                             {symptoms.map((symptom: string) => (
@@ -143,7 +187,7 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
             </Grid>
           </>
         ) : null}
-      </>
+      </div>
     );
   } else {
     return <></>;

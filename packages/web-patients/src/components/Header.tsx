@@ -46,6 +46,9 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
+      [theme.breakpoints.between('sm', 'md')]: {
+        marginLeft: 10,
+      },
     },
     userAccountLogin: {
       marginLeft: 'auto',

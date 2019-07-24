@@ -1,6 +1,6 @@
 import { clientRoutes, clientBaseUrl } from 'helpers/clientRoutes';
 import { getCurrentPatientsFixture } from 'cypress/fixtures/patientsFixtures';
-import { apiRoutes } from 'helpers/apiRoutes';
+import { apiRoutes } from '@aph/universal/aphRoutes';
 import { Relation } from 'graphql/types/globalTypes';
 
 describe('Login', () => {

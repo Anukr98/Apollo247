@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
     welcome: {
       paddingTop: 88,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 78,
+        paddingTop: 61,
       },
     },
     headerSticky: {
@@ -41,6 +41,9 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
       zIndex: 99,
       top: 0,
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
     },
     container: {
       maxWidth: 1064,
@@ -49,6 +52,9 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorDetailsPage: {
       borderRadius: '0 0 10px 10px',
       backgroundColor: theme.palette.text.primary,
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: 'transparent',
+      },
     },
     breadcrumbs: {
       marginLeft: 20,
@@ -60,14 +66,36 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.secondary.dark,
       textTransform: 'uppercase',
       borderBottom: '1px solid rgba(1,71,91,0.3)',
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        zIndex: 2,
+        top: 0,
+        width: '100%',
+        borderBottom: 'none',
+        backgroundColor: theme.palette.common.white,
+        margin: 0,
+        paddingLeft: 20,
+        paddingRight: 20,
+        paddingBottom: 20,
+        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     doctorProfileSection: {
-      display: 'flex',
-      padding: 20,
+      [theme.breakpoints.up('sm')]: {
+        display: 'flex',
+        padding: 20,
+      },
     },
     searchSection: {
       width: 'calc(100% - 328px)',
       paddingLeft: 20,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        paddingLeft: 0,
+      },
     },
     sectionHeader: {
       color: theme.palette.secondary.dark,
@@ -107,6 +135,9 @@ const useStyles = makeStyles((theme: Theme) => {
       color: 'rgba(2,71,91,0.5)',
       padding: '14px 10px',
       textTransform: 'none',
+      [theme.breakpoints.down('xs')]: {
+        width: '50%',
+      },
     },
     tabSelected: {
       color: theme.palette.secondary.dark,
@@ -127,6 +158,40 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '50%',
       backgroundColor: theme.palette.common.white,
       cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        right: 0,
+        top: -48,
+      },
+    },
+    backArrow: {
+      cursor: 'pointer',
+      marginRight: 50,
+      [theme.breakpoints.up(1220)]: {
+        position: 'absolute',
+        left: -82,
+        width: 48,
+        height: 48,
+        top: 0,
+        lineHeight: '36px',
+        borderRadius: '50%',
+        textAlign: 'center',
+        backgroundColor: '#02475b',
+      },
+      '& img': {
+        verticalAlign: 'bottom',
+      },
+    },
+    whiteArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.down(1220)]: {
+        display: 'none',
+      },
+    },
+    blackArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.up(1220)]: {
+        display: 'none',
+      },
     },
   };
 });
@@ -185,7 +250,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         </div>
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
-            <div className={classes.breadcrumbs}>Doctor Details</div>
+            <div className={classes.breadcrumbs}>
+              <div className={classes.backArrow}>
+                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+              </div>
+              Doctor Details
+            </div>
             <div className={classes.doctorProfileSection}>
               <DoctorProfile
                 doctorDetails={doctorDetails}
