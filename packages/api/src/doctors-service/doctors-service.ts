@@ -25,6 +25,7 @@ import { GraphQLTime } from 'graphql-iso-date';
 import { createConnection } from 'typeorm';
 import { Doctor } from 'doctors-service/entity/doctor';
 import { DoctorSpeciality } from 'doctors-service/entity/doctorSpeciality';
+import { StarTeam } from 'doctors-service/entity/starTeam';
 
 export interface DoctorsServiceContext extends GatewayContext {}
 
@@ -36,7 +37,7 @@ export type Resolver<Parent = any, Args = any> = (
 
 (async () => {
   await createConnection({
-    entities: [Doctor, DoctorSpeciality],
+    entities: [Doctor, DoctorSpeciality, StarTeam],
     type: 'postgres',
     host: 'doctors-db',
     port: 5432,

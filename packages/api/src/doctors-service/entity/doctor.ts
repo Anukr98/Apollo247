@@ -6,6 +6,7 @@ import {
   BeforeInsert,
   BeforeUpdate,
   ManyToOne,
+  OneToMany,
 } from 'typeorm';
 
 import { Gender } from 'profiles-service/entity/patient';
@@ -17,6 +18,7 @@ import {
   EmailValidator,
   DateValidator,
 } from 'validators/entityValidators';
+import { StarTeam } from 'doctors-service/entity/starTeam';
 export enum DoctorType {
   STAR = 'STAR',
   APOLLO = 'APOLLO',
@@ -97,17 +99,20 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   qualification: String;
 
-  @Column({ nullable: true })
-  salutation: Salutation;
-
   @Column()
   registrationNumber: String;
+
+  @Column({ nullable: true })
+  salutation: Salutation;
 
   @ManyToOne((type) => DoctorSpeciality, (speciality) => speciality.name)
   speciality: DoctorSpeciality;
 
   @Column({ nullable: true, type: 'text' })
   specialization: String;
+
+  @OneToMany((type) => StarTeam, (starTeam) => starTeam.starDoctor)
+  starTeam: StarTeam[];
 
   @Column({ nullable: true })
   state: String;
