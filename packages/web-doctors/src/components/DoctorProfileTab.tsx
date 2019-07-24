@@ -226,11 +226,6 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
   const [currentDoctor, setCurrentDoctor] = React.useState('');
   const client = useApolloClient();
 
-  function handleClick(event: React.MouseEvent<HTMLButtonElement>, id: string) {
-    setAnchorEl(event.currentTarget);
-    setCurrentDoctor(id);
-  }
-
   function handleClose() {
     setAnchorEl((null as unknown) as HTMLButtonElement);
     setCurrentDoctor('');
@@ -273,7 +268,10 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
                 <Button
                   variant="contained"
                   className={classes.moreIcon}
-                  onClick={(e) => handleClick(e, item.firstName)}
+                  onClick={(e) => {
+                    setAnchorEl(e.currentTarget);
+                    setCurrentDoctor(item.firstName);
+                  }}
                 >
                   <img alt="more.svg" src={require('images/ic_more.svg')} />
                 </Button>
@@ -311,7 +309,10 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
                 <Button
                   variant="contained"
                   className={classes.moreIcon}
-                  onClick={(e) => handleClick(e, item.firstName)}
+                  onClick={(e) => {
+                    setAnchorEl(e.currentTarget);
+                    setCurrentDoctor(item.firstName);
+                  }}
                 >
                   <img alt="" src={require('images/ic_more.svg')} />
                 </Button>
