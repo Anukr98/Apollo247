@@ -5,7 +5,7 @@ import { onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
-import { apiRoutes } from 'helpers/apiRoutes';
+import { apiRoutes } from '@aph/universal/aphRoutes';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
@@ -18,15 +18,12 @@ import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
 export interface AuthContextProps {
   currentPatientId: string | null;
   setCurrentPatientId: ((pid: string | null) => void) | null;
-
   sendOtp: ((phoneNumber: string, captchaPlacement: HTMLElement | null) => Promise<unknown>) | null;
   sendOtpError: boolean;
   isSendingOtp: boolean;
-
   verifyOtp: ((otp: string) => void) | null;
   verifyOtpError: boolean;
   isVerifyingOtp: boolean;
-
   signInError: boolean;
   isSigningIn: boolean;
   hasAuthToken: boolean;
@@ -120,7 +117,11 @@ export const AuthProvider: React.FC = (props) => {
     AuthContextProps['isLoginPopupVisible']
   >(false);
 
-  const signOut = () => app.auth().signOut();
+  const signOut = () =>
+    app
+      .auth()
+      .signOut()
+      .then(() => window.location.reload());
 
   const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
     return new Promise((resolve, reject) => {
