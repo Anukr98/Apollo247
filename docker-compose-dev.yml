@@ -65,3 +65,8 @@ services:
     command: bash -c "node doctors-service.bundle.js"
     volumes:
       - ./:/apollo-hospitals:cached
+
+  doctors-db:
+    image: postgres:10.8-alpine
+    volumes:
+      - ./packages/api/init-doctors-db.sql:/docker-entrypoint-initdb.d/init.sql
