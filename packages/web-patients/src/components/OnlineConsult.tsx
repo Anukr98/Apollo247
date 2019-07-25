@@ -36,8 +36,8 @@ const useStyles = makeStyles((theme: Theme) => {
     button: {
       fontSize: 16,
       fontWeight: 500,
-      marginLeft: 8,
-      marginRight: 8,
+      marginLeft: 7,
+      marginRight: 7,
       textTransform: 'none',
       borderRadius: 10,
       paddingLeft: 10,
