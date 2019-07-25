@@ -14,6 +14,7 @@ import {
 } from 'graphql/types/getDoctorProfile';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Divider from '@material-ui/core/Divider';
+import format from 'date-fns/format';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -252,11 +253,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
   const classes = useStyles();
   const data = values;
   function convertTime(time: string) {
-    return new Date('1970-01-01T' + time).toLocaleString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    });
+    return format(new Date('1970-01-01T' + time), 'p');
   }
   const AvailabilityHtml =
     data && data.consultationHours
