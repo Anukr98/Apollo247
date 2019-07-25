@@ -16,10 +16,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h2': {
         fontSize: 16,
         color: theme.palette.secondary.dark,
-        marginBottom: '15px',
+        marginBottom: 15,
       },
       '& h3': {
-        lineHeight: '22px',
+        lineHeight: 22,
         padding: '3px 5px 5px 20px',
       },
       '& h4': {
@@ -44,18 +44,18 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
-      marginBottom: '30px',
+      marginBottom: 15,
     },
     tabContentPanel: {
       backgroundColor: '#fff !important',
     },
     starDoctors: {
-      width: '80px',
-      height: '80px',
+      width: 80,
+      height: 80,
       borderRadius: '50%',
       overflow: 'hidden',
       position: 'absolute',
-      left: '10px',
+      left: 10,
       '& h4': {
         borderBottom: 'none',
       },
@@ -64,7 +64,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '10px 5px 10px 5px',
     },
     availabletabContent: {
-      padding: theme.spacing(1, 0),
+      padding: 20,
     },
     avatarBlock: {
       overflow: 'hidden',
@@ -74,29 +74,29 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
     },
     profileImg: {
-      height: '80px',
+      height: 80,
     },
     tabContentStarDoctor: {
       borderRadius: 10,
       backgroundColor: theme.palette.primary.contrastText,
-      padding: '10px',
+      padding: 10,
       position: 'relative',
-      paddingLeft: '90px',
-      minHeight: '100px',
+      paddingLeft: 90,
+      minHeight: 100,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
-      marginBottom: '30px',
-      marginRight: '10px',
+      marginBottom: 15,
+      marginRight: 10,
     },
     saveButton: {
-      minWidth: '300px',
+      minWidth: 300,
       margin: theme.spacing(1),
       '&:hover': {
         backgroundColor: '#fcb716',
       },
     },
     backButton: {
-      minWidth: '120px',
+      minWidth: 120,
       color: '#fc9916',
       backgroundColor: '#fff',
       margin: theme.spacing(1),
@@ -105,7 +105,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     addDocter: {
-      marginTop: '20px',
+      marginTop: -15,
     },
     btnAddDoctor: {
       backgroundColor: 'transparent',
@@ -119,8 +119,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     btnContainer: {
       borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
-      marginTop: '30px',
-      paddingTop: '15px',
+      marginTop: 30,
+      paddingTop: 15,
       textAlign: 'right',
       '& button': {
         padding: '9px 16px',
@@ -130,6 +130,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#00b38e',
       color: theme.palette.secondary.contrastText,
       margin: theme.spacing(1, 1, 1, 0),
+      textTransform: 'capitalize',
+      fontSize: 16,
+      fontWeight: theme.typography.fontWeightMedium,
       '&:hover': {
         backgroundColor: '#00b38e',
       },
@@ -170,14 +173,14 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     columnDays: {
       flexBasis: '60%',
-      paddingTop: '4px',
+      paddingTop: 4,
     },
     columnTime: {
       flexBasis: '30%',
     },
     columnType: {
       flexBasis: '10%',
-      paddingTop: '4px',
+      paddingTop: 4,
       color: '#ff748e',
       fontWeight: theme.typography.fontWeightMedium,
     },
@@ -200,7 +203,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: theme.spacing(1),
       width: 140,
       '& input': {
-        fontSize: '20px',
+        fontSize: 20,
         color: '#02475b',
         fontWeight: theme.typography.fontWeightMedium,
         paddingTop: 0,
@@ -211,16 +214,16 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: theme.spacing(2),
     },
     timeForm: {
-      fontSize: '16px',
+      fontSize: 16,
       color: '#658f9b',
       padding: '20px 20px 0 0',
       fontWeight: theme.typography.fontWeightMedium,
     },
     footerButtons: {
       textAlign: 'right',
-      paddingTop: '15px',
+      paddingTop: 15,
       '& button': {
-        fontSize: '15px',
+        fontSize: 15,
         fontWeight: theme.typography.fontWeightMedium,
       },
     },

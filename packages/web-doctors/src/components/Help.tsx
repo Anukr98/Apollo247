@@ -15,14 +15,14 @@ import isNumeric from 'validator/lib/isNumeric';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     loginFormWrap: {
-      padding: '30px 0 60px 0',
+      padding: '30px 0 50px 0',
       '& p': {
         fontSize: 17,
         fontWeight: 500,
         lineHeight: 1.41,
         color: theme.palette.secondary.main,
         marginTop: 10,
-        marginBottom: 30,
+        marginBottom: 10,
       },
     },
     helpWrap: {

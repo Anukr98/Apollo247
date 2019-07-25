@@ -32,10 +32,11 @@ import { Mutation } from 'react-apollo';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
+      padding: '10px 20px',
       '& h2': {
         fontSize: 16,
         color: theme.palette.secondary.dark,
-        marginBottom: '15px',
+        marginBottom: 15,
       },
       '& h3': {
         lineHeight: '22px',
@@ -76,15 +77,15 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
-      marginBottom: '30px',
+      marginBottom: 30,
     },
     starDoctors: {
-      width: '80px',
-      height: '80px',
+      width: 80,
+      height: 80,
       borderRadius: '50%',
       overflow: 'hidden',
       position: 'absolute',
-      left: '10px',
+      left: 10,
       '& h4': {
         borderBottom: 'none',
       },
@@ -105,24 +106,24 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       borderRadius: '10px 0 0 0',
       position: 'relative',
-      paddingBottom: '20px',
+      paddingBottom: 20,
     },
     bigAvatar: {
       width: '100%',
     },
     profileImg: {
-      height: '80px',
+      height: 80,
     },
     tabContentStarDoctor: {
       borderRadius: 10,
       backgroundColor: theme.palette.primary.contrastText,
-      padding: '10px',
+      padding: '10px 10px 10px 90px',
       position: 'relative',
-      minHeight: '130px',
+      minHeight: 130,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
-      marginBottom: '30px',
-      marginRight: '10px',
+      marginBottom: 15,
+      marginRight: 10,
       '& h4': {
         borderBottom: 'none',
         fontSize: 18,
@@ -133,25 +134,21 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.primary.contrastText,
       padding: '10px',
       position: 'relative',
-      paddingLeft: '10px',
-      minHeight: '100px',
+      minHeight: 100,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
-      marginBottom: '30px',
-      marginRight: '10px',
-      '& input': {
-        // borderBottom: '2px solid #f00',
-      },
+      marginBottom: 30,
+      marginRight: 10,
     },
     saveButton: {
-      minWidth: '300px',
+      minWidth: 300,
       margin: theme.spacing(1),
       '&:hover': {
         backgroundColor: '#fcb716',
       },
     },
     backButton: {
-      minWidth: '120px',
+      minWidth: 120,
       color: '#fc9916',
       backgroundColor: '#fff',
       margin: theme.spacing(1),
@@ -174,8 +171,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     btnContainer: {
       borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
-      marginTop: '30px',
-      paddingTop: '15px',
+      marginTop: 30,
+      paddingTop: 15,
       textAlign: 'right',
       '& button': {
         padding: '9px 16px',
@@ -185,13 +182,13 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#ff748e',
       fontSize: 15,
       fontWeight: theme.typography.fontWeightMedium,
-      marginTop: '10px',
+      marginTop: 10,
       textTransform: 'uppercase',
       '& img': {
         position: 'relative',
         top: '4px',
-        marginRight: '15px',
-        marginLeft: '15px',
+        marginRight: 15,
+        marginLeft: 15,
       },
     },
     posRelative: {
@@ -214,9 +211,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     starImg: {
       position: 'absolute',
-      bottom: '7px',
-      right: '15px',
-      width: '40px',
+      bottom: 7,
+      right: 15,
+      width: 40,
     },
   };
 });
