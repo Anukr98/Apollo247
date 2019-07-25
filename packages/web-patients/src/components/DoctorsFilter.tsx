@@ -57,7 +57,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       fontWeight: 500,
       paddingBottom: 5,
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       display: 'flex',
       alignItems: 'center',
     },
