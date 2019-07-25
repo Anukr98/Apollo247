@@ -12,8 +12,8 @@
     "format:fix": "prettier --write '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
-    "start": "npm run apollo:codegen & webpack-dev-server --env local",
-    "test": "cypress open --project src & webpack-dev-server",
+    "start": "npm run apollo:codegen & webpack-dev-server",
+    "test": "cypress open --project src",
     "typecheck": "tsc --project . --noEmit"
   },
   "devDependencies": {
