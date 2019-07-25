@@ -27,7 +27,7 @@ import { MoreVert } from '@material-ui/icons';
 import {
   RemoveDoctorFromStartDoctorProgramVariables,
   RemoveDoctorFromStartDoctorProgram,
-} from 'graphql/types/removeDoctorFromStartDoctorProgram';
+} from 'graphql/types/removeDoctorFromStarDoctorProgram';
 import { Mutation } from 'react-apollo';
 const useStyles = makeStyles((theme: Theme) => {
   return {
