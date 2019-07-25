@@ -1,3 +1,3 @@
-export interface QueryResultFixture<Q> {
-  (...args: any[]): { data: Q };
+export interface QueryResultFixture<Query, QueryVariables = {}> {
+  (queryVariables?: QueryVariables): Query;
 }
