@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React from 'react';
+import React, { useState } from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
@@ -60,17 +60,30 @@ const useStyles = makeStyles((theme: Theme) => {
     customScrollBar: {
       paddingTop: 10,
       paddingBottom: 10,
-      height: '50vh',
+      maxHeight: '50vh',
       overflow: 'auto',
     },
     timeSlots: {
       paddingTop: 0,
+    },
+    scheduleCalendar: {
+      display: 'none',
+    },
+    scheduleTimeSlots: {
+      display: 'none',
+    },
+    showCalendar: {
+      display: 'block',
+    },
+    showTimeSlot: {
+      display: 'block',
     },
   };
 });
 
 export const OnlineConsult: React.FC = (props) => {
   const classes = useStyles();
+  const [showCalendar, setShowCalendar] = useState<boolean>(false);
 
   return (
     <div className={classes.root}>
@@ -81,18 +94,38 @@ export const OnlineConsult: React.FC = (props) => {
             <br /> Would you like to consult now or schedule for later?
           </p>
           <div className={classes.actions}>
-            <AphButton color="secondary" className={`${classes.button} ${classes.buttonActive}`}>
+            <AphButton
+              onClick={(e) => {
+                setShowCalendar(false);
+              }}
+              color="secondary"
+              className={`${classes.button} ${!showCalendar ? classes.buttonActive : ''}`}
+            >
               Consult Now
             </AphButton>
-            <AphButton color="secondary" className={classes.button}>
+            <AphButton
+              onClick={(e) => {
+                setShowCalendar(showCalendar ? false : true);
+              }}
+              color="secondary"
+              className={`${classes.button} ${showCalendar ? classes.buttonActive : ''}`}
+            >
               Schedule For Later
             </AphButton>
           </div>
         </div>
-        <div className={classes.consultGroup}>
+        <div
+          className={`${classes.consultGroup} ${classes.scheduleCalendar} ${
+            showCalendar ? classes.showCalendar : ''
+          }`}
+        >
           <AphCalendar />
         </div>
-        <div className={`${classes.consultGroup} ${classes.timeSlots}`}>
+        <div
+          className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
+            showCalendar ? classes.showTimeSlot : ''
+          }`}
+        >
           <DayTimeSlots />
         </div>
       </div>
