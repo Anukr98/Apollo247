@@ -58,6 +58,7 @@ const useStyles = makeStyles((theme: Theme) => {
     userActive: {},
     loginForm: {
       width: 280,
+      minHeight: 290,
       padding: 20,
       borderRadius: 10,
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
