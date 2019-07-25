@@ -136,7 +136,7 @@ export const ServiceList: React.FC = () => {
     {
       title: 'medico-legal assistance',
       image: require('images/ic_medico_assistance.svg'),
-      content: 'Get more patients and higher utilisation',
+      content: 'Get immediate help from our expert medico legal team',
       action: { link: '', content: 'Who are star doctors' },
     },
   ];
