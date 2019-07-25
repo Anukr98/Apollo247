@@ -55,6 +55,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '30px 15px 15px 15px',
       '& button': {
         borderRadius: 10,
+        textTransform: 'none',
       },
     },
     customScrollBar: {
