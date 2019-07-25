@@ -25,8 +25,8 @@ import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { REMOVE_STAR_DOCTOR, GET_DOCTOR_PROFILE } from 'graphql/profiles';
 import { MoreVert } from '@material-ui/icons';
 import {
-  removeDoctorFromStartDoctorProgramVariables,
-  removeDoctorFromStartDoctorProgram,
+  RemoveDoctorFromStartDoctorProgramVariables,
+  RemoveDoctorFromStartDoctorProgram,
 } from 'graphql/types/removeDoctorFromStartDoctorProgram';
 import { Mutation } from 'react-apollo';
 const useStyles = makeStyles((theme: Theme) => {
@@ -239,7 +239,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           </Avatar>
         }
         action={
-          <Mutation<removeDoctorFromStartDoctorProgram, removeDoctorFromStartDoctorProgramVariables>
+          <Mutation<RemoveDoctorFromStartDoctorProgram, RemoveDoctorFromStartDoctorProgramVariables>
             mutation={REMOVE_STAR_DOCTOR}
           >
             {(mutate, { loading }) => (
