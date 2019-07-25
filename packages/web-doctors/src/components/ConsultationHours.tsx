@@ -2,8 +2,9 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
-import { DaySelector } from 'components/DaySelector';
-import { AphButton } from '@aph/web-ui-components';
+import Grid from '@material-ui/core/Grid';
+import { DaySelector, Day } from 'components/DaySelector';
+import { AphButton, AphInput } from '@aph/web-ui-components';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -13,7 +14,7 @@ import {
 } from 'graphql/types/getDoctorProfile';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Divider from '@material-ui/core/Divider';
-import TextField from '@material-ui/core/TextField';
+import format from 'date-fns/format';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -94,7 +95,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: '10px',
     },
     saveButton: {
-      minWidth: '300px',
+      minWidth: '120px',
       margin: theme.spacing(1),
       '&:hover': {
         backgroundColor: '#fcb716',
@@ -247,62 +248,39 @@ const useStyles = makeStyles((theme: Theme) => {
 interface ConsultationHoursProps {
   values: GetDoctorProfile_getDoctorProfile;
 }
-interface ConsultItem {
-  key: string;
-  value: string;
-  selected: boolean;
-}
-interface DaySelectorProps {}
+
 export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) => {
   const classes = useStyles();
   const data = values;
-  const consultTypeArr = [
-    {
-      key: 'physical',
-      value: 'Physical',
-      selected: true,
-    },
-    {
-      key: 'online',
-      value: 'Online',
-      selected: false,
-    },
-  ];
-  const consultTypeHtml = consultTypeArr.map((item: ConsultItem, index: number) => {
-    return (
-      <AphButton
-        key={item.key}
-        variant="contained"
-        value={item.value}
-        classes={item.selected ? { root: classes.btnActive } : { root: classes.btnInactive }}
-      >
-        {item.value}
-      </AphButton>
-    );
-  });
+  function convertTime(time: string) {
+    return format(new Date('1970-01-01T' + time), 'p');
+  }
   const AvailabilityHtml =
     data && data.consultationHours
       ? data.consultationHours.map(
           (item: GetDoctorProfile_getDoctorProfile_consultationHours, index: number) => {
             return (
               <div key={index.toString()} className={classes.tabContent}>
-                <ExpansionPanel className={classes.pointerNone}>
+                <ExpansionPanel>
                   <ExpansionPanelSummary
                     expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
                   >
                     <div className={classes.columnTime}>
-                      <Typography
-                        className={classes.primaryHeading}
-                      >{`${item.startTime} ${item.endTime}`}</Typography>
+                      <Typography className={classes.primaryHeading}>{`${convertTime(
+                        item.startTime
+                      )} - ${convertTime(item.endTime)}`}</Typography>
                     </div>
                     <div className={classes.columnDays}>
                       <Typography className={classes.heading}>
-                        {item.days} | {item.availableForPhysicalConsultation && 'Physical'},
+                        {item.days} | {item.availableForPhysicalConsultation && 'Physical'}
+                        {item.availableForPhysicalConsultation &&
+                          item.availableForVirtualConsultation &&
+                          ', '}
                         {item.availableForVirtualConsultation && 'Online'}
                       </Typography>
                     </div>
                     {item.type && item.type !== '' && (
-                      <div className={classes.columnType}>(Fixed)</div>
+                      <div className={classes.columnType}>(FIXED)</div>
                     )}
                   </ExpansionPanelSummary>
                   <ExpansionPanelDetails className={classes.details}>
@@ -311,30 +289,16 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                         <Typography variant="h5">
                           <form className={classes.timeForm}>
                             Enter your preferred consult hours:
-                            <TextField
-                              id="time"
-                              type="time"
-                              defaultValue="09:30"
+                            <AphInput
+                              inputProps={{ type: 'text' }}
+                              value={convertTime(item.startTime)}
                               className={classes.textField}
-                              InputLabelProps={{
-                                shrink: true,
-                              }}
-                              inputProps={{
-                                step: 300, // 5 min
-                              }}
                             />
                             <span className={classes.timeDivider}> - </span>
-                            <TextField
-                              id="time"
-                              type="time"
-                              defaultValue="12:30"
+                            <AphInput
+                              inputProps={{ type: 'text' }}
+                              value={convertTime(item.endTime)}
                               className={classes.textField}
-                              InputLabelProps={{
-                                shrink: true,
-                              }}
-                              inputProps={{
-                                step: 300, // 5 min
-                              }}
                             />
                           </form>
                           <br />
@@ -345,18 +309,63 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                           <Typography variant="h5" className={classes.timeForm}>
                             Which days you wish to apply these hours to?
                           </Typography>
-                          <DaySelector />
+                          <DaySelector selectedDays={item.days as Day} />
                         </div>
                         <div>
-                          <Typography variant="h5">
+                          <Typography variant="h5" className={classes.timeForm}>
                             What type of consults will you be available for?
                           </Typography>
-                          {consultTypeHtml}
+                          <AphButton
+                            variant="contained"
+                            classes={
+                              item.availableForPhysicalConsultation
+                                ? { root: classes.btnActive }
+                                : { root: classes.btnInactive }
+                            }
+                          >
+                            Physical
+                          </AphButton>
+
+                          <AphButton
+                            variant="contained"
+                            classes={
+                              item.availableForVirtualConsultation
+                                ? { root: classes.btnActive }
+                                : { root: classes.btnInactive }
+                            }
+                          >
+                            Online
+                          </AphButton>
                         </div>
                         <Typography className={classes.instructions}>
                           Note: Any addition or modification to your consultation hours will take
                           effect only after 24 hours.
                         </Typography>
+                        <Grid
+                          container
+                          alignItems="flex-start"
+                          spacing={0}
+                          className={classes.btnContainer}
+                        >
+                          <Grid item lg={12} sm={12} xs={12}>
+                            <AphButton
+                              variant="contained"
+                              color="primary"
+                              classes={{ root: classes.backButton }}
+                              //onClick={() => onBack()}
+                            >
+                              CANCEL
+                            </AphButton>
+                            <AphButton
+                              variant="contained"
+                              color="primary"
+                              classes={{ root: classes.saveButton }}
+                              //onClick={() => onNext()}
+                            >
+                              SAVE
+                            </AphButton>
+                          </Grid>
+                        </Grid>
                       </div>
                     </div>
                   </ExpansionPanelDetails>
@@ -367,5 +376,5 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
           }
         )
       : '';
-  return <div className={classes.ProfileContainer}> {AvailabilityHtml}</div>;
+  return <div className={classes.ProfileContainer}>{AvailabilityHtml}</div>;
 };

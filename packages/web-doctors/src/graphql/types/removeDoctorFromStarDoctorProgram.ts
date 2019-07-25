@@ -3,14 +3,14 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL mutation operation: removeDoctorFromStartDoctorProgram
+// GraphQL mutation operation: RemoveDoctorFromStarDoctorProgram
 // ====================================================
 
-export interface removeDoctorFromStartDoctorProgram {
-  removeDoctorFromStartDoctorProgram: boolean | null;
+export interface RemoveDoctorFromStarDoctorProgram {
+  removeDoctorFromStarDoctorProgram: boolean | null;
 }
 
-export interface removeDoctorFromStartDoctorProgramVariables {
+export interface RemoveDoctorFromStarDoctorProgramVariables {
   starDoctorId: string;
   doctorId: string;
 }

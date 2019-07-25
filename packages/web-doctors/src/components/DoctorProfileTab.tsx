@@ -1,6 +1,14 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
-import React, { useState } from 'react';
+import {
+  Theme,
+  IconButton,
+  Card,
+  CardHeader,
+  Avatar,
+  CardContent,
+  CircularProgress,
+} from '@material-ui/core';
+import React, { useState, useRef } from 'react';
 import Typography from '@material-ui/core/Typography';
 import Popover from '@material-ui/core/Popover';
 import Grid from '@material-ui/core/Grid';
@@ -9,8 +17,18 @@ import { AphButton } from '@aph/web-ui-components';
 import {
   GetDoctorProfile_getDoctorProfile_starDoctorTeam,
   GetDoctorProfile_getDoctorProfile_clinics,
+  GetDoctorProfile,
+  GetDoctorProfile_getDoctorProfile_profile,
 } from 'graphql/types/getDoctorProfile';
-import Button from '@material-ui/core/Button';
+import { INVITEDSTATUS } from 'graphql/types/globalTypes';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { REMOVE_STAR_DOCTOR, GET_DOCTOR_PROFILE } from 'graphql/profiles';
+import { MoreVert } from '@material-ui/icons';
+import {
+  RemoveDoctorFromStarDoctorProgramVariables,
+  RemoveDoctorFromStarDoctorProgram,
+} from 'graphql/types/removeDoctorFromStarDoctorProgram';
+import { Mutation } from 'react-apollo';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
@@ -22,6 +40,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h3': {
         lineHeight: '22px',
         padding: '3px 5px 5px 20px',
+        fontSize: 16,
+        fontWeight: 600,
+        color: '#02475b',
       },
       '& h4': {
         padding: '5px 5px 5px 0',
@@ -97,7 +118,6 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.primary.contrastText,
       padding: '10px',
       position: 'relative',
-      paddingLeft: '90px',
       minHeight: '130px',
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
@@ -201,153 +221,124 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface DoctorProfileTabProps {
-  values: any;
-  onNext: () => void;
+export interface StarDoctorCardProps {
+  doctor: GetDoctorProfile_getDoctorProfile_starDoctorTeam;
+  indexKey: number;
 }
-interface DoctorsName {
-  label: string;
-  typeOfConsult: string;
-  experience: string;
-  firstName: string;
-  inviteStatus: string;
-  lastName: string;
-}
-
-export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNext }) => {
-  const classes = useStyles();
-  const [userData, setData] = useState(values);
-  const [showAddDoc, setShowAddDoc] = useState(false);
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
-  function handleClick(event: any) {
-    setAnchorEl(event.currentTarget);
-  }
-
-  function handleClose() {
-    setAnchorEl(null);
-  }
-
-  const open = Boolean(anchorEl);
-  function removeDoctor(doctor: any) {
-    const starDoctorTeam = userData.starDoctorTeam.filter(
-      (object: DoctorsName) => object.firstName !== doctor.firstName
-    );
-    setData({ ...userData, starDoctorTeam: starDoctorTeam });
-  }
-  const starDocNumber = userData.starDoctorTeam.length;
-  const starDoctors = userData.starDoctorTeam.map(
-    (item: GetDoctorProfile_getDoctorProfile_starDoctorTeam, index: number) => {
-      return (
-        <Grid item lg={4} sm={6} xs={12} key={index.toString()}>
-          <div className={classes.tabContentStarDoctor}>
-            <div className={classes.starDoctors}>
-              <img
-                alt=""
-                src={require('images/doctor-profile.jpg')}
-                className={classes.profileImg}
-              />
-            </div>
-            {!item.inviteStatus ? (
-              <div className={classes.posRelative}>
-                <Button
-                  aria-describedby={open ? 'simple-popover' : undefined}
-                  variant="contained"
-                  className={classes.moreIcon}
-                  onClick={handleClick}
+const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
+  const { doctor, indexKey } = props;
+  const moreButttonRef = useRef(null);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const client = useApolloClient();
+  return (
+    <Card>
+      <CardHeader
+        avatar={
+          <Avatar>
+            <img src={require('images/doctor-profile.jpg')} />
+          </Avatar>
+        }
+        action={
+          <Mutation<RemoveDoctorFromStarDoctorProgram, RemoveDoctorFromStarDoctorProgramVariables>
+            mutation={REMOVE_STAR_DOCTOR}
+          >
+            {(mutate, { loading }) => (
+              <>
+                <IconButton
+                  ref={moreButttonRef.current}
+                  onClick={() => setIsPopoverOpen(true)}
+                  disabled={loading}
                 >
-                  <img
-                    alt="more.svg"
-                    src={require('images/ic_more.svg')}
-
-                    // onClick={() => removeDoctor(item)}
-                  />
-                </Button>
+                  {loading ? <CircularProgress /> : <MoreVert />}
+                </IconButton>
                 <Popover
-                  id={open ? 'simple-popover' : undefined}
-                  open={open}
-                  anchorEl={anchorEl}
-                  onClose={handleClose}
+                  open={isPopoverOpen}
+                  anchorEl={moreButttonRef.current}
+                  onClose={() => setIsPopoverOpen(false)}
                   anchorOrigin={{
                     vertical: 'bottom',
                     horizontal: 'center',
                   }}
                   transformOrigin={{
                     vertical: 'top',
-                    horizontal: 'center',
+                    horizontal: 'right',
                   }}
                 >
-                  <Typography className={classes.removeDoctor} onClick={() => removeDoctor(item)}>
-                    Remove Doctor
+                  <Typography
+                    onClick={() => {
+                      mutate({
+                        variables: {
+                          starDoctorId: '1234',
+                          doctorId: '1234',
+                        },
+                      }).then(() => {
+                        const existingData = client.readQuery<GetDoctorProfile>({
+                          query: GET_DOCTOR_PROFILE,
+                        });
+                        const existingStarDoctorTeam =
+                          (existingData &&
+                            existingData.getDoctorProfile &&
+                            existingData.getDoctorProfile &&
+                            existingData.getDoctorProfile.starDoctorTeam) ||
+                          [];
+                        const newStarDoctorTeam = existingStarDoctorTeam.filter(
+                          (existingDoc) => existingDoc.firstName !== doctor.firstName
+                        );
+                        const dataAfterMutation: GetDoctorProfile = {
+                          ...existingData,
+                          getDoctorProfile: {
+                            ...existingData!.getDoctorProfile!,
+                            starDoctorTeam: newStarDoctorTeam,
+                          },
+                        };
+                        client.writeQuery({ query: GET_DOCTOR_PROFILE, data: dataAfterMutation });
+                      });
+                    }}
+                  >
+                    Remove Doctor - {indexKey}
                   </Typography>
                 </Popover>
-                <Typography variant="h4">
-                  Dr. {item.firstName} {item.lastName}
-                </Typography>
-                <Typography className={classes.invited}>
-                  <img alt="" src={require('images/ic_invite.svg')} />
-                  Invited
-                </Typography>
-              </div>
-            ) : (
-              <div className={classes.posRelative}>
-                <Button
-                  aria-describedby={open ? 'simple-popover' : undefined}
-                  variant="contained"
-                  className={classes.moreIcon}
-                  onClick={handleClick}
-                >
-                  <img
-                    alt=""
-                    src={require('images/ic_more.svg')}
-                    // onClick={() => removeDoctor(item)}
-                  />
-                </Button>
-                <Popover
-                  id={open ? 'simple-popover' : undefined}
-                  open={open}
-                  anchorEl={anchorEl}
-                  onClose={handleClose}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'center',
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'center',
-                  }}
-                >
-                  <Typography className={classes.removeDoctor} onClick={() => removeDoctor(item)}>
-                    Remove Doctor
-                  </Typography>
-                </Popover>
-                <Typography variant="h4">
-                  Dr. {item.firstName} {item.lastName}
-                </Typography>
-                <Typography variant="h6">
-                  GENERAL PHYSICIAN <span> | </span> <span> {item.experience}YRS </span>{' '}
-                </Typography>
-                <Typography variant="h5">
-                  MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
-                </Typography>
-              </div>
+              </>
             )}
+          </Mutation>
+        }
+        title={`Dr. ${doctor.firstName} ${doctor.lastName}`}
+        //subheader={<span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>}
+      />
+      {doctor.inviteStatus === INVITEDSTATUS.ACCEPTED && (
+        <CardContent>MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills</CardContent>
+      )}
+    </Card>
+  );
+};
+
+export interface StarDoctorsListProps {
+  starDoctors: GetDoctorProfile_getDoctorProfile_starDoctorTeam[];
+}
+
+const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
+  const { starDoctors } = props;
+  const classes = useStyles();
+  return (
+    <Grid container alignItems="flex-start" spacing={0}>
+      {starDoctors.map((doctor, index) => (
+        <Grid item lg={4} sm={6} xs={12} key={index}>
+          <div className={classes.tabContentStarDoctor}>
+            <StarDoctorCard doctor={doctor} indexKey={index} />
           </div>
         </Grid>
-      );
-    }
+      ))}
+    </Grid>
   );
+};
 
-  const clinicsList = userData.clinics.map(
-    (item: GetDoctorProfile_getDoctorProfile_clinics, index: number) => {
-      return (
-        <Typography variant="h3" key={index.toString()} className={index > 0 ? classes.none : ''}>
-          {item.name}, {item.addressLine1}, {item.addressLine2}
-          {item.addressLine3}, {item.city}
-        </Typography>
-      );
-    }
-  );
+interface DoctorDetailsProps {
+  doctor: GetDoctorProfile_getDoctorProfile_profile;
+  clinics: GetDoctorProfile_getDoctorProfile_clinics[];
+}
+const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
+  const { doctor, clinics } = props;
+  const classes = useStyles();
 
   return (
     <div className={classes.ProfileContainer}>
@@ -365,11 +356,11 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
                 <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
               </div>
               <Typography variant="h4">
-                Dr. {userData.profile.firstName} {userData.profile.lastName}
+                Dr. {doctor.firstName} {doctor.lastName}
               </Typography>
               <Typography variant="h6">
-                {userData.profile.specialization} <span> | </span>{' '}
-                <span> {userData.profile.experience}YRS </span>{' '}
+                {(doctor.specialization || '').toUpperCase()} <span> | </span>
+                <span> {doctor.experience}YRS </span>
               </Typography>
             </Paper>
           </Grid>
@@ -378,74 +369,86 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Education</Typography>
-                  <Typography variant="h3">{userData.profile.education}</Typography>
+                  <Typography variant="h3">{doctor.education}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Awards</Typography>
-                  <Typography variant="h3">{userData.profile.awards}</Typography>
+                  <Typography variant="h3">{doctor.awards}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Speciality</Typography>
-                  <Typography variant="h3">{userData.profile.speciality}</Typography>
+                  <Typography variant="h3">{doctor.speciality}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Speaks</Typography>
-                  <Typography variant="h3">{userData.profile.languages}</Typography>
+                  <Typography variant="h3">{doctor.languages}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Services</Typography>
-                  <Typography variant="h3">{userData.profile.services}</Typography>
+                  <Typography variant="h3">{doctor.services}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">In-person Consult Location</Typography>
-                  {clinicsList}
+                  {clinics.map((clinic, index) => (
+                    <Typography variant="h3" key={index} className={index > 0 ? classes.none : ''}>
+                      {clinic.name}, {clinic.addressLine1}, {clinic.addressLine2}
+                      {clinic.addressLine3}, {clinic.city}
+                    </Typography>
+                  ))}
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">MCI Number</Typography>
-                  <Typography variant="h3">{userData.profile.registrationNumber}</Typography>
+                  <Typography variant="h3">{doctor.registrationNumber}</Typography>
                 </Paper>
               </Grid>
             </Grid>
           </Grid>
         </Grid>
       </div>
-      {!!userData.profile.isStarDoctor && (
+    </div>
+  );
+};
+
+interface DoctorProfileTabProps {
+  onNext: () => void;
+}
+export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
+  const classes = useStyles();
+  const { data, error, loading } = useQuery<GetDoctorProfile>(GET_DOCTOR_PROFILE);
+  const getDoctorProfileData = data && data.getDoctorProfile ? data.getDoctorProfile : null;
+
+  if (loading) return <CircularProgress />;
+  if (error || !getDoctorProfileData) return <div>error :(</div>;
+
+  const doctorProfile = getDoctorProfileData.profile;
+  const clinics = getDoctorProfileData.clinics || [];
+  const starDoctors = getDoctorProfileData.starDoctorTeam || [];
+  const numStarDoctors = starDoctors.length;
+
+  return (
+    <div>
+      <DoctorDetails doctor={doctorProfile} clinics={clinics} />
+
+      {doctorProfile.isStarDoctor && (
         <div>
-          <Typography variant="h2" className={starDocNumber === 0 ? classes.none : ''}>
-            Your Star Doctors Team ({starDocNumber})
+          <Typography variant="h2" className={numStarDoctors === 0 ? classes.none : ''}>
+            Your Star Doctors Team ({numStarDoctors})
           </Typography>
-          <Grid container alignItems="flex-start" spacing={0}>
-            {starDoctors}
-            {!!showAddDoc && (
-              <Grid item lg={4} sm={6} xs={12}>
-                <div className={classes.addStarDoctor}>
-                  <Typography variant="h5">
-                    Add doctor to your team
-                    {/* <StarDoctorSearch addDoctorHadler={addDoctorHadler} /> */}
-                  </Typography>
-                </div>
-              </Grid>
-            )}
-          </Grid>
+          <StarDoctorsList starDoctors={starDoctors} />
           <div className={classes.addDocter}>
-            <AphButton
-              variant="contained"
-              color="primary"
-              classes={{ root: classes.btnAddDoctor }}
-              onClick={(e) => setShowAddDoc(!showAddDoc)}
-            >
+            <AphButton variant="contained" color="primary" classes={{ root: classes.btnAddDoctor }}>
               + ADD DOCTOR
             </AphButton>
           </div>
@@ -458,7 +461,7 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = ({ values, onNe
             variant="contained"
             color="primary"
             classes={{ root: classes.saveButton }}
-            onClick={() => onNext()}
+            onClick={() => props.onNext()}
           >
             SAVE AND PROCEED
           </AphButton>
