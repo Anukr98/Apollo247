@@ -21,6 +21,8 @@ import {
   GetDoctorProfileByIdVariables,
 } from 'graphql/types/getDoctorProfileById';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 type Params = { id: string };
 
@@ -251,10 +253,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbs}>
-              <div className={classes.backArrow}>
-                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-              </div>
+              <Link to={clientRoutes.doctorsLanding()}>
+                <div className={classes.backArrow}>
+                  <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                </div>
+              </Link>
               Doctor Details
             </div>
             <div className={classes.doctorProfileSection}>

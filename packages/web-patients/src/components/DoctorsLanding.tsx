@@ -12,6 +12,8 @@ import { DoctorsListing } from 'components/DoctorsListing';
 import { PossibleSpecialitiesAndDoctors } from 'components/PossibleSpecialitiesAndDoctors';
 import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { SEARCH_DOCTORS_AND_SPECIALITY } from 'graphql/doctors';
@@ -264,10 +266,12 @@ export const DoctorsLanding: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.breadcrumbs}>
-            <div className={classes.backArrow}>
-              <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-              <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-            </div>
+            <Link to={clientRoutes.welcome()}>
+              <div className={classes.backArrow}>
+                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+              </div>
+            </Link>
             Doctors / Specialities
           </div>
           <div className={classes.doctorListingSection}>
