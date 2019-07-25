@@ -40,6 +40,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h3': {
         lineHeight: '22px',
         padding: '3px 5px 5px 20px',
+        fontSize: 16,
+        fontWeight: 600,
+        color: '#02475b',
       },
       '& h4': {
         padding: '5px 5px 5px 0',
