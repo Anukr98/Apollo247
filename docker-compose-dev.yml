@@ -39,6 +39,7 @@ services:
     depends_on:
       - profiles-service
       - doctors-service
+      - consults-service
       - nginx
 
   profiles-service:
