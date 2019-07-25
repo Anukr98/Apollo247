@@ -72,6 +72,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
     },
     sectionGroup: {
+      [theme.breakpoints.up('sm')]: {
+        paddingBottom: 15,
+      },
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#f7f8f5',
         marginTop: 16,
