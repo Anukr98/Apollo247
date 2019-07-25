@@ -236,7 +236,10 @@ export const SignIn: React.FC = (props) => {
                       <AphInput
                         {...field}
                         autoFocus
-                        inputProps={{ type: 'tel', maxLength: 10 }}
+                        inputProps={{
+                          type: 'tel',
+                          maxLength: 10,
+                        }}
                         error={showValidationError}
                         onKeyPress={(e) => {
                           if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();

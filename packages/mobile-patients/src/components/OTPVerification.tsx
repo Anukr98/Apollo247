@@ -216,7 +216,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   useEffect(() => {
     if (signInError && otp.length === 6) {
-      Alert.alert('Apollo', 'Something went wrong. Please try again.');
+      // Alert.alert('Apollo', 'Something went wrong. Please try again.');
       // props.navigation.replace(AppRoutes.Login);
     }
   }, [signInError, props.navigation, otp.length]);

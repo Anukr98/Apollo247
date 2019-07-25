@@ -104,6 +104,7 @@ export const GET_DOCTOR_PROFILE_BY_ID = gql`
         availableForVirtualConsultation
         onlineConsultationFees
         physicalConsultationFees
+        availableIn
       }
       paymentDetails {
         accountNumber
@@ -162,11 +163,36 @@ export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
         city
         address
         photoUrl
+        availableIn
       }
       specialties {
         id
         name
         image
+      }
+      possibleMatches {
+        doctors {
+          id
+          salutation
+          firstName
+          lastName
+          experience
+          speciality
+          specialization
+          isStarDoctor
+          education
+          services
+          languages
+          city
+          address
+          photoUrl
+          availableIn
+        }
+        specialties {
+          id
+          name
+          image
+        }
       }
     }
   }
@@ -192,6 +218,7 @@ export const SPECIALITY_DOCTOR_FILTERS = gql`
         photoUrl
         availableForPhysicalConsultation
         availableForVirtualConsultation
+        availableIn
       }
     }
   }
@@ -222,6 +249,14 @@ export const GET_APPOINTMENT_HISTORY = gql`
         status
         bookingDate
       }
+    }
+  }
+`;
+
+export const GET_AVAILABLE_SLOTS = gql`
+  query getDoctorAvailableSlots($DoctorAvailabilityInput: DoctorAvailabilityInput!) {
+    getDoctorAvailableSlots(DoctorAvailabilityInput: $DoctorAvailabilityInput) {
+      availableSlots
     }
   }
 `;

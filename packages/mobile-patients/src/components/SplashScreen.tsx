@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { isSigningIn, signInError } = useAuth();
+  const { isSigningIn, signInError, signOut } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   useEffect(() => {
@@ -72,6 +72,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       AsyncStorage.setItem('userLoggedIn', 'false');
       AsyncStorage.setItem('multiSignUp', 'false');
       AsyncStorage.setItem('signUp', 'false');
+      signOut();
       props.navigation.replace(AppRoutes.Login);
     }
 

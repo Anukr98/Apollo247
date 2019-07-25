@@ -14,7 +14,7 @@ import {
   ActivityIndicator,
   Keyboard,
   Alert,
-  // PermissionsAndroid,
+  PermissionsAndroid,
   AsyncStorage,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
@@ -91,25 +91,25 @@ export const Login: React.FC<LoginProps> = (props) => {
   }, [, analytics]);
 
   const requestReadSmsPermission = async () => {
-    // try {
-    //   const resuts = await PermissionsAndroid.requestMultiple([
-    //     PermissionsAndroid.PERMISSIONS.READ_SMS,
-    //     PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
-    //   ]);
-    //   if (resuts[PermissionsAndroid.PERMISSIONS.READ_SMS] !== PermissionsAndroid.RESULTS.GRANTED) {
-    //     console.log(resuts, 'READ_SMS');
-    //   }
-    //   if (
-    //     resuts[PermissionsAndroid.PERMISSIONS.RECEIVE_SMS] !== PermissionsAndroid.RESULTS.GRANTED
-    //   ) {
-    //     console.log(resuts, 'RECEIVE_SMS');
-    //   }
-    //   if (resuts) {
-    //     console.log(resuts, 'RECEIVE_SMS');
-    //   }
-    // } catch (error) {
-    //   console.log('error', error);
-    // }
+    try {
+      const resuts = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.READ_SMS,
+        PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
+      ]);
+      if (resuts[PermissionsAndroid.PERMISSIONS.READ_SMS] !== PermissionsAndroid.RESULTS.GRANTED) {
+        console.log(resuts, 'READ_SMS');
+      }
+      if (
+        resuts[PermissionsAndroid.PERMISSIONS.RECEIVE_SMS] !== PermissionsAndroid.RESULTS.GRANTED
+      ) {
+        console.log(resuts, 'RECEIVE_SMS');
+      }
+      if (resuts) {
+        console.log(resuts, 'RECEIVE_SMS');
+      }
+    } catch (error) {
+      console.log('error', error);
+    }
   };
 
   useEffect(() => {

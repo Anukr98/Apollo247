@@ -3,16 +3,22 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { DoctorImage, ShareWhite } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ShareWhite } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { Dimensions, Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Image, SafeAreaView, StyleSheet, Text, View, Platform } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { useQuery } from 'react-apollo-hooks';
-import { GET_DOCTOR_PROFILE_BY_ID } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_DOCTOR_PROFILE_BY_ID,
+  GET_APPOINTMENT_HISTORY,
+  GET_AVAILABLE_SLOTS,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import Moment from 'moment';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const { height } = Dimensions.get('window');
 
@@ -115,8 +121,51 @@ export interface DoctorDetailsProps extends NavigationScreenProps {}
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [dispalyoverlay, setdispalyoverlay] = useState<boolean>(false);
   const [doctorDetails, setDoctorDetails] = useState<object>({});
-
+  const [appointmentHistory, setAppointmentHistory] = useState<object>({});
+  const [doctorId, setDoctorId] = useState<String>('');
   const { currentPatient } = useAllCurrentPatients();
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+
+  const appointmentData = useQuery(GET_APPOINTMENT_HISTORY, {
+    variables: {
+      appointmentHistoryInput: {
+        patientId: currentPatient ? currentPatient.id : '',
+        doctorId: doctorId ? doctorId : '',
+      },
+    },
+  });
+  if (appointmentData.error) {
+    console.log('error', appointmentData.error);
+  } else {
+    if (
+      appointmentData.data.getAppointmentHistory &&
+      appointmentHistory !== appointmentData.data.getAppointmentHistory
+    ) {
+      const appointmentDataHistory =
+        appointmentData.data.getAppointmentHistory && appointmentData.data.getAppointmentHistory;
+      setAppointmentHistory(appointmentDataHistory);
+    }
+  }
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2, '0');
+  const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+  const date = `${today.getFullYear()}-${mm}-${dd}`;
+  console.log(date, 'dateeeeeeee', doctorId, 'doctorId');
+  const availabilityData = useQuery(GET_AVAILABLE_SLOTS, {
+    variables: {
+      DoctorAvailabilityInput: {
+        availableDate: date,
+        doctorId: doctorId ? doctorId : '',
+      },
+    },
+  });
+  if (availabilityData.error) {
+    console.log('error', availabilityData.error);
+  } else {
+    console.log(availabilityData.data, 'availabilityData');
+  }
+
+  const formatTime = (time: string) => Moment(time, 'HH:mm:ss.SSSz').format('hh:mm a');
 
   const renderDoctorDetails = () => {
     return (
@@ -248,7 +297,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                             color: theme.colors.SKY_BLUE,
                           }}
                         >
-                          {time.days}
+                          {time.days.toUpperCase()}
                         </Text>
 
                         <Text
@@ -257,7 +306,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                             color: theme.colors.SKY_BLUE,
                           }}
                         >
-                          {time.startTime} - {time.endTime}
+                          {formatTime(time.startTime)} - {formatTime(time.endTime)}
                         </Text>
                       </View>
                     ))}
@@ -311,61 +360,75 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const renderAppointmentHistory = () => {
-    // const startDoctor = string.home.startDoctor;
-    return (
-      <View style={styles.cardView}>
-        <View style={styles.labelView}>
-          <Text style={styles.labelStyle}>Appointment History</Text>
-          <Text style={styles.labelStyle}>{Appointments.length} Prior Consults</Text>
-        </View>
-        <FlatList
-          // horizontal={true}
-          contentContainerStyle={{
-            marginVertical: 12,
-          }}
-          data={Appointments}
-          renderItem={({ item }) => (
-            <View
-              style={{
-                ...theme.viewStyles.cardViewStyle,
-                marginHorizontal: 20,
-                marginVertical: 8,
-                padding: 16,
-                shadowRadius: 3,
-              }}
-            >
-              <CapsuleView
-                isActive={false}
-                style={{ position: 'absolute', top: 0, right: 0, width: 112 }}
-                title={item.type}
-              />
-              <Text
+    const arrayHistory = appointmentHistory.appointmentsHistory
+      ? appointmentHistory.appointmentsHistory
+      : [];
+    // console.log('arrayHistory', arrayHistory);
+    if (arrayHistory.length > 0) {
+      return (
+        <View style={styles.cardView}>
+          <View style={styles.labelView}>
+            <Text style={styles.labelStyle}>Appointment History</Text>
+            <Text style={styles.labelStyle}>
+              {arrayHistory ? arrayHistory.length : 0} Prior Consults
+            </Text>
+          </View>
+          <FlatList
+            // horizontal={true}
+            contentContainerStyle={{
+              marginVertical: 12,
+            }}
+            data={arrayHistory}
+            renderItem={({ item }) => (
+              <View
                 style={{
-                  paddingTop: 16,
-                  paddingBottom: 4,
-                  ...theme.fonts.IBMPlexSansMedium(18),
-                  color: theme.colors.SEARCH_DOCTOR_NAME,
+                  ...theme.viewStyles.cardViewStyle,
+                  marginHorizontal: 20,
+                  marginVertical: 8,
+                  padding: 16,
+                  shadowRadius: 3,
                 }}
               >
-                {item.date}
-              </Text>
-              <View style={styles.separatorStyle} />
-              <View style={{ flexDirection: 'row' }}>
-                {item.symptoms.map((name) => (
-                  <CapsuleView
-                    title={name}
-                    isActive={false}
-                    style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
-                    titleTextStyle={{ color: theme.colors.SKY_BLUE }}
-                  />
-                ))}
+                <CapsuleView
+                  isActive={false}
+                  style={{ position: 'absolute', top: 0, right: 0, width: 112 }}
+                  title={
+                    item.appointmentType === 'ONLINE'
+                      ? item.appointmentType + ' CONSULT'
+                      : item.appointmentType + ' VISIT'
+                  }
+                />
+                <Text
+                  style={{
+                    paddingTop: 16,
+                    paddingBottom: 4,
+                    ...theme.fonts.IBMPlexSansMedium(18),
+                    color: theme.colors.SEARCH_DOCTOR_NAME,
+                  }}
+                >
+                  {Moment(item.appointmentDate).format('DD MMMM')}
+                  {' , '}
+                  {formatTime(item.appointmentTime)}
+                </Text>
+                <View style={styles.separatorStyle} />
+                <View style={{ flexDirection: 'row' }}>
+                  {Appointments[0].symptoms.map((name) => (
+                    <CapsuleView
+                      title={name}
+                      isActive={false}
+                      style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
+                      titleTextStyle={{ color: theme.colors.SKY_BLUE }}
+                    />
+                  ))}
+                </View>
               </View>
-            </View>
-          )}
-        />
-      </View>
-    );
+            )}
+          />
+        </View>
+      );
+    }
   };
+
   // console.log(props.navigation.state.params!.doctorId, 'doctorIddoctorIddoctorId');
   const { data, error } = useQuery(GET_DOCTOR_PROFILE_BY_ID, {
     // variables: { id: 'a6ef960c-fc1f-4a12-878a-12063788d625' },
@@ -373,14 +436,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   });
   if (error) {
     console.log('error', error);
-    //Alert.alert('Error', 'Unable to get the data');
   } else {
     console.log('data details', data);
     if (data.getDoctorProfileById && doctorDetails !== data.getDoctorProfileById) {
       setDoctorDetails(data.getDoctorProfileById);
+      setDoctorId(data.getDoctorProfileById.profile.id);
+      setshowSpinner(false);
     }
-
-    // getDoctorProfileById
   }
 
   console.log(dispalyoverlay, 'dispalyoverlay', doctorDetails);
@@ -395,7 +457,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           container={{
             zIndex: 2,
             position: 'absolute',
-            top: height === 812 || height === 896 ? 40 : 20,
+            top: Platform.OS === 'ios' ? (height === 812 || height === 896 ? 40 : 20) : 0,
             left: 0,
             right: 0,
             // height: 56,
@@ -410,7 +472,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           {renderDoctorDetails()}
           {doctorDetails.profile && renderDoctorClinic()}
           {doctorDetails.starDoctorTeam && renderDoctorTeam()}
-          {renderAppointmentHistory()}
+          {appointmentHistory && renderAppointmentHistory()}
           <View style={{ height: 92 }} />
         </ScrollView>
         <StickyBottomComponent defaultBG>
@@ -431,6 +493,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           clinics={doctorDetails.clinics ? doctorDetails.clinics : []}
         />
       )}
+      {showSpinner && <Spinner />}
     </View>
   );
 };

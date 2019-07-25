@@ -14,7 +14,7 @@ const shadowGray = '#808080';
 
 const TabBar = {
   TAB_BAR_ACTIVE_TINT_COLOR: '#02475b',
-  TAB_BAR_INACTIVE_TINT_COLOR: '#02475b',
+  TAB_BAR_INACTIVE_TINT_COLOR: 'rgba(2,71,91,0.6)',
 };
 
 const Buttons = {

@@ -29,6 +29,7 @@ export interface getDoctorProfileById_getDoctorProfileById_profile {
   availableForVirtualConsultation: boolean;
   onlineConsultationFees: string;
   physicalConsultationFees: string;
+  availableIn: string | null;
 }
 
 export interface getDoctorProfileById_getDoctorProfileById_paymentDetails {

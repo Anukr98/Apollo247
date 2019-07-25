@@ -22,6 +22,7 @@ const styles = StyleSheet.create({
     color: '#0087ba',
     marginHorizontal: 20,
     paddingBottom: 20,
+    marginTop: 4,
   },
   tabContainer: {
     backgroundColor: 'white',

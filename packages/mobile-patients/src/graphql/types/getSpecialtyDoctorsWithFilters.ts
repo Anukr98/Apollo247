@@ -26,6 +26,7 @@ export interface getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_d
   photoUrl: string | null;
   availableForPhysicalConsultation: boolean;
   availableForVirtualConsultation: boolean;
+  availableIn: string | null;
 }
 
 export interface getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters {

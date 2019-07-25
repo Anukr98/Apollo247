@@ -2,10 +2,9 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CalendarClose, CalendarShow, Reload } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { ScrollView } from 'react-native-gesture-handler';
 
@@ -13,7 +12,7 @@ const styles = StyleSheet.create({
   container: {
     ...theme.viewStyles.container,
     position: 'absolute',
-    top: 24,
+    top: Platform.OS === 'ios' ? 24 : 0,
     bottom: 0,
     left: 0,
     right: 0,
@@ -71,13 +70,10 @@ const styles = StyleSheet.create({
 
 export interface FilterSceneProps {
   onClickClose: (arg0: []) => void;
+  data: {};
 }
 export const FilterScene: React.FC<FilterSceneProps> = (props) => {
-  const filterData = strings.doctor_search_listing.filter_data.map((obj: object) => {
-    obj.selectedOptions = [];
-    return obj;
-  });
-  const [data, setData] = useState<any>(filterData);
+  const [data, setData] = useState<any>(props.data);
   const [showCalander, setshowCalander] = useState<boolean>(false);
   const today = new Date().toISOString().slice(0, 10);
   const [dateSelected, setdateSelected] = useState<object>({
@@ -183,21 +179,22 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                         ]}
                         onPress={() => {
                           console.log('onpress');
-
-                          const selectedData = [...data][index]['selectedOptions'];
+                          let selectedData = [...data][index]['selectedOptions'];
                           const dataCopy = [...data];
 
                           if (selectedData.includes(name)) {
+                            selectedData = selectedData.filter((item: string) => item !== name);
+                            console.log(name, 'name', selectedData, 'selectedData');
                           } else {
                             console.log(selectedData, 'selectedDataselectedData1');
                             selectedData.push(name);
-                            console.log(selectedData, 'selectedDataselectedData2');
-                            dataCopy[index] = {
-                              ...dataCopy[index],
-                              selectedOptions: selectedOptions,
-                            };
-                            console.log(dataCopy, 'dataCopy');
                           }
+                          console.log(selectedData, 'selectedDataselectedData');
+                          dataCopy[index] = {
+                            ...dataCopy[index],
+                            selectedOptions: selectedData,
+                          };
+                          console.log(dataCopy, 'dataCopy');
                           setData(dataCopy);
                         }}
                       />
@@ -240,12 +237,18 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   };
 
   const bottomButton = () => {
+    let length = 0;
+    data.forEach((item: object) => {
+      length += item.selectedOptions.length;
+    });
+    console.log(length, 'length');
     return (
       <StickyBottomComponent defaultBG>
         <Button
           title={'APPLY FILTERS'}
           style={{ flex: 1, marginHorizontal: 40 }}
           onPress={() => props.onClickClose(data)}
+          disabled={length > 0 ? false : true}
         />
       </StickyBottomComponent>
     );

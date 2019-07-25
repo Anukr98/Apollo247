@@ -1,12 +1,7 @@
 import { setConfig, Config } from 'react-hot-loader';
 import { hot } from 'react-hot-loader/root';
-import { createMuiTheme, CssBaseline, Theme } from '@material-ui/core';
-import {
-  ThemeProvider,
-  makeStyles,
-  StylesProvider,
-  createGenerateClassName,
-} from '@material-ui/styles';
+import { createMuiTheme, Theme } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
 import React, { useEffect } from 'react';
 import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -17,112 +12,7 @@ import { DoctorsProfile } from 'components/DoctorsProfile';
 import { Calendar } from 'components/Calendar';
 import { AuthProvider } from 'components/AuthProvider';
 import { useAuth } from 'hooks/authHooks';
-
-const muiTheme = createMuiTheme({
-  spacing: 10,
-  palette: {
-    primary: {
-      main: '#fcb716',
-      light: '#fed984',
-      dark: '#00b38e',
-      contrastText: '#fff',
-    },
-    secondary: {
-      main: '#0087ba',
-      light: '#01475b',
-      dark: '#02475b',
-      contrastText: '#fff',
-    },
-    error: {
-      main: '#890000',
-      dark: '#e50000',
-      light: '#e50000',
-      contrastText: '#fff',
-    },
-    text: {
-      primary: '#f7f8f5',
-    },
-    background: {
-      default: '#dcdfce',
-    },
-    action: {
-      active: '#fff',
-      hover: '#fff',
-      hoverOpacity: 0.08,
-      selected: '#fc9916',
-      disabled: '#fff',
-      disabledBackground: '#fed984',
-    },
-  },
-  typography: {
-    htmlFontSize: 16,
-    fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
-    fontSize: 14,
-    fontWeightLight: 300,
-    fontWeightRegular: 400,
-    fontWeightMedium: 500,
-    fontWeightBold: 700,
-    h1: {
-      fontSize: 56,
-      fontWeight: 600,
-      color: '#02475b',
-    },
-    h2: {
-      fontSize: 36,
-      fontWeight: 600,
-      color: '#02475b',
-    },
-    h3: {
-      fontSize: 16,
-      fontWeight: 600,
-      color: '#02475b',
-    },
-    h4: {
-      fontSize: 20,
-      fontWeight: 600,
-      color: '#02475b',
-    },
-    h5: {
-      fontSize: 14,
-      fontWeight: 'normal',
-      color: '#02475b',
-    },
-    h6: {
-      fontSize: 13,
-      fontWeight: 600,
-      color: '#02475b',
-    },
-    button: {
-      fontSize: 13,
-      fontWeight: 'bold',
-    },
-  },
-  shape: {
-    borderRadius: 10,
-  },
-  breakpoints: {
-    values: {
-      xs: 0,
-      sm: 768,
-      md: 900,
-      lg: 1024,
-      xl: 1200,
-    },
-  },
-});
-
-const useStyles = makeStyles((theme: Theme) => {
-  return {
-    app: {
-      minHeight: '100vh',
-      backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
-      paddingBottom: 70,
-      [theme.breakpoints.down('xs')]: {
-        paddingBottom: 90,
-      },
-    },
-  };
-});
+import { aphTheme, AphThemeProvider } from '@aph/web-ui-components';
 
 const App: React.FC = () => {
   const classes = useStyles();
@@ -144,28 +34,38 @@ const App: React.FC = () => {
   );
 };
 
-const generator = createGenerateClassName({
-  seed: `${Math.floor(Math.random() * 1000)}`,
+const useStyles = makeStyles((theme: Theme) => {
+  return {
+    app: {
+      minHeight: '100vh',
+      backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
+      paddingBottom: 70,
+      [theme.breakpoints.down('xs')]: {
+        paddingBottom: 90,
+      },
+    },
+  };
 });
+
+const theme = createMuiTheme({ ...aphTheme });
 
 const AppContainer: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <StylesProvider generateClassName={generator}>
-          <ThemeProvider theme={muiTheme}>
-            <CssBaseline>
-              <App />
-            </CssBaseline>
-          </ThemeProvider>
-        </StylesProvider>
+        <AphThemeProvider theme={theme}>
+          <App />
+        </AphThemeProvider>
       </AuthProvider>
     </BrowserRouter>
   );
 };
 
-const rhlConfig = ({ hotHooks: true } as any) as Partial<Config>;
-setConfig(rhlConfig);
-const HotAppContainer = hot(AppContainer);
+let HotAppContainer = AppContainer;
+if (process.env.NODE_ENV === 'local') {
+  const rhlConfig = ({ hotHooks: true } as any) as Partial<Config>;
+  setConfig(rhlConfig);
+  HotAppContainer = hot(AppContainer);
+}
 
 export { HotAppContainer as AppContainer };

@@ -13,6 +13,8 @@ import React, { useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   topView: {
@@ -76,13 +78,18 @@ type doctorsList = {
 export interface DoctorSearchListingProps extends NavigationScreenProps {}
 
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
+  const filterData = strings.doctor_search_listing.filter_data.map((obj: object) => {
+    obj.selectedOptions = [];
+    return obj;
+  });
   const tabs = ['All Consults', 'Online Consults', 'Clinic Visits'];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0]);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [doctorsList, setDoctorsList] = useState<[]>([]);
-  const [FilterData, setFilterData] = useState<[]>([]);
+  const [FilterData, setFilterData] = useState<[]>(filterData);
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
   const filterInput: any = {
     specialty: props.navigation.state.params!.speciality,
@@ -129,6 +136,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       doctorsList !== data.getSpecialtyDoctorsWithFilters.doctors
     ) {
       setDoctorsList(data.getSpecialtyDoctorsWithFilters.doctors);
+      setshowSpinner(false);
     }
   }
 
@@ -169,9 +177,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const RightHeader = () => {
     return (
       <View style={{ flexDirection: 'row' }}>
-        <TouchableOpacity onPress={() => fetchCurrentLocation()}>
-          <LocationOff />
-        </TouchableOpacity>
+        {/* <TouchableOpacity onPress={() => fetchCurrentLocation()}> */}
+        {/* <LocationOff /> */}
+        {/* </TouchableOpacity> */}
         <TouchableOpacity style={{ marginLeft: 20 }} onPress={() => setDisplayFilter(true)}>
           <Filter />
         </TouchableOpacity>
@@ -218,11 +226,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const renderDoctorSearches = (filter: string) => {
     console.log(doctorsList, 'doctorsList');
     const doctors = filter ? doctorsList.filter((obj) => obj[filter] === true) : doctorsList;
-    if (doctors.length === 0) {
+    if (doctors.length === 0 && !showSpinner) {
       return (
-        <View>
+        <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 64 }}>
           <Card
-            cardContainer={{ marginTop: 64, marginHorizontal: 64 }}
+            cardContainer={{ marginHorizontal: 64 }}
             heading={'Uh oh! :('}
             description={
               filter === 'availableForPhysicalConsultation'
@@ -273,76 +281,79 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     );
   };
   return (
-    <SafeAreaView
-      style={{
-        ...theme.viewStyles.container,
-      }}
-    >
-      {renderTopView()}
+    <View style={{ flex: 1 }}>
+      <SafeAreaView
+        style={{
+          ...theme.viewStyles.container,
+        }}
+      >
+        {renderTopView()}
 
-      <ScrollView style={{ flex: 1 }} bounces={false}>
-        {selectedTab === tabs[0] && renderDoctorSearches()}
-        {selectedTab === tabs[1] && renderDoctorSearches('availableForVirtualConsultation')}
-        {selectedTab === tabs[2] && renderDoctorSearches('availableForPhysicalConsultation')}
-      </ScrollView>
-      {showLocationpopup && (
-        <View
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: 40,
-            alignItems: 'center',
-          }}
-        >
+        <ScrollView style={{ flex: 1 }} bounces={false}>
+          {selectedTab === tabs[0] && renderDoctorSearches()}
+          {selectedTab === tabs[1] && renderDoctorSearches('availableForVirtualConsultation')}
+          {selectedTab === tabs[2] && renderDoctorSearches('availableForPhysicalConsultation')}
+        </ScrollView>
+        {showLocationpopup && (
           <View
             style={{
-              ...theme.viewStyles.cardViewStyle,
-              width: 230,
-              padding: 16,
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 40,
+              alignItems: 'center',
             }}
           >
-            <Text
+            <View
               style={{
-                color: theme.colors.CARD_HEADER,
-                ...theme.fonts.IBMPlexSansMedium(14),
+                ...theme.viewStyles.cardViewStyle,
+                width: 230,
+                padding: 16,
               }}
             >
-              Current Location
-            </Text>
-            <View style={{ flexDirection: 'row' }}>
-              <View style={{ flex: 7 }}>
-                <TextInputComponent
-                  conatinerstyles={{ flex: 1 }}
-                  value={currentLocation}
-                  onChangeText={(value) => {
-                    setcurrentLocation(value);
-                  }}
-                />
-              </View>
-              <View
+              <Text
                 style={{
-                  marginLeft: 20,
-                  alignItems: 'flex-end',
-                  justifyContent: 'center',
-                  marginBottom: 10,
+                  color: theme.colors.CARD_HEADER,
+                  ...theme.fonts.IBMPlexSansMedium(14),
                 }}
               >
-                <LocationOff />
+                Current Location
+              </Text>
+              <View style={{ flexDirection: 'row' }}>
+                <View style={{ flex: 7 }}>
+                  <TextInputComponent
+                    conatinerstyles={{ flex: 1 }}
+                    value={currentLocation}
+                    onChangeText={(value) => {
+                      setcurrentLocation(value);
+                    }}
+                  />
+                </View>
+                <View
+                  style={{
+                    marginLeft: 20,
+                    alignItems: 'flex-end',
+                    justifyContent: 'center',
+                    marginBottom: 10,
+                  }}
+                >
+                  <LocationOff />
+                </View>
               </View>
             </View>
           </View>
-        </View>
-      )}
-
+        )}
+      </SafeAreaView>
       {displayFilter && (
         <FilterScene
           onClickClose={(data: []) => {
             setDisplayFilter(false);
             setFilterData(data);
           }}
+          data={FilterData}
         />
       )}
-    </SafeAreaView>
+      {showSpinner && <Spinner />}
+    </View>
   );
 };

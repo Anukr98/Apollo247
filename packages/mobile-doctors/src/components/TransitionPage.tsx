@@ -42,7 +42,7 @@ export const TransitionPage: React.FC<TransitionPageProps> = (props) => {
           activeTabIndex={0}
         />
         <Button
-          onPress={() => props.navigation.navigate(AppRoutes.TabBar)}
+          onPress={() => props.navigation.push(AppRoutes.TabBar)}
           title="GET STARTED"
           titleTextStyle={styles.titleTextStyle}
           style={styles.buttonStyle}

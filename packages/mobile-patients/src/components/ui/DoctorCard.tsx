@@ -92,6 +92,7 @@ type rowData = {
   speciality: string;
   specialization: string;
   typeOfConsult: string;
+  availableIn: string;
 };
 
 export interface DoctorCardProps extends NavigationScreenProps {
@@ -110,8 +111,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
         <View style={{ flexDirection: 'row' }}>
           {(rowData.availableForPhysicalConsultation || rowData.availableForVirtualConsultation) &&
-          props.displayButton ? (
-            <CapsuleView title={string.common.availableNow} style={styles.availableView} />
+          props.displayButton &&
+          rowData.availableIn ? (
+            <CapsuleView
+              title={rowData.availableIn ? `AVAILABLE IN ${rowData.availableIn} MINS` : ''}
+              style={styles.availableView}
+              isActive={parseInt(rowData.availableIn) > 15 ? false : true}
+            />
           ) : null}
           <View style={styles.imageView}>
             {/* {rowData.image} */}

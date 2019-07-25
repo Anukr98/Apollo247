@@ -11,7 +11,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import { SignIn } from 'components/SignIn';
-import { Navigation } from 'components/Navigatiion';
+import { Navigation } from 'components/Navigation';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
@@ -45,6 +45,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 20,
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
+      },
+      [theme.breakpoints.between('sm', 'md')]: {
+        marginLeft: 10,
       },
     },
     userAccountLogin: {
@@ -87,7 +90,7 @@ export const Header: React.FC = (props) => {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   return (
-    <header className={classes.header}>
+    <header className={classes.header} data-cypress="Header">
       <div className={classes.logo}>
         <Link to="/">
           <img src={require('images/ic_logo.png')} />

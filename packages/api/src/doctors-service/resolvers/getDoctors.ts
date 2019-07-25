@@ -70,6 +70,7 @@ export const doctorTypeDefs = gql`
     package: String
     inviteStatus: INVITEDSTATUS
     address: String
+    availableIn: String
   }
 
   type DoctorProfile {
@@ -138,6 +139,7 @@ export type Doctor = {
   package: String;
   inviteStatus: INVITEDSTATUS;
   address: String;
+  availableIn: String;
 };
 
 export type DoctorProfile = {

@@ -24,6 +24,11 @@ import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../theme/theme';
 import { Button } from './ui/Button';
 import { DoctorCard, DoctorCardProps } from './ui/DoctorCard';
+import {
+  getSpecialties,
+  getSpecialties_getSpecialties,
+} from '@aph/mobile-patients/src/graphql/types/getSpecialties';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -117,10 +122,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [needHelp, setNeedHelp] = useState<boolean>(true);
   const [displaySpeialist, setdisplaySpeialist] = useState<boolean>(true);
   const [Specialities, setSpecialities] = useState<object[]>([]);
-  const [seatchSpecialities, setseatchSpecialities] = useState<object[]>([]);
+  const [searchSpecialities, setsearchSpecialities] = useState<object[]>([]);
   const [PastSearches, setPastSearches] = useState<object[]>([]);
-
   const [doctorsList, setdoctorsList] = useState<object[]>([]);
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [possibleMatches, setpossibleMatches] = useState<object>({});
 
   const { data, error } = useQuery(SEARCH_DOCTOR_AND_SPECIALITY, {
     variables: { searchText: searchText },
@@ -134,17 +140,23 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
     if (
       data.SearchDoctorAndSpecialty &&
-      seatchSpecialities !== data.SearchDoctorAndSpecialty.specialties
+      searchSpecialities !== data.SearchDoctorAndSpecialty.specialties
     ) {
       console.log(
         data.SearchDoctorAndSpecialty.specialties,
         'data.SearchDoctorAndSpecialty.specialties'
       );
-      setseatchSpecialities(data.SearchDoctorAndSpecialty.specialties);
+      setsearchSpecialities(data.SearchDoctorAndSpecialty.specialties);
+    }
+    if (
+      data.SearchDoctorAndSpecialty &&
+      possibleMatches !== data.SearchDoctorAndSpecialty.possibleMatches
+    ) {
+      setpossibleMatches(data.SearchDoctorAndSpecialty.possibleMatches);
     }
   }
 
-  const getData = useQuery(GET_SPECIALTIES, {});
+  const getData = useQuery<getSpecialties, getSpecialties_getSpecialties>(GET_SPECIALTIES, {});
   console.log(getData.loading, 'getData.loading');
   if (getData.error) {
     console.log('getData.error', getData.error);
@@ -155,8 +167,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       Specialities !== getData.data.getSpecialties
     ) {
       console.log('getData.data', getData.data.getSpecialties);
-
       setSpecialities(getData.data.getSpecialties);
+      setshowSpinner(false);
     }
   }
 
@@ -186,34 +198,67 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         />
         <View style={styles.searchView}>
           <TextInputComponent
-            conatinerstyles={{ paddingBottom: 19 }}
-            inputStyle={styles.searchValueStyle}
+            conatinerstyles={{ paddingBottom: 0 }}
+            inputStyle={[
+              styles.searchValueStyle,
+              searchText.length > 2 && doctorsList.length === 0 && searchSpecialities.length === 0
+                ? {
+                    borderBottomColor: '#e50000',
+                  }
+                : {},
+            ]}
+            textInputprops={
+              searchText.length > 2 && doctorsList.length === 0 && searchSpecialities.length === 0
+                ? {
+                    selectionColor: '#e50000',
+                  }
+                : {}
+            }
             autoCorrect={false}
-            value={searchText}
+            // value={searchText}
             placeholder="Search doctors or specialities"
             underlineColorAndroid="transparent"
             onChangeText={(value) => {
               setSearchText(value);
-              if (value === '') {
+              if (value.length > 2) {
                 // setDoctorName(true);
-                setdisplaySpeialist(false);
-              } else {
                 setdisplaySpeialist(true);
+              } else {
+                setdisplaySpeialist(false);
               }
             }}
             onFocus={() => {
-              setPastSearch(false);
-              setNeedHelp(false);
-              setdisplaySpeialist(false);
+              if (searchText.length < 3) {
+                setPastSearch(false);
+                setNeedHelp(false);
+                setdisplaySpeialist(false);
+              }
             }}
             onBlur={() => {
-              if (searchText === '') {
+              if (searchText === '' || searchText.length < 3) {
                 setPastSearch(true);
                 setNeedHelp(true);
                 setdisplaySpeialist(true);
               }
             }}
           />
+          {searchText.length > 2 && doctorsList.length === 0 && searchSpecialities.length === 0 ? (
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansMedium(12),
+                color: '#890000',
+                paddingVertical: 8,
+              }}
+            >
+              Sorry, we couldn’t find what you are looking for :(
+            </Text>
+          ) : (
+            <View
+              style={{
+                paddingBottom: 19,
+              }}
+            />
+          )}
         </View>
       </View>
     );
@@ -267,15 +312,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const renderSpecialist = (styles: any) => {
-    const SpecialitiesList = searchText.length > 0 ? seatchSpecialities : Specialities;
+    const SpecialitiesList = searchText.length > 2 ? searchSpecialities : Specialities;
     console.log(SpecialitiesList, 'SpecialitiesList');
     if (SpecialitiesList.length > 0 && displaySpeialist) {
       return (
         <View>
           <SectionHeaderComponent
             sectionTitle={
-              searchText.length > 0
-                ? `Matching Specialities — ${seatchSpecialities.length}`
+              searchText.length > 2
+                ? `Matching Specialities — ${searchSpecialities.length}`
                 : 'Specialities'
             }
             style={{
@@ -346,7 +391,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const renderDoctorSearches = (styles: any) => {
-    if (searchText.length > 0 && doctorsList.length > 0) {
+    if (searchText.length > 2 && doctorsList.length > 0) {
       return (
         <View>
           <SectionHeaderComponent
@@ -364,19 +409,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             onEndReachedThreshold={0.5}
             renderItem={({ item }: { item: any }) => renderSearchDoctorResultsRow(item)}
           />
-          {/* <SectionList
-            contentContainerStyle={{
-              // flexWrap: 'wrap',
-              marginTop: 12,
-              marginBottom: 8,
-            }}
-            bounces={false}
-            sections={doctorsList}
-            onEndReachedThreshold={0.5}
-            renderItem={({ item }) => renderSearchDoctorResultsRow(item)}
-            keyExtractor={(_, index) => index.toString()}
-            renderSectionHeader={({ section }) => renderHeader(section)}
-          /> */}
         </View>
       );
     }
@@ -386,15 +418,74 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     return <DoctorCard rowData={rowData} navigation={props.navigation} />;
   };
 
+  const renderPossibleMatches = () => {
+    return (
+      <View>
+        {possibleMatches.doctors && (
+          <View>
+            <SectionHeaderComponent
+              sectionTitle={'Possible Doctors — ' + possibleMatches.doctors.length}
+              style={{ marginBottom: 0 }}
+            />
+
+            <FlatList
+              contentContainerStyle={{
+                marginTop: 16,
+                marginBottom: 8,
+              }}
+              bounces={false}
+              data={possibleMatches.doctors}
+              onEndReachedThreshold={0.5}
+              renderItem={({ item }: { item: any }) => renderSearchDoctorResultsRow(item)}
+            />
+          </View>
+        )}
+        {possibleMatches.specialties && (
+          <View>
+            <SectionHeaderComponent
+              sectionTitle={` Possible Specialities — ${possibleMatches.specialties.length}`}
+              style={{
+                marginBottom: 0,
+                marginTop: 4,
+              }}
+            />
+            <FlatList
+              contentContainerStyle={{
+                // flexWrap: 'wrap',
+                marginHorizontal: 12,
+              }}
+              bounces={false}
+              data={possibleMatches.specialties}
+              onEndReachedThreshold={0.5}
+              renderItem={({ item, index }) =>
+                renderSpecialistRow(item, index, possibleMatches.specialties)
+              }
+              keyExtractor={(_, index) => index.toString()}
+              numColumns={2}
+            />
+          </View>
+        )}
+      </View>
+    );
+  };
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
-      {renderSearch(styles)}
-      <ScrollView style={{ flex: 1 }} bounces={false}>
-        {renderPastSearch(styles)}
-        {renderDoctorSearches(styles)}
-        {renderSpecialist(styles)}
-        {renderHelpView(styles)}
-      </ScrollView>
-    </SafeAreaView>
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
+        {renderSearch(styles)}
+        <ScrollView style={{ flex: 1 }} bounces={false}>
+          {renderPastSearch(styles)}
+          {renderDoctorSearches(styles)}
+          {renderSpecialist(styles)}
+          {renderHelpView(styles)}
+          {searchText.length > 2 &&
+            doctorsList.length === 0 &&
+            searchSpecialities.length === 0 &&
+            possibleMatches &&
+            renderPossibleMatches()}
+        </ScrollView>
+      </SafeAreaView>
+      {showSpinner && <Spinner />}
+    </View>
   );
 };

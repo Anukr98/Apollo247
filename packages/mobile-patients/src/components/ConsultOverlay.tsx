@@ -130,7 +130,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
   const descriptionText = `${
     props.doctor ? `${props.doctor.salutation}. ${props.doctor.firstName}` : 'Doctor'
-  } is available in 15mins!\nWould you like to consult now or schedule for later?`;
+  } is available in ${
+    props.doctor.availableIn
+  } mins!\nWould you like to consult now or schedule for later?`;
 
   const renderCalendar = () => {
     return (
@@ -225,7 +227,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             </View>
           </TouchableOpacity>
         </View>
-        <View style={{ marginTop: 21, marginBottom: 4, flexDirection: 'row' }}>
+        <View style={{ marginTop: 11, marginBottom: 4, flexDirection: 'row' }}>
           <View style={{ flex: 1 }}>
             <Text
               style={{
