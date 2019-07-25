@@ -1,6 +1,6 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
-import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
+// import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import React from 'react';
 import {

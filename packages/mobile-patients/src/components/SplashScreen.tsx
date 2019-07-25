@@ -77,7 +77,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
 
     SplashScreenView.hide();
-  }, [props.navigation, signInError]);
+  }, [props.navigation, signInError, signOut]);
 
   return (
     <View style={styles.mainView}>

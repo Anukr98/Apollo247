@@ -50,6 +50,7 @@ export const useAllCurrentPatients = () => {
   const hasAuthToken = useAuthContext().hasAuthToken;
   const { loading, data, error } = useQuery<GetCurrentPatients>(GET_CURRENT_PATIENTS, {
     skip: isSigningIn || !hasAuthToken,
+    fetchPolicy: 'no-cache',
   });
   console.log('hasAuthToken', hasAuthToken);
   // console.log('hasAuthToken error', error);

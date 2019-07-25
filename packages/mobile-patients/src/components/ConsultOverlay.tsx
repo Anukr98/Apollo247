@@ -6,7 +6,7 @@ import {
   DropdownGreen,
   Evening,
   EveningUnselected,
-  Location,
+  // Location,
   Morning,
   MorningUnselected,
   Night,
@@ -69,11 +69,11 @@ const styles = StyleSheet.create({
     paddingBottom: 3,
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
   },
-  horizontalSeparatorStyle: {
-    borderRightWidth: 0.5,
-    borderRightColor: theme.colors.SEPARATOR_LINE,
-    marginHorizontal: 16,
-  },
+  // horizontalSeparatorStyle: {
+  //   borderRightWidth: 0.5,
+  //   borderRightColor: theme.colors.SEPARATOR_LINE,
+  //   marginHorizontal: 16,
+  // },
 });
 
 export interface ConsultOverlayProps extends NavigationScreenProps {
