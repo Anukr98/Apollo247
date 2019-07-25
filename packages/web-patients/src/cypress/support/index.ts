@@ -16,18 +16,21 @@
 // Using import here no longer works. for reasons unkown
 require('./commands');
 
-// Cypress will not intercept `fetch` calls (only xhrs)
-// Nullify `window.fetch` to trick it into using a polyfill (which will fallback to xhrs)
-// And use `Cypress` instead of `cy` so that this persists across all tests
-// More info: https://github.com/cypress-io/cypress/issues/95
 interface Win extends Window {
   __TEST__: string;
 }
+
 let currentTestTitle = 'test';
+
 Cypress.on('window:before:load', (win: Win) => {
-  win.fetch = null as any;
+  // Cypress will not intercept `fetch` calls (only xhrs)
+  // Nullify `window.fetch` to trick it into using a polyfill (which will fallback to xhrs)
+  // And use `Cypress` instead of `cy` so that this persists across all tests
+  // More info: https://github.com/cypress-io/cypress/issues/95
+  // win.fetch = null as any;
   win.__TEST__ = currentTestTitle;
 });
+
 Cypress.on('test:before:run', (test, test2) => {
   currentTestTitle = test.title;
 });
