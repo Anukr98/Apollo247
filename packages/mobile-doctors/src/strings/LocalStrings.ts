@@ -7,7 +7,7 @@ const common = {
 
 const login = {
   hello: 'hello!',
-  please_enter_no: 'Please enter your mobile number to login',
+  please_enter_no: 'Please enter your mobile\nnumber to login',
   otp_sent_to: 'OTP will be sent to this number',
   wrong_number: 'This seems like the wrong number',
   numberPrefix: '+91',
