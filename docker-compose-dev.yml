@@ -62,7 +62,7 @@ services:
     image: node:12.6.0
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
-    command: bash -c "npm run start:doctors-service"
+    command: bash -c "node doctors-service.bundle.js"
     volumes:
       - ./:/apollo-hospitals:cached
     depends_on:
@@ -71,4 +71,4 @@ services:
   doctors-db:
     image: postgres:10.8-alpine
     volumes:
-      - ./packages/api/src/doctors-service/init-doctors-db.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./packages/api/init-doctors-db.sql:/docker-entrypoint-initdb.d/init.sql
