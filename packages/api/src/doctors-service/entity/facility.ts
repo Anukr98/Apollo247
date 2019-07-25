@@ -23,7 +23,7 @@ export class Facility extends BaseEntity {
   @Column({ nullable: true })
   city: String;
 
-  @OneToMany((type) => ConsultHours, (consultHours) => ConsultHours.facility)
+  @OneToMany((type) => ConsultHours, (consultHours) => consultHours.facility)
   consultHours: ConsultHours[];
 
   @Column({ nullable: true })

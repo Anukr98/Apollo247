@@ -21,8 +21,24 @@ export enum WeekDay {
   SATURDAY = 'SATURDAY',
 }
 
+export enum ConsultType {
+  SUNDAY = 'FIXED',
+  MONDAY = 'PREFERRED',
+}
+
+export enum ConsultMode {
+  ONLINE = 'ONLINE',
+  PHYSICAL = 'PHYSICAL',
+}
+
 @Entity()
 export class ConsultHours extends BaseEntity {
+  @Column()
+  consultMode: ConsultMode;
+
+  @Column()
+  consultType: ConsultType;
+
   @Column()
   createdDate: Date;
 
@@ -32,6 +48,9 @@ export class ConsultHours extends BaseEntity {
   @ManyToOne((type) => DoctorAndHospital, (doctorHospital) => doctorHospital.consultHours)
   doctorHospital: DoctorAndHospital;
 
+  @Column({ type: 'timestamp' })
+  endTime: String;
+
   @ManyToOne((type) => Facility, (facility) => facility.consultHours)
   facility: Facility;
 
@@ -40,6 +59,9 @@ export class ConsultHours extends BaseEntity {
 
   @Column({ default: true })
   isActive: Boolean;
+
+  @Column({ type: 'timestamp' })
+  startTime: String;
 
   @Column({ nullable: true })
   updatedDate: Date;
