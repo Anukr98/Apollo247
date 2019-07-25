@@ -386,7 +386,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   marginHorizontal: 20,
                   marginVertical: 8,
                   padding: 16,
-                  shadowRadius: 3,
+                  shadowRadius: 2,
                 }}
               >
                 <CapsuleView
@@ -469,19 +469,21 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           onPressLeftIcon={() => props.navigation.goBack()}
         />
         <ScrollView style={{ flex: 1 }} bounces={false}>
-          {renderDoctorDetails()}
+          {doctorDetails.profile && renderDoctorDetails()}
           {doctorDetails.profile && renderDoctorClinic()}
           {doctorDetails.starDoctorTeam && renderDoctorTeam()}
           {appointmentHistory && renderAppointmentHistory()}
           <View style={{ height: 92 }} />
         </ScrollView>
-        <StickyBottomComponent defaultBG>
-          <Button
-            title={'BOOK CONSULTATION'}
-            onPress={() => setdispalyoverlay(true)}
-            style={{ marginHorizontal: 60, flex: 1 }}
-          />
-        </StickyBottomComponent>
+        {showSpinner ? null : (
+          <StickyBottomComponent defaultBG>
+            <Button
+              title={'BOOK CONSULTATION'}
+              onPress={() => setdispalyoverlay(true)}
+              style={{ marginHorizontal: 60, flex: 1 }}
+            />
+          </StickyBottomComponent>
+        )}
       </SafeAreaView>
 
       {dispalyoverlay && (

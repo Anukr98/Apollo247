@@ -19,11 +19,16 @@ import strings from '@aph/mobile-patients/src/strings/strings.json';
 const styles = StyleSheet.create({
   topView: {
     height: 155,
-    backgroundColor: 'white',
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
     shadowOffset: { width: 0, height: 0 },
-    borderTopWidth: 0,
+    shadowRadius: 2,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 2,
+    elevation: 2,
   },
   headingText: {
     paddingBottom: 8,
@@ -36,44 +41,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
   },
 });
-
-type doctorsList = {
-  title: string;
-  data: {
-    availableForPhysicalConsultation: boolean;
-    availableForVirtualConsultation: boolean;
-    awards: string;
-    city: string;
-    education: string;
-    experience: string;
-    firstName: string;
-    id: string;
-    inviteStatus: string;
-    isProfileComplete: boolean;
-    isStarDoctor: boolean;
-    languages: string;
-    lastName: string;
-    mobileNumber: string;
-    onlineConsultationFees: string;
-    package: string;
-    photoUrl: string;
-    physicalConsultationFees: string;
-    registrationNumber: string;
-    services: string;
-    speciality: string;
-    specialization: string;
-    typeOfConsult: string;
-    // image: any;
-    // doctorName: string;
-    // starDoctor: boolean;
-    // specialization: string;
-    // experience: string;
-    // education: string;
-    // location: string;
-    // time: string;
-    // available: boolean;
-  }[];
-};
 
 export interface DoctorSearchListingProps extends NavigationScreenProps {}
 
@@ -93,26 +60,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const filterInput: any = {
     specialty: props.navigation.state.params!.speciality,
-    // city: [],
-    // experience: [],
-    // availability: [],
-    // gender: [],
-    // language: [],
   };
   FilterData.map((obj: { label: string; options: []; selectedOptions: [] }) => {
     if (obj.selectedOptions.length > 0) {
       filterInput[obj.label.toLowerCase().split(' ')[0]] = obj.selectedOptions;
     }
   });
-
-  // {
-  //   specialty: 'general physician',
-  //   city: [],
-  //   experience: [],
-  //   availability: [],
-  //   gender: [],
-  //   language: [],
-  // },
   console.log(
     props.navigation.state.params,
     'speciality',
@@ -189,7 +142,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const renderTopView = () => {
     return (
-      <View>
+      <View
+        style={{
+          ...theme.viewStyles.cardViewStyle,
+          backgroundColor: theme.colors.CARD_BG,
+          borderRadius: 0,
+        }}
+      >
         <View style={styles.topView}>
           <Header
             leftIcon="backArrow"
@@ -207,9 +166,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         </View>
         <TabsComponent
           style={{
-            ...theme.viewStyles.cardViewStyle,
+            marginTop: 155,
             backgroundColor: theme.colors.CARD_BG,
-            borderRadius: 0,
           }}
           data={tabs}
           onChange={(selectedTab: string) => setselectedTab(selectedTab)}
@@ -230,7 +188,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       return (
         <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 64 }}>
           <Card
-            cardContainer={{ marginHorizontal: 64 }}
+            cardContainer={{
+              marginHorizontal: 64,
+              shadowRadius: 0,
+              shadowOffset: { width: 0, height: 0 },
+              shadowColor: 'white',
+            }}
             heading={'Uh oh! :('}
             description={
               filter === 'availableForPhysicalConsultation'
@@ -252,7 +215,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         {doctors.length > 0 && (
           <FlatList
             contentContainerStyle={{
-              // flexWrap: 'wrap',
               marginTop: 20,
               marginBottom: 8,
             }}
@@ -260,22 +222,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             data={doctors}
             onEndReachedThreshold={0.5}
             renderItem={({ item }: { item: any }) => renderSearchDoctorResultsRow(item)}
-            // keyExtractor={(_, index) => index.toString()}
-            // numColumns={2}
           />
-
-          // <SectionList
-          //   contentContainerStyle={{
-          //     flexWrap: 'wrap',
-          //     marginTop: 20,
-          //     marginBottom: 8,
-          //   }}
-          //   bounces={false}
-          //   sections={doctorsList}
-          //   onEndReachedThreshold={0.5}
-          //   renderItem={({ item }) => renderSearchDoctorResultsRow(item)}
-          //   keyExtractor={(_, index) => index.toString()}
-          // />
         )}
       </View>
     );

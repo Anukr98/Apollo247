@@ -29,6 +29,7 @@ import {
   bookAppointmentVariables,
   bookAppointment_bookAppointment_appointment,
 } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const { width, height } = Dimensions.get('window');
 
@@ -121,6 +122,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [selectedTab, setselectedTab] = useState<string>(tabs[0]);
   const [selectedCTA, setselectedCTA] = useState<string>(onlineCTA[0]);
   // const [descriptionText, setdescriptionText] = useState<string>(onlineCTA[0]);
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
+
   const [dateSelected, setdateSelected] = useState<object>({
     [today]: {
       selected: true,
@@ -267,7 +270,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         bottom: 0,
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, .8)',
-        paddingHorizontal: 20,
+        paddingHorizontal: showSpinner ? 0 : 20,
+        alignItems: 'center',
       }}
     >
       <View
@@ -438,6 +442,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               <Button
                 title="PAY Rs. 299"
                 onPress={() => {
+                  setshowSpinner(true);
                   // props.setdispalyoverlay(false);
                   const formatDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
 
@@ -458,15 +463,18 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 }}
               >
                 {data
-                  ? (console.log('bookAppointment data', data), props.setdispalyoverlay(false))
+                  ? (console.log('bookAppointment data', data),
+                    props.setdispalyoverlay(false),
+                    setshowSpinner(false))
                   : null}
                 {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
-                {error ? console.log('bookAppointment error', error) : null}
+                {error ? console.log('bookAppointment error', error, setshowSpinner(false)) : null}
               </Button>
             )}
           </Mutation>
         </StickyBottomComponent>
       </View>
+      {showSpinner && <Spinner />}
     </View>
   );
 };

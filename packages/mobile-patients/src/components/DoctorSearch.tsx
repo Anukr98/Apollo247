@@ -473,17 +473,19 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {renderSearch(styles)}
-        <ScrollView style={{ flex: 1 }} bounces={false}>
-          {renderPastSearch(styles)}
-          {renderDoctorSearches(styles)}
-          {renderSpecialist(styles)}
-          {renderHelpView(styles)}
-          {searchText.length > 2 &&
-            doctorsList.length === 0 &&
-            searchSpecialities.length === 0 &&
-            possibleMatches &&
-            renderPossibleMatches()}
-        </ScrollView>
+        {showSpinner ? null : (
+          <ScrollView style={{ flex: 1 }} bounces={false}>
+            {renderPastSearch(styles)}
+            {renderDoctorSearches(styles)}
+            {renderSpecialist(styles)}
+            {renderHelpView(styles)}
+            {searchText.length > 2 &&
+              doctorsList.length === 0 &&
+              searchSpecialities.length === 0 &&
+              possibleMatches &&
+              renderPossibleMatches()}
+          </ScrollView>
+        )}
       </SafeAreaView>
       {showSpinner && <Spinner />}
     </View>

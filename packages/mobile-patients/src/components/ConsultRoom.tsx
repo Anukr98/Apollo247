@@ -134,13 +134,13 @@ const arrayTest: ArrayTest[] = [
     id: 2,
     title: 'Do you want to buy some medicines?',
     descripiton: 'SEARCH MEDICINE',
-    image: require('@aph/mobile-patients/src/images/doctor/doctor.png'), //require('@aph/mobile-patients/src/images/home/medicine.png'),
+    image: require('@aph/mobile-patients/src/images/home/medicine.png'),
   },
   {
     id: 3,
     title: 'Do you want to get some tests done?',
     descripiton: 'BOOK A TEST',
-    image: require('@aph/mobile-patients/src/images/doctor/doctor.png'), // require('@aph/mobile-patients/src/images/home/test.png'),
+    image: require('@aph/mobile-patients/src/images/home/test.png'),
   },
 ];
 
@@ -469,7 +469,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     }}
                     key={i}
                   >
-                    <View style={{ width: width - 144 }}>
+                    <View style={{ width: width - 144, justifyContent: 'space-between' }}>
                       <Text
                         style={{
                           color: '#02475b',
