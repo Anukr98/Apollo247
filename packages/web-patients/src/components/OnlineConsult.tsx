@@ -53,6 +53,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     bottomActions: {
       padding: '30px 15px 15px 15px',
+      '& button': {
+        borderRadius: 10,
+      },
     },
     customScrollBar: {
       paddingTop: 10,
@@ -74,7 +77,8 @@ export const OnlineConsult: React.FC = (props) => {
       <div className={classes.customScrollBar}>
         <div className={classes.consultGroup}>
           <p>
-            Dr. Simran is available in 15mins! Would you like to consult now or schedule for later?
+            Dr. Simran is available in 15mins!
+            <br /> Would you like to consult now or schedule for later?
           </p>
           <div className={classes.actions}>
             <AphButton color="secondary" className={`${classes.button} ${classes.buttonActive}`}>
