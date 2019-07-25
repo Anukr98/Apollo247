@@ -106,7 +106,7 @@ export const OnlineConsult: React.FC = (props) => {
             </AphButton>
             <AphButton
               onClick={(e) => {
-                setShowCalendar(showCalendar ? false : true);
+                setShowCalendar(!showCalendar);
               }}
               color="secondary"
               className={`${classes.button} ${showCalendar ? classes.buttonActive : ''}`}
