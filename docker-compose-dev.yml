@@ -74,3 +74,11 @@ services:
     image: postgres:10.8-alpine
     volumes:
       - ./packages/api/init-doctors-db.sql:/docker-entrypoint-initdb.d/init.sql
+
+  consults-service:
+    image: node:12.6.0
+    env_file: .env
+    working_dir: /apollo-hospitals/packages/api
+    command: bash -c "node consults-service.bundle.js"
+    volumes:
+      - ./:/apollo-hospitals:cached
