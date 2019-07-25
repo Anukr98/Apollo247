@@ -65,6 +65,8 @@ services:
     command: bash -c "node doctors-service.bundle.js"
     volumes:
       - ./:/apollo-hospitals:cached
+    depends_on:
+      - doctors-db
 
   doctors-db:
     image: postgres:10.8-alpine
