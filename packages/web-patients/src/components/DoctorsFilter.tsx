@@ -155,7 +155,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   } = props;
 
   const filterCities = { hyderabad: 'Hyderabad', chennai: 'Chennai' };
-  const filterExperiences = { '0_5': '0-5', '6_10': '6-10', '11_15': '11-15', '16_99': '16+' };
+  const filterExperiences = { '0_5': '0-5', '6_10': '6-10', '11_15': '11-15', '15_99': '15+' };
   const filterAvailability = {
     now: 'Now',
     today: 'Today',
