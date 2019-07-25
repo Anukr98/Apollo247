@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       paddingBottom: 5,
       marginBottom: 5,
-      borderBottom: '1px solid rgba(1,71,91,0.2)',
+      borderBottom: '0.5px solid rgba(2,71,91,0.2)',
     },
     specialits: {
       fontSize: 12,
@@ -55,7 +55,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     doctorInfoGroup: {
       paddingBottom: 10,
-      borderBottom: '1px solid rgba(1,71,91,0.2)',
+      borderBottom: '0.5px solid rgba(2,71,91,0.2)',
       [theme.breakpoints.down('xs')]: {
         marginBottom: 10,
       },

@@ -63,7 +63,7 @@ const useStyles = makeStyles((theme: Theme) => {
       float: 'right',
     },
     appointBooked: {
-      borderTop: '1px solid rgba(1,71,91,0.3)',
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
       marginTop: 10,
       paddingTop: 5,
       '& ul': {

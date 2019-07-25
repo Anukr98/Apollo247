@@ -5,7 +5,7 @@ import { Theme, Popover } from '@material-ui/core';
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     userLocation: {
-      borderLeft: '1px solid rgba(2,71,91,0.3)',
+      borderLeft: '0.5px solid rgba(2,71,91,0.3)',
       paddingLeft: 20,
       marginLeft: 40,
       paddingTop: 20,
