@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
+import { Theme, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { CalendarStrip } from 'components/Calendar/CalendarStrip';
 import { Appointments, Appointment } from 'components/Appointments';
 import { addMinutes, startOfDay, getTime } from 'date-fns';
-import { Theme, Typography } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
-      paddingTop: 85,
+      paddingTop: 68,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 78,
+        paddingTop: 68,
       },
     },
     headerSticky: {
@@ -70,30 +70,58 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Calendar: React.FC = (props) => {
+export const Calendar: React.FC = () => {
   const dummyData: Appointment[] = [
     {
       startTime: Date.now(),
-      endTime: getTime(addMinutes(Date.now(), -1)),
+      endTime: getTime(addMinutes(Date.now(), 1)),
       details: {
         patientName: 'Prateek Sharma',
-        checkups: ['Fever', 'Cough & Cold'],
+        checkups: ['Fever', 'Cough & Cold', 'Nausea', 'Sore Eyes'],
+        avatar:
+          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
       },
       isNew: true,
       type: 'walkin',
     },
     {
-      startTime: Date.now(),
-      endTime: getTime(addMinutes(Date.now(), 2)),
+      startTime: getTime(addMinutes(Date.now(), 3)),
+      endTime: getTime(addMinutes(Date.now(), 5)),
       details: {
         patientName: 'George',
-        checkups: ['Fever', 'Cough & Cold'],
+        checkups: ['Fever', 'Cough & Cold', 'Nausea'],
+        avatar:
+          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
       },
-      isNew: true,
+      isNew: false,
+      type: 'walkin',
+    },
+    {
+      startTime: getTime(addMinutes(Date.now(), 5)),
+      endTime: getTime(addMinutes(Date.now(), 10)),
+      details: {
+        patientName: 'George',
+        checkups: ['Fever', 'Cough & Cold', 'Nausea'],
+        avatar:
+          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
+      },
+      isNew: false,
+      type: 'walkin',
+    },
+    {
+      startTime: getTime(addMinutes(Date.now(), 10)),
+      endTime: getTime(addMinutes(Date.now(), 30)),
+      details: {
+        patientName: 'George',
+        checkups: ['Fever', 'Cough & Cold', 'Nausea'],
+        avatar:
+          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
+      },
+      isNew: false,
       type: 'walkin',
     },
   ];
-  const [appointments, setAppointments] = useState(dummyData);
+  const [appointments, setAppointments] = useState<Appointment[]>(dummyData);
 
   const setData = (startOfWeekDate: Date) => {
     if (
@@ -106,33 +134,12 @@ export const Calendar: React.FC = (props) => {
     setAppointments([]);
   };
 
-  const onDayClick = (e: React.MouseEvent, date: Date) => {
-    setData(startOfDay(date));
-  };
-
-  const onMonthChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-    selectedMonth: number,
-    startOfWeekDate: Date
-  ) => {
-    setData(startOfWeekDate);
-  };
-
-  const onNext = (e: React.MouseEvent, date: Date, startOfWeekDate: Date) => {
-    setData(startOfWeekDate);
-  };
-
-  const onPrev = (e: React.MouseEvent, date: Date, startOfWeekDate: Date) => {
-    setData(startOfWeekDate);
-  };
   const classes = useStyles();
 
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
+        <Header />
       </div>
       <div className={classes.container}>
         <div className={classes.tabHeading}>
@@ -143,10 +150,18 @@ export const Calendar: React.FC = (props) => {
           <div></div>
           <div className={classes.calendarContainer}>
             <CalendarStrip
-              dayClickHandler={onDayClick}
-              monthChangeHandler={onMonthChange}
-              onNext={onNext}
-              onPrev={onPrev}
+              dayClickHandler={(e, date) => {
+                setData(startOfDay(date));
+              }}
+              monthChangeHandler={(e, selectedMonth, startOfWeekDate) => {
+                setData(startOfWeekDate);
+              }}
+              onNext={(e, date, startOfWeekDate) => {
+                setData(startOfWeekDate);
+              }}
+              onPrev={(e, date, startOfWeekDate) => {
+                setData(startOfWeekDate);
+              }}
             />
           </div>
 

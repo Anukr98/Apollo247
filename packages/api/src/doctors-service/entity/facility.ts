@@ -5,10 +5,13 @@ import {
   BaseEntity,
   BeforeInsert,
   BeforeUpdate,
+  OneToMany,
 } from 'typeorm';
 
 import { Validate } from 'class-validator';
 import { NameValidator } from 'validators/entityValidators';
+import { DoctorAndHospital } from 'doctors-service/entity/doctorAndHospital';
+import { ConsultHours } from 'doctors-service/entity/consultHours';
 
 export enum FacilityType {
   HOSPITAL = 'HOSPITAL',
@@ -17,14 +20,20 @@ export enum FacilityType {
 
 @Entity()
 export class Facility extends BaseEntity {
-  @Column()
-  createdDate: Date;
-
   @Column({ nullable: true })
   city: String;
 
+  @OneToMany((type) => ConsultHours, (consultHours) => consultHours.facility)
+  consultHours: ConsultHours[];
+
   @Column({ nullable: true })
   country: String;
+
+  @Column()
+  createdDate: Date;
+
+  @OneToMany((type) => DoctorAndHospital, (doctorHospital) => doctorHospital.doctor)
+  doctorHospital: DoctorAndHospital[];
 
   @Column()
   facilityType: FacilityType;
