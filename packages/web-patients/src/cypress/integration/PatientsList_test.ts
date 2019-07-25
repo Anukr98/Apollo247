@@ -1,5 +1,5 @@
 import { clientBaseUrl, clientRoutes } from 'helpers/clientRoutes';
-import { getPatientsFixture, getCurrentPatientsFixture } from 'cypress/fixtures/patientsFixtures';
+import { getPatientsFixture } from 'cypress/fixtures/patientsFixtures';
 import schema from '@aph/api-schema/schema.json';
 
 describe('PatientsList', () => {
