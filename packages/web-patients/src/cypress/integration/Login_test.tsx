@@ -1,19 +1,22 @@
 import { clientRoutes, clientBaseUrl } from 'helpers/clientRoutes';
-import { getCurrentPatientsFixture } from 'cypress/fixtures/patientsFixtures';
-import { apiRoutes } from '@aph/universal/aphRoutes';
 import { Relation } from 'graphql/types/globalTypes';
+import schema from '@aph/api-schema/schema.json';
+import { getCurrentPatientsFixture } from 'cypress/fixtures/patientsFixtures';
 
 describe('Login', () => {
+  const getCurrentPatientsResult = getCurrentPatientsFixture();
+
   beforeEach(() => {
     cy.signOut();
     cy.server();
-    cy.route('POST', apiRoutes.graphql(), currentPatientsResult);
-    // Add a wait after visiting because firebase will immediately think it's signing in
-    // (until it realizes there is no auth token present), during this time the profile circle is not clickable
+    cy.mockAphGraphql({ schema });
+    cy.mockAphGraphqlOps({
+      operations: {
+        GetCurrentPatients: getCurrentPatientsResult,
+      },
+    });
     cy.visit(`${clientBaseUrl()}${clientRoutes.welcome()}`).wait(500);
   });
-
-  const currentPatientsResult = getCurrentPatientsFixture();
 
   it('Can do a real login with firebase', () => {
     cy.get('[data-cypress="Navigation"]').should('not.exist');
@@ -40,7 +43,7 @@ describe('Login', () => {
   });
 
   it('Shows "me" selected in hello dropdown', () => {
-    const me = currentPatientsResult.data.getCurrentPatients!.patients.find(
+    const me = getCurrentPatientsResult.getCurrentPatients!.patients.find(
       (p) => p.relation === Relation.ME
     );
     cy.contains('hello');
