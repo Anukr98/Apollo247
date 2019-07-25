@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React from 'react';
+import React, { useState } from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
@@ -36,8 +36,8 @@ const useStyles = makeStyles((theme: Theme) => {
     button: {
       fontSize: 16,
       fontWeight: 500,
-      marginLeft: 8,
-      marginRight: 8,
+      marginLeft: 7,
+      marginRight: 7,
       textTransform: 'none',
       borderRadius: 10,
       paddingLeft: 10,
@@ -53,42 +53,80 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     bottomActions: {
       padding: '30px 15px 15px 15px',
+      '& button': {
+        borderRadius: 10,
+        textTransform: 'none',
+      },
     },
     customScrollBar: {
       paddingTop: 10,
       paddingBottom: 10,
-      height: '50vh',
+      maxHeight: '50vh',
       overflow: 'auto',
     },
     timeSlots: {
       paddingTop: 0,
+    },
+    scheduleCalendar: {
+      display: 'none',
+    },
+    scheduleTimeSlots: {
+      display: 'none',
+    },
+    showCalendar: {
+      display: 'block',
+    },
+    showTimeSlot: {
+      display: 'block',
     },
   };
 });
 
 export const OnlineConsult: React.FC = (props) => {
   const classes = useStyles();
+  const [showCalendar, setShowCalendar] = useState<boolean>(false);
 
   return (
     <div className={classes.root}>
       <div className={classes.customScrollBar}>
         <div className={classes.consultGroup}>
           <p>
-            Dr. Simran is available in 15mins! Would you like to consult now or schedule for later?
+            Dr. Simran is available in 15mins!
+            <br /> Would you like to consult now or schedule for later?
           </p>
           <div className={classes.actions}>
-            <AphButton color="secondary" className={`${classes.button} ${classes.buttonActive}`}>
+            <AphButton
+              onClick={(e) => {
+                setShowCalendar(false);
+              }}
+              color="secondary"
+              className={`${classes.button} ${!showCalendar ? classes.buttonActive : ''}`}
+            >
               Consult Now
             </AphButton>
-            <AphButton color="secondary" className={classes.button}>
+            <AphButton
+              onClick={(e) => {
+                setShowCalendar(!showCalendar);
+              }}
+              color="secondary"
+              className={`${classes.button} ${showCalendar ? classes.buttonActive : ''}`}
+            >
               Schedule For Later
             </AphButton>
           </div>
         </div>
-        <div className={classes.consultGroup}>
+        <div
+          className={`${classes.consultGroup} ${classes.scheduleCalendar} ${
+            showCalendar ? classes.showCalendar : ''
+          }`}
+        >
           <AphCalendar />
         </div>
-        <div className={`${classes.consultGroup} ${classes.timeSlots}`}>
+        <div
+          className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
+            showCalendar ? classes.showTimeSlot : ''
+          }`}
+        >
           <DayTimeSlots />
         </div>
       </div>

@@ -98,7 +98,6 @@ export const Header: React.FC = (props) => {
             <img src={require('images/ic_logo.png')} />
           </Link>
         </div>
-        {/* {isSignedIn && <Navigation />} */}
         <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup, isProtected }) => (

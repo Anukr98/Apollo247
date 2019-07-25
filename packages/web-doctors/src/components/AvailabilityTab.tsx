@@ -455,7 +455,7 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
                 variant="contained"
                 color="primary"
                 className={`${classes.btnAddDoctor} ${classes.pointerNone}`}
-                onClick={(e) => setShowOperatingHoursForm(!showOperatingHoursForm)}
+                onClick={() => setShowOperatingHoursForm(!showOperatingHoursForm)}
               >
                 + ADD CONSULTATION HOURS
               </AphButton>
