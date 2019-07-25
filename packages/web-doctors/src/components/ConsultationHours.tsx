@@ -3,7 +3,7 @@ import { Theme } from '@material-ui/core';
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import { DaySelector } from 'components/DaySelector';
+import { DaySelector, Day } from 'components/DaySelector';
 import { AphButton, AphInput } from '@aph/web-ui-components';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
@@ -14,7 +14,6 @@ import {
 } from 'graphql/types/getDoctorProfile';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Divider from '@material-ui/core/Divider';
-import format from 'date-fns/format';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -253,7 +252,11 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
   const classes = useStyles();
   const data = values;
   function convertTime(time: string) {
-    return format(new Date('1970-01-01T' + time), 'p');
+    return new Date('1970-01-01T' + time).toLocaleString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
   }
   const AvailabilityHtml =
     data && data.consultationHours
@@ -309,7 +312,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                           <Typography variant="h5" className={classes.timeForm}>
                             Which days you wish to apply these hours to?
                           </Typography>
-                          <DaySelector selectedDays={item.days} />
+                          <DaySelector selectedDays={item.days as Day} />
                         </div>
                         <div>
                           <Typography variant="h5" className={classes.timeForm}>

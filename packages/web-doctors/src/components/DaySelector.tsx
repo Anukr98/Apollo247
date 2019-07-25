@@ -23,12 +23,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-interface DaySelectorProps {
-  selectedDays: string;
+export type Day = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
+export interface DaySelectorProps {
+  selectedDays: Day;
 }
 export const DaySelector: React.FC<DaySelectorProps> = (selectedDays) => {
   const classes = useStyles();
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const days: Day[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const dayshtml = days.map((day) => (
     <AphButton
       key={day}
