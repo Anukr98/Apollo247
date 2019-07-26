@@ -291,6 +291,7 @@ export const SignIn: React.FC = (props) => {
               `Try again after  ${Math.floor(timer / 60)}:${
                 timer % 60 <= 9 ? `0` + (timer % 60) : timer % 60
               }`}
+
           </div>
           <div className={classes.errorText}>
             {!showTimer &&
