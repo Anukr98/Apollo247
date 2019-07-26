@@ -344,20 +344,6 @@ export const DoctorsLanding: React.FC = (props) => {
                           </div>
                         </>
                       ) : null}
-                      <div className={classes.sectionHeader}>
-                        <span>
-                          {filterOptions.searchKeyword !== '' && showSearchAndPastSearch
-                            ? 'Matching Specialities'
-                            : 'Specialities'}
-                        </span>
-                        <span className={classes.count}>
-                          {filterOptions.searchKeyword !== ''
-                            ? matchingSpecialities > 0 && matchingSpecialities < 10
-                              ? `0${matchingSpecialities}`
-                              : matchingSpecialities
-                            : ''}
-                        </span>
-                      </div>
                       <Specialities
                         keyword={filterOptions.searchKeyword}
                         matched={(matchingSpecialities) =>
@@ -369,6 +355,11 @@ export const DoctorsLanding: React.FC = (props) => {
                         disableFilter={(disableFilters) => {
                           setDisableFilters(disableFilters);
                         }}
+                        subHeading={
+                          filterOptions.searchKeyword !== '' && showSearchAndPastSearch
+                            ? 'Matching Specialities'
+                            : 'Specialities'
+                        }
                       />
                     </>
                   ) : (
@@ -381,6 +372,7 @@ export const DoctorsLanding: React.FC = (props) => {
                       disableFilter={(disableFilters) => {
                         setDisableFilters(disableFilters);
                       }}
+                      subHeading=""
                     />
                   )}
                 </>

@@ -146,7 +146,6 @@ export const PossibleSpecialitiesAndDoctors: React.FC<SpecialitiesProps> = (prop
 
   if (data && data.SearchDoctorAndSpecialty && !loading) {
     const matchingDoctors = data.SearchDoctorAndSpecialty.doctors.length;
-    const matchingSpecialities = data.SearchDoctorAndSpecialty.length;
     return (
       <>
         <div className={classes.sectionHeader}>
@@ -164,15 +163,12 @@ export const PossibleSpecialitiesAndDoctors: React.FC<SpecialitiesProps> = (prop
             );
           })}
         </Grid>
-        <div className={classes.sectionHeader}>
-          <span>Possible Specialities</span>
-          <span className={classes.count}>{matchingSpecialities}</span>
-        </div>
         <Specialities
           keyword=""
           matched={matched}
           speciality={speciality}
           disableFilter={disableFilter}
+          subHeading="Possible Specialities"
         />
       </>
     );
