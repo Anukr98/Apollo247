@@ -51,12 +51,27 @@ const useStyles = makeStyles((theme: Theme) => {
         marginBottom: 9,
       },
     },
+    errorText: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#890000',
+      marginTop: 10,
+      lineHeight: 2,
+    },
     helpText: {
       fontSize: 12,
       fontWeight: 500,
       color: 'rgba(2,71,91,0.5)',
       marginTop: 10,
       lineHeight: 2,
+    },
+    timerText: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#02475b',
+      marginTop: 10,
+      lineHeight: 2,
+      opacity: 0.5,
     },
     action: {
       paddingTop: 0,
@@ -165,7 +180,7 @@ export const SignIn: React.FC = (props) => {
     if (submitCount > 0) {
       if (submitCount === 3) {
         setShowTimer(true);
-
+        setOtp([]);
         const intervalId = setInterval(() => {
           countDown.current--;
           setTimer(countDown.current);
@@ -259,14 +274,14 @@ export const SignIn: React.FC = (props) => {
                   focusPreviousInput();
                 }
               }}
-              error={verifyOtpError}
+              error={submitCount != 3 && verifyOtpError}
             />
           </Grid>
         ))}
       </Grid>
       {verifyOtpError && (
-        <FormHelperText component="div" className={classes.helpText} error={verifyOtpError}>
-          <div>
+        <FormHelperText component="div" error={verifyOtpError}>
+          <div className={classes.timerText}>
             {' '}
             {!(isSigningIn || isVerifyingOtp) &&
               showTimer &&
@@ -275,7 +290,7 @@ export const SignIn: React.FC = (props) => {
                 ':' +
                 (timer % 60 <= 9 ? '0' + (timer % 60) : timer % 60)}
           </div>
-          <div>
+          <div className={classes.errorText}>
             {' '}
             {!showTimer &&
               submitCount == 2 &&
