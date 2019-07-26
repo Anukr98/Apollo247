@@ -274,7 +274,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                   </div>
                   <div className={classes.columnDays}>
                     <Typography className={classes.heading}>
-                      {item.days} | {item.availableForPhysicalConsultation && 'Physical'}
+                      {item.days} &nbsp; | &nbsp; {item.availableForPhysicalConsultation && 'Physical'}
                       {item.availableForPhysicalConsultation &&
                         item.availableForVirtualConsultation &&
                         ', '}

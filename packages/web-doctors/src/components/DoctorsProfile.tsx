@@ -106,7 +106,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface DoctorsProfileProps {}
+export interface DoctorsProfileProps { }
 
 export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) => {
   const classes = useStyles();
@@ -184,7 +184,7 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
               )}
             </div>
             {selectedTabIndex < 3 && (
-              <AppBar position="static" color="default">
+              <AppBar position="static" color="default" className={classes.tabBarHeading}>
                 <Tabs
                   value={selectedTabIndex}
                   indicatorColor="secondary"

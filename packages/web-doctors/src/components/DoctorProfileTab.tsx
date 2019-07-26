@@ -42,13 +42,15 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: '22px',
         padding: '3px 5px 5px 20px',
         fontSize: 16,
-        fontWeight: 600,
+        fontWeight: 500,
         color: '#02475b',
       },
       '& h4': {
         padding: '5px 5px 5px 0',
         marginLeft: 20,
         borderBottom: 'solid 0.5px rgba(98,22,64,0.2)',
+        fontSize: 20,
+        fontWeight: 600,
       },
       '& h5': {
         padding: '5px 5px 3px 20px',
@@ -59,6 +61,8 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '5px 5px 5px 0',
         letterSpacing: '0.3px',
         marginLeft: 20,
+        fontSize: 12,
+        fontWeight: 600,
         '& span': {
           padding: '0 2px',
         },
@@ -155,9 +159,6 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#fff',
       },
-    },
-    addDocter: {
-      marginTop: '20px',
     },
     btnAddDoctor: {
       backgroundColor: 'transparent',
@@ -300,7 +301,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           </Mutation>
         }
         title={`Dr. ${doctor.firstName} ${doctor.lastName}`}
-        //subheader={<span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>}
+      //subheader={<span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>}
       />
       {doctor.inviteStatus === INVITEDSTATUS.ACCEPTED && (
         <CardContent>MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills</CardContent>
@@ -338,7 +339,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const classes = useStyles();
 
   return (
-    <div className={classes.ProfileContainer}>
+    <div >
       <Typography variant="h2">Basic Details</Typography>
       <div className={classes.tabContent}>
         <Grid container alignItems="flex-start" spacing={0}>
@@ -435,7 +436,7 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
   const numStarDoctors = starDoctors.length;
 
   return (
-    <div>
+    <div className={classes.ProfileContainer}>
       <DoctorDetails doctor={doctorProfile} clinics={clinics} />
 
       {doctorProfile.isStarDoctor && (
@@ -444,7 +445,7 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
             Your Star Doctors Team ({numStarDoctors})
           </Typography>
           <StarDoctorsList starDoctors={starDoctors} />
-          <div className={classes.addDocter}>
+          <div>
             <AphButton variant="contained" color="primary" classes={{ root: classes.btnAddDoctor }}>
               + ADD DOCTOR
             </AphButton>
