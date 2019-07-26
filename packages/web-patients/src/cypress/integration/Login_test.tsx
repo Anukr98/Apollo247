@@ -1,10 +1,10 @@
 import { clientRoutes, clientBaseUrl } from 'helpers/clientRoutes';
 import { Relation } from 'graphql/types/globalTypes';
 import schema from '@aph/api-schema/schema.json';
-import { getCurrentPatientsFixture } from 'cypress/fixtures/patientsFixtures';
+import { jane, john } from 'cypress/fixtures/patientsFixtures';
 
 describe('Login', () => {
-  const getCurrentPatientsResult = getCurrentPatientsFixture();
+  const patients = [jane, john];
 
   beforeEach(() => {
     cy.signOut();
@@ -12,7 +12,12 @@ describe('Login', () => {
     cy.mockAphGraphql({ schema });
     cy.mockAphGraphqlOps({
       operations: {
-        GetCurrentPatients: getCurrentPatientsResult,
+        GetCurrentPatients: {
+          getCurrentPatients: {
+            __typename: 'GetCurrentPatientsResult',
+            patients,
+          },
+        },
       },
     });
     cy.visit(`${clientBaseUrl()}${clientRoutes.welcome()}`).wait(500);
@@ -43,9 +48,7 @@ describe('Login', () => {
   });
 
   it('Shows "me" selected in hello dropdown', () => {
-    const me = getCurrentPatientsResult.getCurrentPatients!.patients.find(
-      (p) => p.relation === Relation.ME
-    );
+    const me = patients.find((p) => p.relation === Relation.ME);
     cy.contains('hello');
     cy.contains(me!.firstName!.toLowerCase());
   });
