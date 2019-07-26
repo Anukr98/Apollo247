@@ -16,6 +16,20 @@ const useStyles = makeStyles((theme: Theme) => {
     root: {
       width: '100%',
     },
+    sectionHeader: {
+      color: '#02475b',
+      fontSize: 14,
+      fontWeight: 500,
+      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      paddingBottom: 10,
+      paddingTop: 10,
+      marginBottom: 20,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    count: {
+      marginLeft: 'auto',
+    },
     searchList: {
       paddingBottom: 20,
       [theme.breakpoints.down('xs')]: {
@@ -75,12 +89,13 @@ export interface SpecialitiesProps {
   matched: (matchedSpecialities: number) => void;
   speciality: (specialitySelected: string) => void;
   disableFilter: (disableFilters: boolean) => void;
+  subHeading: string;
 }
 
 export const Specialities: React.FC<SpecialitiesProps> = (props) => {
   const classes = useStyles();
   const { loading, error, data } = useQueryWithSkip<GetSpecialties>(GET_SPECIALITIES);
-  const { keyword, matched, speciality, disableFilter } = props;
+  const { keyword, matched, speciality, disableFilter, subHeading } = props;
 
   if (loading) {
     return <LinearProgress variant="query" />;
@@ -90,53 +105,62 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
     return <div>Error! {error.message}</div>;
   }
 
-  const filterValues = (specialities: any) => {
-    const filteredValues = _filter(specialities, (specialityDetails) =>
+  const filterValues = (data: GetSpecialties) => {
+    const filteredValues = _filter(data.getSpecialties, (specialityDetails) =>
       _startsWith(_toLower(specialityDetails.name || ''), _toLower(keyword))
     );
-    // console.log(filteredValues, keyword);
     matched(filteredValues.length);
     return filteredValues;
   };
 
   if (data && data.getSpecialties) {
     const filterSpecialites =
-      keyword !== '' && Object.keys(data) ? filterValues(data.getSpecialties) : data.getSpecialties;
-
+      keyword !== '' && Object.keys(data) ? filterValues(data) : data.getSpecialties;
     return (
-      <div className={classes.root}>
-        <div className={classes.searchList}>
-          <Grid container spacing={2}>
-            {_map(filterSpecialites, (specialityDetails) => {
-              return (
-                <Grid
-                  item
-                  xs={6}
-                  sm={6}
-                  md={4}
-                  lg={3}
-                  key={_uniqueId('special_')}
-                  title={specialityDetails.name}
-                  onClick={(e) => {
-                    speciality(e.currentTarget.title);
-                    disableFilter(false);
-                  }}
-                >
-                  <div className={classes.contentBox}>
-                    <Avatar
-                      alt={specialityDetails.name}
-                      src={specialityDetails.image}
-                      className={classes.bigAvatar}
-                    />
-                    {specialityDetails.name}
-                  </div>
-                </Grid>
-              );
-            })}
-          </Grid>
+      <>
+        <div className={classes.sectionHeader}>
+          <span>{subHeading}</span>
+          <span className={classes.count}>
+            {filterSpecialites.length > 0 && filterSpecialites.length < 10
+              ? `0${filterSpecialites.length}`
+              : filterSpecialites.length}
+          </span>
         </div>
-      </div>
+        <div className={classes.root}>
+          <div className={classes.searchList}>
+            <Grid container spacing={2}>
+              {_map(filterSpecialites, (specialityDetails) => {
+                return (
+                  <Grid
+                    item
+                    xs={6}
+                    sm={6}
+                    md={4}
+                    lg={3}
+                    key={_uniqueId('special_')}
+                    title={specialityDetails.name || ''}
+                    onClick={(e) => {
+                      speciality(e.currentTarget.title);
+                      disableFilter(false);
+                    }}
+                  >
+                    <div className={classes.contentBox}>
+                      <Avatar
+                        alt={specialityDetails.name || ''}
+                        src={specialityDetails.image || ''}
+                        className={classes.bigAvatar}
+                      />
+                      {specialityDetails.name}
+                    </div>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </div>
+        </div>
+      </>
     );
+    return <></>;
   } else {
     return <LinearProgress variant="query" />;
   }

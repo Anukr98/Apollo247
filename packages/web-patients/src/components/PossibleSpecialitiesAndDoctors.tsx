@@ -164,15 +164,12 @@ export const PossibleSpecialitiesAndDoctors: React.FC<SpecialitiesProps> = (prop
             );
           })}
         </Grid>
-        <div className={classes.sectionHeader}>
-          <span>Possible Specialities</span>
-          <span className={classes.count}>{matchingSpecialities}</span>
-        </div>
         <Specialities
           keyword=""
           matched={matched}
           speciality={speciality}
           disableFilter={disableFilter}
+          subHeading="Possible Specialities"
         />
       </>
     );
