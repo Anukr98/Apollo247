@@ -128,7 +128,7 @@ export const HeroBanner: React.FC = () => {
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
 
   return (
-    <div className={classes.heroBanner}>
+    <div className={classes.heroBanner} data-cypress="HeroBanner">
       <div className={classes.bannerInfo}>
         {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
           <Typography variant="h1">
