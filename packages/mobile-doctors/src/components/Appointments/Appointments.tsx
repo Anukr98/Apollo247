@@ -1,38 +1,26 @@
+import { AppointmentsList } from '@aph/mobile-doctors/src/components/Appointments/AppointmentsList';
+import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
-  CalendarTodayIcon,
-  Notification,
-  RoundIcon,
-  DotIcon,
-  Up,
-  Down,
-  Send,
   Block,
   CalendarIcon,
+  CalendarTodayIcon,
+  DotIcon,
+  Down,
+  Notification,
+  RoundIcon,
+  Up,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useRef, useState, useEffect } from 'react';
-import { Alert, SafeAreaView, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { CalendarHeader } from './CalendarHeader';
 import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
-import { AppointmentsList } from '@aph/mobile-doctors/src/components/Appointments/AppointmentsList';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import React, { useRef, useState } from 'react';
+import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
-import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { CalendarHeader } from './CalendarHeader';
 
-let data = [
-  {
-    value: 'Banana',
-  },
-  {
-    value: 'Mango',
-  },
-  {
-    value: 'Pear',
-  },
-];
 const styles = StyleSheet.create({
   noappointments: {
     ...theme.fonts.IBMPlexSansMedium(12),

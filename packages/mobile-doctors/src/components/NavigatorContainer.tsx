@@ -13,6 +13,10 @@ import { ProfileSetup } from '@aph/mobile-doctors/src/components/ProfileSetup/Pr
 import { TabBar } from '@aph/mobile-doctors/src/components/TabBar';
 import { TransitionPage } from '@aph/mobile-doctors/src/components/TransitionPage';
 import { NeedHelpDonePage } from '@aph/mobile-doctors/src/components/NeedHelpDonePage';
+import { AppointmentNotifications } from '@aph/mobile-doctors/src/components/Appointments/AppointmentNotifications';
+import { NeedHelpAppointment } from '@aph/mobile-doctors/src/components/Appointments/NeedHelpAppointment';
+import { CallRequestScreen } from '@aph/mobile-doctors/src/components/Appointments/CallRequestScreen';
+
 import {
   createAppContainer,
   createStackNavigator,
@@ -36,6 +40,9 @@ export enum AppRoutes {
   ProfileSetup = 'ProfileSetup',
   TransitionPage = 'TransitionPage',
   NeedHelpDonePage = 'NeedHelpDonePage',
+  AppointmentNotifications = 'AppointmentNotifications',
+  NeedHelpAppointment = 'NeedHelpAppointment',
+  CallRequestScreen = 'CallRequestScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -92,6 +99,15 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.NeedHelpDonePage]: {
     screen: NeedHelpDonePage,
+  },
+  [AppRoutes.AppointmentNotifications]: {
+    screen: AppointmentNotifications,
+  },
+  [AppRoutes.NeedHelpAppointment]: {
+    screen: NeedHelpAppointment,
+  },
+  [AppRoutes.CallRequestScreen]: {
+    screen: CallRequestScreen,
   },
 };
 
