@@ -6,13 +6,12 @@
     "allowJs": true,
     "esModuleInterop": true,
     "sourceMap": true,
-    "noImplicitAny": true,
     "noEmitOnError": true,
     "allowSyntheticDefaultImports": true,
     "allowUnreachableCode": true,
-    "strictNullChecks": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
+    "strict": true,
     "lib": ["es5", "es6"]
   }
 }
