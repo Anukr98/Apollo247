@@ -67,6 +67,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '& button': {
         marginLeft: 'auto',
         marginRight: -40,
+        backgroundColor: '#fc9916',
+        '&:hover': {
+          backgroundColor: '#fc9916',
+        },
         '&:disabled': {
           backgroundColor: '#fed6a2',
           boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2) !important',
@@ -271,9 +275,9 @@ export const SignIn: React.FC = (props) => {
             {!(isSigningIn || isVerifyingOtp) &&
               showTimer &&
               'Try again after ' +
-                Math.floor(timer / 60) +
-                ':' +
-                (timer % 60 <= 9 ? '0' + (timer % 60) : timer % 60)}
+              Math.floor(timer / 60) +
+              ':' +
+              (timer % 60 <= 9 ? '0' + (timer % 60) : timer % 60)}
           </div>
           <div>
             {' '}
@@ -300,19 +304,19 @@ export const SignIn: React.FC = (props) => {
           GET HELP
         </Button>
       ) : (
-        <Button
-          variant="text"
-          className={classes.resendBtn}
-          disabled={isSendingOtp}
-          onClick={() => {
-            setOtp([]);
-            setSubmitCount(0);
-            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
-          }}
-        >
-          Resend OTP
+          <Button
+            variant="text"
+            className={classes.resendBtn}
+            disabled={isSendingOtp}
+            onClick={() => {
+              setOtp([]);
+              setSubmitCount(0);
+              sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
+            }}
+          >
+            Resend OTP
         </Button>
-      )}
+        )}
 
       <div ref={placeRecaptchaAfterMe} />
       <div className={classes.action}>
@@ -327,84 +331,84 @@ export const SignIn: React.FC = (props) => {
           {isSigningIn || isSendingOtp || isVerifyingOtp || showTimer ? (
             <CircularProgress className={classes.loader} />
           ) : (
-            <img src={require('images/ic_arrow_forward.svg')} />
-          )}
+              <img src={require('images/ic_arrow_forward.svg')} />
+            )}
         </Fab>
       </div>
     </div>
   ) : (
-    <div className={classes.loginFormWrap}>
-      <Typography variant="h2">hello!</Typography>
-      <p>Please enter your mobile number to login</p>
-      <FormControl fullWidth>
-        <AphInput
-          autoFocus
-          inputProps={{ type: 'tel', maxLength: 10 }}
-          value={mobileNumber}
-          onPaste={(e) => {
-            if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
-          }}
-          onChange={(event) => {
-            setMobileNumber(event.currentTarget.value);
-            if (event.currentTarget.value !== '') {
-              if (isMobileNumberValid(event.currentTarget.value)) {
-                setPhoneMessage(validPhoneMessage);
-                setShowErrorMessage(false);
-              } else {
-                setPhoneMessage(invalidPhoneMessage);
-                setShowErrorMessage(true);
+        <div className={classes.loginFormWrap}>
+          <Typography variant="h2">hello!</Typography>
+          <p>Please enter your mobile number to login</p>
+          <FormControl fullWidth>
+            <AphInput
+              autoFocus
+              inputProps={{ type: 'tel', maxLength: 10 }}
+              value={mobileNumber}
+              onPaste={(e) => {
+                if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
+              }}
+              onChange={(event) => {
+                setMobileNumber(event.currentTarget.value);
+                if (event.currentTarget.value !== '') {
+                  if (isMobileNumberValid(event.currentTarget.value)) {
+                    setPhoneMessage(validPhoneMessage);
+                    setShowErrorMessage(false);
+                  } else {
+                    setPhoneMessage(invalidPhoneMessage);
+                    setShowErrorMessage(true);
+                  }
+                } else {
+                  setPhoneMessage(validPhoneMessage);
+                  setShowErrorMessage(false);
+                }
+              }}
+              error={mobileNumber.trim() !== '' && !isMobileNumberValid(mobileNumber)}
+              onKeyPress={(e) => {
+                if (isNaN(parseInt(e.key, 10))) {
+                  e.preventDefault();
+                }
+              }}
+              startAdornment={
+                <InputAdornment className={classes.inputAdornment} position="start">
+                  {mobileNumberPrefix}
+                </InputAdornment>
               }
-            } else {
-              setPhoneMessage(validPhoneMessage);
-              setShowErrorMessage(false);
-            }
-          }}
-          error={mobileNumber.trim() !== '' && !isMobileNumberValid(mobileNumber)}
-          onKeyPress={(e) => {
-            if (isNaN(parseInt(e.key, 10))) {
-              e.preventDefault();
-            }
-          }}
-          startAdornment={
-            <InputAdornment className={classes.inputAdornment} position="start">
-              {mobileNumberPrefix}
-            </InputAdornment>
-          }
-        />
-        <FormHelperText component="div" className={classes.helpText} error={showErrorMessage}>
-          {sendOtpError ? 'Error sending OTP' : phoneMessage}
-        </FormHelperText>
-      </FormControl>
-      <Button
-        variant="text"
-        className={classes.resendBtn}
-        disabled={!showErrorMessage}
-        onClick={() => {
-          setDisplayGetHelp(true);
-        }}
-      >
-        GET HELP
+            />
+            <FormHelperText component="div" className={classes.helpText} error={showErrorMessage}>
+              {sendOtpError ? 'Error sending OTP' : phoneMessage}
+            </FormHelperText>
+          </FormControl>
+          <Button
+            variant="text"
+            className={classes.resendBtn}
+            disabled={!showErrorMessage}
+            onClick={() => {
+              setDisplayGetHelp(true);
+            }}
+          >
+            GET HELP
       </Button>
 
-      <div className={classes.action}>
-        <Fab
-          color="primary"
-          aria-label="Sign in"
-          disabled={!isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10}
-          onClick={() =>
-            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
-              setDisplayOtpInput(true)
-            )
-          }
-        >
-          {isSendingOtp ? (
-            <CircularProgress className={classes.loader} />
-          ) : (
-            <img src={require('images/ic_arrow_forward.svg')} />
-          )}
-        </Fab>
-      </div>
-      <div className={classes.captcha} ref={placeRecaptchaAfterMe} />
-    </div>
-  );
+          <div className={classes.action}>
+            <Fab
+              color="primary"
+              aria-label="Sign in"
+              disabled={!isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10}
+              onClick={() =>
+                sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
+                  setDisplayOtpInput(true)
+                )
+              }
+            >
+              {isSendingOtp ? (
+                <CircularProgress className={classes.loader} />
+              ) : (
+                  <img src={require('images/ic_arrow_forward.svg')} />
+                )}
+            </Fab>
+          </div>
+          <div className={classes.captcha} ref={placeRecaptchaAfterMe} />
+        </div>
+      );
 };

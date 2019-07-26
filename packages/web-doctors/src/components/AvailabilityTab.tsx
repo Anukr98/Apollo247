@@ -90,16 +90,26 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     saveButton: {
       minWidth: 300,
+      fontSize: 15,
+      padding: '8px 16px',
+      lineHeight: '24px',
+      fontWeight: theme.typography.fontWeightBold,
       margin: theme.spacing(1),
+      backgroundColor: '#fc9916',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
-        backgroundColor: '#fcb716',
+        backgroundColor: '#fc9916',
       },
     },
     backButton: {
       minWidth: 120,
+      fontSize: 15,
+      padding: '8px 16px',
+      fontWeight: theme.typography.fontWeightBold,
       color: '#fc9916',
       backgroundColor: '#fff',
       margin: theme.spacing(1),
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
         backgroundColor: '#fff',
       },
@@ -122,9 +132,6 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 30,
       paddingTop: 15,
       textAlign: 'right',
-      '& button': {
-        padding: '9px 16px',
-      },
     },
     btnActive: {
       backgroundColor: '#00b38e',
