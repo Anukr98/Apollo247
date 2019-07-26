@@ -1,9 +1,9 @@
-import React, { forwardRef, useImperativeHandle, useRef } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { FlatList, ScrollView } from 'react-navigation';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { CalenderCard } from '@aph/mobile-doctors/src/components/Appointments/CalenderCard';
+import { Appointments, DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({});
 
@@ -60,7 +60,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     );
   };
 
-  const showText = (apdata: any) => {
+  const showText = (apdata: Appointments) => {
     return (
       <View>
         <Text
@@ -93,7 +93,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     <ScrollView bounces={false}>
       <View style={{ backgroundColor: '#f7f7f7', flex: 1, flexDirection: 'row' }}>
         <View style={{ marginTop: 70 }}>
-          {getDoctorProfile.appointments.map((i: any, index: number, array: any) => {
+          {getDoctorProfile.appointments.map((i, index, array) => {
             return (
               <>
                 {getStatusCircle('current')}
@@ -104,7 +104,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
         </View>
 
         <View>
-          {getDoctorProfile.appointments.map((i: any, index: number, array: any) => {
+          {getDoctorProfile.appointments.map((i, index, array) => {
             console.log('array', array);
             const containerStyle =
               i.timeslottype == 'MISSED'

@@ -62,7 +62,7 @@ export interface FeesProps {
 }
 
 export const Fees: React.FC<FeesProps> = ({ profileData }) => {
-  const Feedata: any = profileData!.profile;
+  const Feedata = profileData!.profile;
   const BankDetails = profileData!.paymentDetails![0];
   console.log('fee', Feedata);
   console.log('BankDetails', BankDetails);
@@ -126,7 +126,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
               <Text style={styles.feeeducationbold}> online</Text>
               <Text style={styles.feeeducation}> consultation fees?</Text>
             </Text>,
-            Feedata.onlineConsultationFees
+            Feedata!.onlineConsultationFees
           )}
           {feeprofileRowBold(
             <Text>
@@ -134,9 +134,9 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
               <Text style={styles.feeeducationbold}> physical</Text>
               <Text style={styles.feeeducation}> consultation fees?</Text>
             </Text>,
-            Feedata.physicalConsultationFees
+            Feedata!.physicalConsultationFees
           )}
-          {feeprofileRow('What package do you offer your patients?', Feedata.package)}
+          {feeprofileRow('What package do you offer your patients?', Feedata!.package || '')}
         </View>
       )}
       {renderCard(
@@ -150,9 +150,12 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
             {showPaymentDetails ? (
               <>
                 <View style={styles.separator}></View>
-                {feeprofileRowdetails('Account Holder’s Name', 'Dr. Simran Rao')}
-                {feeprofileRowdetails('IFSC Code', '000 123 456 7890')}
-                {feeprofileRowdetails('Account Type', Feedata.accountType)}
+                {feeprofileRowdetails(
+                  'Account Holder’s Name',
+                  `Dr. ${Feedata!.firstName} ${Feedata!.lastName}`
+                )}
+                {feeprofileRowdetails('IFSC Code', 'SBIN 000 1109')}
+                {feeprofileRowdetails('Account Type', 'Savings Account')}
               </>
             ) : null}
           </View>

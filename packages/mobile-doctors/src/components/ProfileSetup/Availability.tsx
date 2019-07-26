@@ -6,7 +6,7 @@ import { SelectableButton } from '../ui/SelectableButton';
 import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
 import { Add } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { getDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
-
+import { format } from 'date-fns';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -43,12 +43,12 @@ export interface AvailabilityProps {
 
 export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
   const [consultationType, setConsultationType] = useState({ physical: false, online: false });
+
   const get12HrsFormat = (timeString: string /* 12:30 */) => {
-    const H = +timeString.substr(0, 2);
-    const h = H % 12 || 12;
-    const ampm = H < 12 ? 'AM' : 'PM';
-    return h + timeString.substr(2, 3) + ' ' + ampm;
+    const hoursAndMinutes = timeString.split(':').map((i) => parseInt(i));
+    return format(new Date(0, 0, 0, hoursAndMinutes[0], hoursAndMinutes[1]), 'h:mm a');
   };
+
   const fromatConsultationHours = (startTime: string, endTime: string /* input eg.: 15:15:30Z */) =>
     `${get12HrsFormat(startTime.replace('Z', ''))} - ${get12HrsFormat(endTime.replace('Z', ''))}`;
 

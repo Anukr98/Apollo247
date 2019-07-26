@@ -9,10 +9,21 @@ import {
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Alert, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Keyboard,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+} from 'react-native';
 import { DoctorProfile, Doctor } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import Highlighter from 'react-native-highlight-words';
 import { getDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import { INVITEDSTATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { getDoctorsForStarDoctorProgram } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 
 const styles = StyleSheet.create({
   inputTextStyle: {
@@ -47,11 +58,15 @@ export interface StarDoctorsTeamProps {
   profileData: getDoctorProfile_getDoctorProfile;
 }
 
-export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData }) => {
+export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _profileData }) => {
   const [addshow, setAddShow] = useState<boolean>(false);
   const [doctorSearchText, setDoctorSearchText] = useState<string>('');
   const [filteredStarDoctors, setFilteredStarDoctors] = useState<Doctor[]>([]);
   const [isShowAddDoctorButton, setIsShowAddDoctorButton] = useState<boolean>(false);
+  const [suggestionCardHeight, setSuggestionCardHeight] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [profileData, setProfileData] = useState(_profileData);
 
   const [isSuggestionExist, setIsSuggestionExist] = useState<boolean>(false);
   const client = useApolloClient();
@@ -98,25 +113,40 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
     setIsShowAddDoctorButton(true);
   };
 
-  const addDoctorToProgram = () => {
+  const addDoctorToProgram = (name: string) => {
     setIsShowAddDoctorButton(false);
     setDoctorSearchText('');
     setIsSuggestionExist(false);
+    setIsLoading(true);
     client
       .mutate({
         mutation: ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM,
         variables: { starDoctorId: '1', doctorId: '2' },
       })
       .then((_data: any | boolean) => {
-        console.log(_data);
+        setIsLoading(false);
+        // Note: This is for demo/testing purpose only, do real implementation after real API
+        const array = [...profileData.starDoctorTeam!];
+        array.push({
+          ...profileData.starDoctorTeam![0]!,
+          id: Math.random().toString(36),
+          firstName: name.replace('Dr. ', ''),
+          lastName: '',
+          inviteStatus: INVITEDSTATUS.ACCEPTED,
+        });
+        setProfileData({ ...profileData, starDoctorTeam: array });
       })
       .catch((e: any) => {
+        setIsLoading(false);
         console.log('Error occured while adding Doctor', e);
         // Alert.alert('Error occured while adding Doctor');
       });
   };
 
   const removeDoctorFromProgram = (id: string) => {
+    const array = [...profileData.starDoctorTeam!];
+    setProfileData({ ...profileData, starDoctorTeam: array.filter((i) => i!.id !== id) });
+
     client
       .mutate({
         mutation: REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM,
@@ -149,7 +179,13 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
   };
 
   const renderSuggestionCard = () => (
-    <View style={{ marginTop: 2 }}>
+    <View
+      style={{ marginTop: 2 }}
+      onLayout={(layout) => {
+        const { height } = layout.nativeEvent.layout;
+        setSuggestionCardHeight(height);
+      }}
+    >
       {filteredStarDoctors.length > 0 ? (
         <View
           style={{
@@ -157,7 +193,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
             paddingBottom: 15,
             position: 'absolute',
             top: 0,
-            zIndex: 2,
+            zIndex: 3,
             width: '100%',
             alignSelf: 'center',
             justifyContent: 'flex-end',
@@ -218,9 +254,14 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
           specialization={(starDoctor!.specialization || '').toUpperCase()}
           education={starDoctor!.education}
           location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
-          inviteStatus={starDoctor!.inviteStatus! == 'ACCEPTED' ? 'accepted' : 'Not accepted'}
+          inviteStatus={
+            starDoctor!.inviteStatus! == 'ACCEPTED'
+              ? INVITEDSTATUS.ACCEPTED
+              : INVITEDSTATUS.NOTAPPLICABLE
+          }
         />
       ))}
+      {isLoading && <ActivityIndicator style={{ marginBottom: 16 }} />}
       {!addshow ? (
         <View style={{ flexDirection: 'row', margin: 20, marginTop: 7 }}>
           <Add />
@@ -250,7 +291,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
                 onChange={(text) => filterDoctors(text.nativeEvent.text)}
               />
               {isShowAddDoctorButton ? (
-                <TouchableOpacity onPress={addDoctorToProgram}>
+                <TouchableOpacity onPress={() => addDoctorToProgram(doctorSearchText)}>
                   <Send />
                 </TouchableOpacity>
               ) : null}
@@ -259,6 +300,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData })
           </View>
         </View>
       )}
+      <View style={{ height: suggestionCardHeight }} />
     </SquareCardWithTitle>
   );
 };

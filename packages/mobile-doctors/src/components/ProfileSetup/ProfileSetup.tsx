@@ -10,7 +10,7 @@ import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
 import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
@@ -23,6 +23,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Keyboard,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -32,6 +33,7 @@ import {
   getDoctorProfile,
 } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
 import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
+// const isMobileNumberValid = () => true;
 
 const { height } = Dimensions.get('window');
 
@@ -244,11 +246,17 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       </View>
     );
   };
+  const scrollViewRef = useRef<KeyboardAwareScrollView | null>();
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       <KeyboardAwareScrollView
-        enableOnAndroid
+        ref={(ref) => (scrollViewRef.current = ref)}
         scrollEnabled
+        enableAutomaticScroll
+        enableOnAndroid
+        onKeyboardDidShow={() => {
+          scrollViewRef.current && scrollViewRef.current.scrollToEnd();
+        }}
         bounces={false}
         keyboardShouldPersistTaps="always"
       >

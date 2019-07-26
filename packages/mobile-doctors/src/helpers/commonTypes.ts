@@ -77,6 +77,6 @@ export type Appointments = {
   doctorname: string;
   timings: string;
   disease: string;
-  type: string; //=> 'MISSED' | 'UP NEXT'
-  timeslottype: string;
+  type: 'audio' | 'video';
+  timeslottype: string; //=> 'MISSED' | 'UP NEXT'
 };
