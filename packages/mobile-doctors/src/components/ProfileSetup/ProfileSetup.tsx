@@ -10,7 +10,7 @@ import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
 import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
@@ -23,7 +23,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Keyboard,
+  BackHandler,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -32,9 +32,8 @@ import {
   getDoctorProfile_getDoctorProfile,
   getDoctorProfile,
 } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
-import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
-// const isMobileNumberValid = () => true;
-
+//import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
+const isMobileNumberValid = (n: string) => true;
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -118,7 +117,7 @@ const headerContent = [
     tab: 'Profile',
     heading: (name: string) => `hi dr. ${name}!`,
     description:
-      "It’s great to have you join us!\nHere's what your patients see when they view your profile",
+      "It’s great to have you join us!\nHere's what your patients see when they\nview your profile",
   },
   {
     tab: 'Availability',

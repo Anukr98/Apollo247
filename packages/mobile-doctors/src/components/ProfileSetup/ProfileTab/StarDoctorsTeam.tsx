@@ -83,20 +83,19 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
       return;
     }
     // do api call
-    client
-      .query({
-        query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
-        variables: { searchString: searchText.replace('Dr. ', '') },
-      })
-      // getDoctorsForStarDoctorProgram.data.getDoctorsForStarDoctorProgram!(
-      //   searchText.replace('Dr. ', '')
-      // )
+    client.query({
+      query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
+      variables: { searchString: searchText.replace('Dr. ', '') },
+    });
+    getDoctorsForStarDoctorProgram.data.getDoctorsForStarDoctorProgram!(
+      searchText.replace('Dr. ', '')
+    )
       .then((_data) => {
         console.log('flitered array', _data);
-        const doctorProfile =
-          _data.data.getDoctorsForStarDoctorProgram &&
-          _data.data.getDoctorsForStarDoctorProgram.map((i: DoctorProfile) => i.profile);
-        // const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
+        // const doctorProfile =
+        //   _data.data.getDoctorsForStarDoctorProgram &&
+        //   _data.data.getDoctorsForStarDoctorProgram.map((i: DoctorProfile) => i.profile);
+        const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
         setFilteredStarDoctors(doctorProfile);
       })
       .catch((e) => {
