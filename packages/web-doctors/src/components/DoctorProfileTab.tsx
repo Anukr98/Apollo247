@@ -307,7 +307,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           </Mutation>
         }
         title={`Dr. ${doctor.firstName} ${doctor.lastName}`}
-        //subheader={<span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>}
+      //subheader={<span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>}
       />
       {doctor.inviteStatus === INVITEDSTATUS.ACCEPTED && (
         <CardContent>MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills</CardContent>
@@ -345,7 +345,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const classes = useStyles();
 
   return (
-    <div>
+    <div >
       <Typography variant="h2">Basic Details</Typography>
       <div className={classes.tabContent}>
         <Grid container alignItems="flex-start" spacing={0}>

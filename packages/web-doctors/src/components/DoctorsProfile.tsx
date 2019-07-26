@@ -111,7 +111,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface DoctorsProfileProps {}
+export interface DoctorsProfileProps { }
 
 export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) => {
   const classes = useStyles();

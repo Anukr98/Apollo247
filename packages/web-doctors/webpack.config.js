@@ -45,7 +45,6 @@ const urlLoader = {
 
 module.exports = {
   mode: isProduction ? 'production' : 'development',
-  devtool: isLocal ? 'source-map' : false,
 
   context: path.resolve(__dirname, 'src'),
 
