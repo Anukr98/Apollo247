@@ -110,6 +110,32 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fff',
       },
     },
+    saveBtn: {
+      minWidth: 30,
+      margin: theme.spacing(1),
+      fontSize: 15,
+      fontWeight: 600,
+      color: '#fc9916',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      border: 'none',
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    cancelBtn: {
+      minWidth: 30,
+      margin: theme.spacing(1),
+      fontSize: 15,
+      fontWeight: 500,
+      color: '#02575b',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      border: 'none',
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
     addDocter: {
       marginTop: 20,
     },
@@ -129,13 +155,15 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 15,
       textAlign: 'right',
       '& button': {
-        padding: '9px 16px',
+        padding: '0px 16px 10px 5px',
       },
     },
     btnActive: {
       backgroundColor: '#00b38e',
       color: theme.palette.secondary.contrastText,
       margin: theme.spacing(1, 1, 1, 0),
+      textTransform: 'capitalize',
+      minWidth: 56,
       '&:hover': {
         backgroundColor: '#00b38e',
       },
@@ -144,12 +172,14 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       color: '#00b38e',
       margin: theme.spacing(1, 1, 1, 0),
+      textTransform: 'capitalize',
+      minWidth: 56,
       '&:hover': {
         backgroundColor: '#fff',
       },
     },
     heading: {
-      fontSize: theme.typography.pxToRem(15),
+      fontSize: 14,
       color: theme.palette.secondary.dark,
     },
     primaryHeading: {
@@ -170,6 +200,7 @@ const useStyles = makeStyles((theme: Theme) => {
     details: {
       alignItems: 'center',
       display: 'block',
+      padding: '24px 24px 0 24px',
     },
     column: {
       flexBasis: '100%',
@@ -231,9 +262,6 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 15,
         fontWeight: theme.typography.fontWeightMedium,
       },
-    },
-    cancelBtn: {
-      color: theme.palette.secondary.dark,
     },
     timeDivider: {},
     instructions: {
@@ -353,7 +381,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                           <AphButton
                             variant="contained"
                             color="primary"
-                            classes={{ root: classes.backButton }}
+                            classes={{ root: classes.cancelBtn }}
                           //onClick={() => onBack()}
                           >
                             CANCEL
@@ -361,7 +389,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                           <AphButton
                             variant="contained"
                             color="primary"
-                            classes={{ root: classes.saveButton }}
+                            classes={{ root: classes.saveBtn }}
                           //onClick={() => onNext()}
                           >
                             SAVE

@@ -13,11 +13,12 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
+      paddingLeft: 15,
       '& h2': {
         fontSize: 16,
         color: theme.palette.secondary.dark,
-        marginBottom: '15px',
-        paddingTop: '15px',
+        marginBottom: 15,
+        paddingTop: 0,
       },
       '& h3': {
         lineHeight: '22px',
@@ -53,12 +54,12 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: '30px',
     },
     starDoctors: {
-      width: '80px',
-      height: '80px',
+      width: 80,
+      height: 80,
       borderRadius: '50%',
       overflow: 'hidden',
       position: 'absolute',
-      left: '10px',
+      left: 10,
       '& h4': {
         borderBottom: 'none',
       },
@@ -83,19 +84,19 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
     },
     profileImg: {
-      height: '80px',
+      height: 80,
     },
     tabContentStarDoctor: {
       borderRadius: 10,
       backgroundColor: theme.palette.primary.contrastText,
-      padding: '10px',
+      padding: 10,
       position: 'relative',
-      paddingLeft: '90px',
-      minHeight: '100px',
+      paddingLeft: 90,
+      minHeight: 100,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
-      marginBottom: '30px',
-      marginRight: '10px',
+      marginBottom: 30,
+      marginRight: 10,
     },
     saveButton: {
       minWidth: 300,
@@ -124,7 +125,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     addDocter: {
-      marginTop: '20px',
+      marginTop: 20,
     },
     btnAddDoctor: {
       backgroundColor: 'transparent',
@@ -137,9 +138,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     btnContainer: {
-      borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
-      marginTop: '30px',
-      paddingTop: '15px',
+      borderTop: 'solid 2px rgba(101,143,155,0.3)',
+      marginTop: 30,
+      paddingTop: 15,
       textAlign: 'right',
     },
     btnActive: {
@@ -199,7 +200,7 @@ const useStyles = makeStyles((theme: Theme) => {
     bold: {
       fontWeight: theme.typography.fontWeightBold,
       color: '#02475b',
-      marginLeft: '20px',
+      marginLeft: 20,
     },
     pointerNone: {
       pointerEvents: 'none',
@@ -289,7 +290,7 @@ export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
             classes={{ root: classes.saveButton }}
             onClick={() => onNext()}
           >
-            PROCEED
+            SAVE AND PROCEED
           </AphButton>
         </Grid>
       </Grid>

@@ -244,6 +244,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightMedium,
       padding: theme.spacing(2, 0, 2, 0),
     },
+    consultForm: {
+      fontSize: 14,
+      color: 'rgba(2,71,91,0.5)',
+      fontWeight: theme.typography.fontWeightMedium,
+    },
     pointerNone: {
       pointerEvents: 'none',
     },
@@ -400,7 +405,7 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
         <Grid item lg={10} sm={6} xs={12}>
           <div>
             <div>
-              <Typography variant="h5">What type of consults will you be available for?</Typography>
+              <Typography variant="h5" className={classes.consultForm}>What type of consults will you be available for?</Typography>
               <AphButton
                 variant="contained"
                 classes={

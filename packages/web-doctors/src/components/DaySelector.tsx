@@ -9,6 +9,10 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#00b38e',
       color: theme.palette.secondary.contrastText,
       margin: theme.spacing(1, 1, 1, 0),
+      textTransform: 'capitalize',
+      fontSize: 14,
+      fontWeight: 500,
+      borderRadius: 10,
       '&:hover': {
         backgroundColor: '#00b38e',
       },
@@ -17,6 +21,10 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       color: '#00b38e',
       margin: theme.spacing(1, 1, 1, 0),
+      textTransform: 'capitalize',
+      fontSize: 14,
+      fontWeight: 500,
+      borderRadius: 10,
       '&:hover': {
         backgroundColor: '#fff',
       },
@@ -36,15 +44,15 @@ export const DaySelector: React.FC<DaySelectorProps> = (selectedDays) => {
       className={
         selectedDays.selectedDays.indexOf(day) > -1 ? classes.btnActive : classes.btnInactive
       }
-      // onClick={() => {
-      //   const newDays = new Set(selectedDays);
-      //   if (selectedDays.has(day)) {
-      //     newDays.delete(day);
-      //   } else {
-      //     newDays.add(day);
-      //   }
-      //   setSelectedDays(newDays);
-      // }}
+    // onClick={() => {
+    //   const newDays = new Set(selectedDays);
+    //   if (selectedDays.has(day)) {
+    //     newDays.delete(day);
+    //   } else {
+    //     newDays.add(day);
+    //   }
+    //   setSelectedDays(newDays);
+    // }}
     >
       {day}
     </AphButton>
