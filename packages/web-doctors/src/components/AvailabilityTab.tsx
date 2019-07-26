@@ -405,7 +405,9 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
         <Grid item lg={10} sm={6} xs={12}>
           <div>
             <div>
-              <Typography variant="h5" className={classes.consultForm}>What type of consults will you be available for?</Typography>
+              <Typography variant="h5" className={classes.consultForm}>
+                What type of consults will you be available for?
+              </Typography>
               <AphButton
                 variant="contained"
                 classes={
