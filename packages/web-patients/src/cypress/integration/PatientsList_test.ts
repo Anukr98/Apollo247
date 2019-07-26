@@ -1,9 +1,9 @@
 import { clientBaseUrl, clientRoutes } from 'helpers/clientRoutes';
-import { getPatientsFixture } from 'cypress/fixtures/patientsFixtures';
+import { jane, john } from 'cypress/fixtures/patientsFixtures';
 import schema from '@aph/api-schema/schema.json';
 
 describe('PatientsList', () => {
-  const GetPatients = getPatientsFixture();
+  const patients = [jane, john];
 
   beforeEach(() => {
     cy.signOut();
@@ -11,7 +11,12 @@ describe('PatientsList', () => {
       .mockAphGraphql({ schema })
       .mockAphGraphqlOps({
         operations: {
-          GetPatients,
+          GetPatients: {
+            getPatients: {
+              __typename: 'GetPatientsResult',
+              patients,
+            },
+          },
         },
       });
   });
@@ -22,7 +27,6 @@ describe('PatientsList', () => {
 
   it('Renders each patient', () => {
     cy.visit(`${clientBaseUrl()}${clientRoutes.patients()}`).then(() => {
-      const { patients } = GetPatients.getPatients!;
       patients.forEach((patient) => {
         cy.contains('div', `${patient.firstName} ${patient.lastName}`);
       });
