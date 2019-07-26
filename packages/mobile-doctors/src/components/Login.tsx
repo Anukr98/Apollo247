@@ -24,7 +24,9 @@ import firebase from 'react-native-firebase';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
+import { NavigationEventSubscription } from 'react-navigation';
 import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
+// const isMobileNumberValid = () => true;
 
 const styles = StyleSheet.create({
   container: {
@@ -97,6 +99,11 @@ const styles = StyleSheet.create({
   },
 });
 
+type ReceivedSmsMessage = {
+  originatingAddress: string;
+  body: string;
+};
+
 export interface LoginProps extends NavigationScreenProps {}
 
 const isPhoneNumberValid = (number: string) => {
@@ -107,8 +114,7 @@ const isPhoneNumberValid = (number: string) => {
 };
 
 let otpString = '';
-let backHandler: any;
-let didBlurSubscription: any;
+let didBlurSubscription: NavigationEventSubscription;
 
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
@@ -153,9 +159,8 @@ export const Login: React.FC<LoginProps> = (props) => {
   };
 
   useEffect(() => {
-    const subscriptionId = SmsListener.addListener((message: any) => {
+    const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
       const newOtp = message.body.match(/-*[0-9]+/);
-      console.log(newOtp[0], 'wertyuio');
       otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
     });
     setSubscriptionId(subscriptionId);

@@ -7,10 +7,14 @@ import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { Cancel, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
 import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  getDoctorProfile,
+  getDoctorProfile_getDoctorProfile,
+} from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
 import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
@@ -23,17 +27,12 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  BackHandler,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
-import {
-  getDoctorProfile_getDoctorProfile,
-  getDoctorProfile,
-} from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
-//import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
-const isMobileNumberValid = (n: string) => true;
+import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
+// const isMobileNumberValid = (n: string) => true;
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({

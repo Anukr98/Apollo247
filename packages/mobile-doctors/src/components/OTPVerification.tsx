@@ -100,10 +100,10 @@ const styles = StyleSheet.create({
 
 let timer = 900;
 
-interface ReceivedSmsMessage {
+type ReceivedSmsMessage = {
   originatingAddress: string;
   body: string;
-}
+};
 
 export interface OTPVerificationProps extends NavigationScreenProps {
   phoneNumberVerificationCredential: PhoneNumberVerificationCredential;
@@ -194,11 +194,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     try {
       const data = await AsyncStorage.getItem('timeOutData');
       if (data) {
-        const timeOutData = JSON.parse(data);
+        const timeOutData: TimeOutData[] = JSON.parse(data);
         console.log(timeOutData);
         const { phoneNumber } = props.navigation.state.params!;
 
-        timeOutData.map((obj: any) => {
+        timeOutData.map((obj) => {
           if (obj.phoneNumber === phoneNumber) {
             const t1 = new Date();
             const t2 = new Date(obj.startTime);
@@ -235,8 +235,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       const { phoneNumber } = props.navigation.state.params!;
       const getData = await AsyncStorage.getItem('timeOutData');
       if (getData) {
-        const timeOutData = JSON.parse(getData);
-        const filteredData = timeOutData.filter((el: any) => el.phoneNumber !== phoneNumber);
+        const timeOutData: TimeOutData[] = JSON.parse(getData);
+        const filteredData = timeOutData.filter((el) => el.phoneNumber !== phoneNumber);
         console.log(filteredData, 'filteredData');
         await AsyncStorage.setItem('timeOutData', JSON.stringify(filteredData));
       }
@@ -322,7 +322,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           }
         });
       })
-      .catch((error: any) => {
+      .catch((error) => {
         console.log('error', error);
         setIsLoading(false);
         _storeTimerData(invalidOtpCount + 1);
@@ -344,7 +344,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
 
-  const isOtpValid = (otp: any) => {
+  const isOtpValid = (otp: string) => {
     setOtp(otp);
     if (otp.length === 6 || otp.length === 0) {
       setIsValidOTP(true);

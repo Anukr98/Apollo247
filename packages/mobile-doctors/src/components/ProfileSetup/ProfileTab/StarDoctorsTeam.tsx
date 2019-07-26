@@ -6,24 +6,34 @@ import {
   GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
   REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM,
 } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  addDoctorToStartDoctorProgram,
+  addDoctorToStartDoctorProgramVariables,
+} from '@aph/mobile-doctors/src/graphql/types/addDoctorToStartDoctorProgram';
+import { getDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import {
+  getDoctorsForStarDoctorProgram,
+  getDoctorsForStarDoctorProgramVariables,
+  getDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile,
+} from '@aph/mobile-doctors/src/graphql/types/getDoctorsForStarDoctorProgram';
+import { INVITEDSTATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import {
+  removeDoctorFromStartDoctorProgram,
+  removeDoctorFromStartDoctorProgramVariables,
+} from '@aph/mobile-doctors/src/graphql/types/removeDoctorFromStartDoctorProgram';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  Alert,
+  ActivityIndicator,
   Keyboard,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from 'react-native';
-import { DoctorProfile, Doctor } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import Highlighter from 'react-native-highlight-words';
-import { getDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
-import { INVITEDSTATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import { getDoctorsForStarDoctorProgram } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 
 const styles = StyleSheet.create({
   inputTextStyle: {
@@ -61,7 +71,9 @@ export interface StarDoctorsTeamProps {
 export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _profileData }) => {
   const [addshow, setAddShow] = useState<boolean>(false);
   const [doctorSearchText, setDoctorSearchText] = useState<string>('');
-  const [filteredStarDoctors, setFilteredStarDoctors] = useState<Doctor[]>([]);
+  const [filteredStarDoctors, setFilteredStarDoctors] = useState<
+    (getDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile | null)[] | null
+  >([]);
   const [isShowAddDoctorButton, setIsShowAddDoctorButton] = useState<boolean>(false);
   const [suggestionCardHeight, setSuggestionCardHeight] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -83,19 +95,20 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
       return;
     }
     // do api call
-    client.query({
-      query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
-      variables: { searchString: searchText.replace('Dr. ', '') },
-    });
-    getDoctorsForStarDoctorProgram.data.getDoctorsForStarDoctorProgram!(
-      searchText.replace('Dr. ', '')
-    )
+    client
+      .query<getDoctorsForStarDoctorProgram, getDoctorsForStarDoctorProgramVariables>({
+        query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
+        variables: { searchString: searchText.replace('Dr. ', '') },
+      })
+      // getDoctorsForStarDoctorProgramData.data.getDoctorsForStarDoctorProgram!(
+      //   searchText.replace('Dr. ', '')
+      // )
       .then((_data) => {
         console.log('flitered array', _data);
-        // const doctorProfile =
-        //   _data.data.getDoctorsForStarDoctorProgram &&
-        //   _data.data.getDoctorsForStarDoctorProgram.map((i: DoctorProfile) => i.profile);
-        const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
+        const doctorProfile =
+          _data.data.getDoctorsForStarDoctorProgram &&
+          _data.data.getDoctorsForStarDoctorProgram.map((i) => i!.profile);
+        // const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
         setFilteredStarDoctors(doctorProfile);
       })
       .catch((e) => {
@@ -118,11 +131,11 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
     setIsSuggestionExist(false);
     setIsLoading(true);
     client
-      .mutate({
+      .mutate<addDoctorToStartDoctorProgram, addDoctorToStartDoctorProgramVariables>({
         mutation: ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM,
         variables: { starDoctorId: '1', doctorId: '2' },
       })
-      .then((_data: any | boolean) => {
+      .then((_data) => {
         setIsLoading(false);
         // Note: This is for demo/testing purpose only, do real implementation after real API
         const array = [...profileData.starDoctorTeam!];
@@ -135,7 +148,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
         });
         setProfileData({ ...profileData, starDoctorTeam: array });
       })
-      .catch((e: any) => {
+      .catch((e) => {
         setIsLoading(false);
         console.log('Error occured while adding Doctor', e);
         // Alert.alert('Error occured while adding Doctor');
@@ -147,14 +160,14 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
     setProfileData({ ...profileData, starDoctorTeam: array.filter((i) => i!.id !== id) });
 
     client
-      .mutate({
+      .mutate<removeDoctorFromStartDoctorProgram, removeDoctorFromStartDoctorProgramVariables>({
         mutation: REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM,
         variables: { starDoctorId: id || '1', doctorId: '2' },
       })
-      .then((_data: any | boolean) => {
+      .then((_data) => {
         console.log(_data);
       })
-      .catch((e: any) => {
+      .catch((e) => {
         console.log('Error occured while removing Doctor', e);
         // Alert.alert('Error occured while removing Doctor');
       });
@@ -185,7 +198,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
         setSuggestionCardHeight(height);
       }}
     >
-      {filteredStarDoctors.length > 0 ? (
+      {filteredStarDoctors!.length > 0 ? (
         <View
           style={{
             paddingTop: 16,
@@ -200,18 +213,18 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
           }}
         >
           <View>
-            {filteredStarDoctors.map((item, i) => {
-              const drName = `Dr. ${item.firstName} ${item.lastName}`;
+            {filteredStarDoctors!.map((item, i) => {
+              const drName = `Dr. ${item!.firstName} ${item!.lastName}`;
               return (
                 <TouchableOpacity
                   onPress={() =>
-                    onPressDoctorSearchListItem(`Dr. ${item.firstName} ${item.lastName}`)
+                    onPressDoctorSearchListItem(`Dr. ${item!.firstName} ${item!.lastName}`)
                   }
                   style={{ marginHorizontal: 16 }}
                   key={i}
                 >
                   {formatSuggestionsText(drName, doctorSearchText)}
-                  {i < filteredStarDoctors.length - 1 ? (
+                  {i < filteredStarDoctors!.length - 1 ? (
                     <View
                       style={{
                         marginTop: 8,

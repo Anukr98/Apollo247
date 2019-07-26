@@ -1,4 +1,11 @@
-import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import React, {
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  ForwardRefExoticComponent,
+  PropsWithoutRef,
+  RefAttributes,
+} from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList } from 'react-navigation';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -52,10 +59,16 @@ const getDaysInMonth = (month: number, year: number) => {
 export interface CalendarHeaderProps {
   date: Date;
   onTapDate: (date: Date) => void;
-  ref: (ref: React.FC<CalendarHeaderProps>) => void;
+  ref: (ref: { scrollToCurrentDate: () => void }) => void;
 }
 
-export const CalendarHeader: React.FC<CalendarHeaderProps | any> = forwardRef((props, ref) => {
+export type CalendarHeaderRefProps = {
+  scrollToCurrentDate: () => void;
+};
+
+export const CalendarHeader: ForwardRefExoticComponent<
+  PropsWithoutRef<CalendarHeaderProps> & RefAttributes<CalendarHeaderRefProps>
+> = forwardRef((props, ref) => {
   const arrayRef = useRef<FlatList<Date> | null>();
 
   useImperativeHandle(ref, () => ({

@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 
 export const GET_DOCTOR_PROFILE = gql`
-  query getDoctorProfile {
+  query GetDoctorProfile {
     getDoctorProfile {
       profile {
         id
@@ -76,7 +76,7 @@ export const GET_DOCTOR_PROFILE = gql`
  * @param {String} searchString
  */
 export const GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM = gql`
-  query getDoctorsForStarDoctorProgram($searchString: String!) {
+  query GetDoctorsForStarDoctorProgram($searchString: String!) {
     getDoctorsForStarDoctorProgram(searchString: $searchString) {
       profile {
         id
@@ -93,7 +93,7 @@ export const GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM = gql`
  * @param {String} doctorId
  */
 export const ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM = gql`
-  mutation addDoctorToStartDoctorProgram($starDoctorId: String!, $doctorId: String!) {
+  mutation AddDoctorToStartDoctorProgram($starDoctorId: String!, $doctorId: String!) {
     addDoctorToStartDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
   }
 `;
@@ -104,7 +104,7 @@ export const ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM = gql`
  * @param {String} doctorId
  */
 export const REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM = gql`
-  mutation removeDoctorFromStartDoctorProgram($starDoctorId: String!, $doctorId: String!) {
+  mutation RemoveDoctorFromStartDoctorProgram($starDoctorId: String!, $doctorId: String!) {
     removeDoctorFromStartDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
   }
 `;
@@ -144,7 +144,7 @@ export const PATIENT_SIGN_IN = gql`
 `;
 
 export const UPDATE_PATIENT = gql`
-  mutation updatePatient($patientInput: UpdatePatientInput!) {
+  mutation UpdatePatient($patientInput: UpdatePatientInput!) {
     updatePatient(patientInput: $patientInput) {
       patient {
         id

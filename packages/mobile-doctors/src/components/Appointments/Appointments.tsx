@@ -53,25 +53,25 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const CalendarHeaderRef = useRef<{ scrollToCurrentDate: () => void }>();
   const [show, setshow] = useState(false);
   const [dropdownshow, setDropDownShow] = useState(false);
-  const monthsname = {
-    1: 'Jan',
-    2: 'Feb',
-    3: 'Mar',
-    4: 'Apr',
-    5: 'MAY',
-    6: 'June',
-    7: 'July',
-    8: 'Aug',
-    9: 'Sep',
-    10: 'Oct',
-    11: 'Nov',
-    12: 'Dec',
-  };
+  const monthsName = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
 
   const currentDate = new Date();
-  const a: number = currentDate.getMonth() + 1;
+  const currentMonth = currentDate.getMonth();
 
-  const [currentmonth, setCurrentMonth] = useState(monthsname[a]);
+  const [currentmonth, setCurrentMonth] = useState(monthsName[currentMonth]);
   console.log('thisMonth', currentmonth);
 
   const renderMonthSelection = (
@@ -107,9 +107,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           }}
           monthFormat={''}
           onVisibleMonthsChange={(months) => {
-            months.map((i: any, index: number, array: any) => {
-              setCurrentMonth(monthsname[i.month]);
-            });
+            setCurrentMonth(monthsName[months[0].month - 1]);
           }}
           // hideArrows={false}
           hideExtraDays={false}
@@ -226,7 +224,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       <View style={{ zIndex: -1 }}>
         <View style={{ marginTop: 12 }} />
         <CalendarHeader
-          ref={(ref: any) => (CalendarHeaderRef.current = ref)}
+          ref={(ref) => (CalendarHeaderRef.current = ref!)}
           date={date}
           onTapDate={(date: Date) => {
             setDate(date);

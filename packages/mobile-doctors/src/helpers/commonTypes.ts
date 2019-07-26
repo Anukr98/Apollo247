@@ -9,7 +9,7 @@ export type LocalStorage = {
 };
 
 export type DummyQueryResult = {
-  error: any;
+  error: string;
   loading: boolean;
   data: {
     getDoctorProfile?: DoctorProfile;
