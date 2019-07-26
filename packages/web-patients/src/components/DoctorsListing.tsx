@@ -11,6 +11,8 @@ import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { DOCTORS_BY_SPECIALITY } from 'graphql/doctors';
 import { SearchObject } from 'components/DoctorsLanding';
 
+import CircularProgress from '@material-ui/core/CircularProgress';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     pageHeader: {
@@ -147,7 +149,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   });
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <CircularProgress />;
   }
   if (error) {
     return <div>Error....</div>;

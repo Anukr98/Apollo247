@@ -13,11 +13,12 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
+      paddingLeft: 15,
       '& h2': {
         fontSize: 16,
         color: theme.palette.secondary.dark,
-        marginBottom: '15px',
-        paddingTop: '15px',
+        marginBottom: 15,
+        paddingTop: 0,
       },
       '& h3': {
         lineHeight: '22px',
@@ -53,12 +54,12 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: '30px',
     },
     starDoctors: {
-      width: '80px',
-      height: '80px',
+      width: 80,
+      height: 80,
       borderRadius: '50%',
       overflow: 'hidden',
       position: 'absolute',
-      left: '10px',
+      left: 10,
       '& h4': {
         borderBottom: 'none',
       },
@@ -83,57 +84,64 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
     },
     profileImg: {
-      height: '80px',
+      height: 80,
     },
     tabContentStarDoctor: {
       borderRadius: 10,
       backgroundColor: theme.palette.primary.contrastText,
-      padding: '10px',
+      padding: 10,
       position: 'relative',
-      paddingLeft: '90px',
-      minHeight: '100px',
+      paddingLeft: 90,
+      minHeight: 100,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
-      marginBottom: '30px',
-      marginRight: '10px',
+      marginBottom: 30,
+      marginRight: 10,
     },
     saveButton: {
-      minWidth: '300px',
+      minWidth: 300,
+      fontSize: 15,
+      padding: '8px 16px',
+      lineHeight: '24px',
+      fontWeight: theme.typography.fontWeightBold,
       margin: theme.spacing(1),
+      backgroundColor: '#fc9916',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
-        backgroundColor: '#fcb716',
+        backgroundColor: '#fc9916',
       },
     },
     backButton: {
-      minWidth: '120px',
+      minWidth: 120,
+      fontSize: 15,
+      padding: '8px 16px',
+      fontWeight: theme.typography.fontWeightBold,
       color: '#fc9916',
       backgroundColor: '#fff',
       margin: theme.spacing(1),
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
         backgroundColor: '#fff',
       },
     },
     addDocter: {
-      marginTop: '20px',
+      marginTop: 20,
     },
     btnAddDoctor: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
-      fontWeight: 'bold',
+      fontWeight: theme.typography.fontWeightBold,
       '&:hover': {
         backgroundColor: 'transparent',
       },
     },
     btnContainer: {
-      borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
-      marginTop: '30px',
-      paddingTop: '15px',
+      borderTop: 'solid 2px rgba(101,143,155,0.3)',
+      marginTop: 30,
+      paddingTop: 15,
       textAlign: 'right',
-      '& button': {
-        padding: '9px 16px',
-      },
     },
     btnActive: {
       backgroundColor: '#00b38e !important',
@@ -142,12 +150,12 @@ const useStyles = makeStyles((theme: Theme) => {
     heading: {
       fontSize: theme.typography.pxToRem(15),
       color: '#02475b',
-      fontWeight: 700,
+      fontWeight: theme.typography.fontWeightBold,
     },
     secondaryHeading: {
       fontSize: theme.typography.pxToRem(15),
       color: '#658f9b',
-      fontWeight: 700,
+      fontWeight: theme.typography.fontWeightBold,
     },
     icon: {
       verticalAlign: 'bottom',
@@ -192,7 +200,7 @@ const useStyles = makeStyles((theme: Theme) => {
     bold: {
       fontWeight: theme.typography.fontWeightBold,
       color: '#02475b',
-      marginLeft: '20px',
+      marginLeft: 20,
     },
     pointerNone: {
       pointerEvents: 'none',
@@ -282,7 +290,7 @@ export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
             classes={{ root: classes.saveButton }}
             onClick={() => onNext()}
           >
-            PROCEED
+            SAVE AND PROCEED
           </AphButton>
         </Grid>
       </Grid>

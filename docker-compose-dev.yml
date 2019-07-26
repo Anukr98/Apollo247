@@ -30,7 +30,7 @@ services:
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
     command: bash -c "
-      while ((! curl -s http://profiles-service/graphql) || (! curl -s http://doctors-service/graphql)) > /dev/null;
+      while ((! curl -s http://profiles-service/graphql) || (! curl -s http://doctors-service/graphql) || (! curl -s http://consults-service/graphql)) > /dev/null;
       do echo waiting for services to start...; sleep 5;
       done;
       node api-gateway.bundle.js"

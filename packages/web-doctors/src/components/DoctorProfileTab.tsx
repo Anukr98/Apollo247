@@ -32,22 +32,25 @@ import { Mutation } from 'react-apollo';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
+      padding: '10px 20px',
       '& h2': {
         fontSize: 16,
         color: theme.palette.secondary.dark,
-        marginBottom: '15px',
+        marginBottom: 15,
       },
       '& h3': {
         lineHeight: '22px',
         padding: '3px 5px 5px 20px',
         fontSize: 16,
-        fontWeight: 600,
+        fontWeight: 500,
         color: '#02475b',
       },
       '& h4': {
         padding: '5px 5px 5px 0',
         marginLeft: 20,
+        fontSize: 20,
         borderBottom: 'solid 0.5px rgba(98,22,64,0.2)',
+        fontWeight: 600,
       },
       '& h5': {
         padding: '5px 5px 3px 20px',
@@ -58,6 +61,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '5px 5px 5px 0',
         letterSpacing: '0.3px',
         marginLeft: 20,
+        fontSize: 12,
         '& span': {
           padding: '0 2px',
         },
@@ -76,15 +80,15 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
-      marginBottom: '30px',
+      marginBottom: 30,
     },
     starDoctors: {
-      width: '80px',
-      height: '80px',
+      width: 80,
+      height: 80,
       borderRadius: '50%',
       overflow: 'hidden',
       position: 'absolute',
-      left: '10px',
+      left: 10,
       '& h4': {
         borderBottom: 'none',
       },
@@ -105,24 +109,24 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       borderRadius: '10px 0 0 0',
       position: 'relative',
-      paddingBottom: '20px',
+      paddingBottom: 20,
     },
     bigAvatar: {
       width: '100%',
     },
     profileImg: {
-      height: '80px',
+      height: 80,
     },
     tabContentStarDoctor: {
       borderRadius: 10,
       backgroundColor: theme.palette.primary.contrastText,
-      padding: '10px',
+      padding: '10px 10px 10px 90px',
       position: 'relative',
-      minHeight: '130px',
+      minHeight: 130,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
-      marginBottom: '30px',
-      marginRight: '10px',
+      marginBottom: 15,
+      marginRight: 10,
       '& h4': {
         borderBottom: 'none',
         fontSize: 18,
@@ -133,65 +137,65 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.primary.contrastText,
       padding: '10px',
       position: 'relative',
-      paddingLeft: '10px',
-      minHeight: '100px',
+      minHeight: 100,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
-      marginBottom: '30px',
-      marginRight: '10px',
-      '& input': {
-        // borderBottom: '2px solid #f00',
-      },
+      marginBottom: 30,
+      marginRight: 10,
     },
     saveButton: {
-      minWidth: '300px',
+      minWidth: 300,
+      fontSize: 15,
+      padding: '8px 16px',
+      lineHeight: '24px',
+      fontWeight: theme.typography.fontWeightBold,
       margin: theme.spacing(1),
+      backgroundColor: '#fc9916',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
-        backgroundColor: '#fcb716',
+        backgroundColor: '#fc9916',
       },
     },
     backButton: {
-      minWidth: '120px',
+      minWidth: 120,
+      fontSize: 15,
+      padding: '8px 16px',
+      fontWeight: theme.typography.fontWeightBold,
       color: '#fc9916',
       backgroundColor: '#fff',
       margin: theme.spacing(1),
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
         backgroundColor: '#fff',
       },
-    },
-    addDocter: {
-      marginTop: '20px',
     },
     btnAddDoctor: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
-      fontWeight: 'bold',
+      fontWeight: theme.typography.fontWeightBold,
       '&:hover': {
         backgroundColor: 'transparent',
       },
     },
     btnContainer: {
-      borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
-      marginTop: '30px',
-      paddingTop: '15px',
+      borderTop: 'solid 2px rgba(101,143,155,0.2)',
+      marginTop: 30,
+      paddingTop: 15,
       textAlign: 'right',
-      '& button': {
-        padding: '9px 16px',
-      },
     },
     invited: {
       color: '#ff748e',
       fontSize: 15,
       fontWeight: theme.typography.fontWeightMedium,
-      marginTop: '10px',
+      marginTop: 10,
       textTransform: 'uppercase',
       '& img': {
         position: 'relative',
-        top: '4px',
-        marginRight: '15px',
-        marginLeft: '15px',
+        top: 4,
+        marginRight: 15,
+        marginLeft: 15,
       },
     },
     posRelative: {
@@ -214,9 +218,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     starImg: {
       position: 'absolute',
-      bottom: '7px',
-      right: '15px',
-      width: '40px',
+      bottom: 7,
+      right: 15,
+      width: 40,
     },
   };
 });
@@ -303,7 +307,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           </Mutation>
         }
         title={`Dr. ${doctor.firstName} ${doctor.lastName}`}
-        //subheader={<span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>}
+      //subheader={<span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>}
       />
       {doctor.inviteStatus === INVITEDSTATUS.ACCEPTED && (
         <CardContent>MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills</CardContent>
@@ -341,7 +345,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const classes = useStyles();
 
   return (
-    <div className={classes.ProfileContainer}>
+    <div >
       <Typography variant="h2">Basic Details</Typography>
       <div className={classes.tabContent}>
         <Grid container alignItems="flex-start" spacing={0}>
@@ -438,16 +442,16 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
   const numStarDoctors = starDoctors.length;
 
   return (
-    <div>
+    <div className={classes.ProfileContainer}>
       <DoctorDetails doctor={doctorProfile} clinics={clinics} />
 
       {doctorProfile.isStarDoctor && (
         <div>
-          <Typography variant="h2" className={numStarDoctors === 0 ? classes.none : ''}>
+          <Typography variant="h3" className={numStarDoctors === 0 ? classes.none : ''}>
             Your Star Doctors Team ({numStarDoctors})
           </Typography>
           <StarDoctorsList starDoctors={starDoctors} />
-          <div className={classes.addDocter}>
+          <div>
             <AphButton variant="contained" color="primary" classes={{ root: classes.btnAddDoctor }}>
               + ADD DOCTOR
             </AphButton>

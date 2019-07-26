@@ -82,6 +82,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '& button': {
         marginLeft: 'auto',
         marginRight: -40,
+        backgroundColor: '#fc9916',
+        '&:hover': {
+          backgroundColor: '#fc9916',
+        },
         '&:disabled': {
           backgroundColor: '#fed6a2',
           boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2) !important',
