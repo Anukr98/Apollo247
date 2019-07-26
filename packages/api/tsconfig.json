@@ -3,7 +3,9 @@
   "compilerOptions": {
     "outDir": "dist",
     "baseUrl": "src",
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "strictFunctionTypes": false, // disable for buildFederatedSchema call
+    "strictPropertyInitialization": false // https://github.com/typeorm/typeorm/issues/2797
   },
   "exclude": ["node_modules", "dist"]
 }
