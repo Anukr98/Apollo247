@@ -73,3 +73,8 @@ Go into your docker network settings and select Automatic DNS
 This usually indicates that volumes are not mounting properly due to permissions issues.
 Go into your docker settings, click on hard drives, and reset the credentials.
 Then close and reopen your Ubuntu WSL
+
+### Debugging Webapps
+
+Source map has been configured for local environment, you can use chrome devtool to add breakpoints and debug the code.
+If you are using VS Code you can install [Debugger for Chrome](https://marketplace.visualstudio.com/items?itemName=msjsdiag.debugger-for-chrome) in your VS code from the plugin seciton. Once you have installed the plugin head over to Debug panel in VS code `ctrl + shift + D` on windows and `cmd + shift + D` on MacOS. For further information on how to debug using VS code head over to https://code.visualstudio.com/docs/editor/debugging
