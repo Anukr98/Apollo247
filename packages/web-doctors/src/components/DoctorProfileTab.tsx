@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: '22px',
         padding: '3px 5px 5px 20px',
         fontSize: 16,
-        fontWeight: 600,
+        fontWeight: 500,
         color: '#02475b',
       },
       '& h4': {
@@ -50,6 +50,7 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: 20,
         fontSize: 20,
         borderBottom: 'solid 0.5px rgba(98,22,64,0.2)',
+        fontWeight: 600,
       },
       '& h5': {
         padding: '5px 5px 3px 20px',
@@ -167,9 +168,6 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#fff',
       },
-    },
-    addDocter: {
-      marginTop: 20,
     },
     btnAddDoctor: {
       backgroundColor: 'transparent',
@@ -347,7 +345,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const classes = useStyles();
 
   return (
-    <div className={classes.ProfileContainer}>
+    <div >
       <Typography variant="h2">Basic Details</Typography>
       <div className={classes.tabContent}>
         <Grid container alignItems="flex-start" spacing={0}>
@@ -444,7 +442,7 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
   const numStarDoctors = starDoctors.length;
 
   return (
-    <div>
+    <div className={classes.ProfileContainer}>
       <DoctorDetails doctor={doctorProfile} clinics={clinics} />
 
       {doctorProfile.isStarDoctor && (
@@ -453,7 +451,7 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
             Your Star Doctors Team ({numStarDoctors})
           </Typography>
           <StarDoctorsList starDoctors={starDoctors} />
-          <div className={classes.addDocter}>
+          <div>
             <AphButton variant="contained" color="primary" classes={{ root: classes.btnAddDoctor }}>
               + ADD DOCTOR
             </AphButton>
