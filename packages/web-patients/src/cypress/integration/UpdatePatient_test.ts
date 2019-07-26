@@ -1,4 +1,4 @@
-import { clientRoutes, clientBaseUrl } from 'helpers/clientRoutes';
+import { clientRoutes } from 'helpers/clientRoutes';
 import schema from '@aph/api-schema/schema.json';
 import { jane } from 'cypress/fixtures/patientsFixtures';
 import { Relation, Gender } from 'graphql/types/globalTypes';
