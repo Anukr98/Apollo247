@@ -1,4 +1,4 @@
-import { clientBaseUrl, clientRoutes } from 'helpers/clientRoutes';
+import { clientRoutes } from 'helpers/clientRoutes';
 import { jane, john } from 'cypress/fixtures/patientsFixtures';
 import schema from '@aph/api-schema/schema.json';
 
