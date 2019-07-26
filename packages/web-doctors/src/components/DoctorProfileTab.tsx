@@ -48,6 +48,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h4': {
         padding: '5px 5px 5px 0',
         marginLeft: 20,
+        fontSize: 20,
         borderBottom: 'solid 0.5px rgba(98,22,64,0.2)',
       },
       '& h5': {
@@ -59,6 +60,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '5px 5px 5px 0',
         letterSpacing: '0.3px',
         marginLeft: 20,
+        fontSize: 12,
         '& span': {
           padding: '0 2px',
         },
@@ -142,41 +144,48 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     saveButton: {
       minWidth: 300,
+      fontSize: 15,
+      padding: '8px 16px',
+      lineHeight: '24px',
+      fontWeight: theme.typography.fontWeightBold,
       margin: theme.spacing(1),
+      backgroundColor: '#fc9916',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
-        backgroundColor: '#fcb716',
+        backgroundColor: '#fc9916',
       },
     },
     backButton: {
       minWidth: 120,
+      fontSize: 15,
+      padding: '8px 16px',
+      fontWeight: theme.typography.fontWeightBold,
       color: '#fc9916',
       backgroundColor: '#fff',
       margin: theme.spacing(1),
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
         backgroundColor: '#fff',
       },
     },
     addDocter: {
-      marginTop: '20px',
+      marginTop: 20,
     },
     btnAddDoctor: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
-      fontWeight: 'bold',
+      fontWeight: theme.typography.fontWeightBold,
       '&:hover': {
         backgroundColor: 'transparent',
       },
     },
     btnContainer: {
-      borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
+      borderTop: 'solid 2px rgba(101,143,155,0.2)',
       marginTop: 30,
       paddingTop: 15,
       textAlign: 'right',
-      '& button': {
-        padding: '9px 16px',
-      },
     },
     invited: {
       color: '#ff748e',
@@ -186,7 +195,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       '& img': {
         position: 'relative',
-        top: '4px',
+        top: 4,
         marginRight: 15,
         marginLeft: 15,
       },
@@ -300,7 +309,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           </Mutation>
         }
         title={`Dr. ${doctor.firstName} ${doctor.lastName}`}
-        //subheader={<span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>}
+      //subheader={<span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>}
       />
       {doctor.inviteStatus === INVITEDSTATUS.ACCEPTED && (
         <CardContent>MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills</CardContent>
@@ -440,7 +449,7 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
 
       {doctorProfile.isStarDoctor && (
         <div>
-          <Typography variant="h2" className={numStarDoctors === 0 ? classes.none : ''}>
+          <Typography variant="h3" className={numStarDoctors === 0 ? classes.none : ''}>
             Your Star Doctors Team ({numStarDoctors})
           </Typography>
           <StarDoctorsList starDoctors={starDoctors} />

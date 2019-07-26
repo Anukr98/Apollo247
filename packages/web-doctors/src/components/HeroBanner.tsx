@@ -25,8 +25,16 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('lg')]: {
         width: '40%',
         '& button': {
-          padding: '9px 16px',
-          borderRadius: '5px',
+          padding: '10px 16px',
+          borderRadius: 5,
+          fontSize: 15,
+          lineHeight: '24px',
+          backgroundColor: '#fc9916',
+          fontWeight: theme.typography.fontWeightBold,
+          boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+          '&:hover': {
+            backgroundColor: '#fc9916',
+          },
         },
       },
       '& p': {
