@@ -20,7 +20,7 @@ describe('UpdatePatient', () => {
         },
       },
     });
-    cy.visit(`${clientBaseUrl()}${clientRoutes.welcome()}`).wait(500);
+    cy.visitAph(clientRoutes.welcome()).wait(500);
   });
 
   it('Shows NewProfile automatically', () => {
@@ -45,13 +45,14 @@ describe('UpdatePatient', () => {
       .should('be.disabled');
   });
 
-  it.only('Should update the patient', () => {
+  it('Should update the patient', () => {
     const janeTheMan = {
       ...jane,
       firstName: 'Jane The Man',
       relation: Relation.ME,
       gender: Gender.MALE,
     };
+
     cy.mockAphGraphqlOps({
       operations: {
         UpdatePatient: {
@@ -62,17 +63,22 @@ describe('UpdatePatient', () => {
         },
       },
     });
+
     cy.get('[data-cypress="NewProfile"]')
       .find('button[value="MALE"]')
       .click();
+
     cy.get('[data-cypress="NewProfile"]')
-      .find(`input[value="${janeTheMan.firstName!}"]`)
+      .find(`input[value="${jane.firstName!}"]`)
       .clear()
       .type(janeTheMan.firstName!);
+
     cy.get('[data-cypress="NewProfile"]')
       .find('button[type="submit"]')
       .click();
+
     cy.contains('congratulations!');
+
     cy.get('[data-cypress="HeroBanner"]')
       .contains(janeTheMan.firstName!.toLowerCase())
       .should('exist');

@@ -4,7 +4,8 @@ import schema from '@aph/api-schema/schema.json';
 import { jane, john } from 'cypress/fixtures/patientsFixtures';
 
 describe('Login', () => {
-  const patients = [jane, john];
+  const johnMe = { ...john, relation: Relation.ME };
+  const patients = [jane, johnMe];
 
   beforeEach(() => {
     cy.signOut();
@@ -20,7 +21,7 @@ describe('Login', () => {
         },
       },
     });
-    cy.visit(`${clientBaseUrl()}${clientRoutes.welcome()}`).wait(500);
+    cy.visitAph(clientRoutes.welcome()).wait(500);
   });
 
   it('Can do a real login with firebase', () => {

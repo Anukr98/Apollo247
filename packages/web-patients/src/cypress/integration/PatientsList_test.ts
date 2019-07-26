@@ -22,11 +22,11 @@ describe('PatientsList', () => {
   });
 
   it('Shows the PatientsList', () => {
-    cy.visit(`${clientBaseUrl()}${clientRoutes.patients()}`).contains('h3', 'Patients List');
+    cy.visitAph(clientRoutes.patients()).contains('h3', 'Patients List');
   });
 
   it('Renders each patient', () => {
-    cy.visit(`${clientBaseUrl()}${clientRoutes.patients()}`).then(() => {
+    cy.visitAph(clientRoutes.patients()).then(() => {
       patients.forEach((patient) => {
         cy.contains('div', `${patient.firstName} ${patient.lastName}`);
       });

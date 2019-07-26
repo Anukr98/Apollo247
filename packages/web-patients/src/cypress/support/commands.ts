@@ -1,5 +1,6 @@
 import 'cypress-graphql-mock';
 import { AllAphOperations } from 'cypress/types/AllAphOperations';
+import { clientBaseUrl } from 'helpers/clientRoutes';
 
 // ***********************************************
 // This example commands.js shows you how to
@@ -34,6 +35,7 @@ import { AllAphOperations } from 'cypress/types/AllAphOperations';
 // add a custom command cy.foo()
 Cypress.Commands.add('foo', () => 'foo');
 Cypress.Commands.add('signOut', () => window.indexedDB.deleteDatabase('firebaseLocalStorageDb'));
+Cypress.Commands.add('visitAph', (route) => cy.visit(`${clientBaseUrl()}${route}`));
 Cypress.Commands.add('mockAphGraphql', (options) => (cy as any).mockGraphql(options));
 Cypress.Commands.add('mockAphGraphqlOps', (options) => (cy as any).mockGraphqlOps(options));
 
@@ -56,6 +58,7 @@ declare global {
     interface Chainable {
       foo: () => string;
       signOut: () => void;
+      visitAph: (route: string) => Cypress.Chainable;
       mockAphGraphql(options?: MockAphGraphQLOptions<AllAphOperations>): Cypress.Chainable;
       mockAphGraphqlOps(options?: SetAphOperationsOpts<AllAphOperations>): Cypress.Chainable;
     }

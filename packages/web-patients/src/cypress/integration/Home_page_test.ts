@@ -1,10 +1,10 @@
-import { clientBaseUrl, clientRoutes } from 'helpers/clientRoutes';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 describe('Home page', () => {
   beforeEach(() => cy.signOut());
 
   it('Launch the Application', () => {
-    cy.visit(`${clientBaseUrl()}${clientRoutes.welcome()}`);
+    cy.visitAph(clientRoutes.welcome());
   });
 
   it('Apollo logo displayed', () => {
