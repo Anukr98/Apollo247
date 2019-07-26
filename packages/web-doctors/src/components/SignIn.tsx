@@ -226,17 +226,17 @@ export const SignIn: React.FC = (props) => {
         {'<'}
       </Button>
       <Typography variant="h2">
-        {(isSigningIn || isVerifyingOtp || submitCount != 3) && 'great'}
-        {!(isSigningIn || isVerifyingOtp) && submitCount == 3 && 'oops!'}
+        {(isSigningIn || isVerifyingOtp || submitCount !== 3) && 'great'}
+        {!(isSigningIn || isVerifyingOtp) && submitCount === 3 && 'oops!'}
       </Typography>
 
       <p>
-        {(isSigningIn || isVerifyingOtp || submitCount != 3) &&
+        {(isSigningIn || isVerifyingOtp || submitCount !== 3) &&
           'Enter the OTP sent to you, to authenticate'}
       </p>
       <p>
         {!(isSigningIn || isVerifyingOtp) &&
-          submitCount == 3 &&
+          submitCount === 3 &&
           'You entered an incorrect OTP 3 times'}
       </p>
       <Grid container spacing={1}>
@@ -274,7 +274,7 @@ export const SignIn: React.FC = (props) => {
                   focusPreviousInput();
                 }
               }}
-              error={submitCount != 3 && verifyOtpError}
+              error={submitCount !== 3 && verifyOtpError}
             />
           </Grid>
         ))}
@@ -282,22 +282,19 @@ export const SignIn: React.FC = (props) => {
       {verifyOtpError && (
         <FormHelperText component="div" error={verifyOtpError}>
           <div className={classes.timerText}>
-            {' '}
             {!(isSigningIn || isVerifyingOtp) &&
               showTimer &&
-              'Try again after ' +
-                Math.floor(timer / 60) +
-                ':' +
-                (timer % 60 <= 9 ? '0' + (timer % 60) : timer % 60)}
+              `Try again after  ${Math.floor(timer / 60)}:${
+                timer % 60 <= 9 ? `0` + (timer % 60) : timer % 60
+              }`}
           </div>
           <div className={classes.errorText}>
-            {' '}
             {!showTimer &&
-              submitCount == 2 &&
+              submitCount === 2 &&
               submitCount > 0 &&
               ' Incorrect OTP, ' + (3 - submitCount) + ' attempt left'}
             {!showTimer &&
-              submitCount == 1 &&
+              submitCount === 1 &&
               submitCount > 0 &&
               ' Incorrect OTP, ' + (3 - submitCount) + ' attempts left'}
           </div>
