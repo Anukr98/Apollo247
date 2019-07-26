@@ -64,7 +64,7 @@ export const ArrowStep3: React.FC<IconProps> = (props) => (
 );
 
 export const Remove: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/ic_cross.png')} />
+  <IconBase size={'sm'} {...props} source={require('./icons/ic_cross.png')} />
 );
 
 export const Reload: React.FC<IconProps> = (props) => (
@@ -165,4 +165,72 @@ export const DoctorPlaceholder: React.FC<IconProps> = (props) => (
 
 export const DoctorImage: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/narayanRao.png')} />
+);
+
+export const Morning: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_morning.png')} />
+);
+
+export const Afternoon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_afternoon.png')} />
+);
+
+export const Evening: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_evening.png')} />
+);
+
+export const Night: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_night.png')} />
+);
+
+export const MorningUnselected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_morning_unselected.png')} />
+);
+
+export const AfternoonUnselected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_afternoon_unselected.png')} />
+);
+
+export const EveningUnselected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_evening_unselected.png')} />
+);
+
+export const NightUnselected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_night_unselected.png')} />
+);
+
+export const Location: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_location.png')} />
+);
+
+export const LocationOn: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_location_on.png')} />
+);
+
+export const CrossPopup: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 28, height: 28 }}
+    {...props}
+    source={require('./icons/ic_cross_popup.png')}
+  />
+);
+
+export const ShareWhite: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_share_white.png')} />
+);
+
+export const BackArrowWhite: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 25 }}
+    {...props}
+    source={require('./icons/ic_back_white.png')}
+  />
+);
+
+export const CalendarClose: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_calendar_close.png')} />
+);
+
+export const CalendarShow: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_calendar_show.png')} />
 );

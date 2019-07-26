@@ -92,11 +92,16 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     saveButton: {
-      minWidth: '240px',
+      minWidth: 240,
+      fontSize: 15,
+      padding: '8px 16px',
+      lineHeight: '24px',
+      fontWeight: theme.typography.fontWeightBold,
       margin: theme.spacing(3, 1, 1, 1),
-      padding: '9px 16px',
+      backgroundColor: '#fc9916',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
-        backgroundColor: '#fcb716',
+        backgroundColor: '#fc9916',
       },
     },
     tabBarHeading: {
