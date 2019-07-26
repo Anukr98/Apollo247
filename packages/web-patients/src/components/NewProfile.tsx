@@ -145,7 +145,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
   }
 
   return (
-    <div className={classes.signUpPop}>
+    <div className={classes.signUpPop} data-cypress="NewProfile">
       <Formik
         initialValues={{
           firstName: patient.firstName || '',
