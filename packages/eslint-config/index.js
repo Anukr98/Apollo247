@@ -9,6 +9,7 @@ module.exports = {
     '@typescript-eslint/array-type': ['warn', 'array'],
     '@typescript-eslint/class-name-casing': 'warn',
     '@typescript-eslint/no-array-constructor': 'warn',
+    '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
     'import/no-default-export': 'warn',
     'import/no-extraneous-dependencies': 'error',
