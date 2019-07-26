@@ -36,6 +36,7 @@ export const DoctorsData: DoctorProfile[] = [
       photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_3.png',
       profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
       address: 'Apollo Hospital, Jubilee Hills',
+      availableIn: '27',
     },
     paymentDetails: [
       {
@@ -93,6 +94,7 @@ export const DoctorsData: DoctorProfile[] = [
         photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_1.png',
         profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
         address: 'Apollo Hospital, Hyderguda',
+        availableIn: '35',
       },
       {
         id: 'f69f31b8-c90d-4758-b711-ba9ea21d9fac',
@@ -121,6 +123,7 @@ export const DoctorsData: DoctorProfile[] = [
         photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_6.png',
         profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
         address: 'Apollo Hospital, Secunderabad',
+        availableIn: '27',
       },
     ],
     consultationHours: [
@@ -170,6 +173,7 @@ export const DoctorsData: DoctorProfile[] = [
       photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_1.png',
       profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
       address: 'Apollo Hospital, Hyderguda',
+      availableIn: '45',
     },
     paymentDetails: [
       {
@@ -243,10 +247,11 @@ export const DoctorsData: DoctorProfile[] = [
       onlineConsultationFees: '400',
       physicalConsultationFees: '600',
       package: '2 Online Consults + 2 Physical Consults @ Rs.999',
-      inviteStatus: INVITEDSTATUS.NONE,
+      inviteStatus: INVITEDSTATUS.ACCEPTED,
       photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_6.png',
       profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
       address: 'Apollo Hospital, Secunderabad',
+      availableIn: '55',
     },
     paymentDetails: [
       {
@@ -301,7 +306,7 @@ export const DoctorsData: DoctorProfile[] = [
       id: 'a6ef960c-fc1f-4a12-878a-12063788d625',
       salutation: 'Dr',
       firstName: 'Nancy',
-      lastName: 'Willams',
+      lastName: 'Williams',
       experience: '7',
       gender: Gender.FEMALE,
       mobileNumber: '1111111111',
@@ -324,6 +329,7 @@ export const DoctorsData: DoctorProfile[] = [
       photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_5.png',
       profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
       address: 'Apollo Hospital, Jubilee Hills',
+      availableIn: '45',
     },
     paymentDetails: [
       {
@@ -381,6 +387,7 @@ export const DoctorsData: DoctorProfile[] = [
         photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_3.png',
         profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
         address: 'Apollo Hospital, Secunderabad',
+        availableIn: '15',
       },
       {
         id: 'a759f343-7bbf-4bea-8058-f849724b2dda',
@@ -458,6 +465,7 @@ export const DoctorsData: DoctorProfile[] = [
       photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_3.png',
       profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
       address: 'Apollo Hospital, Secunderabad',
+      availableIn: '27',
     },
     paymentDetails: [
       {
@@ -535,6 +543,7 @@ export const DoctorsData: DoctorProfile[] = [
       photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_4.png',
       profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
       address: 'Apollo Hospital, Jubilee Hills',
+      availableIn: '15',
     },
     paymentDetails: [
       {
@@ -612,6 +621,7 @@ export const DoctorsData: DoctorProfile[] = [
       photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_5.png',
       profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
       address: 'Apollo Hospital, Secunderabad',
+      availableIn: '36',
     },
     paymentDetails: [
       {
@@ -669,6 +679,7 @@ export const DoctorsData: DoctorProfile[] = [
         photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_2.png',
         profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
         address: 'Apollo Hospital, Jubilee Hills',
+        availableIn: '15',
       },
       {
         id: 'e392e6ff-de1b-45a2-8a75-02f46ae703a7',
@@ -697,6 +708,7 @@ export const DoctorsData: DoctorProfile[] = [
         photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_1.png',
         profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
         address: 'Apollo Hospital, Jubilee Hills',
+        availableIn: '36',
       },
     ],
     consultationHours: [
@@ -746,6 +758,7 @@ export const DoctorsData: DoctorProfile[] = [
       photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_2.png',
       profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
       address: 'Apollo Hospital, Jubilee Hills',
+      availableIn: '15',
     },
     paymentDetails: [
       {
@@ -819,10 +832,11 @@ export const DoctorsData: DoctorProfile[] = [
       onlineConsultationFees: '500',
       physicalConsultationFees: '800',
       package: '3 Online Consults + 3 Physical Consults @ Rs.999',
-      inviteStatus: INVITEDSTATUS.NONE,
+      inviteStatus: INVITEDSTATUS.ACCEPTED,
       photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_1.png',
       profilePhotoUrl: 'https://dev.popcornapps.com/apolloImages/doctor.png',
       address: 'Apollo Hospital, Jubilee Hills',
+      availableIn: '50',
     },
     paymentDetails: [
       {

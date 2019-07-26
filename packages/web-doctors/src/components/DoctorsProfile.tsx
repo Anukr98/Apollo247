@@ -14,7 +14,6 @@ import { FeesTab } from 'components/FeesTab';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 import { Link } from 'react-router-dom';
-
 export interface TabContainerProps {
   children: React.ReactNode;
 }
@@ -57,11 +56,13 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.text.primary,
     },
     tabBar: {
-      backgroundColor: theme.palette.secondary.contrastText,
+      backgroundColor: 'transparent',
       color: theme.palette.secondary.dark,
+      paddingLeft: 40,
       '& button': {
         textTransform: 'capitalize',
         fontSize: 16,
+        padding: '15px 0',
       },
     },
     none: {
@@ -70,6 +71,7 @@ const useStyles = makeStyles((theme: Theme) => {
     tabHeading: {
       padding: '30px 40px 20px 40px',
       backgroundColor: theme.palette.secondary.contrastText,
+      boxShadow: '0px 1px 5px 0 rgba(128, 128, 128, 0.3)',
       '& h1': {
         display: 'flex',
         paddingTop: 12,
@@ -97,6 +99,10 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fcb716',
       },
     },
+    tabBarHeading: {
+      boxShadow: 'inset 0px 8px 6px -6px rgba(128,128,128,0.3)',
+      backgroundColor: theme.palette.secondary.contrastText,
+    },
   };
 });
 
@@ -104,7 +110,6 @@ export interface DoctorsProfileProps {}
 
 export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) => {
   const classes = useStyles();
-
   const [selectedTabIndex, setselectedTabIndex] = React.useState(0);
   const { data } = useQuery(GET_DOCTOR_PROFILE);
   const tabsArray = ['Profile', 'Availability', 'Fees', ''];
@@ -136,30 +141,16 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
             <div className={classes.tabHeading}>
               <Typography variant="h1">
                 {selectedTabIndex === 0 && (
-                  <span>
-                    {`hi dr ${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName} !`}
-                  </span>
+                  <span>{`hi dr. ${data.getDoctorProfile.profile.lastName.toLowerCase()} !`}</span>
                 )}
                 {selectedTabIndex === 1 && (
-                  <span>
-                    ok dr.{' '}
-                    {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
-                    !
-                  </span>
+                  <span>{` ok dr. ${data.getDoctorProfile.profile.lastName.toLowerCase()}`}!</span>
                 )}
                 {selectedTabIndex === 2 && (
-                  <span>
-                    ok dr.{' '}
-                    {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
-                    !
-                  </span>
+                  <span>{`ok dr. ${data.getDoctorProfile.profile.lastName.toLowerCase()}`}!</span>
                 )}
                 {selectedTabIndex === 3 && (
-                  <span>
-                    thank you, dr.{' '}
-                    {`${data.getDoctorProfile.profile.firstName} ${data.getDoctorProfile.profile.lastName}`}
-                    :)
-                  </span>
+                  <span>{`thank you, dr. ${data.getDoctorProfile.profile.lastName.toLowerCase()} :)`}</span>
                 )}
               </Typography>
               {selectedTabIndex === 0 && (
@@ -207,7 +198,7 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
               <TabContainer>
                 {!!data.getDoctorProfile && (
                   <DoctorProfileTab
-                    values={data.getDoctorProfile}
+                    // values={data.getDoctorProfile}
                     onNext={() => onNext()}
                     key={1}
                   />

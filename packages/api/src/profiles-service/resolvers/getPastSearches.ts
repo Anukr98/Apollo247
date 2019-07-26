@@ -1,40 +1,36 @@
 import gql from 'graphql-tag';
-import { ProfilesServiceContext } from 'profiles-service/profiles-service';
-import { SearchHistory, SEARCH_TYPE } from 'profiles-service/entity/searchHistory';
-
-import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 import { Resolver } from 'api-gateway';
+import { ProfilesServiceContext } from 'profiles-service/profiles-service';
+import { searchData, SEARCH_TYPE } from 'profiles-service/mockData/searchData';
 
 export const getPastSearchesTypeDefs = gql`
-  type GetPastSearchesResult {
-    searchType: SEARCH_TYPE
-    typeId: ID
+  enum SEARCH_TYPE {
+    DOCTOR
+    SPECIALTY
   }
-
+  type SearchData {
+    searchType: SEARCH_TYPE
+    typeId: String
+    name: String
+    image: String
+  }
   extend type Query {
-    getPastSearches(patientId: ID!): [SearchHistory!]
+    getPastSearches: [SearchData]
   }
 `;
 
-type GetPastSearchesResult = {
+export type SearchData = {
   searchType: SEARCH_TYPE;
-  typeId: string;
+  typeId: String;
+  name: String;
+  image: String;
 };
 
-const getPastSearches: Resolver<null, {}, ProfilesServiceContext, SearchHistory[]> = async (
+const getPastSearches: Resolver<null, {}, ProfilesServiceContext, SearchData[]> = async (
   parent,
   args
 ) => {
-  let searchHistoryData: SearchHistory[];
-  try {
-    searchHistoryData = await SearchHistory.find({ order: { createdDate: 'DESC' }, take: 10 });
-    return searchHistoryData;
-  } catch (searchHistoryError) {
-    throw new AphError(AphErrorMessages.GET_SEARCH_HISTORY_ERROR, undefined, {
-      searchHistoryError,
-    });
-  }
+  return searchData;
 };
 
 export const getPastSearchesResolvers = {

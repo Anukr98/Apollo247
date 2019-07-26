@@ -4,33 +4,35 @@ import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer
 import { Profile } from '@aph/mobile-doctors/src/components/Profile';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import { RoundIcon, Cancel } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Cancel, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
-import React, { useState } from 'react';
-import {
-  Alert,
-  SafeAreaView,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  Platform,
-  ActivityIndicator,
-  Dimensions,
-} from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
+import { DummyQueryResult } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
-import { Overlay } from 'react-native-elements';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
-import { ApolloClient } from 'apollo-client';
+import React, { useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-const { height, width } = Dimensions.get('window');
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Overlay } from 'react-native-elements';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { NavigationScreenProps } from 'react-navigation';
+const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   footerButtonsContainer: {
+    zIndex: -1,
     justifyContent: 'center',
     paddingTop: 40,
     paddingBottom: 32,
@@ -43,9 +45,35 @@ const styles = StyleSheet.create({
   buttonTextStyle: {
     ...theme.fonts.IBMPlexSansBold(13),
   },
-  buttonview: {
-    width: 200,
+  buttonView: {
     height: 40,
+    borderRadius: 5,
+    backgroundColor: '#fed6a2',
+    width: 200,
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    shadowColor: 'rgba(0,0,0,0.2)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 2,
+    marginTop: 32,
+  },
+  buttonViewfull: {
+    height: 40,
+    borderRadius: 5,
+    backgroundColor: '#fc9916',
+    width: 200,
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    shadowColor: 'rgba(0,0,0,0.2)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 2,
+    marginTop: 12,
   },
   inputTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -78,86 +106,12 @@ const styles = StyleSheet.create({
   },
 });
 
-export type ProfileData = {
-  firstName: string;
-  lastName: string;
-  mobileNumber: string;
-  experience: string;
-  speciality: string;
-  isStarDoctor: boolean;
-  education: string;
-  services: string;
-  languages: string;
-  city: string;
-  awards: string;
-  mcinumber: string;
-  inpersonconsult: string;
-  designation: string;
-  uri: string;
-  starDoctorTeam: {
-    firstName: string;
-    lastName: string;
-    experience: string;
-    typeOfConsult: string;
-    inviteStatus: boolean;
-    speciality: string;
-    education: string;
-    services: string;
-    designation: string;
-    uri: string;
-  }[];
-};
-
-const profileObject: ProfileData = {
-  firstName: 'Sujane',
-  lastName: 'Smith',
-  mobileNumber: '1234567890',
-  experience: '7',
-  speciality: 'Gynacology',
-  isStarDoctor: true,
-  education: 'MBBS',
-  services: 'Consultations, Surgery',
-  languages: 'English,Hindi,Telgu',
-  city: 'Hyderabad',
-  awards: 'Ramon Magsaysay Award',
-  mcinumber: '1234',
-  inpersonconsult: '20 Orchard Avenue, Hiranandani, PowaiMumbai 400076',
-  designation: 'GENERAL PHYSICIAN',
-  uri: 'https://facebook.github.io/react-native/docs/assets/favicon.png',
-  starDoctorTeam: [
-    {
-      firstName: 'Dr. Rakhi Sharma',
-      lastName: 'Mcmarrow',
-      experience: '7',
-      typeOfConsult: '24/7',
-      inviteStatus: false,
-      speciality: 'Gynacology',
-      education: 'MBBS',
-      services: 'Consultations, Surgery',
-      designation: 'GENERAL PHYSICIAN',
-      uri: 'https://facebook.github.io/react-native/docs/assets/favicon.png',
-    },
-    {
-      firstName: 'Dr. Jayanth Reddy',
-      lastName: 'Carter',
-      experience: '7',
-      typeOfConsult: '24/7',
-      inviteStatus: true,
-      speciality: 'Gynacology',
-      education: 'MBBS',
-      services: 'Consultations, Surgery',
-      designation: 'GENERAL PHYSICIAN',
-      uri: 'https://facebook.github.io/react-native/docs/assets/favicon.png',
-    },
-  ],
-};
-
 const headerContent = [
   {
     tab: 'Profile',
     heading: (name: string) => `hi dr. ${name}!`,
     description:
-      "It’s great to have you join us! Here's what your patients see when they view your profile",
+      "It’s great to have you join us! \n Here's what your patients see when they view your profile",
   },
   {
     tab: 'Availibility',
@@ -179,12 +133,23 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
 
-  const { data, error, loading } = useQuery(GET_DOCTOR_PROFILE, {
+  const {
+    data: { getDoctorProfile },
+    error,
+    loading,
+  } = useQuery(GET_DOCTOR_PROFILE, {
     variables: { mobileNumber: '1234567890' },
-  });
+  }) as any;
+
+  // const {
+  //   data: { getDoctorProfile },
+  //   error,
+  //   loading,
+  // } = doctorProfile;
   if (error) {
     Alert.alert('Error', 'Unable to get the data');
   }
+
   const renderHeader = (
     <Header
       rightIcons={[
@@ -195,17 +160,20 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       ]}
     />
   );
-  const renderProgressBar = (tabIndex: number) => (
+  const renderProgressBar = (
+    tabIndex: number,
+    data: DummyQueryResult['data']['getDoctorProfile']
+  ) => (
     <ProfileTabHeader
-      title={headerContent[tabIndex].heading(profileObject.firstName)}
+      title={headerContent[tabIndex].heading(data!.profile.firstName)}
       description={headerContent[tabIndex].description}
-      tabs={(profileObject.isStarDoctor ? headerContent : [headerContent[0], headerContent[1]]).map(
+      tabs={(data!.profile.isStarDoctor ? headerContent : [headerContent[0], headerContent[1]]).map(
         (content) => content.tab
       )}
       activeTabIndex={tabIndex}
     />
   );
-  const renderComponent = (tabIndex: number, data: any) =>
+  const renderComponent = (tabIndex: number, data: DummyQueryResult['data']['getDoctorProfile']) =>
     tabIndex == 0 ? (
       <Profile profileData={data} />
     ) : tabIndex == 1 ? (
@@ -229,9 +197,12 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
     return isValidNumber;
   };
-  const renderFooterButtons = (tabIndex: number) => {
+  const renderFooterButtons = (
+    tabIndex: number,
+    data: DummyQueryResult['data']['getDoctorProfile']
+  ) => {
     const onPressProceed = () => {
-      const tabsCount = profileObject.isStarDoctor ? 3 : 2;
+      const tabsCount = data!.profile.isStarDoctor ? 3 : 2;
       if (activeTabIndex < tabsCount - 1) {
         setActiveTabIndex(activeTabIndex + 1);
       } else {
@@ -245,7 +216,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         {activeTabIndex == 0 ? (
           <Button
             onPress={() => onPressProceed()}
-            title={profileObject.isStarDoctor ? 'SAVE AND PROCEED' : 'PROCEED'}
+            title={data!.profile.isStarDoctor ? 'SAVE AND PROCEED' : 'PROCEED'}
             titleTextStyle={styles.buttonTextStyle}
             style={{ width: 240 }}
           />
@@ -271,21 +242,20 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   };
   return (
     <SafeAreaView style={theme.viewStyles.container}>
-      <ScrollView bounces={false}>
+      <KeyboardAwareScrollView bounces={false} keyboardShouldPersistTaps="always">
         {renderHeader}
-        {!data.getDoctorProfile ? (
+        {!getDoctorProfile ? (
           <View style={{ flex: 1, alignSelf: 'center', marginTop: height / 3 }}>
             <ActivityIndicator size="large" color="green" />
           </View>
         ) : (
           <>
-            {renderProgressBar(activeTabIndex)}
-            {renderComponent(activeTabIndex, data)}
-            {renderFooterButtons(activeTabIndex)}
+            {renderProgressBar(activeTabIndex, getDoctorProfile)}
+            {renderComponent(activeTabIndex, getDoctorProfile)}
+            {renderFooterButtons(activeTabIndex, getDoctorProfile)}
           </>
         )}
-      </ScrollView>
-
+      </KeyboardAwareScrollView>
       {modelvisible ? (
         <Overlay isVisible={modelvisible} height={289} width={280} borderRadius={10}>
           <View>
@@ -297,7 +267,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
             <Text
               style={{
                 color: '#02475b',
-                ...theme.fonts.IBMPlexSansBold(36),
+                ...theme.fonts.IBMPlexSansSemiBold(36),
                 marginLeft: 16,
                 marginBottom: 8,
               }}
@@ -334,7 +304,13 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
               <Button
                 title={'CALL ME'}
                 titleTextStyle={styles.buttonTextStyle}
-                style={styles.buttonview}
+                style={
+                  phoneNumber == '' || phoneNumberIsValid
+                    ? styles.buttonViewfull
+                    : styles.buttonView
+                }
+                onPress={() => Alert.alert('Need Help')}
+                disabled={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
               />
             </View>
           </View>

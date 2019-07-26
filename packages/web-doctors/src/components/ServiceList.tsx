@@ -53,6 +53,9 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('sm')]: {
         paddingRight: 0,
       },
+      '& h5': {
+        fontWeight: theme.typography.fontWeightBold,
+      },
     },
     avatarBlock: {
       marginLeft: 'auto',
@@ -136,7 +139,7 @@ export const ServiceList: React.FC = () => {
     {
       title: 'medico-legal assistance',
       image: require('images/ic_medico_assistance.svg'),
-      content: 'Get more patients and higher utilisation',
+      content: 'Get immediate help from our expert medico legal team',
       action: { link: '', content: 'Who are star doctors' },
     },
   ];

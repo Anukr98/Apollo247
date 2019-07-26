@@ -4,6 +4,7 @@ import { Theme, Avatar } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors as DoctorDetails } from 'graphql/types/SearchDoctorAndSpecialty';
 import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -11,6 +12,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      [theme.breakpoints.down('sm')]: {
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     topContent: {
       padding: 15,
@@ -100,44 +104,42 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const { doctorDetails } = props;
 
-  // console.log(doctorDetails);
-
   return (
-    <div className={classes.root}>
-      <div className={classes.topContent}>
-        <Avatar
-          alt={doctorDetails.firstName || ''}
-          src={
-            doctorDetails.photoUrl || '' !== ''
-              ? doctorDetails.photoUrl
-              : require('images/ic_placeholder.png')
-          }
-          className={classes.doctorAvatar}
-        />
-        <div className={classes.doctorInfo}>
-          <div className={`${classes.availability} ${classes.availableNow}`}>
-            Available in 15 mins
-          </div>
-          <div className={classes.doctorName}>
-            <Link
-              to={`/doctor-details/${doctorDetails.id}`}
-            >{`${doctorDetails.firstName} ${doctorDetails.lastName}`}</Link>
-          </div>
-          <div className={classes.doctorType}>
-            {doctorDetails.speciality}{' '}
-            <span className={classes.doctorExp}>{doctorDetails.experience} YRS</span>
-          </div>
-          <div className={classes.doctorDetails}>
-            <p>{doctorDetails.education}</p>
-            <p>Apollo Hospitals, Jubilee Hills</p>
+    <Link to={clientRoutes.doctorDetails(doctorDetails.id)}>
+      <div className={classes.root}>
+        <div className={classes.topContent}>
+          <Avatar
+            alt={doctorDetails.firstName || ''}
+            src={
+              doctorDetails.photoUrl || '' !== ''
+                ? doctorDetails.photoUrl
+                : require('images/ic_placeholder.png')
+            }
+            className={classes.doctorAvatar}
+          />
+          <div className={classes.doctorInfo}>
+            <div className={`${classes.availability} ${classes.availableNow}`}>
+              Available in 15 mins
+            </div>
+            <div className={classes.doctorName}>
+              {`${doctorDetails.firstName} ${doctorDetails.lastName}`}
+            </div>
+            <div className={classes.doctorType}>
+              {doctorDetails.speciality}
+              <span className={classes.doctorExp}>{doctorDetails.experience} YRS</span>
+            </div>
+            <div className={classes.doctorDetails}>
+              <p>{doctorDetails.education}</p>
+              <p>Apollo Hospitals, Jubilee Hills</p>
+            </div>
           </div>
         </div>
+        <div className={classes.bottomAction}>
+          <AphButton fullWidth color="primary" className={classes.button}>
+            Consult Now
+          </AphButton>
+        </div>
       </div>
-      <div className={classes.bottomAction}>
-        <AphButton fullWidth color="primary" className={classes.button}>
-          Consult Now
-        </AphButton>
-      </div>
-    </div>
+    </Link>
   );
 };

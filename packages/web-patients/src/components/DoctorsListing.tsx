@@ -13,86 +13,27 @@ import { SearchObject } from 'components/DoctorsLanding';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    welcome: {
-      paddingTop: 88,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 78,
-      },
-    },
-    booksLink: {
-      color: theme.palette.primary.main,
-      textDecoration: 'underline',
-    },
-    headerSticky: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      top: 0,
-    },
-    container: {
-      maxWidth: 1064,
-      margin: 'auto',
-    },
-    bottomMenuRoot: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      bottom: 0,
-      height: 'auto',
-      [theme.breakpoints.up('sm')]: {
-        display: 'none',
-      },
-      '& button': {
-        padding: '10px 0',
-      },
-    },
-    labelRoot: {
-      width: '100%',
-    },
-    iconLabel: {
-      fontSize: 12,
-      color: '#67919d',
-      paddingTop: 10,
-      textTransform: 'uppercase',
-    },
-    iconSelected: {
-      fontSize: '12px !important',
-      color: theme.palette.primary.main,
-    },
-    doctorListingPage: {
-      borderRadius: '0 0 10px 10px',
-      backgroundColor: '#f7f8f5',
-    },
-    breadcrumbs: {
-      marginLeft: 20,
-      marginRight: 20,
-      fontSize: 13,
-      paddingTop: 17,
-      paddingBottom: 11,
-      fontWeight: 600,
-      color: '#02475b',
-      textTransform: 'uppercase',
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
-    },
-    doctorListingSection: {
-      display: 'flex',
-      padding: 20,
-    },
-    searchSection: {
-      width: 'calc(100% - 328px)',
-      paddingLeft: 20,
-    },
     pageHeader: {
       fontSize: 17,
       fontWeight: 500,
       color: '#0087ba',
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
-      display: 'flex',
-      alignItems: 'center',
       marginBottom: 20,
+      [theme.breakpoints.up('sm')]: {
+        borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+        display: 'flex',
+        alignItems: 'center',
+      },
     },
     filterSection: {
       marginLeft: 'auto',
+      marginBottom: 0.5,
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#f7f8f5',
+        marginLeft: -20,
+        marginRight: -20,
+        marginTop: 20,
+        display: 'flex',
+      },
       '& button:last-child': {
         marginRight: 0,
       },
@@ -110,6 +51,13 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 0,
       marginLeft: 10,
       marginRight: 10,
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 0,
+        marginRight: 0,
+        fontSize: 14,
+        fontWeight: 600,
+        width: '33.333%',
+      },
     },
     buttonActive: {
       borderBottom: '5px solid #00b38e',
@@ -124,11 +72,50 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       fontWeight: 600,
       marginTop: 115,
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 44,
+        backgroundColor: '#f7f8f5',
+      },
       '& h2': {
         fontSize: 18,
         paddingBottom: 5,
         margin: 0,
         color: '#02475b',
+      },
+    },
+    searchList: {
+      paddingBottom: 20,
+      [theme.breakpoints.down('xs')]: {
+        paddingBottom: 14,
+      },
+      '& >div': {
+        [theme.breakpoints.down('xs')]: {
+          marginLeft: -6,
+          marginRight: -6,
+          width: 'calc(100% + 12px)',
+        },
+        '& >div': {
+          [theme.breakpoints.down('xs')]: {
+            padding: '6px !important',
+          },
+        },
+      },
+    },
+    sectionHead: {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: theme.palette.common.white,
+        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+        marginLeft: -20,
+        marginRight: -20,
+        marginTop: -14,
+        paddingLeft: 20,
+        paddingRight: 20,
+        paddingTop: 10,
+      },
+      '& h2': {
+        [theme.breakpoints.down('xs')]: {
+          paddingBottom: 10,
+        },
       },
     },
   };
@@ -180,7 +167,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
     return (
       <Grid container spacing={2} justify="center">
-        <Grid item sm={12} md={6} key={_uniqueId('consultGrid_')}>
+        <Grid item xs={8} sm={6} md={6} key={_uniqueId('consultGrid_')}>
           <div className={classes.noDataCard}>
             <h2>Uh oh! :(</h2>
             {data && data.getSpecialtyDoctorsWithFilters.doctors.length > 0
@@ -211,41 +198,45 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   return (
     <>
-      <Typography variant="h2">Okay!</Typography>
-      <div className={classes.pageHeader}>
-        <div>Here are our best {specialityName}</div>
-        <div className={classes.filterSection}>
-          {_map(consultOptions, (consultName, consultType) => {
-            return (
-              <AphButton
-                className={
-                  selectedFilterOption === consultType
-                    ? `${classes.filterButton} ${classes.buttonActive}`
-                    : `${classes.filterButton}`
-                }
-                onClick={(e) => {
-                  setSelectedFilterOption(e.currentTarget.value);
-                }}
-                value={consultType}
-                key={_uniqueId('cbutton_')}
-              >
-                {consultName}
-              </AphButton>
-            );
-          })}
+      <div className={classes.sectionHead}>
+        <Typography variant="h2">Okay!</Typography>
+        <div className={classes.pageHeader}>
+          <div>Here are our best {specialityName}</div>
+          <div className={classes.filterSection}>
+            {_map(consultOptions, (consultName, consultType) => {
+              return (
+                <AphButton
+                  className={
+                    selectedFilterOption === consultType
+                      ? `${classes.filterButton} ${classes.buttonActive}`
+                      : `${classes.filterButton}`
+                  }
+                  onClick={(e) => {
+                    setSelectedFilterOption(e.currentTarget.value);
+                  }}
+                  value={consultType}
+                  key={_uniqueId('cbutton_')}
+                >
+                  {consultName}
+                </AphButton>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {doctorsList.length > 0 ? (
-        <Grid container spacing={2}>
-          {_map(doctorsList, (doctorDetails) => {
-            return (
-              <Grid item sm={12} md={6} key={_uniqueId('consultGrid_')}>
-                <DoctorCard doctorDetails={doctorDetails} key={_uniqueId('dcListing_')} />
-              </Grid>
-            );
-          })}
-        </Grid>
+        <div className={classes.searchList}>
+          <Grid container spacing={2}>
+            {_map(doctorsList, (doctorDetails) => {
+              return (
+                <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('consultGrid_')}>
+                  <DoctorCard doctorDetails={doctorDetails} key={_uniqueId('dcListing_')} />
+                </Grid>
+              );
+            })}
+          </Grid>
+        </div>
       ) : (
         consultErrorMessage()
       )}

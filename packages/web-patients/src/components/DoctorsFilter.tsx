@@ -21,10 +21,23 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 10,
       width: 328,
       borderRadius: 5,
+      [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        top: 46,
+        zIndex: 1,
+        borderRadius: 0,
+        paddingTop: 0,
+        width: '100%',
+        paddingBottom: 20,
+        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     filterSection: {
       padding: 20,
       paddingTop: 15,
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
     },
     customScroll: {
       width: '100%',
@@ -44,7 +57,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       fontWeight: 500,
       paddingBottom: 5,
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       display: 'flex',
       alignItems: 'center',
     },
@@ -68,6 +81,7 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 'auto',
       color: '#00b38e !important',
       letterSpacing: -0.27,
+      borderRadius: 10,
     },
     helpText: {
       paddingLeft: 20,
@@ -142,12 +156,12 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   } = props;
 
   const filterCities = { hyderabad: 'Hyderabad', chennai: 'Chennai' };
-  const filterExperiences = { '0_5': '0-5', '6_10': '6-10', '11_15': '11-15', '16_99': '16+' };
+  const filterExperiences = { '0_5': '0-5', '6_10': '6-10', '11_15': '11-15', '15_99': '15+' };
   const filterAvailability = {
     now: 'Now',
     today: 'Today',
     tomorrow: 'Tomorrow',
-    next3: 'Next 3 days',
+    next3: 'Next 3 Days',
   };
   const filterFees = { '100_500': '100-500', '501_1000': '501-1000', '1001_10000': '1000+' };
   const filterGenders = _reverse(_filter(Object.values(Gender), (gender) => gender !== 'OTHER')); // show MALE, FEMALE instead of FEMALE, MALE

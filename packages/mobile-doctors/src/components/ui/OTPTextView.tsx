@@ -7,7 +7,6 @@ import {
   TextInputKeyPressEventData,
   View,
   ViewStyle,
-  TextInputProps,
 } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -28,15 +27,16 @@ const styles = StyleSheet.create({
 });
 
 export interface OTPTextViewProps {
+  defaultValue?: string;
   cellTextLength?: number;
   inputCount: number;
   offTintColor?: string;
   tintColor?: string;
   containerStyle?: StyleProp<ViewStyle>;
   textInputStyle?: StyleProp<ViewStyle>;
-  handleTextChange?: (otpText: string) => void;
+  handleTextChange: (otpText: string) => void;
   value?: string;
-  textInputProps: TextInputProps;
+  editable?: boolean;
 }
 
 export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
@@ -45,13 +45,14 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
   const arrayRef = useRef<any[]>([]);
 
   const {
+    defaultValue,
     inputCount = 4,
     offTintColor,
     tintColor,
     containerStyle,
     textInputStyle,
     value,
-    textInputProps,
+    ...textInputProps
   } = props;
 
   const TextInputs = [];
@@ -78,7 +79,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
     if (text.match(/[0-9]/)) {
       otpText[i] = text;
       setotpText(otpText);
-      handleTextChange && handleTextChange(otpText.join(''));
+      handleTextChange(otpText.join(''));
       if (text.length === 1 && i !== inputCount - 1) {
         arrayRef.current && arrayRef.current[i + 1].focus();
       }
@@ -101,11 +102,12 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
         otpArray[i] = '';
       }
     }
-    props.handleTextChange && props.handleTextChange(otpArray.join(''));
+    props.handleTextChange(otpArray.join(''));
     setotpText(otpArray);
   };
 
   for (let i = 0; i < inputCount; i += 1) {
+    const defaultChars: string[] = [];
     const inputStyle = [styles.textInput, textInputStyle, { borderColor: offTintColor }];
     if (focusedInput === i) {
       inputStyle.push({ borderColor: tintColor });
@@ -115,7 +117,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
       <TextInput
         ref={(ref) => (arrayRef.current[i] = ref)}
         key={i}
-        defaultValue={''}
+        defaultValue={defaultValue ? defaultChars[i] : ''}
         style={inputStyle}
         maxLength={1}
         onFocus={() => onInputFocus(i)}

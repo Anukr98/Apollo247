@@ -4,6 +4,8 @@ import { clientBaseUrl } from 'helpers/clientRoutes';
 // brings type definition from @types/chai
 // declare const expect: Chai.ExpectStatic
 describe('TypeScript', () => {
+  beforeEach(() => cy.signOut());
+
   it('works', () => {
     // note TypeScript definition
     const x: number = 42; // eslint-disable-line @typescript-eslint/no-unused-vars

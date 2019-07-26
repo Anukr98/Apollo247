@@ -13,13 +13,29 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import { OnlineConsult } from 'components/OnlineConsult';
 import { VisitClinic } from 'components/VisitClinic';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
+import {
+  GetDoctorProfileById,
+  GetDoctorProfileByIdVariables,
+} from 'graphql/types/getDoctorProfileById';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
+
+type Params = { id: string };
+
+export interface DoctorDetailsProps {
+  id: string;
+}
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
       paddingTop: 88,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 78,
+        paddingTop: 61,
       },
     },
     headerSticky: {
@@ -27,6 +43,9 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
       zIndex: 99,
       top: 0,
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
     },
     container: {
       maxWidth: 1064,
@@ -35,6 +54,9 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorDetailsPage: {
       borderRadius: '0 0 10px 10px',
       backgroundColor: theme.palette.text.primary,
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: 'transparent',
+      },
     },
     breadcrumbs: {
       marginLeft: 20,
@@ -45,21 +67,43 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       color: theme.palette.secondary.dark,
       textTransform: 'uppercase',
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        zIndex: 2,
+        top: 0,
+        width: '100%',
+        borderBottom: 'none',
+        backgroundColor: theme.palette.common.white,
+        margin: 0,
+        paddingLeft: 20,
+        paddingRight: 20,
+        paddingBottom: 20,
+        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     doctorProfileSection: {
-      display: 'flex',
-      padding: 20,
+      [theme.breakpoints.up('sm')]: {
+        display: 'flex',
+        padding: 20,
+      },
     },
     searchSection: {
       width: 'calc(100% - 328px)',
       paddingLeft: 20,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        paddingLeft: 0,
+      },
     },
     sectionHeader: {
       color: theme.palette.secondary.dark,
       fontSize: 14,
       fontWeight: 500,
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       paddingBottom: 10,
       paddingTop: 10,
       marginBottom: 20,
@@ -93,6 +137,9 @@ const useStyles = makeStyles((theme: Theme) => {
       color: 'rgba(2,71,91,0.5)',
       padding: '14px 10px',
       textTransform: 'none',
+      [theme.breakpoints.down('xs')]: {
+        width: '50%',
+      },
     },
     tabSelected: {
       color: theme.palette.secondary.dark,
@@ -113,19 +160,43 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '50%',
       backgroundColor: theme.palette.common.white,
       cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        right: 0,
+        top: -48,
+      },
+    },
+    backArrow: {
+      cursor: 'pointer',
+      marginRight: 50,
+      [theme.breakpoints.up(1220)]: {
+        position: 'absolute',
+        left: -82,
+        width: 48,
+        height: 48,
+        top: 0,
+        lineHeight: '36px',
+        borderRadius: '50%',
+        textAlign: 'center',
+        backgroundColor: '#02475b',
+      },
+      '& img': {
+        verticalAlign: 'bottom',
+      },
+    },
+    whiteArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.down(1220)]: {
+        display: 'none',
+      },
+    },
+    blackArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.up(1220)]: {
+        display: 'none',
+      },
     },
   };
 });
-
-type Params = { id: string };
-
-export interface DoctorDetailsProps {
-  id: string;
-}
-
-interface TabContainerProps {
-  children?: React.ReactNode;
-}
 
 const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
@@ -137,135 +208,108 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const doctorId = params.id;
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
+  const { allCurrentPatients } = useAllCurrentPatients();
 
-  /* this should be a graphql call */
-  const detailsObj = {
-    '1': {
-      profilePicture: '',
-      doctorName: 'Dr. Simran Rai',
-      doctorSpeciality: 'GENERAL PHYSICIAN',
-      doctorExperience: '7',
-      doctorQualification: ['MS (Surgery)', 'MBBS (Internal Medicine)'],
-      awards: [
-        'Dr. B.C. Roy Award (2009)',
-        'Wiliam E. Ladd Medical (2013)',
-        'R. D. Birla Award (2014)',
-      ],
-      locations: ['Apollo Hospital, Jubilee Hills', 'Apollo Hospital, Banjara Hills'],
-      languagesKnown: ['English', 'Hindi', 'Telugu'],
-      consultingOptions: {
-        online: {
-          consultType: 'Online Consultation',
-          fees: 299,
-          availableIn: 30,
-        },
-        clinic: {
-          consultType: 'Clinic Visit',
-          fees: 499,
-          availableIn: 27,
-        },
-      },
-      isStarDoctor: true,
-    },
-    '2': {
-      profilePicture: '',
-      doctorName: 'Dr. Mishra',
-      doctorSpeciality: 'GENERAL PHYSICIAN',
-      doctorExperience: '10',
-      doctorQualification: ['MD (Surgery)'],
-      awards: [
-        'Dr. B.C. Roy Award (2009)',
-        'Wiliam E. Ladd Medical (2013)',
-        'R. D. Birla Award (2014)',
-      ],
-      locations: ['SLN Terminus', 'HiTECH City'],
-      languagesKnown: ['English', 'Hindi', 'Telugu'],
-      consultingOptions: {
-        online: {
-          consultType: 'Online Consultation',
-          fees: 399,
-          availableIn: 30,
-        },
-        clinic: {
-          consultType: 'Clinic Visit',
-          fees: 599,
-          availableIn: 27,
-        },
-      },
-      isStarDoctor: false,
-    },
-  };
+  const currentUserId = (allCurrentPatients && allCurrentPatients[0].id) || '';
 
-  const doctorDetails = detailsObj[doctorId as '1' | '2'];
+  const { data, loading, error } = useQueryWithSkip<
+    GetDoctorProfileById,
+    GetDoctorProfileByIdVariables
+  >(GET_DOCTOR_DETAILS_BY_ID, {
+    variables: { id: doctorId },
+  });
 
-  return (
-    <div className={classes.welcome}>
-      <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
+  if (loading) {
+    return <LinearProgress />;
+  }
+  if (error) {
+    return <div>Error....</div>;
+  }
+
+  const doctorDetails = data && data.getDoctorProfileById ? data : null;
+
+  if (doctorDetails) {
+    const isStarDoctor =
+      doctorDetails &&
+      doctorDetails.getDoctorProfileById &&
+      doctorDetails.getDoctorProfileById.profile
+        ? doctorDetails.getDoctorProfileById.profile.isStarDoctor
+        : false;
+
+    const doctorId =
+      doctorDetails &&
+      doctorDetails.getDoctorProfileById &&
+      doctorDetails.getDoctorProfileById.profile
+        ? doctorDetails.getDoctorProfileById.profile.id
+        : '';
+
+    return (
+      <div className={classes.welcome}>
+        <div className={classes.headerSticky}>
+          <div className={classes.container}>
+            <Header />
+          </div>
         </div>
-      </div>
-      <div className={classes.container}>
-        <div className={classes.doctorDetailsPage}>
-          <div className={classes.breadcrumbs}>Doctor Details</div>
-          <div className={classes.doctorProfileSection}>
-            <DoctorProfile
-              doctorDetails={doctorDetails}
-              onBookConsult={() => setIsPopoverOpen(true)}
-            />
-            <div className={classes.searchSection}>
-              <div className={classes.sectionHeader}>
-                <span>Dr. Simran’s Clinic</span>
-                <span className={classes.count}>02</span>
+        <div className={classes.container}>
+          <div className={classes.doctorDetailsPage}>
+            <div className={classes.breadcrumbs}>
+              <Link to={clientRoutes.doctorsLanding()}>
+                <div className={classes.backArrow}>
+                  <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                </div>
+              </Link>
+              Doctor Details
+            </div>
+            <div className={classes.doctorProfileSection}>
+              <DoctorProfile
+                doctorDetails={doctorDetails}
+                onBookConsult={() => setIsPopoverOpen(true)}
+              />
+              <div className={classes.searchSection}>
+                <DoctorClinics doctorDetails={doctorDetails} />
+                {isStarDoctor && <StarDoctorTeam doctorDetails={doctorDetails} />}
+                <AppointmentHistory doctorId={doctorId} patientId={currentUserId} />
               </div>
-              <DoctorClinics doctorId={doctorId} />
-              <div className={classes.sectionHeader}>
-                <span>Dr. Simran’s Team</span>
-                <span className={classes.count}>02</span>
-              </div>
-              <StarDoctorTeam doctorId={doctorId} />
-              <div className={classes.sectionHeader}>
-                <span>Appointment History</span>
-                <span className={classes.count}>02</span>
-              </div>
-              <AppointmentHistory />
             </div>
           </div>
         </div>
+        <Modal open={isPopoverOpen} onClose={() => setIsPopoverOpen(false)}>
+          <Paper className={classes.modalBox}>
+            <div className={classes.modalBoxClose} onClick={() => setIsPopoverOpen(false)}>
+              <img src={require('images/ic_cross_popup.svg')} alt="" />
+            </div>
+            <Tabs
+              value={tabValue}
+              classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+              onChange={(e, newValue) => {
+                setTabValue(newValue);
+              }}
+            >
+              <Tab
+                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                label="Consult Online"
+              />
+              <Tab
+                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                label="Visit Clinic"
+              />
+            </Tabs>
+            {tabValue === 0 && (
+              <TabContainer>
+                <OnlineConsult />
+              </TabContainer>
+            )}
+            {tabValue === 1 && (
+              <TabContainer>
+                <VisitClinic />
+              </TabContainer>
+            )}
+          </Paper>
+        </Modal>
       </div>
-      <Modal open={isPopoverOpen} onClose={() => setIsPopoverOpen(false)}>
-        <Paper className={classes.modalBox}>
-          <div className={classes.modalBoxClose} onClick={() => setIsPopoverOpen(false)}>
-            <img src={require('images/ic_cross_popup.svg')} alt="" />
-          </div>
-          <Tabs
-            value={tabValue}
-            classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
-            onChange={(e, newValue) => {
-              setTabValue(newValue);
-            }}
-          >
-            <Tab
-              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-              label="Consult Online"
-            />
-            <Tab
-              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-              label="Visit Clinic"
-            />
-          </Tabs>
-          {tabValue === 0 && (
-            <TabContainer>
-              <OnlineConsult />
-            </TabContainer>
-          )}
-          {tabValue === 1 && (
-            <TabContainer>
-              <VisitClinic />
-            </TabContainer>
-          )}
-        </Paper>
-      </Modal>
-    </div>
-  );
+    );
+  } else {
+    return <LinearProgress />;
+  }
 };

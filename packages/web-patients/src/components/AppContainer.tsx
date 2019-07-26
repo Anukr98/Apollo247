@@ -14,18 +14,7 @@ import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import { DoctorsLanding } from 'components/DoctorsLanding';
 import { AuthRouted } from 'components/AuthRouted';
-
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      NODE_ENV: 'local' | 'dev';
-      WEB_PATIENTS_PORT: string;
-      API_GATEWAY_PORT: string;
-      GOOGLE_APPLICATION_CREDENTIALS: string;
-      FIREBASE_PROJECT_ID: string;
-    }
-  }
-}
+import { PatientsList } from 'components/PatientsList';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -49,7 +38,8 @@ const App: React.FC = () => {
   return (
     <div className={classes.app}>
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
-      <AuthRouted exact path={clientRoutes.doctorDetails()} component={DoctorDetails} />
+      <Route exact path={clientRoutes.patients()} component={PatientsList} />
+      <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
       <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
     </div>
   );
@@ -71,8 +61,11 @@ const AppContainer: React.FC = () => {
   );
 };
 
-const rhlConfig = ({ hotHooks: true } as any) as Partial<Config>;
-setConfig(rhlConfig);
-const HotAppContainer = hot(AppContainer);
+let HotAppContainer = AppContainer;
+if (process.env.NODE_ENV === 'local') {
+  const rhlConfig = ({ hotHooks: true } as any) as Partial<Config>;
+  setConfig(rhlConfig);
+  HotAppContainer = hot(AppContainer);
+}
 
 export { HotAppContainer as AppContainer };

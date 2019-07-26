@@ -58,6 +58,7 @@ const useStyles = makeStyles((theme: Theme) => {
     userActive: {},
     loginForm: {
       width: 280,
+      minHeight: 290,
       padding: 20,
       borderRadius: 10,
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
@@ -98,7 +99,6 @@ export const Header: React.FC = (props) => {
             <img src={require('images/ic_logo.png')} />
           </Link>
         </div>
-        {/* {isSignedIn && <Navigation />} */}
         <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup, isProtected }) => (

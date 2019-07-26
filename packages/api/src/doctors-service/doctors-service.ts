@@ -22,6 +22,13 @@ import {
 import { GatewayContext } from 'api-gateway';
 import gql from 'graphql-tag';
 import { GraphQLTime } from 'graphql-iso-date';
+import { createConnection } from 'typeorm';
+import { Doctor } from 'doctors-service/entity/doctor';
+import { DoctorSpeciality } from 'doctors-service/entity/doctorSpeciality';
+import { StarTeam } from 'doctors-service/entity/starTeam';
+import { DoctorAndHospital } from 'doctors-service/entity/doctorAndHospital';
+import { Facility } from 'doctors-service/entity/facility';
+import { ConsultHours } from 'doctors-service/entity/consultHours';
 
 export interface DoctorsServiceContext extends GatewayContext {}
 
@@ -32,6 +39,20 @@ export type Resolver<Parent = any, Args = any> = (
 ) => any;
 
 (async () => {
+  await createConnection({
+    entities: [Doctor, DoctorSpeciality, StarTeam, DoctorAndHospital, Facility, ConsultHours],
+    type: 'postgres',
+    host: 'doctors-db',
+    port: 5432,
+    username: 'postgres',
+    password: 'postgres',
+    database: `doctors_${process.env.NODE_ENV}`,
+    logging: true,
+    synchronize: true,
+  }).catch((error) => {
+    throw new Error(error);
+  });
+
   const server = new ApolloServer({
     schema: buildFederatedSchema([
       {

@@ -1,23 +1,31 @@
 import { clientBaseUrl, clientRoutes } from 'helpers/clientRoutes';
-import { apiRoutes } from 'helpers/apiRoutes';
 import { getPatientsFixture } from 'cypress/fixtures/patientsFixtures';
+import schema from '@aph/api-schema/schema.json';
 
 describe('PatientsList', () => {
-  const patientsListQueryResult = getPatientsFixture();
+  const GetPatients = getPatientsFixture();
+
+  beforeEach(() => {
+    cy.signOut();
+    cy.server()
+      .mockAphGraphql({ schema })
+      .mockAphGraphqlOps({
+        operations: {
+          GetPatients,
+        },
+      });
+  });
 
   it('Shows the PatientsList', () => {
-    cy.server();
-    cy.visit(`${clientBaseUrl()}${clientRoutes.patients()}`);
-    cy.route('POST', apiRoutes.graphql(), patientsListQueryResult);
-    cy.contains('h3', 'Patients List').should('exist');
+    cy.visit(`${clientBaseUrl()}${clientRoutes.patients()}`).contains('h3', 'Patients List');
   });
 
   it('Renders each patient', () => {
-    cy.server();
-    cy.visit(`${clientBaseUrl()}${clientRoutes.patients()}`);
-    cy.route('POST', apiRoutes.graphql(), patientsListQueryResult);
-    patientsListQueryResult.data.getPatients!.patients.forEach((patient) => {
-      cy.contains('div', `${patient.firstName} ${patient.lastName}`);
+    cy.visit(`${clientBaseUrl()}${clientRoutes.patients()}`).then(() => {
+      const { patients } = GetPatients.getPatients!;
+      patients.forEach((patient) => {
+        cy.contains('div', `${patient.firstName} ${patient.lastName}`);
+      });
     });
   });
 });
