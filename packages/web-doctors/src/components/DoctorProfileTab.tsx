@@ -1,14 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
-import {
-  Theme,
-  IconButton,
-  Card,
-  CardHeader,
-  Avatar,
-  //CardContent,
-  CircularProgress,
-} from '@material-ui/core';
-import React, { useState, useRef } from 'react';
+import { Theme, IconButton, Card, CardHeader, Avatar, CircularProgress } from '@material-ui/core';
+import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Popover from '@material-ui/core/Popover';
 import Grid from '@material-ui/core/Grid';
@@ -122,7 +114,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.primary.contrastText,
       padding: 0,
       position: 'relative',
-      minHeight: 130,
+      minHeight: 120,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
       marginBottom: 15,
@@ -204,7 +196,7 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'relative',
         top: 4,
         marginRight: 15,
-        marginLeft: 15,
+        marginLeft: 0,
       },
     },
     posRelative: {
@@ -236,11 +228,15 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     cardHeader: {
       padding: '12px 0 12px 12px',
+      position: 'relative',
     },
     details: {
       '& button': {
-        padding: '5px 10px 5px 0px',
+        padding: '5px 8px 5px 0px',
         color: '#02475b',
+        position: 'absolute',
+        right: 0,
+        top: 8,
       },
     },
     qualification: {
@@ -255,18 +251,38 @@ const useStyles = makeStyles((theme: Theme) => {
         height: 80,
       },
     },
+    starDoctorHeading: {
+      marginBottom: 15,
+    },
+    starDoctordelete: {
+      color: '#951717',
+      fontSize: 15,
+      fontWeight: theme.typography.fontWeightMedium,
+      padding: '16px 20px',
+      cursor: 'pointer',
+    },
   };
 });
 
 export interface StarDoctorCardProps {
   doctor: GetDoctorProfile_getDoctorProfile_starDoctorTeam;
-  indexKey: number;
 }
 const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
-  const { doctor, indexKey } = props;
-  const moreButttonRef = useRef(null);
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const { doctor } = props;
+  //const moreButttonRef = useRef(null);
+  //const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const client = useApolloClient();
+  const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
+  const [currentDoctor, setCurrentDoctor] = React.useState('');
+  function handleClick(event: React.MouseEvent<HTMLButtonElement>, id: string) {
+    setAnchorEl(event.currentTarget);
+    setCurrentDoctor(id);
+  }
+
+  function handleClose() {
+    setAnchorEl((null as unknown) as HTMLButtonElement);
+    setCurrentDoctor('');
+  }
   const classes = useStyles();
   return (
     <Card className={classes.card}>
@@ -284,17 +300,14 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
             >
               {(mutate, { loading }) => (
                 <>
-                  <IconButton
-                    ref={moreButttonRef.current}
-                    onClick={() => setIsPopoverOpen(true)}
-                    disabled={loading}
-                  >
+                  <IconButton onClick={(e) => handleClick(e, doctor.firstName)} disabled={loading}>
                     {loading ? <CircularProgress /> : <MoreVert />}
                   </IconButton>
                   <Popover
-                    open={isPopoverOpen}
-                    anchorEl={moreButttonRef.current}
-                    onClose={() => setIsPopoverOpen(false)}
+                    id={currentDoctor === doctor.firstName ? doctor.firstName : undefined}
+                    open={currentDoctor === doctor.firstName}
+                    anchorEl={anchorEl}
+                    onClose={handleClose}
                     anchorOrigin={{
                       vertical: 'bottom',
                       horizontal: 'center',
@@ -305,6 +318,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                     }}
                   >
                     <Typography
+                      className={classes.starDoctordelete}
                       onClick={() => {
                         mutate({
                           variables: {
@@ -335,7 +349,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                         });
                       }}
                     >
-                      Remove Doctor - {indexKey}
+                      Remove Doctor
                     </Typography>
                   </Popover>
                 </>
@@ -387,7 +401,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
       {starDoctors.map((doctor, index) => (
         <Grid item lg={4} sm={6} xs={12} key={index}>
           <div className={classes.tabContentStarDoctor}>
-            <StarDoctorCard doctor={doctor} indexKey={index} />
+            <StarDoctorCard doctor={doctor} />
           </div>
         </Grid>
       ))}
@@ -506,7 +520,10 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
 
       {doctorProfile.isStarDoctor && (
         <div>
-          <Typography variant="h3" className={numStarDoctors === 0 ? classes.none : ''}>
+          <Typography
+            variant="h3"
+            className={numStarDoctors === 0 ? classes.none : classes.starDoctorHeading}
+          >
             Your Star Doctors Team ({numStarDoctors})
           </Typography>
           <StarDoctorsList starDoctors={starDoctors} />

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Theme } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
+import { makeStyles, withStyles } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 import AppBar from '@material-ui/core/AppBar';
@@ -14,6 +14,22 @@ import { FeesTab } from 'components/FeesTab';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 import { Link } from 'react-router-dom';
+const AntTabs = withStyles({
+  root: {
+    borderBottom: '1px solid #e8e8e8',
+    '& button': {
+      minWidth: 120,
+      width: 120,
+      maxWidth: 120,
+    },
+  },
+  indicator: {
+    backgroundColor: '#02475b',
+    minWidth: 120,
+    width: 120,
+    maxWidth: 120,
+  },
+})(Tabs);
 export interface TabContainerProps {
   children: React.ReactNode;
 }
@@ -30,7 +46,7 @@ TabContainer.propTypes = {
 const useStyles = makeStyles((theme: Theme) => {
   return {
     highlightActive: {
-      borderBottom: '2px solid #0087ba',
+      borderBottom: '2px solid #02475b',
       opacity: 1,
     },
     highlightInactive: {
@@ -59,6 +75,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'transparent',
       color: theme.palette.secondary.dark,
       paddingLeft: 40,
+      minWidth: 120,
       '& button': {
         textTransform: 'capitalize',
         fontSize: 16,
@@ -190,13 +207,13 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
             </div>
             {selectedTabIndex < 3 && (
               <AppBar position="static" color="default" className={classes.tabBarHeading}>
-                <Tabs
+                <AntTabs
                   value={selectedTabIndex}
                   indicatorColor="secondary"
                   className={classes.tabBar}
                 >
                   {tabsHtml}
-                </Tabs>
+                </AntTabs>
               </AppBar>
             )}
             {selectedTabIndex === 0 && (

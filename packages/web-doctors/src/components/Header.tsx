@@ -41,6 +41,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& img': {
         marginTop: 10,
+        width: 30,
       },
     },
     userAccountLogin: {
@@ -70,7 +71,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
     },
     container: {
-      maxWidth: 1044,
+      maxWidth: 1024,
       margin: 'auto',
       width: 1044,
       display: 'flex',
