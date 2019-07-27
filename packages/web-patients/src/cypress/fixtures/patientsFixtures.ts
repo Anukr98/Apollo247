@@ -28,3 +28,16 @@ export const john: Patient = {
   dateOfBirth: '1999-01-01',
   emailAddress: '',
 };
+
+export const jimmy: Patient = {
+  __typename: 'Patient',
+  id: '3',
+  uhid: '',
+  firstName: 'Jimmy',
+  lastName: 'Doe',
+  gender: Gender.MALE,
+  mobileNumber: '+91123456789',
+  relation: Relation.BROTHER,
+  dateOfBirth: null,
+  emailAddress: '',
+};
