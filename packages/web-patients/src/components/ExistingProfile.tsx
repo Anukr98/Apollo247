@@ -185,7 +185,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const disabled = patients.some(isPatientInvalid);
 
   return (
-    <div className={classes.signUpPop}>
+    <div className={classes.signUpPop} data-cypress="NewProfile">
       <div className={classes.mascotIcon}>
         <img src={require('images/ic_mascot.png')} alt="" />
       </div>
@@ -220,7 +220,10 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
         </div>
       </div>
       <div className={classes.actions}>
-        <Mutation<UpdatePatient, UpdatePatientVariables> mutation={UPDATE_PATIENT}>
+        <Mutation<UpdatePatient, UpdatePatientVariables>
+          mutation={UPDATE_PATIENT}
+          data-cypress="submit"
+        >
           {(mutate) => (
             <AphButton
               type="submit"

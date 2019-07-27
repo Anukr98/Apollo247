@@ -214,9 +214,9 @@ export const SignIn: React.FC = (props) => {
       render={({ touched, dirty, errors, values }: FormikProps<{ mobileNumber: string }>) => {
         if (displayOtpInput) return <OtpInput mobileNumber={values.mobileNumber} />;
         return (
-          <div className={classes.loginFormWrap}>
+          <div className={classes.loginFormWrap} data-cypress="phoneSignIn">
             <Typography variant="h2">hi</Typography>
-            <p>Please enter your mobile number to login</p>
+            <p data-cypress="phoneInstructions">Please enter your mobile number to login</p>
             <Form>
               <Field
                 name="mobileNumber"

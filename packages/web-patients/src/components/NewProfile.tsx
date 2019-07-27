@@ -195,7 +195,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
             !dirty ||
             requiredFields.some((field) => _isEmpty(values[field]) || Boolean(errors[field]));
           return (
-            <Form>
+            <Form data-cypress="loginFollowUpForm">
               <div className={classes.mascotIcon}>
                 <img src={require('images/ic_mascot.png')} alt="" />
               </div>
@@ -246,7 +246,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                         isNameValid(name) ? undefined : 'Invalid last name'
                       }
                       render={({ field }: FieldProps<{ firstName: string }>) => (
-                        <FormControl className={classes.formControl} fullWidth>
+                        <FormControl className={classes.formControl} fullWidth data-cypress="Form">
                           <AphTextField
                             {...field}
                             placeholder="Last Name"
@@ -271,6 +271,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                     />
 
                     <Field
+                      date-cypress="birthValidation"
                       name="dateOfBirth"
                       validate={(dob: string) =>
                         isDateValid(dob) ? undefined : 'Invalid date of birth'
@@ -363,7 +364,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                 </div>
               </div>
 
-              <div className={classes.actions}>
+              <div className={classes.actions} data-cypress="submit">
                 <AphButton
                   fullWidth
                   type="submit"

@@ -24,7 +24,7 @@ describe('UpdatePatient', () => {
   });
 
   it('Shows NewProfile automatically', () => {
-    cy.get('[data-cypress="NewProfile"]').should('exist');
+    cy.get('[data-cypress="NewProfile"]').should('exist'); //could add ExistingProfile cypress tag for existing profile via uhid
   });
 
   it('Does not show name in HeroBanner (yet)', () => {

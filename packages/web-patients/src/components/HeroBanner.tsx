@@ -172,6 +172,7 @@ export const HeroBanner: React.FC = () => {
               variant="contained"
               color="primary"
               className={classes.button}
+              data-cypress="ConsultButton"
               onClick={() => protectWithLoginPopup()}
             >
               Consult a doctor
