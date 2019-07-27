@@ -13,22 +13,30 @@ describe('Home page', () => {
   });
 
   // it('Available tabs in the header', () => {
+  //   // These don't exist yet
   //   cy.get('header').contains('Consult Room');
   //   cy.get('header').contains('Health Records');
   //   cy.get('header').contains('Tests & Medicines');
   // });
 
-  // it('profile icon displayed', () => {
-  //   const header = cy.get('header');
-  //   const userAccount = header.find('[ data-cypress="userAccountImg"]');
-  //   expect(userAccount).to.exist;
-  // });
+  it('should display profile icon', () => {
+    cy.get('header')
+      .find('div[class*="userCircle"]')
+      .should('exist');
+  });
 
-  // it('Name of the logged in user should be visible beside Hello', () => {
-  //   cy.get('h1')
-  //     .contains('there!')
-  //     .should('exist');
-  // });
+  it('Button for consult a doctor', () => {
+    cy.get('[data-cypress="HeroBanner"]')
+      .find('span')
+      .contains('Consult a doctor')
+      .should('exist');
+  });
+
+  it('Name of the logged in user should be visible beside Hello', () => {
+    cy.get('h1')
+      .contains('there!')
+      .should('exist');
+  });
 
   it('Clicking "Consult a doctor" when not signed in renders sign in popup', () => {
     cy.contains(/consult a doctor/i).click();
@@ -46,20 +54,26 @@ describe('Home page', () => {
     cy.visitAph(clientRoutes.welcome())
       .wait(500)
       .get('[data-cypress="HeroBanner"]')
+      .find('div[role*="button"]')
       .contains(me.firstName!.toLowerCase())
       .click({ force: true });
-    patients.forEach(({ firstName }) => cy.contains(firstName!.toLowerCase()));
+
+    patients.forEach(({ firstName }) => cy.contains(firstName!.toLowerCase())); //passes, though doesn't display right?
+    //played around endlessly with line 141-153 of HeroBanner, to no avail.
+    //Proper capitalization displays in console, though.
   });
 
-  // it('Add member option verified', () => {
-  //   cy.get('span')
-  //     .contains('Add Member')
-  //     .should('exist');
-  // });
-
-  it('Button for consult a doctor', () => {
-    cy.get('span')
-      .contains('Consult a doctor')
+  it('Add member option verified', () => {
+    const me = { ...jane, relation: Relation.ME };
+    const patients = [jimmy, john, me];
+    cy.signIn(patients);
+    cy.visitAph(clientRoutes.welcome()).wait(500);
+    cy.get('[data-cypress="HeroBanner"]')
+      .find('div[role*="button"]')
+      .contains(me.firstName!.toLowerCase())
+      .click({ force: true });
+    cy.get('button[class*="addMember"]')
+      .contains('Add Member')
       .should('exist');
   });
 
