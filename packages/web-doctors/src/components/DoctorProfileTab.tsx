@@ -40,9 +40,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& h3': {
         lineHeight: '22px',
-        padding: '3px 5px 5px 20px',
+        padding: '3px 5px 5px 0',
         fontSize: 16,
-        fontWeight: 500,
+        fontWeight: theme.typography.fontWeightMedium,
         color: '#02475b',
       },
       '& h4': {
@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
       },
       '& h5': {
-        padding: '5px 5px 3px 20px',
+        padding: '5px 5px 3px 0',
         color: '#658f9b',
       },
       '& h6': {
@@ -94,7 +94,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     tabLeftcontent: {
-      padding: '10px 5px 10px 5px',
+      padding: '10px 5px 10px 20px',
     },
     serviceItem: {
       padding: '0 0 10px 0',
@@ -120,7 +120,7 @@ const useStyles = makeStyles((theme: Theme) => {
     tabContentStarDoctor: {
       borderRadius: 10,
       backgroundColor: theme.palette.primary.contrastText,
-      padding: '10px 10px 10px 90px',
+      padding: 0,
       position: 'relative',
       minHeight: 130,
       flexGrow: 1,
@@ -130,6 +130,15 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h4': {
         borderBottom: 'none',
         fontSize: 18,
+        color: '#02475b',
+        margin: 0,
+        padding: 0,
+        fontWeight: theme.typography.fontWeightMedium,
+      },
+      '& h6': {
+        margin: 0,
+        fontWeight: 600,
+        color: '#0087ba',
       },
     },
     addStarDoctor: {
@@ -222,6 +231,30 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 15,
       width: 40,
     },
+    card: {
+      boxShadow: 'none',
+    },
+    cardHeader: {
+      padding: '12px 0 12px 12px',
+    },
+    details: {
+      '& button': {
+        padding: '5px 10px 5px 0px',
+        color: '#02475b',
+      },
+    },
+    qualification: {
+      fontSize: 12,
+      fontWeight: theme.typography.fontWeightMedium,
+      color: '#658f9b',
+    },
+    profileAvatar: {
+      width: 80,
+      height: 80,
+      '& img': {
+        height: 80,
+      },
+    },
   };
 });
 
@@ -234,84 +267,99 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
   const moreButttonRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const client = useApolloClient();
+  const classes = useStyles();
   return (
-    <Card>
-      <CardHeader
-        avatar={
-          <Avatar>
-            <img src={require('images/doctor-profile.jpg')} />
-          </Avatar>
-        }
-        action={
-          <Mutation<RemoveDoctorFromStarDoctorProgram, RemoveDoctorFromStarDoctorProgramVariables>
-            mutation={REMOVE_STAR_DOCTOR}
-          >
-            {(mutate, { loading }) => (
-              <>
-                <IconButton
-                  ref={moreButttonRef.current}
-                  onClick={() => setIsPopoverOpen(true)}
-                  disabled={loading}
-                >
-                  {loading ? <CircularProgress /> : <MoreVert />}
-                </IconButton>
-                <Popover
-                  open={isPopoverOpen}
-                  anchorEl={moreButttonRef.current}
-                  onClose={() => setIsPopoverOpen(false)}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'center',
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                >
-                  <Typography
-                    onClick={() => {
-                      mutate({
-                        variables: {
-                          starDoctorId: '1234',
-                          doctorId: '1234',
-                        },
-                      }).then(() => {
-                        const existingData = client.readQuery<GetDoctorProfile>({
-                          query: GET_DOCTOR_PROFILE,
-                        });
-                        const existingStarDoctorTeam =
-                          (existingData &&
-                            existingData.getDoctorProfile &&
-                            existingData.getDoctorProfile &&
-                            existingData.getDoctorProfile.starDoctorTeam) ||
-                          [];
-                        const newStarDoctorTeam = existingStarDoctorTeam.filter(
-                          (existingDoc) => existingDoc.firstName !== doctor.firstName
-                        );
-                        const dataAfterMutation: GetDoctorProfile = {
-                          ...existingData,
-                          getDoctorProfile: {
-                            ...existingData!.getDoctorProfile!,
-                            starDoctorTeam: newStarDoctorTeam,
-                          },
-                        };
-                        client.writeQuery({ query: GET_DOCTOR_PROFILE, data: dataAfterMutation });
-                      });
+    <Card className={classes.card}>
+      <div className={classes.details}>
+        <CardHeader
+          className={classes.cardHeader}
+          avatar={
+            <Avatar className={classes.profileAvatar}>
+              <img src={require('images/doctor-profile.jpg')} />
+            </Avatar>
+          }
+          action={
+            <Mutation<RemoveDoctorFromStarDoctorProgram, RemoveDoctorFromStarDoctorProgramVariables>
+              mutation={REMOVE_STAR_DOCTOR}
+            >
+              {(mutate, { loading }) => (
+                <>
+                  <IconButton
+                    ref={moreButttonRef.current}
+                    onClick={() => setIsPopoverOpen(true)}
+                    disabled={loading}
+                  >
+                    {loading ? <CircularProgress /> : <MoreVert />}
+                  </IconButton>
+                  <Popover
+                    open={isPopoverOpen}
+                    anchorEl={moreButttonRef.current}
+                    onClose={() => setIsPopoverOpen(false)}
+                    anchorOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'center',
+                    }}
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
                     }}
                   >
-                    Remove Doctor - {indexKey}
-                  </Typography>
-                </Popover>
-              </>
-            )}
-          </Mutation>
-        }
-        title={`Dr. ${doctor.firstName} ${doctor.lastName}`}
-      //subheader={<span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>}
-      />
-      {doctor.inviteStatus === INVITEDSTATUS.ACCEPTED && (
-        <CardContent>MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills</CardContent>
-      )}
+                    <Typography
+                      onClick={() => {
+                        mutate({
+                          variables: {
+                            starDoctorId: '1234',
+                            doctorId: '1234',
+                          },
+                        }).then(() => {
+                          const existingData = client.readQuery<GetDoctorProfile>({
+                            query: GET_DOCTOR_PROFILE,
+                          });
+                          const existingStarDoctorTeam =
+                            (existingData &&
+                              existingData.getDoctorProfile &&
+                              existingData.getDoctorProfile &&
+                              existingData.getDoctorProfile.starDoctorTeam) ||
+                            [];
+                          const newStarDoctorTeam = existingStarDoctorTeam.filter(
+                            (existingDoc) => existingDoc.firstName !== doctor.firstName
+                          );
+                          const dataAfterMutation: GetDoctorProfile = {
+                            ...existingData,
+                            getDoctorProfile: {
+                              ...existingData!.getDoctorProfile!,
+                              starDoctorTeam: newStarDoctorTeam,
+                            },
+                          };
+                          client.writeQuery({ query: GET_DOCTOR_PROFILE, data: dataAfterMutation });
+                        });
+                      }}
+                    >
+                      Remove Doctor - {indexKey}
+                    </Typography>
+                  </Popover>
+                </>
+              )}
+            </Mutation>
+          }
+          title={
+            <div>
+              <h4>
+                Dr. {doctor.firstName} {doctor.lastName}
+              </h4>
+              <h6>
+                <span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>
+              </h6>
+            </div>
+          }
+          subheader={
+            <span className={classes.qualification}>
+              MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+            </span>
+          }
+        />
+        {}
+      </div>
     </Card>
   );
 };
@@ -345,7 +393,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const classes = useStyles();
 
   return (
-    <div >
+    <div>
       <Typography variant="h2">Basic Details</Typography>
       <div className={classes.tabContent}>
         <Grid container alignItems="flex-start" spacing={0}>

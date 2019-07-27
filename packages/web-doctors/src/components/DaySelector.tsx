@@ -44,15 +44,15 @@ export const DaySelector: React.FC<DaySelectorProps> = (selectedDays) => {
       className={
         selectedDays.selectedDays.indexOf(day) > -1 ? classes.btnActive : classes.btnInactive
       }
-    // onClick={() => {
-    //   const newDays = new Set(selectedDays);
-    //   if (selectedDays.has(day)) {
-    //     newDays.delete(day);
-    //   } else {
-    //     newDays.add(day);
-    //   }
-    //   setSelectedDays(newDays);
-    // }}
+      // onClick={() => {
+      //   const newDays = new Set(selectedDays);
+      //   if (selectedDays.has(day)) {
+      //     newDays.delete(day);
+      //   } else {
+      //     newDays.add(day);
+      //   }
+      //   setSelectedDays(newDays);
+      // }}
     >
       {day}
     </AphButton>
