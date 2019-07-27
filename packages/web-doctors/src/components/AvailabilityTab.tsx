@@ -91,7 +91,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '8px 16px',
       lineHeight: '24px',
       fontWeight: theme.typography.fontWeightBold,
-      margin: theme.spacing(1),
+      margin: theme.spacing(1, 1, 0, 1),
       backgroundColor: '#fc9916',
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
@@ -105,7 +105,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightBold,
       color: '#fc9916',
       backgroundColor: '#fff',
-      margin: theme.spacing(1),
+      margin: theme.spacing(1, 1, 0, 1),
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
         backgroundColor: '#fff',
@@ -125,9 +125,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     btnContainer: {
-      borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
+      borderTop: 'solid 2px rgba(101,143,155,0.2)',
       marginTop: 30,
-      paddingTop: 15,
+      paddingTop: 10,
       textAlign: 'right',
     },
     btnActive: {
