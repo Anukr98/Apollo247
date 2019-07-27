@@ -142,7 +142,7 @@ export const HeroBanner: React.FC = () => {
                 const isSelected = patient.id === currentPatient.id;
                 const name = isSelected
                   ? (patient.firstName || '').toLocaleLowerCase()
-                  : patient.firstName || '';
+                  : (patient.firstName || '').toLocaleLowerCase();
                 return (
                   <MenuItem
                     selected={isSelected}

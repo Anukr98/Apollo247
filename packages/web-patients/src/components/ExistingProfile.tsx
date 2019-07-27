@@ -129,7 +129,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
     patient.relation || ''
   );
   return (
-    <div className={classes.profileBox} data-cypress="ExistingProfile">
+    <div className={classes.profileBox} data-cypress="PatientProfile">
       <div className={classes.boxHeader}>
         <div>{number}.</div>
         <div className={classes.userId}>{patient.uhid}</div>
@@ -181,7 +181,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const disabled = patients.some(isPatientInvalid);
 
   return (
-    <div className={classes.signUpPop} data-cypress="NewProfile">
+    <div className={classes.signUpPop} data-cypress="ExistingProfile">
       <div className={classes.mascotIcon}>
         <img src={require('images/ic_mascot.png')} alt="" />
       </div>
