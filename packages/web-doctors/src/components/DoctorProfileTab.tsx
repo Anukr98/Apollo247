@@ -5,7 +5,7 @@ import {
   Card,
   CardHeader,
   Avatar,
-  CardContent,
+  //CardContent,
   CircularProgress,
 } from '@material-ui/core';
 import React, { useState, useRef } from 'react';
@@ -347,15 +347,26 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
               <h4>
                 Dr. {doctor.firstName} {doctor.lastName}
               </h4>
-              <h6>
-                <span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>
-              </h6>
+              {doctor.inviteStatus === INVITEDSTATUS.ACCEPTED ? (
+                <h6>
+                  <span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>
+                </h6>
+              ) : (
+                <Typography className={classes.invited}>
+                  <img alt="" src={require('images/ic_invite.svg')} />
+                  Invited
+                </Typography>
+              )}
             </div>
           }
           subheader={
-            <span className={classes.qualification}>
-              MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
-            </span>
+            <div>
+              {doctor.inviteStatus === INVITEDSTATUS.ACCEPTED && (
+                <span className={classes.qualification}>
+                  MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+                </span>
+              )}
+            </div>
           }
         />
         {}
