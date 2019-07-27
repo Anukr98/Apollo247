@@ -1,8 +1,21 @@
 import { clientRoutes } from 'helpers/clientRoutes';
-import { jane } from 'cypress/fixtures/patientsFixtures';
+import { jane, john, jimmy } from 'cypress/fixtures/patientsFixtures';
 import { Relation, Gender } from 'graphql/types/globalTypes';
 
-describe('UpdatePatient', () => {
+describe('UpdatePatient (with uhids)', () => {
+  const patients = [jane, john, jimmy].map((pat) => ({ ...pat, uhid: 'uhid-1234' }));
+
+  beforeEach(() => {
+    cy.signIn(patients);
+    cy.visitAph(clientRoutes.welcome()).wait(500);
+  });
+
+  it('Shows ExistingProfile automatically', () => {
+    cy.get('[data-cypress="ExistingProfile"]').should('exist');
+  });
+});
+
+describe('UpdatePatient (without uhids)', () => {
   const patients = [jane];
 
   beforeEach(() => {
