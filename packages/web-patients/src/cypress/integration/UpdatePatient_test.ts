@@ -1,5 +1,4 @@
 import { clientRoutes } from 'helpers/clientRoutes';
-import schema from '@aph/api-schema/schema.json';
 import { jane } from 'cypress/fixtures/patientsFixtures';
 import { Relation, Gender } from 'graphql/types/globalTypes';
 
@@ -7,19 +6,7 @@ describe('UpdatePatient', () => {
   const patients = [jane];
 
   beforeEach(() => {
-    cy.signOut();
-    cy.server();
-    cy.mockAphGraphql({ schema });
-    cy.mockAphGraphqlOps({
-      operations: {
-        GetCurrentPatients: {
-          getCurrentPatients: {
-            __typename: 'GetCurrentPatientsResult',
-            patients,
-          },
-        },
-      },
-    });
+    cy.signIn(patients);
     cy.visitAph(clientRoutes.welcome()).wait(500);
   });
 
