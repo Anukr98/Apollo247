@@ -203,87 +203,89 @@ export const SignIn: React.FC = (props) => {
   const { sendOtp, sendOtpError, isSendingOtp } = useAuth();
 
   return (
-    <Formik
-      initialValues={{ mobileNumber: '' }}
-      onSubmit={(values) => {
-        const mobileNumberWithPrefix = `${mobileNumberPrefix}${values.mobileNumber}`;
-        sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
-          setDisplayOtpInput(true)
-        );
-      }}
-      render={({ touched, dirty, errors, values }: FormikProps<{ mobileNumber: string }>) => {
-        if (displayOtpInput) return <OtpInput mobileNumber={values.mobileNumber} />;
-        return (
-          <div className={classes.loginFormWrap} data-cypress="SignIn">
-            <Typography variant="h2">hi</Typography>
-            <p>Please enter your mobile number to login</p>
-            <Form>
-              <Field
-                name="mobileNumber"
-                validate={(val: string) =>
-                  isMobileNumberValid(val) ? undefined : 'This seems like a wrong number'
-                }
-                render={({ field }: FieldProps<{ mobileNumber: string }>) => {
-                  const finishedTyping = field.value.length === 10;
-                  const showValidationError =
-                    dirty &&
-                    !sendOtpError &&
-                    Boolean(errors.mobileNumber) &&
-                    (finishedTyping || touched.mobileNumber);
-                  const showSendOtpError = sendOtpError;
-                  return (
-                    <FormControl fullWidth>
-                      <AphInput
-                        {...field}
-                        autoFocus
-                        inputProps={{
-                          type: 'tel',
-                          maxLength: 10,
-                        }}
-                        error={showValidationError}
-                        onKeyPress={(e) => {
-                          if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
-                        }}
-                        startAdornment={
-                          <InputAdornment className={classes.inputAdornment} position="start">
-                            {mobileNumberPrefix}
-                          </InputAdornment>
-                        }
-                      />
-                      <FormHelperText
-                        component="div"
-                        className={classes.helpText}
-                        error={showValidationError || showSendOtpError}
-                      >
-                        {showValidationError
-                          ? errors.mobileNumber
-                          : showSendOtpError
-                          ? 'Error sending OTP'
-                          : 'OTP will be sent to this number'}
-                      </FormHelperText>
-                    </FormControl>
-                  );
-                }}
-              />
-              <div className={classes.action}>
-                <Fab
-                  type="submit"
-                  color="primary"
-                  aria-label="Sign in"
-                  disabled={Boolean(errors.mobileNumber) || !dirty}
-                >
-                  {isSendingOtp ? (
-                    <CircularProgress color="secondary" />
-                  ) : (
-                    <img src={require('images/ic_arrow_forward.svg')} />
-                  )}
-                </Fab>
-              </div>
-            </Form>
-            <div ref={placeRecaptchaAfterMe} />
-          </div>
-        );
-      }}
-    />
+    <div data-cypress="SignIn">
+      <Formik
+        initialValues={{ mobileNumber: '' }}
+        onSubmit={(values) => {
+          const mobileNumberWithPrefix = `${mobileNumberPrefix}${values.mobileNumber}`;
+          sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
+            setDisplayOtpInput(true)
+          );
+        }}
+        render={({ touched, dirty, errors, values }: FormikProps<{ mobileNumber: string }>) => {
+          if (displayOtpInput) return <OtpInput mobileNumber={values.mobileNumber} />;
+          return (
+            <div className={classes.loginFormWrap}>
+              <Typography variant="h2">hi</Typography>
+              <p>Please enter your mobile number to login</p>
+              <Form>
+                <Field
+                  name="mobileNumber"
+                  validate={(val: string) =>
+                    isMobileNumberValid(val) ? undefined : 'This seems like a wrong number'
+                  }
+                  render={({ field }: FieldProps<{ mobileNumber: string }>) => {
+                    const finishedTyping = field.value.length === 10;
+                    const showValidationError =
+                      dirty &&
+                      !sendOtpError &&
+                      Boolean(errors.mobileNumber) &&
+                      (finishedTyping || touched.mobileNumber);
+                    const showSendOtpError = sendOtpError;
+                    return (
+                      <FormControl fullWidth>
+                        <AphInput
+                          {...field}
+                          autoFocus
+                          inputProps={{
+                            type: 'tel',
+                            maxLength: 10,
+                          }}
+                          error={showValidationError}
+                          onKeyPress={(e) => {
+                            if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+                          }}
+                          startAdornment={
+                            <InputAdornment className={classes.inputAdornment} position="start">
+                              {mobileNumberPrefix}
+                            </InputAdornment>
+                          }
+                        />
+                        <FormHelperText
+                          component="div"
+                          className={classes.helpText}
+                          error={showValidationError || showSendOtpError}
+                        >
+                          {showValidationError
+                            ? errors.mobileNumber
+                            : showSendOtpError
+                            ? 'Error sending OTP'
+                            : 'OTP will be sent to this number'}
+                        </FormHelperText>
+                      </FormControl>
+                    );
+                  }}
+                />
+                <div className={classes.action}>
+                  <Fab
+                    type="submit"
+                    color="primary"
+                    aria-label="Sign in"
+                    disabled={Boolean(errors.mobileNumber) || !dirty}
+                  >
+                    {isSendingOtp ? (
+                      <CircularProgress color="secondary" />
+                    ) : (
+                      <img src={require('images/ic_arrow_forward.svg')} />
+                    )}
+                  </Fab>
+                </div>
+              </Form>
+              <div ref={placeRecaptchaAfterMe} />
+            </div>
+          );
+        }}
+      />
+    </div>
   );
 };

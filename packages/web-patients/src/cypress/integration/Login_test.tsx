@@ -18,19 +18,22 @@ describe('Login', () => {
       .find('[class*="userCircle"]')
       .click();
 
-    cy.get('input[type="tel"]')
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[type="tel"]')
       .type('9999999999')
       .get('button[type="submit"]')
       .click()
-      .wait(5000);
+      .find('[class*="MuiCircularProgress"]')
+      .should('not.exist');
 
-    cy.get('[class*="loginFormWrap"]')
+    cy.get('[data-cypress="SignIn"]')
       .find('input[type*="tel"]')
       .each(($el) => cy.wrap($el).type('9'))
       .get('form')
       .find('button[type="submit"]')
       .click()
-      .wait(5000);
+      .find('[class*="MuiCircularProgress"]')
+      .should('not.exist');
 
     cy.get('[data-cypress="Navigation"]').should('exist');
 
