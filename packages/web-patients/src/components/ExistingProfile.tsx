@@ -220,10 +220,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
         </div>
       </div>
       <div className={classes.actions}>
-        <Mutation<UpdatePatient, UpdatePatientVariables>
-          mutation={UPDATE_PATIENT}
-          data-cypress="submit"
-        >
+        <Mutation<UpdatePatient, UpdatePatientVariables> mutation={UPDATE_PATIENT}>
           {(mutate) => (
             <AphButton
               type="submit"

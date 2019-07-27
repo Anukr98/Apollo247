@@ -11,7 +11,7 @@ describe('UpdatePatient', () => {
   });
 
   it('Shows NewProfile automatically', () => {
-    cy.get('[data-cypress="NewProfile"]').should('exist'); //could add ExistingProfile cypress tag for existing profile via uhid
+    cy.get('[data-cypress="NewProfile"]').should('exist');
   });
 
   it('Does not show name in HeroBanner (yet)', () => {
@@ -31,6 +31,33 @@ describe('UpdatePatient', () => {
       .find('button[type="submit"]')
       .should('be.disabled');
   });
+
+  it('Wont allow improper dates in dateOfBirth field', () => {
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('input[name="dateOfBirth"]')
+      .clear()
+      .type('test')
+      .blur();
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .get('button[type="submit"]')
+      .should('be.disabled');
+
+    cy.contains('Invalid date of birth');
+  });
+
+  // describe('LandingPage', () => {
+  //   //works when logged out, but times out; can't work with fixture, even after AuthProvider alteration
+  //   it('Shows mobile number input', () => {
+  //     cy.visit('http://localhost:3000');
+  //     cy.get('[data-cypress="ConsultButton"]')
+  //       .click()
+  //       .wait(500);
+  //     cy.get('[data-cypress="phoneSignIn"]').should('be.visible');
+  //   });
+  // });
 
   it('Should update the patient', () => {
     const janeTheMan = {
