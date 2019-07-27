@@ -48,17 +48,6 @@ describe('UpdatePatient', () => {
     cy.contains('Invalid date of birth');
   });
 
-  // describe('LandingPage', () => {
-  //   //works when logged out, but times out; can't work with fixture, even after AuthProvider alteration
-  //   it('Shows mobile number input', () => {
-  //     cy.visit('http://localhost:3000');
-  //     cy.get('[data-cypress="ConsultButton"]')
-  //       .click()
-  //       .wait(500);
-  //     cy.get('[data-cypress="phoneSignIn"]').should('be.visible');
-  //   });
-  // });
-
   it('Should update the patient', () => {
     const janeTheMan = {
       ...jane,

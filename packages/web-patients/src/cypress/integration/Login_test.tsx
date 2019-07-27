@@ -33,6 +33,8 @@ describe('Login', () => {
       .wait(5000);
 
     cy.get('[data-cypress="Navigation"]').should('exist');
+
+    cy.clearFirebaseDb();
   });
 
   it('Shows "me" selected in hello dropdown', () => {

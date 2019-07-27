@@ -1,13 +1,14 @@
 import { clientRoutes } from 'helpers/clientRoutes';
+import { jane, john, jimmy } from 'cypress/fixtures/patientsFixtures';
+import { Relation } from 'graphql/types/globalTypes';
 
 describe('Home page', () => {
-  beforeEach(() => cy.signOut());
-
-  it('Launch the Application', () => {
-    cy.visitAph(clientRoutes.welcome());
+  beforeEach(() => {
+    // Add a wait so we finish attempting to authenticate
+    cy.visitAph(clientRoutes.welcome()).wait(500);
   });
 
-  it('Apollo logo displayed', () => {
+  it('Apollo logo is displayed', () => {
     cy.get('header').find('img');
   });
 
@@ -29,15 +30,26 @@ describe('Home page', () => {
   //     .should('exist');
   // });
 
+  it('Clicking "Consult a doctor" when not signed in renders sign in popup', () => {
+    cy.contains(/consult a doctor/i).click();
+    cy.get('[data-cypress="SignIn"]').should('be.visible');
+  });
+
   it('Are you not feeling well', () => {
     cy.contains('p', 'Not feeling well today').should('exist');
   });
 
-  // it('All the profiles should be visible upon clicking on drop down beside name of the logged In user', () => {
-  //   cy.contains('Surj').click();
-  //   cy.contains('Surj').should('exist');
-  //   cy.contains('Preeti').should('exist');
-  // });
+  it('All the profiles should be visible after logging in', () => {
+    const me = { ...jimmy, relation: Relation.ME };
+    const patients = [jane, john, me];
+    cy.signIn(patients);
+    cy.visitAph(clientRoutes.welcome())
+      .wait(500)
+      .get('[data-cypress="HeroBanner"]')
+      .contains(me.firstName!.toLowerCase())
+      .click({ force: true });
+    patients.forEach(({ firstName }) => cy.contains(firstName!.toLowerCase()));
+  });
 
   // it('Add member option verified', () => {
   //   cy.get('span')
