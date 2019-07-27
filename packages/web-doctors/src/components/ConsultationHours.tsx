@@ -69,6 +69,14 @@ const useStyles = makeStyles((theme: Theme) => {
     tabLeftcontent: {
       padding: '10px 5px 10px 5px',
     },
+    serviceItem: {
+      position: 'relative',
+      height: '100%',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'flex',
+      },
+    },
     availabletabContent: {
       padding: theme.spacing(1, 0),
     },
@@ -291,7 +299,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
           (item: GetDoctorProfile_getDoctorProfile_consultationHours, index: number) => {
             return (
               <div key={index.toString()} className={classes.tabContent}>
-                <ExpansionPanel>
+                <ExpansionPanel className={classes.serviceItem}>
                   <ExpansionPanelSummary
                     expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
                   >

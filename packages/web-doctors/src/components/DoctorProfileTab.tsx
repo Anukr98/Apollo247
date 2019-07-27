@@ -24,7 +24,7 @@ import { Mutation } from 'react-apollo';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
-      padding: '10px 20px',
+      padding: '10px 20px 0 20px',
       '& h2': {
         fontSize: 16,
         color: theme.palette.secondary.dark,
@@ -41,12 +41,13 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '5px 5px 5px 0',
         marginLeft: 20,
         fontSize: 20,
-        borderBottom: 'solid 0.5px rgba(98,22,64,0.2)',
+        borderBottom: 'solid 2px rgba(101,143,155,0.05)',
         fontWeight: 600,
       },
       '& h5': {
         padding: '5px 5px 3px 0',
         color: '#658f9b',
+        fontWeight: 'normal',
       },
       '& h6': {
         color: theme.palette.secondary.main,
@@ -150,7 +151,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '8px 16px',
       lineHeight: '24px',
       fontWeight: theme.typography.fontWeightBold,
-      margin: theme.spacing(1),
+      margin: theme.spacing(1, 1, 0, 1),
       backgroundColor: '#fc9916',
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
@@ -183,7 +184,7 @@ const useStyles = makeStyles((theme: Theme) => {
     btnContainer: {
       borderTop: 'solid 2px rgba(101,143,155,0.2)',
       marginTop: 30,
-      paddingTop: 15,
+      paddingTop: 10,
       textAlign: 'right',
     },
     invited: {
