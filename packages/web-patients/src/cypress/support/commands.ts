@@ -39,9 +39,12 @@ Cypress.Commands.add('foo', () => 'foo');
 Cypress.Commands.add('visitAph', (route) => cy.visit(`${clientBaseUrl()}${route}`));
 Cypress.Commands.add('mockAphGraphql', (options) => (cy as any).mockGraphql(options));
 Cypress.Commands.add('mockAphGraphqlOps', (options) => (cy as any).mockGraphqlOps(options));
-Cypress.Commands.add('signOut', () => window.indexedDB.deleteDatabase('firebaseLocalStorageDb'));
+Cypress.Commands.add('clearFirebaseDb', () =>
+  window.indexedDB.deleteDatabase('firebaseLocalStorageDb')
+);
+Cypress.Commands.add('signOut', () => cy.signIn(null));
 Cypress.Commands.add('signIn', (patients) => {
-  cy.signOut();
+  cy.clearFirebaseDb();
   cy.server();
   (cy as any).mockAphGraphql({ schema });
   (cy as any).mockAphGraphqlOps({
@@ -74,9 +77,9 @@ declare global {
   namespace Cypress {
     interface Chainable {
       foo: () => string;
-      signOut: () => void;
+      clearFirebaseDb: () => void;
       signIn: (
-        currentPatients: GetCurrentPatients_getCurrentPatients_patients[]
+        currentPatients: GetCurrentPatients_getCurrentPatients_patients[] | null
       ) => Cypress.Chainable;
       visitAph: (route: string) => Cypress.Chainable;
       mockAphGraphql(options?: MockAphGraphQLOptions<AllAphOperations>): Cypress.Chainable;

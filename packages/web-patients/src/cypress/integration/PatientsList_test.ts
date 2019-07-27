@@ -6,7 +6,6 @@ describe('PatientsList', () => {
   const patients = [jane, john];
 
   beforeEach(() => {
-    cy.signOut();
     cy.server()
       .mockAphGraphql({ schema })
       .mockAphGraphqlOps({
