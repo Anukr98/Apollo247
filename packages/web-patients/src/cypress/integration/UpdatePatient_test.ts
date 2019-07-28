@@ -16,10 +16,10 @@ describe('UpdatePatient (with uhids)', () => {
 
   it('Welcomes you by prompting for complete family data', () => {
     cy.get('[data-cypress="ExistingProfile"]')
-      .find('p')
       .contains('Please tell us who is who')
       .should('exist');
   });
+
   it('Does not show name in HeroBanner until Relation.ME is established', () => {
     cy.get('[data-cypress="HeroBanner"]')
       .contains('hello there')
