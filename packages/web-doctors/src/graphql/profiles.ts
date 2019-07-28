@@ -86,7 +86,6 @@ export const GET_DOCTOR_FOR_STAR_DOCTOR_PROGRAM = gql`
         firstName
         lastName
         inviteStatus
-        typeOfConsult
         experience
       }
       starDoctorTeam {
@@ -94,15 +93,14 @@ export const GET_DOCTOR_FOR_STAR_DOCTOR_PROGRAM = gql`
         firstName
         lastName
         inviteStatus
-        typeOfConsult
         experience
       }
     }
   }
 `;
 export const ADD_DOCTOR_TO_STAR_PROGRAM = gql`
-  mutation AddDoctorToStartDoctorProgram($starDoctorId: String!, $doctorId: String!) {
-    addDoctorToStartDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
+  mutation AddDoctorToStarDoctorProgram($starDoctorId: String!, $doctorId: String!) {
+    addDoctorToStarDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
   }
 `;
 

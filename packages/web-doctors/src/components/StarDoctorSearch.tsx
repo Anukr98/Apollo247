@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -6,6 +6,15 @@ import TextField from '@material-ui/core/TextField';
 import Paper from '@material-ui/core/Paper';
 import MenuItem from '@material-ui/core/MenuItem';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { debounce } from 'lodash';
+import { GET_DOCTOR_FOR_STAR_DOCTOR_PROGRAM } from 'graphql/profiles';
+import { ApolloConsumer } from 'react-apollo';
+import ApolloClient from 'apollo-client';
+import {
+  GetDoctorsForStarDoctorProgram,
+  GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram,
+  GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile,
+} from 'graphql/types/GetDoctorsForStarDoctorProgram';
 
 interface DoctorsName {
   label: string;
@@ -99,11 +108,12 @@ function renderInputComponent(inputProps: any) {
 }
 
 function renderSuggestion(
-  suggestion: DoctorsName,
+  suggestion: GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram,
   { query, isHighlighted }: Autosuggest.RenderSuggestionParams
 ) {
-  const matches = match(suggestion.label, query);
-  const parts = parse(suggestion.label, matches);
+  const label = `${suggestion.profile!.firstName} ${suggestion.profile!.lastName}`;
+  const matches = match(label, query);
+  const parts = parse(label, matches);
   return (
     <MenuItem selected={isHighlighted} component="div">
       <div>
@@ -131,8 +141,10 @@ function getSuggestions(value: string) {
       });
 }
 
-function getSuggestionValue(suggestion: DoctorsName) {
-  return suggestion.label;
+function getSuggestionValue(
+  suggestion: GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram
+) {
+  return `${suggestion.profile!.firstName} ${suggestion.profile!.lastName}`;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -180,25 +192,52 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 export interface StarDoctorSearchProps {
-  addDoctorHandler: (doctor: DoctorsName) => void;
+  addDoctorHandler: (
+    doctor: GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile
+  ) => void;
 }
+
+let debouncedSuggestionFetchRequested: (client: ApolloClient<any>, value: string) => void;
+
 export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHandler }) => {
   const classes = useStyles();
   const [state, setState] = React.useState({
     single: '',
   });
-  const [doctor, setDoctor] = React.useState<DoctorsName>({} as DoctorsName);
-  const [stateSuggestions, setSuggestions] = React.useState<DoctorsName[]>([]);
+  const [doctor, setDoctor] = React.useState<
+    GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile
+  >({} as GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile);
+  const [stateSuggestions, setSuggestions] = React.useState<
+    GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram[]
+  >([]);
+
+  useEffect(() => {
+    debouncedSuggestionFetchRequested = debounce(
+      (client, value) => {
+        client
+          .query({
+            query: GET_DOCTOR_FOR_STAR_DOCTOR_PROGRAM,
+            variables: { searchString: value },
+          })
+          .then(({ data }) => {
+            // setSuggestions(getSuggestions(value));
+            setSuggestions(data.getDoctorsForStarDoctorProgram);
+          });
+      },
+      500,
+      { leading: false, trailing: true }
+    );
+  }, []);
 
   const onSuggestionSelected = (
-    event: React.MouseEvent,
+    event: React.FormEvent,
     {
       suggestion,
     }: {
-      suggestion: DoctorsName;
+      suggestion: GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram;
     }
   ) => {
-    setDoctor(suggestion);
+    setDoctor(suggestion.profile!);
   };
 
   const handleSuggestionsClearRequested = () => {
@@ -218,9 +257,6 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
   const autosuggestProps = {
     renderInputComponent,
     suggestions: stateSuggestions,
-    onSuggestionsFetchRequested: ({ value }: { value: string }) => {
-      setSuggestions(getSuggestions(value));
-    },
     onSuggestionsClearRequested: handleSuggestionsClearRequested,
     getSuggestionValue,
     renderSuggestion,
@@ -228,34 +264,48 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
   };
 
   return (
-    <div className={`${classes.root} ${classes.posRelative}`}>
-      <Autosuggest
-        {...autosuggestProps}
-        inputProps={{
-          classes,
-          id: 'react-autosuggest-simple',
-          label: 'Search doctor',
+    <ApolloConsumer>
+      {(client) => (
+        <div className={`${classes.root} ${classes.posRelative}`}>
+          <Autosuggest
+            {...autosuggestProps}
+            onSuggestionsFetchRequested={({ value }) => {
+              if (value.length > 2) {
+                debouncedSuggestionFetchRequested(client, value);
+              }
+            }}
+            inputProps={{
+              classes,
+              id: 'react-autosuggest-simple',
+              label: 'Search doctor',
 
-          value: state.single,
-          onChange: handleChange('single'),
-        }}
-        theme={{
-          container: classes.container,
-          suggestionsContainerOpen: classes.suggestionsContainerOpen,
-          suggestionsList: classes.suggestionsList,
-          suggestion: classes.suggestion,
-        }}
-        renderSuggestionsContainer={(options) => (
-          <Paper {...options.containerProps} square>
-            {options.children}
-          </Paper>
-        )}
-      />
-      {doctor.label && state.single === doctor.label && (
-        <div className={classes.addBtn} onClick={() => addDoctorHandler(doctor)}>
-          <img alt="" src={require('images/add_doctor.svg')} />
+              value: state.single,
+              onChange: handleChange('single'),
+            }}
+            theme={{
+              container: classes.container,
+              suggestionsContainerOpen: classes.suggestionsContainerOpen,
+              suggestionsList: classes.suggestionsList,
+              suggestion: classes.suggestion,
+            }}
+            renderSuggestionsContainer={(options) => (
+              <Paper {...options.containerProps} square>
+                {options.children}
+              </Paper>
+            )}
+          />
+          {doctor.firstName && state.single === `${doctor.firstName} ${doctor.lastName}` && (
+            <div
+              className={classes.addBtn}
+              onClick={() => {
+                addDoctorHandler(doctor);
+              }}
+            >
+              <img alt="" src={require('images/add_doctor.svg')} />
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </ApolloConsumer>
   );
 };
