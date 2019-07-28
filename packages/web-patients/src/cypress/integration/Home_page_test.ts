@@ -2,7 +2,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { jane, john, jimmy } from 'cypress/fixtures/patientsFixtures';
 import { Relation } from 'graphql/types/globalTypes';
 
-describe.only('Home page', () => {
+describe('Home page', () => {
   it('Clicking "Consult a doctor" when not signed in renders sign in popup', () => {
     cy.signOut();
     cy.visitAph(clientRoutes.welcome()).wait(500);
