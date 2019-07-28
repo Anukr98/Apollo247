@@ -1,9 +1,6 @@
 import { clientRoutes } from 'helpers/clientRoutes';
 import { jane, john, jimmy } from 'cypress/fixtures/patientsFixtures';
 import { Relation } from 'graphql/types/globalTypes';
-// import chaiColors from 'chai-colors';
-// chai.use(chaiColors);
-// ^related error: "Could not find a declaration file for module 'chai-colors'. '/Users/BarkerAW83/Repos/apollo/apollo-hospitals/packages/web-patients/node_modules/chai-colors/chai_colors.js' implicitly has an 'any' type.""
 
 describe('Home page', () => {
   beforeEach(() => {
@@ -11,6 +8,25 @@ describe('Home page', () => {
     cy.visitAph(clientRoutes.welcome()).wait(500);
   });
 
+  it('Clicking "Consult a doctor" when not signed in renders sign in popup', () => {
+    cy.signOut();
+    cy.visitAph(clientRoutes.welcome()).wait(500);
+    cy.contains(/consult a doctor/i).click();
+    cy.get('[data-cypress="SignIn"]').should('be.visible');
+  });
+
+  it('All the profiles should be visible after logging in', () => {
+    const me = { ...jimmy, relation: Relation.ME };
+    const patients = [jane, john, me];
+    cy.signIn(patients);
+    cy.visitAph(clientRoutes.welcome())
+      .wait(500)
+      .get('[data-cypress="HeroBanner"]')
+      .contains(me.firstName!.toLowerCase())
+      .click({ force: true });
+    patients.forEach(({ firstName }) => cy.contains(firstName!.toLowerCase()));
+    cy.contains('button', /add member/i);
+  });
   it('Apollo logo is displayed', () => {
     cy.get('header').find('img');
   });

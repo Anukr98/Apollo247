@@ -81,6 +81,7 @@ declare global {
       signIn: (
         currentPatients: GetCurrentPatients_getCurrentPatients_patients[] | null
       ) => Cypress.Chainable;
+      signOut: () => void;
       visitAph: (route: string) => Cypress.Chainable;
       mockAphGraphql(options?: MockAphGraphQLOptions<AllAphOperations>): Cypress.Chainable;
       mockAphGraphqlOps(options?: SetAphOperationsOpts<AllAphOperations>): Cypress.Chainable;
