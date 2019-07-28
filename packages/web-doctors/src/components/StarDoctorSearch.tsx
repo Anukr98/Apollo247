@@ -11,7 +11,6 @@ import { GET_DOCTOR_FOR_STAR_DOCTOR_PROGRAM } from 'graphql/profiles';
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
 import {
-  GetDoctorsForStarDoctorProgram,
   GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram,
   GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile,
 } from 'graphql/types/GetDoctorsForStarDoctorProgram';
@@ -28,64 +27,6 @@ interface Search {
   text: string;
   highlight: boolean;
 }
-const suggestions: DoctorsName[] = [
-  {
-    label: 'Dr Sunita Rao',
-    typeOfConsult: '24/7',
-    experience: '7',
-    firstName: 'Sunita',
-    inviteStatus: 'Not accepted',
-    lastName: 'Rao',
-  },
-  {
-    label: 'Dr Ranjit Mehra',
-    typeOfConsult: '24/7',
-    experience: '7',
-    firstName: 'Ranjit',
-    inviteStatus: 'Not accepted',
-    lastName: 'Mehra',
-  },
-  {
-    label: 'Dr Simran Kaur',
-    typeOfConsult: '24/7',
-    experience: '7',
-    firstName: 'Simran',
-    inviteStatus: 'Not accepted',
-    lastName: 'Kaur',
-  },
-  {
-    label: 'Dr Ajay Ranka',
-    typeOfConsult: '24/7',
-    experience: '7',
-    firstName: 'Ajay',
-    inviteStatus: 'Not accepted',
-    lastName: 'Ranka',
-  },
-  {
-    label: 'Dr Suman Seth',
-    typeOfConsult: '24/7',
-    experience: '7',
-    firstName: 'Suman',
-    inviteStatus: 'Not accepted',
-    lastName: 'Seth',
-  },
-  {
-    label: 'Dr kiran Seth',
-    typeOfConsult: '24/7',
-    experience: '7',
-    firstName: 'kiran',
-    inviteStatus: 'Not accepted',
-    lastName: 'Seth',
-  },
-  {
-    label: 'Dr Pooja Seth',
-    typeOfConsult: '24/7',
-    experience: '7',
-    firstName: 'Pooja',
-    inviteStatus: 'Not accepted',
-    lastName: 'Seth',
-  },
-];
 
 function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -128,17 +69,6 @@ function renderSuggestion(
       </div>
     </MenuItem>
   );
-}
-
-function getSuggestions(value: string) {
-  const inputValue = value.trim().toLowerCase();
-  const inputLength = inputValue.length;
-
-  return inputLength < 3
-    ? []
-    : suggestions.filter((suggestion) => {
-        return suggestion.label.toLowerCase().indexOf(value.toLowerCase()) !== -1;
-      });
 }
 
 function getSuggestionValue(
@@ -197,7 +127,10 @@ export interface StarDoctorSearchProps {
   ) => void;
 }
 
-let debouncedSuggestionFetchRequested: (client: ApolloClient<any>, value: string) => void;
+let debouncedSuggestionFetchRequested: (
+  client: ApolloClient<GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram>,
+  value: string
+) => void;
 
 export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHandler }) => {
   const classes = useStyles();
@@ -220,7 +153,6 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
             variables: { searchString: value },
           })
           .then(({ data }) => {
-            // setSuggestions(getSuggestions(value));
             setSuggestions(data.getDoctorsForStarDoctorProgram);
           });
       },

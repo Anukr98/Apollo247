@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, IconButton, Card, CardHeader, Avatar, CircularProgress } from '@material-ui/core';
-import React, { useEffect } from 'react';
+import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Popover from '@material-ui/core/Popover';
 import Grid from '@material-ui/core/Grid';
