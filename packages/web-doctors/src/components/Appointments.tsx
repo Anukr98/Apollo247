@@ -256,8 +256,10 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
             >
               <Typography variant="h5" className={classes.AppointmentTime}>
                 <span>
-                  {format(appointment.startTime, 'hh:mm')} -{' '}
-                  {format(appointment.endTime, 'hh:mm bb')}
+                  {`${format(appointment.startTime, 'hh:mm')} - ${format(
+                    appointment.endTime,
+                    'hh:mm aa'
+                  )}`}
                 </span>
               </Typography>
             </StepLabel>
@@ -266,7 +268,6 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
                 root: 'stepContent',
               }}
             >
-              {/* card view start */}
               <div>
                 <Card
                   className={classes.card}
@@ -342,7 +343,6 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
                   </CardContent>
                 </Card>
               </div>
-              {/* card view end */}
             </StepContent>
           </Step>
         ))}
