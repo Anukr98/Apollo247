@@ -16,7 +16,8 @@ describe('Login', () => {
 
     cy.get('[data-cypress="Header"]')
       .find('[class*="userCircle"]')
-      .click();
+      .click()
+      .wait(2000);
 
     cy.get('[data-cypress="SignIn"]')
       .find('input[type="tel"]')
