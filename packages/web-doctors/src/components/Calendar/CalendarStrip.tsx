@@ -21,6 +21,7 @@ const useStyles = makeStyles({
     display: 'flex',
     'flex-wrap': 'nowrap',
     'justify-content': 'space-between',
+    boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
   },
   daysList: {
     width: '70%',
@@ -30,18 +31,20 @@ const useStyles = makeStyles({
       width: '14%',
       padding: '10px 0 10px 0',
       '&.highlight': {
-        backgroundColor: '#02475b',
+        backgroundColor: '#00b38e',
         color: '#fff',
+        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.5)',
       },
     },
   },
   weekView: {
     backgroundColor: '#fff',
     borderRadius: '10px',
-    width: '86%',
+    width: '80%',
     margin: 'auto',
     padding: '0 15px',
     textAlign: 'center',
+    boxShadow: '-4px 2px 10px 0 rgba(0, 0, 0, 0.1)',
   },
   monthPopup: {
     fontSize: 21,
@@ -63,6 +66,31 @@ const useStyles = makeStyles({
     fontSize: 25,
     color: '#658f9b',
     cursor: 'pointer',
+  },
+  calendarContainer: {
+    display: 'flex',
+  },
+  calenderIcon: {
+    width: '7%',
+    display: 'flex',
+    borderRadius: '10px',
+    textAlign: 'center',
+    boxShadow: '-4px 2px 10px 0 rgba(0, 0, 0, 0.1)',
+    backgroundColor: '#fff',
+    '& img': {
+      margin: 'auto',
+    },
+  },
+  moreIcon: {
+    width: '7%',
+    display: 'flex',
+    borderRadius: '10px',
+    textAlign: 'center',
+    boxShadow: '-4px 2px 10px 0 rgba(0, 0, 0, 0.1)',
+    backgroundColor: '#fff',
+    '& img': {
+      margin: 'auto',
+    },
   },
 });
 
@@ -96,70 +124,78 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
   }, [date, highlightStartOfMonth]);
 
   return (
-    <div className={classes.weekView}>
-      <MonthList
-        className={classes.monthPopup}
-        month={month}
-        onChange={(e) => {
-          const monthSelected: number = (e.target.value as unknown) as number;
-          const newDate = new Date(getYear(date), monthSelected, 1, 0, 0, 0);
-
-          setDate(newDate);
-          setMonth(monthSelected);
-          setHighlightStartOfMonth(true);
-
-          if (monthChangeHandler) {
-            monthChangeHandler(
-              (e as unknown) as SelectInputProps['onChange'], // the default type of `e` is React.ChangeEvent need to convert it to `SelectInputProps.onChange`
-              monthSelected,
-              startOfWeek(startOfDay(newDate))
-            );
-          }
-        }}
-      />
-      <div
-        className={classes.prevBtn}
-        onClick={(e) => {
-          const newDate = subWeeks(date, 1);
-          const weekStartDate: Date = startOfWeek(startOfDay(newDate));
-          setDate(newDate);
-          setHighlightStartOfMonth(false);
-
-          if (onPrev) {
-            onPrev(e, newDate, weekStartDate);
-          }
-        }}
-      >
-        {' '}
-        &lt;{' '}
+    <div className={classes.calendarContainer}>
+      <div className={classes.calenderIcon}>
+        <img src={require('images/ic_calendar.svg')} alt="" />
       </div>
-      <Days
-        className={classes.daysList}
-        date={date}
-        handler={(e, date) => {
-          setMonth(getMonth(date));
-          setHighlightStartOfMonth(false);
+      <div className={classes.weekView}>
+        <MonthList
+          className={classes.monthPopup}
+          month={month}
+          onChange={(e) => {
+            const monthSelected: number = (e.target.value as unknown) as number;
+            const newDate = new Date(getYear(date), monthSelected, 1, 0, 0, 0);
 
-          if (dayClickHandler) {
-            dayClickHandler(e, date);
-          }
-        }}
-        highlightStartOfMonth={highlightStartOfMonth}
-      />
-      <div
-        className={classes.nextBtn}
-        onClick={(e) => {
-          const newDate = addWeeks(date, 1);
-          setDate(newDate);
-          setHighlightStartOfMonth(false);
+            setDate(newDate);
+            setMonth(monthSelected);
+            setHighlightStartOfMonth(true);
 
-          if (onNext) {
-            onNext(e, newDate, startOfWeek(startOfDay(newDate)));
-          }
-        }}
-      >
-        {' '}
-        >{' '}
+            if (monthChangeHandler) {
+              monthChangeHandler(
+                (e as unknown) as SelectInputProps['onChange'], // the default type of `e` is React.ChangeEvent need to convert it to `SelectInputProps.onChange`
+                monthSelected,
+                startOfWeek(startOfDay(newDate))
+              );
+            }
+          }}
+        />
+        <div
+          className={classes.prevBtn}
+          onClick={(e) => {
+            const newDate = subWeeks(date, 1);
+            const weekStartDate: Date = startOfWeek(startOfDay(newDate));
+            setDate(newDate);
+            setHighlightStartOfMonth(false);
+
+            if (onPrev) {
+              onPrev(e, newDate, weekStartDate);
+            }
+          }}
+        >
+          {' '}
+          &lt;{' '}
+        </div>
+        <Days
+          className={classes.daysList}
+          date={date}
+          handler={(e, date) => {
+            setMonth(getMonth(date));
+            setHighlightStartOfMonth(false);
+
+            if (dayClickHandler) {
+              dayClickHandler(e, date);
+            }
+          }}
+          highlightStartOfMonth={highlightStartOfMonth}
+        />
+        <div
+          className={classes.nextBtn}
+          onClick={(e) => {
+            const newDate = addWeeks(date, 1);
+            setDate(newDate);
+            setHighlightStartOfMonth(false);
+
+            if (onNext) {
+              onNext(e, newDate, startOfWeek(startOfDay(newDate)));
+            }
+          }}
+        >
+          {' '}
+          >{' '}
+        </div>
+      </div>
+      <div className={classes.moreIcon}>
+        <img src={require('images/ic_more.svg')} alt="" />
       </div>
     </div>
   );

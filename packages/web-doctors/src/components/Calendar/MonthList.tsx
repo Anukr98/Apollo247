@@ -2,6 +2,7 @@ import React from 'react';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import { makeStyles } from '@material-ui/styles';
+import IconButton from '@material-ui/core/IconButton';
 import { SelectInputProps } from '@material-ui/core/Select/SelectInput';
 
 export interface MonthListProps {
@@ -11,11 +12,10 @@ export interface MonthListProps {
 }
 const useStyles = makeStyles({
   monthList: {
-    width: '17%',
+    width: '15%',
     display: 'inline-block',
     textAlign: 'center',
-    paddingTop: '18px',
-    paddingBottom: '22px',
+    padding: '9px 16px 16px 16px',
     marginLeft: '-38px',
     borderRadius: '10px 0 0 10px',
     backgroundColor: '#f7f7f7',
@@ -30,7 +30,6 @@ const useStyles = makeStyles({
         backgroundColor: 'transparent',
       },
     },
-
     '&:after': {
       borderBottom: 'none',
     },
@@ -43,6 +42,7 @@ const useStyles = makeStyles({
     },
     '& button': {
       color: '#02475b',
+      right: 10,
     },
   },
   monthListItem: {
@@ -58,13 +58,25 @@ const useStyles = makeStyles({
     display: 'inline-block',
     width: '15%',
   },
+  monthArrow: {
+    width: 28,
+  },
 });
 export const MonthList: React.FC<MonthListProps> = ({ month, onChange }) => {
   const classes = useStyles();
 
   return (
     <div className={classes.monthList}>
-      <Select className={classes.monthListPopup} value={month} onChange={onChange}>
+      <Select
+        className={classes.monthListPopup}
+        value={month}
+        onChange={onChange}
+        IconComponent={() => (
+          <IconButton aria-label="down arrow">
+            <img src={require('images/ic_downarrow.svg')} className={classes.monthArrow} alt="" />
+          </IconButton>
+        )}
+      >
         <MenuItem className={classes.monthListItem} value={0}>
           Jan
         </MenuItem>
