@@ -7,7 +7,14 @@ import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
 import IconButton from '@material-ui/core/IconButton';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
-import { Stepper, Step, StepLabel, StepContent, Typography } from '@material-ui/core';
+import {
+  Stepper,
+  Step,
+  StepLabel,
+  StepConnector,
+  StepContent,
+  Typography,
+} from '@material-ui/core';
 import { format, getTime, setSeconds, setMilliseconds } from 'date-fns';
 
 export interface Appointment {
@@ -104,13 +111,30 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     calendarContent: {
       backgroundColor: '#f7f7f7',
+      paddingTop: 90,
     },
     iconContainer: {
       '& text': {
         display: 'none',
       },
     },
+    AppointmentTime: {
+      position: 'relative',
+      top: -70,
+      marginLeft: '5%',
+      fontSize: 14,
+      fontWeight: theme.typography.fontWeightBold,
+      color: '#0087ba',
+    },
     step: {
+      '& .stepContent': {
+        borderLeft: '2px solid #0087ba',
+      },
+      '&:last-child': {
+        '& .stepContent': {
+          borderLeft: 'none',
+        },
+      },
       '& .stepIcon': {
         color: '#fff',
         border: '2px solid #0087ba',
@@ -119,6 +143,10 @@ const useStyles = makeStyles((theme: Theme) =>
       '& .cardRow': {
         border: '2px solid #0087ba',
         backgroundColor: '#fff',
+        position: 'relative',
+        top: -70,
+        marginLeft: '5%',
+        width: '95%',
       },
       '&.upcoming': {
         '& .stepIcon': {
@@ -129,6 +157,10 @@ const useStyles = makeStyles((theme: Theme) =>
         '& .cardRow': {
           border: '2px solid #ff748e',
           backgroundColor: '#fff',
+          position: 'relative',
+          top: -70,
+          marginLeft: '5%',
+          width: '95%',
         },
       },
     },
@@ -137,6 +169,13 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#0087ba',
         border: 'none',
       },
+      '& .cardRow': {
+        backgroundColor: '#f0f4f5',
+        border: 'solid 1px rgba(2, 71, 91, 0.1)',
+      },
+    },
+    hide: {
+      display: 'none',
     },
   })
 );
@@ -184,7 +223,18 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
 
   return (
     <div>
-      <Stepper activeStep={activeStep} orientation="vertical" className={classes.calendarContent}>
+      <Stepper
+        activeStep={activeStep}
+        orientation="vertical"
+        connector={
+          <StepConnector
+            classes={{
+              line: classes.hide,
+            }}
+          />
+        }
+        className={classes.calendarContent}
+      >
         {appointments.map((appointment, idx) => (
           <Step
             key={idx}
@@ -204,7 +254,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
                 },
               }}
             >
-              <Typography variant="h5">
+              <Typography variant="h5" className={classes.AppointmentTime}>
                 <span>
                   {format(appointment.startTime, 'hh:mm')} -{' '}
                   {format(appointment.endTime, 'hh:mm bb')}
