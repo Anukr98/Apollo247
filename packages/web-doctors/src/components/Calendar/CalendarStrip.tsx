@@ -12,7 +12,6 @@ import {
   getYear,
 } from 'date-fns';
 import { SelectInputProps } from '@material-ui/core/Select/SelectInput';
-import { flexbox } from '@material-ui/system';
 
 const useStyles = makeStyles({
   float: {
@@ -22,6 +21,7 @@ const useStyles = makeStyles({
     display: 'flex',
     'flex-wrap': 'nowrap',
     'justify-content': 'space-between',
+    boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
   },
   daysList: {
     width: '70%',
