@@ -32,12 +32,6 @@ import { ConsultHours } from 'doctors-service/entity/consultHours';
 
 export interface DoctorsServiceContext extends GatewayContext {}
 
-export type Resolver<Parent = any, Args = any> = (
-  parent: Parent,
-  args: Args,
-  context: DoctorsServiceContext
-) => any;
-
 (async () => {
   await createConnection({
     entities: [Doctor, DoctorSpeciality, StarTeam, DoctorAndHospital, Facility, ConsultHours],
