@@ -4,6 +4,7 @@ import React from 'react';
 import { AphButton, AphSelect } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -61,8 +62,6 @@ const useStyles = makeStyles((theme: Theme) => {
     customScrollBar: {
       paddingTop: 10,
       paddingBottom: 10,
-      height: '50vh',
-      overflow: 'auto',
     },
     timeSlots: {
       paddingTop: 5,
@@ -115,25 +114,27 @@ export const VisitClinic: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.customScrollBar}>
-        <div className={classes.consultGroup}>
-          <AphCalendar />
-        </div>
-        <div className={`${classes.consultGroup} ${classes.timeSlots}`}>
-          <AphSelect value="Apollo Hospital">
-            <MenuItem classes={{ selected: classes.menuSelected }}>Apollo Hospital</MenuItem>
-          </AphSelect>
-          <div className={classes.selectedAddress}>
-            <div className={classes.clinicAddress}>Road No 72, Film Nagar, Jubilee Hills</div>
-            <div className={classes.clinicDistance}>
-              <img src={require('images/ic_location.svg')} alt="" />
-              <br />
-              2.5 Kms
-            </div>
+      <Scrollbars autoHide={true} autoHeight autoHeightMax={'50vh'}>
+        <div className={classes.customScrollBar}>
+          <div className={classes.consultGroup}>
+            <AphCalendar />
           </div>
-          <DayTimeSlots />
+          <div className={`${classes.consultGroup} ${classes.timeSlots}`}>
+            <AphSelect value="Apollo Hospital">
+              <MenuItem classes={{ selected: classes.menuSelected }}>Apollo Hospital</MenuItem>
+            </AphSelect>
+            <div className={classes.selectedAddress}>
+              <div className={classes.clinicAddress}>Road No 72, Film Nagar, Jubilee Hills</div>
+              <div className={classes.clinicDistance}>
+                <img src={require('images/ic_location.svg')} alt="" />
+                <br />
+                2.5 Kms
+              </div>
+            </div>
+            <DayTimeSlots />
+          </div>
         </div>
-      </div>
+      </Scrollbars>
       <div className={classes.bottomActions}>
         <AphButton fullWidth color="primary">
           PAY Rs. 499

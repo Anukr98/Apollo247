@@ -17,6 +17,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { SEARCH_DOCTORS_AND_SPECIALITY } from 'graphql/doctors';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -105,12 +106,11 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorListingSection: {
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
-        padding: 20,
+        padding: '20px 3px 20px 20px',
       },
     },
     searchSection: {
       width: 'calc(100% - 328px)',
-      paddingLeft: 20,
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         paddingRight: 20,
@@ -186,6 +186,10 @@ const useStyles = makeStyles((theme: Theme) => {
           },
         },
       },
+    },
+    customScroll: {
+      paddingLeft: 20,
+      paddingRight: 17,
     },
   };
 });
@@ -288,95 +292,102 @@ export const DoctorsLanding: React.FC = (props) => {
                 setDisableFilters(disableFilters);
               }}
             />
-
             <div className={classes.searchSection}>
-              {filterOptions.searchKeyword.length <= 0 &&
-              specialitySelected.length === 0 &&
-              showSearchAndPastSearch ? (
-                <>
-                  <div className={classes.sectionHeader}>Your Past Searches</div>
-                  <PastSearches
-                    speciality={(specialitySelected) => setSpecialitySelected(specialitySelected)}
-                    disableFilter={(disableFilters) => {
-                      setDisableFilters(disableFilters);
-                    }}
-                  />
-                </>
-              ) : null}
-
-              {specialitySelected.length > 0 ? (
-                <DoctorsListing filter={filterOptions} specialityName={specialitySelected} />
-              ) : (
-                <>
-                  {matchingDoctorsFound > 0 || matchingSpecialitesFound > 0 ? (
+              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 245px'}>
+                <div className={classes.customScroll}>
+                  {filterOptions.searchKeyword.length <= 0 &&
+                  specialitySelected.length === 0 &&
+                  showSearchAndPastSearch ? (
                     <>
-                      {data &&
-                      data.SearchDoctorAndSpecialty &&
-                      filterOptions.searchKeyword.length > 0 &&
-                      matchingDoctorsFound > 0 &&
-                      showSearchAndPastSearch ? (
-                        <>
-                          <div className={classes.sectionHeader}>
-                            <span>Matching Doctors</span>
-                            <span className={classes.count}>
-                              {matchingDoctorsFound > 0 && matchingDoctorsFound < 10
-                                ? `0${matchingDoctorsFound}`
-                                : matchingDoctorsFound}
-                            </span>
-                          </div>
-                          <div className={classes.searchList}>
-                            <Grid spacing={2} container>
-                              {_map(data.SearchDoctorAndSpecialty.doctors, (doctorDetails) => {
-                                return (
-                                  <Grid
-                                    item
-                                    xs={12}
-                                    sm={12}
-                                    md={12}
-                                    lg={6}
-                                    key={_uniqueId('doctor_')}
-                                  >
-                                    <DoctorCard doctorDetails={doctorDetails} />
-                                  </Grid>
-                                );
-                              })}
-                            </Grid>
-                          </div>
-                        </>
-                      ) : null}
-                      <Specialities
-                        keyword={filterOptions.searchKeyword}
-                        matched={(matchingSpecialities) =>
-                          setMatchingSpecialities(matchingSpecialities)
-                        }
+                      <div className={classes.sectionHeader}>Your Past Searches</div>
+                      <PastSearches
                         speciality={(specialitySelected) =>
                           setSpecialitySelected(specialitySelected)
                         }
                         disableFilter={(disableFilters) => {
                           setDisableFilters(disableFilters);
                         }}
-                        subHeading={
-                          filterOptions.searchKeyword !== '' && showSearchAndPastSearch
-                            ? 'Matching Specialities'
-                            : 'Specialities'
-                        }
                       />
                     </>
+                  ) : null}
+
+                  {specialitySelected.length > 0 ? (
+                    <DoctorsListing filter={filterOptions} specialityName={specialitySelected} />
                   ) : (
-                    <PossibleSpecialitiesAndDoctors
-                      keyword={filterOptions.searchKeyword}
-                      matched={(matchingSpecialities) =>
-                        setMatchingSpecialities(matchingSpecialities)
-                      }
-                      speciality={(specialitySelected) => setSpecialitySelected(specialitySelected)}
-                      disableFilter={(disableFilters) => {
-                        setDisableFilters(disableFilters);
-                      }}
-                      subHeading=""
-                    />
+                    <>
+                      {matchingDoctorsFound > 0 || matchingSpecialitesFound > 0 ? (
+                        <>
+                          {data &&
+                          data.SearchDoctorAndSpecialty &&
+                          filterOptions.searchKeyword.length > 0 &&
+                          matchingDoctorsFound > 0 &&
+                          showSearchAndPastSearch ? (
+                            <>
+                              <div className={classes.sectionHeader}>
+                                <span>Matching Doctors</span>
+                                <span className={classes.count}>
+                                  {matchingDoctorsFound > 0 && matchingDoctorsFound < 10
+                                    ? `0${matchingDoctorsFound}`
+                                    : matchingDoctorsFound}
+                                </span>
+                              </div>
+                              <div className={classes.searchList}>
+                                <Grid spacing={2} container>
+                                  {_map(data.SearchDoctorAndSpecialty.doctors, (doctorDetails) => {
+                                    return (
+                                      <Grid
+                                        item
+                                        xs={12}
+                                        sm={12}
+                                        md={12}
+                                        lg={6}
+                                        key={_uniqueId('doctor_')}
+                                      >
+                                        <DoctorCard doctorDetails={doctorDetails} />
+                                      </Grid>
+                                    );
+                                  })}
+                                </Grid>
+                              </div>
+                            </>
+                          ) : null}
+                          <Specialities
+                            keyword={filterOptions.searchKeyword}
+                            matched={(matchingSpecialities) =>
+                              setMatchingSpecialities(matchingSpecialities)
+                            }
+                            speciality={(specialitySelected) =>
+                              setSpecialitySelected(specialitySelected)
+                            }
+                            disableFilter={(disableFilters) => {
+                              setDisableFilters(disableFilters);
+                            }}
+                            subHeading={
+                              filterOptions.searchKeyword !== '' && showSearchAndPastSearch
+                                ? 'Matching Specialities'
+                                : 'Specialities'
+                            }
+                          />
+                        </>
+                      ) : (
+                        <PossibleSpecialitiesAndDoctors
+                          keyword={filterOptions.searchKeyword}
+                          matched={(matchingSpecialities) =>
+                            setMatchingSpecialities(matchingSpecialities)
+                          }
+                          speciality={(specialitySelected) =>
+                            setSpecialitySelected(specialitySelected)
+                          }
+                          disableFilter={(disableFilters) => {
+                            setDisableFilters(disableFilters);
+                          }}
+                          subHeading=""
+                        />
+                      )}
+                    </>
                   )}
-                </>
-              )}
+                </div>
+              </Scrollbars>
             </div>
           </div>
         </div>
