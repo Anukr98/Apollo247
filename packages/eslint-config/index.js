@@ -17,6 +17,6 @@ module.exports = {
     'no-var': 'warn',
     'prefer-arrow-callback': 'warn',
     'prefer-const': 'warn',
-    radix: 'error',
+    radix: 'warn',
   },
 };
