@@ -13,11 +13,11 @@ export const viewStyles = {
   whiteRoundedCornerCard: {
     backgroundColor: colors.WHITE,
     shadowColor: colors.CARD_SHADOW_COLOR,
-    shadowOpacity: 0.6,
     shadowOffset: { width: 0, height: 5 },
-    shadowRadius: 20,
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
     borderRadius: 10,
-    elevation: 5,
+    elevation: 10,
   },
   graySquareCard: {
     backgroundColor: colors.CARD_GRAY_BG,

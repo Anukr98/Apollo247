@@ -51,12 +51,27 @@ const useStyles = makeStyles((theme: Theme) => {
         marginBottom: 9,
       },
     },
+    errorText: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#890000',
+      marginTop: 10,
+      lineHeight: 2,
+    },
     helpText: {
       fontSize: 12,
       fontWeight: 500,
       color: 'rgba(2,71,91,0.5)',
       marginTop: 10,
       lineHeight: 2,
+    },
+    timerText: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#02475b',
+      marginTop: 10,
+      lineHeight: 2,
+      opacity: 0.5,
     },
     action: {
       paddingTop: 0,
@@ -169,7 +184,7 @@ export const SignIn: React.FC = (props) => {
     if (submitCount > 0) {
       if (submitCount === 3) {
         setShowTimer(true);
-
+        setOtp([]);
         const intervalId = setInterval(() => {
           countDown.current--;
           setTimer(countDown.current);
@@ -215,17 +230,17 @@ export const SignIn: React.FC = (props) => {
         {'<'}
       </Button>
       <Typography variant="h2">
-        {(isSigningIn || isVerifyingOtp || submitCount != 3) && 'great'}
-        {!(isSigningIn || isVerifyingOtp) && submitCount == 3 && 'oops!'}
+        {(isSigningIn || isVerifyingOtp || submitCount !== 3) && 'great'}
+        {!(isSigningIn || isVerifyingOtp) && submitCount === 3 && 'oops!'}
       </Typography>
 
       <p>
-        {(isSigningIn || isVerifyingOtp || submitCount != 3) &&
+        {(isSigningIn || isVerifyingOtp || submitCount !== 3) &&
           'Enter the OTP sent to you, to authenticate'}
       </p>
       <p>
         {!(isSigningIn || isVerifyingOtp) &&
-          submitCount == 3 &&
+          submitCount === 3 &&
           'You entered an incorrect OTP 3 times'}
       </p>
       <Grid container spacing={1}>
@@ -263,30 +278,27 @@ export const SignIn: React.FC = (props) => {
                   focusPreviousInput();
                 }
               }}
-              error={verifyOtpError}
+              error={submitCount !== 3 && verifyOtpError}
             />
           </Grid>
         ))}
       </Grid>
       {verifyOtpError && (
-        <FormHelperText component="div" className={classes.helpText} error={verifyOtpError}>
-          <div>
-            {' '}
+        <FormHelperText component="div" error={verifyOtpError}>
+          <div className={classes.timerText}>
             {!(isSigningIn || isVerifyingOtp) &&
               showTimer &&
-              'Try again after ' +
-              Math.floor(timer / 60) +
-              ':' +
-              (timer % 60 <= 9 ? '0' + (timer % 60) : timer % 60)}
+              `Try again after  ${Math.floor(timer / 60)}:${
+                timer % 60 <= 9 ? `0` + (timer % 60) : timer % 60
+              }`}
           </div>
-          <div>
-            {' '}
+          <div className={classes.errorText}>
             {!showTimer &&
-              submitCount == 2 &&
+              submitCount === 2 &&
               submitCount > 0 &&
               ' Incorrect OTP, ' + (3 - submitCount) + ' attempt left'}
             {!showTimer &&
-              submitCount == 1 &&
+              submitCount === 1 &&
               submitCount > 0 &&
               ' Incorrect OTP, ' + (3 - submitCount) + ' attempts left'}
           </div>
@@ -304,19 +316,19 @@ export const SignIn: React.FC = (props) => {
           GET HELP
         </Button>
       ) : (
-          <Button
-            variant="text"
-            className={classes.resendBtn}
-            disabled={isSendingOtp}
-            onClick={() => {
-              setOtp([]);
-              setSubmitCount(0);
-              sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
-            }}
-          >
-            Resend OTP
+        <Button
+          variant="text"
+          className={classes.resendBtn}
+          disabled={isSendingOtp}
+          onClick={() => {
+            setOtp([]);
+            setSubmitCount(0);
+            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
+          }}
+        >
+          Resend OTP
         </Button>
-        )}
+      )}
 
       <div ref={placeRecaptchaAfterMe} />
       <div className={classes.action}>
@@ -331,84 +343,84 @@ export const SignIn: React.FC = (props) => {
           {isSigningIn || isSendingOtp || isVerifyingOtp || showTimer ? (
             <CircularProgress className={classes.loader} />
           ) : (
-              <img src={require('images/ic_arrow_forward.svg')} />
-            )}
+            <img src={require('images/ic_arrow_forward.svg')} />
+          )}
         </Fab>
       </div>
     </div>
   ) : (
-        <div className={classes.loginFormWrap}>
-          <Typography variant="h2">hello!</Typography>
-          <p>Please enter your mobile number to login</p>
-          <FormControl fullWidth>
-            <AphInput
-              autoFocus
-              inputProps={{ type: 'tel', maxLength: 10 }}
-              value={mobileNumber}
-              onPaste={(e) => {
-                if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
-              }}
-              onChange={(event) => {
-                setMobileNumber(event.currentTarget.value);
-                if (event.currentTarget.value !== '') {
-                  if (isMobileNumberValid(event.currentTarget.value)) {
-                    setPhoneMessage(validPhoneMessage);
-                    setShowErrorMessage(false);
-                  } else {
-                    setPhoneMessage(invalidPhoneMessage);
-                    setShowErrorMessage(true);
-                  }
-                } else {
-                  setPhoneMessage(validPhoneMessage);
-                  setShowErrorMessage(false);
-                }
-              }}
-              error={mobileNumber.trim() !== '' && !isMobileNumberValid(mobileNumber)}
-              onKeyPress={(e) => {
-                if (isNaN(parseInt(e.key, 10))) {
-                  e.preventDefault();
-                }
-              }}
-              startAdornment={
-                <InputAdornment className={classes.inputAdornment} position="start">
-                  {mobileNumberPrefix}
-                </InputAdornment>
+    <div className={classes.loginFormWrap}>
+      <Typography variant="h2">hello!</Typography>
+      <p>Please enter your mobile number to login</p>
+      <FormControl fullWidth>
+        <AphInput
+          autoFocus
+          inputProps={{ type: 'tel', maxLength: 10 }}
+          value={mobileNumber}
+          onPaste={(e) => {
+            if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
+          }}
+          onChange={(event) => {
+            setMobileNumber(event.currentTarget.value);
+            if (event.currentTarget.value !== '') {
+              if (isMobileNumberValid(event.currentTarget.value)) {
+                setPhoneMessage(validPhoneMessage);
+                setShowErrorMessage(false);
+              } else {
+                setPhoneMessage(invalidPhoneMessage);
+                setShowErrorMessage(true);
               }
-            />
-            <FormHelperText component="div" className={classes.helpText} error={showErrorMessage}>
-              {sendOtpError ? 'Error sending OTP' : phoneMessage}
-            </FormHelperText>
-          </FormControl>
-          <Button
-            variant="text"
-            className={classes.resendBtn}
-            disabled={!showErrorMessage}
-            onClick={() => {
-              setDisplayGetHelp(true);
-            }}
-          >
-            GET HELP
+            } else {
+              setPhoneMessage(validPhoneMessage);
+              setShowErrorMessage(false);
+            }
+          }}
+          error={mobileNumber.trim() !== '' && !isMobileNumberValid(mobileNumber)}
+          onKeyPress={(e) => {
+            if (isNaN(parseInt(e.key, 10))) {
+              e.preventDefault();
+            }
+          }}
+          startAdornment={
+            <InputAdornment className={classes.inputAdornment} position="start">
+              {mobileNumberPrefix}
+            </InputAdornment>
+          }
+        />
+        <FormHelperText component="div" className={classes.helpText} error={showErrorMessage}>
+          {sendOtpError ? 'Error sending OTP' : phoneMessage}
+        </FormHelperText>
+      </FormControl>
+      <Button
+        variant="text"
+        className={classes.resendBtn}
+        disabled={!showErrorMessage}
+        onClick={() => {
+          setDisplayGetHelp(true);
+        }}
+      >
+        GET HELP
       </Button>
 
-          <div className={classes.action}>
-            <Fab
-              color="primary"
-              aria-label="Sign in"
-              disabled={!isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10}
-              onClick={() =>
-                sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
-                  setDisplayOtpInput(true)
-                )
-              }
-            >
-              {isSendingOtp ? (
-                <CircularProgress className={classes.loader} />
-              ) : (
-                  <img src={require('images/ic_arrow_forward.svg')} />
-                )}
-            </Fab>
-          </div>
-          <div className={classes.captcha} ref={placeRecaptchaAfterMe} />
-        </div>
-      );
+      <div className={classes.action}>
+        <Fab
+          color="primary"
+          aria-label="Sign in"
+          disabled={!isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10}
+          onClick={() =>
+            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
+              setDisplayOtpInput(true)
+            )
+          }
+        >
+          {isSendingOtp ? (
+            <CircularProgress className={classes.loader} />
+          ) : (
+            <img src={require('images/ic_arrow_forward.svg')} />
+          )}
+        </Fab>
+      </div>
+      <div className={classes.captcha} ref={placeRecaptchaAfterMe} />
+    </div>
+  );
 };

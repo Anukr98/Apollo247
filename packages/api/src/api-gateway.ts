@@ -50,6 +50,7 @@ const isDev = process.env.NODE_ENV == 'dev';
         url,
         willSendRequest(requestContext) {
           const request = requestContext.request;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const context = (requestContext.context as any) as GatewayContext;
           if (request && request.http) {
             request.http.headers.set('mobilenumber', context.mobileNumber);

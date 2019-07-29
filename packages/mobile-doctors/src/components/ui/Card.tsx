@@ -8,9 +8,6 @@ import {
   TouchableOpacityProps,
   View,
   ViewStyle,
-  ImageSourcePropType,
-  ImageStyle,
-  Image,
 } from 'react-native';
 
 const styles = StyleSheet.create({

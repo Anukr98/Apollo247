@@ -1,14 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
-import {
-  Theme,
-  IconButton,
-  Card,
-  CardHeader,
-  Avatar,
-  CardContent,
-  CircularProgress,
-} from '@material-ui/core';
-import React, { useState, useRef } from 'react';
+import { Theme, IconButton, Card, CardHeader, Avatar, CircularProgress } from '@material-ui/core';
+import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Popover from '@material-ui/core/Popover';
 import Grid from '@material-ui/core/Grid';
@@ -32,7 +24,7 @@ import { Mutation } from 'react-apollo';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
-      padding: '10px 20px',
+      padding: '10px 20px 0 20px',
       '& h2': {
         fontSize: 16,
         color: theme.palette.secondary.dark,
@@ -40,21 +32,22 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& h3': {
         lineHeight: '22px',
-        padding: '3px 5px 5px 20px',
+        padding: '3px 5px 5px 0',
         fontSize: 16,
-        fontWeight: 500,
+        fontWeight: theme.typography.fontWeightMedium,
         color: '#02475b',
       },
       '& h4': {
         padding: '5px 5px 5px 0',
         marginLeft: 20,
         fontSize: 20,
-        borderBottom: 'solid 0.5px rgba(98,22,64,0.2)',
+        borderBottom: 'solid 2px rgba(101,143,155,0.05)',
         fontWeight: 600,
       },
       '& h5': {
-        padding: '5px 5px 3px 20px',
+        padding: '5px 5px 3px 0',
         color: '#658f9b',
+        fontWeight: 'normal',
       },
       '& h6': {
         color: theme.palette.secondary.main,
@@ -94,7 +87,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     tabLeftcontent: {
-      padding: '10px 5px 10px 5px',
+      padding: '10px 5px 10px 20px',
     },
     serviceItem: {
       padding: '0 0 10px 0',
@@ -120,9 +113,9 @@ const useStyles = makeStyles((theme: Theme) => {
     tabContentStarDoctor: {
       borderRadius: 10,
       backgroundColor: theme.palette.primary.contrastText,
-      padding: '10px 10px 10px 90px',
+      padding: 0,
       position: 'relative',
-      minHeight: 130,
+      minHeight: 120,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
       marginBottom: 15,
@@ -130,6 +123,15 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h4': {
         borderBottom: 'none',
         fontSize: 18,
+        color: '#02475b',
+        margin: 0,
+        padding: 0,
+        fontWeight: theme.typography.fontWeightMedium,
+      },
+      '& h6': {
+        margin: 0,
+        fontWeight: 600,
+        color: '#0087ba',
       },
     },
     addStarDoctor: {
@@ -149,7 +151,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '8px 16px',
       lineHeight: '24px',
       fontWeight: theme.typography.fontWeightBold,
-      margin: theme.spacing(1),
+      margin: theme.spacing(1, 1, 0, 1),
       backgroundColor: '#fc9916',
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
@@ -182,7 +184,7 @@ const useStyles = makeStyles((theme: Theme) => {
     btnContainer: {
       borderTop: 'solid 2px rgba(101,143,155,0.2)',
       marginTop: 30,
-      paddingTop: 15,
+      paddingTop: 10,
       textAlign: 'right',
     },
     invited: {
@@ -195,7 +197,7 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'relative',
         top: 4,
         marginRight: 15,
-        marginLeft: 15,
+        marginLeft: 0,
       },
     },
     posRelative: {
@@ -222,96 +224,168 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 15,
       width: 40,
     },
+    card: {
+      boxShadow: 'none',
+    },
+    cardHeader: {
+      padding: '12px 0 12px 12px',
+      position: 'relative',
+    },
+    details: {
+      '& button': {
+        padding: '5px 8px 5px 0px',
+        color: '#02475b',
+        position: 'absolute',
+        right: 0,
+        top: 8,
+      },
+    },
+    qualification: {
+      fontSize: 12,
+      fontWeight: theme.typography.fontWeightMedium,
+      color: '#658f9b',
+    },
+    profileAvatar: {
+      width: 80,
+      height: 80,
+      '& img': {
+        height: 80,
+      },
+    },
+    starDoctorHeading: {
+      marginBottom: 15,
+    },
+    starDoctordelete: {
+      color: '#951717',
+      fontSize: 15,
+      fontWeight: theme.typography.fontWeightMedium,
+      padding: '16px 20px',
+      cursor: 'pointer',
+    },
   };
 });
 
 export interface StarDoctorCardProps {
   doctor: GetDoctorProfile_getDoctorProfile_starDoctorTeam;
-  indexKey: number;
 }
 const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
-  const { doctor, indexKey } = props;
-  const moreButttonRef = useRef(null);
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const { doctor } = props;
+  //const moreButttonRef = useRef(null);
+  //const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const client = useApolloClient();
+  const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
+  const [currentDoctor, setCurrentDoctor] = React.useState('');
+  function handleClick(event: React.MouseEvent<HTMLButtonElement>, id: string) {
+    setAnchorEl(event.currentTarget);
+    setCurrentDoctor(id);
+  }
+
+  function handleClose() {
+    setAnchorEl((null as unknown) as HTMLButtonElement);
+    setCurrentDoctor('');
+  }
+  const classes = useStyles();
   return (
-    <Card>
-      <CardHeader
-        avatar={
-          <Avatar>
-            <img src={require('images/doctor-profile.jpg')} />
-          </Avatar>
-        }
-        action={
-          <Mutation<RemoveDoctorFromStarDoctorProgram, RemoveDoctorFromStarDoctorProgramVariables>
-            mutation={REMOVE_STAR_DOCTOR}
-          >
-            {(mutate, { loading }) => (
-              <>
-                <IconButton
-                  ref={moreButttonRef.current}
-                  onClick={() => setIsPopoverOpen(true)}
-                  disabled={loading}
-                >
-                  {loading ? <CircularProgress /> : <MoreVert />}
-                </IconButton>
-                <Popover
-                  open={isPopoverOpen}
-                  anchorEl={moreButttonRef.current}
-                  onClose={() => setIsPopoverOpen(false)}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'center',
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                >
-                  <Typography
-                    onClick={() => {
-                      mutate({
-                        variables: {
-                          starDoctorId: '1234',
-                          doctorId: '1234',
-                        },
-                      }).then(() => {
-                        const existingData = client.readQuery<GetDoctorProfile>({
-                          query: GET_DOCTOR_PROFILE,
-                        });
-                        const existingStarDoctorTeam =
-                          (existingData &&
-                            existingData.getDoctorProfile &&
-                            existingData.getDoctorProfile &&
-                            existingData.getDoctorProfile.starDoctorTeam) ||
-                          [];
-                        const newStarDoctorTeam = existingStarDoctorTeam.filter(
-                          (existingDoc) => existingDoc.firstName !== doctor.firstName
-                        );
-                        const dataAfterMutation: GetDoctorProfile = {
-                          ...existingData,
-                          getDoctorProfile: {
-                            ...existingData!.getDoctorProfile!,
-                            starDoctorTeam: newStarDoctorTeam,
-                          },
-                        };
-                        client.writeQuery({ query: GET_DOCTOR_PROFILE, data: dataAfterMutation });
-                      });
+    <Card className={classes.card}>
+      <div className={classes.details}>
+        <CardHeader
+          className={classes.cardHeader}
+          avatar={
+            <Avatar className={classes.profileAvatar}>
+              <img src={require('images/doctor-profile.jpg')} />
+            </Avatar>
+          }
+          action={
+            <Mutation<RemoveDoctorFromStarDoctorProgram, RemoveDoctorFromStarDoctorProgramVariables>
+              mutation={REMOVE_STAR_DOCTOR}
+            >
+              {(mutate, { loading }) => (
+                <>
+                  <IconButton onClick={(e) => handleClick(e, doctor.firstName)} disabled={loading}>
+                    {loading ? <CircularProgress /> : <MoreVert />}
+                  </IconButton>
+                  <Popover
+                    id={currentDoctor === doctor.firstName ? doctor.firstName : undefined}
+                    open={currentDoctor === doctor.firstName}
+                    anchorEl={anchorEl}
+                    onClose={handleClose}
+                    anchorOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'center',
+                    }}
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
                     }}
                   >
-                    Remove Doctor - {indexKey}
-                  </Typography>
-                </Popover>
-              </>
-            )}
-          </Mutation>
-        }
-        title={`Dr. ${doctor.firstName} ${doctor.lastName}`}
-      //subheader={<span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>}
-      />
-      {doctor.inviteStatus === INVITEDSTATUS.ACCEPTED && (
-        <CardContent>MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills</CardContent>
-      )}
+                    <Typography
+                      className={classes.starDoctordelete}
+                      onClick={() => {
+                        mutate({
+                          variables: {
+                            starDoctorId: '1234',
+                            doctorId: '1234',
+                          },
+                        }).then(() => {
+                          const existingData = client.readQuery<GetDoctorProfile>({
+                            query: GET_DOCTOR_PROFILE,
+                          });
+                          const existingStarDoctorTeam =
+                            (existingData &&
+                              existingData.getDoctorProfile &&
+                              existingData.getDoctorProfile &&
+                              existingData.getDoctorProfile.starDoctorTeam) ||
+                            [];
+                          const newStarDoctorTeam = existingStarDoctorTeam.filter(
+                            (existingDoc) => existingDoc.firstName !== doctor.firstName
+                          );
+                          const dataAfterMutation: GetDoctorProfile = {
+                            ...existingData,
+                            getDoctorProfile: {
+                              ...existingData!.getDoctorProfile!,
+                              starDoctorTeam: newStarDoctorTeam,
+                            },
+                          };
+                          client.writeQuery({ query: GET_DOCTOR_PROFILE, data: dataAfterMutation });
+                        });
+                      }}
+                    >
+                      Remove Doctor
+                    </Typography>
+                  </Popover>
+                </>
+              )}
+            </Mutation>
+          }
+          title={
+            <div>
+              <h4>
+                Dr. {doctor.firstName} {doctor.lastName}
+              </h4>
+              {doctor.inviteStatus === INVITEDSTATUS.ACCEPTED ? (
+                <h6>
+                  <span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>
+                </h6>
+              ) : (
+                <Typography className={classes.invited}>
+                  <img alt="" src={require('images/ic_invite.svg')} />
+                  Invited
+                </Typography>
+              )}
+            </div>
+          }
+          subheader={
+            <div>
+              {doctor.inviteStatus === INVITEDSTATUS.ACCEPTED && (
+                <span className={classes.qualification}>
+                  MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+                </span>
+              )}
+            </div>
+          }
+        />
+        {}
+      </div>
     </Card>
   );
 };
@@ -328,7 +402,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
       {starDoctors.map((doctor, index) => (
         <Grid item lg={4} sm={6} xs={12} key={index}>
           <div className={classes.tabContentStarDoctor}>
-            <StarDoctorCard doctor={doctor} indexKey={index} />
+            <StarDoctorCard doctor={doctor} />
           </div>
         </Grid>
       ))}
@@ -345,7 +419,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const classes = useStyles();
 
   return (
-    <div >
+    <div>
       <Typography variant="h2">Basic Details</Typography>
       <div className={classes.tabContent}>
         <Grid container alignItems="flex-start" spacing={0}>
@@ -447,7 +521,10 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
 
       {doctorProfile.isStarDoctor && (
         <div>
-          <Typography variant="h3" className={numStarDoctors === 0 ? classes.none : ''}>
+          <Typography
+            variant="h3"
+            className={numStarDoctors === 0 ? classes.none : classes.starDoctorHeading}
+          >
             Your Star Doctors Team ({numStarDoctors})
           </Typography>
           <StarDoctorsList starDoctors={starDoctors} />

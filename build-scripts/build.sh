@@ -32,10 +32,14 @@ echo -e "\nbuilding consults-service..."
 docker-compose -f docker-compose-$1.yml run --no-deps --rm consults-service npm run start:consults-service 
 
 echo -e "\nbuilding web-patients..."
-cd packages/web-patients && npm run build && cd -
+cd packages/web-patients
+npm run build
+cd -
 
 echo -e "\nbuilding web-doctors..."
-cd packages/web-doctors && npm run build && cd -
+cd packages/web-doctors
+npm run build
+cd -
 
 echo -e "\npreparing to build aph-$1.tar.gz artifact..."
 mkdir -pv skeleton
@@ -48,8 +52,8 @@ echo -e "\ncopying all api files..."
 mkdir -pv skeleton/apollo-hospitals/packages/api/
 cp -rv packages/api/dist/* skeleton/apollo-hospitals/packages/api/
 cp -rv packages/api/src/**/*.sql skeleton/apollo-hospitals/packages/api/
-echo "packages/api/node_modules -> skeleton/apollo-hospitals/packages/api/node_modules"
-cp -r packages/api/node_modules skeleton/apollo-hospitals/packages/api/
+echo "'packages/api/node_modules' -> 'skeleton/apollo-hospitals/packages/api/node_modules'"
+cp -rL packages/api/node_modules skeleton/apollo-hospitals/packages/api/
 cp packages/api/firebase-secrets.json skeleton/apollo-hospitals/packages/api/
 
 echo -e "\ncopying web-patients files..."

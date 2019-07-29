@@ -9,6 +9,7 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { GetDoctorProfile_getDoctorProfile } from 'graphql/types/getDoctorProfile';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -47,7 +48,7 @@ const useStyles = makeStyles((theme: Theme) => {
     tabContent: {
       borderRadius: 10,
       backgroundColor: theme.palette.primary.contrastText,
-      padding: 0,
+      padding: '10px 0',
       position: 'relative',
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
@@ -68,7 +69,6 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '10px 5px 10px 5px',
     },
     serviceItem: {
-      padding: '0 0 10px 0',
       position: 'relative',
       height: '100%',
       boxShadow: 'none',
@@ -104,7 +104,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '8px 16px',
       lineHeight: '24px',
       fontWeight: theme.typography.fontWeightBold,
-      margin: theme.spacing(1),
+      margin: theme.spacing(1, 1, 0, 1),
       backgroundColor: '#fc9916',
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
@@ -118,7 +118,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightBold,
       color: '#fc9916',
       backgroundColor: '#fff',
-      margin: theme.spacing(1),
+      margin: theme.spacing(1, 1, 0, 1),
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
         backgroundColor: '#fff',
@@ -138,9 +138,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     btnContainer: {
-      borderTop: 'solid 2px rgba(101,143,155,0.3)',
+      borderTop: 'solid 2px rgba(101,143,155,0.2)',
       marginTop: 30,
-      paddingTop: 15,
+      paddingTop: 10,
       textAlign: 'right',
     },
     btnActive: {
@@ -148,14 +148,15 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fff !important',
     },
     heading: {
-      fontSize: theme.typography.pxToRem(15),
+      fontSize: 18,
       color: '#02475b',
-      fontWeight: theme.typography.fontWeightBold,
+      fontWeight: theme.typography.fontWeightMedium,
     },
     secondaryHeading: {
-      fontSize: theme.typography.pxToRem(15),
-      color: '#658f9b',
-      fontWeight: theme.typography.fontWeightBold,
+      fontSize: 14,
+      color: 'rgba(2, 71, 91, 0.6)',
+      fontWeight: 600,
+      paddingTop: 3,
     },
     icon: {
       verticalAlign: 'bottom',
@@ -208,7 +209,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 interface FeesProps {
-  values: any;
+  values: GetDoctorProfile_getDoctorProfile;
   onNext: () => void;
   onBack: () => void;
 }
@@ -248,7 +249,7 @@ export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
 
           <Grid item lg={10} sm={6} xs={12}>
             <div className={classes.tabContent}>
-              <ExpansionPanel className={classes.pointerNone}>
+              <ExpansionPanel className={`${classes.pointerNone} ${classes.serviceItem}`}>
                 <ExpansionPanelSummary
                   expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
                 >
