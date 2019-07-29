@@ -52,8 +52,8 @@ echo -e "\ncopying all api files..."
 mkdir -pv skeleton/apollo-hospitals/packages/api/
 cp -rv packages/api/dist/* skeleton/apollo-hospitals/packages/api/
 cp -rv packages/api/src/**/*.sql skeleton/apollo-hospitals/packages/api/
-echo "packages/api/node_modules -> skeleton/apollo-hospitals/packages/api/node_modules"
-cp -r packages/api/node_modules skeleton/apollo-hospitals/packages/api/
+echo "'packages/api/node_modules' -> 'skeleton/apollo-hospitals/packages/api/node_modules'"
+cp -rL packages/api/node_modules skeleton/apollo-hospitals/packages/api/
 cp packages/api/firebase-secrets.json skeleton/apollo-hospitals/packages/api/
 
 echo -e "\ncopying web-patients files..."

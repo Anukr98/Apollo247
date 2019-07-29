@@ -53,12 +53,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 10,
     elevation: 8,
+    marginBottom: 30,
   },
   descptionText: {
     marginTop: 20,
     color: 'rgba(0,0,0,0.4)',
     textAlign: 'center',
-    marginHorizontal: 50,
+    marginHorizontal: 40,
     lineHeight: 20,
     ...theme.fonts.IBMPlexSansMedium(14),
     paddingBottom: 50,
@@ -72,6 +73,8 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'flex-start',
     backgroundColor: 'transparent',
+    // backgroundColor: 'red',
+    top: -70,
   },
   imageStyle: {
     marginTop: -90,
@@ -82,7 +85,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     ...theme.fonts.IBMPlexSansBold(13),
     textAlign: 'center',
-    marginTop: -70,
+    // top: -70,
   },
   statusBarBg: {
     width: '100%',
@@ -116,7 +119,7 @@ const slides: Slide[] = [
   {
     key: 'somethun',
     title: 'higher revenues',
-    text: 'Get more patients and higher utilisation',
+    text: 'Get more patients and higher\nutilisation',
     image: require('../images/onboard/img_onboarding_higher_revenues.png'),
     titleStyle: styles.titleStyle,
     backgroundColor: 'red',
@@ -201,20 +204,22 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
               )}
             />
           </View>
+
+          {!state ? null : (
+            <View style={styles.skipView}>
+              <TouchableOpacity
+                onPress={() => {
+                  AsyncStorage.setItem('onboarding', 'true').then(() => {
+                    console.log('view');
+                  });
+                  props.navigation.replace(AppRoutes.Login);
+                }}
+              >
+                <Text style={styles.skipTextStyle}>SKIP</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
-        {!state ? null : (
-          <TouchableOpacity
-            style={styles.skipView}
-            onPress={() => {
-              AsyncStorage.setItem('onboarding', 'true').then(() => {
-                console.log('view');
-              });
-              props.navigation.replace(AppRoutes.Login);
-            }}
-          >
-            <Text style={styles.skipTextStyle}>SKIP</Text>
-          </TouchableOpacity>
-        )}
       </SafeAreaView>
     </View>
   );

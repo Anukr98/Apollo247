@@ -177,13 +177,27 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
 
   const filterOptions = {
-    searchKeyword: existingFilters.searchKeyword || searchKeyword,
+    searchKeyword: searchKeyword,
     cityName: existingFilters.cityName,
     experience: existingFilters.experience,
     availability: existingFilters.availability,
     fees: existingFilters.fees,
     gender: existingFilters.gender,
     language: existingFilters.language,
+  };
+
+  const emptyFilters = () => {
+    filterOptions.searchKeyword = '';
+    showNormal(true);
+    emptySpeciality('');
+    manageFilter(true);
+    setCityName([]);
+    setGender([]);
+    setExperience([]);
+    setAvailability([]);
+    setFees([]);
+    setLanguage([]);
+    handleFilterOptions(filterOptions);
   };
 
   return (
@@ -195,20 +209,12 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
           setSearchKeyword(event.target.value);
           filterOptions.searchKeyword = event.currentTarget.value;
           if (event.target.value.length === 0) {
-            filterOptions.searchKeyword = '';
-            showNormal(true);
-            emptySpeciality('');
-            manageFilter(true);
-            setCityName([]);
-            setGender([]);
-            setExperience([]);
-            setAvailability([]);
-            setFees([]);
-            setLanguage([]);
+            emptyFilters();
+          } else if (event.target.value.length > 3) {
+            handleFilterOptions(filterOptions);
           }
-          handleFilterOptions(filterOptions);
         }}
-        value={existingFilters.searchKeyword || ''}
+        value={searchKeyword}
         error={showError}
       />
       {showError ? (

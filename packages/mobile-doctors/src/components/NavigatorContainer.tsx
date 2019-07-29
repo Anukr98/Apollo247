@@ -1,4 +1,4 @@
-import { Appointments } from '@aph/mobile-doctors/src/components/Appointments';
+import { Appointments } from '@aph/mobile-doctors/src/components/Appointments/Appointments';
 import { Inbox } from '@aph/mobile-doctors/src/components/Inbox';
 import { SplashScreen } from '@aph/mobile-doctors/src/components/SplashScreen';
 import { LandingPage } from '@aph/mobile-doctors/src/components/LandingPage';
@@ -9,10 +9,14 @@ import { Onboarding } from '@aph/mobile-doctors/src/components/Onboarding';
 import { OnBoardingPage } from '@aph/mobile-doctors/src/components/OnBoardingPage';
 import { OTPVerification } from '@aph/mobile-doctors/src/components/OTPVerification';
 import { Patients } from '@aph/mobile-doctors/src/components/Patients';
-import { ProfileSetup } from '@aph/mobile-doctors/src/components/ProfileSetup';
+import { ProfileSetup } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileSetup';
 import { TabBar } from '@aph/mobile-doctors/src/components/TabBar';
 import { TransitionPage } from '@aph/mobile-doctors/src/components/TransitionPage';
 import { NeedHelpDonePage } from '@aph/mobile-doctors/src/components/NeedHelpDonePage';
+import { AppointmentNotifications } from '@aph/mobile-doctors/src/components/Appointments/AppointmentNotifications';
+import { NeedHelpAppointment } from '@aph/mobile-doctors/src/components/Appointments/NeedHelpAppointment';
+import { CallRequestScreen } from '@aph/mobile-doctors/src/components/Appointments/CallRequestScreen';
+
 import {
   createAppContainer,
   createStackNavigator,
@@ -36,6 +40,9 @@ export enum AppRoutes {
   ProfileSetup = 'ProfileSetup',
   TransitionPage = 'TransitionPage',
   NeedHelpDonePage = 'NeedHelpDonePage',
+  AppointmentNotifications = 'AppointmentNotifications',
+  NeedHelpAppointment = 'NeedHelpAppointment',
+  CallRequestScreen = 'CallRequestScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -92,6 +99,15 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.NeedHelpDonePage]: {
     screen: NeedHelpDonePage,
+  },
+  [AppRoutes.AppointmentNotifications]: {
+    screen: AppointmentNotifications,
+  },
+  [AppRoutes.NeedHelpAppointment]: {
+    screen: NeedHelpAppointment,
+  },
+  [AppRoutes.CallRequestScreen]: {
+    screen: CallRequestScreen,
   },
 };
 

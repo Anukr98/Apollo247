@@ -69,7 +69,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const mobileNumberPrefix = '+91';
 const validPhoneMessage = '';
-const invalidPhoneMessage = 'This seems like a wrong number';
+const invalidPhoneMessage = 'This seems like the wrong number';
 
 export const HelpPopup: React.FC = (props) => {
   const classes = useStyles();

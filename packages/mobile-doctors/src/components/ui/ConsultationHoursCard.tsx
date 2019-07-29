@@ -27,13 +27,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.09,
   },
   fixedSlotText: {
-    ...theme.fonts.IBMPlexSansBold(13),
+    ...theme.fonts.IBMPlexSansMedium(13),
     lineHeight: 24,
     color: '#ff748e',
   },
   daysText: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: theme.colors.darkBlueColor(),
+    ...theme.fonts.IBMPlexSansLight(12),
+    fontFamily: 'IBMPlexSans',
+    color: '#02475b',
     letterSpacing: 0.05,
     marginBottom: 19,
     //marginHorizontal: 16,
