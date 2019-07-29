@@ -4,7 +4,12 @@ import { Fees } from '@aph/mobile-doctors/src/components/ProfileSetup/Fees';
 import { Profile } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/Profile';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import { Cancel, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import {
+  Cancel,
+  RoundIcon,
+  Block,
+  CalendarIcon,
+} from '@aph/mobile-doctors/src/components/ui/Icons';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
 import {
   getDoctorProfile_getDoctorProfile,
@@ -33,7 +38,8 @@ import { NavigationScreenProps } from 'react-navigation';
 import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
 import { useQuery } from 'react-apollo-hooks';
 import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
-// const isMobileNumberValid = () => true;
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
+// const isMobileNumberValid = (n: string) => true;
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -53,34 +59,54 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   buttonView: {
-    height: 40,
-    borderRadius: 5,
-    backgroundColor: '#fed6a2',
+    borderRadius: 10,
     width: 200,
-    alignItems: 'center',
-    alignSelf: 'center',
-    justifyContent: 'center',
-    shadowColor: 'rgba(0,0,0,0.2)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 2,
-    marginTop: 32,
-  },
-  buttonViewfull: {
-    height: 40,
-    borderRadius: 5,
     backgroundColor: '#fc9916',
-    width: 200,
-    alignItems: 'center',
-    alignSelf: 'center',
-    justifyContent: 'center',
     shadowColor: 'rgba(0,0,0,0.2)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 2,
-    marginTop: 12,
+    height: 40,
+    justifyContent: 'center',
+    alignSelf: 'center',
+    ...Platform.select({
+      ios: {
+        marginTop: -25,
+        marginLeft: 40,
+        marginRight: 30,
+        marginBottom: 16,
+      },
+      android: {
+        marginTop: -25,
+        marginBottom: 16,
+      },
+    }),
+  },
+  buttonViewLess: {
+    justifyContent: 'center',
+    borderRadius: 10,
+    width: 200,
+    height: 40,
+    backgroundColor: '#fc9916',
+    shadowColor: 'rgba(0,0,0,0.2)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 2,
+    alignSelf: 'center',
+    ...Platform.select({
+      ios: {
+        marginTop: -25,
+        marginLeft: 40,
+        marginRight: 30,
+        marginBottom: 16,
+      },
+      android: {
+        marginTop: -25,
+        marginBottom: 16,
+      },
+    }),
   },
   inputTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -94,8 +120,22 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
+    width: '90%',
     paddingBottom: 0,
+    marginLeft: 20,
+  },
+  bottomDescription: {
+    color: '#890000',
+    ...theme.fonts.IBMPlexSansMedium(12),
+    bottom: 5,
+  },
+  bottomValidDescription: {
+    lineHeight: 24,
+    color: theme.colors.INPUT_SUCCESS_TEXT,
+    opacity: 0.6,
+    paddingVertical: 10,
+    ...theme.fonts.IBMPlexSansMedium(12),
+    marginBottom: 5,
   },
   inputStyle: {
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -110,6 +150,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '90%',
     paddingBottom: 0,
+    marginLeft: 20,
   },
 });
 
@@ -155,24 +196,6 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   } else {
     console.log('getDoctorProfile', getDoctorProfile);
   }
-
-  const validateAndSetPhoneNumber = (number: string) => {
-    if (/^\d+$/.test(number) || number == '') {
-      setPhoneNumber(number);
-      if (number.length == 10) {
-        setPhoneNumberIsValid(isMobileNumberValid(phoneNumber));
-      } else {
-        setPhoneNumberIsValid(isPhoneNumberValid(number));
-      }
-    } else {
-      return false;
-    }
-  };
-
-  const isPhoneNumberValid = (number: string) => {
-    const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
-    return isValidNumber;
-  };
 
   const renderHeader = (
     <Header
@@ -252,6 +275,26 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       </View>
     );
   };
+  const moveNextPage = () => {
+    setmodelvisible(false);
+    props.navigation.push(AppRoutes.NeedHelpDonePage);
+  };
+  const validateAndSetPhoneNumber = (number: string) => {
+    if (/^\d+$/.test(number) || number == '') {
+      setPhoneNumber(number);
+      // if (number.length == 10) {
+      setPhoneNumberIsValid(isPhoneNumberValid(number));
+      // }
+    } else {
+      return false;
+    }
+  };
+  const isPhoneNumberValid = (number: string) => {
+    const isValidNumber =
+      // (number.replace(/^0+/, '').length !== 10 && number.length !== 0) ||
+      !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
+    return isValidNumber;
+  };
   const scrollViewRef = useRef<KeyboardAwareScrollView | null>();
   return (
     <SafeAreaView style={theme.viewStyles.container}>
@@ -285,36 +328,15 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       </KeyboardAwareScrollView>
 
       {modelvisible ? (
-        <Overlay isVisible={modelvisible} height={289} width={280} borderRadius={10}>
-          <View>
-            <TouchableOpacity onPress={() => setmodelvisible(false)}>
-              <View style={{ alignSelf: 'flex-end', marginBottom: 8 }}>
-                <Cancel />
-              </View>
-            </TouchableOpacity>
-            <Text
-              style={{
-                color: '#02475b',
-                ...theme.fonts.IBMPlexSansSemiBold(36),
-                marginLeft: 16,
-                marginBottom: 8,
-              }}
-            >
-              need help?
-            </Text>
-            <Text
-              style={{
-                color: '#0087ba',
-                ...theme.fonts.IBMPlexSansMedium(16),
-                marginLeft: 16,
-                marginRight: 16,
-              }}
-            >
-              You can request a call back for us to resolve your issue ASAP
-            </Text>
+        <View>
+          <NeedHelpCard
+            onPress={() => setmodelvisible(false)}
+            heading="need help?"
+            description="You can request a call back for us to resolve your issue ASAP"
+          >
             <View
               style={[
-                { height: 56, paddingTop: 20, marginBottom: 20, marginLeft: 16, marginRight: 16 },
+                { height: 56 },
                 phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
               ]}
             >
@@ -328,21 +350,41 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
                 onChangeText={(value) => validateAndSetPhoneNumber(value)}
               />
             </View>
-            <View style={{ alignItems: 'center' }}>
-              <Button
-                title={'CALL ME'}
-                titleTextStyle={styles.buttonTextStyle}
+            <View
+              style={{
+                height: 50,
+                width: '100%',
+                paddingVertical: 10,
+                overflow: 'hidden',
+                marginLeft: 20,
+              }}
+            >
+              <Text
                 style={
                   phoneNumber == '' || phoneNumberIsValid
-                    ? styles.buttonViewfull
-                    : styles.buttonView
+                    ? styles.bottomValidDescription
+                    : styles.bottomDescription
                 }
-                onPress={() => Alert.alert('Need Help')}
-                disabled={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
-              />
+              >
+                {phoneNumber == '' || phoneNumberIsValid ? null : string.LocalStrings.wrong_number}
+              </Text>
             </View>
-          </View>
-        </Overlay>
+
+            <Button
+              title={'CALL ME'}
+              titleTextStyle={styles.buttonTextStyle}
+              style={
+                phoneNumber == '' || phoneNumberIsValid ? styles.buttonViewLess : styles.buttonView
+              }
+              onPress={() => moveNextPage()}
+              disabled={
+                phoneNumberIsValid && phoneNumber.length === 10 && isMobileNumberValid(phoneNumber)
+                  ? false
+                  : true
+              }
+            />
+          </NeedHelpCard>
+        </View>
       ) : null}
     </SafeAreaView>
   );

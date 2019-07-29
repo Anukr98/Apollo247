@@ -26,7 +26,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 import { NavigationEventSubscription } from 'react-navigation';
 import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
-// const isMobileNumberValid = () => true;
+//const isMobileNumberValid = () => true;
 
 const styles = StyleSheet.create({
   container: {
@@ -72,11 +72,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     ...theme.fonts.IBMPlexSansMedium(12),
   },
-  gethelpText: {
-    marginTop: 22,
-    color: '#fc9916',
-    ...theme.fonts.IBMPlexSansSemiBold(12),
-  },
   bottomValidDescription: {
     lineHeight: 24,
     color: theme.colors.INPUT_SUCCESS_TEXT,
@@ -84,6 +79,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     ...theme.fonts.IBMPlexSansMedium(12),
   },
+  gethelpText: {
+    marginTop: 22,
+    color: '#fc9916',
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+  },
+
   statusBarBg: {
     width: '100%',
     opacity: 0.05,

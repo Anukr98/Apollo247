@@ -24,6 +24,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     letterSpacing: 0.35,
     marginTop: 2,
+    marginRight: 16,
   },
   feeeducationtextname: {
     ...theme.fonts.IBMPlexSansSemiBold(12),
