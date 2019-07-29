@@ -6,16 +6,15 @@ import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { Cancel, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
-import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
-  getDoctorProfile,
   getDoctorProfile_getDoctorProfile,
+  getDoctorProfile,
 } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useRef, useState } from 'react';
-import { useQuery } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
   Alert,
@@ -31,8 +30,10 @@ import {
 import { Overlay } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
+import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
+import { useQuery } from 'react-apollo-hooks';
 import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
-// const isMobileNumberValid = (n: string) => true;
+// const isMobileNumberValid = () => true;
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -49,6 +50,7 @@ const styles = StyleSheet.create({
   },
   buttonTextStyle: {
     ...theme.fonts.IBMPlexSansBold(13),
+    textAlign: 'center',
   },
   buttonView: {
     height: 40,
@@ -114,18 +116,18 @@ const styles = StyleSheet.create({
 const headerContent = [
   {
     tab: 'Profile',
-    heading: (name: string) => `hi dr. ${name}!`,
+    heading: (name: string) => `hi dr. ${name.toLowerCase()}!`,
     description:
       "It’s great to have you join us!\nHere's what your patients see when they\nview your profile",
   },
   {
     tab: 'Availability',
-    heading: (name: string) => `ok dr. ${name}!`,
+    heading: (name: string) => `ok dr. ${name.toLowerCase()}!`,
     description: 'Now tell us what hours suit you for online \nand in-person consults',
   },
   {
     tab: 'Fees',
-    heading: (name: string) => `ok dr. ${name}!`,
+    heading: (name: string) => `ok dr. ${name.toLowerCase()}!`,
     description:
       'Lastly, some money-related matters like \nfees, packages and how you take payments',
   },
@@ -138,6 +140,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [modelvisible, setmodelvisible] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
+
   const { data, error, loading } = useQuery<getDoctorProfile, getDoctorProfile_getDoctorProfile>(
     GET_DOCTOR_PROFILE
   );
@@ -207,6 +210,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       const tabsCount = data!.profile!.isStarDoctor ? 3 : 2;
       if (tabIndex < tabsCount - 1) {
         setActiveTabIndex(tabIndex + 1);
+        scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0, false);
       } else {
         setProfileFlowDone(true).finally(() => {
           props.navigation.navigate(AppRoutes.TransitionPage, {
@@ -215,11 +219,15 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         });
       }
     };
+    const onPressBack = () => {
+      setActiveTabIndex(tabIndex - 1);
+      scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0, false);
+    };
     return (
       <View style={styles.footerButtonsContainer}>
         {tabIndex == 0 ? (
           <Button
-            onPress={() => onPressProceed()}
+            onPress={onPressProceed}
             title={data!.profile!.isStarDoctor ? 'SAVE AND PROCEED' : 'PROCEED'}
             titleTextStyle={styles.buttonTextStyle}
             style={{ width: 240 }}
@@ -227,14 +235,14 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         ) : (
           <>
             <Button
-              onPress={() => setActiveTabIndex(tabIndex - 1)}
+              onPress={onPressBack}
               title="BACK"
               titleTextStyle={styles.buttonTextStyle}
               variant="white"
               style={[styles.buttonStyle, { marginRight: 16 }]}
             />
             <Button
-              onPress={() => onPressProceed()}
+              onPress={onPressProceed}
               title={'SAVE AND PROCEED'}
               titleTextStyle={styles.buttonTextStyle}
               style={styles.buttonStyle}
@@ -248,10 +256,12 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
         ref={(ref) => (scrollViewRef.current = ref)}
         scrollEnabled
         enableAutomaticScroll
-        enableOnAndroid
+        enableOnAndroid={false}
         onKeyboardDidShow={() => {
           scrollViewRef.current && scrollViewRef.current.scrollToEnd();
         }}
@@ -273,6 +283,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
           )
         )}
       </KeyboardAwareScrollView>
+
       {modelvisible ? (
         <Overlay isVisible={modelvisible} height={289} width={280} borderRadius={10}>
           <View>
