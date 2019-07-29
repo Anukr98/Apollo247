@@ -54,7 +54,8 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 0,
       },
       '& h5': {
-        fontWeight: theme.typography.fontWeightBold,
+        fontWeight: 600,
+        fontSize: 18,
       },
     },
     avatarBlock: {
