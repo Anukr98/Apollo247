@@ -11,7 +11,7 @@ import {
   GetDoctorProfile_getDoctorProfile_clinics,
   GetDoctorProfile,
   GetDoctorProfile_getDoctorProfile_profile,
-} from 'graphql/types/getDoctorProfile';
+} from 'graphql/types/GetDoctorProfile';
 import { INVITEDSTATUS } from 'graphql/types/globalTypes';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
@@ -23,7 +23,7 @@ import { MoreVert } from '@material-ui/icons';
 import {
   RemoveDoctorFromStarDoctorProgramVariables,
   RemoveDoctorFromStarDoctorProgram,
-} from 'graphql/types/removeDoctorFromStarDoctorProgram';
+} from 'graphql/types/RemoveDoctorFromStarDoctorProgram';
 import {
   AddDoctorToStarDoctorProgram,
   AddDoctorToStarDoctorProgramVariables,

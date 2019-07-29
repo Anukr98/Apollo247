@@ -9,7 +9,7 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { GetDoctorProfile_getDoctorProfile } from 'graphql/types/getDoctorProfile';
+import { GetDoctorProfile_getDoctorProfile } from 'graphql/types/GetDoctorProfile';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
