@@ -2,8 +2,8 @@ import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer
 import { SplashLogo } from '@aph/mobile-doctors/src/components/SplashLogo';
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, StyleSheet, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
@@ -23,49 +23,33 @@ const styles = StyleSheet.create({
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { currentUser, authError } = useAuth();
-  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
+  const { currentUser, isAuthenticating } = useAuth();
 
   useEffect(() => {
-    console.log('authError Login', authError);
-    if (authError) {
-      setVerifyingPhonenNumber(false);
-      //Alert.alert('Error', 'Unable to connect the server at the moment.');
-      props.navigation.replace(AppRoutes.Onboarding);
-    }
-  }, [authError, props.navigation]);
-
-  useEffect(() => {
-    console.log('SplashScreen currentUser', currentUser);
-
-    async function fetchData() {
-      firebase.analytics().setCurrentScreen('SplashScreen');
-
-      const localData = await getLocalData();
-
-      setVerifyingPhonenNumber(true);
-
-      setTimeout(() => {
-        setVerifyingPhonenNumber(false);
-        if (localData.isLoggedIn) {
-          if (localData.isProfileFlowDone) {
-            props.navigation.replace(AppRoutes.TabBar);
+    firebase.analytics().setCurrentScreen('SplashScreen');
+    setTimeout(() => {
+      getLocalData()
+        .then((localData) => {
+          if (localData.isLoggedIn) {
+            if (localData.isProfileFlowDone) {
+              props.navigation.replace(AppRoutes.TabBar);
+            } else {
+              props.navigation.replace(AppRoutes.ProfileSetup);
+            }
           } else {
-            props.navigation.replace(AppRoutes.ProfileSetup);
+            if (localData.isOnboardingDone) {
+              props.navigation.push(AppRoutes.Login);
+            } else {
+              props.navigation.push(AppRoutes.LandingPage);
+            }
           }
-        } else {
-          if (localData.isOnboardingDone) {
-            props.navigation.push(AppRoutes.Login);
-          } else {
-            props.navigation.push(AppRoutes.LandingPage);
-          }
-        }
-      }, 2500);
-    }
-
-    fetchData();
-    SplashScreenView.hide();
-  }, [currentUser, props.navigation]);
+          SplashScreenView.hide();
+        })
+        .catch((e) => {
+          console.log('getLocalData error', e);
+        });
+    }, 1000);
+  }, [props.navigation]);
 
   return (
     <View style={styles.mainView}>
@@ -81,9 +65,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         }}
         resizeMode="contain"
       />
-      {verifyingPhoneNumber ? (
+      {true ? (
         <ActivityIndicator
-          animating={verifyingPhoneNumber}
+          animating={true}
           size="large"
           color="green"
           style={{ bottom: 60, position: 'absolute' }}

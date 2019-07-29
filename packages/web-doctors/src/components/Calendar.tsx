@@ -9,7 +9,7 @@ import { addMinutes, startOfDay, getTime } from 'date-fns';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
-      paddingTop: 85,
+      paddingTop: 68,
       [theme.breakpoints.down('xs')]: {
         paddingTop: 78,
       },

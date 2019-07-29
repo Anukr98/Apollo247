@@ -7,13 +7,13 @@ const common = {
 
 const login = {
   hello: 'hello!',
-  please_enter_no: 'Please enter your mobile number to login',
+  please_enter_no: 'Please enter your mobile\nnumber to login',
   otp_sent_to: 'OTP will be sent to this number',
-  wrong_number: 'This seems like a wrong number',
+  wrong_number: 'This seems like the wrong number',
   numberPrefix: '+91',
   great: 'great',
   type_otp_text: 'Enter the OTP sent to you, to authenticate',
-  resend_otp_text: 'Type in the OTP sent to you, to authenticate',
+  resend_otp_text: 'Enter the OTP sent to you, to authenticate',
   resend_opt: 'RESEND OTP',
   enter_correct_opt: 'Please enter the correct OTP',
   welcome_text: 'welcome\nto apollo 24/7',

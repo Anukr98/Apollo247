@@ -69,7 +69,7 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
-      backgroundColor: theme.palette.text.primary,
+      backgroundColor: '#f7f7f7',
     },
     tabBar: {
       backgroundColor: 'transparent',

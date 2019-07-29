@@ -1,12 +1,10 @@
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import { StyleProp, StyleSheet, TextStyle, View, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, TextStyle, View, ViewStyle, Platform } from 'react-native';
 import { Text } from 'react-native-elements';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
-    overflow: 'hidden',
+    backgroundColor: theme.colors.WHITE,
   },
   titleStyle: {
     // ...theme.fonts.IBMPlexSansRegular(28), => Error Unrecognised font family
@@ -24,19 +22,15 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     marginTop: 4,
   },
+  tabContainerShadow: {
+    ...theme.viewStyles.whiteRoundedCornerCard,
+    borderRadius: 0,
+    marginBottom: 1,
+  },
   tabContainer: {
-    backgroundColor: 'white',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'baseline',
-    shadowOffset: {
-      height: 10,
-      width: 0,
-    },
-    shadowColor: '#808080',
-    shadowRadius: 5,
-    shadowOpacity: 0.2,
-    elevation: 5,
   },
   tabViewStyle: {
     flex: 1,
@@ -68,18 +62,20 @@ const styles = StyleSheet.create({
     color: '#02475b',
     opacity: 0.4,
   },
+  textShadow: {
+    ...Platform.select({
+      ios: {
+        ...theme.viewStyles.whiteRoundedCornerCard,
+        borderRadius: 0,
+        shadowOpacity: 0.1,
+        marginBottom: 2,
+      },
+      android: { overflow: 'hidden' },
+    }),
+  },
   statusBarline: {
     width: '100%',
-    backgroundColor: '#f0f4f5',
-    opacity: 0.5,
-    ...ifIphoneX(
-      {
-        height: 2,
-      },
-      {
-        height: 2.5,
-      }
-    ),
+    height: 2,
   },
 });
 
@@ -106,29 +102,31 @@ export const ProfileTabHeader: React.FC<ProfileTabHeaderProps> = (props) => {
 
   return (
     <View style={[styles.container, containerStyle]}>
-      <View>
+      <View style={[tabs ? styles.textShadow : {}]}>
         {title && <Text style={[styles.titleStyle, titleStyle]}>{title}</Text>}
         {description && (
           <Text style={[styles.descriptionStyle, descriptionStyle]}>{description}</Text>
         )}
       </View>
-      {tabs && <View style={styles.statusBarline}></View>}
-      <View style={styles.tabContainer}>
-        {tabs &&
-          tabs.map((tab, i) => {
-            const tabTextStyle =
-              activeTabIndex == i
-                ? styles.tabTitleActiveStyle
-                : activeTabIndex < i
-                ? styles.tabTitlePendingStyle
-                : styles.tabTitleDoneStyle;
-            return (
-              <View key={i} style={[styles.tabViewStyle]}>
-                <Text style={[styles.tabTitleStyle, tabTextStyle]}>{tab}</Text>
-                <View style={activeTabIndex >= i ? styles.tabViewActiveStyle : {}} />
-              </View>
-            );
-          })}
+      {Platform.select({ android: <View style={styles.statusBarline}></View> })}
+      <View style={styles.tabContainerShadow}>
+        <View style={styles.tabContainer}>
+          {tabs &&
+            tabs.map((tab, i) => {
+              const tabTextStyle =
+                activeTabIndex == i
+                  ? styles.tabTitleActiveStyle
+                  : activeTabIndex < i
+                  ? styles.tabTitlePendingStyle
+                  : styles.tabTitleDoneStyle;
+              return (
+                <View key={i} style={[styles.tabViewStyle]}>
+                  <Text style={[styles.tabTitleStyle, tabTextStyle]}>{tab}</Text>
+                  <View style={activeTabIndex >= i ? styles.tabViewActiveStyle : {}} />
+                </View>
+              );
+            })}
+        </View>
       </View>
     </View>
   );
