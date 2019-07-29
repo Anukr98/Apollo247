@@ -76,10 +76,13 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
+
 var resendOTPStatus = false;
 const initialOTPMessage = 'Type in the OTP sent to you, to authenticate';
 const resentOTPMessage = 'Type in the OTP that has been resent to you for authentication';
 var displayOTPMessage = resendOTPStatus ? resentOTPMessage : initialOTPMessage;
+
+const [otpStatusText, setOtpStatusText] = useState(initialOTPMessage);
 
 const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
   const classes = useStyles();
