@@ -4,14 +4,12 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AphButton, AphSelect } from '@aph/web-ui-components';
-import _camelCase from 'lodash/camelCase';
 import { Relation } from 'graphql/types/globalTypes';
 import { Mutation } from 'react-apollo';
 import { UpdatePatientVariables, UpdatePatient } from 'graphql/types/UpdatePatient';
 import { UPDATE_PATIENT } from 'graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
-import _toLower from 'lodash/toLower';
-import _upperFirst from 'lodash/upperFirst';
+import _capitalize from 'lodash/capitalize';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -127,22 +125,20 @@ interface PatientProfileProps {
 const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   const classes = useStyles();
   const { patient, number } = props;
-  const [selectedRelation, setSelectedRelation] = React.useState<Relation | 'relation'>(
-    patient.relation || 'relation'
+  const [selectedRelation, setSelectedRelation] = React.useState<Relation | ''>(
+    patient.relation || ''
   );
   return (
-    <div className={classes.profileBox}>
+    <div className={classes.profileBox} data-cypress="PatientProfile">
       <div className={classes.boxHeader}>
         <div>{number}.</div>
         <div className={classes.userId}>{patient.uhid}</div>
       </div>
       <div className={classes.boxContent}>
-        <div className={classes.userName}>
-          {(patient.firstName && _upperFirst(_toLower(patient.firstName))) || ''}
-        </div>
+        <div className={classes.userName}>{_capitalize(patient.firstName || '')}</div>
         <div className={classes.userInfo}>
-          {_camelCase(patient.gender || '')}
-          {_camelCase(patient.dateOfBirth || '')}
+          {_capitalize(patient.gender || '')}
+          {(patient.dateOfBirth || '').toString()}
         </div>
         <AphSelect
           value={selectedRelation}
@@ -153,17 +149,17 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
             props.onUpdatePatient(updatedPatient);
           }}
         >
-          <MenuItem className={classes.menuItemHide} value="relation" disabled>
+          <MenuItem className={classes.menuItemHide} disabled>
             Relation
           </MenuItem>
-          {Object.values(Relation).map((relationOption: Relation) => (
+          {Object.values(Relation).map((relationOption) => (
             <MenuItem
               selected={relationOption === selectedRelation}
               value={relationOption}
               classes={{ selected: classes.menuSelected }}
               key={relationOption}
             >
-              {_upperFirst(_toLower(relationOption))}
+              {_capitalize(relationOption)}
             </MenuItem>
           ))}
         </AphSelect>
@@ -185,7 +181,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const disabled = patients.some(isPatientInvalid);
 
   return (
-    <div className={classes.signUpPop}>
+    <div className={classes.signUpPop} data-cypress="ExistingProfile">
       <div className={classes.mascotIcon}>
         <img src={require('images/ic_mascot.png')} alt="" />
       </div>
