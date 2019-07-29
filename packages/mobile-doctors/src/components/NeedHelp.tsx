@@ -104,6 +104,19 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(13),
     color: theme.colors.BUTTON_TEXT,
   },
+  needhelpview: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0, 0.2)',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  needHeight: { height: 56 },
 });
 
 export interface NeedHelpProps extends NavigationScreenProps {}
@@ -155,7 +168,7 @@ export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
     <View style={styles.container}>
       <View style={styles.statusBarBg} />
       <SafeAreaView style={styles.container}>
-        <View style={{ height: 56 }} />
+        <View style={styles.needHeight} />
         <OtpCard
           cardContainer={{ marginTop: 0, height: 300 }}
           heading={string.LocalStrings.needhelp}
@@ -190,20 +203,7 @@ export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
         </OtpCard>
       </SafeAreaView>
       {verifyingPhoneNumber ? (
-        <View
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0, 0.2)',
-            alignSelf: 'center',
-            justifyContent: 'center',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-          }}
-        >
+        <View style={styles.needhelpview}>
           <ActivityIndicator animating={verifyingPhoneNumber} size="large" color="green" />
         </View>
       ) : null}

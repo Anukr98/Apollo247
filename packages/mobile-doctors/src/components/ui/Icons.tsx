@@ -221,7 +221,7 @@ export const Down: React.FC<IconProps> = (props) => (
 
 export const Send: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ height: 24, width: 24, resizeMode: 'contain', marginTop: 20, right: 20, bottom: 5 }}
+    style={{ height: 24, width: 24, resizeMode: 'contain', marginTop: -32, marginLeft: -20 }}
     {...props}
     source={require('../../images/icons/send.png')}
   />
@@ -250,12 +250,12 @@ export const Notification: React.FC<IconProps> = (props) => (
   />
 );
 
-export const RemoveDot: React.FC<IconProps> = (props) => (
-  <IconBase
-    style={{ height: 24, width: 24, resizeMode: 'contain' }}
-    {...props}
-    source={require('../../images/icons/remove.png')}
-  />
+export const CalendarTodayIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_calendar_today.png')} />
+);
+
+export const CalendarIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_calendar.png')} />
 );
 
 export const Cancel: React.FC<IconProps> = (props) => (
@@ -263,5 +263,36 @@ export const Cancel: React.FC<IconProps> = (props) => (
     style={{ height: 24, width: 24, resizeMode: 'contain' }}
     {...props}
     source={require('../../images/icons/clear.png')}
+  />
+);
+
+export const Video: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/video.png')}
+  />
+);
+export const Audio: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/clinic.png')}
+  />
+);
+
+export const DotIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/remove.png')}
+  />
+);
+
+export const Block: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/block.png')}
   />
 );

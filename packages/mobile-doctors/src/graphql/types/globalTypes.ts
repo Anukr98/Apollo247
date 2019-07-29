@@ -12,6 +12,13 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum INVITEDSTATUS {
+  ACCEPTED = "ACCEPTED",
+  NONE = "NONE",
+  NOTAPPLICABLE = "NOTAPPLICABLE",
+  REJECTED = "REJECTED",
+}
+
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
@@ -32,9 +39,10 @@ export interface UpdatePatientInput {
   gender?: Gender | null;
   uhid?: string | null;
   emailAddress?: string | null;
-  dateOfBirth?: string | null;
+  dateOfBirth?: any | null;
   relation?: Relation | null;
 }
+
 
 export enum ErrorMsgs {
   INVALID_MOBILE_NUMBER = 'INVALID_MOBILE_NUMBER',
