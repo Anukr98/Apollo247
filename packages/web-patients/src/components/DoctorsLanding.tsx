@@ -223,9 +223,9 @@ export const DoctorsLanding: React.FC = (props) => {
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
   const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
 
-  let showError = false;
-  let matchingDoctorsFound = 0;
-  let matchingSpecialitesFound = 0;
+  let showError = false,
+    matchingDoctorsFound = 0,
+    matchingSpecialitesFound = matchingSpecialities;
 
   useEffect(() => {
     if (specialitySelected.length > 0) {
