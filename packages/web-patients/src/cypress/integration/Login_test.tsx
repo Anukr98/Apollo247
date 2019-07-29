@@ -91,7 +91,7 @@ describe('Login (Firebase)', () => {
     cy.get('[data-cypress="Navigation"]').should('exist');
   });
 
-  it('Firebase: Resend OTP', () => {
+  it.only('Firebase: Resend OTP', () => {
     cy.get('[data-cypress="SignIn"]')
       .find('input[type="tel"]')
       .type('9999999999')
@@ -109,7 +109,8 @@ describe('Login (Firebase)', () => {
     cy.get('[data-cypress="SignIn"]')
       .should('be.visible')
       .contains('button', 'Resend OTP')
-      .click();
+      .click()
+      .should('be.disabled');
 
     cy.get('[data-cypress="SignIn"]')
       .find('input[type*="tel"]')
