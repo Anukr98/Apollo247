@@ -42,7 +42,6 @@ Cypress.Commands.add('mockAphGraphqlOps', (options) => (cy as any).mockGraphqlOp
 Cypress.Commands.add('clearFirebaseDb', () =>
   window.indexedDB.deleteDatabase('firebaseLocalStorageDb')
 );
-Cypress.Commands.add('signOut', () => cy.signIn(null));
 Cypress.Commands.add('signIn', (patients) => {
   cy.clearFirebaseDb();
   cy.server();
@@ -54,6 +53,18 @@ Cypress.Commands.add('signIn', (patients) => {
           __typename: 'GetCurrentPatientsResult',
           patients,
         },
+      },
+    },
+  });
+});
+Cypress.Commands.add('signOut', () => {
+  cy.clearFirebaseDb();
+  cy.server();
+  (cy as any).mockAphGraphql({ schema });
+  (cy as any).mockAphGraphqlOps({
+    operations: {
+      GetCurrentPatients: {
+        getCurrentPatients: null,
       },
     },
   });
