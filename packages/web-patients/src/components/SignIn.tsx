@@ -77,17 +77,13 @@ const useStyles = makeStyles((theme: Theme) => {
 const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
 
-var resendOTPStatus = false;
-const initialOTPMessage = 'Type in the OTP sent to you, to authenticate';
-const resentOTPMessage = 'Type in the OTP that has been resent to you for authentication';
-var displayOTPMessage = resendOTPStatus ? resentOTPMessage : initialOTPMessage;
-
-const [otpStatusText, setOtpStatusText] = useState(initialOTPMessage);
-
 const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
   const classes = useStyles();
   const { mobileNumber } = props;
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
+  const initialOTPMessage = 'Type in the OTP sent to you, to authenticate';
+  const resentOTPMessage = 'Type in the OTP that has been resent to you for authentication';
+  const [otpStatusText, setOtpStatusText] = useState<string>(initialOTPMessage);
 
   const [otpInputRefs, setOtpInputRefs] = useState<RefObject<HTMLInputElement>[]>([]);
   const [otp, setOtp] = useState<number[]>([]);
@@ -114,8 +110,7 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
   return (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">hi</Typography>
-      <p>{`${displayOTPMessage}`}</p>
-      {/* <p>'Type in the OTP sent to you, to authenticate'</p> */}
+      {<p>{`${otpStatusText}`}</p>}
       <form>
         <Grid container spacing={1}>
           {_times(numOtpDigits, (index) => (
@@ -173,8 +168,7 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
           onClick={(e) => {
             sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
             setOtp([]);
-            resendOTPStatus = !resendOTPStatus;
-            console.log('resendOTPStatus is: ', resendOTPStatus);
+            setOtpStatusText(resentOTPMessage);
             const firstInput = otpInputRefs[0].current;
             if (firstInput) firstInput.focus();
           }}
