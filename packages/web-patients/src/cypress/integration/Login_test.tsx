@@ -90,36 +90,4 @@ describe('Login (Firebase)', () => {
 
     cy.get('[data-cypress="Navigation"]').should('exist');
   });
-
-  it.only('Firebase: Resend OTP', () => {
-    cy.get('[data-cypress="SignIn"]')
-      .find('input[type="tel"]')
-      .type('9999999999')
-      .get('button[type="submit"]')
-      .click()
-      .find('[class*="MuiCircularProgress"]')
-      .should('not.exist');
-
-    cy.contains('Type in the OTP sent to you, to authenticate');
-
-    cy.get('[data-cypress="SignIn"]')
-      .find('input[type*="tel"]')
-      .each(($el) => cy.wrap($el).type('9'));
-
-    cy.get('[data-cypress="SignIn"]')
-      .should('be.visible')
-      .contains('button', 'Resend OTP')
-      .click()
-      .should('be.disabled');
-
-    cy.get('[data-cypress="SignIn"]')
-      .find('input[type*="tel"]')
-      .each(($el) => cy.wrap($el).should('be.empty'));
-
-    cy.get('[data-cypress="SignIn"]')
-      .find('[class*="MuiCircularProgress"]')
-      .should('not.exist');
-
-    cy.contains('Type in the OTP that has been resent to you for authentication');
-  });
 });
