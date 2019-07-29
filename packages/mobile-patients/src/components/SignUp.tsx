@@ -97,8 +97,6 @@ const GenderOptions: genderOptions[] = [
   },
 ];
 
-let backHandler: any;
-
 export interface SignUpProps extends NavigationScreenProps {}
 export const SignUp: React.FC<SignUpProps> = (props) => {
   const [gender, setGender] = useState<string>('');
@@ -143,7 +141,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
 
   useEffect(() => {
     AsyncStorage.setItem('signUp', 'true');
-    backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       setbackPressCount(backPressCount + 1);
       if (backPressCount === 1) {
         BackHandler.exitApp();

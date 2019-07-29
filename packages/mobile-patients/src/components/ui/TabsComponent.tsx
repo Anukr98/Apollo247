@@ -1,7 +1,6 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {
@@ -26,24 +25,14 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface TabsComponentProps extends NavigationScreenProps {
-  data:
-    | string
-    | {
-        title: string;
-        selectedIcon: any;
-        unselectedIcon: any;
-      }[];
+export interface TabsComponentProps {
+  data: {
+    title: string;
+    selectedIcon?: React.ReactNode;
+    unselectedIcon?: React.ReactNode;
+  }[];
   selectedTab: string;
-  onChange: (
-    title:
-      | string
-      | {
-          title: string;
-          selectedIcon?: any;
-          unselectedIcon?: any;
-        }
-  ) => any;
+  onChange: (title: string) => void;
   style?: StyleProp<ViewStyle>;
   showIcons?: boolean;
 }
@@ -51,15 +40,15 @@ export interface TabsComponentProps extends NavigationScreenProps {
 export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
   const renderTabs = () => {
     return props.data.map((item, index) => {
-      const title = props.showIcons ? item.title : item;
+      // const title = props.showIcons ? item.title : item;
       return (
         <TouchableOpacity
           key={index}
           style={[
             styles.tabView,
-            props.selectedTab === title ? { borderBottomColor: theme.colors.APP_GREEN } : {},
+            props.selectedTab === item.title ? { borderBottomColor: theme.colors.APP_GREEN } : {},
           ]}
-          onPress={() => props.onChange(title)}
+          onPress={() => props.onChange(item.title)}
         >
           {props.showIcons ? (
             <View
@@ -68,16 +57,16 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
                 paddingBottom: 10,
               }}
             >
-              {props.selectedTab === title ? item.selectedIcon : item.unselectedIcon}
+              {props.selectedTab === item.title ? item.selectedIcon : item.unselectedIcon}
             </View>
           ) : (
             <Text
               style={[
                 styles.textStyle,
-                props.selectedTab === title ? { color: theme.colors.LIGHT_BLUE } : {},
+                props.selectedTab === item.title ? { color: theme.colors.LIGHT_BLUE } : {},
               ]}
             >
-              {title}
+              {item.title}
             </Text>
           )}
         </TouchableOpacity>

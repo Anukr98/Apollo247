@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../../theme/theme';
+import { SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialty';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -68,35 +69,35 @@ const styles = StyleSheet.create({
   },
 });
 
-type rowData = {
-  availableForPhysicalConsultation: boolean;
-  availableForVirtualConsultation: boolean;
-  awards: string;
-  city: string;
-  education: string;
-  experience: string;
-  firstName: string;
-  id: string;
-  inviteStatus: string;
-  isProfileComplete: boolean;
-  isStarDoctor: boolean;
-  languages: string;
-  lastName: string;
-  mobileNumber: string;
-  onlineConsultationFees: string;
-  package: string;
-  photoUrl: string;
-  physicalConsultationFees: string;
-  registrationNumber: string;
-  services: string;
-  speciality: string;
-  specialization: string;
-  typeOfConsult: string;
-  availableIn: string;
-};
+// type rowData = {
+//   availableForPhysicalConsultation: boolean;
+//   availableForVirtualConsultation: boolean;
+//   awards: string;
+//   city: string;
+//   education: string;
+//   experience: string;
+//   firstName: string;
+//   id: string;
+//   inviteStatus: string;
+//   isProfileComplete: boolean;
+//   isStarDoctor: boolean;
+//   languages: string;
+//   lastName: string;
+//   mobileNumber: string;
+//   onlineConsultationFees: string;
+//   package: string;
+//   photoUrl: string;
+//   physicalConsultationFees: string;
+//   registrationNumber: string;
+//   services: string;
+//   speciality: string;
+//   specialization: string;
+//   typeOfConsult: string;
+//   availableIn: string;
+// };
 
 export interface DoctorCardProps extends NavigationScreenProps {
-  rowData: rowData;
+  rowData: SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors;
   displayButton?: boolean;
   style?: StyleProp<ViewStyle>;
 }
@@ -121,10 +122,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           ) : null}
           <View style={styles.imageView}>
             {/* {rowData.image} */}
-            <Image
-              style={{ width: 80, height: 80, borderRadius: 40 }}
-              source={{ uri: rowData.photoUrl }}
-            />
+            {rowData.photoUrl && (
+              <Image
+                style={{ width: 80, height: 80, borderRadius: 40 }}
+                source={{ uri: rowData.photoUrl }}
+              />
+            )}
+
             {/* {rowData.isStarDoctor ? (
               <Star style={{ height: 28, width: 28, position: 'absolute', top: 66, left: 30 }} />
             ) : null} */}
@@ -134,7 +138,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               Dr. {rowData.firstName} {rowData.lastName}
             </Text>
             <Text style={styles.doctorSpecializationStyles}>
-              {rowData.specialization.toUpperCase()} | {rowData.experience} YRS
+              {rowData.specialization!.toUpperCase()} | {rowData.experience} YRS
             </Text>
             <Text style={styles.educationTextStyles}>{rowData.education}</Text>
             <Text style={styles.doctorLocation}>{rowData.city}</Text>

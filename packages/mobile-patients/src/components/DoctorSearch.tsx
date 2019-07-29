@@ -23,12 +23,23 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../theme/theme';
 import { Button } from './ui/Button';
-import { DoctorCard, DoctorCardProps } from './ui/DoctorCard';
+import { DoctorCard } from './ui/DoctorCard';
 import {
   getSpecialties,
   getSpecialties_getSpecialties,
 } from '@aph/mobile-patients/src/graphql/types/getSpecialties';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import {
+  getPastSearches,
+  getPastSearches_getPastSearches,
+} from '@aph/mobile-patients/src/graphql/types/getPastSearches';
+import {
+  SearchDoctorAndSpecialty,
+  SearchDoctorAndSpecialtyVariables,
+  SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors,
+  SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_possibleMatches,
+  SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_specialties,
+} from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialty';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -121,24 +132,41 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [pastSearch, setPastSearch] = useState<boolean>(true);
   const [needHelp, setNeedHelp] = useState<boolean>(true);
   const [displaySpeialist, setdisplaySpeialist] = useState<boolean>(true);
-  const [Specialities, setSpecialities] = useState<object[]>([]);
-  const [searchSpecialities, setsearchSpecialities] = useState<object[]>([]);
-  const [PastSearches, setPastSearches] = useState<object[]>([]);
-  const [doctorsList, setdoctorsList] = useState<object[]>([]);
+  const [Specialities, setSpecialities] = useState<
+    (SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_specialties | null)[] | null
+  >([]);
+  const [searchSpecialities, setsearchSpecialities] = useState<
+    (SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_specialties | null)[] | null
+  >([]);
+  const [PastSearches, setPastSearches] = useState<(getPastSearches_getPastSearches | null)[]>([]);
+  const [doctorsList, setdoctorsList] = useState<
+    (SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors | null)[] | null
+  >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const [possibleMatches, setpossibleMatches] = useState<object>({});
+  const [
+    possibleMatches,
+    setpossibleMatches,
+  ] = useState<SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_possibleMatches | null>(null);
 
-  const { data, error } = useQuery(SEARCH_DOCTOR_AND_SPECIALITY, {
-    variables: { searchText: searchText },
-  });
+  const { data, error } = useQuery<SearchDoctorAndSpecialty, SearchDoctorAndSpecialtyVariables>(
+    SEARCH_DOCTOR_AND_SPECIALITY,
+    {
+      variables: { searchText: searchText },
+    }
+  );
   if (error) {
     console.log('error', error);
   } else {
     console.log('data doctor', data);
-    if (data.SearchDoctorAndSpecialty && doctorsList !== data.SearchDoctorAndSpecialty.doctors) {
+    if (
+      data &&
+      data.SearchDoctorAndSpecialty &&
+      doctorsList !== data.SearchDoctorAndSpecialty.doctors
+    ) {
       setdoctorsList(data.SearchDoctorAndSpecialty.doctors);
     }
     if (
+      data &&
       data.SearchDoctorAndSpecialty &&
       searchSpecialities !== data.SearchDoctorAndSpecialty.specialties
     ) {
@@ -149,6 +177,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       setsearchSpecialities(data.SearchDoctorAndSpecialty.specialties);
     }
     if (
+      data &&
       data.SearchDoctorAndSpecialty &&
       possibleMatches !== data.SearchDoctorAndSpecialty.possibleMatches
     ) {
@@ -172,7 +201,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   }
 
-  const pastData = useQuery(GET_PAST_SEARCHES, {});
+  const pastData = useQuery<getPastSearches, getPastSearches_getPastSearches>(
+    GET_PAST_SEARCHES,
+    {}
+  );
   if (pastData.error) {
     console.log('pastData.error', pastData.error);
   } else {
@@ -187,7 +219,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   }
 
-  const renderSearch = (styles: any) => {
+  const renderSearch = () => {
     return (
       <View style={styles.searchContainer}>
         <Header
@@ -201,14 +233,22 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             conatinerstyles={{ paddingBottom: 0 }}
             inputStyle={[
               styles.searchValueStyle,
-              searchText.length > 2 && doctorsList.length === 0 && searchSpecialities.length === 0
+              searchText.length > 2 &&
+              doctorsList &&
+              doctorsList.length === 0 &&
+              searchSpecialities &&
+              searchSpecialities.length === 0
                 ? {
                     borderBottomColor: '#e50000',
                   }
                 : {},
             ]}
             textInputprops={
-              searchText.length > 2 && doctorsList.length === 0 && searchSpecialities.length === 0
+              searchText.length > 2 &&
+              doctorsList &&
+              doctorsList.length === 0 &&
+              searchSpecialities &&
+              searchSpecialities.length === 0
                 ? {
                     selectionColor: '#e50000',
                   }
@@ -242,7 +282,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               }
             }}
           />
-          {searchText.length > 2 && doctorsList.length === 0 && searchSpecialities.length === 0 ? (
+          {searchText.length > 2 &&
+          doctorsList &&
+          doctorsList.length === 0 &&
+          searchSpecialities &&
+          searchSpecialities.length === 0 ? (
             <Text
               style={{
                 ...theme.fonts.IBMPlexSansMedium(12),
@@ -264,7 +308,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     );
   };
 
-  const renderPastSearch = (styles: any) => {
+  const renderPastSearch = () => {
     if (pastSearch) {
       return (
         <View>
@@ -289,43 +333,47 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
-  const renderRow = (rowData: pastSearches, rowID: number) => {
-    return (
-      <Button
-        title={rowData.name.toUpperCase()}
-        style={[
-          styles.listView,
-          rowID === 0 ? { marginLeft: 20 } : null,
-          rowID + 1 === PastSearches.length ? { marginRight: 20 } : null,
-        ]}
-        titleTextStyle={styles.rowTextStyles}
-        onPress={() => {
-          if (rowData.searchType === 'DOCTOR') {
-            props.navigation.navigate(AppRoutes.DoctorDetails, { doctorId: rowData.typeId });
-          }
-          if (rowData.searchType === 'SPECIALTY') {
-            props.navigation.navigate('DoctorSearchListing', { speciality: rowData.name });
-          }
-        }}
-      />
-    );
+  const renderRow = (rowData: getPastSearches_getPastSearches | null, rowID: number) => {
+    if (rowData) {
+      return (
+        <Button
+          title={(rowData && rowData.name && rowData.name.toUpperCase()) || ''}
+          style={[
+            styles.listView,
+            rowID === 0 ? { marginLeft: 20 } : null,
+            rowID + 1 === PastSearches.length ? { marginRight: 20 } : null,
+          ]}
+          titleTextStyle={styles.rowTextStyles}
+          onPress={() => {
+            if (rowData.searchType === 'DOCTOR') {
+              props.navigation.navigate(AppRoutes.DoctorDetails, { doctorId: rowData.typeId });
+            }
+            if (rowData.searchType === 'SPECIALTY') {
+              props.navigation.navigate('DoctorSearchListing', { speciality: rowData.name });
+            }
+          }}
+        />
+      );
+    } else return null;
   };
 
-  const renderSpecialist = (styles: any) => {
+  const renderSpecialist = () => {
+    // const SpecialitiesList = Specialities;
+
     const SpecialitiesList = searchText.length > 2 ? searchSpecialities : Specialities;
     console.log(SpecialitiesList, 'SpecialitiesList');
-    if (SpecialitiesList.length > 0 && displaySpeialist) {
+    if (SpecialitiesList && SpecialitiesList.length > 0 && displaySpeialist) {
       return (
         <View>
           <SectionHeaderComponent
             sectionTitle={
               searchText.length > 2
-                ? `Matching Specialities — ${searchSpecialities.length}`
+                ? `Matching Specialities — ${searchSpecialities && searchSpecialities.length}`
                 : 'Specialities'
             }
             style={{
               marginBottom: 0,
-              marginTop: searchText.length > 0 && doctorsList.length === 0 ? 24 : 8,
+              marginTop: searchText.length > 0 && doctorsList && doctorsList.length === 0 ? 24 : 8,
             }}
           />
           <FlatList
@@ -336,7 +384,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             bounces={false}
             data={SpecialitiesList}
             onEndReachedThreshold={0.5}
-            renderItem={({ item, index }) => renderSpecialistRow(item, index, SpecialitiesList)}
+            renderItem={({ item, index }) =>
+              renderSpecialistRow(item, index, SpecialitiesList.length)
+            }
             keyExtractor={(_, index) => index.toString()}
             numColumns={2}
           />
@@ -345,37 +395,44 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
-  const renderSpecialistRow = (rowData: any, rowID: number, Specialities: any) => {
-    return (
-      <TouchableOpacity
-        onPress={() => onClickSearch(rowData.name)}
-        style={{
-          // flex: 1,
-          width: '50%',
-          paddingHorizontal: 8,
-          marginVertical: 8,
-          marginTop: rowID === 0 || rowID === 1 ? 16 : 8,
-          marginBottom:
-            Specialities.length === rowID + 1 || (Specialities.length - 1) % 2 === 1 ? 16 : 8,
-          height: 100,
-        }}
-        activeOpacity={1}
-        key={rowData.id}
-      >
-        <View style={styles.listSpecialistView}>
-          <Image source={{ uri: rowData.image }} style={{ height: 44, width: 44 }} />
-          {/* {SpecialityImages[rowID % 4]} */}
-          <Text style={styles.rowSpecialistStyles}>{rowData.name.toUpperCase()}</Text>
-        </View>
-      </TouchableOpacity>
-    );
+  const renderSpecialistRow = (
+    rowData: SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_specialties | null,
+    rowID: number,
+    length: number
+  ) => {
+    if (rowData)
+      return (
+        <TouchableOpacity
+          onPress={() => onClickSearch(rowData.name!)}
+          style={{
+            // flex: 1,
+            width: '50%',
+            paddingHorizontal: 8,
+            marginVertical: 8,
+            marginTop: rowID === 0 || rowID === 1 ? 16 : 8,
+            marginBottom: length === rowID + 1 || (length - 1) % 2 === 1 ? 16 : 8,
+            height: 100,
+          }}
+          activeOpacity={1}
+          key={rowID}
+        >
+          <View style={styles.listSpecialistView}>
+            {rowData.image && (
+              <Image source={{ uri: rowData.image }} style={{ height: 44, width: 44 }} />
+            )}
+            {/* {SpecialityImages[rowID % 4]} */}
+            <Text style={styles.rowSpecialistStyles}>{rowData.name!.toUpperCase()}</Text>
+          </View>
+        </TouchableOpacity>
+      );
+    else return null;
   };
 
   const onClickSearch = (speciality: string) => {
     props.navigation.navigate('DoctorSearchListing', { speciality });
   };
 
-  const renderHelpView = (styles: any) => {
+  const renderHelpView = () => {
     if (needHelp) {
       return (
         <View style={styles.helpView}>
@@ -390,8 +447,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
-  const renderDoctorSearches = (styles: any) => {
-    if (searchText.length > 2 && doctorsList.length > 0) {
+  const renderDoctorSearches = () => {
+    if (searchText.length > 2 && doctorsList && doctorsList.length > 0) {
       return (
         <View>
           <SectionHeaderComponent
@@ -407,21 +464,24 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             bounces={false}
             data={doctorsList}
             onEndReachedThreshold={0.5}
-            renderItem={({ item }: { item: any }) => renderSearchDoctorResultsRow(item)}
+            renderItem={({ item }) => renderSearchDoctorResultsRow(item)}
           />
         </View>
       );
     }
   };
 
-  const renderSearchDoctorResultsRow = (rowData: DoctorCardProps['rowData']) => {
-    return <DoctorCard rowData={rowData} navigation={props.navigation} />;
+  const renderSearchDoctorResultsRow = (
+    rowData: SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors | null
+  ) => {
+    if (rowData) return <DoctorCard rowData={rowData} navigation={props.navigation} />;
+    return null;
   };
 
   const renderPossibleMatches = () => {
     return (
       <View>
-        {possibleMatches.doctors && (
+        {possibleMatches && possibleMatches.doctors && (
           <View>
             <SectionHeaderComponent
               sectionTitle={'Possible Doctors — ' + possibleMatches.doctors.length}
@@ -436,11 +496,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               bounces={false}
               data={possibleMatches.doctors}
               onEndReachedThreshold={0.5}
-              renderItem={({ item }: { item: any }) => renderSearchDoctorResultsRow(item)}
+              renderItem={({ item }) => renderSearchDoctorResultsRow(item)}
             />
           </View>
         )}
-        {possibleMatches.specialties && (
+        {possibleMatches && possibleMatches.specialties && (
           <View>
             <SectionHeaderComponent
               sectionTitle={` Possible Specialities — ${possibleMatches.specialties.length}`}
@@ -458,7 +518,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               data={possibleMatches.specialties}
               onEndReachedThreshold={0.5}
               renderItem={({ item, index }) =>
-                renderSpecialistRow(item, index, possibleMatches.specialties)
+                renderSpecialistRow(item, index, possibleMatches.specialties!.length)
               }
               keyExtractor={(_, index) => index.toString()}
               numColumns={2}
@@ -472,15 +532,17 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
-        {renderSearch(styles)}
+        {doctorsList && renderSearch()}
         {showSpinner ? null : (
           <ScrollView style={{ flex: 1 }} bounces={false}>
-            {renderPastSearch(styles)}
-            {renderDoctorSearches(styles)}
-            {renderSpecialist(styles)}
-            {renderHelpView(styles)}
+            {renderPastSearch()}
+            {renderDoctorSearches()}
+            {renderSpecialist()}
+            {renderHelpView()}
             {searchText.length > 2 &&
+              doctorsList &&
               doctorsList.length === 0 &&
+              searchSpecialities &&
               searchSpecialities.length === 0 &&
               possibleMatches &&
               renderPossibleMatches()}

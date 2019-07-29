@@ -58,7 +58,7 @@ export interface HeaderProps {
   title?: string;
   leftIcon?: string;
   rightIcon?: string;
-  rightComponent?: any;
+  rightComponent?: React.ReactNode;
   container?: StyleProp<ViewStyle>;
   onPress?: TouchableOpacityProps['onPress'];
   onPressLeftIcon?: TouchableOpacityProps['onPress'];

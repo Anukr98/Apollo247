@@ -7,13 +7,11 @@ import {
   addWeeks,
   subWeeks,
   getMonth,
-  isWithinInterval,
-  endOfMonth,
   startOfWeek,
-  endOfWeek,
   startOfDay,
   getYear,
 } from 'date-fns';
+import { SelectInputProps } from '@material-ui/core/Select/SelectInput';
 
 const useStyles = makeStyles({
   float: {
@@ -68,82 +66,98 @@ const useStyles = makeStyles({
   },
 });
 
-interface Props {
-  dayClickHandler?: Function;
-  monthChangeHandler?: Function;
-  onNext?: Function;
-  onPrev?: Function;
+export interface CalendarStripProps {
+  dayClickHandler?: (e: React.MouseEvent, date: Date) => void;
+  monthChangeHandler?: (
+    e: SelectInputProps['onChange'],
+    monthSelected: number,
+    startOfWeek: Date
+  ) => void;
+  onNext?: (e: React.MouseEvent, newDate: Date, startOfWeek: Date) => void;
+  onPrev?: (e: React.MouseEvent, newDate: Date, startOfWeek: Date) => void;
 }
 
-export const CalendarStrip: React.FC<Props> = (props) => {
+export const CalendarStrip: React.FC<CalendarStripProps> = ({
+  onNext,
+  onPrev,
+  monthChangeHandler,
+  dayClickHandler,
+}) => {
   const classes = useStyles();
   const today = startOfToday();
-  const [prevDate, setPrevDate] = useState(today);
-  const [date, setDate] = useState(today);
-  const [month, setMonth] = useState(getMonth(today));
+  const [date, setDate] = useState<Date>(today);
+  const [month, setMonth] = useState<number>(getMonth(today));
+  const [highlightStartOfMonth, setHighlightStartOfMonth] = useState<boolean>(false);
 
   useEffect(() => {
-    if (
-      !isWithinInterval(endOfMonth(prevDate), {
-        start: startOfWeek(date, { weekStartsOn: 0 }),
-        end: endOfWeek(date),
-      })
-    ) {
-      setMonth(getMonth(date));
+    if (!highlightStartOfMonth) {
+      setMonth(getMonth(startOfWeek(date)));
     }
-  }, [date, prevDate]);
-
-  const next = (e: React.MouseEvent) => {
-    setPrevDate(date);
-
-    const newDate = addWeeks(date, 1);
-    setDate(newDate);
-
-    if (typeof props.onNext === 'function') {
-      props.onNext(e, newDate, startOfWeek(startOfDay(newDate)));
-    }
-  };
-
-  const previous = (e: React.MouseEvent) => {
-    setPrevDate(date);
-
-    const newDate = subWeeks(date, 1);
-    setDate(newDate);
-
-    if (typeof props.onPrev === 'function') {
-      props.onPrev(e, newDate, startOfWeek(startOfDay(newDate)));
-    }
-  };
-
-  const onMonthSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const monthSelected: number = (e.target.value as unknown) as number;
-    const newDate = new Date(getYear(date), monthSelected, 1, 0, 0, 0);
-
-    setDate(newDate);
-    setMonth(monthSelected);
-
-    if (typeof props.monthChangeHandler === 'function') {
-      props.monthChangeHandler(e, monthSelected, startOfWeek(startOfDay(newDate)));
-    }
-  };
-
-  const dayClickHandler = (e: React.MouseEvent<HTMLLIElement>, date: Date) => {
-    setMonth(getMonth(date));
-
-    if (typeof props.dayClickHandler === 'function') {
-      props.dayClickHandler(e, date);
-    }
-  };
+  }, [date, highlightStartOfMonth]);
 
   return (
     <div className={classes.weekView}>
-      <MonthList classes={classes.monthPopup} month={month} onChange={onMonthSelect} />
-      <div className={classes.prevBtn} onClick={previous}>
+      <MonthList
+        className={classes.monthPopup}
+        month={month}
+        onChange={(e) => {
+          const monthSelected: number = (e.target.value as unknown) as number;
+          const newDate = new Date(getYear(date), monthSelected, 1, 0, 0, 0);
+
+          setDate(newDate);
+          setMonth(monthSelected);
+          setHighlightStartOfMonth(true);
+
+          if (monthChangeHandler) {
+            monthChangeHandler(
+              (e as unknown) as SelectInputProps['onChange'], // the default type of `e` is React.ChangeEvent need to convert it to `SelectInputProps.onChange`
+              monthSelected,
+              startOfWeek(startOfDay(newDate))
+            );
+          }
+        }}
+      />
+      <div
+        className={classes.prevBtn}
+        onClick={(e) => {
+          const newDate = subWeeks(date, 1);
+          const weekStartDate: Date = startOfWeek(startOfDay(newDate));
+          setDate(newDate);
+          setHighlightStartOfMonth(false);
+
+          if (onPrev) {
+            onPrev(e, newDate, weekStartDate);
+          }
+        }}
+      >
         {' '}
         &lt;{' '}
       </div>
-      <Days classes={classes.daysList} date={date} handler={dayClickHandler} />
-      <div className={classes.nextBtn} onClick={next}>
+      <Days
+        className={classes.daysList}
+        date={date}
+        handler={(e, date) => {
+          setMonth(getMonth(date));
+          setHighlightStartOfMonth(false);
+
+          if (dayClickHandler) {
+            dayClickHandler(e, date);
+          }
+        }}
+        highlightStartOfMonth={highlightStartOfMonth}
+      />
+      <div
+        className={classes.nextBtn}
+        onClick={(e) => {
+          const newDate = addWeeks(date, 1);
+          setDate(newDate);
+          setHighlightStartOfMonth(false);
+
+          if (onNext) {
+            onNext(e, newDate, startOfWeek(startOfDay(newDate)));
+          }
+        }}
+      >
         {' '}
         >{' '}
       </div>

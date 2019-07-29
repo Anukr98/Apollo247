@@ -81,7 +81,6 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   // dispalyoverlay: boolean;
   setdispalyoverlay: (arg0: boolean) => void;
   // setdispalyoverlay: () => void;
-  navigation: any;
   patientId: string;
   doctor: {};
 }
@@ -172,7 +171,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         hideExtraDays={true}
         firstDay={1}
         markedDates={dateSelected}
-        onDayPress={(day: any) => {
+        onDayPress={(day: object) => {
           console.log(day, '234567890');
           setdateSelected({
             [day.dateString]: { selected: true, selectedColor: theme.colors.APP_GREEN },
@@ -199,7 +198,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         />
         {/* <FilterCard data={timeArray[selectedtiming]} /> */}
         <View style={styles.optionsView}>
-          {timeArray[selectedtiming].map((name: any, index: number) => (
+          {timeArray[selectedtiming].map((name: string, index: number) => (
             <Button
               title={name}
               style={[

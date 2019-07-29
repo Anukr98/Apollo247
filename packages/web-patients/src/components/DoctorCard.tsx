@@ -105,41 +105,41 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const { doctorDetails } = props;
 
   return (
-    <div className={classes.root}>
-      <div className={classes.topContent}>
-        <Avatar
-          alt={doctorDetails.firstName || ''}
-          src={
-            doctorDetails.photoUrl || '' !== ''
-              ? doctorDetails.photoUrl
-              : require('images/ic_placeholder.png')
-          }
-          className={classes.doctorAvatar}
-        />
-        <div className={classes.doctorInfo}>
-          <div className={`${classes.availability} ${classes.availableNow}`}>
-            Available in 15 mins
-          </div>
-          <div className={classes.doctorName}>
-            <Link
-              to={clientRoutes.doctorDetails(doctorDetails.id)}
-            >{`${doctorDetails.firstName} ${doctorDetails.lastName}`}</Link>
-          </div>
-          <div className={classes.doctorType}>
-            {doctorDetails.speciality}{' '}
-            <span className={classes.doctorExp}>{doctorDetails.experience} YRS</span>
-          </div>
-          <div className={classes.doctorDetails}>
-            <p>{doctorDetails.education}</p>
-            <p>Apollo Hospitals, Jubilee Hills</p>
+    <Link to={clientRoutes.doctorDetails(doctorDetails.id)}>
+      <div className={classes.root}>
+        <div className={classes.topContent}>
+          <Avatar
+            alt={doctorDetails.firstName || ''}
+            src={
+              doctorDetails.photoUrl || '' !== ''
+                ? doctorDetails.photoUrl
+                : require('images/ic_placeholder.png')
+            }
+            className={classes.doctorAvatar}
+          />
+          <div className={classes.doctorInfo}>
+            <div className={`${classes.availability} ${classes.availableNow}`}>
+              Available in 15 mins
+            </div>
+            <div className={classes.doctorName}>
+              {`${doctorDetails.firstName} ${doctorDetails.lastName}`}
+            </div>
+            <div className={classes.doctorType}>
+              {doctorDetails.speciality}
+              <span className={classes.doctorExp}>{doctorDetails.experience} YRS</span>
+            </div>
+            <div className={classes.doctorDetails}>
+              <p>{doctorDetails.education}</p>
+              <p>Apollo Hospitals, Jubilee Hills</p>
+            </div>
           </div>
         </div>
+        <div className={classes.bottomAction}>
+          <AphButton fullWidth color="primary" className={classes.button}>
+            Consult Now
+          </AphButton>
+        </div>
       </div>
-      <div className={classes.bottomAction}>
-        <AphButton fullWidth color="primary" className={classes.button}>
-          Consult Now
-        </AphButton>
-      </div>
-    </div>
+    </Link>
   );
 };

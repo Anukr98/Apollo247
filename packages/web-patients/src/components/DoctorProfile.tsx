@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       paddingBottom: 5,
       marginBottom: 5,
-      borderBottom: '1px solid rgba(1,71,91,0.2)',
+      borderBottom: '0.5px solid rgba(2,71,91,0.2)',
     },
     specialits: {
       fontSize: 12,
@@ -55,7 +55,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     doctorInfoGroup: {
       paddingBottom: 10,
-      borderBottom: '1px solid rgba(1,71,91,0.2)',
+      borderBottom: '0.5px solid rgba(2,71,91,0.2)',
       [theme.breakpoints.down('xs')]: {
         marginBottom: 10,
       },
@@ -153,6 +153,9 @@ const useStyles = makeStyles((theme: Theme) => {
         opacity: 0.5,
       },
     },
+    noIcon: {
+      opacity: 0,
+    },
   };
 });
 
@@ -205,19 +208,19 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
             <div className={classes.specialits}>
               {speciality} <span className={classes.lineDivider}>|</span> {experience} Yrs
               <div className={classes.shareIcon}>
-                <img src={require('images/ic_home.svg')} alt="" />
+                <img src={require('images/ic-share-green.svg')} alt="" />
               </div>
             </div>
             <div className={classes.doctorInfoGroup}>
               <div className={classes.infoRow}>
                 <div className={classes.iconType}>
-                  <img src={require('images/ic_home.svg')} alt="" />
+                  <img src={require('images/ic-edu.svg')} alt="" />
                 </div>
                 <div className={classes.details}>{education}</div>
               </div>
               <div className={classes.infoRow}>
                 <div className={classes.iconType}>
-                  <img src={require('images/ic_home.svg')} alt="" />
+                  <img src={require('images/ic-awards.svg')} alt="" />
                 </div>
                 <div className={classes.details}>{awards}</div>
               </div>
@@ -225,13 +228,13 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
             <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
               <div className={classes.infoRow}>
                 <div className={classes.iconType}>
-                  <img src={require('images/ic_home.svg')} alt="" />
+                  <img src={require('images/ic-location.svg')} alt="" />
                 </div>
                 <div className={classes.details}>{locations}</div>
               </div>
               <div className={`${classes.infoRow} ${classes.textCenter}`}>
                 <div className={classes.iconType}>
-                  <img src={require('images/ic_home.svg')} alt="" />
+                  <img src={require('images/ic-language.svg')} alt="" />
                 </div>
                 <div className={classes.details}>{languages}</div>
               </div>
@@ -242,7 +245,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                 <div className={classes.consultGroup}>
                   <div className={classes.infoRow}>
                     <div className={classes.iconType}>
-                      <img src={require('images/ic_home.svg')} alt="" />
+                      <img src={require('images/ic-rupee.svg')} alt="" />
                     </div>
                     <div className={classes.details}>
                       Online Consultation
@@ -259,8 +262,8 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
               {avaForPhyConsult ? (
                 <div className={classes.consultGroup}>
                   <div className={classes.infoRow}>
-                    <div className={classes.iconType}>
-                      <img src={require('images/ic_home.svg')} alt="" />
+                    <div className={`${classes.iconType} ${classes.noIcon}`}>
+                      <img src={require('images/ic-rupee.svg')} alt="" />
                     </div>
                     <div className={classes.details}>
                       Clinic Visit

@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleProp, StyleSheet, TextInput, View, ViewStyle } from 'react-native';
+import {
+  StyleProp,
+  StyleSheet,
+  TextInput,
+  View,
+  ViewStyle,
+  TextInputKeyPressEventData,
+  NativeSyntheticEvent,
+} from 'react-native';
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
@@ -79,7 +87,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
     setFocusedInput(i);
   };
 
-  const onKeyPress = (e: any, i: number) => {
+  const onKeyPress = (e: NativeSyntheticEvent<TextInputKeyPressEventData>, i: number) => {
     const otpArray = [...otpText];
 
     if (e.nativeEvent.key === 'Backspace') {
@@ -95,7 +103,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
   };
 
   for (let i = 0; i < inputCount; i += 1) {
-    const defaultChars: any = [];
+    const defaultChars: string[] = [];
     const inputStyle = [styles.textInput, textInputStyle, { borderColor: offTintColor }];
     if (focusedInput === i) {
       inputStyle.push({ borderColor: tintColor });

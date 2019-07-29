@@ -70,11 +70,11 @@ export interface GetDoctorProfile_getDoctorProfile_consultationHours {
 
 export interface GetDoctorProfile_getDoctorProfile {
   __typename: 'DoctorProfile';
-  profile: GetDoctorProfile_getDoctorProfile_profile | null;
-  paymentDetails: (GetDoctorProfile_getDoctorProfile_paymentDetails | null)[] | null;
-  clinics: (GetDoctorProfile_getDoctorProfile_clinics | null)[] | null;
-  starDoctorTeam: (GetDoctorProfile_getDoctorProfile_starDoctorTeam | null)[] | null;
-  consultationHours: (GetDoctorProfile_getDoctorProfile_consultationHours | null)[] | null;
+  profile: GetDoctorProfile_getDoctorProfile_profile;
+  paymentDetails: GetDoctorProfile_getDoctorProfile_paymentDetails[] | null;
+  clinics: GetDoctorProfile_getDoctorProfile_clinics[] | null;
+  starDoctorTeam: GetDoctorProfile_getDoctorProfile_starDoctorTeam[] | null;
+  consultationHours: GetDoctorProfile_getDoctorProfile_consultationHours[] | null;
 }
 
 export interface GetDoctorProfile {

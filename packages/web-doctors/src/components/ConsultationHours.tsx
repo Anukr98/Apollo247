@@ -2,8 +2,9 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
-import { DaySelector } from 'components/DaySelector';
-import { AphButton } from '@aph/web-ui-components';
+import Grid from '@material-ui/core/Grid';
+import { DaySelector, Day } from 'components/DaySelector';
+import { AphButton, AphInput } from '@aph/web-ui-components';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -13,7 +14,7 @@ import {
 } from 'graphql/types/getDoctorProfile';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Divider from '@material-ui/core/Divider';
-import TextField from '@material-ui/core/TextField';
+import format from 'date-fns/format';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -21,10 +22,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h2': {
         fontSize: 16,
         color: theme.palette.secondary.dark,
-        marginBottom: '15px',
+        marginBottom: 15,
       },
       '& h3': {
-        lineHeight: '22px',
+        lineHeight: 22,
         padding: '3px 5px 5px 20px',
       },
       '& h4': {
@@ -49,18 +50,18 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
-      marginBottom: '30px',
+      marginBottom: 30,
     },
     tabContentPanel: {
       backgroundColor: '#fff !important',
     },
     starDoctors: {
-      width: '80px',
-      height: '80px',
+      width: 80,
+      height: 80,
       borderRadius: '50%',
       overflow: 'hidden',
       position: 'absolute',
-      left: '10px',
+      left: 10,
       '& h4': {
         borderBottom: 'none',
       },
@@ -79,29 +80,29 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
     },
     profileImg: {
-      height: '80px',
+      height: 80,
     },
     tabContentStarDoctor: {
       borderRadius: 10,
       backgroundColor: theme.palette.primary.contrastText,
-      padding: '10px',
+      padding: 10,
       position: 'relative',
-      paddingLeft: '90px',
-      minHeight: '100px',
+      paddingLeft: '90',
+      minHeight: 100,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
-      marginBottom: '30px',
-      marginRight: '10px',
+      marginBottom: 30,
+      marginRight: 10,
     },
     saveButton: {
-      minWidth: '300px',
+      minWidth: 300,
       margin: theme.spacing(1),
       '&:hover': {
         backgroundColor: '#fcb716',
       },
     },
     backButton: {
-      minWidth: '120px',
+      minWidth: 120,
       color: '#fc9916',
       backgroundColor: '#fff',
       margin: theme.spacing(1),
@@ -109,8 +110,34 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fff',
       },
     },
+    saveBtn: {
+      minWidth: 30,
+      margin: theme.spacing(1),
+      fontSize: 15,
+      fontWeight: 600,
+      color: '#fc9916',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      border: 'none',
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    cancelBtn: {
+      minWidth: 30,
+      margin: theme.spacing(1),
+      fontSize: 15,
+      fontWeight: 500,
+      color: '#02575b',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      border: 'none',
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
     addDocter: {
-      marginTop: '20px',
+      marginTop: 20,
     },
     btnAddDoctor: {
       backgroundColor: 'transparent',
@@ -124,17 +151,19 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     btnContainer: {
       borderTop: 'solid 0.5px rgba(98,22,64,0.6)',
-      marginTop: '30px',
-      paddingTop: '15px',
+      marginTop: 30,
+      paddingTop: 15,
       textAlign: 'right',
       '& button': {
-        padding: '9px 16px',
+        padding: '0px 16px 10px 5px',
       },
     },
     btnActive: {
       backgroundColor: '#00b38e',
       color: theme.palette.secondary.contrastText,
       margin: theme.spacing(1, 1, 1, 0),
+      textTransform: 'capitalize',
+      minWidth: 56,
       '&:hover': {
         backgroundColor: '#00b38e',
       },
@@ -143,12 +172,14 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       color: '#00b38e',
       margin: theme.spacing(1, 1, 1, 0),
+      textTransform: 'capitalize',
+      minWidth: 56,
       '&:hover': {
         backgroundColor: '#fff',
       },
     },
     heading: {
-      fontSize: theme.typography.pxToRem(15),
+      fontSize: 14,
       color: theme.palette.secondary.dark,
     },
     primaryHeading: {
@@ -169,22 +200,25 @@ const useStyles = makeStyles((theme: Theme) => {
     details: {
       alignItems: 'center',
       display: 'block',
+      padding: '24px 24px 0 24px',
     },
     column: {
       flexBasis: '100%',
     },
     columnDays: {
       flexBasis: '60%',
-      paddingTop: '4px',
+      paddingTop: 4,
     },
     columnTime: {
-      flexBasis: '30%',
+      flexBasis: '45%',
     },
     columnType: {
       flexBasis: '10%',
-      paddingTop: '4px',
+      paddingTop: 4,
       color: '#ff748e',
       fontWeight: theme.typography.fontWeightMedium,
+      textTransform: 'uppercase',
+      fontSize: 14,
     },
     helper: {
       borderLeft: `2px solid ${theme.palette.divider}`,
@@ -205,7 +239,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: theme.spacing(1),
       width: 140,
       '& input': {
-        fontSize: '20px',
+        fontSize: 20,
         color: '#02475b',
         fontWeight: theme.typography.fontWeightMedium,
         paddingTop: 0,
@@ -216,21 +250,18 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: theme.spacing(2),
     },
     timeForm: {
-      fontSize: '16px',
+      fontSize: 16,
       color: '#658f9b',
       padding: '20px 20px 0 0',
       fontWeight: theme.typography.fontWeightMedium,
     },
     footerButtons: {
       textAlign: 'right',
-      paddingTop: '15px',
+      paddingTop: 15,
       '& button': {
-        fontSize: '15px',
+        fontSize: 15,
         fontWeight: theme.typography.fontWeightMedium,
       },
-    },
-    cancelBtn: {
-      color: theme.palette.secondary.dark,
     },
     timeDivider: {},
     instructions: {
@@ -247,125 +278,133 @@ const useStyles = makeStyles((theme: Theme) => {
 interface ConsultationHoursProps {
   values: GetDoctorProfile_getDoctorProfile;
 }
-interface ConsultItem {
-  key: string;
-  value: string;
-  selected: boolean;
-}
-interface DaySelectorProps {}
+
 export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) => {
   const classes = useStyles();
   const data = values;
-  const consultTypeArr = [
-    {
-      key: 'physical',
-      value: 'Physical',
-      selected: true,
-    },
-    {
-      key: 'online',
-      value: 'Online',
-      selected: false,
-    },
-  ];
-  const consultTypeHtml = consultTypeArr.map((item: ConsultItem, index: number) => {
-    return (
-      <AphButton
-        key={item.key}
-        variant="contained"
-        value={item.value}
-        classes={item.selected ? { root: classes.btnActive } : { root: classes.btnInactive }}
-      >
-        {item.value}
-      </AphButton>
-    );
-  });
+  function convertTime(time: string) {
+    return format(new Date('1970-01-01T' + time), 'p');
+  }
   const AvailabilityHtml =
     data && data.consultationHours
       ? data.consultationHours.map(
-          (item: GetDoctorProfile_getDoctorProfile_consultationHours, index: number) => {
-            return (
-              <div key={index.toString()} className={classes.tabContent}>
-                <ExpansionPanel className={classes.pointerNone}>
-                  <ExpansionPanelSummary
-                    expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-                  >
-                    <div className={classes.columnTime}>
-                      <Typography
-                        className={classes.primaryHeading}
-                      >{`${item.startTime} ${item.endTime}`}</Typography>
-                    </div>
-                    <div className={classes.columnDays}>
-                      <Typography className={classes.heading}>
-                        {item.days} | {item.availableForPhysicalConsultation && 'Physical'},
-                        {item.availableForVirtualConsultation && 'Online'}
+        (item: GetDoctorProfile_getDoctorProfile_consultationHours, index: number) => {
+          return (
+            <div key={index.toString()} className={classes.tabContent}>
+              <ExpansionPanel>
+                <ExpansionPanelSummary
+                  expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+                >
+                  <div className={classes.columnTime}>
+                    <Typography className={classes.primaryHeading}>{`${convertTime(
+                      item.startTime
+                    )} - ${convertTime(item.endTime)}`}</Typography>
+                  </div>
+                  <div className={classes.columnDays}>
+                    <Typography className={classes.heading}>
+                      {item.days} &nbsp; | &nbsp; {item.availableForPhysicalConsultation && 'Physical'}
+                      {item.availableForPhysicalConsultation &&
+                        item.availableForVirtualConsultation &&
+                        ', '}
+                      {item.availableForVirtualConsultation && 'Online'}
+                    </Typography>
+                  </div>
+                  {item.type && item.type !== '' && (
+                    <div className={classes.columnType}>(FIXED)</div>
+                  )}
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails className={classes.details}>
+                  <div>
+                    <div className={classes.column}>
+                      <Typography variant="h5">
+                        <form className={classes.timeForm}>
+                          Enter your preferred consult hours:
+                            <AphInput
+                            inputProps={{ type: 'text' }}
+                            value={convertTime(item.startTime)}
+                            className={classes.textField}
+                          />
+                          <span className={classes.timeDivider}> - </span>
+                          <AphInput
+                            inputProps={{ type: 'text' }}
+                            value={convertTime(item.endTime)}
+                            className={classes.textField}
+                          />
+                        </form>
+                        <br />
                       </Typography>
                     </div>
-                    {item.type && item.type !== '' && (
-                      <div className={classes.columnType}>(Fixed)</div>
-                    )}
-                  </ExpansionPanelSummary>
-                  <ExpansionPanelDetails className={classes.details}>
                     <div>
-                      <div className={classes.column}>
-                        <Typography variant="h5">
-                          <form className={classes.timeForm}>
-                            Enter your preferred consult hours:
-                            <TextField
-                              id="time"
-                              type="time"
-                              defaultValue="09:30"
-                              className={classes.textField}
-                              InputLabelProps={{
-                                shrink: true,
-                              }}
-                              inputProps={{
-                                step: 300, // 5 min
-                              }}
-                            />
-                            <span className={classes.timeDivider}> - </span>
-                            <TextField
-                              id="time"
-                              type="time"
-                              defaultValue="12:30"
-                              className={classes.textField}
-                              InputLabelProps={{
-                                shrink: true,
-                              }}
-                              inputProps={{
-                                step: 300, // 5 min
-                              }}
-                            />
-                          </form>
-                          <br />
-                        </Typography>
+                      <div>
+                        <Typography variant="h5" className={classes.timeForm}>
+                          Which days you wish to apply these hours to?
+                          </Typography>
+                        <DaySelector selectedDays={item.days as Day} />
                       </div>
                       <div>
-                        <div>
-                          <Typography variant="h5" className={classes.timeForm}>
-                            Which days you wish to apply these hours to?
+                        <Typography variant="h5" className={classes.timeForm}>
+                          What type of consults will you be available for?
                           </Typography>
-                          <DaySelector />
-                        </div>
-                        <div>
-                          <Typography variant="h5">
-                            What type of consults will you be available for?
-                          </Typography>
-                          {consultTypeHtml}
-                        </div>
-                        <Typography className={classes.instructions}>
-                          Note: Any addition or modification to your consultation hours will take
-                          effect only after 24 hours.
-                        </Typography>
+                        <AphButton
+                          variant="contained"
+                          classes={
+                            item.availableForPhysicalConsultation
+                              ? { root: classes.btnActive }
+                              : { root: classes.btnInactive }
+                          }
+                        >
+                          Physical
+                          </AphButton>
+
+                        <AphButton
+                          variant="contained"
+                          classes={
+                            item.availableForVirtualConsultation
+                              ? { root: classes.btnActive }
+                              : { root: classes.btnInactive }
+                          }
+                        >
+                          Online
+                          </AphButton>
                       </div>
+                      <Typography className={classes.instructions}>
+                        Note: Any addition or modification to your consultation hours will take
+                        effect only after 24 hours.
+                        </Typography>
+                      <Grid
+                        container
+                        alignItems="flex-start"
+                        spacing={0}
+                        className={classes.btnContainer}
+                      >
+                        <Grid item lg={12} sm={12} xs={12}>
+                          <AphButton
+                            variant="contained"
+                            color="primary"
+                            classes={{ root: classes.cancelBtn }}
+                          //onClick={() => onBack()}
+                          >
+                            CANCEL
+                            </AphButton>
+                          <AphButton
+                            variant="contained"
+                            color="primary"
+                            classes={{ root: classes.saveBtn }}
+                          //onClick={() => onNext()}
+                          >
+                            SAVE
+                            </AphButton>
+                        </Grid>
+                      </Grid>
                     </div>
-                  </ExpansionPanelDetails>
-                  <Divider />
-                </ExpansionPanel>
-              </div>
-            );
-          }
-        )
+                  </div>
+                </ExpansionPanelDetails>
+                <Divider />
+              </ExpansionPanel>
+            </div>
+          );
+        }
+      )
       : '';
-  return <div className={classes.ProfileContainer}> {AvailabilityHtml}</div>;
+  return <div className={classes.ProfileContainer}>{AvailabilityHtml}</div>;
 };

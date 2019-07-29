@@ -2,7 +2,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CalendarClose, CalendarShow } from '@aph/mobile-patients/src/components/ui/Icons';
 import React, { useEffect, useState } from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { Calendar } from 'react-native-calendars';
+import { Calendar, DateObject } from 'react-native-calendars';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../../theme/theme';
@@ -55,14 +55,15 @@ const styles = StyleSheet.create({
   },
 });
 
+type dataType = {
+  label: string;
+  options: string[];
+  selectedOptions: string[];
+}[];
 export interface FilterCardProps extends NavigationScreenProps {
   cardContainer?: StyleProp<ViewStyle>;
-  data: {
-    label: string;
-    options: string[];
-    selectedOptions: string[];
-  }[];
-  updateData: (data: any) => void;
+  data: dataType;
+  updateData: (data: dataType) => void;
 }
 
 export const FilterCard: React.FC<FilterCardProps> = (props) => {
@@ -79,13 +80,13 @@ export const FilterCard: React.FC<FilterCardProps> = (props) => {
     console.log(props.data, 'props.data useEffect');
     setdata(props.data);
   }, [props.data]);
-  const [data, setdata] = useState<any>(props.data);
+  const [data, setdata] = useState<dataType>(props.data);
 
   console.log(props.data, 'props.data');
 
   return (
     <View style={{ marginVertical: 20 }}>
-      {data.map(({ label, options, selectedOptions = [] }, index: number) => (
+      {data.map(({ label, options, selectedOptions }, index: number) => (
         <View style={[styles.cardContainer, props.cardContainer]}>
           <View style={styles.labelView}>
             <Text style={styles.leftText}>{label}</Text>
@@ -128,7 +129,7 @@ export const FilterCard: React.FC<FilterCardProps> = (props) => {
               hideExtraDays={true}
               firstDay={1}
               markedDates={dateSelected}
-              onDayPress={(day: any) => {
+              onDayPress={(day: DateObject) => {
                 console.log(day, '234567890');
                 setdateSelected({
                   [day.dateString]: { selected: true, selectedColor: theme.colors.APP_GREEN },

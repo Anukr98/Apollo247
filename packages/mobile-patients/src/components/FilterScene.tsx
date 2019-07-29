@@ -5,8 +5,9 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
-import { Calendar } from 'react-native-calendars';
+import { Calendar, DateObject } from 'react-native-calendars';
 import { ScrollView } from 'react-native-gesture-handler';
+import { filterDataType } from '@aph/mobile-patients/src/components/DoctorSearchListing';
 
 const styles = StyleSheet.create({
   container: {
@@ -22,7 +23,7 @@ const styles = StyleSheet.create({
   cardContainer: {
     padding: 20,
     paddingBottom: 0,
-    paddingTop: 16,
+    // paddingTop: 16,
     marginVertical: 4,
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
@@ -35,6 +36,8 @@ const styles = StyleSheet.create({
   labelView: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+
     paddingBottom: 8,
     borderBottomWidth: 0.5,
     borderColor: 'rgba(2,71,91, 0.3)',
@@ -68,12 +71,18 @@ const styles = StyleSheet.create({
   },
 });
 
+type dataType = {
+  label: string;
+  options: string[];
+  selectedOptions: string[];
+}[];
+
 export interface FilterSceneProps {
-  onClickClose: (arg0: []) => void;
-  data: {};
+  onClickClose: (arg0: filterDataType[]) => void;
+  data: filterDataType[];
 }
 export const FilterScene: React.FC<FilterSceneProps> = (props) => {
-  const [data, setData] = useState<any>(props.data);
+  const [data, setData] = useState<filterDataType[]>(props.data);
   const [showCalander, setshowCalander] = useState<boolean>(false);
   const today = new Date().toISOString().slice(0, 10);
   const [dateSelected, setdateSelected] = useState<object>({
@@ -88,83 +97,79 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   const filterCardsView = () => {
     return (
       <View style={{ marginVertical: 16 }}>
-        {data.map(
-          (
-            {
-              label,
-              options,
-              selectedOptions,
-            }: { label: string; options: []; selectedOptions: [] },
-            index: number
-          ) => {
-            console.log(selectedOptions, '1234567890');
-            const allSelected = options.length > 0 && options.length === selectedOptions.length;
-            return (
-              <View style={styles.cardContainer}>
-                <View style={styles.labelView}>
-                  <Text style={styles.leftText}>{label}</Text>
-                  {label === 'Availability' && (
-                    <View style={{ flex: 1, alignItems: 'flex-end', marginRight: 20 }}>
-                      <TouchableOpacity onPress={() => setshowCalander(!showCalander)}>
-                        {showCalander ? <CalendarClose /> : <CalendarShow />}
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                  <Text
-                    style={styles.rightText}
-                    onPress={() => {
-                      const dataCopy = [...data];
-                      dataCopy[index] = {
-                        ...dataCopy[index],
-                        selectedOptions: allSelected ? [] : dataCopy[index].options,
-                      };
-                      console.log(dataCopy, 'dataCopy');
-                      setData(dataCopy);
-                    }}
-                  >
-                    {allSelected ? 'DESELECT ALL' : 'SELECT ALL'}
-                  </Text>
-                </View>
-                {showCalander && label === 'Availability' ? (
-                  <Calendar
-                    style={styles.calendarStyle}
-                    theme={{
-                      backgroundColor: '#f7f8f5',
-                      calendarBackground: '#f7f8f5',
-                      textSectionTitleColor: '#80a3ad',
-                      selectedDayBackgroundColor: '#00adf5',
-                      selectedDayTextColor: '#ffffff',
-                      todayTextColor: theme.colors.LIGHT_BLUE,
-                      dayTextColor: theme.colors.APP_GREEN,
-                      textDisabledColor: '#d9e1e8',
-                      dotColor: '#00adf5',
-                      selectedDotColor: '#ffffff',
-                      arrowColor: theme.colors.LIGHT_BLUE,
-                      monthTextColor: theme.colors.LIGHT_BLUE,
-                      indicatorColor: 'blue',
-                      textDayFontFamily: 'IBMPlexSans-SemiBold',
-                      textMonthFontFamily: 'IBMPlexSans-SemiBold',
-                      textDayHeaderFontFamily: 'IBMPlexSans-SemiBold',
-                      // textDayFontWeight: '300',
-                      textMonthFontWeight: 'normal',
-                      textDayHeaderFontWeight: '300',
-                      textDayFontSize: 14,
-                      textMonthFontSize: 14,
-                      textDayHeaderFontSize: 14,
-                    }}
-                    hideExtraDays={true}
-                    firstDay={1}
-                    markedDates={dateSelected}
-                    onDayPress={(day: any) => {
-                      console.log(day, '234567890');
-                      setdateSelected({
-                        [day.dateString]: { selected: true, selectedColor: theme.colors.APP_GREEN },
-                      });
-                    }}
-                  />
-                ) : (
-                  <View style={styles.optionsView}>
-                    {options.map((name) => (
+        {data.map(({ label, options, selectedOptions }: filterDataType, index: number) => {
+          console.log(selectedOptions, '1234567890');
+          const allSelected =
+            options.length > 0 && selectedOptions && options.length === selectedOptions.length;
+          return (
+            <View style={styles.cardContainer}>
+              <View
+                style={[styles.labelView, label === 'Availability' ? { paddingBottom: 5 } : {}]}
+              >
+                <Text style={styles.leftText}>{label}</Text>
+                {label === 'Availability' && (
+                  <View style={{ flex: 1, alignItems: 'flex-end', marginRight: 20 }}>
+                    <TouchableOpacity onPress={() => setshowCalander(!showCalander)}>
+                      {showCalander ? <CalendarClose /> : <CalendarShow />}
+                    </TouchableOpacity>
+                  </View>
+                )}
+                <Text
+                  style={styles.rightText}
+                  onPress={() => {
+                    const dataCopy = [...data];
+                    dataCopy[index] = {
+                      ...dataCopy[index],
+                      selectedOptions: allSelected ? [] : dataCopy[index].options,
+                    };
+                    console.log(dataCopy, 'dataCopy');
+                    setData(dataCopy);
+                  }}
+                >
+                  {allSelected ? 'DESELECT ALL' : 'SELECT ALL'}
+                </Text>
+              </View>
+              {showCalander && label === 'Availability' ? (
+                <Calendar
+                  style={styles.calendarStyle}
+                  theme={{
+                    backgroundColor: '#f7f8f5',
+                    calendarBackground: '#f7f8f5',
+                    textSectionTitleColor: '#80a3ad',
+                    selectedDayBackgroundColor: '#00adf5',
+                    selectedDayTextColor: '#ffffff',
+                    todayTextColor: theme.colors.LIGHT_BLUE,
+                    dayTextColor: theme.colors.APP_GREEN,
+                    textDisabledColor: '#d9e1e8',
+                    dotColor: '#00adf5',
+                    selectedDotColor: '#ffffff',
+                    arrowColor: theme.colors.LIGHT_BLUE,
+                    monthTextColor: theme.colors.LIGHT_BLUE,
+                    indicatorColor: 'blue',
+                    textDayFontFamily: 'IBMPlexSans-SemiBold',
+                    textMonthFontFamily: 'IBMPlexSans-SemiBold',
+                    textDayHeaderFontFamily: 'IBMPlexSans-SemiBold',
+                    // textDayFontWeight: '300',
+                    textMonthFontWeight: 'normal',
+                    textDayHeaderFontWeight: '300',
+                    textDayFontSize: 14,
+                    textMonthFontSize: 14,
+                    textDayHeaderFontSize: 14,
+                  }}
+                  hideExtraDays={true}
+                  firstDay={1}
+                  markedDates={dateSelected}
+                  onDayPress={(day: DateObject) => {
+                    console.log(day, '234567890');
+                    setdateSelected({
+                      [day.dateString]: { selected: true, selectedColor: theme.colors.APP_GREEN },
+                    });
+                  }}
+                />
+              ) : (
+                <View style={styles.optionsView}>
+                  {selectedOptions &&
+                    options.map((name) => (
                       <Button
                         title={name}
                         style={[
@@ -179,7 +184,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                         ]}
                         onPress={() => {
                           console.log('onpress');
-                          let selectedData = [...data][index]['selectedOptions'];
+                          let selectedData = [...data][index]['selectedOptions'] || [];
                           const dataCopy = [...data];
 
                           if (selectedData.includes(name)) {
@@ -199,12 +204,11 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                         }}
                       />
                     ))}
-                  </View>
-                )}
-              </View>
-            );
-          }
-        )}
+                </View>
+              )}
+            </View>
+          );
+        })}
       </View>
     );
   };
@@ -221,7 +225,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
         rightComponent={() => (
           <TouchableOpacity
             onPress={() => {
-              const filterData = data.map((obj: object) => {
+              const filterData = data.map((obj) => {
                 obj.selectedOptions = [];
                 return obj;
               });
@@ -238,8 +242,8 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
 
   const bottomButton = () => {
     let length = 0;
-    data.forEach((item: object) => {
-      length += item.selectedOptions.length;
+    data.forEach((item) => {
+      if (item.selectedOptions) length += item.selectedOptions.length;
     });
     console.log(length, 'length');
     return (

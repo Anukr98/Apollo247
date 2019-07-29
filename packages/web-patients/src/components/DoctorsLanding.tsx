@@ -12,6 +12,8 @@ import { DoctorsListing } from 'components/DoctorsListing';
 import { PossibleSpecialitiesAndDoctors } from 'components/PossibleSpecialitiesAndDoctors';
 import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { SEARCH_DOCTORS_AND_SPECIALITY } from 'graphql/doctors';
@@ -84,7 +86,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       color: '#02475b',
       textTransform: 'uppercase',
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       display: 'flex',
       alignItems: 'center',
       position: 'relative',
@@ -119,7 +121,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       fontSize: 14,
       fontWeight: 500,
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       paddingBottom: 10,
       paddingTop: 10,
       marginBottom: 20,
@@ -264,10 +266,12 @@ export const DoctorsLanding: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.breadcrumbs}>
-            <div className={classes.backArrow}>
-              <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-              <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-            </div>
+            <Link to={clientRoutes.welcome()}>
+              <div className={classes.backArrow}>
+                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+              </div>
+            </Link>
             Doctors / Specialities
           </div>
           <div className={classes.doctorListingSection}>
@@ -340,20 +344,6 @@ export const DoctorsLanding: React.FC = (props) => {
                           </div>
                         </>
                       ) : null}
-                      <div className={classes.sectionHeader}>
-                        <span>
-                          {filterOptions.searchKeyword !== '' && showSearchAndPastSearch
-                            ? 'Matching Specialities'
-                            : 'Specialities'}
-                        </span>
-                        <span className={classes.count}>
-                          {filterOptions.searchKeyword !== ''
-                            ? matchingSpecialities > 0 && matchingSpecialities < 10
-                              ? `0${matchingSpecialities}`
-                              : matchingSpecialities
-                            : ''}
-                        </span>
-                      </div>
                       <Specialities
                         keyword={filterOptions.searchKeyword}
                         matched={(matchingSpecialities) =>
@@ -365,6 +355,11 @@ export const DoctorsLanding: React.FC = (props) => {
                         disableFilter={(disableFilters) => {
                           setDisableFilters(disableFilters);
                         }}
+                        subHeading={
+                          filterOptions.searchKeyword !== '' && showSearchAndPastSearch
+                            ? 'Matching Specialities'
+                            : 'Specialities'
+                        }
                       />
                     </>
                   ) : (
@@ -377,6 +372,7 @@ export const DoctorsLanding: React.FC = (props) => {
                       disableFilter={(disableFilters) => {
                         setDisableFilters(disableFilters);
                       }}
+                      subHeading=""
                     />
                   )}
                 </>

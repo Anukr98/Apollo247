@@ -1,6 +1,6 @@
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
-import { DoctorCard, DoctorCardProps } from '@aph/mobile-patients/src/components/ui/DoctorCard';
+import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Filter } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -15,6 +15,12 @@ import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } fr
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  getSpecialtyDoctorsWithFilters,
+  getSpecialtyDoctorsWithFiltersVariables,
+  getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors,
+} from '@aph/mobile-patients/src/graphql/types/getSpecialtyDoctorsWithFilters';
+import { filterInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   topView: {
@@ -43,27 +49,35 @@ const styles = StyleSheet.create({
 });
 
 export interface DoctorSearchListingProps extends NavigationScreenProps {}
+export type filterDataType = { label: string; options: string[]; selectedOptions?: string[] };
 
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
-  const filterData = strings.doctor_search_listing.filter_data.map((obj: object) => {
+  const filterData = strings.doctor_search_listing.filter_data.map((obj: filterDataType) => {
     obj.selectedOptions = [];
     return obj;
   });
-  const tabs = ['All Consults', 'Online Consults', 'Clinic Visits'];
-  const [selectedTab, setselectedTab] = useState<string>(tabs[0]);
+  const tabs = [
+    { title: 'All Consults' },
+    { title: 'Online Consults' },
+    { title: 'Clinic Visits' },
+  ];
+  const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   // const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   // const [currentLocation, setcurrentLocation] = useState<string>('');
-  const [doctorsList, setDoctorsList] = useState<[]>([]);
-  const [FilterData, setFilterData] = useState<[]>(filterData);
+  const [doctorsList, setDoctorsList] = useState<
+    (getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors | null)[]
+  >([]);
+  const [FilterData, setFilterData] = useState<object[]>(filterData);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
-  const filterInput: any = {
+  const FilterInput: filterInput = {
     specialty: props.navigation.state.params!.speciality,
   };
-  FilterData.map((obj: { label: string; options: []; selectedOptions: [] }) => {
-    if (obj.selectedOptions.length > 0) {
-      filterInput[obj.label.toLowerCase().split(' ')[0]] = obj.selectedOptions;
+
+  FilterData.forEach((obj: filterDataType) => {
+    if (obj.selectedOptions!.length > 0) {
+      FilterInput[obj.label.toLowerCase().split(' ')[0]] = obj.selectedOptions;
     }
   });
   console.log(
@@ -71,11 +85,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     'speciality',
     FilterData,
     'FilterDataFilterDataFilterData',
-    filterInput
+    FilterInput
   );
-  const { data, error } = useQuery(SPECIALITY_DOCTOR_FILTERS, {
+  const { data, error } = useQuery<
+    getSpecialtyDoctorsWithFilters,
+    getSpecialtyDoctorsWithFiltersVariables
+  >(SPECIALITY_DOCTOR_FILTERS, {
     variables: {
-      filterInput,
+      filterInput: FilterInput,
     },
   });
   if (error) {
@@ -84,6 +101,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   } else {
     console.log('data', data);
     if (
+      data &&
       data.getSpecialtyDoctorsWithFilters &&
       data.getSpecialtyDoctorsWithFilters.doctors &&
       doctorsList !== data.getSpecialtyDoctorsWithFilters.doctors
@@ -177,13 +195,21 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     );
   };
 
-  const renderSearchDoctorResultsRow = (rowData: DoctorCardProps['rowData']) => {
-    return <DoctorCard rowData={rowData} navigation={props.navigation} />;
+  const renderSearchDoctorResultsRow = (
+    rowData: getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors | null
+  ) => {
+    if (rowData) return <DoctorCard rowData={rowData} navigation={props.navigation} />;
+    return null;
   };
 
-  const renderDoctorSearches = (filter: string) => {
+  const renderDoctorSearches = (filter?: string) => {
     console.log(doctorsList, 'doctorsList');
-    const doctors = filter ? doctorsList.filter((obj) => obj[filter] === true) : doctorsList;
+    const doctors = filter
+      ? doctorsList.filter(
+          (obj: getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors | null) =>
+            obj[filter] === true
+        )
+      : doctorsList;
     if (doctors.length === 0 && !showSpinner) {
       return (
         <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 64 }}>
@@ -221,7 +247,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             bounces={false}
             data={doctors}
             onEndReachedThreshold={0.5}
-            renderItem={({ item }: { item: any }) => renderSearchDoctorResultsRow(item)}
+            renderItem={({ item }) => renderSearchDoctorResultsRow(item)}
           />
         )}
       </View>
@@ -237,9 +263,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         {renderTopView()}
 
         <ScrollView style={{ flex: 1 }} bounces={false}>
-          {selectedTab === tabs[0] && renderDoctorSearches()}
-          {selectedTab === tabs[1] && renderDoctorSearches('availableForVirtualConsultation')}
-          {selectedTab === tabs[2] && renderDoctorSearches('availableForPhysicalConsultation')}
+          {selectedTab === tabs[0].title && renderDoctorSearches()}
+          {selectedTab === tabs[1].title && renderDoctorSearches('availableForVirtualConsultation')}
+          {selectedTab === tabs[2].title &&
+            renderDoctorSearches('availableForPhysicalConsultation')}
         </ScrollView>
         {/* {showLocationpopup && (
           <View

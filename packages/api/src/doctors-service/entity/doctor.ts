@@ -14,6 +14,8 @@ import { DoctorSpeciality } from 'doctors-service/entity/doctorSpeciality';
 import { Validate, IsDate } from 'class-validator';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
 import { StarTeam } from 'doctors-service/entity/starTeam';
+import { DoctorAndHospital } from 'doctors-service/entity/doctorAndHospital';
+import { ConsultHours } from 'doctors-service/entity/consultHours';
 export enum DoctorType {
   APOLLO = 'APOLLO',
   PAYROLL = 'PAYROLL',
@@ -34,6 +36,9 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   city: String;
 
+  @OneToMany((type) => ConsultHours, (consultHours) => consultHours.doctor)
+  consultHours: ConsultHours[];
+
   @Column({ nullable: true })
   country: String;
 
@@ -44,11 +49,14 @@ export class Doctor extends BaseEntity {
   @IsDate()
   dateOfBirth: Date;
 
-  @Column({ nullable: true })
-  delegateNumber: String;
+  @OneToMany((type) => DoctorAndHospital, (doctorHospital) => doctorHospital.doctor)
+  doctorHospital: DoctorAndHospital[];
 
   @Column()
   doctorType: DoctorType;
+
+  @Column({ nullable: true })
+  delegateNumber: String;
 
   @Column({ nullable: true, type: 'text' })
   @Validate(EmailValidator)
@@ -84,11 +92,11 @@ export class Doctor extends BaseEntity {
   @Column({ type: 'float8' })
   onlineConsultationFees: Number;
 
-  @Column({ type: 'float8' })
-  physicalConsultationFees: Number;
-
   @Column({ nullable: true, type: 'text' })
   photoUrl: String;
+
+  @Column({ type: 'float8' })
+  physicalConsultationFees: Number;
 
   @Column({ nullable: true, type: 'text' })
   qualification: String;

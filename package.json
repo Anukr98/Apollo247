@@ -10,12 +10,8 @@
     "lint": "lerna run lint",
     "typecheck": "lerna run typecheck"
   },
-  "workspaces": {
-    "packages": [
-      "packages/*"
-    ]
-  },
   "devDependencies": {
+    "typescript": "3.5.2",
     "lerna": "^3.15.0"
   }
 }

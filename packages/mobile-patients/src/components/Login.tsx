@@ -78,13 +78,13 @@ const isPhoneNumberValid = (number: string) => {
 };
 
 let otpString = '';
-let didBlurSubscription: any;
+let didBlurSubscription: object;
 
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const { analytics, sendOtp, isSendingOtp } = useAuth();
-  const [subscriptionId, setSubscriptionId] = useState<any>();
+  const [subscriptionId, setSubscriptionId] = useState<object>();
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
@@ -118,7 +118,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    const subscriptionId = SmsListener.addListener((message: any) => {
+    const subscriptionId = SmsListener.addListener((message: {}) => {
       const newOtp = message.body.match(/-*[0-9]+/);
       console.log(newOtp[0], 'wertyuio');
       otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';

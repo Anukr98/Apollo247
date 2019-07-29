@@ -61,17 +61,19 @@ export interface OTPVerificationProps
     phoneNumber: string;
   }> {}
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
-  const [subscriptionId, setSubscriptionId] = useState<any>();
+  const [subscriptionId, setSubscriptionId] = useState<{}>();
   const [isValidOTP, setIsValidOTP] = useState<boolean>(true);
   const [invalidOtpCount, setInvalidOtpCount] = useState<number>(0);
   const [showErrorMsg, setShowErrorMsg] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
-  const [intervalId, setIntervalId] = useState<any>(0);
+  const [intervalId, setIntervalId] = useState<number>(0);
   const [otp, setOtp] = useState<string>('');
   const [isresent, setIsresent] = useState<boolean>(false);
 
   const { verifyOtp, sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
+
+  type timeOutDataType = { phoneNumber: string; invalidAttems: number; startTime: string };
 
   const startInterval = useCallback(
     (timer: number) => {
@@ -96,7 +98,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       const getData = await AsyncStorage.getItem('timeOutData');
       if (getData) {
         const timeOutData = JSON.parse(getData);
-        const filteredData = timeOutData.filter((el: any) => el.phoneNumber !== phoneNumber);
+        const filteredData = timeOutData.filter(
+          (el: timeOutDataType) => el.phoneNumber !== phoneNumber
+        );
         console.log(filteredData, 'filteredData');
         await AsyncStorage.setItem('timeOutData', JSON.stringify(filteredData));
       }
@@ -114,7 +118,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         console.log(timeOutData);
         const { phoneNumber } = props.navigation.state.params!;
 
-        timeOutData.map((obj: any) => {
+        timeOutData.map((obj: timeOutDataType) => {
           if (obj.phoneNumber === phoneNumber) {
             const t1 = new Date();
             const t2 = new Date(obj.startTime);
@@ -157,11 +161,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     try {
       const { phoneNumber } = props.navigation.state.params!;
       const getData = await AsyncStorage.getItem('timeOutData');
-      let timeOutData: object[] = [];
+      let timeOutData: timeOutDataType[] = [];
       if (getData) {
         timeOutData = JSON.parse(getData);
         let index: number = 0;
-        timeOutData.map((item, i) => {
+        timeOutData.map((item: timeOutDataType, i: number) => {
           if (item.phoneNumber === phoneNumber) {
             index = i + 1;
           }
@@ -252,7 +256,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const seconds = remainingTime - minutes * 60;
 
   useEffect(() => {
-    const subscriptionId = SmsListener.addListener((message: any) => {
+    const subscriptionId = SmsListener.addListener((message: {}) => {
       const newOtp = message.body.match(/-*[0-9]+/);
       const otpString = newOtp ? newOtp[0] : '';
       console.log(otpString, otpString.length, 'otpString');
@@ -287,7 +291,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   }, [intervalId, _removeFromStore]);
 
-  const isOtpValid = (otp: any) => {
+  const isOtpValid = (otp: string) => {
     setOtp(otp);
     if (otp.length === 6) {
       setIsValidOTP(true);
