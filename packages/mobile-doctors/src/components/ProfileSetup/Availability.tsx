@@ -1,46 +1,60 @@
+import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { SelectableButton } from './ui/SelectableButton';
-import { SquareCardWithTitle } from './ui/SquareCardWithTitle';
-import { DummyQueryResult } from '@aph/mobile-doctors/src/helpers/commonTypes';
-import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
-
+import { SelectableButton } from '../ui/SelectableButton';
+import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
+import { Add } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { getDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import { format } from 'date-fns';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
   consultTypeSelection: {
     flexDirection: 'row',
-    marginHorizontal: 16,
+    marginHorizontal: 20,
     marginTop: 12,
     marginBottom: 20,
   },
   consultDescText: {
     ...theme.fonts.IBMPlexSansMedium(14),
-    opacity: 0.5,
-    color: '#02475b',
+    color: theme.colors.darkBlueColor(0.5),
     marginTop: 16,
+    marginHorizontal: 20,
+  },
+  addConsultationTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 23,
     marginHorizontal: 16,
   },
   addConsultationText: {
+    marginLeft: 8,
     ...theme.fonts.IBMPlexSansBold(14),
-    color: '#fc9916',
-    paddingVertical: 23,
-    marginHorizontal: 16,
+    color: theme.colors.BUTTON_BG,
   },
 });
 
 export interface AvailabilityProps {
-  profileData: DummyQueryResult['data']['getDoctorProfile'];
+  profileData: getDoctorProfile_getDoctorProfile;
 }
 
 export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
   const [consultationType, setConsultationType] = useState({ physical: false, online: false });
+
+  const get12HrsFormat = (timeString: string /* 12:30 */) => {
+    const hoursAndMinutes = timeString.split(':').map((i) => parseInt(i));
+    return format(new Date(0, 0, 0, hoursAndMinutes[0], hoursAndMinutes[1]), 'h:mm a');
+  };
+
+  const fromatConsultationHours = (startTime: string, endTime: string /* input eg.: 15:15:30Z */) =>
+    `${get12HrsFormat(startTime.replace('Z', ''))} - ${get12HrsFormat(endTime.replace('Z', ''))}`;
+
   return (
     <View style={styles.container}>
-      {profileData!.profile.isStarDoctor ? (
+      {profileData!.profile!.isStarDoctor ? (
         <SquareCardWithTitle title="Consultation Type" containerStyle={{ marginTop: 16 }}>
           <Text style={styles.consultDescText}>
             What type of consults will you be available for?
@@ -65,20 +79,23 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
         </SquareCardWithTitle>
       ) : null}
       <SquareCardWithTitle title="Consultation Hours" containerStyle={{ marginTop: 16 }}>
-        {profileData!.consultationHours.map((i, idx) => {
+        {profileData!.consultationHours!.map((i, idx) => {
           return (
             <ConsultationHoursCard
-              days={i.days}
-              timing={i.timings}
-              isAvailableForOnlineConsultation={i.availableForVirtualConsultation}
-              isAvailableForPhysicalConsultation={i.availableForPhysicalConsultation}
+              days={i!.days}
+              timing={fromatConsultationHours(i!.startTime, i!.endTime)}
+              isAvailableForOnlineConsultation={i!.availableForVirtualConsultation}
+              isAvailableForPhysicalConsultation={i!.availableForPhysicalConsultation}
               key={idx}
               type="fixed"
             />
           );
         })}
+        <View style={styles.addConsultationTextContainer}>
+          <Add />
+          <Text style={styles.addConsultationText}>ADD CONSULTATION HOURS</Text>
+        </View>
       </SquareCardWithTitle>
-      <Text style={styles.addConsultationText}>+{'  '}ADD CONSULTATION HOURS</Text>
     </View>
   );
 };

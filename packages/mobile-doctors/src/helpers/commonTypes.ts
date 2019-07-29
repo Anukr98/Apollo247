@@ -9,7 +9,7 @@ export type LocalStorage = {
 };
 
 export type DummyQueryResult = {
-  error: any;
+  error: string;
   loading: boolean;
   data: {
     getDoctorProfile?: DoctorProfile;
@@ -25,6 +25,7 @@ export type DoctorProfile = {
   clinics: clinics[];
   starDoctorTeam: Doctor[];
   consultationHours: Consultations[];
+  appointments: Appointments[];
 };
 
 export type Doctor = {
@@ -65,8 +66,17 @@ export type clinics = {
 };
 export type Consultations = {
   days: string;
-  timings: string;
+  startTime: string;
+  endTime: string;
   availableForPhysicalConsultation: boolean;
   availableForVirtualConsultation: boolean;
   type: string; //=> 'accepted' | 'Not accepted'
+};
+
+export type Appointments = {
+  doctorname: string;
+  timings: string;
+  disease: string;
+  type: 'audio' | 'video';
+  timeslottype: string; //=> 'MISSED' | 'UP NEXT'
 };

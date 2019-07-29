@@ -10,13 +10,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     shadowOffset: {
-      height: 2,
+      height: 1,
       width: 0,
     },
     shadowColor: '#000000',
-    shadowRadius: 4,
-    shadowOpacity: 0.3,
-    elevation: 4,
+    shadowRadius: 2,
+    shadowOpacity: 0.2,
+    elevation: 2,
   },
   containerUnSelected: {
     backgroundColor: '#ffffff',
@@ -71,6 +71,7 @@ export const SelectableButton: React.FC<SelectableButtonProps> = (props) => {
               styles.containerSelected,
               containerSelectedStyle,
               buttonWidth ? { width: buttonWidth } : {},
+              { shadowOpacity: 0.4 },
             ]
           : [styles.container, containerStyle, styles.containerUnSelected, containerUnSelectedStyle]
       }

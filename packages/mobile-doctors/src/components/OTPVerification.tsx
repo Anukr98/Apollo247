@@ -84,19 +84,34 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     paddingBottom: 3,
   },
+  otpbuttonview: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0, 0.2)',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
 });
 
 let timer = 900;
-let backHandler: any;
 
-export interface OTPVerificationProps
-  extends NavigationScreenProps<{
-    phoneNumberVerificationCredential: PhoneNumberVerificationCredential;
-    otpString: string;
-    phoneNumber: string;
-  }> {}
+type ReceivedSmsMessage = {
+  originatingAddress: string;
+  body: string;
+};
+
+export interface OTPVerificationProps extends NavigationScreenProps {
+  phoneNumberVerificationCredential: PhoneNumberVerificationCredential;
+  otpString: string;
+  phoneNumber: string;
+}
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
-  const [subscriptionId, setSubscriptionId] = useState<any>();
+  const [smsListener, setSmsListener] = useState();
   const [isValidOTP, setIsValidOTP] = useState<boolean>(true);
   const [invalidOtpCount, setInvalidOtpCount] = useState<number>(0);
   const [showErrorMsg, setShowErrorMsg] = useState<boolean>(false);
@@ -107,7 +122,59 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [errorAuth, setErrorAuth] = useState<boolean>(true);
 
   const { signIn, callApiWithToken, authError, clearCurrentUser } = useAuth();
-  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const { otpString } = props.navigation.state.params!;
+    setOtp(otpString);
+    console.log('OTPVerification otpString', otpString);
+    _getTimerData();
+  }, []);
+
+  // useEffect(() => {
+  //   setErrorAuth(authError);
+  //   console.log('authError OTPVerification', authError);
+  //   if (authError) {
+  //     clearCurrentUser();
+  //     setIsLoading(false);
+  //     //Alert.alert('Error', 'Unable to connect the server at the moment.');
+  //   }
+  // }, [authError]);
+
+  useEffect(() => {
+    const smsListener = SmsListener.addListener((message: ReceivedSmsMessage) => {
+      const newOtp = message.body.match(/-*[0-9]+/);
+      const otpString = newOtp ? newOtp[0] : '';
+      setOtp(otpString);
+      setIsValidOTP(true);
+    });
+    setSmsListener(smsListener);
+    // textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
+    // backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+    //   console.log('hardwareBackPress');
+    //   return false;
+    // });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      smsListener && smsListener.remove();
+      // backHandler && backHandler.remove();
+    };
+  }, [smsListener]);
+
+  useEffect(() => {
+    if (timer === 0) {
+      console.log('timer', 'wedfrtgy5u676755ertyuiojkhgfghjkgf');
+      timer = 900;
+      setRemainingTime(900);
+      setShowErrorMsg(false);
+      setInvalidOtpCount(0);
+      setIsValidOTP(true);
+      clearInterval(intervalId);
+      _removeFromStore();
+    }
+  }, [timer, intervalId]);
 
   const startInterval = (timer: number) => {
     const intervalId = setInterval(() => {
@@ -122,22 +189,16 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       }
     }, 1000);
   };
-  useEffect(() => {
-    const { otpString } = props.navigation.state.params!;
-    setOtp(otpString);
-    console.log('OTPVerification otpString', otpString);
-    _getTimerData();
-  }, []);
 
   const _getTimerData = async () => {
     try {
       const data = await AsyncStorage.getItem('timeOutData');
       if (data) {
-        const timeOutData = JSON.parse(data);
+        const timeOutData: TimeOutData[] = JSON.parse(data);
         console.log(timeOutData);
         const { phoneNumber } = props.navigation.state.params!;
 
-        timeOutData.map((obj: any) => {
+        timeOutData.map((obj) => {
           if (obj.phoneNumber === phoneNumber) {
             const t1 = new Date();
             const t2 = new Date(obj.startTime);
@@ -174,8 +235,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       const { phoneNumber } = props.navigation.state.params!;
       const getData = await AsyncStorage.getItem('timeOutData');
       if (getData) {
-        const timeOutData = JSON.parse(getData);
-        const filteredData = timeOutData.filter((el: any) => el.phoneNumber !== phoneNumber);
+        const timeOutData: TimeOutData[] = JSON.parse(getData);
+        const filteredData = timeOutData.filter((el) => el.phoneNumber !== phoneNumber);
         console.log(filteredData, 'filteredData');
         await AsyncStorage.setItem('timeOutData', JSON.stringify(filteredData));
       }
@@ -185,12 +246,17 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   };
 
+  type TimeOutData = {
+    phoneNumber: string;
+    startTime: string;
+    invalidAttems: number;
+  };
+
   const _storeTimerData = async (invalidAttems: number) => {
     try {
       const { phoneNumber } = props.navigation.state.params!;
+      let timeOutData: TimeOutData[] = [];
       const getData = await AsyncStorage.getItem('timeOutData');
-      // let timeOutData: Array<object> = [];
-      let timeOutData: any[] = [];
       if (getData) {
         timeOutData = JSON.parse(getData);
         let index: number = 0;
@@ -227,77 +293,38 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   };
 
-  useEffect(() => {
-    setErrorAuth(authError);
-    console.log('authError OTPVerification', authError);
-    if (authError) {
-      clearCurrentUser();
-      setVerifyingOtp(false);
-      //Alert.alert('Error', 'Unable to connect the server at the moment.');
-    }
-  }, [authError]);
-
   const onClickOk = async () => {
     const { phoneNumberVerificationCredential } = props.navigation.state.params!;
-    console.log(
-      'phoneNumberVerificationCredential OTPVerification',
-      phoneNumberVerificationCredential
-    );
-
-    setVerifyingOtp(true);
     Keyboard.dismiss();
-
+    setIsLoading(true);
     const credential = firebase.auth.PhoneAuthProvider.credential(
       phoneNumberVerificationCredential,
       otp
     );
-
     signIn(credential)
-      .then((otpCredenntial: void) => {
-        console.log('otpCredenntial', otpCredenntial);
+      .then((_) => {
         firebase.auth().onAuthStateChanged(async (updatedUser) => {
-          setLoggedIn(true);
+          console.log('updatedUser firebase user', updatedUser);
           if (updatedUser) {
+            setLoggedIn(true);
             _removeFromStore();
-            const token = await updatedUser!.getIdToken();
-            const patientSign = await callApiWithToken!(token);
-            const patient = patientSign.data.patientSignIn.patients[0];
-            const errMsg =
-              patientSign.data.patientSignIn.errors &&
-              patientSign.data.patientSignIn.errors.messages[0];
-
-            AsyncStorage.setItem('onAuthStateChanged', 'false');
-
-            setTimeout(() => {
-              setVerifyingOtp(false);
-              if (errMsg) {
-                Alert.alert('Error', errMsg);
-              } else {
-                if (patient && patient.uhid && patient.uhid !== '') {
-                  if (patient.firstName.relation != 0) {
-                    AsyncStorage.setItem('userLoggedIn', 'true');
-                    props.navigation.replace(AppRoutes.ProfileSetup);
-                  } else {
-                    props.navigation.replace(AppRoutes.ProfileSetup);
-                  }
-                } else {
-                  if (patient.firstName.length != 0) {
-                    AsyncStorage.setItem('userLoggedIn', 'true');
-                    props.navigation.replace(AppRoutes.ProfileSetup);
-                  } else {
-                    props.navigation.replace(AppRoutes.ProfileSetup);
-                  }
-                }
-              }
-            }, 2000);
+            try {
+              const token = await updatedUser!.getIdToken();
+              await callApiWithToken!(token);
+            } catch (e) {
+              console.log('Exception', e);
+            }
+            await AsyncStorage.setItem('onAuthStateChanged', 'false');
+            setIsLoading(false);
+            props.navigation.replace(AppRoutes.ProfileSetup);
           } else {
             console.log('no new user');
           }
         });
       })
-      .catch((error: any) => {
+      .catch((error) => {
         console.log('error', error);
-        setVerifyingOtp(false);
+        setIsLoading(false);
         _storeTimerData(invalidOtpCount + 1);
 
         if (invalidOtpCount + 1 === 3) {
@@ -317,42 +344,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
 
-  useEffect(() => {
-    const subscriptionId = SmsListener.addListener((message: any) => {
-      const newOtp = message.body.match(/-*[0-9]+/);
-      const otpString = newOtp ? newOtp[0] : '';
-      setOtp(otpString);
-      setIsValidOTP(true);
-    });
-    setSubscriptionId(subscriptionId);
-    // textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
-    // backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-    //   console.log('hardwareBackPress');
-    //   return false;
-    // });
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      subscriptionId && subscriptionId.remove();
-      // backHandler && backHandler.remove();
-    };
-  }, [subscriptionId]);
-
-  useEffect(() => {
-    if (timer === 0) {
-      console.log('timer', 'wedfrtgy5u676755ertyuiojkhgfghjkgf');
-      timer = 900;
-      setRemainingTime(900);
-      setShowErrorMsg(false);
-      setInvalidOtpCount(0);
-      setIsValidOTP(true);
-      clearInterval(intervalId);
-      _removeFromStore();
-    }
-  }, [timer, intervalId]);
-
-  const isOtpValid = (otp: any) => {
+  const isOtpValid = (otp: string) => {
     setOtp(otp);
     if (otp.length === 6 || otp.length === 0) {
       setIsValidOTP(true);
@@ -367,20 +359,20 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     Keyboard.dismiss();
     const { phoneNumber } = props.navigation.state.params!;
     console.log('onClickResend', phoneNumber);
-    setVerifyingOtp(true);
+    setIsLoading(true);
 
     setTimeout(() => {
       firebase
         .auth()
         .signInWithPhoneNumber(phoneNumber)
         .then((confirmResult) => {
-          setVerifyingOtp(false);
+          setIsLoading(false);
           props.navigation.setParams({
             phoneNumberVerificationCredential: confirmResult.verificationId || '',
           });
         })
         .catch((error) => {
-          setVerifyingOtp(false);
+          setIsLoading(false);
           console.log(error, 'error');
           // Alert.alert('Error', 'Unable to connect the server at the moment.');
         });
@@ -454,7 +446,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             </View>
             {showErrorMsg && (
               <Text style={styles.errorText}>
-                Incorrect OTP, {3 - invalidOtpCount} attempts{' '}
+                Incorrect OTP, {3 - invalidOtpCount} attempt{3 - invalidOtpCount > 1 ? 's' : ''}{' '}
                 {invalidOtpCount == 2 ? 'left' : 'left'}
               </Text>
             )}
@@ -466,22 +458,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           </OtpCard>
         )}
       </SafeAreaView>
-      {verifyingOtp ? (
-        <View
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0, 0.2)',
-            alignSelf: 'center',
-            justifyContent: 'center',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-          }}
-        >
-          <ActivityIndicator animating={verifyingOtp} size="large" color="green" />
+      {isLoading ? (
+        <View style={styles.otpbuttonview}>
+          <ActivityIndicator animating={isLoading} size="large" color="green" />
         </View>
       ) : null}
     </View>

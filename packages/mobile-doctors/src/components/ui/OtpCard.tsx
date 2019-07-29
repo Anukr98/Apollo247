@@ -42,6 +42,11 @@ const styles = StyleSheet.create({
     height: 64,
     width: 64,
   },
+  iconPlace: {
+    height: 24,
+    width: 24,
+    //position: 'absolute',
+  },
 });
 
 export interface OtpCardProps {
@@ -64,11 +69,13 @@ export const OtpCard: React.FC<OtpCardProps> = (props) => {
           onPress={props.onPress}
           style={{ alignSelf: 'flex-end', marginRight: 16 }}
         >
-          <Cancel style={{ height: 24, width: 24, position: 'absolute' }} />
+          <View style={{ height: 10 }}>
+            <Cancel style={styles.iconPlace} />
+          </View>
         </TouchableOpacity>
       ) : (
-        <TouchableOpacity onPress={props.onPress} style={{}}>
-          <BackIcon style={{ height: 24, width: 24, position: 'absolute' }} />
+        <TouchableOpacity onPress={props.onPress} style={{ height: 10 }}>
+          <BackIcon style={styles.iconPlace} />
         </TouchableOpacity>
       )}
 
