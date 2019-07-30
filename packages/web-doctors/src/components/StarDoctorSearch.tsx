@@ -80,6 +80,7 @@ function getSuggestionValue(
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
+      height: 80,
       flexGrow: 1,
     },
     container: {
@@ -108,17 +109,7 @@ const useStyles = makeStyles((theme: Theme) =>
       height: theme.spacing(2),
     },
     input: {
-      marginTop: 11,
-      color: '#01475b',
-      fontSize: 18,
-      fontWeight: theme.typography.fontWeightMedium,
-      borderBottom: '2px solid #00b38e',
-      '&:before': {
-        borderBottom: '2px solid #00b38e',
-      },
-      '&:after': {
-        borderBottom: '2px solid #00b38e',
-      },
+      color: '#000',
     },
     posRelative: {
       position: 'relative',
@@ -218,8 +209,8 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
             inputProps={{
               classes,
               id: 'react-autosuggest-simple',
-              label: '',
-              placeholder: '',
+              label: 'Search doctor',
+
               value: state.single,
               onChange: handleChange('single'),
             }}

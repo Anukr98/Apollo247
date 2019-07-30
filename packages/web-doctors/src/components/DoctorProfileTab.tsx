@@ -147,18 +147,13 @@ const useStyles = makeStyles((theme: Theme) => {
     addStarDoctor: {
       borderRadius: 10,
       backgroundColor: theme.palette.primary.contrastText,
-      padding: 16,
+      padding: '10px',
       position: 'relative',
-      minHeight: 120,
+      minHeight: 100,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
       marginBottom: 30,
       marginRight: 10,
-      '& h5': {
-        fontWeight: theme.typography.fontWeightMedium,
-        color: 'rgba(2,71,91,0.6)',
-        fontSize: 14,
-      },
     },
     saveButton: {
       minWidth: 300,
@@ -192,8 +187,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.action.selected,
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
-      pointerEvents: 'none',
-      paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -435,7 +428,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
             <Grid item lg={4} sm={6} xs={12}>
               <div className={classes.addStarDoctor}>
                 <Typography variant="h5">
-                  Add a doctor to your team
+                  Add doctor to your team
                   <StarDoctorSearch
                     addDoctorHandler={(starDoctor) => {
                       setShowAddDoc(false);
@@ -470,16 +463,16 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
               </div>
             </Grid>
           )}
-          <Grid item lg={12} sm={12} xs={12}>
+          <div>
             <AphButton
               variant="contained"
               color="primary"
               classes={{ root: classes.btnAddDoctor }}
               onClick={() => setShowAddDoc(true)}
             >
-              <img src={require('images/ic_add.svg')} alt="" /> ADD DOCTOR
+              + ADD DOCTOR
             </AphButton>
-          </Grid>
+          </div>
         </Grid>
       )}
     </Mutation>
