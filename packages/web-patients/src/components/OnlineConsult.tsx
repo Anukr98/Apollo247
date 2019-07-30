@@ -31,18 +31,19 @@ const useStyles = makeStyles((theme: Theme) => {
     actions: {
       paddingTop: 10,
       paddingBottom: 10,
-      marginLeft: -8,
+      marginLeft: -7,
       marginRight: -8,
     },
     button: {
       fontSize: 16,
       fontWeight: 500,
-      marginLeft: 7,
-      marginRight: 7,
+      marginLeft: 8,
+      marginRight: 8,
       textTransform: 'none',
       borderRadius: 10,
       paddingLeft: 10,
       paddingRight: 10,
+      letterSpacing: 'normal',
     },
     buttonActive: {
       backgroundColor: '#00b38e',
