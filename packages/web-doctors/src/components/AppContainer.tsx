@@ -28,7 +28,6 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
       <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
       <AuthRouted exact path={clientRoutes.consult()} component={Consult} />
-      
     </div>
   ) : (
     <div className={classes.app}>

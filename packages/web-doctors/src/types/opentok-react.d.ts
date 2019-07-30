@@ -1,1 +1,1 @@
-declare module "opentok-react";
+declare module 'opentok-react';

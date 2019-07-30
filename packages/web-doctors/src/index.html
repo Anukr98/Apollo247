@@ -16,7 +16,6 @@
       body {
         padding-right: 0 !important;
       }
-      
     </style>
     <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
   </head>
@@ -24,16 +23,21 @@
   <body>
     <div id="root"></div>
     <style>
-      .OT_publisher{
+      .OT_subscriber {
         position: inherit;
         margin-top: 50px;
+        width: 50%;
+        height: 50%;
       }
-      .OT_subscriber {
+      .OT_publisher {
         position: absolute;
         min-width: 48px;
         min-height: 48px;
-        top: 20px;
+        width: 80%;
+        height: 80%;
+        top: 100px;
         right: 40px;
+        z-index: 9;
       }
     </style>
   </body>
