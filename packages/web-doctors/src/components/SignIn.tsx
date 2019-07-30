@@ -307,7 +307,6 @@ export const SignIn: React.FC<PopupProps> = (props) => {
                   focusPreviousInput();
                 }
               }}
-              //error={submitCount !== 3 && verifyOtpError}
             />
           </Grid>
         ))}
