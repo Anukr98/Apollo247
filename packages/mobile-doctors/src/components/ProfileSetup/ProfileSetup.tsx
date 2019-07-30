@@ -4,22 +4,19 @@ import { Fees } from '@aph/mobile-doctors/src/components/ProfileSetup/Fees';
 import { Profile } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/Profile';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import {
-  Cancel,
-  RoundIcon,
-  Block,
-  CalendarIcon,
-} from '@aph/mobile-doctors/src/components/ui/Icons';
+import { RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
+import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
-  getDoctorProfile_getDoctorProfile,
-  getDoctorProfile,
+  GetDoctorProfile,
+  GetDoctorProfile_getDoctorProfile,
 } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
-import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useRef, useState } from 'react';
+import { useQuery } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
   Alert,
@@ -29,17 +26,12 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
-import { Overlay } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
-import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
-import { useQuery } from 'react-apollo-hooks';
 import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
-import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
-// const isMobileNumberValid = (n: string) => true;
+// const isMobileNumberValid = (phoneNumber: string) => true;
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -182,7 +174,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
 
-  const { data, error, loading } = useQuery<getDoctorProfile, getDoctorProfile_getDoctorProfile>(
+  const { data, error, loading } = useQuery<GetDoctorProfile, GetDoctorProfile_getDoctorProfile>(
     GET_DOCTOR_PROFILE
   );
   const getDoctorProfile = data && data.getDoctorProfile;
@@ -208,7 +200,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
     />
   );
 
-  const renderProgressBar = (tabIndex: number, data: getDoctorProfile_getDoctorProfile) => (
+  const renderProgressBar = (tabIndex: number, data: GetDoctorProfile_getDoctorProfile) => (
     <ProfileTabHeader
       title={headerContent[tabIndex].heading(data!.profile!.firstName)}
       description={headerContent[tabIndex].description}
@@ -219,7 +211,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       activeTabIndex={tabIndex}
     />
   );
-  const renderComponent = (tabIndex: number, data: getDoctorProfile_getDoctorProfile) =>
+  const renderComponent = (tabIndex: number, data: GetDoctorProfile_getDoctorProfile) =>
     tabIndex == 0 ? (
       <Profile profileData={data} />
     ) : tabIndex == 1 ? (
@@ -228,7 +220,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       <Fees profileData={data} />
     );
 
-  const renderFooterButtons = (tabIndex: number, data: getDoctorProfile_getDoctorProfile) => {
+  const renderFooterButtons = (tabIndex: number, data: GetDoctorProfile_getDoctorProfile) => {
     const onPressProceed = () => {
       const tabsCount = data!.profile!.isStarDoctor ? 3 : 2;
       if (tabIndex < tabsCount - 1) {

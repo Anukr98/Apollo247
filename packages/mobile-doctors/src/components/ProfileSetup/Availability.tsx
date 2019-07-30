@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SelectableButton } from '../ui/SelectableButton';
 import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
-import { getDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import { GetDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
 import { format } from 'date-fns';
 const styles = StyleSheet.create({
   container: {
@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
 });
 
 export interface AvailabilityProps {
-  profileData: getDoctorProfile_getDoctorProfile;
+  profileData: GetDoctorProfile_getDoctorProfile;
 }
 
 export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
