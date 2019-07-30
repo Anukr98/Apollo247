@@ -277,6 +277,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             <AphTextField
               autoFocus={index === 0}
               inputRef={otpInputRefs[index]}
+              disabled={showTimer}
               value={_isNumber(otp[index]) ? otp[index] : ''}
               inputProps={{ type: 'tel', maxLength: 1 }}
               onChange={(e) => {
@@ -306,7 +307,6 @@ export const SignIn: React.FC<PopupProps> = (props) => {
                   focusPreviousInput();
                 }
               }}
-              error={submitCount !== 3 && verifyOtpError}
             />
           </Grid>
         ))}
@@ -368,7 +368,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           }}
           disabled={isSendingOtp || otp.join('').length !== numOtpDigits || showTimer}
         >
-          {isSigningIn || isSendingOtp || isVerifyingOtp || showTimer ? (
+          {isSigningIn || isSendingOtp || isVerifyingOtp ? (
             <CircularProgress className={classes.loader} />
           ) : (
             <img src={require('images/ic_arrow_forward.svg')} />
