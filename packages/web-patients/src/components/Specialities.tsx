@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       fontSize: 14,
       fontWeight: 500,
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       paddingBottom: 10,
       paddingTop: 10,
       marginBottom: 20,

@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import { GetDoctorProfileById as DoctorDetails } from 'graphql/types/getDoctorProfileById';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -24,7 +25,7 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
     },
     doctorInfo: {
-      padding: 20,
+      padding: '20px 5px 0 20px',
     },
     doctorName: {
       fontSize: 20,
@@ -32,6 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       paddingBottom: 5,
       marginBottom: 5,
+      marginRight: 15,
       borderBottom: '0.5px solid rgba(2,71,91,0.2)',
     },
     specialits: {
@@ -42,6 +44,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       position: 'relative',
       paddingRight: 40,
+      marginRight: 15,
     },
     shareIcon: {
       position: 'absolute',
@@ -55,6 +58,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     doctorInfoGroup: {
       paddingBottom: 10,
+      marginRight: 15,
       borderBottom: '0.5px solid rgba(2,71,91,0.2)',
       [theme.breakpoints.down('xs')]: {
         marginBottom: 10,
@@ -132,9 +136,6 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#ff748e',
       color: theme.palette.common.white,
     },
-    button: {
-      marginTop: 20,
-    },
     consultGroup: {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#f7f8f5',
@@ -155,6 +156,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     noIcon: {
       opacity: 0,
+    },
+    bottomActions: {
+      padding: 20,
     },
   };
 });
@@ -211,78 +215,80 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                 <img src={require('images/ic-share-green.svg')} alt="" />
               </div>
             </div>
-            <div className={classes.doctorInfoGroup}>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType}>
-                  <img src={require('images/ic-edu.svg')} alt="" />
+            <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 546px'}>
+              <div className={classes.doctorInfoGroup}>
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic-edu.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>{education}</div>
                 </div>
-                <div className={classes.details}>{education}</div>
-              </div>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType}>
-                  <img src={require('images/ic-awards.svg')} alt="" />
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic-awards.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>{awards}</div>
                 </div>
-                <div className={classes.details}>{awards}</div>
               </div>
-            </div>
-            <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType}>
-                  <img src={require('images/ic-location.svg')} alt="" />
+              <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic-location.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>{locations}</div>
                 </div>
-                <div className={classes.details}>{locations}</div>
-              </div>
-              <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                <div className={classes.iconType}>
-                  <img src={require('images/ic-language.svg')} alt="" />
+                <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic-language.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>{languages}</div>
                 </div>
-                <div className={classes.details}>{languages}</div>
               </div>
-            </div>
 
-            <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
-              {avaForVirtualConsult ? (
-                <div className={classes.consultGroup}>
-                  <div className={classes.infoRow}>
-                    <div className={classes.iconType}>
-                      <img src={require('images/ic-rupee.svg')} alt="" />
-                    </div>
-                    <div className={classes.details}>
-                      Online Consultation
-                      <div className={classes.doctorPriceIn}>Rs.{onlineConsultFees}</div>
-                      <div className={`${classes.availability} ${classes.availableNow}`}>
-                        Available in 15 mins
+              <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
+                {avaForVirtualConsult ? (
+                  <div className={classes.consultGroup}>
+                    <div className={classes.infoRow}>
+                      <div className={classes.iconType}>
+                        <img src={require('images/ic-rupee.svg')} alt="" />
                       </div>
+                      <div className={classes.details}>
+                        Online Consultation
+                        <div className={classes.doctorPriceIn}>Rs.{onlineConsultFees}</div>
+                        <div className={`${classes.availability} ${classes.availableNow}`}>
+                          Available in 15 mins
+                        </div>
+                      </div>
+                      <div className={classes.doctorPrice}>Rs.{onlineConsultFees}</div>
                     </div>
-                    <div className={classes.doctorPrice}>Rs.{onlineConsultFees}</div>
                   </div>
-                </div>
-              ) : null}
+                ) : null}
 
-              {avaForPhyConsult ? (
-                <div className={classes.consultGroup}>
-                  <div className={classes.infoRow}>
-                    <div className={`${classes.iconType} ${classes.noIcon}`}>
-                      <img src={require('images/ic-rupee.svg')} alt="" />
+                {avaForPhyConsult ? (
+                  <div className={classes.consultGroup}>
+                    <div className={classes.infoRow}>
+                      <div className={`${classes.iconType} ${classes.noIcon}`}>
+                        <img src={require('images/ic-rupee.svg')} alt="" />
+                      </div>
+                      <div className={classes.details}>
+                        Clinic Visit
+                        <div className={classes.doctorPriceIn}>Rs.{physicalConsultationFees}</div>
+                        <div className={`${classes.availability}`}>Available in 27 mins</div>
+                      </div>
+                      <div className={classes.doctorPrice}>Rs.{physicalConsultationFees}</div>
                     </div>
-                    <div className={classes.details}>
-                      Clinic Visit
-                      <div className={classes.doctorPriceIn}>Rs.{physicalConsultationFees}</div>
-                      <div className={`${classes.availability}`}>Available in 27 mins</div>
-                    </div>
-                    <div className={classes.doctorPrice}>Rs.{physicalConsultationFees}</div>
                   </div>
-                </div>
-              ) : null}
-            </div>
-
+                ) : null}
+              </div>
+            </Scrollbars>
+          </div>
+          <div className={classes.bottomActions}>
             <AphButton
               onClick={(e) => {
                 onBookConsult();
               }}
               fullWidth
               color="primary"
-              className={classes.button}
             >
               Book Consultation
             </AphButton>
