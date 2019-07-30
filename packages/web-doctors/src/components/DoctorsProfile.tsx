@@ -46,15 +46,13 @@ TabContainer.propTypes = {
 const useStyles = makeStyles((theme: Theme) => {
   return {
     highlightActive: {
-      borderBottom: '3px solid #02475b',
+      borderBottom: '2px solid #02475b',
       opacity: 1,
-      fontWeight: theme.typography.fontWeightBold,
     },
     highlightInactive: {
       borderBottom: 'none',
       opacity: 0.4,
       cursor: 'default',
-      fontWeight: theme.typography.fontWeightMedium,
     },
     profile: {
       paddingTop: 68,
@@ -82,7 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& button': {
         textTransform: 'capitalize',
         fontSize: 16,
-        padding: '16px 0',
+        padding: '15px 0',
       },
     },
     none: {
