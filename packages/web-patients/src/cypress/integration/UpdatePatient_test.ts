@@ -20,6 +20,58 @@ describe('UpdatePatient (with uhids)', () => {
       .should('exist');
   });
 
+  it('Relations dropdown goes in order Me (Default) > Mother > Father > Sister > Brother > Wife > Husband > Others', () => {
+    cy.get('[data-cypress="ExistingProfile"]')
+      .find('div[class*="MuiInputBase-inputSelect"]')
+      .first()
+      .click();
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(1)
+      .should('have.attr', 'data-value', 'ME');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(2)
+      .should('have.attr', 'data-value', 'MOTHER');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(3)
+      .should('have.attr', 'data-value', 'FATHER');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(4)
+      .should('have.attr', 'data-value', 'SISTER');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(5)
+      .should('have.attr', 'data-value', 'BROTHER');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(6)
+      .should('have.attr', 'data-value', 'WIFE');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(7)
+      .should('have.attr', 'data-value', 'HUSBAND');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(8)
+      .should('have.attr', 'data-value', 'COUSIN');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(9)
+      .should('have.attr', 'data-value', 'OTHER');
+  });
+
   it('Does not show name in HeroBanner until Relation.ME is established', () => {
     cy.get('[data-cypress="HeroBanner"]')
       .contains('hello there')
