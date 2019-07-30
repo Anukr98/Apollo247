@@ -70,6 +70,7 @@ const useStyles = makeStyles((theme: Theme) => {
       maxWidth: 1064,
       margin: 'auto',
       backgroundColor: '#f7f7f7',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
     },
     tabBar: {
       backgroundColor: 'transparent',

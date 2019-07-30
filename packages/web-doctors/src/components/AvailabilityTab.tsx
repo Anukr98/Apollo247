@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import { AphButton } from '@aph/web-ui-components';
 import { ConsultationHours } from 'components/ConsultationHours';
-import { GetDoctorProfile_getDoctorProfile } from 'graphql/types/getDoctorProfile';
+import { GetDoctorProfile_getDoctorProfile } from 'graphql/types/GetDoctorProfile';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

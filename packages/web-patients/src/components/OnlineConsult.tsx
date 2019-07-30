@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -61,8 +62,6 @@ const useStyles = makeStyles((theme: Theme) => {
     customScrollBar: {
       paddingTop: 10,
       paddingBottom: 10,
-      maxHeight: '50vh',
-      overflow: 'auto',
     },
     timeSlots: {
       paddingTop: 0,
@@ -88,48 +87,50 @@ export const OnlineConsult: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.customScrollBar}>
-        <div className={classes.consultGroup}>
-          <p>
-            Dr. Simran is available in 15mins!
-            <br /> Would you like to consult now or schedule for later?
-          </p>
-          <div className={classes.actions}>
-            <AphButton
-              onClick={(e) => {
-                setShowCalendar(false);
-              }}
-              color="secondary"
-              className={`${classes.button} ${!showCalendar ? classes.buttonActive : ''}`}
-            >
-              Consult Now
-            </AphButton>
-            <AphButton
-              onClick={(e) => {
-                setShowCalendar(!showCalendar);
-              }}
-              color="secondary"
-              className={`${classes.button} ${showCalendar ? classes.buttonActive : ''}`}
-            >
-              Schedule For Later
-            </AphButton>
+      <Scrollbars autoHide={true} autoHeight autoHeightMax={'50vh'}>
+        <div className={classes.customScrollBar}>
+          <div className={classes.consultGroup}>
+            <p>
+              Dr. Simran is available in 15mins!
+              <br /> Would you like to consult now or schedule for later?
+            </p>
+            <div className={classes.actions}>
+              <AphButton
+                onClick={(e) => {
+                  setShowCalendar(false);
+                }}
+                color="secondary"
+                className={`${classes.button} ${!showCalendar ? classes.buttonActive : ''}`}
+              >
+                Consult Now
+              </AphButton>
+              <AphButton
+                onClick={(e) => {
+                  setShowCalendar(!showCalendar);
+                }}
+                color="secondary"
+                className={`${classes.button} ${showCalendar ? classes.buttonActive : ''}`}
+              >
+                Schedule For Later
+              </AphButton>
+            </div>
+          </div>
+          <div
+            className={`${classes.consultGroup} ${classes.scheduleCalendar} ${
+              showCalendar ? classes.showCalendar : ''
+            }`}
+          >
+            <AphCalendar />
+          </div>
+          <div
+            className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
+              showCalendar ? classes.showTimeSlot : ''
+            }`}
+          >
+            <DayTimeSlots />
           </div>
         </div>
-        <div
-          className={`${classes.consultGroup} ${classes.scheduleCalendar} ${
-            showCalendar ? classes.showCalendar : ''
-          }`}
-        >
-          <AphCalendar />
-        </div>
-        <div
-          className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
-            showCalendar ? classes.showTimeSlot : ''
-          }`}
-        >
-          <DayTimeSlots />
-        </div>
-      </div>
+      </Scrollbars>
       <div className={classes.bottomActions}>
         <AphButton fullWidth color="primary">
           PAY Rs. 299
