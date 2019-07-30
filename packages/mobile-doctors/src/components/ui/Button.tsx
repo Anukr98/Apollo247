@@ -7,6 +7,7 @@ import {
   ViewStyle,
   TouchableOpacityProps,
   TextStyle,
+  View,
 } from 'react-native';
 import { theme } from '../../theme/theme';
 
@@ -31,19 +32,21 @@ const styles = StyleSheet.create({
   titleTextStyle: {
     ...theme.fonts.IBMPlexSansBold(14),
     color: theme.colors.BUTTON_TEXT,
+    textAlign: 'center',
   },
 });
 
-export interface buttonProps {
+export interface ButtonProps {
   style?: StyleProp<ViewStyle>;
   titleTextStyle?: StyleProp<TextStyle>;
   title?: string;
   onPress?: TouchableOpacityProps['onPress'];
   disabled?: boolean;
   variant?: 'white' | 'orange';
+  buttonIcon?: React.ReactNode;
 }
 
-export const Button: React.FC<buttonProps> = (props) => {
+export const Button: React.FC<ButtonProps> = (props) => {
   return (
     <TouchableOpacity
       style={[
@@ -55,15 +58,18 @@ export const Button: React.FC<buttonProps> = (props) => {
       onPress={props.disabled ? () => {} : props.onPress}
       activeOpacity={props.disabled ? 1 : 0.6}
     >
-      <Text
-        style={[
-          styles.titleTextStyle,
-          props.variant == 'white' ? { color: theme.colors.BUTTON_BG } : {},
-          props.titleTextStyle,
-        ]}
-      >
-        {props.title}
-      </Text>
+      <View style={{ justifyContent: 'center', flexDirection: 'row' }}>
+        <View>{props.buttonIcon}</View>
+        <Text
+          style={[
+            styles.titleTextStyle,
+            props.variant == 'white' ? { color: theme.colors.BUTTON_BG } : {},
+            props.titleTextStyle,
+          ]}
+        >
+          {props.title}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 };

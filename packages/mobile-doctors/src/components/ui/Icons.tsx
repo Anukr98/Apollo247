@@ -320,3 +320,33 @@ export const NextAppointmentIcon: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/ic_status_incomplete.png')}
   />
 );
+export const Call: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/call.png')}
+  />
+);
+
+export const PatientPlaceHolderImage: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 178, width: '100%' }}
+    {...props}
+    source={require('../../images/icons/patient_01.png')}
+  />
+);
+
+export const NoCalenderData: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 131, width: 138 }}
+    {...props}
+    source={require('../../images/icons/no_data.png')}
+  />
+);
+export const StartConsult: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 39, width: 149 }}
+    {...props}
+    source={require('../../images/icons/start_consult.png')}
+  />
+);

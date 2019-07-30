@@ -10,6 +10,7 @@ import {
   Notification,
   RoundIcon,
   Up,
+  NoCalenderData,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
 import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';

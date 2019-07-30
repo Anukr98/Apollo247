@@ -30,6 +30,7 @@ const login = {
   needhelp: 'need help?',
   callback: 'You can request a call back for us to resolve your issue ASAP',
   gethelp: 'GET HELP',
+  placeholder_message: 'What you enter here won’t be shown\nto the patient..',
 };
 
 export const LocalStrings = {
