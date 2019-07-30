@@ -434,7 +434,9 @@ export const SignIn: React.FC<PopupProps> = (props) => {
         <Fab
           color="primary"
           aria-label="Sign in"
-          disabled={!isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10}
+          disabled={
+            !isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10 || isSendingOtp
+          }
           onClick={() =>
             sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
               setDisplayOtpInput(true)
