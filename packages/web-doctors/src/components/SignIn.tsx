@@ -134,6 +134,13 @@ const useStyles = makeStyles((theme: Theme) => {
     loader: {
       color: '#fff',
     },
+    cross: {
+      position: 'absolute',
+      right: 0,
+      top: '10px',
+      fontSize: '18px',
+      color: '#02475b',
+    },
   };
 });
 
@@ -146,7 +153,11 @@ const invalidPhoneMessage = 'This seems like a wrong number';
 export interface DoctorsProps {
   mobileNumber: string;
 }
-export const SignIn: React.FC = (props) => {
+interface PopupProps {
+  popup: () => void;
+}
+export const SignIn: React.FC<PopupProps> = (props) => {
+  const { popup } = props;
   const classes = useStyles();
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
@@ -157,6 +168,7 @@ export const SignIn: React.FC = (props) => {
   const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
   const [submitCount, setSubmitCount] = useState(0);
   const [showTimer, setShowTimer] = useState(false);
+  const [showBackArrow, setShowBackArrow] = useState(true);
   const countDown = useRef(179);
   const [timer, setTimer] = useState(179);
 
@@ -202,19 +214,31 @@ export const SignIn: React.FC = (props) => {
 
   return displayGetHelp ? (
     <div>
-      <Button
-        className={classes.backButton}
-        onClick={() => {
-          setOtp([]);
-          setDisplayOtpInput(false);
-          setSubmitCount(0);
-          setDisplayGetHelp(false);
-          setShowTimer(false);
-        }}
-      >
-        {'<'}
-      </Button>
-      <HelpPopup />
+      {showBackArrow ? (
+        <Button
+          className={classes.backButton}
+          onClick={() => {
+            setOtp([]);
+            setDisplayOtpInput(false);
+            setSubmitCount(0);
+            setDisplayGetHelp(false);
+            setShowTimer(false);
+          }}
+        >
+          {'<'}
+        </Button>
+      ) : (
+        <Button
+          className={classes.cross}
+          onClick={() => {
+            popup();
+          }}
+        >
+          {!showBackArrow && <img src={require('images/ic_cross.svg')} alt="" />}
+        </Button>
+      )}
+      ;
+      <HelpPopup setBackArrow={() => setShowBackArrow(false)} />
     </div>
   ) : displayOtpInput ? (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
