@@ -10,11 +10,11 @@ import {
   addDoctorToStartDoctorProgram,
   addDoctorToStartDoctorProgramVariables,
 } from '@aph/mobile-doctors/src/graphql/types/addDoctorToStartDoctorProgram';
-import { getDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import { GetDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
 import {
-  getDoctorsForStarDoctorProgram,
-  getDoctorsForStarDoctorProgramVariables,
-  getDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile,
+  GetDoctorsForStarDoctorProgram,
+  GetDoctorsForStarDoctorProgramVariables,
+  GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram,
 } from '@aph/mobile-doctors/src/graphql/types/getDoctorsForStarDoctorProgram';
 import { INVITEDSTATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
@@ -68,14 +68,14 @@ const styles = StyleSheet.create({
 });
 
 export interface StarDoctorsTeamProps {
-  profileData: getDoctorProfile_getDoctorProfile;
+  profileData: GetDoctorProfile_getDoctorProfile;
 }
 
 export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _profileData }) => {
   const [addshow, setAddShow] = useState<boolean>(false);
   const [doctorSearchText, setDoctorSearchText] = useState<string>('');
   const [filteredStarDoctors, setFilteredStarDoctors] = useState<
-    (getDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile | null)[] | null
+    (GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram['profile'] | null)[] | null
   >([]);
   const [isShowAddDoctorButton, setIsShowAddDoctorButton] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -101,7 +101,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
     }
     // do api call
     client
-      .query<getDoctorsForStarDoctorProgram, getDoctorsForStarDoctorProgramVariables>({
+      .query<GetDoctorsForStarDoctorProgram, GetDoctorsForStarDoctorProgramVariables>({
         query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
         variables: { searchString: searchText.replace('Dr. ', '') },
       })
@@ -111,8 +111,9 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
       .then((_data) => {
         console.log('flitered array', _data);
         const doctorProfile =
-          _data.data.getDoctorsForStarDoctorProgram &&
-          _data.data.getDoctorsForStarDoctorProgram.map((i) => i!.profile);
+          (_data.data.getDoctorsForStarDoctorProgram &&
+            _data.data.getDoctorsForStarDoctorProgram.map((i) => i!.profile)) ||
+          [];
         // const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
         setFilteredStarDoctors(doctorProfile);
       })
