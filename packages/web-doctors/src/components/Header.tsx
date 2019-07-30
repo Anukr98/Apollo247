@@ -139,7 +139,7 @@ export const Header: React.FC = (props) => {
                 <Button onClick={() => setIsHelpPopupOpen(false)} className={classes.cross}>
                   <img src={require('images/ic_cross.svg')} alt="" />
                 </Button>
-                <HelpPopup />
+                <HelpPopup setBackArrow={() => setIsHelpPopupOpen(true)} />
               </Paper>
             </Popover>
           ) : (
@@ -158,7 +158,11 @@ export const Header: React.FC = (props) => {
               classes={{ paper: classes.topPopover }}
             >
               <Paper className={classes.loginForm}>
-                <SignIn />
+                <SignIn
+                  popup={() => {
+                    setIsLoginPopupVisible(false);
+                  }}
+                />
               </Paper>
             </Popover>
           )}
