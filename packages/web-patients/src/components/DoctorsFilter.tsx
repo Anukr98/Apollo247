@@ -13,6 +13,7 @@ import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';
 import _without from 'lodash/without';
 import { AphCalendar } from 'components/AphCalendar';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -33,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     filterSection: {
-      padding: 20,
+      padding: '20px 5px 20px 10px',
       paddingTop: 15,
       [theme.breakpoints.down('xs')]: {
         display: 'none',
@@ -41,6 +42,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     customScroll: {
       width: '100%',
+      paddingLeft: 10,
+      paddingRight: 15,
     },
     searchInput: {
       paddingLeft: 20,
@@ -177,13 +180,27 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
 
   const filterOptions = {
-    searchKeyword: existingFilters.searchKeyword || searchKeyword,
+    searchKeyword: searchKeyword,
     cityName: existingFilters.cityName,
     experience: existingFilters.experience,
     availability: existingFilters.availability,
     fees: existingFilters.fees,
     gender: existingFilters.gender,
     language: existingFilters.language,
+  };
+
+  const emptyFilters = () => {
+    filterOptions.searchKeyword = '';
+    showNormal(true);
+    emptySpeciality('');
+    manageFilter(true);
+    setCityName([]);
+    setGender([]);
+    setExperience([]);
+    setAvailability([]);
+    setFees([]);
+    setLanguage([]);
+    handleFilterOptions(filterOptions);
   };
 
   return (
@@ -195,20 +212,12 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
           setSearchKeyword(event.target.value);
           filterOptions.searchKeyword = event.currentTarget.value;
           if (event.target.value.length === 0) {
-            filterOptions.searchKeyword = '';
-            showNormal(true);
-            emptySpeciality('');
-            manageFilter(true);
-            setCityName([]);
-            setGender([]);
-            setExperience([]);
-            setAvailability([]);
-            setFees([]);
-            setLanguage([]);
+            emptyFilters();
+          } else if (event.target.value.length > 3) {
+            handleFilterOptions(filterOptions);
           }
-          handleFilterOptions(filterOptions);
         }}
-        value={existingFilters.searchKeyword || ''}
+        value={searchKeyword}
         error={showError}
       />
       {showError ? (
@@ -223,239 +232,241 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
           disableFilters ? classes.filterSectionDisabled : ''
         }`}
       >
-        <div className={classes.customScroll}>
-          <div className={classes.filterBox}>
-            <div className={classes.filterType}>City</div>
-            <div className={classes.boxContent}>
-              {_map(filterCities, (filterCityName, index) => {
-                return (
-                  <AphButton
-                    color="secondary"
-                    size="small"
-                    className={
-                      cityName.includes(_toLower(filterCityName))
-                        ? `${classes.button} ${classes.buttonActive}`
-                        : `${classes.button}`
-                    }
-                    value={index}
-                    onClick={(e) => {
-                      if (cityName.includes(e.currentTarget.value)) {
-                        const newArray = _without(cityName, e.currentTarget.value);
-                        setCityName(newArray);
-                        filterOptions.cityName = newArray;
-                      } else {
-                        cityName.push(e.currentTarget.value);
-                        setCityName(cityName);
-                        filterOptions.cityName = cityName;
+        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 325px'}>
+          <div className={classes.customScroll}>
+            <div className={classes.filterBox}>
+              <div className={classes.filterType}>City</div>
+              <div className={classes.boxContent}>
+                {_map(filterCities, (filterCityName, index) => {
+                  return (
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={
+                        cityName.includes(_toLower(filterCityName))
+                          ? `${classes.button} ${classes.buttonActive}`
+                          : `${classes.button}`
                       }
-                      handleFilterOptions(filterOptions);
-                    }}
-                    key={_uniqueId('cityName_')}
-                    disabled={disableFilters}
-                  >
-                    {filterCityName}
-                  </AphButton>
-                );
-              })}
-            </div>
-          </div>
-          <div className={classes.filterBox}>
-            <div className={classes.filterType}>Experience In Years</div>
-            <div className={classes.boxContent}>
-              {_map(filterExperiences, (filterExperience, index) => {
-                return (
-                  <AphButton
-                    color="secondary"
-                    size="small"
-                    className={
-                      experience.includes(_toLower(index))
-                        ? `${classes.button} ${classes.buttonActive}`
-                        : `${classes.button}`
-                    }
-                    value={index}
-                    onClick={(e) => {
-                      if (experience.includes(e.currentTarget.value)) {
-                        const newArray = _without(experience, e.currentTarget.value);
-                        setExperience(newArray);
-                        filterOptions.experience = newArray;
-                      } else {
-                        experience.push(e.currentTarget.value);
-                        setExperience(experience);
-                        filterOptions.experience = experience;
-                      }
-                      handleFilterOptions(filterOptions);
-                    }}
-                    key={_uniqueId('exp_')}
-                    disabled={disableFilters}
-                  >
-                    {filterExperience}
-                  </AphButton>
-                );
-              })}
-            </div>
-          </div>
-          <div className={classes.filterBox}>
-            <div className={classes.filterType}>
-              Availability
-              <div
-                className={classes.calendarIcon}
-                onClick={(e) => {
-                  !disableFilters ? setShowCalendar(showCalendar ? false : true) : false;
-                }}
-              >
-                <img
-                  src={
-                    showCalendar
-                      ? require('images/ic_calendar_close.svg')
-                      : require('images/ic_calendar_show.svg')
-                  }
-                />
+                      value={index}
+                      onClick={(e) => {
+                        if (cityName.includes(e.currentTarget.value)) {
+                          const newArray = _without(cityName, e.currentTarget.value);
+                          setCityName(newArray);
+                          filterOptions.cityName = newArray;
+                        } else {
+                          cityName.push(e.currentTarget.value);
+                          setCityName(cityName);
+                          filterOptions.cityName = cityName;
+                        }
+                        handleFilterOptions(filterOptions);
+                      }}
+                      key={_uniqueId('cityName_')}
+                      disabled={disableFilters}
+                    >
+                      {filterCityName}
+                    </AphButton>
+                  );
+                })}
               </div>
             </div>
-            <div className={classes.boxContent}>
-              <div
-                className={`${classes.calendarView} ${showCalendar ? classes.showCalendar : ''}`}
-              >
-                <AphCalendar />
+            <div className={classes.filterBox}>
+              <div className={classes.filterType}>Experience In Years</div>
+              <div className={classes.boxContent}>
+                {_map(filterExperiences, (filterExperience, index) => {
+                  return (
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={
+                        experience.includes(_toLower(index))
+                          ? `${classes.button} ${classes.buttonActive}`
+                          : `${classes.button}`
+                      }
+                      value={index}
+                      onClick={(e) => {
+                        if (experience.includes(e.currentTarget.value)) {
+                          const newArray = _without(experience, e.currentTarget.value);
+                          setExperience(newArray);
+                          filterOptions.experience = newArray;
+                        } else {
+                          experience.push(e.currentTarget.value);
+                          setExperience(experience);
+                          filterOptions.experience = experience;
+                        }
+                        handleFilterOptions(filterOptions);
+                      }}
+                      key={_uniqueId('exp_')}
+                      disabled={disableFilters}
+                    >
+                      {filterExperience}
+                    </AphButton>
+                  );
+                })}
               </div>
-              {_map(filterAvailability, (filterAvailability, index) => {
-                return !showCalendar ? (
-                  <AphButton
-                    color="secondary"
-                    size="small"
-                    className={
-                      availability.includes(_toLower(index))
-                        ? `${classes.button} ${classes.buttonActive}`
-                        : `${classes.button}`
+            </div>
+            <div className={classes.filterBox}>
+              <div className={classes.filterType}>
+                Availability
+                <div
+                  className={classes.calendarIcon}
+                  onClick={(e) => {
+                    !disableFilters ? setShowCalendar(showCalendar ? false : true) : false;
+                  }}
+                >
+                  <img
+                    src={
+                      showCalendar
+                        ? require('images/ic_calendar_close.svg')
+                        : require('images/ic_calendar_show.svg')
                     }
-                    value={index}
-                    onClick={(e) => {
-                      if (availability.includes(e.currentTarget.value)) {
-                        const newArray = _without(availability, e.currentTarget.value);
-                        setAvailability(newArray);
-                        filterOptions.availability = newArray;
-                      } else {
-                        availability.push(e.currentTarget.value);
-                        setAvailability(availability);
-                        filterOptions.availability = availability;
+                  />
+                </div>
+              </div>
+              <div className={classes.boxContent}>
+                <div
+                  className={`${classes.calendarView} ${showCalendar ? classes.showCalendar : ''}`}
+                >
+                  <AphCalendar />
+                </div>
+                {_map(filterAvailability, (filterAvailability, index) => {
+                  return !showCalendar ? (
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={
+                        availability.includes(_toLower(index))
+                          ? `${classes.button} ${classes.buttonActive}`
+                          : `${classes.button}`
                       }
-                      handleFilterOptions(filterOptions);
-                    }}
-                    key={_uniqueId('ava_')}
-                    disabled={disableFilters}
-                  >
-                    {filterAvailability}
-                  </AphButton>
-                ) : null;
-              })}
+                      value={index}
+                      onClick={(e) => {
+                        if (availability.includes(e.currentTarget.value)) {
+                          const newArray = _without(availability, e.currentTarget.value);
+                          setAvailability(newArray);
+                          filterOptions.availability = newArray;
+                        } else {
+                          availability.push(e.currentTarget.value);
+                          setAvailability(availability);
+                          filterOptions.availability = availability;
+                        }
+                        handleFilterOptions(filterOptions);
+                      }}
+                      key={_uniqueId('ava_')}
+                      disabled={disableFilters}
+                    >
+                      {filterAvailability}
+                    </AphButton>
+                  ) : null;
+                })}
+              </div>
+            </div>
+            <div className={classes.filterBox}>
+              <div className={classes.filterType}>Fees In Rupees</div>
+              <div className={classes.boxContent}>
+                {_map(filterFees, (filterFee, index) => {
+                  return (
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={
+                        fees.includes(_toLower(index))
+                          ? `${classes.button} ${classes.buttonActive}`
+                          : `${classes.button}`
+                      }
+                      value={index}
+                      onClick={(e) => {
+                        if (fees.includes(e.currentTarget.value)) {
+                          const newArray = _without(fees, e.currentTarget.value);
+                          setFees(newArray);
+                          filterOptions.fees = newArray;
+                        } else {
+                          fees.push(e.currentTarget.value);
+                          setFees(fees);
+                          filterOptions.fees = fees;
+                        }
+                        handleFilterOptions(filterOptions);
+                      }}
+                      key={_uniqueId('fees_')}
+                      disabled={disableFilters}
+                    >
+                      {filterFee}
+                    </AphButton>
+                  );
+                })}
+              </div>
+            </div>
+            <div className={classes.filterBox}>
+              <div className={classes.filterType}>Gender</div>
+              <div className={classes.boxContent}>
+                {_map(filterGenders, (filterGender) => {
+                  return (
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      value={Gender[filterGender]}
+                      onClick={(e) => {
+                        if (gender.includes(e.currentTarget.value)) {
+                          const newArray = _without(gender, e.currentTarget.value);
+                          setGender(newArray);
+                          filterOptions.gender = newArray;
+                        } else {
+                          gender.push(Gender[e.currentTarget.value as Gender]);
+                          setGender(gender);
+                          filterOptions.gender = gender;
+                        }
+                        handleFilterOptions(filterOptions);
+                      }}
+                      className={
+                        gender.includes(filterGender)
+                          ? `${classes.button} ${classes.buttonActive}`
+                          : `${classes.button}`
+                      }
+                      key={_uniqueId('gender_')}
+                      disabled={disableFilters}
+                    >
+                      {_upperFirst(_toLower(filterGender))}
+                    </AphButton>
+                  );
+                })}
+              </div>
+            </div>
+            <div className={classes.filterBox}>
+              <div className={classes.filterType}>Language</div>
+              <div className={classes.boxContent}>
+                {_map(filterLanguages, (filterLanguage, index) => {
+                  return (
+                    <AphButton
+                      color="secondary"
+                      size="small"
+                      className={
+                        language.includes(_toLower(index))
+                          ? `${classes.button} ${classes.buttonActive}`
+                          : `${classes.button}`
+                      }
+                      value={index}
+                      onClick={(e) => {
+                        if (language.includes(e.currentTarget.value)) {
+                          const newArray = _without(language, e.currentTarget.value);
+                          setLanguage(newArray);
+                          filterOptions.language = newArray;
+                        } else {
+                          language.push(e.currentTarget.value);
+                          setLanguage(language);
+                          filterOptions.language = language;
+                        }
+                        handleFilterOptions(filterOptions);
+                      }}
+                      key={_uniqueId('lang_')}
+                      disabled={disableFilters}
+                    >
+                      {filterLanguage}
+                    </AphButton>
+                  );
+                })}
+              </div>
             </div>
           </div>
-          <div className={classes.filterBox}>
-            <div className={classes.filterType}>Fees In Rupees</div>
-            <div className={classes.boxContent}>
-              {_map(filterFees, (filterFee, index) => {
-                return (
-                  <AphButton
-                    color="secondary"
-                    size="small"
-                    className={
-                      fees.includes(_toLower(index))
-                        ? `${classes.button} ${classes.buttonActive}`
-                        : `${classes.button}`
-                    }
-                    value={index}
-                    onClick={(e) => {
-                      if (fees.includes(e.currentTarget.value)) {
-                        const newArray = _without(fees, e.currentTarget.value);
-                        setFees(newArray);
-                        filterOptions.fees = newArray;
-                      } else {
-                        fees.push(e.currentTarget.value);
-                        setFees(fees);
-                        filterOptions.fees = fees;
-                      }
-                      handleFilterOptions(filterOptions);
-                    }}
-                    key={_uniqueId('fees_')}
-                    disabled={disableFilters}
-                  >
-                    {filterFee}
-                  </AphButton>
-                );
-              })}
-            </div>
-          </div>
-          <div className={classes.filterBox}>
-            <div className={classes.filterType}>Gender</div>
-            <div className={classes.boxContent}>
-              {_map(filterGenders, (filterGender) => {
-                return (
-                  <AphButton
-                    color="secondary"
-                    size="small"
-                    value={Gender[filterGender]}
-                    onClick={(e) => {
-                      if (gender.includes(e.currentTarget.value)) {
-                        const newArray = _without(gender, e.currentTarget.value);
-                        setGender(newArray);
-                        filterOptions.gender = newArray;
-                      } else {
-                        gender.push(Gender[e.currentTarget.value as Gender]);
-                        setGender(gender);
-                        filterOptions.gender = gender;
-                      }
-                      handleFilterOptions(filterOptions);
-                    }}
-                    className={
-                      gender.includes(filterGender)
-                        ? `${classes.button} ${classes.buttonActive}`
-                        : `${classes.button}`
-                    }
-                    key={_uniqueId('gender_')}
-                    disabled={disableFilters}
-                  >
-                    {_upperFirst(_toLower(filterGender))}
-                  </AphButton>
-                );
-              })}
-            </div>
-          </div>
-          <div className={classes.filterBox}>
-            <div className={classes.filterType}>Language</div>
-            <div className={classes.boxContent}>
-              {_map(filterLanguages, (filterLanguage, index) => {
-                return (
-                  <AphButton
-                    color="secondary"
-                    size="small"
-                    className={
-                      language.includes(_toLower(index))
-                        ? `${classes.button} ${classes.buttonActive}`
-                        : `${classes.button}`
-                    }
-                    value={index}
-                    onClick={(e) => {
-                      if (language.includes(e.currentTarget.value)) {
-                        const newArray = _without(language, e.currentTarget.value);
-                        setLanguage(newArray);
-                        filterOptions.language = newArray;
-                      } else {
-                        language.push(e.currentTarget.value);
-                        setLanguage(language);
-                        filterOptions.language = language;
-                      }
-                      handleFilterOptions(filterOptions);
-                    }}
-                    key={_uniqueId('lang_')}
-                    disabled={disableFilters}
-                  >
-                    {filterLanguage}
-                  </AphButton>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+        </Scrollbars>
       </div>
     </div>
   );

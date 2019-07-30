@@ -1,52 +1,93 @@
-import { clientRoutes, clientBaseUrl } from 'helpers/clientRoutes';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { jane, john } from 'cypress/fixtures/patientsFixtures';
 import { Relation } from 'graphql/types/globalTypes';
-import schema from '@aph/api-schema/schema.json';
-import { getCurrentPatientsFixture } from 'cypress/fixtures/patientsFixtures';
 
 describe('Login', () => {
-  const getCurrentPatientsResult = getCurrentPatientsFixture();
-
   beforeEach(() => {
     cy.signOut();
-    cy.server();
-    cy.mockAphGraphql({ schema });
-    cy.mockAphGraphqlOps({
-      operations: {
-        GetCurrentPatients: getCurrentPatientsResult,
-      },
-    });
-    cy.visit(`${clientBaseUrl()}${clientRoutes.welcome()}`).wait(500);
-  });
-
-  it('Can do a real login with firebase', () => {
-    cy.get('[data-cypress="Navigation"]').should('not.exist');
-
+    cy.visitAph(clientRoutes.welcome()).wait(500);
     cy.get('[data-cypress="Header"]')
       .find('[class*="userCircle"]')
       .click();
+  });
 
-    cy.get('input[type="tel"]')
+  it('Prefix "+91" should be displayed before the mobile number input field', () => {
+    cy.get('[data-cypress="SignIn"]').contains('+91');
+  });
+
+  it('There should be validation upon entering anything non-numerical', () => {
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[name*="mobileNumber"]')
+      .type('test');
+    cy.get('input[name*="mobileNumber"]')
+      .contains('test')
+      .should('not.exist');
+    cy.get('[data-cypress="SignIn"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+  });
+
+  it('Next arrow should be disabled upon entering an invalid number', () => {
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[name*="mobileNumber"]')
+      .type('0123456789');
+    cy.get('[data-cypress="SignIn"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+  });
+
+  it('There should be validation upon entering mobile number starting with zero', () => {
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[name*="mobileNumber"]')
+      .type('0123456789');
+    cy.get('[data-cypress="SignIn"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+    cy.contains('This seems like a wrong number');
+  });
+
+  it('Ten digit numbers starting with non-zero should be considered valid', () => {
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[name*="mobileNumber"]')
+      .type('934567890');
+    cy.get('[data-cypress="SignIn"]')
+      .find('button[type="submit"]')
+      .should('be.enabled');
+    cy.contains('OTP will be sent to this number');
+  });
+});
+
+describe('Login (Firebase)', () => {
+  beforeEach(() => {
+    const johnMe = { ...john, relation: Relation.ME };
+    const patients = [jane, johnMe];
+    cy.signIn(patients);
+    cy.visitAph(clientRoutes.welcome()).wait(500);
+    cy.get('[data-cypress="Header"]')
+      .find('[class*="userCircle"]')
+      .click();
+  });
+
+  it('Firebase: Can do a real login', () => {
+    cy.get('[data-cypress="Navigation"]').should('not.exist');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[type="tel"]')
       .type('9999999999')
       .get('button[type="submit"]')
       .click()
-      .wait(5000);
+      .find('[class*="MuiCircularProgress"]')
+      .should('not.exist');
 
-    cy.get('[class*="loginFormWrap"]')
+    cy.get('[data-cypress="SignIn"]')
       .find('input[type*="tel"]')
       .each(($el) => cy.wrap($el).type('9'))
       .get('form')
       .find('button[type="submit"]')
       .click()
-      .wait(5000);
+      .find('[class*="MuiCircularProgress"]')
+      .should('not.exist');
 
     cy.get('[data-cypress="Navigation"]').should('exist');
-  });
-
-  it('Shows "me" selected in hello dropdown', () => {
-    const me = getCurrentPatientsResult.getCurrentPatients!.patients.find(
-      (p) => p.relation === Relation.ME
-    );
-    cy.contains('hello');
-    cy.contains(me!.firstName!.toLowerCase());
   });
 });
