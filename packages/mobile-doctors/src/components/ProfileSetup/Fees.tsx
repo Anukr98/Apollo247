@@ -3,7 +3,7 @@ import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/Squar
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { getDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import { GetDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
 
 const styles = StyleSheet.create({
   feeeducation: {
@@ -24,6 +24,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     letterSpacing: 0.35,
     marginTop: 2,
+    marginRight: 16,
   },
   feeeducationtextname: {
     ...theme.fonts.IBMPlexSansSemiBold(12),
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
 });
 
 export interface FeesProps {
-  profileData: getDoctorProfile_getDoctorProfile;
+  profileData: GetDoctorProfile_getDoctorProfile;
 }
 
 export const Fees: React.FC<FeesProps> = ({ profileData }) => {

@@ -7,7 +7,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.WHITE,
   },
   titleStyle: {
-    // ...theme.fonts.IBMPlexSansRegular(28), => Error Unrecognised font family
     ...theme.fonts.IBMPlexSansSemiBold(28),
     fontWeight: '600',
     color: '#02475b',
