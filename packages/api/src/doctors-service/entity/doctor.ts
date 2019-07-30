@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 
 import { Gender } from 'profiles-service/entity/patient';
-import { DoctorSpeciality } from 'doctors-service/entity/doctorSpeciality';
+import { DoctorSpecialty } from 'doctors-service/entity/doctorSpecialty';
 import { Validate, IsDate } from 'class-validator';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
 import { StarTeam } from 'doctors-service/entity/starTeam';
@@ -107,8 +107,8 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   salutation: Salutation;
 
-  @ManyToOne((type) => DoctorSpeciality, (speciality) => speciality.name)
-  speciality: DoctorSpeciality;
+  @ManyToOne((type) => DoctorSpecialty, (specialty) => specialty.doctor)
+  specialty: DoctorSpecialty;
 
   @Column({ nullable: true, type: 'text' })
   specialization: String;
