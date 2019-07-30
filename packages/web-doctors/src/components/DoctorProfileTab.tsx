@@ -11,16 +11,26 @@ import {
   GetDoctorProfile_getDoctorProfile_clinics,
   GetDoctorProfile,
   GetDoctorProfile_getDoctorProfile_profile,
-} from 'graphql/types/getDoctorProfile';
+} from 'graphql/types/GetDoctorProfile';
 import { INVITEDSTATUS } from 'graphql/types/globalTypes';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import { REMOVE_STAR_DOCTOR, GET_DOCTOR_PROFILE } from 'graphql/profiles';
+import {
+  REMOVE_STAR_DOCTOR,
+  GET_DOCTOR_PROFILE,
+  ADD_DOCTOR_TO_STAR_PROGRAM,
+} from 'graphql/profiles';
 import { MoreVert } from '@material-ui/icons';
 import {
   RemoveDoctorFromStarDoctorProgramVariables,
   RemoveDoctorFromStarDoctorProgram,
-} from 'graphql/types/removeDoctorFromStarDoctorProgram';
+} from 'graphql/types/RemoveDoctorFromStarDoctorProgram';
+import {
+  AddDoctorToStarDoctorProgram,
+  AddDoctorToStarDoctorProgramVariables,
+} from 'graphql/types/AddDoctorToStarDoctorProgram';
 import { Mutation } from 'react-apollo';
+import { StarDoctorSearch } from 'components/StarDoctorSearch';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
@@ -391,22 +401,81 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
 };
 
 export interface StarDoctorsListProps {
+  currentDocId: string;
   starDoctors: GetDoctorProfile_getDoctorProfile_starDoctorTeam[];
 }
 
 const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
   const { starDoctors } = props;
+  const [showAddDoc, setShowAddDoc] = React.useState<boolean>();
+  const client = useApolloClient();
+
   const classes = useStyles();
   return (
-    <Grid container alignItems="flex-start" spacing={0}>
-      {starDoctors.map((doctor, index) => (
-        <Grid item lg={4} sm={6} xs={12} key={index}>
-          <div className={classes.tabContentStarDoctor}>
-            <StarDoctorCard doctor={doctor} />
+    <Mutation<AddDoctorToStarDoctorProgram, AddDoctorToStarDoctorProgramVariables>
+      mutation={ADD_DOCTOR_TO_STAR_PROGRAM}
+    >
+      {(mutate, { loading }) => (
+        <Grid container alignItems="flex-start" spacing={0}>
+          {starDoctors.map((doctor, index) => (
+            <Grid item lg={4} sm={6} xs={12} key={index}>
+              <div className={classes.tabContentStarDoctor}>
+                <StarDoctorCard doctor={doctor} />
+              </div>
+            </Grid>
+          ))}
+          {showAddDoc && (
+            <Grid item lg={4} sm={6} xs={12}>
+              <div className={classes.addStarDoctor}>
+                <Typography variant="h5">
+                  Add doctor to your team
+                  <StarDoctorSearch
+                    addDoctorHandler={(starDoctor) => {
+                      setShowAddDoc(false);
+                      mutate({
+                        variables: {
+                          starDoctorId: starDoctor.id,
+                          doctorId: props.currentDocId,
+                        },
+                      }).then(() => {
+                        const existingData = client.readQuery<GetDoctorProfile>({
+                          query: GET_DOCTOR_PROFILE,
+                        });
+                        const existingStarDoctorTeam =
+                          (existingData &&
+                            existingData.getDoctorProfile &&
+                            existingData.getDoctorProfile &&
+                            existingData.getDoctorProfile.starDoctorTeam) ||
+                          [];
+                        const newStarDoctorTeam = existingStarDoctorTeam.concat(starDoctor);
+                        const dataAfterMutation: GetDoctorProfile = {
+                          ...existingData,
+                          getDoctorProfile: {
+                            ...existingData!.getDoctorProfile!,
+                            starDoctorTeam: newStarDoctorTeam,
+                          },
+                        };
+                        client.writeQuery({ query: GET_DOCTOR_PROFILE, data: dataAfterMutation });
+                      });
+                    }}
+                  />
+                </Typography>
+              </div>
+            </Grid>
+          )}
+          <div>
+            <AphButton
+              variant="contained"
+              color="primary"
+              classes={{ root: classes.btnAddDoctor }}
+              onClick={() => setShowAddDoc(true)}
+            >
+              + ADD DOCTOR
+            </AphButton>
           </div>
         </Grid>
-      ))}
-    </Grid>
+      )}
+    </Mutation>
   );
 };
 
@@ -527,12 +596,7 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
           >
             Your Star Doctors Team ({numStarDoctors})
           </Typography>
-          <StarDoctorsList starDoctors={starDoctors} />
-          <div>
-            <AphButton variant="contained" color="primary" classes={{ root: classes.btnAddDoctor }}>
-              + ADD DOCTOR
-            </AphButton>
-          </div>
+          <StarDoctorsList currentDocId={doctorProfile.id} starDoctors={starDoctors} />
         </div>
       )}
 

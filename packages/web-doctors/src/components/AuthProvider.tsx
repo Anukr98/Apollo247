@@ -9,7 +9,7 @@ import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 import {
   GetDoctorProfile,
   GetDoctorProfile_getDoctorProfile,
-} from 'graphql/types/getDoctorProfile';
+} from 'graphql/types/GetDoctorProfile';
 import { apiRoutes } from '@aph/universal/aphRoutes';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
