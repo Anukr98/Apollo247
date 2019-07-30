@@ -59,6 +59,22 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    inputDisabled: {
+      '&:before': {
+        borderBottom: '2px solid rgba(2,71,91,0.3) !important',
+      },
+      '&:after': {
+        borderBottom: '2px solid rgba(2,71,91,0.3) !important',
+      },
+      '&:hover': {
+        '&:before': {
+          borderBottom: '2px solid rgba(2,71,91,0.3) !important',
+        },
+        '&:after': {
+          borderBottom: '2px solid rgba(2,71,91,0.3) !important',
+        },
+      },
+    },
     selectRoot: {
       fontSize: 16,
       fontWeight: 500,
@@ -85,6 +101,7 @@ const AphTextField: React.FC<TextFieldProps> = (props) => {
           root: classes.inputRoot,
           focused: classes.inputFocused,
           error: classes.inputError,
+          disabled: classes.inputDisabled,
         },
       }}
       SelectProps={{ classes: { root: classes.selectRoot } }}
