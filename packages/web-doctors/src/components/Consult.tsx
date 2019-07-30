@@ -68,7 +68,7 @@ export const Consult: React.FC = (props) => {
             console.log('connectionCreated!', event);
           },
           connectionDestroyed: (event: any) => {
-            console.log('connectionDestroyed!', event);
+            setIscall(false)
           },
         }} >
         <OTPublisher
