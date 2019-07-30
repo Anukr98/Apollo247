@@ -1,31 +1,33 @@
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
-// import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
-import string from '@aph/mobile-patients/src/strings/strings.json';
+import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import React from 'react';
 import {
-  Image,
+  ImageSourcePropType,
+  ImageStyle,
   StyleProp,
   StyleSheet,
   Text,
-  TouchableOpacity,
+  TextStyle,
   View,
-  ViewStyle,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { string } from '../../strings/string';
 import { theme } from '../../theme/theme';
-import { SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialty';
 
 const styles = StyleSheet.create({
   doctorView: {
     flex: 1,
     marginHorizontal: 20,
-    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: 'white',
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 10,
     marginBottom: 12,
     borderRadius: 10,
   },
   buttonView: {
     height: 44,
+    marginTop: 16,
     backgroundColor: theme.colors.BUTTON_BG,
     alignItems: 'center',
     justifyContent: 'center',
@@ -35,12 +37,26 @@ const styles = StyleSheet.create({
     color: theme.colors.BUTTON_TEXT,
   },
   availableView: {
+    alignItems: 'center',
+    justifyContent: 'center',
     position: 'absolute',
     right: 0,
     top: 0,
+    borderRadius: 10,
+    backgroundColor: '#ff748e',
+  },
+  availableTextStyles: {
+    color: 'white',
+    textAlign: 'center',
+    ...theme.fonts.IBMPlexSansSemiBold(9),
+    letterSpacing: 0.5,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
   },
   imageView: {
     margin: 16,
+    alignContent: 'center',
+    justifyContent: 'center',
   },
   doctorNameStyles: {
     paddingTop: 32,
@@ -52,14 +68,34 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansSemiBold(12),
-    color: theme.colors.SKY_BLUE,
+    color: theme.colors.CARD_DESCRIPTION,
   },
   doctorLocation: {
-    marginBottom: 16,
     paddingTop: 2,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
+  },
+  consultViewStyles: {
+    paddingHorizontal: 0,
+    marginTop: 16,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  separatorViewStyles: {
+    backgroundColor: theme.colors.CARD_HEADER,
+    opacity: 0.3,
+    marginHorizontal: 16,
+    height: 1,
+  },
+  consultTextStyles: {
+    paddingLeft: 0,
+    ...theme.fonts.IBMPlexSansSemiBold(14),
+    color: theme.colors.SEARCH_CONSULT_COLOR,
+    textAlign: 'center',
+    paddingVertical: 12,
+    lineHeight: 24,
   },
   educationTextStyles: {
     paddingTop: 12,
@@ -69,93 +105,64 @@ const styles = StyleSheet.create({
   },
 });
 
-// type rowData = {
-//   availableForPhysicalConsultation: boolean;
-//   availableForVirtualConsultation: boolean;
-//   awards: string;
-//   city: string;
-//   education: string;
-//   experience: string;
-//   firstName: string;
-//   id: string;
-//   inviteStatus: string;
-//   isProfileComplete: boolean;
-//   isStarDoctor: boolean;
-//   languages: string;
-//   lastName: string;
-//   mobileNumber: string;
-//   onlineConsultationFees: string;
-//   package: string;
-//   photoUrl: string;
-//   physicalConsultationFees: string;
-//   registrationNumber: string;
-//   services: string;
-//   speciality: string;
-//   specialization: string;
-//   typeOfConsult: string;
-//   availableIn: string;
-// };
-
-export interface DoctorCardProps extends NavigationScreenProps {
-  rowData: SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors;
-  displayButton?: boolean;
-  style?: StyleProp<ViewStyle>;
-}
-
-export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
-  const rowData = props.rowData;
-  return (
-    <TouchableOpacity
-      style={[styles.doctorView, props.style]}
-      onPress={() => props.navigation.navigate(AppRoutes.DoctorDetails, { doctorId: rowData.id })}
-    >
-      <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
-        <View style={{ flexDirection: 'row' }}>
-          {(rowData.availableForPhysicalConsultation || rowData.availableForVirtualConsultation) &&
-          props.displayButton &&
-          rowData.availableIn ? (
-            <CapsuleView
-              title={rowData.availableIn ? `AVAILABLE IN ${rowData.availableIn} MINS` : ''}
-              style={styles.availableView}
-              isActive={parseInt(rowData.availableIn) > 15 ? false : true}
-            />
-          ) : null}
-          <View style={styles.imageView}>
-            {/* {rowData.image} */}
-            {rowData.photoUrl && (
-              <Image
-                style={{ width: 80, height: 80, borderRadius: 40 }}
-                source={{ uri: rowData.photoUrl }}
-              />
-            )}
-
-            {/* {rowData.isStarDoctor ? (
-              <Star style={{ height: 28, width: 28, position: 'absolute', top: 66, left: 30 }} />
-            ) : null} */}
-          </View>
-          <View>
-            <Text style={styles.doctorNameStyles}>
-              Dr. {rowData.firstName} {rowData.lastName}
-            </Text>
-            <Text style={styles.doctorSpecializationStyles}>
-              {rowData.specialization!.toUpperCase()} | {rowData.experience} YRS
-            </Text>
-            <Text style={styles.educationTextStyles}>{rowData.education}</Text>
-            <Text style={styles.doctorLocation}>{rowData.city}</Text>
-          </View>
-        </View>
-        {props.displayButton && (
-          <View style={{ overflow: 'hidden' }}>
-            <View style={styles.buttonView}>
-              <Text style={styles.buttonText}>{string.common.consult_now}</Text>
-            </View>
-          </View>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+type rowData = {
+  available: boolean;
+  doctorName: string;
+  specialization: string;
+  image: ImageSourcePropType;
+  imageStyle?: StyleProp<ImageStyle>;
+  titleStyle?: StyleProp<TextStyle>;
+  experience: string;
+  education: string;
+  location: string;
+  time: string;
 };
 
-DoctorCard.defaultProps = {
-  displayButton: true,
+export interface doctorCardProps {
+  rowData: rowData;
+}
+
+export const DoctorCard: React.FC<doctorCardProps> = (props) => {
+  const rowData = props.rowData;
+  return (
+    <View style={styles.doctorView}>
+      <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
+        <View style={{ flexDirection: 'row' }}>
+          {rowData.available ? (
+            <View style={styles.availableView}>
+              <Text style={styles.availableTextStyles}>{string.LocalStrings.availableNow}</Text>
+            </View>
+          ) : null}
+          <View style={styles.imageView}>
+            {rowData.image}
+            {rowData.available ? (
+              <Star
+                style={{ height: 28, width: 28, position: 'absolute', bottom: -10, left: 30 }}
+              />
+            ) : null}
+          </View>
+          <View>
+            <Text style={styles.doctorNameStyles}>{rowData.doctorName}</Text>
+            <Text style={styles.doctorSpecializationStyles}>
+              {rowData.specialization} | {rowData.experience}
+            </Text>
+            <Text style={styles.educationTextStyles}>{rowData.education}</Text>
+            <Text style={styles.doctorLocation}>{rowData.location}</Text>
+          </View>
+        </View>
+        <View style={{ overflow: 'hidden' }}>
+          {rowData.available ? (
+            <View style={styles.buttonView}>
+              <Text style={styles.buttonText}>{rowData.time}</Text>
+            </View>
+          ) : (
+            <View style={styles.consultViewStyles}>
+              <View style={styles.separatorViewStyles} />
+              <Text style={styles.consultTextStyles}>{rowData.time}</Text>
+            </View>
+          )}
+        </View>
+      </View>
+    </View>
+  );
 };

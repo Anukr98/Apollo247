@@ -1,25 +1,25 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { BackArrow, OkText, OkTextDisabled } from '@aph/mobile-patients/src/components/ui/Icons';
-import string from '@aph/mobile-patients/src/strings/strings.json';
+import { string } from '@aph/mobile-patients/src/strings/string';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  AsyncStorage,
-  Keyboard,
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
+  Keyboard,
+  Alert,
+  AsyncStorage,
 } from 'react-native';
 import SmsListener from 'react-native-android-sms-listener';
-import { NavigationScreenProps } from 'react-navigation';
-import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
 import { OTPTextView } from './ui/OTPTextView';
+import { NavigationScreenProps } from 'react-navigation';
+import { useAuth } from '../hooks/authHooks';
 
 const styles = StyleSheet.create({
   container: {
@@ -61,56 +61,38 @@ export interface OTPVerificationProps
     phoneNumber: string;
   }> {}
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
-  const [subscriptionId, setSubscriptionId] = useState<{}>();
+  const [subscriptionId, setSubscriptionId] = useState<any>();
   const [isValidOTP, setIsValidOTP] = useState<boolean>(true);
   const [invalidOtpCount, setInvalidOtpCount] = useState<number>(0);
   const [showErrorMsg, setShowErrorMsg] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
-  const [intervalId, setIntervalId] = useState<number>(0);
+  const [intervalId, setIntervalId] = useState<any>(0);
   const [otp, setOtp] = useState<string>('');
   const [isresent, setIsresent] = useState<boolean>(false);
 
-  const { verifyOtp, sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
-  const { currentPatient } = useAllCurrentPatients();
+  const { verifyOtp, sendOtp, isSigningIn, currentPatient, isVerifyingOtp } = useAuth();
 
-  type timeOutDataType = { phoneNumber: string; invalidAttems: number; startTime: string };
-
-  const startInterval = useCallback(
-    (timer: number) => {
-      const intervalId = setInterval(() => {
-        timer = timer - 1;
-        setRemainingTime(timer);
-        if (timer == 0) {
-          console.log('descriptionTextStyle remainingTime', remainingTime);
-          setRemainingTime(0);
-          setInvalidOtpCount(0);
-          setIsValidOTP(true);
-          clearInterval(intervalId);
-        }
-      }, 1000);
-    },
-    [remainingTime]
-  );
-
-  const _removeFromStore = useCallback(async () => {
-    try {
-      const { phoneNumber } = props.navigation.state.params!;
-      const getData = await AsyncStorage.getItem('timeOutData');
-      if (getData) {
-        const timeOutData = JSON.parse(getData);
-        const filteredData = timeOutData.filter(
-          (el: timeOutDataType) => el.phoneNumber !== phoneNumber
-        );
-        console.log(filteredData, 'filteredData');
-        await AsyncStorage.setItem('timeOutData', JSON.stringify(filteredData));
+  const startInterval = (timer: number) => {
+    const intervalId = setInterval(() => {
+      timer = timer - 1;
+      setRemainingTime(timer);
+      if (timer == 0) {
+        console.log('descriptionTextStyle remainingTime', remainingTime);
+        setRemainingTime(0);
+        setInvalidOtpCount(0);
+        setIsValidOTP(true);
+        clearInterval(intervalId);
       }
-    } catch (error) {
-      console.log(error, 'error');
-      // Error removing data
-    }
-  }, [props.navigation.state.params]);
+    }, 1000);
+  };
+  useEffect(() => {
+    const { otpString } = props.navigation.state.params!;
+    setOtp(otpString);
+    console.log('OTPVerification otpString', otpString);
+    _getTimerData();
+  }, [props.navigation]);
 
-  const getTimerData = useCallback(async () => {
+  const _getTimerData = async () => {
     try {
       const data = await AsyncStorage.getItem('timeOutData');
       if (data) {
@@ -118,7 +100,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         console.log(timeOutData);
         const { phoneNumber } = props.navigation.state.params!;
 
-        timeOutData.map((obj: timeOutDataType) => {
+        timeOutData.map((obj) => {
           if (obj.phoneNumber === phoneNumber) {
             const t1 = new Date();
             const t2 = new Date(obj.startTime);
@@ -148,24 +130,33 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       // Error retrieving data
       console.log(error.message);
     }
-  }, [_removeFromStore, props.navigation.state.params, startInterval]);
+  };
 
-  useEffect(() => {
-    const { otpString } = props.navigation.state.params!;
-    setOtp(otpString);
-    console.log('OTPVerification otpString', otpString);
-    getTimerData();
-  }, [props.navigation, getTimerData]);
+  const _removeFromStore = useCallback(async () => {
+    try {
+      const { phoneNumber } = props.navigation.state.params!;
+      const getData = await AsyncStorage.getItem('timeOutData');
+      if (getData) {
+        const timeOutData = JSON.parse(getData);
+        const filteredData = timeOutData.filter((el: any) => el.phoneNumber !== phoneNumber);
+        console.log(filteredData, 'filteredData');
+        await AsyncStorage.setItem('timeOutData', JSON.stringify(filteredData));
+      }
+    } catch (error) {
+      console.log(error, 'error');
+      // Error removing data
+    }
+  });
 
   const _storeTimerData = async (invalidAttems: number) => {
     try {
       const { phoneNumber } = props.navigation.state.params!;
       const getData = await AsyncStorage.getItem('timeOutData');
-      let timeOutData: timeOutDataType[] = [];
+      let timeOutData: Array<object> = [];
       if (getData) {
         timeOutData = JSON.parse(getData);
         let index: number = 0;
-        timeOutData.map((item: timeOutDataType, i: number) => {
+        timeOutData.map((item, i) => {
           if (item.phoneNumber === phoneNumber) {
             index = i + 1;
           }
@@ -208,7 +199,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           props.navigation.replace(AppRoutes.TabBar);
         }
       } else {
-        if (currentPatient.firstName == '') {
+        if (currentPatient.firstName == null) {
           props.navigation.replace(AppRoutes.SignUp);
         } else {
           AsyncStorage.setItem('userLoggedIn', 'true');
@@ -216,14 +207,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         }
       }
     }
-  }, [props.navigation, currentPatient]);
-
-  useEffect(() => {
-    if (signInError && otp.length === 6) {
-      // Alert.alert('Apollo', 'Something went wrong. Please try again.');
-      // props.navigation.replace(AppRoutes.Login);
-    }
-  }, [signInError, props.navigation, otp.length]);
+  }, [isSigningIn, currentPatient, props.navigation]);
 
   const onClickOk = async () => {
     console.log('otp OTPVerification', otp);
@@ -231,11 +215,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
     verifyOtp(otp)
       .then((result) => {
-        // console.log('result OTPVerification', result);
+        console.log('result OTPVerification', result);
         _removeFromStore();
       })
       .catch((error) => {
-        // console.log('error', error);
+        console.log('error', error);
         _storeTimerData(invalidOtpCount + 1);
 
         if (invalidOtpCount + 1 === 3) {
@@ -256,11 +240,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const seconds = remainingTime - minutes * 60;
 
   useEffect(() => {
-    const subscriptionId = SmsListener.addListener((message: {}) => {
+    const subscriptionId = SmsListener.addListener((message: any) => {
       const newOtp = message.body.match(/-*[0-9]+/);
       const otpString = newOtp ? newOtp[0] : '';
-      console.log(otpString, otpString.length, 'otpString');
-      setOtp(otpString.trim());
+      setOtp(otpString);
       setIsValidOTP(true);
     });
     setSubscriptionId(subscriptionId);
@@ -291,7 +274,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   }, [intervalId, _removeFromStore]);
 
-  const isOtpValid = (otp: string) => {
+  const isOtpValid = (otp: any) => {
     setOtp(otp);
     if (otp.length === 6) {
       setIsValidOTP(true);
@@ -315,7 +298,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         Alert.alert('Error', 'The interaction was cancelled by the user.');
       });
   };
-  // console.log(isSigningIn, currentPatient, isVerifyingOtp);
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
@@ -334,8 +317,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           <Card
             key={1}
             cardContainer={{ marginTop: 0, height: 270 }}
-            heading={string.login.oops}
-            description={string.login.incorrect_otp_message}
+            heading={string.LocalStrings.oops}
+            description={string.LocalStrings.incorrect_otp_message}
             disableButton={isValidOTP ? false : true}
             descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 0 : 1 }}
           >
@@ -360,8 +343,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           <Card
             key={2}
             cardContainer={{ marginTop: 0, height: 270 }}
-            heading={string.login.great}
-            description={isresent ? string.login.resend_otp_text : string.login.type_otp_text}
+            heading={string.LocalStrings.great}
+            description={
+              isresent ? string.LocalStrings.resend_otp_text : string.LocalStrings.type_otp_text
+            }
             buttonIcon={isValidOTP && otp.length === 6 ? <OkText /> : <OkTextDisabled />}
             onClickButton={onClickOk}
             disableButton={isValidOTP && otp.length === 6 ? false : true}
@@ -396,7 +381,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             )}
             {
               <TouchableOpacity onPress={onClickResend}>
-                <Text style={styles.bottomDescription}>{string.login.resend_opt}</Text>
+                <Text style={styles.bottomDescription}>{string.LocalStrings.resend_opt}</Text>
               </TouchableOpacity>
             }
           </Card>

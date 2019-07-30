@@ -3,10 +3,10 @@ import {
   StyleProp,
   StyleSheet,
   Text,
-  TextStyle,
   TouchableOpacity,
-  TouchableOpacityProps,
   ViewStyle,
+  TouchableOpacityProps,
+  TextStyle,
 } from 'react-native';
 import { theme } from '../../theme/theme';
 
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface ButtonProps {
+export interface buttonProps {
   style?: StyleProp<ViewStyle>;
   titleTextStyle?: StyleProp<TextStyle>;
   title?: string;
@@ -42,7 +42,7 @@ export interface ButtonProps {
   disabled?: boolean;
 }
 
-export const Button: React.FC<ButtonProps> = (props) => {
+export const Button: React.FC<buttonProps> = (props) => {
   return (
     <TouchableOpacity
       style={[styles.containerStyles, props.style, props.disabled ? styles.disabledStyle : null]}
