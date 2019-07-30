@@ -110,7 +110,7 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
   return (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">hi</Typography>
-      {<p>{otpStatusText}</p>}
+      <p>{otpStatusText}</p>
       <form>
         <Grid container spacing={1}>
           {_times(numOtpDigits, (index) => (
