@@ -117,11 +117,7 @@ export const AuthProvider: React.FC = (props) => {
     AuthContextProps['isLoginPopupVisible']
   >(false);
 
-  const signOut = () =>
-    app
-      .auth()
-      .signOut()
-      .then(() => window.location.reload());
+  const signOut = () => app.auth().signOut();
 
   const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
     return new Promise((resolve, reject) => {

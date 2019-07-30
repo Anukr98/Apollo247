@@ -1,31 +1,27 @@
+import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
+// import { apiRoutes } from '@aph/universal/aphRoutes';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloClient } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
-import { ErrorResponse, onError } from 'apollo-link-error';
+import { onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
-import firebase, { RNFirebase } from 'react-native-firebase';
-import { PATIENT_SIGN_IN } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  PatientSignIn,
-  PatientSignInVariables,
-  PatientSignIn_patientSignIn_patients,
-} from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
-import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
-import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import firebase, { RNFirebase } from 'react-native-firebase';
+import { GetCurrentPatients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { GET_CURRENT_PATIENTS } from '@aph/mobile-patients/src/graphql/profiles';
+import _isEmpty from 'lodash/isEmpty';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
 }
 
-export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients> {
+export interface AuthContextProps {
   analytics: RNFirebase.Analytics | null;
 
-  currentPatient: Patient | null;
-  allCurrentPatients: Patient[] | null;
-  setCurrentPatient: ((p: Patient) => void) | null;
+  currentPatientId: string | null;
+  setCurrentPatientId: ((pid: string | null) => void) | null;
 
   sendOtp: ((phoneNumber: string | null) => Promise<unknown>) | null;
   sendOtpError: boolean;
@@ -37,13 +33,14 @@ export interface AuthContextProps<Patient = PatientSignIn_patientSignIn_patients
 
   signInError: boolean;
   isSigningIn: boolean;
-  signOut: (() => Promise<void>) | null;
+  signOut: (() => void) | null;
+
+  hasAuthToken: boolean;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
-  currentPatient: null,
-  setCurrentPatient: null,
-  allCurrentPatients: null,
+  currentPatientId: null,
+  setCurrentPatientId: null,
 
   sendOtp: null,
   sendOtpError: false,
@@ -52,7 +49,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
   verifyOtp: null,
   verifyOtpError: false,
   isVerifyingOtp: false,
-
+  hasAuthToken: false,
   signInError: false,
   isSigningIn: true,
   signOut: null,
@@ -62,6 +59,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
 let apolloClient: ApolloClient<any>;
 const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
+  console.log('buildApolloClient', authToken);
   const errorLink = onError((error) => {
     const { graphQLErrors, operation, forward } = error;
     if (graphQLErrors) {
@@ -87,14 +85,15 @@ let otpVerifier: RNFirebase.ConfirmationResult;
 
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
+  const hasAuthToken = !_isEmpty(authToken);
+
   const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
 
   apolloClient = buildApolloClient(authToken, () => signOut());
 
-  const [allCurrentPatients, setAllCurrentPatients] = useState<
-    AuthContextProps['allCurrentPatients']
-  >(null);
-  const [currentPatient, setCurrentPatient] = useState<AuthContextProps['currentPatient']>(null);
+  const [currentPatientId, setCurrentPatientId] = useState<AuthContextProps['currentPatientId']>(
+    null
+  );
 
   const [isSendingOtp, setIsSendingOtp] = useState<AuthContextProps['isSendingOtp']>(false);
   const [sendOtpError, setSendOtpError] = useState<AuthContextProps['sendOtpError']>(false);
@@ -104,7 +103,6 @@ export const AuthProvider: React.FC = (props) => {
 
   const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(false);
   const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
-  const [authError, setAuthError] = useState<AuthContextProps['authError']>(false);
 
   const auth = firebase.auth();
 
@@ -138,6 +136,7 @@ export const AuthProvider: React.FC = (props) => {
       const [otpAuthResult, otpError] = await wait(otpVerifier.confirm(otp));
       setVerifyOtpError(Boolean(otpError || !otpAuthResult));
       if (otpAuthResult) {
+        // console.log('otpAuthResult', otpAuthResult);
         resolve(otpAuthResult);
       } else {
         reject(otpError);
@@ -146,64 +145,71 @@ export const AuthProvider: React.FC = (props) => {
     });
   };
 
-  const signOut = () => auth.signOut();
+  const signOut = useCallback(() => {
+    auth.signOut();
+    setAuthToken('');
+    setCurrentPatientId(null);
+    console.log('authprovider signOut');
+  }, [auth]);
 
   useEffect(() => {
     setAnalytics(firebase.analytics());
+  }, [analytics]);
+
+  useEffect(() => {
     let authStateRegistered = false;
+    console.log('authprovider');
 
     auth.onAuthStateChanged(async (user) => {
-      console.log('authStateChanged', authStateRegistered, user);
+      console.log('authprovider', authStateRegistered, user);
 
       if (user && !authStateRegistered) {
+        console.log('authprovider login');
+        setIsSigningIn(true);
         authStateRegistered = true;
-        console.log('fetching jwt');
-        const [jwt, jwtError] = await wait(user.getIdToken());
-        if (jwtError || !jwt) {
-          console.log('authprovider jwtError', jwtError);
-          if (jwtError) console.error(jwtError);
-          authStateRegistered = false;
+
+        const jwt = await user.getIdToken().catch((error) => {
           setIsSigningIn(false);
           setSignInError(true);
-          return;
-        }
-        setAuthToken(jwt);
+          setAuthToken('');
+          authStateRegistered = false;
+          console.log('authprovider error', error);
+          throw error;
+        });
+
         console.log('authprovider jwt', jwt);
 
-        setIsSigningIn(true);
-        const [signInResult, signInError] = await wait(
-          apolloClient.mutate<PatientSignIn, PatientSignInVariables>({
-            mutation: PATIENT_SIGN_IN,
-            variables: { jwt },
-          })
-        );
-        if (signInError || !signInResult.data || !signInResult.data.patientSignIn.patients) {
-          if (signInError) console.error(signInError);
-          authStateRegistered = false;
-          setSignInError(true);
-          setIsSigningIn(false);
-          console.log('authprovider signInError', signInError);
-          return;
-        }
-        const patients = signInResult.data.patientSignIn.patients;
-        const me = patients.find((p) => p.relation === Relation.ME) || patients[0];
-        setAllCurrentPatients(patients);
-        setCurrentPatient(me);
-        setSignInError(false);
-        console.log('authprovider me', me);
-        setIsSigningIn(false);
-      }
-    });
-  }, [auth]);
+        apolloClient = buildApolloClient(jwt, () => signOut());
+        authStateRegistered = false;
+        setAuthToken(jwt);
 
+        await apolloClient
+          .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
+          .then((data) => {
+            setSignInError(false);
+            console.log('data', data);
+          })
+          .catch((error) => {
+            setSignInError(true);
+            console.log('error', error);
+          });
+      }
+      setIsSigningIn(false);
+    });
+  }, [auth, signOut]);
+
+  // useEffect(() => {
+  //   app.auth().onAuthStateChanged(async (user) => {
+
+  //   });
+  // }, []);
   return (
     <ApolloProvider client={apolloClient}>
       <ApolloHooksProvider client={apolloClient}>
         <AuthContext.Provider
           value={{
-            currentPatient,
-            setCurrentPatient,
-            allCurrentPatients,
+            currentPatientId,
+            setCurrentPatientId,
 
             sendOtp,
             sendOtpError,
@@ -218,6 +224,7 @@ export const AuthProvider: React.FC = (props) => {
             signOut,
 
             analytics,
+            hasAuthToken,
           }}
         >
           {props.children}

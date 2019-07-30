@@ -1,7 +1,7 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { ArrowDisabled, ArrowYellow } from '@aph/mobile-patients/src/components/ui/Icons';
-import { string } from '@aph/mobile-patients/src/strings/string';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -78,13 +78,13 @@ const isPhoneNumberValid = (number: string) => {
 };
 
 let otpString = '';
-let didBlurSubscription: any;
+let didBlurSubscription: object;
 
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const { analytics, sendOtp, isSendingOtp } = useAuth();
-  const [subscriptionId, setSubscriptionId] = useState<any>();
+  const [subscriptionId, setSubscriptionId] = useState<object>();
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
@@ -96,7 +96,6 @@ export const Login: React.FC<LoginProps> = (props) => {
         PermissionsAndroid.PERMISSIONS.READ_SMS,
         PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
       ]);
-
       if (resuts[PermissionsAndroid.PERMISSIONS.READ_SMS] !== PermissionsAndroid.RESULTS.GRANTED) {
         console.log(resuts, 'READ_SMS');
       }
@@ -105,7 +104,6 @@ export const Login: React.FC<LoginProps> = (props) => {
       ) {
         console.log(resuts, 'RECEIVE_SMS');
       }
-
       if (resuts) {
         console.log(resuts, 'RECEIVE_SMS');
       }
@@ -120,7 +118,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    const subscriptionId = SmsListener.addListener((message: any) => {
+    const subscriptionId = SmsListener.addListener((message: {}) => {
       const newOtp = message.body.match(/-*[0-9]+/);
       console.log(newOtp[0], 'wertyuio');
       otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
@@ -182,8 +180,8 @@ export const Login: React.FC<LoginProps> = (props) => {
         <View style={{ height: 56 }} />
         <Card
           cardContainer={{ marginTop: 0, height: 270 }}
-          heading={string.LocalStrings.hello}
-          description={string.LocalStrings.please_enter_no}
+          heading={string.login.hello}
+          description={string.login.please_enter_no}
           buttonIcon={
             phoneNumberIsValid && phoneNumber.replace(/^0+/, '').length === 10 ? (
               <ArrowYellow />
@@ -225,7 +223,7 @@ export const Login: React.FC<LoginProps> = (props) => {
               phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
             ]}
           >
-            <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
+            <Text style={styles.inputTextStyle}>{string.login.numberPrefix}</Text>
             <TextInput
               autoFocus
               style={styles.inputStyle}
@@ -243,8 +241,8 @@ export const Login: React.FC<LoginProps> = (props) => {
             }
           >
             {phoneNumber == '' || phoneNumberIsValid
-              ? string.LocalStrings.otp_sent_to
-              : string.LocalStrings.wrong_number}
+              ? string.login.otp_sent_to
+              : string.login.wrong_number}
           </Text>
         </Card>
       </SafeAreaView>

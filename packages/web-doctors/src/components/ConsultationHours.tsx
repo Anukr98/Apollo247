@@ -11,7 +11,7 @@ import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import {
   GetDoctorProfile_getDoctorProfile_consultationHours,
   GetDoctorProfile_getDoctorProfile,
-} from 'graphql/types/getDoctorProfile';
+} from 'graphql/types/GetDoctorProfile';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Divider from '@material-ui/core/Divider';
 import format from 'date-fns/format';

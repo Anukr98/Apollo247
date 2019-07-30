@@ -23,6 +23,7 @@ import {
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import Scrollbars from 'react-custom-scrollbars';
 
 type Params = { id: string };
 
@@ -88,7 +89,7 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorProfileSection: {
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
-        padding: 20,
+        padding: '20px 3px 20px 20px',
       },
     },
     searchSection: {
@@ -119,7 +120,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
     },
     modalBox: {
-      maxWidth: 340,
+      maxWidth: 320,
       margin: 'auto',
       marginTop: 88,
       backgroundColor: theme.palette.text.primary,
@@ -195,6 +196,10 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    customScroll: {
+      paddingLeft: 20,
+      paddingRight: 17,
+    },
   };
 });
 
@@ -267,9 +272,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 onBookConsult={() => setIsPopoverOpen(true)}
               />
               <div className={classes.searchSection}>
-                <DoctorClinics doctorDetails={doctorDetails} />
-                {isStarDoctor && <StarDoctorTeam doctorDetails={doctorDetails} />}
-                <AppointmentHistory doctorId={doctorId} patientId={currentUserId} />
+                <Scrollbars autoHide={true} autoHeightMax={'calc(100vh - 245px'}>
+                  <div className={classes.customScroll}>
+                    <DoctorClinics doctorDetails={doctorDetails} />
+                    {isStarDoctor && <StarDoctorTeam doctorDetails={doctorDetails} />}
+                    <AppointmentHistory doctorId={doctorId} patientId={currentUserId} />
+                  </div>
+                </Scrollbars>
               </div>
             </div>
           </div>

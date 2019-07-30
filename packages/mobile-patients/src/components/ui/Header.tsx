@@ -1,4 +1,4 @@
-import { BackArrow } from '@aph/mobile-patients/src/components/ui/Icons';
+import { BackArrow, BackArrowWhite, Remove } from '@aph/mobile-patients/src/components/ui/Icons';
 import React from 'react';
 import {
   StyleProp,
@@ -52,7 +52,7 @@ type rightText = {
   onPress?: TextProps['onPress'];
 };
 
-export interface headerProps {
+export interface HeaderProps {
   leftText?: leftText;
   rightText?: rightText;
   title?: string;
@@ -64,17 +64,17 @@ export interface headerProps {
   onPressLeftIcon?: TouchableOpacityProps['onPress'];
 }
 
-export const Header: React.FC<headerProps> = (props) => {
+export const Header: React.FC<HeaderProps> = (props) => {
   const { rightText, title, leftIcon, rightIcon } = props;
 
   return (
     <View style={[styles.container, props.container]}>
       <View style={{ flex: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
-        {leftIcon && (
-          <TouchableOpacity onPress={props.onPressLeftIcon} style={{}}>
-            <BackArrow />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity onPress={props.onPressLeftIcon} style={{}}>
+          {leftIcon === 'backArrow' && <BackArrow />}
+          {leftIcon === 'close' && <Remove />}
+          {leftIcon === 'backArrowWhite' && <BackArrowWhite />}
+        </TouchableOpacity>
       </View>
       <View>{title && <Text style={styles.titleTextStyle}>{title}</Text>}</View>
       <View style={{ flex: 1, alignItems: 'flex-end' }}>

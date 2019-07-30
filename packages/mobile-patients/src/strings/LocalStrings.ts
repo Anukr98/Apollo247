@@ -22,6 +22,7 @@ const login = {
     'We have found 1 account registered with this mobile number. Please tell us who is who? :)',
   oops: 'oops!',
   incorrect_otp_message: 'You seem to have entered an incorrect OTP 3 times.',
+  incorrect_otp_description: 'Incorrect OTP. You have {0} more {1}.',
   try_again: 'Try again after  —  {0}',
   okay: 'okay!',
   best_general_physicians_text: 'Here are our best General Physicians',

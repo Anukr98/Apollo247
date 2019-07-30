@@ -32,6 +32,10 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 10,
         marginBottom: 10,
       },
+      '& input': {
+        fontSize: 18,
+        color: '#02475b',
+      },
     },
     helpWrap: {
       paddingBottom: 0,
@@ -46,8 +50,8 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.secondary.dark,
       '& p': {
         color: theme.palette.secondary.dark,
-        fontSize: 16,
-        fontWeight: 600,
+        fontSize: 18,
+        fontWeight: 500,
         marginBottom: 9,
       },
     },
@@ -148,7 +152,7 @@ const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
 const otpInputRefs: RefObject<HTMLInputElement>[] = [];
 const validPhoneMessage = 'OTP will be sent to this number';
-const invalidPhoneMessage = 'This seems like a wrong number';
+const invalidPhoneMessage = 'This seems like the wrong number';
 
 export interface DoctorsProps {
   mobileNumber: string;
