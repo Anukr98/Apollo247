@@ -133,7 +133,7 @@ const slides: Slide[] = [
 
 export interface OnboardingProps extends NavigationScreenProps {}
 export const Onboarding: React.FC<OnboardingProps> = (props) => {
-  const appIntroSliderRef = React.useRef<any>(null);
+  const appIntroSliderRef = React.useRef<{}>(null);
 
   useEffect(() => {
     firebase.analytics().setCurrentScreen('Onboarding');
@@ -160,7 +160,7 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
                       AsyncStorage.setItem('onboarding', 'true');
                       props.navigation.replace(AppRoutes.Login);
                     } else {
-                      appIntroSliderRef.current.goToSlide(item.index);
+                      appIntroSliderRef.current!.goToSlide(item.index);
                     }
                   }}
                 >
