@@ -90,12 +90,6 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
       paddingRight: 20,
     },
-    showMessage: {
-      opacity: 1.0,
-    },
-    hideMessage: {
-      opacity: 0,
-    },
     buttonActive: {
       backgroundColor: '#00b38e',
       color: theme.palette.common.white + '!important',

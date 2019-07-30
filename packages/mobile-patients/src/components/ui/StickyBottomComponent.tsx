@@ -1,7 +1,6 @@
 import React from 'react';
-import { Dimensions, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import { View, StyleProp, ViewStyle, StyleSheet } from 'react-native';
 import { theme } from '../../theme/theme';
-const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -11,9 +10,10 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingTop: 10,
+    marginTop: 30,
     backgroundColor: theme.colors.WHITE,
-    height: height === 812 || height === 896 ? 80 : 70,
+    height: 80,
+    alignItems: 'center',
     paddingHorizontal: 20,
     shadowColor: theme.colors.WHITE,
     shadowOffset: { width: 0, height: -5 },
@@ -23,32 +23,23 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface StickyBottomProps {
+export interface stickyBottomProps {
   style?: StyleProp<ViewStyle>;
   backgroundColor?: string;
   children: React.ReactNode;
-  defaultBG?: boolean;
 }
 
-export const StickyBottomComponent: React.FC<StickyBottomProps> = (props) => {
+export const StickyBottomComponent: React.FC<stickyBottomProps> = (props) => {
   return (
     <View
       style={[
         styles.container,
-        props.style,
-        props.defaultBG
-          ? {
-              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-              shadowColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-            }
+        props.backgroundColor
+          ? { backgroundColor: props.backgroundColor, shadowColor: props.backgroundColor }
           : null,
       ]}
     >
       {props.children}
     </View>
   );
-};
-
-StickyBottomComponent.defaultProps = {
-  defaultBG: false,
 };

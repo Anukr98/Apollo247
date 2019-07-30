@@ -6,7 +6,7 @@ import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import string from '@aph/mobile-patients/src/strings/strings.json';
+import { string } from '@aph/mobile-patients/src/strings/string';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import {
@@ -19,12 +19,11 @@ import {
   Text,
   ActivityIndicator,
   AsyncStorage,
-  BackHandler,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
 import Moment from 'moment';
-import { useAuth, useAllCurrentPatients } from '../hooks/authHooks';
+import { useAuth } from '../hooks/authHooks';
 import {
   updatePatient_updatePatient_patient,
   updatePatientVariables,
@@ -97,6 +96,8 @@ const GenderOptions: genderOptions[] = [
   },
 ];
 
+// let backHandler: any;
+
 export interface SignUpProps extends NavigationScreenProps {}
 export const SignUp: React.FC<SignUpProps> = (props) => {
   const [gender, setGender] = useState<string>('');
@@ -106,11 +107,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const [lastName, setLastName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
-  const { currentPatient } = useAllCurrentPatients();
-  const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
-  const [backPressCount, setbackPressCount] = useState<number>(0);
-
-  const { signOut } = useAuth();
+  const { currentPatient } = useAuth();
+  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' ' ? false : value == '' || /^[a-zA-Z ]+$/.test(value) ? true : false;
@@ -141,23 +139,13 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
 
   useEffect(() => {
     AsyncStorage.setItem('signUp', 'true');
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      setbackPressCount(backPressCount + 1);
-      if (backPressCount === 1) {
-        BackHandler.exitApp();
-      }
-      return true;
-    });
-    return function cleanup() {
-      backHandler.remove();
-    };
-  }, [backPressCount]);
+  }, []);
 
   console.log(isDateTimePickerVisible, 'isDateTimePickerVisible');
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAwareScrollView style={styles.container} extraScrollHeight={50} bounces={false}>
+        <KeyboardAwareScrollView style={styles.container} extraScrollHeight={50}>
           <View style={{ justifyContent: 'center', marginTop: 20, marginLeft: 20 }}>
             <ApolloLogo />
           </View>
@@ -169,8 +157,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
               shadowOpacity: 0.35,
               shadowRadius: 20,
             }}
-            heading={string.login.welcome_text}
-            description={string.login.welcome_desc}
+            heading={string.LocalStrings.welcome_text}
+            description={string.LocalStrings.welcome_desc}
             descriptionTextStyle={{ paddingBottom: 45 }}
           >
             <View style={styles.mascotStyle}>
@@ -293,14 +281,13 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   if (validationMessage) {
                     Alert.alert('Error', validationMessage);
                   } else {
-                    setVerifyingPhoneNumber(true);
+                    setVerifyingPhonenNumber(true);
 
-                    const formatDate = Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-                    console.log('signup currentPatient', currentPatient);
+                    const formatDate = Moment(date, 'DD/MM/YYYY').format('MM/DD/YYYY');
 
                     const patientsDetails: updatePatient_updatePatient_patient = {
-                      id: currentPatient ? currentPatient.id : '',
-                      mobileNumber: currentPatient ? currentPatient.mobileNumber : '',
+                      id: currentPatient.id,
+                      mobileNumber: currentPatient.mobileNumber,
                       firstName: firstName,
                       lastName: lastName,
                       relation: Relation.ME,
@@ -309,7 +296,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       dateOfBirth: formatDate,
                       emailAddress: email,
                     };
-                    console.log('patientsDetails', patientsDetails);
+
                     mutate({
                       variables: {
                         patientInput: patientsDetails,
@@ -319,24 +306,15 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                 }}
               >
                 {data
-                  ? (setVerifyingPhoneNumber(false),
-                    console.log('data', data.updatePatient.patient),
+                  ? (setVerifyingPhonenNumber(false),
+                    console.log('data', data),
                     AsyncStorage.setItem('userLoggedIn', 'true'),
                     AsyncStorage.setItem('signUp', 'false'),
                     AsyncStorage.setItem('gotIt', 'false'),
-                    props.navigation.replace(AppRoutes.TabBar))
+                    props.navigation.navigate(AppRoutes.TabBar))
                   : null}
-                {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
-                {error
-                  ? (setVerifyingPhoneNumber(false),
-                    signOut(),
-                    Alert.alert('Apollo', error.message),
-                    console.log('updatePatient error', error),
-                    AsyncStorage.setItem('userLoggedIn', 'false'),
-                    AsyncStorage.setItem('multiSignUp', 'false'),
-                    AsyncStorage.setItem('signUp', 'false'),
-                    props.navigation.replace(AppRoutes.Login))
-                  : null}
+                {loading ? setVerifyingPhonenNumber(false) : setVerifyingPhonenNumber(false)}
+                {error ? setVerifyingPhonenNumber(false) : setVerifyingPhonenNumber(false)}
               </Button>
             )}
           </Mutation>

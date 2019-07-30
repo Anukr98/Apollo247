@@ -7,44 +7,44 @@
 //==============================================================
 
 export enum APPOINTMENT_TYPE {
-  ONLINE = 'ONLINE',
-  PHYSICAL = 'PHYSICAL',
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
 }
 
 export enum Gender {
-  FEMALE = 'FEMALE',
-  MALE = 'MALE',
-  OTHER = 'OTHER',
+  FEMALE = "FEMALE",
+  MALE = "MALE",
+  OTHER = "OTHER",
 }
 
 export enum INVITEDSTATUS {
-  ACCEPTED = 'ACCEPTED',
-  NONE = 'NONE',
-  NOTAPPLICABLE = 'NOTAPPLICABLE',
-  REJECTED = 'REJECTED',
+  ACCEPTED = "ACCEPTED",
+  NONE = "NONE",
+  NOTAPPLICABLE = "NOTAPPLICABLE",
+  REJECTED = "REJECTED",
 }
 
 export enum Relation {
-  BROTHER = 'BROTHER',
-  COUSIN = 'COUSIN',
-  FATHER = 'FATHER',
-  HUSBAND = 'HUSBAND',
-  ME = 'ME',
-  MOTHER = 'MOTHER',
-  OTHER = 'OTHER',
-  SISTER = 'SISTER',
-  WIFE = 'WIFE',
+  BROTHER = "BROTHER",
+  COUSIN = "COUSIN",
+  FATHER = "FATHER",
+  HUSBAND = "HUSBAND",
+  ME = "ME",
+  MOTHER = "MOTHER",
+  OTHER = "OTHER",
+  SISTER = "SISTER",
+  WIFE = "WIFE",
 }
 
 export enum SEARCH_TYPE {
-  DOCTOR = 'DOCTOR',
-  SPECIALTY = 'SPECIALTY',
+  DOCTOR = "DOCTOR",
+  SPECIALTY = "SPECIALTY",
 }
 
 export enum STATUS {
-  CANCELLED = 'CANCELLED',
-  CONFIRMED = 'CONFIRMED',
-  IN_PROGRESS = 'IN_PROGRESS',
+  CANCELLED = "CANCELLED",
+  CONFIRMED = "CONFIRMED",
+  IN_PROGRESS = "IN_PROGRESS",
 }
 
 export interface AppointmentHistoryInput {

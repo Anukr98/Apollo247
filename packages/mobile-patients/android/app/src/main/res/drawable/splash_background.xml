@@ -6,7 +6,7 @@
         />
     <item>
         <bitmap
-            android:src="@mipmap/ic_appicon"
+            android:src="@drawable/ic_appicon"
             android:gravity="center"
             />
     </item>
