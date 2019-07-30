@@ -4,7 +4,6 @@ import {
   StyleProp,
   StyleSheet,
   Text,
-  TextStyle,
   TouchableOpacity,
   TouchableOpacityProps,
   View,
@@ -46,8 +45,7 @@ const styles = StyleSheet.create({
 export interface CardProps {
   cardContainer?: StyleProp<ViewStyle>;
   heading?: string;
-  descriptionTextStyle?: StyleProp<TextStyle>;
-  headingTextStyle?: StyleProp<TextStyle>;
+  descriptionTextStyle?: StyleProp<ViewStyle>;
   description?: string;
   disableButton?: boolean;
   buttonIcon?: React.ReactNode;
@@ -57,7 +55,7 @@ export interface CardProps {
 export const Card: React.FC<CardProps> = (props) => {
   return (
     <View style={[styles.cardContainer, props.cardContainer]}>
-      <Text style={[styles.headingText, props.headingTextStyle]}>{props.heading}</Text>
+      <Text style={styles.headingText}>{props.heading}</Text>
       <Text style={[styles.descriptionText, props.descriptionTextStyle]}>{props.description}</Text>
       <TouchableOpacity
         style={styles.buttonStyle}

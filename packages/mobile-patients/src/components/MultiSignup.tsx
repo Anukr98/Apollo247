@@ -4,7 +4,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DropdownGreen, Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import string from '@aph/mobile-patients/src/strings/strings.json';
+import { string } from '@aph/mobile-patients/src/strings/string';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import {
@@ -17,21 +17,18 @@ import {
   AsyncStorage,
   Alert,
   ActivityIndicator,
-  BackHandler,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MenuProvider } from 'react-native-popup-menu';
 import { NavigationScreenProps } from 'react-navigation';
-import { useAuth, useAllCurrentPatients } from '../hooks/authHooks';
+import { useAuth } from '../hooks/authHooks';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updatePatientVariables,
   updatePatient,
-  updatePatient_updatePatient_patient,
 } from '@aph/mobile-patients/src/graphql/types/updatePatient';
 import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -109,28 +106,11 @@ export interface MultiSignupProps extends NavigationScreenProps {}
 export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [relationIndex, setRelationIndex] = useState<number>(0);
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const { analytics, signOut } = useAuth();
-  const [profiles, setProfiles] = useState<GetCurrentPatients_getCurrentPatients_patients[] | null>(
-    []
-  );
+  const { currentPatient, analytics, allCurrentPatients } = useAuth();
+  const [profiles, setProfiles] = useState<any>([]);
   const [discriptionText, setDiscriptionText] = useState<string>('');
   const [showText, setShowText] = useState<boolean>(false);
-  const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  const [backPressCount, setbackPressCount] = useState<number>(0);
-
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      setbackPressCount(backPressCount + 1);
-      if (backPressCount === 1) {
-        BackHandler.exitApp();
-      }
-      return true;
-    });
-    return function cleanup() {
-      backHandler.remove();
-    };
-  }, [backPressCount]);
+  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
 
   useEffect(() => {
     setProfiles(allCurrentPatients ? allCurrentPatients : []);
@@ -157,70 +137,65 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     console.log('allCurrentPatients', allCurrentPatients);
   }, [currentPatient, allCurrentPatients, analytics, profiles, discriptionText, showText]);
 
-  const renderUserForm = (
-    allCurrentPatients: GetCurrentPatients_getCurrentPatients_patients | null,
-    i: number
-  ) => {
-    if (allCurrentPatients)
-      return (
-        <View>
+  const renderUserForm = (styles: any, allCurrentPatients: currentProfiles, i: number) => {
+    return (
+      <View>
+        <View
+          style={{
+            marginTop: 12,
+            borderRadius: 5,
+            backgroundColor: '#f7f8f5',
+            padding: 16,
+            paddingBottom: 6,
+          }}
+        >
+          <View style={{ flex: 1 }}></View>
           <View
             style={{
-              marginTop: 12,
-              borderRadius: 5,
-              backgroundColor: '#f7f8f5',
-              padding: 16,
-              paddingBottom: 6,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              borderBottomColor: 'rgba(2,71,91, 0.3)',
+              borderBottomWidth: 0.5,
+              paddingBottom: 8,
             }}
           >
-            <View style={{ flex: 1 }}></View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                borderBottomColor: 'rgba(2,71,91, 0.3)',
-                borderBottomWidth: 0.5,
-                paddingBottom: 8,
-              }}
-            >
-              <Text style={styles.idTextStyle}>{i + 1}.</Text>
-              <Text style={styles.idTextStyle}>{allCurrentPatients.uhid}</Text>
-            </View>
-            <Text style={styles.nameTextStyle}>
-              {allCurrentPatients.firstName} {allCurrentPatients.lastName}
-            </Text>
-            <Text style={styles.idTextStyle}>{allCurrentPatients.gender} | 01 January 1987</Text>
-            <View style={{ marginTop: 10 }}>
-              <View style={{ paddingTop: 5, paddingBottom: 10 }}>
-                <TouchableOpacity
-                  // style={styles.placeholderViewStyle}
-                  onPress={() => {
-                    setShowPopup(true);
-                    setRelationIndex(i);
-                  }}
-                >
-                  <View style={styles.placeholderViewStyle}>
-                    <Text
-                      style={[
-                        styles.placeholderTextStyle,
-                        allCurrentPatients.relation ? null : styles.placeholderStyle,
-                      ]}
-                    >
-                      {allCurrentPatients.relation ? allCurrentPatients.relation : 'Relation'}
-                    </Text>
-                    <DropdownGreen size="sm" />
-                  </View>
-                </TouchableOpacity>
-              </View>
+            <Text style={styles.idTextStyle}>{i + 1}.</Text>
+            <Text style={styles.idTextStyle}>{allCurrentPatients.uhid}</Text>
+          </View>
+          <Text style={styles.nameTextStyle}>
+            {allCurrentPatients.firstName} {allCurrentPatients.lastName}
+          </Text>
+          <Text style={styles.idTextStyle}>{allCurrentPatients.gender} | 01 January 1987</Text>
+          <View style={{ marginTop: 10 }}>
+            <View style={{ paddingTop: 5, paddingBottom: 10 }}>
+              <TouchableOpacity
+                // style={styles.placeholderViewStyle}
+                onPress={() => {
+                  setShowPopup(true);
+                  setRelationIndex(i);
+                }}
+              >
+                <View style={styles.placeholderViewStyle}>
+                  <Text
+                    style={[
+                      styles.placeholderTextStyle,
+                      allCurrentPatients.relation ? null : styles.placeholderStyle,
+                    ]}
+                  >
+                    {allCurrentPatients.relation ? allCurrentPatients.relation : 'Relation'}
+                  </Text>
+                  <DropdownGreen size="sm" />
+                </View>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
-      );
-    return null;
+      </View>
+    );
   };
   const isDisabled = () => {
-    const filteredProfiles = profiles ? profiles.filter((obj) => obj.relation) : [];
-    if (profiles && profiles.length === filteredProfiles.length) {
+    const filteredProfiles = profiles.filter((obj: object) => obj.relation);
+    if (profiles.length === filteredProfiles.length) {
       return false;
     }
     return true;
@@ -305,22 +280,20 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             <Text
               style={styles.textStyle}
               onPress={() => {
-                if (profiles) {
-                  profiles[relationIndex].relation = menu.name;
-                  const result = profiles.filter((obj) => {
-                    return obj.relation == 'Me';
-                  });
+                profiles[relationIndex].relation = menu.name;
+                const result = profiles.filter((obj) => {
+                  return obj.relation == 'Me';
+                });
 
-                  if (result.length > 1) {
-                    profiles[relationIndex].relation = '';
-                    Alert.alert('Apollo', 'Me is already choosen for another profile.');
-                  }
-                  console.log('result', result);
-                  console.log('result length', result.length);
-
-                  setProfiles(profiles);
-                  setShowPopup(false);
+                if (result.length > 1) {
+                  profiles[relationIndex].relation = '';
+                  Alert.alert('Apollo', 'Me is already choosen for another profile.');
                 }
+                console.log('result', result);
+                console.log('result length', result.length);
+
+                setProfiles(profiles);
+                setShowPopup(false);
               }}
             >
               {menu.name}
@@ -341,42 +314,34 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               title={'SUBMIT'}
               disabled={isDisabled()}
               onPress={async () => {
-                setVerifyingPhoneNumber(true);
+                setVerifyingPhonenNumber(true);
 
-                profiles &&
-                  profiles.forEach(async (profile: updatePatient_updatePatient_patient) => {
-                    const patientsDetails: updatePateint = {
-                      id: profile.id || '',
-                      relation: profile ? profile.relation!.toUpperCase() : '',
-                    };
-                    console.log('patientsDetails', patientsDetails);
-                    mutate({
-                      variables: {
-                        patientInput: patientsDetails,
-                      },
-                    });
+                profiles.forEach(async (profile: any) => {
+                  const patientsDetails: updatePateint = {
+                    id: profile.id || '',
+                    relation: profile.relation.toUpperCase() || '',
+                  };
+                  console.log('patientsDetails', patientsDetails);
+                  mutate({
+                    variables: {
+                      patientInput: patientsDetails,
+                    },
                   });
+                });
               }}
             >
               {data
-                ? (setVerifyingPhoneNumber(false),
-                  console.log('data', data.updatePatient.patient),
+                ? (setVerifyingPhonenNumber(false),
+                  console.log('updatePatient', data),
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
-                  props.navigation.replace(AppRoutes.TabBar))
+                  props.navigation.navigate(AppRoutes.TabBar))
                 : null}
+              {loading ? setVerifyingPhonenNumber(false) : setVerifyingPhonenNumber(false)}
               {error
-                ? (setVerifyingPhoneNumber(false),
-                  signOut(),
-                  Alert.alert('Apollo', error.message),
-                  signOut(),
-                  console.log('updatePatient error', error),
-                  AsyncStorage.setItem('userLoggedIn', 'false'),
-                  AsyncStorage.setItem('multiSignUp', 'false'),
-                  AsyncStorage.setItem('signUp', 'false'),
-                  props.navigation.replace(AppRoutes.Login))
-                : null}
+                ? (setVerifyingPhonenNumber(false), console.log('updatePatient error', error))
+                : setVerifyingPhonenNumber(false)}
             </Button>
           )}
         </Mutation>
@@ -400,17 +365,16 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                 shadowOffset: { width: 0, height: -10 },
                 shadowOpacity: 0.4,
               }}
-              heading={string.login.welcome_text}
-              description={showText ? discriptionText : string.login.multi_signup_desc}
+              heading={string.LocalStrings.welcome_text}
+              description={showText ? discriptionText : string.LocalStrings.multi_signup_desc}
               descriptionTextStyle={{ paddingBottom: 50 }}
             >
               <View style={styles.mascotStyle}>
                 <Mascot />
               </View>
-              {profiles &&
-                profiles.map((allCurrentPatients, i: number) => (
-                  <View key={i}>{renderUserForm(allCurrentPatients, i)}</View>
-                ))}
+              {profiles.map((allCurrentPatients: currentProfiles, i: number) => (
+                <View key={i}>{renderUserForm(styles, allCurrentPatients, i)}</View>
+              ))}
               <View style={{ height: 80 }} />
             </Card>
           </KeyboardAwareScrollView>

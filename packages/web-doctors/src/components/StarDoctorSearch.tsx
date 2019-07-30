@@ -15,7 +15,7 @@ import {
   GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile,
 } from 'graphql/types/GetDoctorsForStarDoctorProgram';
 
-export interface DoctorsName {
+interface DoctorsName {
   label: string;
   typeOfConsult: string;
   experience: string;
