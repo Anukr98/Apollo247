@@ -37,8 +37,8 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.secondary.dark,
       '& p': {
         color: theme.palette.secondary.dark,
-        fontSize: 16,
-        fontWeight: 600,
+        fontSize: 18,
+        fontWeight: 500,
         marginBottom: 9,
       },
     },
@@ -64,25 +64,35 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: '18px',
       color: '#02475b',
     },
+    helpInput: {
+      '& input': {
+        fontSize: 18,
+        fontWeight: 500,
+        color: '#02475b',
+      },
+    },
   };
 });
 
 const mobileNumberPrefix = '+91';
 const validPhoneMessage = '';
 const invalidPhoneMessage = 'This seems like the wrong number';
-
-export const HelpPopup: React.FC = (props) => {
+interface HelpProps {
+  setBackArrow: () => void;
+}
+export const HelpPopup: React.FC<HelpProps> = (props) => {
+  const { setBackArrow } = props;
   const classes = useStyles();
   const [mobileNumber, setMobileNumber] = useState<string>('');
-
   const [phoneMessage, setPhoneMessage] = useState<string>(validPhoneMessage);
   const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
+  const [showHelpPage, setShowHelpPage] = useState<boolean>(true);
 
-  return (
+  return showHelpPage ? (
     <div className={`${classes.loginFormWrap} ${classes.helpWrap}`}>
       <Typography variant="h2">need help?</Typography>
       <p>You can request a call back for us to resolve your issue ASAP</p>
-      <FormControl fullWidth>
+      <FormControl fullWidth className={classes.helpInput}>
         <AphInput
           autoFocus
           inputProps={{ type: 'tel', maxLength: 10 }}
@@ -127,11 +137,17 @@ export const HelpPopup: React.FC = (props) => {
         disabled={!isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10}
         className={classes.needHelp}
         onClick={() => {
-          alert('call pro');
+          setShowHelpPage(false);
+          setBackArrow();
         }}
       >
         CALL ME
       </Button>
+    </div>
+  ) : (
+    <div className={`${classes.loginFormWrap} ${classes.helpWrap}`}>
+      <Typography variant="h2">done!</Typography>
+      <p>You will receive a call from us shortly.</p>
     </div>
   );
 };
