@@ -38,12 +38,23 @@ import { StarTeam } from 'doctors-service/entity/starTeam';
 import { DoctorAndHospital } from 'doctors-service/entity/doctorAndHospital';
 import { Facility } from 'doctors-service/entity/facility';
 import { ConsultHours } from 'doctors-service/entity/consultHours';
+import { DoctorBankAccounts } from 'doctors-service/entity/doctorBankAccounts';
+import { Packages } from 'doctors-service/entity/packages';
 
 export interface DoctorsServiceContext extends GatewayContext {}
 
 (async () => {
   await createConnection({
-    entities: [Doctor, DoctorSpecialty, StarTeam, DoctorAndHospital, Facility, ConsultHours],
+    entities: [
+      Doctor,
+      DoctorSpecialty,
+      StarTeam,
+      DoctorAndHospital,
+      Facility,
+      ConsultHours,
+      DoctorBankAccounts,
+      Packages,
+    ],
     type: 'postgres',
     host: 'doctors-db',
     port: 5432,

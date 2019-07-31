@@ -16,6 +16,9 @@ import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators
 import { StarTeam } from 'doctors-service/entity/starTeam';
 import { DoctorAndHospital } from 'doctors-service/entity/doctorAndHospital';
 import { ConsultHours } from 'doctors-service/entity/consultHours';
+import { DoctorBankAccounts } from 'doctors-service/entity/doctorBankAccounts';
+import { Packages } from 'doctors-service/entity/packages';
+
 export enum DoctorType {
   APOLLO = 'APOLLO',
   PAYROLL = 'PAYROLL',
@@ -30,6 +33,9 @@ export enum Salutation {
 
 @Entity()
 export class Doctor extends BaseEntity {
+  @OneToMany((type) => DoctorBankAccounts, (bankAccount) => bankAccount.doctor)
+  bankAccount: DoctorBankAccounts[];
+
   @Column({ nullable: true, type: 'text' })
   awards: String;
 
@@ -91,6 +97,9 @@ export class Doctor extends BaseEntity {
 
   @Column({ type: 'float8' })
   onlineConsultationFees: Number;
+
+  @OneToMany((type) => Packages, (packages) => packages.doctor)
+  packages: Packages[];
 
   @Column({ nullable: true, type: 'text' })
   photoUrl: String;
