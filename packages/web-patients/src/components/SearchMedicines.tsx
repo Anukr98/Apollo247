@@ -91,6 +91,7 @@ const useStyles = makeStyles((theme: Theme) => {
     bottomImgGroup: {
       marginTop: 40,
       '& img': {
+        maxWidth: '100%',
         verticalAlign: 'middle',
       },
     },
@@ -180,7 +181,7 @@ export const SearchMedicines: React.FC = (props) => {
                 to="/search-medicines"
               >
                 <span className={classes.serviceIcon}>
-                  <img src={require('images/ic_add.svg')} alt="" />
+                  <img src={require('images/ic_schedule.svg')} alt="" />
                 </span>
                 <span className={classes.linkText}>Your Med Subscripitons</span>
                 <span className={classes.rightArrow}>
@@ -194,7 +195,7 @@ export const SearchMedicines: React.FC = (props) => {
                 to="/search-medicines"
               >
                 <span className={classes.serviceIcon}>
-                  <img src={require('images/ic_add.svg')} alt="" />
+                  <img src={require('images/ic_tablets.svg')} alt="" />
                 </span>
                 <span className={classes.linkText}>Your Orders</span>
                 <span className={classes.rightArrow}>
@@ -203,7 +204,7 @@ export const SearchMedicines: React.FC = (props) => {
               </Link>
             </div>
             <div className={classes.bottomImgGroup}>
-              <img src="https://via.placeholder.com/288x186" alt="" />
+              <img src={require('images/ic_adbanner_web.png')} alt="" />
             </div>
           </div>
         </Scrollbars>
@@ -213,7 +214,7 @@ export const SearchMedicines: React.FC = (props) => {
           <div className={classes.searchMedicine}>
             <AphTextField placeholder="Enter name of the medicine" disabled />
             <div className={classes.uploadPrescriptionBtn}>
-              <img src={require('images/ic_add.svg')} alt="" />
+              <img src={require('images/ic_prescription.svg')} alt="" />
             </div>
           </div>
           <div className={classes.pinCode}>
