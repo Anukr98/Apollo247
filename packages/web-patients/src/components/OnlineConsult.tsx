@@ -85,6 +85,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const OnlineConsult: React.FC = (props) => {
   const classes = useStyles();
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
+  const [dateSelected, setDateSelected] = useState<string>('');
 
   return (
     <div className={classes.root}>
@@ -121,7 +122,7 @@ export const OnlineConsult: React.FC = (props) => {
               showCalendar ? classes.showCalendar : ''
             }`}
           >
-            <AphCalendar />
+            <AphCalendar getDate={(dateSelected: string) => setDateSelected(dateSelected)} />
           </div>
           <div
             className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${

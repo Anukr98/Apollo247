@@ -202,6 +202,7 @@ export interface SearchObject {
   fees: string[] | null;
   gender: string[] | null;
   language: string[] | null;
+  dateSelected: string;
 }
 
 const searchObject = {
@@ -212,6 +213,7 @@ const searchObject = {
   fees: [],
   gender: [],
   language: [],
+  dateSelected: '',
 };
 
 export const DoctorsLanding: React.FC = (props) => {
@@ -237,6 +239,7 @@ export const DoctorsLanding: React.FC = (props) => {
         fees: [],
         gender: [],
         language: [],
+        dateSelected: '',
       });
       setShowSearchAndPastSearch(false);
     }
@@ -259,6 +262,8 @@ export const DoctorsLanding: React.FC = (props) => {
     specialitySelected.length === 0
   )
     showError = true;
+
+  console.log('fileroptions is....', filterOptions);
 
   return (
     <div className={classes.welcome}>
