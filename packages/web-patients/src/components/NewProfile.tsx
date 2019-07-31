@@ -141,16 +141,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const [showProfileSuccess, setShowProfileSuccess] = useState<boolean>(false);
   const updatePatient = useMutation<UpdatePatient, UpdatePatientVariables>(UPDATE_PATIENT);
 
-  const genderOrderMap = {
-    [Gender.MALE]: 0,
-    [Gender.FEMALE]: 1,
-    [Gender.OTHER]: 2,
-  };
-
-  const allGenders = Object.values(Gender);
-  const orderedGenders = _sortBy(allGenders, (gen: Gender) =>
-    genderOrderMap[gen] != null ? genderOrderMap[gen] : 99
-  );
+  const orderedGenders = [Gender.MALE, Gender.FEMALE, Gender.OTHER];
 
   if (showProfileSuccess) {
     return <ProfileSuccess onSubmitClick={() => props.onClose()} />;
