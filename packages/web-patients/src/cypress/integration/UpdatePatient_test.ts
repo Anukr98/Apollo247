@@ -114,7 +114,7 @@ describe('UpdatePatient (without uhids)', () => {
       .should('exist');
   });
 
-  it.only('Shows genders in the order Male > Female > Other', () => {
+  it('Shows genders in the order Male > Female > Other', () => {
     cy.get('[data-cypress="NewProfile"]')
       .find('div[class*="makeStyles-btnGroup"]')
       .children()
