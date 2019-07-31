@@ -19,7 +19,12 @@ import {
   getSpecialtyDoctorsResolvers,
 } from 'doctors-service/resolvers/getSpecialtyDoctorsWithFilters';
 
-import { GatewayContext } from 'api-gateway';
+import {
+  getDoctorDetailsTypeDefs,
+  getDoctorDetailsResolvers,
+} from 'doctors-service/resolvers/getDoctorDetails';
+
+import { GatewayContext, GatewayHeaders } from 'api-gateway';
 import gql from 'graphql-tag';
 import { GraphQLTime } from 'graphql-iso-date';
 import { createConnection } from 'typeorm';
@@ -48,6 +53,13 @@ export interface DoctorsServiceContext extends GatewayContext {}
   });
 
   const server = new ApolloServer({
+    context: async ({ req }) => {
+      const headers = req.headers as GatewayHeaders;
+      const firebaseUid = headers.firebaseuid;
+      const mobileNumber = headers.mobilenumber;
+      const context: DoctorsServiceContext = { firebaseUid, mobileNumber };
+      return context;
+    },
     schema: buildFederatedSchema([
       {
         typeDefs: gql`
@@ -76,6 +88,10 @@ export interface DoctorsServiceContext extends GatewayContext {}
       {
         typeDefs: starDoctorTypeDefs,
         resolvers: starDoctorProgramResolvers,
+      },
+      {
+        typeDefs: getDoctorDetailsTypeDefs,
+        resolvers: getDoctorDetailsResolvers,
       },
     ]),
   });
