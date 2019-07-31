@@ -1,9 +1,17 @@
 import { clientRoutes } from 'helpers/clientRoutes';
-import { jane, john, jimmy } from 'cypress/fixtures/patientsFixtures';
+import {
+  janeNoRelation,
+  johnBrother,
+  jimmyCousin,
+  julieNoRelation,
+} from 'cypress/fixtures/patientsFixtures';
 import { Relation, Gender } from 'graphql/types/globalTypes';
 
 describe('UpdatePatient (with uhids)', () => {
-  const patients = [jane, john, jimmy].map((pat) => ({ ...pat, uhid: 'uhid-1234' }));
+  const patients = [janeNoRelation, johnBrother, jimmyCousin].map((pat) => ({
+    ...pat,
+    uhid: 'uhid-1234',
+  }));
 
   beforeEach(() => {
     cy.signIn(patients);
@@ -20,17 +28,69 @@ describe('UpdatePatient (with uhids)', () => {
       .should('exist');
   });
 
+  it('Relations dropdown goes in order Me (Default), Mother, Father, Sister, Brother, Wife, Husband, Others', () => {
+    cy.get('[data-cypress="ExistingProfile"]')
+      .find('div[class*="MuiInputBase-inputSelect"]')
+      .first()
+      .click();
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(1)
+      .should('have.attr', 'data-value', 'ME');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(2)
+      .should('have.attr', 'data-value', 'MOTHER');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(3)
+      .should('have.attr', 'data-value', 'FATHER');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(4)
+      .should('have.attr', 'data-value', 'SISTER');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(5)
+      .should('have.attr', 'data-value', 'BROTHER');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(6)
+      .should('have.attr', 'data-value', 'WIFE');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(7)
+      .should('have.attr', 'data-value', 'HUSBAND');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(8)
+      .should('have.attr', 'data-value', 'COUSIN');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(9)
+      .should('have.attr', 'data-value', 'OTHER');
+  });
+
   it('Does not show name in HeroBanner until Relation.ME is established', () => {
     cy.get('[data-cypress="HeroBanner"]')
       .contains('hello there')
       .should('exist')
-      .contains(jane.firstName!)
+      .contains(janeNoRelation.firstName!)
       .should('not.exist');
   });
 });
 
 describe('UpdatePatient (without uhids)', () => {
-  const patients = [jane];
+  const patients = [janeNoRelation, julieNoRelation];
 
   beforeEach(() => {
     cy.signIn(patients);
@@ -41,16 +101,16 @@ describe('UpdatePatient (without uhids)', () => {
     cy.get('[data-cypress="NewProfile"]').should('exist');
   });
 
-  it('Does not show name in HeroBanner (yet)', () => {
+  it('Does not show name in HeroBanner until a Relation.ME is established', () => {
     cy.get('[data-cypress="HeroBanner"]')
       .contains('hello there')
       .should('exist')
-      .contains(jane.firstName!)
+      .contains(janeNoRelation.firstName!)
       .should('not.exist');
   });
 
   it('Has firstName input pre-filled', () => {
-    cy.get(`input[value="${jane.firstName}"]`).should('exist');
+    cy.get(`input[value="${janeNoRelation.firstName}"]`).should('exist');
   });
 
   it('Submit is disabled unless form is dirty', () => {
@@ -77,7 +137,7 @@ describe('UpdatePatient (without uhids)', () => {
 
   it('Should update the patient', () => {
     const janeTheMan = {
-      ...jane,
+      ...janeNoRelation,
       firstName: 'Jane The Man',
       relation: Relation.ME,
       gender: Gender.MALE,
@@ -99,7 +159,7 @@ describe('UpdatePatient (without uhids)', () => {
       .click();
 
     cy.get('[data-cypress="NewProfile"]')
-      .find(`input[value="${jane.firstName!}"]`)
+      .find(`input[value="${janeNoRelation.firstName!}"]`)
       .clear()
       .type(janeTheMan.firstName!);
 
