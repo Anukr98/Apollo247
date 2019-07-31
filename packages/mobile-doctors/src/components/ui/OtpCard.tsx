@@ -8,6 +8,7 @@ import {
   TouchableOpacityProps,
   View,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import { BackIcon, Cancel } from '@aph/mobile-doctors/src/components/ui/Icons';
 
@@ -41,6 +42,9 @@ const styles = StyleSheet.create({
     right: -25,
     height: 64,
     width: 64,
+    ...Platform.select({
+      android: { paddingTop: 5 },
+    }),
   },
   iconPlace: {
     height: 24,

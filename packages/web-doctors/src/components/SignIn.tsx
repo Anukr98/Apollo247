@@ -138,6 +138,13 @@ const useStyles = makeStyles((theme: Theme) => {
     loader: {
       color: '#fff',
     },
+    cross: {
+      position: 'absolute',
+      right: 0,
+      top: '10px',
+      fontSize: '18px',
+      color: '#02475b',
+    },
   };
 });
 
@@ -150,7 +157,11 @@ const invalidPhoneMessage = 'This seems like the wrong number';
 export interface DoctorsProps {
   mobileNumber: string;
 }
-export const SignIn: React.FC = (props) => {
+interface PopupProps {
+  popup: () => void;
+}
+export const SignIn: React.FC<PopupProps> = (props) => {
+  const { popup } = props;
   const classes = useStyles();
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
@@ -161,6 +172,7 @@ export const SignIn: React.FC = (props) => {
   const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
   const [submitCount, setSubmitCount] = useState(0);
   const [showTimer, setShowTimer] = useState(false);
+  const [showBackArrow, setShowBackArrow] = useState(true);
   const countDown = useRef(179);
   const [timer, setTimer] = useState(179);
 
@@ -206,19 +218,31 @@ export const SignIn: React.FC = (props) => {
 
   return displayGetHelp ? (
     <div>
-      <Button
-        className={classes.backButton}
-        onClick={() => {
-          setOtp([]);
-          setDisplayOtpInput(false);
-          setSubmitCount(0);
-          setDisplayGetHelp(false);
-          setShowTimer(false);
-        }}
-      >
-        {'<'}
-      </Button>
-      <HelpPopup />
+      {showBackArrow ? (
+        <Button
+          className={classes.backButton}
+          onClick={() => {
+            setOtp([]);
+            setDisplayOtpInput(false);
+            setSubmitCount(0);
+            setDisplayGetHelp(false);
+            setShowTimer(false);
+          }}
+        >
+          {'<'}
+        </Button>
+      ) : (
+        <Button
+          className={classes.cross}
+          onClick={() => {
+            popup();
+          }}
+        >
+          {!showBackArrow && <img src={require('images/ic_cross.svg')} alt="" />}
+        </Button>
+      )}
+      ;
+      <HelpPopup setBackArrow={() => setShowBackArrow(false)} />
     </div>
   ) : displayOtpInput ? (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
@@ -253,6 +277,7 @@ export const SignIn: React.FC = (props) => {
             <AphTextField
               autoFocus={index === 0}
               inputRef={otpInputRefs[index]}
+              disabled={showTimer}
               value={_isNumber(otp[index]) ? otp[index] : ''}
               inputProps={{ type: 'tel', maxLength: 1 }}
               onChange={(e) => {
@@ -282,7 +307,6 @@ export const SignIn: React.FC = (props) => {
                   focusPreviousInput();
                 }
               }}
-              error={submitCount !== 3 && verifyOtpError}
             />
           </Grid>
         ))}
@@ -344,7 +368,7 @@ export const SignIn: React.FC = (props) => {
           }}
           disabled={isSendingOtp || otp.join('').length !== numOtpDigits || showTimer}
         >
-          {isSigningIn || isSendingOtp || isVerifyingOtp || showTimer ? (
+          {isSigningIn || isSendingOtp || isVerifyingOtp ? (
             <CircularProgress className={classes.loader} />
           ) : (
             <img src={require('images/ic_arrow_forward.svg')} />
@@ -410,7 +434,9 @@ export const SignIn: React.FC = (props) => {
         <Fab
           color="primary"
           aria-label="Sign in"
-          disabled={!isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10}
+          disabled={
+            !isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10 || isSendingOtp
+          }
           onClick={() =>
             sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
               setDisplayOtpInput(true)

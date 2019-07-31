@@ -48,9 +48,13 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   gethelpText: {
-    marginTop: 22,
+    ...Platform.select({
+      ios: { marginTop: 22 },
+      android: { marginTop: 10 },
+    }),
     color: '#fc9916',
     ...theme.fonts.IBMPlexSansBold(12),
+    marginBottom: 5,
   },
   bottomDescription: {
     lineHeight: 24,
@@ -389,8 +393,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             cardContainer={{ marginTop: 56, height: 300 }}
             heading={string.LocalStrings.oops}
             description={string.LocalStrings.incorrect_otp_message}
-            disableButton={isValidOTP ? false : true}
+            // disableButton={isValidOTP ? false : true}
+            buttonIcon={isValidOTP && otp.length === 6 ? <OkText /> : <OkTextDisabled />}
+            disableButton={isValidOTP && otp.length === 6 ? false : true}
             descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 0 : 1 }}
+            onPress={() => props.navigation.push(AppRoutes.Login)}
           >
             <View style={styles.inputView}>
               <OTPTextView
@@ -405,7 +412,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               />
             </View>
             <Text style={[styles.errorTextfincal]}>
-              Try again after {minutes} : {seconds}
+              Try again after {minutes} : {seconds.toString().length < 2 ? '0' + seconds : seconds}
             </Text>
             <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.NeedHelp)}>
               <Text style={[styles.gethelpText]}>GET HELP</Text>

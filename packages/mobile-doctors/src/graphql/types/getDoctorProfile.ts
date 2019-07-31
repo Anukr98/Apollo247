@@ -5,12 +5,13 @@
 import { INVITEDSTATUS } from "./globalTypes";
 
 // ====================================================
-// GraphQL query operation: getDoctorProfile
+// GraphQL query operation: GetDoctorProfile
 // ====================================================
 
-export interface getDoctorProfile_getDoctorProfile_profile {
+export interface GetDoctorProfile_getDoctorProfile_profile {
   __typename: "Doctor";
   id: string;
+  salutation: string;
   firstName: string;
   lastName: string;
   mobileNumber: string;
@@ -32,63 +33,64 @@ export interface getDoctorProfile_getDoctorProfile_profile {
   physicalConsultationFees: string;
   package: string | null;
   inviteStatus: INVITEDSTATUS | null;
+  address: string | null;
 }
 
-export interface getDoctorProfile_getDoctorProfile_paymentDetails {
+export interface GetDoctorProfile_getDoctorProfile_paymentDetails {
   __typename: "PaymentDetails";
   accountNumber: string;
   address: string | null;
 }
 
-export interface getDoctorProfile_getDoctorProfile_clinics {
+export interface GetDoctorProfile_getDoctorProfile_clinics {
   __typename: "Clinics";
   name: string;
   image: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  addressLine3: string | null;
+  city: string | null;
 }
 
-export interface getDoctorProfile_getDoctorProfile_starDoctorTeam {
+export interface GetDoctorProfile_getDoctorProfile_starDoctorTeam {
   __typename: "Doctor";
   id: string;
+  salutation: string;
   firstName: string;
   lastName: string;
-  mobileNumber: string;
   experience: string | null;
   speciality: string;
   specialization: string | null;
-  isStarDoctor: boolean;
   education: string;
   services: string | null;
   languages: string | null;
   city: string | null;
   awards: string | null;
   photoUrl: string | null;
-  registrationNumber: string;
-  isProfileComplete: string;
-  availableForPhysicalConsultation: boolean;
-  availableForVirtualConsultation: boolean;
-  onlineConsultationFees: string;
-  physicalConsultationFees: string;
   package: string | null;
   inviteStatus: INVITEDSTATUS | null;
+  address: string | null;
 }
 
-export interface getDoctorProfile_getDoctorProfile_consultationHours {
+export interface GetDoctorProfile_getDoctorProfile_consultationHours {
   __typename: "Consultations";
   days: string;
+  startTime: any;
+  endTime: any;
   availableForPhysicalConsultation: boolean;
   availableForVirtualConsultation: boolean;
   type: string | null;
 }
 
-export interface getDoctorProfile_getDoctorProfile {
+export interface GetDoctorProfile_getDoctorProfile {
   __typename: "DoctorProfile";
-  profile: getDoctorProfile_getDoctorProfile_profile | null;
-  paymentDetails: (getDoctorProfile_getDoctorProfile_paymentDetails | null)[] | null;
-  clinics: (getDoctorProfile_getDoctorProfile_clinics | null)[] | null;
-  starDoctorTeam: (getDoctorProfile_getDoctorProfile_starDoctorTeam | null)[] | null;
-  consultationHours: (getDoctorProfile_getDoctorProfile_consultationHours | null)[] | null;
+  profile: GetDoctorProfile_getDoctorProfile_profile;
+  paymentDetails: GetDoctorProfile_getDoctorProfile_paymentDetails[] | null;
+  clinics: GetDoctorProfile_getDoctorProfile_clinics[] | null;
+  starDoctorTeam: GetDoctorProfile_getDoctorProfile_starDoctorTeam[] | null;
+  consultationHours: GetDoctorProfile_getDoctorProfile_consultationHours[] | null;
 }
 
-export interface getDoctorProfile {
-  getDoctorProfile: getDoctorProfile_getDoctorProfile | null;
+export interface GetDoctorProfile {
+  getDoctorProfile: GetDoctorProfile_getDoctorProfile | null;
 }
