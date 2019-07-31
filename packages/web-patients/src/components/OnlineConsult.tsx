@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React, { useState } from 'react';
 import { AphButton } from '@aph/web-ui-components';
-import { AphCalendar } from 'components/AphCalendar';
+// import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
 import Scrollbars from 'react-custom-scrollbars';
 
@@ -85,6 +85,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const OnlineConsult: React.FC = (props) => {
   const classes = useStyles();
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
+  // const [dateSelected, setDateSelected] = useState<string>('');
 
   return (
     <div className={classes.root}>
@@ -121,7 +122,7 @@ export const OnlineConsult: React.FC = (props) => {
               showCalendar ? classes.showCalendar : ''
             }`}
           >
-            <AphCalendar />
+            {/* <AphCalendar getDate={(dateSelected: string) => setDateSelected(dateSelected)} /> */}
           </div>
           <div
             className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
