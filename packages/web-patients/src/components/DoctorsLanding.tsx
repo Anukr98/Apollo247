@@ -263,8 +263,6 @@ export const DoctorsLanding: React.FC = (props) => {
   )
     showError = true;
 
-  console.log('fileroptions is....', filterOptions);
-
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
