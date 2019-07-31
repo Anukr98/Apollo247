@@ -396,7 +396,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           onChange={(event) => {
             setMobileNumber(event.currentTarget.value);
             if (event.currentTarget.value !== '') {
-              if (parseInt(event.currentTarget.value[0], 10) > 5) {
+              if (isMobileNumberValid(event.currentTarget.value)) {
                 setPhoneMessage(validPhoneMessage);
                 setShowErrorMessage(false);
               } else {
