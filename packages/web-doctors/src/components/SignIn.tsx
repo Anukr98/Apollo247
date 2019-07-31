@@ -159,9 +159,10 @@ export interface DoctorsProps {
 }
 interface PopupProps {
   popup: () => void;
+  setStickyPopupValue: () => void;
 }
 export const SignIn: React.FC<PopupProps> = (props) => {
-  const { popup } = props;
+  const { popup, setStickyPopupValue } = props;
   const classes = useStyles();
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
@@ -227,15 +228,17 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             setSubmitCount(0);
             setDisplayGetHelp(false);
             setShowTimer(false);
+            setStickyPopupValue();
           }}
         >
-          {'<'}
+          <img src={require('images/ic_login_back.svg')} alt="" />
         </Button>
       ) : (
         <Button
           className={classes.cross}
           onClick={() => {
             popup();
+            setStickyPopupValue();
           }}
         >
           {!showBackArrow && <img src={require('images/ic_cross.svg')} alt="" />}
@@ -253,9 +256,10 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           setDisplayOtpInput(false);
           setSubmitCount(0);
           setShowTimer(false);
+          setStickyPopupValue();
         }}
       >
-        {'<'}
+        <img src={require('images/ic_login_back.svg')} alt="" />
       </Button>
       <Typography variant="h2">
         {(isSigningIn || isVerifyingOtp || submitCount !== 3) && 'great'}
@@ -307,6 +311,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
                   focusPreviousInput();
                 }
               }}
+              error={submitCount !== 0 && submitCount !== 3 && verifyOtpError}
             />
           </Grid>
         ))}
@@ -425,6 +430,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
         disabled={!showErrorMessage}
         onClick={() => {
           setDisplayGetHelp(true);
+          setStickyPopupValue();
         }}
       >
         GET HELP
@@ -437,11 +443,12 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           disabled={
             !isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10 || isSendingOtp
           }
-          onClick={() =>
+          onClick={() => {
             sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
               setDisplayOtpInput(true)
-            )
-          }
+            );
+            setStickyPopupValue();
+          }}
         >
           {isSendingOtp ? (
             <CircularProgress className={classes.loader} />
