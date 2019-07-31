@@ -57,6 +57,10 @@ export const useAllCurrentPatients = () => {
 
   useEffect(() => {
     if (!currentPatientId) {
+      // if (allCurrentPatients!.length && allCurrentPatients!.length === 1) {
+      //   allCurrentPatients![0].relation = Relation.ME;
+      // }
+      console.log('ALL CURRENT PATIENTS IS: ', allCurrentPatients);
       const defaultCurrentPatient = allCurrentPatients
         ? allCurrentPatients.find((patient) => patient.relation === Relation.ME) || null
         : null;

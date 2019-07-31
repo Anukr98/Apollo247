@@ -23,7 +23,7 @@ describe('Home page (when signed in)', () => {
     cy.visitAph(clientRoutes.welcome()).wait(500);
   });
 
-  it('All the profiles should be visible after logging in', () => {
+  it.only('All the profiles should be visible after logging in', () => {
     cy.get('[data-cypress="HeroBanner"]')
       .contains(me.firstName!.toLowerCase())
       .click({ force: true });
@@ -36,3 +36,21 @@ describe('Home page (when signed in)', () => {
     cy.contains(me!.firstName!.toLowerCase());
   });
 });
+
+// describe('Relation.ME autofills for a single user', () => { //Not active yet
+//   const patient = [jane];
+
+//   beforeEach(() => {
+//     cy.signIn(patient);
+//     cy.visitAph(clientRoutes.welcome()).wait(500);
+//   });
+
+//   it.only('All the profiles should be visible after logging in', () => {
+//     cy.get('[data-cypress="HeroBanner"]').click({ force: true });
+//     cy.contains('button', /add member/i);
+//   });
+
+//   it('Shows "me" selected in hello dropdown', () => {
+//     cy.contains('hello');
+//   });
+// });
