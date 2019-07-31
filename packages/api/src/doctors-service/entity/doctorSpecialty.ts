@@ -10,7 +10,7 @@ import {
 import { Doctor } from 'doctors-service/entity/doctor';
 
 @Entity()
-export class DoctorSpeciality extends BaseEntity {
+export class DoctorSpecialty extends BaseEntity {
   @Column()
   createdDate: Date;
 
@@ -20,7 +20,10 @@ export class DoctorSpeciality extends BaseEntity {
   @Column()
   name: String;
 
-  @OneToMany((type) => Doctor, (doctor) => doctor.speciality)
+  @Column({ nullable: true, type: 'text' })
+  image: String;
+
+  @OneToMany((type) => Doctor, (doctor) => doctor.specialty)
   doctor: Doctor[];
 
   @Column({ nullable: true })

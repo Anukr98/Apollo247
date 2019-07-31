@@ -11,6 +11,10 @@ import {
   getSpecialtyResolvers,
 } from 'doctors-service/resolvers/getSpecialties';
 import {
+  getAllSpecialtiesTypeDefs,
+  getAllSpecialtiesResolvers,
+} from 'doctors-service/resolvers/getAllSpecialties';
+import {
   searchDoctorAndSpecialtyTypeDefs,
   searchDoctorAndSpecialtyResolvers,
 } from 'doctors-service/resolvers/searchDoctorAndSpecialty';
@@ -24,7 +28,7 @@ import gql from 'graphql-tag';
 import { GraphQLTime } from 'graphql-iso-date';
 import { createConnection } from 'typeorm';
 import { Doctor } from 'doctors-service/entity/doctor';
-import { DoctorSpeciality } from 'doctors-service/entity/doctorSpeciality';
+import { DoctorSpecialty } from 'doctors-service/entity/doctorSpecialty';
 import { StarTeam } from 'doctors-service/entity/starTeam';
 import { DoctorAndHospital } from 'doctors-service/entity/doctorAndHospital';
 import { Facility } from 'doctors-service/entity/facility';
@@ -34,7 +38,7 @@ export interface DoctorsServiceContext extends GatewayContext {}
 
 (async () => {
   await createConnection({
-    entities: [Doctor, DoctorSpeciality, StarTeam, DoctorAndHospital, Facility, ConsultHours],
+    entities: [Doctor, DoctorSpecialty, StarTeam, DoctorAndHospital, Facility, ConsultHours],
     type: 'postgres',
     host: 'doctors-db',
     port: 5432,
@@ -68,6 +72,10 @@ export interface DoctorsServiceContext extends GatewayContext {}
       {
         typeDefs: getSpecialtyTypeDefs,
         resolvers: getSpecialtyResolvers,
+      },
+      {
+        typeDefs: getAllSpecialtiesTypeDefs,
+        resolvers: getAllSpecialtiesResolvers,
       },
       {
         typeDefs: searchDoctorAndSpecialtyTypeDefs,

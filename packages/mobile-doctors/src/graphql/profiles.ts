@@ -93,8 +93,8 @@ export const GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM = gql`
  * @param {String} doctorId
  */
 export const ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM = gql`
-  mutation AddDoctorToStartDoctorProgram($starDoctorId: String!, $doctorId: String!) {
-    addDoctorToStartDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
+  mutation AddDoctorToStarDoctorProgram($starDoctorId: String!, $doctorId: String!) {
+    addDoctorToStarDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
   }
 `;
 
@@ -104,8 +104,8 @@ export const ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM = gql`
  * @param {String} doctorId
  */
 export const REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM = gql`
-  mutation RemoveDoctorFromStartDoctorProgram($starDoctorId: String!, $doctorId: String!) {
-    removeDoctorFromStartDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
+  mutation RemoveDoctorFromStarDoctorProgram($starDoctorId: String!, $doctorId: String!) {
+    removeDoctorFromStarDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
   }
 `;
 

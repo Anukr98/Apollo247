@@ -10,11 +10,11 @@ import {
   addDoctorToStartDoctorProgram,
   addDoctorToStartDoctorProgramVariables,
 } from '@aph/mobile-doctors/src/graphql/types/addDoctorToStartDoctorProgram';
-import { getDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import { GetDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
 import {
-  getDoctorsForStarDoctorProgram,
-  getDoctorsForStarDoctorProgramVariables,
-  getDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile,
+  GetDoctorsForStarDoctorProgram,
+  GetDoctorsForStarDoctorProgramVariables,
+  GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram,
 } from '@aph/mobile-doctors/src/graphql/types/getDoctorsForStarDoctorProgram';
 import { INVITEDSTATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
@@ -32,8 +32,11 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Alert,
+  Platform,
 } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
+import { getDoctorsForStarDoctorProgram as getDoctorsForStarDoctorProgramData } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 
 const styles = StyleSheet.create({
   inputTextStyle: {
@@ -65,17 +68,16 @@ const styles = StyleSheet.create({
 });
 
 export interface StarDoctorsTeamProps {
-  profileData: getDoctorProfile_getDoctorProfile;
+  profileData: GetDoctorProfile_getDoctorProfile;
 }
 
 export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _profileData }) => {
   const [addshow, setAddShow] = useState<boolean>(false);
   const [doctorSearchText, setDoctorSearchText] = useState<string>('');
   const [filteredStarDoctors, setFilteredStarDoctors] = useState<
-    (getDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile | null)[] | null
+    (GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram['profile'] | null)[] | null
   >([]);
   const [isShowAddDoctorButton, setIsShowAddDoctorButton] = useState<boolean>(false);
-  const [suggestionCardHeight, setSuggestionCardHeight] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
 
   const [profileData, setProfileData] = useState(_profileData);
@@ -84,6 +86,9 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
   const client = useApolloClient();
 
   const filterDoctors = (searchText: string) => {
+    if (searchText != '' && !/^[A-Za-z .]+$/.test(searchText)) {
+      return;
+    }
     if (isSuggestionExist) {
       setIsSuggestionExist(false);
       setIsShowAddDoctorButton(false);
@@ -96,7 +101,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
     }
     // do api call
     client
-      .query<getDoctorsForStarDoctorProgram, getDoctorsForStarDoctorProgramVariables>({
+      .query<GetDoctorsForStarDoctorProgram, GetDoctorsForStarDoctorProgramVariables>({
         query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
         variables: { searchString: searchText.replace('Dr. ', '') },
       })
@@ -106,8 +111,9 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
       .then((_data) => {
         console.log('flitered array', _data);
         const doctorProfile =
-          _data.data.getDoctorsForStarDoctorProgram &&
-          _data.data.getDoctorsForStarDoctorProgram.map((i) => i!.profile);
+          (_data.data.getDoctorsForStarDoctorProgram &&
+            _data.data.getDoctorsForStarDoctorProgram.map((i) => i!.profile)) ||
+          [];
         // const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
         setFilteredStarDoctors(doctorProfile);
       })
@@ -151,7 +157,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
       .catch((e) => {
         setIsLoading(false);
         console.log('Error occured while adding Doctor', e);
-        // Alert.alert('Error occured while adding Doctor');
+        Alert.alert('Error occured while adding Doctor');
       });
   };
 
@@ -191,56 +197,48 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
   };
 
   const renderSuggestionCard = () => (
-    <View
-      style={{ marginTop: 2 }}
-      onLayout={(layout) => {
-        const { height } = layout.nativeEvent.layout;
-        setSuggestionCardHeight(height);
-      }}
-    >
+    <View style={{ marginTop: 2 }}>
       {filteredStarDoctors!.length > 0 ? (
         <View
           style={{
             paddingTop: 16,
             paddingBottom: 15,
-            position: 'absolute',
+            position: Platform.OS == 'android' ? 'relative' : 'absolute',
             top: 0,
-            zIndex: 3,
+            zIndex: 2,
             width: '100%',
             alignSelf: 'center',
             justifyContent: 'flex-end',
             ...theme.viewStyles.whiteRoundedCornerCard,
           }}
         >
-          <View>
-            {filteredStarDoctors!.map((item, i) => {
-              const drName = `Dr. ${item!.firstName} ${item!.lastName}`;
-              return (
-                <TouchableOpacity
-                  onPress={() =>
-                    onPressDoctorSearchListItem(`Dr. ${item!.firstName} ${item!.lastName}`)
-                  }
-                  style={{ marginHorizontal: 16 }}
-                  key={i}
-                >
-                  {formatSuggestionsText(drName, doctorSearchText)}
-                  {i < filteredStarDoctors!.length - 1 ? (
-                    <View
-                      style={{
-                        marginTop: 8,
-                        marginBottom: 7,
-                        height: 1,
-                        opacity: 0.1,
-                        borderStyle: 'solid',
-                        borderWidth: 0.5,
-                        borderColor: theme.colors.darkBlueColor(),
-                      }}
-                    ></View>
-                  ) : null}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+          {filteredStarDoctors!.map((item, i) => {
+            const drName = `Dr. ${item!.firstName} ${item!.lastName}`;
+            return (
+              <TouchableOpacity
+                onPress={() =>
+                  onPressDoctorSearchListItem(`Dr. ${item!.firstName} ${item!.lastName}`)
+                }
+                style={{ marginHorizontal: 16 }}
+                key={i}
+              >
+                {formatSuggestionsText(drName, doctorSearchText)}
+                {i < filteredStarDoctors!.length - 1 ? (
+                  <View
+                    style={{
+                      marginTop: 8,
+                      marginBottom: 7,
+                      height: 1,
+                      opacity: 0.1,
+                      borderStyle: 'solid',
+                      borderWidth: 0.5,
+                      borderColor: theme.colors.darkBlueColor(),
+                    }}
+                  ></View>
+                ) : null}
+              </TouchableOpacity>
+            );
+          })}
         </View>
       ) : null}
     </View>
@@ -300,11 +298,15 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
                 autoFocus
                 style={styles.inputStyle}
                 value={doctorSearchText}
-                onChange={(text) => filterDoctors(text.nativeEvent.text)}
+                onChange={(text) => filterDoctors(text.nativeEvent.text.replace(/\\/g, ''))}
               />
               {isShowAddDoctorButton ? (
-                <TouchableOpacity onPress={() => addDoctorToProgram(doctorSearchText)}>
+                <TouchableOpacity
+                  style={{ marginLeft: -20 }}
+                  onPress={() => addDoctorToProgram(doctorSearchText)}
+                >
                   <Send />
+                  <View style={{ height: 6 }} />
                 </TouchableOpacity>
               ) : null}
             </View>
@@ -312,7 +314,6 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
           </View>
         </View>
       )}
-      <View style={{ height: suggestionCardHeight }} />
     </SquareCardWithTitle>
   );
 };
