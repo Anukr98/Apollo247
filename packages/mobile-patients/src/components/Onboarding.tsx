@@ -160,7 +160,7 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
                       AsyncStorage.setItem('onboarding', 'true');
                       props.navigation.replace(AppRoutes.Login);
                     } else {
-                      appIntroSliderRef.current.goToSlide(item.index);
+                      appIntroSliderRef.current!.goToSlide(item.index);
                     }
                   }}
                 >

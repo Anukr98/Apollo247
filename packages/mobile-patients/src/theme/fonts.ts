@@ -1,3 +1,5 @@
+// import { Platform } from 'react-native';
+
 const Fonts = {
   IBMPlexSansThinItalic: (s = 12) => {
     return {
@@ -39,6 +41,14 @@ const Fonts = {
     return {
       fontFamily: 'IBMPlexSans-Medium',
       fontSize: s,
+      // ...Platform.select({
+      //   android: {
+      //     fontWeight: 'normal',
+      //   },
+      //   ios: {
+      //     fontWeight: '500',
+      //   },
+      // }),
     };
   },
   IBMPlexSansLightItalic: (s = 12) => {
