@@ -88,7 +88,7 @@ const useStyles = makeStyles((theme: Theme) => {
         marginRight: -40,
         backgroundColor: '#fc9916',
         '&:hover': {
-          backgroundColor: '#fc9916',
+          backgroundColor: '#e28913',
         },
         '&:disabled': {
           backgroundColor: '#fed6a2',
