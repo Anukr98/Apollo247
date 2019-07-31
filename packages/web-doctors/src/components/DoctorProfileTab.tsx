@@ -271,8 +271,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     starDoctorHeading: {
+      fontSize: 16,
       marginBottom: 15,
       fontWeight: 600,
+      color: '#02475b',
     },
     starDoctordelete: {
       color: '#951717',
@@ -599,10 +601,7 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
 
       {doctorProfile.isStarDoctor && (
         <div>
-          <Typography
-            variant="h3"
-            className={numStarDoctors === 0 ? classes.none : classes.starDoctorHeading}
-          >
+          <Typography className={numStarDoctors === 0 ? classes.none : classes.starDoctorHeading}>
             Your Star Doctors Team ({numStarDoctors})
           </Typography>
           <StarDoctorsList currentDocId={doctorProfile.id} starDoctors={starDoctors} />
