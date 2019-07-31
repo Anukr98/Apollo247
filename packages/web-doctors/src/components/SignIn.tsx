@@ -159,10 +159,10 @@ export interface DoctorsProps {
 }
 interface PopupProps {
   popup: () => void;
-  LoginPageOpen: () => void;
+  loginPopupOpen: () => void;
 }
 export const SignIn: React.FC<PopupProps> = (props) => {
-  const { popup, LoginPageOpen } = props;
+  const { popup, loginPopupOpen } = props;
   const classes = useStyles();
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
@@ -174,8 +174,8 @@ export const SignIn: React.FC<PopupProps> = (props) => {
   const [submitCount, setSubmitCount] = useState(0);
   const [showTimer, setShowTimer] = useState(false);
   const [showBackArrow, setShowBackArrow] = useState(true);
-  const countDown = useRef(19);
-  const [timer, setTimer] = useState(19);
+  const countDown = useRef(179);
+  const [timer, setTimer] = useState(179);
 
   const placeRecaptchaAfterMe = useRef(null);
 
@@ -210,7 +210,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             clearInterval(intervalId);
             setSubmitCount(0);
             setShowTimer(false);
-            countDown.current = 19;
+            countDown.current = 179;
           }
         }, 1000);
       }
@@ -228,7 +228,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             setSubmitCount(0);
             setDisplayGetHelp(false);
             setShowTimer(false);
-            LoginPageOpen();
+            loginPopupOpen();
           }}
         >
           {'<'}
@@ -238,7 +238,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           className={classes.cross}
           onClick={() => {
             popup();
-            LoginPageOpen();
+            loginPopupOpen();
           }}
         >
           {!showBackArrow && <img src={require('images/ic_cross.svg')} alt="" />}
@@ -256,7 +256,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           setDisplayOtpInput(false);
           setSubmitCount(0);
           setShowTimer(false);
-          LoginPageOpen();
+          loginPopupOpen();
         }}
       >
         {'<'}
@@ -430,6 +430,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
         disabled={!showErrorMessage}
         onClick={() => {
           setDisplayGetHelp(true);
+          loginPopupOpen();
         }}
       >
         GET HELP
@@ -446,7 +447,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
               setDisplayOtpInput(true)
             );
-            LoginPageOpen();
+            loginPopupOpen();
           }}
         >
           {isSendingOtp ? (
