@@ -231,7 +231,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             setStickyPopupValue();
           }}
         >
-          {'<'}
+          <img src={require('images/ic_login_back.svg')} alt="" />
         </Button>
       ) : (
         <Button
@@ -259,7 +259,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           setStickyPopupValue();
         }}
       >
-        {'<'}
+        <img src={require('images/ic_login_back.svg')} alt="" />
       </Button>
       <Typography variant="h2">
         {(isSigningIn || isVerifyingOtp || submitCount !== 3) && 'great'}

@@ -165,7 +165,7 @@ export const Header: React.FC = (props) => {
                     setIsLoginPopupVisible(false);
                   }}
                   setStickyPopupValue={() => {
-                    stickyPopup === true ? setStickyPopup(false) : setStickyPopup(true);
+                    setStickyPopup(!stickyPopup);
                   }}
                 />
               </Paper>
