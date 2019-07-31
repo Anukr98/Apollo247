@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
@@ -145,6 +145,15 @@ export interface DoctorsFilterProps {
   manageFilter: (disableFilters: boolean) => void;
 }
 
+// previous hook that accepts anything
+function usePrevious(value: any) {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
+
 export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   const classes = useStyles();
 
@@ -177,17 +186,27 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   const [fees, setFees] = useState<string[]>(existingFilters.fees || []);
   const [gender, setGender] = useState<string[]>(existingFilters.gender || []);
   const [language, setLanguage] = useState<string[]>(existingFilters.language || []);
+  const [dateSelected, setDateSelected] = useState<string>(existingFilters.dateSelected || '');
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
 
+  const prevDateSelected = usePrevious(dateSelected);
+
   const filterOptions = {
-    searchKeyword: searchKeyword,
-    cityName: existingFilters.cityName,
-    experience: existingFilters.experience,
-    availability: existingFilters.availability,
-    fees: existingFilters.fees,
-    gender: existingFilters.gender,
-    language: existingFilters.language,
+    searchKeyword: searchKeyword === '' ? existingFilters.searchKeyword : '',
+    cityName: cityName,
+    experience: experience,
+    availability: availability,
+    fees: fees,
+    gender: gender,
+    language: language,
+    dateSelected: dateSelected,
   };
+
+  // we should keep the previous value and render only when prop changes to prevent infinite renders.
+  // https://reactjs.org/docs/hooks-faq.html#how-to-get-the-previous-props-or-state
+  useEffect(() => {
+    if (prevDateSelected !== dateSelected) handleFilterOptions(filterOptions);
+  });
 
   const emptyFilters = () => {
     filterOptions.searchKeyword = '';
@@ -200,6 +219,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     setAvailability([]);
     setFees([]);
     setLanguage([]);
+    setDateSelected('');
     handleFilterOptions(filterOptions);
   };
 
@@ -217,7 +237,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
             handleFilterOptions(filterOptions);
           }
         }}
-        value={searchKeyword}
+        value={searchKeyword.length > 0 ? searchKeyword : existingFilters.searchKeyword}
         error={showError}
       />
       {showError ? (
@@ -310,6 +330,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                 <div
                   className={classes.calendarIcon}
                   onClick={(e) => {
+                    setDateSelected('');
                     !disableFilters ? setShowCalendar(showCalendar ? false : true) : false;
                   }}
                 >
@@ -326,7 +347,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                 <div
                   className={`${classes.calendarView} ${showCalendar ? classes.showCalendar : ''}`}
                 >
-                  <AphCalendar />
+                  <AphCalendar getDate={(dateSelected: string) => setDateSelected(dateSelected)} />
                 </div>
                 {_map(filterAvailability, (filterAvailability, index) => {
                   return !showCalendar ? (

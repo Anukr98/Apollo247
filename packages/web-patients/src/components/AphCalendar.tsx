@@ -2,6 +2,7 @@ import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { Theme, createMuiTheme } from '@material-ui/core';
 import React, { useState } from 'react';
 import { usePickerState, Calendar, MaterialUiPickersDate } from '@material-ui/pickers';
+import format from 'date-fns/format';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -61,15 +62,29 @@ const defaultMaterialTheme = createMuiTheme({
   },
 });
 
-export const AphCalendar: React.FC = (props) => {
+interface CustomAPHCalendarProps {
+  getDate: (dateSelected: string) => void;
+}
+
+export const AphCalendar: React.FC<CustomAPHCalendarProps> = (props) => {
   const classes = useStyles();
-  const [value, handleDateChange1] = useState<MaterialUiPickersDate>(new Date());
+  const [value, handleDateChange] = useState<MaterialUiPickersDate>(new Date());
+  const { getDate } = props;
+
   const { pickerProps } = usePickerState(
-    { value, onChange: handleDateChange1 },
     {
-      getDefaultFormat: () => 'MM/dd/yyyy',
+      value,
+      onChange: (date) => {
+        handleDateChange(date);
+        if (date) getDate(format(date, 'dd/MM/yyyy'));
+      },
+      autoOk: true,
+    },
+    {
+      getDefaultFormat: () => 'dd/MM/yyyy',
     }
   );
+
   return (
     <div className={classes.root}>
       <ThemeProvider theme={defaultMaterialTheme}>
@@ -77,6 +92,10 @@ export const AphCalendar: React.FC = (props) => {
           leftArrowIcon={<img src={require('images/ic_arrow_left.svg')} alt="" />}
           rightArrowIcon={<img src={require('images/ic_arrow_right.svg')} alt="" />}
           classes={{ transitionContainer: classes.transitionContainer }}
+          onChange={(date) => {
+            handleDateChange(date);
+          }}
+          minDate={new Date()}
           {...pickerProps}
         />
       </ThemeProvider>
