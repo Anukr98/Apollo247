@@ -3,25 +3,25 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL query operation: getDoctorsForStarDoctorProgram
+// GraphQL query operation: GetDoctorsForStarDoctorProgram
 // ====================================================
 
-export interface getDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile {
+export interface GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile {
   __typename: "Doctor";
   id: string;
   firstName: string;
   lastName: string;
 }
 
-export interface getDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram {
+export interface GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram {
   __typename: "StarDoctorProfile";
-  profile: getDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile | null;
+  profile: GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile | null;
 }
 
-export interface getDoctorsForStarDoctorProgram {
-  getDoctorsForStarDoctorProgram: (getDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram | null)[] | null;
+export interface GetDoctorsForStarDoctorProgram {
+  getDoctorsForStarDoctorProgram: (GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram | null)[] | null;
 }
 
-export interface getDoctorsForStarDoctorProgramVariables {
+export interface GetDoctorsForStarDoctorProgramVariables {
   searchString: string;
 }
