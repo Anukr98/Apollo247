@@ -67,3 +67,16 @@ export const jenny: Patient = {
   dateOfBirth: '1999-01-01',
   emailAddress: '',
 };
+
+export const julie: Patient = {
+  __typename: 'Patient',
+  id: '6',
+  uhid: '',
+  firstName: 'Julie',
+  lastName: 'Doe',
+  gender: Gender.FEMALE,
+  mobileNumber: '+91123456789',
+  relation: null,
+  dateOfBirth: '1999-01-01',
+  emailAddress: '',
+};

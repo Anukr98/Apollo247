@@ -91,3 +91,17 @@ describe('Login (Firebase)', () => {
     cy.get('[data-cypress="Navigation"]').should('exist');
   });
 });
+
+describe('Login state for single user without Relation status selected', () => {
+  const patient = [jane];
+
+  beforeEach(() => {
+    cy.signIn(patient);
+    cy.visitAph(clientRoutes.welcome()).wait(500);
+  });
+
+  it('Status should autofill to Relation.ME, as indicated in welcome banner', () => {
+    cy.get('[data-cypress="HeroBanner"]').click({ force: true });
+    cy.should('contain', patient[0].firstName!.toLowerCase());
+  });
+});

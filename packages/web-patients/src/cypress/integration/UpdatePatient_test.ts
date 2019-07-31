@@ -1,5 +1,5 @@
 import { clientRoutes } from 'helpers/clientRoutes';
-import { jane, john, jimmy } from 'cypress/fixtures/patientsFixtures';
+import { jane, john, jimmy, julie } from 'cypress/fixtures/patientsFixtures';
 import { Relation, Gender } from 'graphql/types/globalTypes';
 
 describe('UpdatePatient (with uhids)', () => {
@@ -82,7 +82,7 @@ describe('UpdatePatient (with uhids)', () => {
 });
 
 describe('UpdatePatient (without uhids)', () => {
-  const patients = [jane];
+  const patients = [jane, julie];
 
   beforeEach(() => {
     cy.signIn(patients);
@@ -93,7 +93,7 @@ describe('UpdatePatient (without uhids)', () => {
     cy.get('[data-cypress="NewProfile"]').should('exist');
   });
 
-  it('Does not show name in HeroBanner (yet)', () => {
+  it('Does not show name in HeroBanner until a Relation.ME is established', () => {
     cy.get('[data-cypress="HeroBanner"]')
       .contains('hello there')
       .should('exist')

@@ -23,7 +23,7 @@ describe('Home page (when signed in)', () => {
     cy.visitAph(clientRoutes.welcome()).wait(500);
   });
 
-  it.only('All the profiles should be visible after logging in', () => {
+  it('All the profiles should be visible after logging in', () => {
     cy.get('[data-cypress="HeroBanner"]')
       .contains(me.firstName!.toLowerCase())
       .click({ force: true });
@@ -34,19 +34,5 @@ describe('Home page (when signed in)', () => {
   it('Shows "me" selected in hello dropdown', () => {
     cy.contains('hello');
     cy.contains(me!.firstName!.toLowerCase());
-  });
-});
-
-describe('Login state for single user without Relation status selected', () => {
-  const patient = [jane];
-
-  beforeEach(() => {
-    cy.signIn(patient);
-    cy.visitAph(clientRoutes.welcome()).wait(500);
-  });
-
-  it.only('Status should autofill to Relation.ME, as indicated in welcome banner', () => {
-    cy.get('[data-cypress="HeroBanner"]').click({ force: true });
-    cy.should('contain', patient[0].firstName!.toLowerCase());
   });
 });

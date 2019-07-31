@@ -56,21 +56,14 @@ export const useAllCurrentPatients = () => {
     : null;
 
   useEffect(() => {
-    if (!currentPatientId) {
-      let defaultCurrentPatient;
-      if (allCurrentPatients) {
-        if (allCurrentPatients.length > 1) {
-          defaultCurrentPatient =
-            allCurrentPatients.find((patient) => patient.relation === Relation.ME) || null;
-        }
-        if (allCurrentPatients.length === 1) {
-          defaultCurrentPatient = allCurrentPatients[0];
-        }
-      } else {
-        defaultCurrentPatient = null;
-      }
-      setCurrentPatientId(defaultCurrentPatient ? defaultCurrentPatient.id : null);
-    }
+    const getDefaultCurrentPatient = () => {
+      if (!allCurrentPatients) return null;
+      if (allCurrentPatients.length === 1) return allCurrentPatients[0];
+      return allCurrentPatients.find((p) => p.relation === Relation.ME) || null;
+    };
+    const defaultCurrentPatient = getDefaultCurrentPatient();
+
+    setCurrentPatientId(defaultCurrentPatient ? defaultCurrentPatient.id : null);
   }, [allCurrentPatients, currentPatientId, setCurrentPatientId]);
 
   return {

@@ -170,7 +170,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
           <MenuItem className={classes.menuItemHide} disabled>
             Relation
           </MenuItem>
-          {Object.values(orderedRelations).map((relationOption) => (
+          {orderedRelations.map((relationOption) => (
             <MenuItem
               selected={relationOption === selectedRelation}
               value={relationOption}
