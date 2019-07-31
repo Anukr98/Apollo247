@@ -127,7 +127,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     tabBarHeading: {
-      boxShadow: 'inset 0px 8px 6px -6px rgba(128,128,128,0.3)',
+      boxShadow: 'inset 0px 5px 6px -6px rgba(128,128,128,0.3)',
       backgroundColor: theme.palette.secondary.contrastText,
     },
   };
