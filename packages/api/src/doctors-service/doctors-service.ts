@@ -11,6 +11,10 @@ import {
   getSpecialtyResolvers,
 } from 'doctors-service/resolvers/getSpecialties';
 import {
+  getAllSpecialtiesTypeDefs,
+  getAllSpecialtiesResolvers,
+} from 'doctors-service/resolvers/getAllSpecialties';
+import {
   searchDoctorAndSpecialtyTypeDefs,
   searchDoctorAndSpecialtyResolvers,
 } from 'doctors-service/resolvers/searchDoctorAndSpecialty';
@@ -80,6 +84,10 @@ export interface DoctorsServiceContext extends GatewayContext {}
       {
         typeDefs: getSpecialtyTypeDefs,
         resolvers: getSpecialtyResolvers,
+      },
+      {
+        typeDefs: getAllSpecialtiesTypeDefs,
+        resolvers: getAllSpecialtiesResolvers,
       },
       {
         typeDefs: searchDoctorAndSpecialtyTypeDefs,
