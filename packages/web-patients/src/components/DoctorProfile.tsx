@@ -290,13 +290,13 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
               fullWidth
               color="primary"
             >
-              Book Consultation
+              Book Appointment
             </AphButton>
           </div>
         </div>
       </div>
     );
   } else {
-    return <div>Page Not Found....</div>;
+    return <div>Invalid doctor id</div>;
   }
 };

@@ -234,6 +234,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const doctorDetails = data && data.getDoctorProfileById ? data : null;
 
   if (doctorDetails) {
+    console.log(doctorDetails);
+
     const isStarDoctor =
       doctorDetails &&
       doctorDetails.getDoctorProfileById &&

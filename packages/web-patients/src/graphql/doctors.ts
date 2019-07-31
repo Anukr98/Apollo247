@@ -29,12 +29,14 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         address
       }
       clinics {
+        id
         name
         image
         addressLine1
         addressLine2
         addressLine3
         city
+        isClinic
       }
       starDoctorTeam {
         id
