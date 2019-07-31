@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphTextField } from '@aph/web-ui-components';
 import { MedicineCard } from 'components/MedicineCard';
+import { MedicineStripCard } from 'components/MedicineStripCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -228,6 +229,13 @@ export const SearchMedicines: React.FC = (props) => {
             <div className={classes.pastSearches}>
               <MedicineCard />
             </div>
+            <div className={classes.sectionHeader}>
+              <span>Matching Medicines</span>
+              <span className={classes.count}>03</span>
+            </div>
+            <MedicineStripCard />
+            <MedicineStripCard />
+            <MedicineStripCard />
           </div>
         </Scrollbars>
       </div>
