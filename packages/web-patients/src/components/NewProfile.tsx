@@ -17,7 +17,6 @@ import { Formik, FormikProps, Field, FieldProps, Form } from 'formik';
 import { useMutation } from 'react-apollo-hooks';
 import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';
-import _sortBy from 'lodash/sortBy';
 
 const isoDatePattern = 'yyyy-MM-dd';
 const clientDatePattern = 'dd/MM/yyyy';
@@ -310,7 +309,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                         <FormControl className={classes.formControl}>
                           <label>Gender</label>
                           <Grid container spacing={2} className={classes.btnGroup}>
-                            {Object.values(orderedGenders).map((gender) => (
+                            {orderedGenders.map((gender) => (
                               <Grid item xs={4} sm={4} key={gender}>
                                 <AphButton
                                   color="secondary"
