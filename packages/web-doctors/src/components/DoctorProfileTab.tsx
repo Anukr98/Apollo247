@@ -65,6 +65,7 @@ const useStyles = makeStyles((theme: Theme) => {
         letterSpacing: '0.3px',
         marginLeft: 20,
         fontSize: 12,
+        fontWeight: 600,
         '& span': {
           padding: '0 2px',
         },
@@ -170,7 +171,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fc9916',
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
-        backgroundColor: '#fc9916',
+        backgroundColor: '#e28913',
       },
     },
     backButton: {
@@ -192,7 +193,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.action.selected,
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
-      pointerEvents: 'none',
+      // pointerEvents: 'none',
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
@@ -271,6 +272,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     starDoctorHeading: {
       marginBottom: 15,
+      fontWeight: 600,
     },
     starDoctordelete: {
       color: '#951717',
