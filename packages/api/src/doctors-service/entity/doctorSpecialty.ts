@@ -20,7 +20,7 @@ export class DoctorSpecialty extends BaseEntity {
   @Column()
   name: String;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'text' })
   image: String;
 
   @OneToMany((type) => Doctor, (doctor) => doctor.specialty)
