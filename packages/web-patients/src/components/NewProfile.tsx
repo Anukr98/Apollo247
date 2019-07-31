@@ -140,6 +140,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const [showProfileSuccess, setShowProfileSuccess] = useState<boolean>(false);
   const updatePatient = useMutation<UpdatePatient, UpdatePatientVariables>(UPDATE_PATIENT);
 
+  const orderedGenders = [Gender.MALE, Gender.FEMALE, Gender.OTHER];
+
   if (showProfileSuccess) {
     return <ProfileSuccess onSubmitClick={() => props.onClose()} />;
   }
@@ -307,7 +309,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                         <FormControl className={classes.formControl}>
                           <label>Gender</label>
                           <Grid container spacing={2} className={classes.btnGroup}>
-                            {Object.values(Gender).map((gender) => (
+                            {orderedGenders.map((gender) => (
                               <Grid item xs={4} sm={4} key={gender}>
                                 <AphButton
                                   color="secondary"

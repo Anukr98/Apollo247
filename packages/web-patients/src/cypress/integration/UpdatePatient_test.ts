@@ -113,4 +113,25 @@ describe('UpdatePatient (without uhids)', () => {
       .contains(janeTheMan.firstName!.toLowerCase())
       .should('exist');
   });
+
+  it('Shows genders in the order Male, Female, Other', () => {
+    cy.get('[data-cypress="NewProfile"]')
+      .find('div[class*="makeStyles-btnGroup"]')
+      .children()
+      .eq(0)
+      .find('span[class*="MuiButton-label"]')
+      .should('contain', 'Male');
+
+    cy.get('div[class*="makeStyles-btnGroup"]')
+      .children()
+      .eq(1)
+      .find('span[class*="MuiButton-label"]')
+      .should('contain', 'Female');
+
+    cy.get('div[class*="makeStyles-btnGroup"]')
+      .children()
+      .eq(2)
+      .find('span[class*="MuiButton-label"]')
+      .should('contain', 'Other');
+  });
 });
