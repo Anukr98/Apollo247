@@ -203,6 +203,7 @@ export interface SearchObject {
   gender: string[] | null;
   language: string[] | null;
   dateSelected: string;
+  specialtyName: string;
 }
 
 const searchObject = {
@@ -214,6 +215,7 @@ const searchObject = {
   gender: [],
   language: [],
   dateSelected: '',
+  specialtyName: '',
 };
 
 export const DoctorsLanding: React.FC = (props) => {
@@ -233,6 +235,7 @@ export const DoctorsLanding: React.FC = (props) => {
     if (specialitySelected.length > 0) {
       setFilterOptions({
         searchKeyword: specialitySelected,
+        specialtyName: specialitySelected, // this is used to disable filter if specialty selected and changed.
         cityName: [],
         experience: [],
         availability: [],
