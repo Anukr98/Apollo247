@@ -5,7 +5,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
-import { getDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import { GetDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
 
 const styles = StyleSheet.create({
   container: {
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
 });
 
 export interface ProfileProps {
-  profileData: getDoctorProfile_getDoctorProfile;
+  profileData: GetDoctorProfile_getDoctorProfile;
 }
 
 export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
@@ -126,7 +126,14 @@ export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
           {profileRow('Awards', profileData!.profile!.awards || '')}
           {profileRow('Speaks', (profileData!.profile!.languages || '').split(',').join(', '))}
           {profileRow('MCI Number', profileData!.profile!.registrationNumber)}
-          {profileRow('In-person Consult Location', profileData!.clinics![0]!.location! || '')}
+          {profileRow(
+            'In-person Consult Location',
+            [
+              profileData!.clinics![0]!.addressLine1,
+              profileData!.clinics![0]!.addressLine2,
+              profileData!.clinics![0]!.addressLine3,
+            ].join(', ')
+          )}
         </View>
       </SquareCardWithTitle>
       <StarDoctorsTeam profileData={profileData} />

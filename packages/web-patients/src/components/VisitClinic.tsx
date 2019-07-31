@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem } from '@material-ui/core';
 import React from 'react';
 import { AphButton, AphSelect } from '@aph/web-ui-components';
-import { AphCalendar } from 'components/AphCalendar';
+// import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
 import Scrollbars from 'react-custom-scrollbars';
 
@@ -111,13 +111,14 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const VisitClinic: React.FC = (props) => {
   const classes = useStyles();
+  // const [dateSelected, setDateSelected] = useState<string>('');
 
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'50vh'}>
         <div className={classes.customScrollBar}>
           <div className={classes.consultGroup}>
-            <AphCalendar />
+            {/* <AphCalendar getDate={(dateSelected: string) => setDateSelected(dateSelected)} /> */}
           </div>
           <div className={`${classes.consultGroup} ${classes.timeSlots}`}>
             <AphSelect value="Apollo Hospital">

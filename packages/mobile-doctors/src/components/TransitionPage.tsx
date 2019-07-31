@@ -39,7 +39,7 @@ export const TransitionPage: React.FC<TransitionPageProps> = (props) => {
       <View style={{ backgroundColor: colors.WHITE, flex: 1 }}>
         <Header />
         <ProfileTabHeader
-          title={`thank you, dr. ${doctorName} :)`}
+          title={`thank you, dr. ${doctorName.toLowerCase()} :)`}
           description="Let’s go over now to see the Apollo24x7 portal and start consultations!"
           activeTabIndex={0}
         />
