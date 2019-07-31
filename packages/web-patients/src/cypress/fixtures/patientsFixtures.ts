@@ -3,7 +3,7 @@ import { Gender, Relation } from 'graphql/types/globalTypes';
 
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
-export const jane: Patient = {
+export const janeNoRelation: Patient = {
   __typename: 'Patient',
   id: '1',
   uhid: '',
@@ -16,7 +16,7 @@ export const jane: Patient = {
   emailAddress: '',
 };
 
-export const john: Patient = {
+export const johnBrother: Patient = {
   __typename: 'Patient',
   id: '2',
   uhid: '',
@@ -29,7 +29,7 @@ export const john: Patient = {
   emailAddress: '',
 };
 
-export const jimmy: Patient = {
+export const jimmyCousin: Patient = {
   __typename: 'Patient',
   id: '3',
   uhid: '',
@@ -37,12 +37,12 @@ export const jimmy: Patient = {
   lastName: 'Doe',
   gender: Gender.MALE,
   mobileNumber: '+91123456789',
-  relation: Relation.BROTHER,
+  relation: Relation.COUSIN,
   dateOfBirth: null,
   emailAddress: '',
 };
 
-export const jerome: Patient = {
+export const jeromeFather: Patient = {
   __typename: 'Patient',
   id: '4',
   uhid: '4',
@@ -55,7 +55,7 @@ export const jerome: Patient = {
   emailAddress: '',
 };
 
-export const jenny: Patient = {
+export const jennyMother: Patient = {
   __typename: 'Patient',
   id: '5',
   uhid: '5',
@@ -68,7 +68,7 @@ export const jenny: Patient = {
   emailAddress: '',
 };
 
-export const julie: Patient = {
+export const julieNoRelation: Patient = {
   __typename: 'Patient',
   id: '6',
   uhid: '',

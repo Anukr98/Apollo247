@@ -1,5 +1,5 @@
 import { clientRoutes } from 'helpers/clientRoutes';
-import { jane, john } from 'cypress/fixtures/patientsFixtures';
+import { janeNoRelation, johnBrother } from 'cypress/fixtures/patientsFixtures';
 import { Relation } from 'graphql/types/globalTypes';
 
 describe('Login', () => {
@@ -59,8 +59,8 @@ describe('Login', () => {
 
 describe('Login (Firebase)', () => {
   beforeEach(() => {
-    const johnMe = { ...john, relation: Relation.ME };
-    const patients = [jane, johnMe];
+    const johnMe = { ...johnBrother, relation: Relation.ME };
+    const patients = [janeNoRelation, johnMe];
     cy.signIn(patients);
     cy.visitAph(clientRoutes.welcome()).wait(500);
     cy.get('[data-cypress="Header"]')
@@ -93,7 +93,7 @@ describe('Login (Firebase)', () => {
 });
 
 describe('Login state for single user without Relation status selected', () => {
-  const patient = [jane];
+  const patient = [janeNoRelation];
 
   beforeEach(() => {
     cy.signIn(patient);

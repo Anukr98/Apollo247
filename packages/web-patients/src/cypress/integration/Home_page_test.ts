@@ -1,5 +1,5 @@
 import { clientRoutes } from 'helpers/clientRoutes';
-import { jane, john, jimmy } from 'cypress/fixtures/patientsFixtures';
+import { janeNoRelation, johnBrother, jimmyCousin } from 'cypress/fixtures/patientsFixtures';
 import { Relation } from 'graphql/types/globalTypes';
 
 describe('Home page (when signed out)', () => {
@@ -15,8 +15,8 @@ describe('Home page (when signed out)', () => {
 });
 
 describe('Home page (when signed in)', () => {
-  const me = { ...jimmy, relation: Relation.ME };
-  const patients = [jane, john, me];
+  const me = { ...jimmyCousin, relation: Relation.ME };
+  const patients = [janeNoRelation, johnBrother, me];
 
   beforeEach(() => {
     cy.signIn(patients);
