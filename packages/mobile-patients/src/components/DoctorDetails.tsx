@@ -7,7 +7,16 @@ import { ShareWhite } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { Dimensions, Image, SafeAreaView, StyleSheet, Text, View, Platform } from 'react-native';
+import {
+  Dimensions,
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  Platform,
+  Animated,
+} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { useQuery } from 'react-apollo-hooks';
@@ -140,6 +149,19 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [doctorId, setDoctorId] = useState<String>('');
   const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [scrollY, setscrollY] = useState(new Animated.Value(0));
+  const headMov = scrollY.interpolate({
+    inputRange: [0, 180, 181],
+    outputRange: [0, -105, -105],
+  });
+  const headColor = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: ['white', 'white'],
+  });
+  const imgOp = scrollY.interpolate({
+    inputRange: [0, 180, 181],
+    outputRange: [1, 0, 0],
+  });
 
   const appointmentData = useQuery<getAppointmentHistory>(GET_APPOINTMENT_HISTORY, {
     variables: {
@@ -186,13 +208,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     if (doctorDetails)
       return (
         <View style={styles.topView}>
-          {doctorDetails.profile && doctorDetails.profile.photoUrl && (
-            <Image
-              source={{ uri: doctorDetails.profile.photoUrl }}
-              style={{ height: 160, width: '100%' }}
-            />
-          )}
-
           {doctorDetails && doctorDetails.profile && (
             <View style={styles.detailsViewStyle}>
               <Text style={styles.doctorNameStyles}>
@@ -470,6 +485,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     }
   }
 
+  const handleScroll = () => {
+    // console.log(e, 'jvjhvhm');
+  };
+
   console.log(dispalyoverlay, 'dispalyoverlay', doctorDetails);
   return (
     <View style={{ flex: 1 }}>
@@ -478,9 +497,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           ...theme.viewStyles.container,
         }}
       >
-        <Header
+        {/* <Header
           container={{
-            zIndex: 2,
+            zIndex: 3,
             position: 'absolute',
             top: Platform.OS === 'ios' ? (height === 812 || height === 896 ? 40 : 20) : 0,
             left: 0,
@@ -492,14 +511,34 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           leftIcon="backArrowWhite"
           rightComponent={<ShareWhite />}
           onPressLeftIcon={() => props.navigation.goBack()}
-        />
-        <ScrollView style={{ flex: 1 }} bounces={false}>
+        /> */}
+        <Animated.ScrollView
+          bounces={false}
+          scrollEventThrottle={16}
+          contentContainerStyle={{
+            paddingTop: 160,
+          }}
+          onScroll={Animated.event(
+            [
+              {
+                nativeEvent: { contentOffset: { y: scrollY } },
+              },
+            ],
+            { listener: handleScroll }
+            // {
+            //   useNativeDriver: true,
+            // }
+          )}
+        >
+          {/* <ScrollView style={{ flex: 1 }} bounces={false}> */}
           {doctorDetails && renderDoctorDetails()}
           {doctorDetails && renderDoctorClinic()}
           {doctorDetails && renderDoctorTeam()}
           {appointmentHistory && renderAppointmentHistory()}
           <View style={{ height: 92 }} />
-        </ScrollView>
+          {/* </ScrollView> */}
+        </Animated.ScrollView>
+
         {showSpinner ? null : (
           <StickyBottomComponent defaultBG>
             <Button
@@ -521,6 +560,53 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         />
       )}
       {showSpinner && <Spinner />}
+      <Animated.View
+        style={{
+          position: 'absolute',
+          height: 160,
+          width: '100%',
+          top: 20,
+          backgroundColor: headColor,
+          justifyContent: 'flex-end',
+          flexDirection: 'column',
+          transform: [{ translateY: headMov }],
+        }}
+      >
+        {/* <Animated.Text>
+          <Text>Hey, Hi</Text>
+        </Animated.Text> */}
+        {/* <Text>hello</Text> */}
+        <View
+          style={{
+            height: 160,
+            // backgroundColor: 'red',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {doctorDetails && doctorDetails.profile && doctorDetails.profile.photoUrl && (
+            <Animated.Image
+              source={{ uri: doctorDetails.profile.photoUrl }}
+              style={{ top: 10, height: 180, width: '100%', opacity: imgOp }}
+            />
+          )}
+        </View>
+      </Animated.View>
+      <Header
+        container={{
+          zIndex: 3,
+          position: 'absolute',
+          top: Platform.OS === 'ios' ? (height === 812 || height === 896 ? 40 : 20) : 0,
+          left: 0,
+          right: 0,
+          height: 56,
+          backgroundColor: 'transparent',
+          borderBottomWidth: 0,
+        }}
+        leftIcon="backArrowWhite"
+        rightComponent={<ShareWhite />}
+        onPressLeftIcon={() => props.navigation.goBack()}
+      />
     </View>
   );
 };

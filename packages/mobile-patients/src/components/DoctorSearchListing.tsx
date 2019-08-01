@@ -2,10 +2,10 @@ import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Filter } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Filter, LocationOff, LocationOn } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-// import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { SPECIALITY_DOCTOR_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getSpecialtyDoctorsWithFilters,
@@ -17,7 +17,7 @@ import {
   default as strings,
 } from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-// import axios from 'axios';
+import axios from 'axios';
 import React, { useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -63,9 +63,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     { title: 'Clinic Visits' },
   ];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
-  // const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
+  const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
-  // const [currentLocation, setcurrentLocation] = useState<string>('');
+  const [currentLocation, setcurrentLocation] = useState<string>('');
   const [doctorsList, setDoctorsList] = useState<
     (getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors | null)[]
   >([]);
@@ -112,46 +112,62 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   }
 
-  // const fetchCurrentLocation = () => {
-  //   setshowLocationpopup(true);
+  const fetchCurrentLocation = () => {
+    // setshowLocationpopup(true);
 
-  //   navigator.geolocation.getCurrentPosition(
-  //     (position) => {
-  //       console.log(position.coords.latitude);
-  //       console.warn(position.coords.longitude);
-  //       // this.setState({
-  //       //   region: {
-  //       //     latitude: position.coords.latitude,
-  //       //     longitude: position.coords.longitude,
-  //       //     latitudeDelta: 0.001 * 5,
-  //       //     longitudeDelta: 0.001 * 5,
-  //       //   },
-  //       // });
-  //       const searchstring = position.coords.latitude + ',' + position.coords.longitude;
-  //       const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
-  //       const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
-  //       axios
-  //         .get(url)
-  //         .then((obj) => {
-  //           console.log(obj);
-  //         })
-  //         .catch((error) => {
-  //           console.log(error);
-  //         });
-  //     },
-  //     (error) => {
-  //       console.warn(error.code, error.message);
-  //     },
-  //     { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-  //   );
-  // };
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+        const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
+        axios
+          .get(url)
+          .then((obj) => {
+            console.log(obj);
+            if (obj.data.results.length > 0 && obj.data.results[0].address_components.length > 0) {
+              const address = obj.data.results[0].address_components[0].short_name;
+              console.log(address, 'address');
+              setcurrentLocation(address.toUpperCase());
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      },
+      (error) => {
+        console.warn(error.code, error.message);
+      },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+    );
+  };
 
   const RightHeader = () => {
     return (
       <View style={{ flexDirection: 'row' }}>
-        {/* <TouchableOpacity onPress={() => fetchCurrentLocation()}> */}
-        {/* <LocationOff /> */}
-        {/* </TouchableOpacity> */}
+        {currentLocation === '' ? (
+          <TouchableOpacity onPress={() => fetchCurrentLocation()}>
+            <LocationOff />
+          </TouchableOpacity>
+        ) : (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
+            <Text
+              style={{
+                color: theme.colors.SHERPA_BLUE,
+                ...theme.fonts.IBMPlexSansSemiBold(13),
+              }}
+            >
+              {currentLocation}
+            </Text>
+            <TouchableOpacity onPress={() => setshowLocationpopup(true)}>
+              <LocationOn />
+            </TouchableOpacity>
+          </View>
+        )}
         <TouchableOpacity style={{ marginLeft: 20 }} onPress={() => setDisplayFilter(true)}>
           <Filter />
         </TouchableOpacity>
@@ -272,7 +288,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           {selectedTab === tabs[2].title &&
             renderDoctorSearches('availableForPhysicalConsultation')}
         </ScrollView>
-        {/* {showLocationpopup && (
+        {showLocationpopup && (
           <View
             style={{
               position: 'absolute',
@@ -320,7 +336,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               </View>
             </View>
           </View>
-        )} */}
+        )}
       </SafeAreaView>
       {displayFilter && (
         <FilterScene
