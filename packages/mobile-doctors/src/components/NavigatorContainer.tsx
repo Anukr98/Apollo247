@@ -16,6 +16,9 @@ import { NeedHelpDonePage } from '@aph/mobile-doctors/src/components/NeedHelpDon
 import { AppointmentNotifications } from '@aph/mobile-doctors/src/components/Appointments/AppointmentNotifications';
 import { NeedHelpAppointment } from '@aph/mobile-doctors/src/components/Appointments/NeedHelpAppointment';
 import { CallRequestScreen } from '@aph/mobile-doctors/src/components/Appointments/CallRequestScreen';
+import { ConsultRoomScreen } from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen';
+import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView';
+import { NotificationScreen } from '@aph/mobile-doctors/src/components/Notification/NotificationScreen';
 
 import {
   createAppContainer,
@@ -43,6 +46,10 @@ export enum AppRoutes {
   AppointmentNotifications = 'AppointmentNotifications',
   NeedHelpAppointment = 'NeedHelpAppointment',
   CallRequestScreen = 'CallRequestScreen',
+  ConsultRoomScreen = 'ConsultRoomScreen',
+  TabPage = 'TabPage',
+  CaseSheetView = 'CaseSheetView',
+  NotificationScreen = 'NotificationScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -109,10 +116,20 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.CallRequestScreen]: {
     screen: CallRequestScreen,
   },
+  [AppRoutes.ConsultRoomScreen]: {
+    screen: ConsultRoomScreen,
+  },
+
+  [AppRoutes.CaseSheetView]: {
+    screen: CaseSheetView,
+  },
+  [AppRoutes.NotificationScreen]: {
+    screen: NotificationScreen,
+  },
 };
 
 const stackConfig: StackNavigatorConfig = {
-  initialRouteName: AppRoutes.SplashScreen,
+  initialRouteName: AppRoutes.ConsultRoomScreen,
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   transitionConfig: () => {

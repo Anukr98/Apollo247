@@ -7,7 +7,7 @@ import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
-import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
+
 import {
   GetDoctorProfile,
   GetDoctorProfile_getDoctorProfile,
@@ -16,7 +16,7 @@ import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useRef, useState } from 'react';
-import { useQuery } from 'react-apollo-hooks';
+
 import {
   ActivityIndicator,
   Alert,
@@ -30,8 +30,11 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
+import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
+import { useQuery } from 'react-apollo-hooks';
 import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
-// const isMobileNumberValid = (phoneNumber: string) => true;
+
+//const isMobileNumberValid = (n: string) => true;
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({

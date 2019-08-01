@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Relation, ErrorMsgs, Gender } from "./globalTypes";
+import { Relation, Gender, ErrorMsgs} from './globalTypes';
 
 // ====================================================
 // GraphQL mutation operation: PatientSignIn

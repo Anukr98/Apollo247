@@ -814,7 +814,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <Switch onValueChange={() => setSwitchValue(!switchValue)} value={switchValue} />
           </View>
           <View style={styles.medicineunderline}></View>
-          <View style={{ marginLeft: 16, marginBottom: 20, marginRight: 16 }}>
+          <View style={{ marginLeft: 16, marginBottom: 20, marginRight: 25 }}>
             <Text style={styles.medicineText}>Follow Up After:</Text>
             <View style={{ flex: 1, justifyContent: 'center' }}>
               <Slider
