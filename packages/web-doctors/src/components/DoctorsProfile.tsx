@@ -45,6 +45,11 @@ TabContainer.propTypes = {
 };
 const useStyles = makeStyles((theme: Theme) => {
   return {
+    lowlightActive: {
+      borderBottom: '3px solid #02475b',
+      opacity: 1,
+      fontWeight: theme.typography.fontWeightMedium,
+    },
     highlightActive: {
       borderBottom: '3px solid #02475b',
       opacity: 1,
@@ -145,7 +150,11 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
       <Tab
         key={item}
         className={
-          selectedTabIndex > index - 1 ? classes.highlightActive : classes.highlightInactive
+          selectedTabIndex === index
+            ? classes.highlightActive
+            : selectedTabIndex > index
+            ? classes.lowlightActive
+            : classes.highlightInactive
         }
         label={item}
       />
