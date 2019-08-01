@@ -1,39 +1,41 @@
-import { DoctorCard, doctorCardProps } from '@aph/mobile-patients/src/components/ui/DoctorCard';
+import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { Filter } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+// import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { SPECIALITY_DOCTOR_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  DoctorImage,
-  DropdownGreen,
-  Filter,
-  LocationOff,
-  Reload,
-  SortIncreasing,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
-import { string } from '@aph/mobile-patients/src/strings/string';
+  getSpecialtyDoctorsWithFilters,
+  getSpecialtyDoctorsWithFiltersVariables,
+  getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors,
+} from '@aph/mobile-patients/src/graphql/types/getSpecialtyDoctorsWithFilters';
+import {
+  default as string,
+  default as strings,
+} from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  SectionList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  SectionListData,
-} from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+// import axios from 'axios';
+import React, { useState } from 'react';
+import { useQuery } from 'react-apollo-hooks';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   topView: {
     height: 155,
-    backgroundColor: 'white',
-    shadowColor: '#808080',
+    ...theme.viewStyles.cardViewStyle,
+    borderRadius: 0,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 5,
-    borderTopWidth: 0,
+    shadowRadius: 2,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 2,
+    elevation: 2,
   },
   headingText: {
     paddingBottom: 8,
@@ -45,124 +47,112 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     ...theme.fonts.IBMPlexSansMedium(17),
   },
-  filterView: {
-    height: 44,
-    flexDirection: 'row',
-    backgroundColor: '#f7f8f5',
-    paddingHorizontal: 20,
-    shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 1,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  filterItemView: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  itemLabelText: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.INPUT_TEXT,
-    paddingRight: 4,
-  },
 });
 
-type doctorsList = {
-  title: string;
-  data: {
-    image: any;
-    doctorName: string;
-    starDoctor: boolean;
-    specialization: string;
-    experience: string;
-    education: string;
-    location: string;
-    time: string;
-    available: boolean;
-  }[];
-};
-
-const style = { width: 80, height: 80 };
-const DoctorsList: doctorsList[] = [
-  {
-    title: 'Our Star Doctors',
-    data: [
-      {
-        image: <DoctorImage style={style} />,
-        doctorName: 'Dr. Simran Rai',
-        starDoctor: true,
-        specialization: 'GENERAL PHYSICIAN',
-        experience: '7 YRS',
-        education: 'MBBS, Internal Medicine',
-        location: 'Apollo Hospitals, Jubilee Hills',
-        time: 'CONSULT NOW',
-        available: true,
-      },
-    ],
-  },
-  {
-    title: 'From Your Past Consults',
-    data: [
-      {
-        image: <DoctorImage style={style} />,
-        doctorName: 'Dr. Rakhi Sharma',
-        starDoctor: false,
-        specialization: 'GENERAL PHYSICIAN',
-        experience: '4 YRS',
-        education: 'MBBS, Internal Medicine',
-        location: 'Apollo Hospitals, Jubilee Hills',
-        time: 'CONSULT NOW',
-        available: true,
-      },
-    ],
-  },
-  {
-    title: 'More Apollo Doctors In Hyderabad',
-    data: [
-      {
-        image: <DoctorImage style={style} />,
-        doctorName: 'Dr. Rahul Nerlekar',
-        starDoctor: false,
-        specialization: 'GENERAL PHYSICIAN',
-        experience: '4 YRS',
-        education: 'MBBS, Internal Medicine',
-        location: 'Apollo Hospitals, Jubilee Hills',
-        time: 'CONSULT IN 45 MINS',
-        available: false,
-      },
-    ],
-  },
-  {
-    title: 'Apollo Doctors In Other Cities',
-    data: [
-      {
-        image: <DoctorImage style={style} />,
-        doctorName: 'Dr. Ranjan Gopal',
-        starDoctor: false,
-        specialization: 'GENERAL PHYSICIAN',
-        experience: '4 YRS',
-        education: 'MBBS, Internal Medicine',
-        location: 'Apollo Hospitals, Jubilee Hills',
-        time: 'CONSULT IN 45 MINS',
-        available: false,
-      },
-    ],
-  },
-];
-
 export interface DoctorSearchListingProps extends NavigationScreenProps {}
+export type filterDataType = { label: string; options: string[]; selectedOptions?: string[] };
 
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
+  const filterData = strings.doctor_search_listing.filter_data.map((obj: filterDataType) => {
+    obj.selectedOptions = [];
+    return obj;
+  });
+  const tabs = [
+    { title: 'All Consults' },
+    { title: 'Online Consults' },
+    { title: 'Clinic Visits' },
+  ];
+  const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
+  // const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
+  const [displayFilter, setDisplayFilter] = useState<boolean>(false);
+  // const [currentLocation, setcurrentLocation] = useState<string>('');
+  const [doctorsList, setDoctorsList] = useState<
+    (getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors | null)[]
+  >([]);
+  const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+
+  const FilterInput = {
+    specialty: props.navigation.state.params!.speciality,
+  };
+
+  // FilterData.forEach((obj) => {
+  //   if (obj.selectedOptions!.length > 0) {
+  //     FilterInput[obj.label.toLowerCase().split(' ')[0]] = obj.selectedOptions;
+  //   }
+  // }); Todo
+  console.log(
+    props.navigation.state.params,
+    'speciality',
+    FilterData,
+    'FilterDataFilterDataFilterData',
+    FilterInput
+  );
+  const { data, error } = useQuery<
+    getSpecialtyDoctorsWithFilters,
+    getSpecialtyDoctorsWithFiltersVariables
+  >(SPECIALITY_DOCTOR_FILTERS, {
+    variables: {
+      filterInput: FilterInput,
+    },
+  });
+  if (error) {
+    console.log('error', error);
+    //Alert.alert('Error', 'Unable to get the data');
+  } else {
+    console.log('data', data);
+    if (
+      data &&
+      data.getSpecialtyDoctorsWithFilters &&
+      data.getSpecialtyDoctorsWithFilters.doctors &&
+      doctorsList !== data.getSpecialtyDoctorsWithFilters.doctors
+    ) {
+      setDoctorsList(data.getSpecialtyDoctorsWithFilters.doctors);
+      setshowSpinner(false);
+    }
+  }
+
+  // const fetchCurrentLocation = () => {
+  //   setshowLocationpopup(true);
+
+  //   navigator.geolocation.getCurrentPosition(
+  //     (position) => {
+  //       console.log(position.coords.latitude);
+  //       console.warn(position.coords.longitude);
+  //       // this.setState({
+  //       //   region: {
+  //       //     latitude: position.coords.latitude,
+  //       //     longitude: position.coords.longitude,
+  //       //     latitudeDelta: 0.001 * 5,
+  //       //     longitudeDelta: 0.001 * 5,
+  //       //   },
+  //       // });
+  //       const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+  //       const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+  //       const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
+  //       axios
+  //         .get(url)
+  //         .then((obj) => {
+  //           console.log(obj);
+  //         })
+  //         .catch((error) => {
+  //           console.log(error);
+  //         });
+  //     },
+  //     (error) => {
+  //       console.warn(error.code, error.message);
+  //     },
+  //     { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+  //   );
+  // };
+
   const RightHeader = () => {
     return (
       <View style={{ flexDirection: 'row' }}>
-        <LocationOff />
-        <TouchableOpacity
-          style={{ marginLeft: 20 }}
-          onPress={() => props.navigation.navigate('FilterScene')}
-        >
+        {/* <TouchableOpacity onPress={() => fetchCurrentLocation()}> */}
+        {/* <LocationOff /> */}
+        {/* </TouchableOpacity> */}
+        <TouchableOpacity style={{ marginLeft: 20 }} onPress={() => setDisplayFilter(true)}>
           <Filter />
         </TouchableOpacity>
       </View>
@@ -171,75 +161,177 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const renderTopView = () => {
     return (
-      <View>
+      <View
+        style={{
+          ...theme.viewStyles.cardViewStyle,
+          backgroundColor: theme.colors.CARD_BG,
+          borderRadius: 0,
+        }}
+      >
         <View style={styles.topView}>
           <Header
             leftIcon="backArrow"
             container={{ borderBottomWidth: 0 }}
-            rightComponent={() => <RightHeader />}
+            rightComponent={<RightHeader />}
             onPressLeftIcon={() => props.navigation.goBack()}
           />
           <View style={{ paddingHorizontal: 20 }}>
-            <Text style={styles.headingText}>{string.LocalStrings.okay}</Text>
+            <Text style={styles.headingText}>{string.common.okay}</Text>
             <Text style={styles.descriptionText}>
-              {string.LocalStrings.best_general_physicians_text}
+              {string.common.best_doctor_text}
+              {props.navigation.state.params!.speciality}
             </Text>
           </View>
         </View>
-        <View style={styles.filterView}>
-          <View style={styles.filterItemView}>
-            <Text style={styles.itemLabelText}>{string.LocalStrings.all_consults}</Text>
-            <DropdownGreen />
-          </View>
-          <View style={styles.filterItemView}>
-            <Text style={styles.itemLabelText}>{string.LocalStrings.distance}</Text>
-            <SortIncreasing />
-          </View>
-          <View style={styles.filterItemView}>
-            <Reload />
-          </View>
-        </View>
-      </View>
-    );
-  };
-
-  const renderSearchDoctorResultsRow = (rowData: doctorCardProps['rowData']) => {
-    return <DoctorCard rowData={rowData} />;
-  };
-
-  const renderHeader = (rowHeader: SectionListData<{ title: string }>) => {
-    let sectionTitle = rowHeader.title;
-    if (sectionTitle === 'Matching Doctors') {
-      sectionTitle = sectionTitle + ' — ' + rowHeader.data.length;
-    }
-    return <SectionHeaderComponent sectionTitle={sectionTitle} />;
-  };
-
-  const renderDoctorSearches = () => {
-    return (
-      <View>
-        <SectionList
-          contentContainerStyle={{
-            flexWrap: 'wrap',
-            marginTop: 12,
-            marginBottom: 8,
+        <TabsComponent
+          style={{
+            marginTop: 155,
+            backgroundColor: theme.colors.CARD_BG,
           }}
-          bounces={false}
-          sections={DoctorsList}
-          onEndReachedThreshold={0.5}
-          renderItem={({ item }) => renderSearchDoctorResultsRow(item)}
-          keyExtractor={(_, index) => index.toString()}
-          renderSectionHeader={({ section }) => renderHeader(section)}
+          data={tabs}
+          onChange={(selectedTab: string) => setselectedTab(selectedTab)}
+          selectedTab={selectedTab}
         />
       </View>
     );
   };
+
+  const renderSearchDoctorResultsRow = (
+    rowData: getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors | null
+  ) => {
+    if (rowData) return <DoctorCard rowData={rowData} navigation={props.navigation} />;
+    return null;
+  };
+
+  const renderDoctorSearches = (filter?: string) => {
+    console.log(doctorsList, 'doctorsList');
+    const doctors = filter
+      ? doctorsList.filter(
+          (obj: getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors | null) => {
+            if (filter === 'availableForPhysicalConsultation')
+              return obj && obj.availableForPhysicalConsultation === true;
+            return obj && obj.availableForVirtualConsultation === true;
+          }
+        )
+      : doctorsList;
+    if (doctors.length === 0 && !showSpinner) {
+      return (
+        <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 64 }}>
+          <Card
+            cardContainer={{
+              marginHorizontal: 64,
+              shadowRadius: 0,
+              shadowOffset: { width: 0, height: 0 },
+              shadowColor: 'white',
+            }}
+            heading={'Uh oh! :('}
+            description={
+              filter === 'availableForPhysicalConsultation'
+                ? `There is no ${
+                    props.navigation.state.params!.speciality
+                  } available for Physical Consult. Please you try Online Consultation.`
+                : `There is no ${
+                    props.navigation.state.params!.speciality
+                  } available to match your filters. Please try again with different filters.`
+            }
+            descriptionTextStyle={{ fontSize: 14 }}
+            headingTextStyle={{ fontSize: 14 }}
+          />
+        </View>
+      );
+    }
+    return (
+      <View>
+        {doctors.length > 0 && (
+          <FlatList
+            contentContainerStyle={{
+              marginTop: 20,
+              marginBottom: 8,
+            }}
+            bounces={false}
+            data={doctors}
+            onEndReachedThreshold={0.5}
+            renderItem={({ item }) => renderSearchDoctorResultsRow(item)}
+          />
+        )}
+      </View>
+    );
+  };
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
-      <ScrollView style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
+      <SafeAreaView
+        style={{
+          ...theme.viewStyles.container,
+        }}
+      >
         {renderTopView()}
-        {renderDoctorSearches()}
-      </ScrollView>
-    </SafeAreaView>
+
+        <ScrollView style={{ flex: 1 }} bounces={false}>
+          {selectedTab === tabs[0].title && renderDoctorSearches()}
+          {selectedTab === tabs[1].title && renderDoctorSearches('availableForVirtualConsultation')}
+          {selectedTab === tabs[2].title &&
+            renderDoctorSearches('availableForPhysicalConsultation')}
+        </ScrollView>
+        {/* {showLocationpopup && (
+          <View
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 40,
+              alignItems: 'center',
+            }}
+          >
+            <View
+              style={{
+                ...theme.viewStyles.cardViewStyle,
+                width: 230,
+                padding: 16,
+              }}
+            >
+              <Text
+                style={{
+                  color: theme.colors.CARD_HEADER,
+                  ...theme.fonts.IBMPlexSansMedium(14),
+                }}
+              >
+                Current Location
+              </Text>
+              <View style={{ flexDirection: 'row' }}>
+                <View style={{ flex: 7 }}>
+                  <TextInputComponent
+                    conatinerstyles={{ flex: 1 }}
+                    value={currentLocation}
+                    onChangeText={(value) => {
+                      setcurrentLocation(value);
+                    }}
+                  />
+                </View>
+                <View
+                  style={{
+                    marginLeft: 20,
+                    alignItems: 'flex-end',
+                    justifyContent: 'center',
+                    marginBottom: 10,
+                  }}
+                >
+                  <LocationOff />
+                </View>
+              </View>
+            </View>
+          </View>
+        )} */}
+      </SafeAreaView>
+      {displayFilter && (
+        <FilterScene
+          onClickClose={(data: filterDataType[]) => {
+            setDisplayFilter(false);
+            setFilterData(data);
+          }}
+          data={FilterData}
+        />
+      )}
+      {showSpinner && <Spinner />}
+    </View>
   );
 };
