@@ -14,6 +14,7 @@ import { DoctorSpecialty } from 'doctors-service/entities/doctorSpecialty';
 import { Validate, IsDate } from 'class-validator';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
 import { StarTeam, DoctorAndHospital, ConsultHours } from 'doctors-service/entities';
+
 export enum DoctorType {
   APOLLO = 'APOLLO',
   PAYROLL = 'PAYROLL',
