@@ -55,6 +55,7 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       DoctorBankAccounts,
       Packages,
     ],
+    name: 'doctorsDbConnection',
     type: 'postgres',
     host: 'doctors-db',
     port: 5432,
