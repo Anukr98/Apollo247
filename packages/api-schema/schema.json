@@ -257,13 +257,9 @@
             "description": null,
             "args": [],
             "type": {
-              "kind": "LIST",
-              "name": null,
-              "ofType": {
-                "kind": "OBJECT",
-                "name": "DoctorDetails",
-                "ofType": null
-              }
+              "kind": "OBJECT",
+              "name": "DoctorDetails",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
