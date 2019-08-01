@@ -22,26 +22,24 @@ import {
   getSpecialtyDoctorsTypeDefs,
   getSpecialtyDoctorsResolvers,
 } from 'doctors-service/resolvers/getSpecialtyDoctorsWithFilters';
-
 import {
   getDoctorDetailsTypeDefs,
   getDoctorDetailsResolvers,
 } from 'doctors-service/resolvers/getDoctorDetails';
 
-import { GatewayContext, GatewayHeaders } from 'api-gateway';
 import gql from 'graphql-tag';
 import { GraphQLTime } from 'graphql-iso-date';
 import { createConnection } from 'typeorm';
-import { Doctor } from 'doctors-service/entity/doctor';
-import { DoctorSpecialty } from 'doctors-service/entity/doctorSpecialty';
-import { StarTeam } from 'doctors-service/entity/starTeam';
-import { DoctorAndHospital } from 'doctors-service/entity/doctorAndHospital';
-import { Facility } from 'doctors-service/entity/facility';
-import { ConsultHours } from 'doctors-service/entity/consultHours';
-import { DoctorBankAccounts } from 'doctors-service/entity/doctorBankAccounts';
-import { Packages } from 'doctors-service/entity/packages';
-
-export interface DoctorsServiceContext extends GatewayContext {}
+import {
+  Doctor,
+  DoctorSpecialty,
+  StarTeam,
+  DoctorAndHospital,
+  Facility,
+  ConsultHours,
+  DoctorBankAccounts,
+  Packages,
+} from 'doctors-service/entities';
 
 (async () => {
   await createConnection({
