@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { DoctorsServiceContext } from 'doctors-service/doctors-service';
-import { Doctor } from 'doctors-service/entity/doctor';
+import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
+import { Doctor } from 'doctors-service/entities/doctor';
 import { getRepository } from 'typeorm';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';

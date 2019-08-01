@@ -13,7 +13,13 @@ import { Gender } from 'profiles-service/entity/patient';
 import { DoctorSpecialty } from 'doctors-service/entities/doctorSpecialty';
 import { Validate, IsDate } from 'class-validator';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
-import { StarTeam, DoctorAndHospital, ConsultHours } from 'doctors-service/entities';
+import {
+  StarTeam,
+  DoctorAndHospital,
+  ConsultHours,
+  DoctorBankAccounts,
+  Packages,
+} from 'doctors-service/entities';
 
 export enum DoctorType {
   APOLLO = 'APOLLO',
@@ -29,6 +35,9 @@ export enum Salutation {
 
 @Entity()
 export class Doctor extends BaseEntity {
+  @OneToMany((type) => DoctorBankAccounts, (bankAccount) => bankAccount.doctor)
+  bankAccount: DoctorBankAccounts[];
+
   @Column({ nullable: true, type: 'text' })
   awards: String;
 
@@ -90,6 +99,9 @@ export class Doctor extends BaseEntity {
 
   @Column({ type: 'float8' })
   onlineConsultationFees: Number;
+
+  @OneToMany((type) => Packages, (packages) => packages.doctor)
+  packages: Packages[];
 
   @Column({ nullable: true, type: 'text' })
   photoUrl: String;

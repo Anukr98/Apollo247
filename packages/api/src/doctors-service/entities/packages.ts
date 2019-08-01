@@ -7,7 +7,7 @@ import {
   BeforeUpdate,
   ManyToOne,
 } from 'typeorm';
-import { Doctor } from 'doctors-service/entity/doctor';
+import { Doctor } from 'doctors-service/entities/doctor';
 @Entity()
 export class Packages extends BaseEntity {
   @Column()

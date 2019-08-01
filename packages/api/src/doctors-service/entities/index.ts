@@ -7,3 +7,5 @@ export * from './doctorSpecialty';
 export * from './consultHours';
 export * from './facility';
 export * from './starTeam';
+export * from './DoctorBankAccounts';
+export * from './Packages';
