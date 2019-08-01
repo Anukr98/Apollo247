@@ -7,13 +7,14 @@ import { AphCheckbox } from 'components/AphCheckbox';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      paddingBottom: 10,
+      width: '100%',
     },
     medicineStrip: {
       backgroundColor: theme.palette.common.white,
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       borderRadius: 5,
       padding: 10,
+      marginBottom: 10,
     },
     medicineStripWrap: {
       display: 'flex',
@@ -78,7 +79,15 @@ const useStyles = makeStyles((theme: Theme) => {
       borderLeft: 'solid 0.5px rgba(2,71,91,0.2)',
       '& button': {
         borderRadius: 10,
+        minWidth: 114,
       },
+    },
+    removeItem: {
+      paddingLeft: 14,
+      borderLeft: 'solid 0.5px rgba(2,71,91,0.2)',
+      paddingTop: 5,
+      paddingBottom: 4,
+      cursor: 'pointer',
     },
     minusIcon: {
       cursor: 'pointer',
@@ -110,9 +119,11 @@ const useStyles = makeStyles((theme: Theme) => {
       borderTop: 'solid 0.5px rgba(2,71,91,0.2)',
       paddingTop: 10,
       marginTop: 10,
-      textAlign: 'right',
+      display: 'flex',
+      alignItems: 'center',
       '& label': {
         margin: 0,
+        marginLeft: 'auto',
         '& span:last-child': {
           fontSize: 12,
           fontWeight: 500,
@@ -120,6 +131,14 @@ const useStyles = makeStyles((theme: Theme) => {
           paddingRight: 20,
         },
       },
+    },
+    preRequired: {
+      paddingLeft: 44,
+      color: '#890000',
+      fontSize: 12,
+      fontWeight: 500,
+      display: 'flex',
+      alignItems: 'center',
     },
     medicineInformationPopup: {
       width: 328,
@@ -145,6 +164,29 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: 0,
         paddingLeft: 15,
       },
+    },
+    storeAddress: {
+      fontSize: 10,
+      color: '#658f9b',
+      fontWeight: 500,
+      paddingTop: 2,
+      '& span': {
+        paddingLeft: 20,
+      },
+    },
+    buttonDisabled: {
+      backgroundColor: '#fed984',
+    },
+    mLeftAuto: {
+      marginLeft: 'auto',
+    },
+    preUploadBtn: {
+      fontSize: 13,
+      fontWeight: 'bold',
+      color: '#fc9916',
+      textTransform: 'uppercase',
+      cursor: 'pointer',
+      marginLeft: 20,
     },
   };
 });
@@ -189,9 +231,190 @@ export const MedicineStripCard: React.FC = (props) => {
             <AphButton color="primary">Add to cart</AphButton>
           </div>
         </div>
+      </div>
+      <div className={classes.medicineStrip}>
+        <div className={classes.medicineStripWrap}>
+          <div className={classes.medicineInformation}>
+            <div className={classes.medicineIcon}>
+              <img src={require('images/ic_tablets.svg')} alt="" />
+            </div>
+            <div className={classes.medicineName}>
+              Metformin 500mg <div className={classes.tabInfo}>Tablet / Type 2 Diabetes</div>
+            </div>
+          </div>
+          <div
+            className={classes.helpText}
+            ref={medicineRef}
+            onClick={() => setIsPopoverOpen(true)}
+          >
+            <img src={require('images/ic_info.svg')} alt="" />
+          </div>
+          <div className={classes.medicinePrice}>
+            Rs. 120 <span>/strip</span>
+          </div>
+          <div className={classes.medicineCount}>
+            <div className={classes.minusIcon}>
+              <img src={require('images/ic_minus.svg')} alt="" />
+            </div>
+            <span>1 Strip</span>
+            <div className={classes.plusIcon}>
+              <img src={require('images/ic_plus.svg')} alt="" />
+            </div>
+          </div>
+          <div className={classes.addToCart}>
+            <AphButton color="primary" disabled className={classes.buttonDisabled}>
+              Added
+            </AphButton>
+          </div>
+        </div>
         <div className={classes.subscriptionLink}>
           <FormControlLabel
             control={<AphCheckbox color="primary" />}
+            label="Need to take this regularly?"
+            labelPlacement="start"
+          />
+        </div>
+      </div>
+      <div className={classes.medicineStrip}>
+        <div className={classes.medicineStripWrap}>
+          <div className={classes.medicineInformation}>
+            <div className={classes.medicineIcon}>
+              <img src={require('images/ic_tablets.svg')} alt="" />
+            </div>
+            <div className={classes.medicineName}>
+              Metformin 500mg <div className={classes.tabInfo}>Tablet / Type 2 Diabetes</div>
+            </div>
+          </div>
+          <div
+            className={classes.helpText}
+            ref={medicineRef}
+            onClick={() => setIsPopoverOpen(true)}
+          >
+            <img src={require('images/ic_info.svg')} alt="" />
+          </div>
+          <div className={classes.medicinePrice}>
+            Rs. 120 <span>/strip</span>
+          </div>
+          <div className={classes.medicineCount}>
+            <div className={classes.minusIcon}>
+              <img src={require('images/ic_minus.svg')} alt="" />
+            </div>
+            <span>1 Strip</span>
+            <div className={classes.plusIcon}>
+              <img src={require('images/ic_plus.svg')} alt="" />
+            </div>
+          </div>
+          <div className={classes.addToCart}>
+            <AphButton color="primary" disabled className={classes.buttonDisabled}>
+              Added
+            </AphButton>
+          </div>
+        </div>
+        <div className={classes.subscriptionLink}>
+          <FormControlLabel
+            control={<AphCheckbox color="primary" checked={true} />}
+            label="Need to take this regularly?"
+            labelPlacement="start"
+          />
+        </div>
+      </div>
+      <div className={classes.medicineStrip}>
+        <div className={classes.medicineStripWrap}>
+          <div className={classes.medicineInformation}>
+            <div className={classes.medicineIcon}>
+              <img src={require('images/ic_tablets.svg')} alt="" />
+            </div>
+            <div className={classes.medicineName}>
+              Metformin 500mg <div className={classes.tabInfo}>Tablet / Type 2 Diabetes</div>
+              <div className={classes.storeAddress}>
+                Delivery From: Apollo MedPoint, Jubilee Hills <span>By: 27 July 2019</span>
+              </div>
+            </div>
+          </div>
+          <div className={`${classes.medicineCount} ${classes.mLeftAuto}`}>
+            <div className={classes.minusIcon}>
+              <img src={require('images/ic_minus.svg')} alt="" />
+            </div>
+            <span>1 Strip</span>
+            <div className={classes.plusIcon}>
+              <img src={require('images/ic_plus.svg')} alt="" />
+            </div>
+          </div>
+          <div className={classes.medicinePrice}>Rs. 120</div>
+          <div className={classes.removeItem}>
+            <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
+          </div>
+        </div>
+        <div className={classes.subscriptionLink}>
+          <FormControlLabel
+            control={<AphCheckbox color="primary" checked={true} />}
+            label="Need to take this regularly?"
+            labelPlacement="start"
+          />
+        </div>
+      </div>
+      <div className={classes.medicineStrip}>
+        <div className={classes.medicineStripWrap}>
+          <div className={classes.medicineInformation}>
+            <div className={classes.medicineIcon}>
+              <img src={require('images/ic_tablets.svg')} alt="" />
+            </div>
+            <div className={classes.medicineName}>
+              Metformin 500mg <div className={classes.tabInfo}>Tablet / Type 2 Diabetes</div>
+              <div className={classes.storeAddress}>
+                Delivery From: Apollo MedPoint, Jubilee Hills <span>By: 27 July 2019</span>
+              </div>
+            </div>
+          </div>
+          <div className={`${classes.medicineCount} ${classes.mLeftAuto}`}>
+            <div className={classes.minusIcon}>
+              <img src={require('images/ic_minus.svg')} alt="" />
+            </div>
+            <span>1 Strip</span>
+            <div className={classes.plusIcon}>
+              <img src={require('images/ic_plus.svg')} alt="" />
+            </div>
+          </div>
+          <div className={classes.medicinePrice}>Rs. 120</div>
+          <div className={classes.removeItem}>
+            <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
+          </div>
+        </div>
+      </div>
+      <div className={classes.medicineStrip}>
+        <div className={classes.medicineStripWrap}>
+          <div className={classes.medicineInformation}>
+            <div className={classes.medicineIcon}>
+              <img src={require('images/ic_tablets.svg')} alt="" />
+            </div>
+            <div className={classes.medicineName}>
+              Metformin 500mg <div className={classes.tabInfo}>Tablet / Type 2 Diabetes</div>
+              <div className={classes.storeAddress}>
+                Delivery From: Apollo MedPoint, Jubilee Hills <span>By: 27 July 2019</span>
+              </div>
+            </div>
+          </div>
+          <div className={`${classes.medicineCount} ${classes.mLeftAuto}`}>
+            <div className={classes.minusIcon}>
+              <img src={require('images/ic_minus.svg')} alt="" />
+            </div>
+            <span>1 Strip</span>
+            <div className={classes.plusIcon}>
+              <img src={require('images/ic_plus.svg')} alt="" />
+            </div>
+          </div>
+          <div className={classes.medicinePrice}>Rs. 120</div>
+          <div className={classes.removeItem}>
+            <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
+          </div>
+        </div>
+        <div className={classes.subscriptionLink}>
+          <div className={classes.preRequired}>
+            <div>Prescription Required</div>
+            <div className={classes.preUploadBtn}>Upload</div>
+          </div>
+          <FormControlLabel
+            control={<AphCheckbox color="primary" checked={true} />}
             label="Need to take this regularly?"
             labelPlacement="start"
           />
