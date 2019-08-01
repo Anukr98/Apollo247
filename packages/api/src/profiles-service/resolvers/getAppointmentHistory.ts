@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { Appointments, STATUS, APPOINTMENT_TYPE } from 'profiles-service/entity/appointment';
-import { ProfilesServiceContext } from 'profiles-service/profiles-service';
+import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 
 export const getAppointmentHistoryTypeDefs = gql`
   type AppointmentHistory {

@@ -5,7 +5,7 @@ import { AphError, AphUserInputError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 import { validate } from 'class-validator';
 import { Resolver } from 'api-gateway';
-import { ProfilesServiceContext } from 'profiles-service/profiles-service';
+import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 
 export const updatePatientTypeDefs = gql`
   input UpdatePatientInput {
