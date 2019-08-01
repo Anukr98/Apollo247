@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { doctors } from 'doctors-service/data/doctor';
 import { Doctor } from 'doctors-service/resolvers/getDoctors';
-import { DoctorsServiceContext } from 'doctors-service/doctors-service';
+import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 
 export const getSpecialtyDoctorsTypeDefs = gql`
   type filteredDoctorsResult {

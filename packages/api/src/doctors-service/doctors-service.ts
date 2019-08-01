@@ -22,8 +22,6 @@ import {
   getSpecialtyDoctorsTypeDefs,
   getSpecialtyDoctorsResolvers,
 } from 'doctors-service/resolvers/getSpecialtyDoctorsWithFilters';
-
-import { GatewayContext } from 'api-gateway';
 import gql from 'graphql-tag';
 import { GraphQLTime } from 'graphql-iso-date';
 import { createConnection } from 'typeorm';
@@ -33,8 +31,6 @@ import { StarTeam } from 'doctors-service/entities/starTeam';
 import { DoctorAndHospital } from 'doctors-service/entities/doctorAndHospital';
 import { Facility } from 'doctors-service/entities/facility';
 import { ConsultHours } from 'doctors-service/entities/consultHours';
-
-export interface DoctorsServiceContext extends GatewayContext {}
 
 (async () => {
   await createConnection({
