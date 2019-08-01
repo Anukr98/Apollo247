@@ -27,12 +27,13 @@ import {
 import { APPOINTMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mutation } from 'react-apollo';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Calendar, DateObject } from 'react-native-calendars';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
+import Axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
 
@@ -77,6 +78,7 @@ const styles = StyleSheet.create({
     borderRightWidth: 0.5,
     borderRightColor: theme.colors.SEPARATOR_LINE,
     marginHorizontal: 16,
+    marginBottom: 5,
   },
 });
 
@@ -126,6 +128,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [selectedCTA, setselectedCTA] = useState<string>(onlineCTA[0]);
   // const [descriptionText, setdescriptionText] = useState<string>(onlineCTA[0]);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [distance, setdistance] = useState<string>('');
 
   const [dateSelected, setdateSelected] = useState<object>({
     [today]: {
@@ -133,6 +136,30 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       selectedColor: theme.colors.APP_GREEN,
     },
   });
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition((position) => {
+      const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+      const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+
+      const destination = props.clinics
+        ? `${props.clinics[0].addressLine1}, ${props.clinics[0].addressLine2}, ${props.clinics[0].city}`
+        : '';
+      const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
+      Axios.get(distanceUrl)
+        .then((obj) => {
+          console.log(obj, 'distanceUrl');
+          if (obj.data.rows.length > 0 && obj.data.rows[0].elements.length > 0) {
+            const value = obj.data.rows[0].elements[0].distance.value;
+            console.log(`${(value / 1000).toFixed(1)} Kms`, 'distance');
+            setdistance(`${(value / 1000).toFixed(1)} Kms`);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    });
+  }, [props.clinics]);
 
   const descriptionText = `${
     props.doctor ? `${props.doctor.salutation}. ${props.doctor.firstName}` : 'Doctor'
@@ -237,29 +264,33 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             </View>
           </TouchableOpacity>
         </View>
-        <View style={{ marginTop: 11, marginBottom: 4, flexDirection: 'row' }}>
+        <View style={{ marginTop: 6, marginBottom: 4, flexDirection: 'row' }}>
           <View style={{ flex: 1 }}>
             <Text
               style={{
                 color: theme.colors.SHERPA_BLUE,
                 ...theme.fonts.IBMPlexSansMedium(13),
+                paddingTop: 5,
+                lineHeight: 20,
               }}
             >
               {props.clinics && props.clinics.length > 0
-                ? `${props.clinics[0].addressLine1}, ${props.clinics[0].addressLine2},\n${props.clinics[0].city}`
+                ? `${props.clinics[0].addressLine1}, ${props.clinics[0].addressLine2}, ${props.clinics[0].city}`
                 : ''}
             </Text>
           </View>
           <View style={styles.horizontalSeparatorStyle} />
-          <View style={{ width: 64, alignItems: 'flex-end' }}>
+          <View style={{ width: 48, alignItems: 'flex-end' }}>
             <Location />
             <Text
               style={{
                 color: theme.colors.SHERPA_BLUE,
                 ...theme.fonts.IBMPlexSansMedium(12),
+                paddingTop: 2,
+                lineHeight: 20,
               }}
             >
-              2.7 Kms
+              {distance}
             </Text>
           </View>
         </View>
@@ -278,6 +309,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, .8)',
         paddingHorizontal: showSpinner ? 0 : 20,
+        zIndex: 5,
       }}
     >
       <View

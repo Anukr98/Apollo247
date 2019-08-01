@@ -351,7 +351,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 value={otp}
                 textInputStyle={styles.codeInputStyle}
                 tintColor={'rgba(0, 179, 142, 0.4)'}
-                offTintColor={'rgba(0, 179, 142, 0.4)'}
                 containerStyle={{ flex: 1 }}
                 editable={false}
               />
@@ -379,17 +378,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 value={otp}
                 textInputStyle={styles.codeInputStyle}
                 tintColor={
-                  isValidOTP && (otp.length === 0 || otp.length === 6)
-                    ? theme.colors.INPUT_BORDER_SUCCESS
-                    : theme.colors.INPUT_BORDER_FAILURE
-                }
-                offTintColor={
-                  isValidOTP && (otp.length === 0 || otp.length === 6)
-                    ? theme.colors.INPUT_BORDER_SUCCESS
-                    : theme.colors.INPUT_BORDER_FAILURE
+                  otp.length === 0 && invalidOtpCount > 0
+                    ? theme.colors.INPUT_BORDER_FAILURE
+                    : theme.colors.INPUT_BORDER_SUCCESS
                 }
                 containerStyle={{ flex: 1 }}
-                // textContentType={'oneTimeCode'}
               />
             </View>
             {showErrorMsg && (

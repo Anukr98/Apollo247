@@ -125,12 +125,9 @@ export const Login: React.FC<LoginProps> = (props) => {
   useEffect(() => {
     const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
       const newOtp = message.body.match(/-*[0-9]+/);
-      console.log(newOtp![0], 'wertyuio');
       otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
     });
-    console.log(subscriptionId, 'subscriptionId');
     setSubscriptionId(subscriptionId);
-
     didBlurSubscription = props.navigation.addListener('didBlur', () => {
       setPhoneNumber('');
     });
