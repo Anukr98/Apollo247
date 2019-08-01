@@ -51,6 +51,7 @@ const showHeaderView = () => {
       ]}
       middleText="CONSULT ROOM"
       timerText="Time to Consult  04:25"
+      textStyles={{ marginTop: 30 }}
       rightIcons={[
         {
           icon: (

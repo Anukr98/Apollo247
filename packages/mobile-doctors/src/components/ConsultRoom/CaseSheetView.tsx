@@ -1,5 +1,4 @@
 import { Diagnosis } from '@aph/mobile-doctors/src/components/ConsultRoom/Diagnosis';
-import { FollowUp } from '@aph/mobile-doctors/src/components/ConsultRoom/FollowUp';
 import { PatientHealthVault } from '@aph/mobile-doctors/src/components/ConsultRoom/PatientHealthVault';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { ChipViewCard } from '@aph/mobile-doctors/src/components/ui/ChipViewCard';
@@ -9,13 +8,26 @@ import {
   Notification,
   PatientPlaceHolderImage,
   Up,
+  Start,
+  Add,
+  PlaceHolderDoctor,
+  PlaceHolderDoctors,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Switch,
+} from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { Slider } from 'react-native-elements';
 
 const styles = StyleSheet.create({
   casesheetView: {
@@ -114,7 +126,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonendStyle: {
-    width: 168,
+    width: '45%',
+    height: 40,
     backgroundColor: '#890000',
     shadowOffset: {
       height: 2,
@@ -126,7 +139,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   buttonsaveStyle: {
-    width: 136,
+    width: '35%',
+    height: 40,
     shadowOffset: {
       height: 2,
       width: 0,
@@ -141,12 +155,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   footerButtonsContainer: {
-    zIndex: -1,
+    // zIndex: -1,
     justifyContent: 'center',
     paddingTop: 20,
     paddingBottom: 20,
+    marginLeft: 10,
+    marginRight: 10,
     marginHorizontal: 20,
     flexDirection: 'row',
+    width: '100%',
+    alignSelf: 'center',
+    alignItems: 'center',
   },
   footerButtonsContainersave: {
     zIndex: -1,
@@ -245,6 +264,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
     backgroundColor: '#f7f7f7',
     borderColor: 'rgba(247, 247, 247, 0.2)',
+    shadowOffset: {
+      height: 0,
+      width: 0,
+    },
+    shadowColor: '#000000',
+    shadowRadius: 2,
+    shadowOpacity: 0.2,
+    elevation: 2,
   },
 
   showunselectedview: {
@@ -272,6 +299,68 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 5,
     flex: 1,
+  },
+  medicineText: {
+    color: 'rgba(2, 71, 91, 0.6)',
+    ...theme.fonts.IBMPlexSansMedium(14),
+    marginBottom: 7,
+  },
+  medicineTextInputView: {
+    borderWidth: 1,
+    borderColor: '#30c1a3',
+    marginRight: 16,
+    borderRightColor: 'transparent',
+    borderLeftColor: 'transparent',
+    borderTopColor: 'transparent',
+    paddingBottom: 4,
+  },
+  medicineunderline: {
+    height: 2,
+    borderWidth: 1,
+    borderColor: '#e2e2e2',
+    opacity: 0.2,
+    marginBottom: 13,
+  },
+  dosage: {
+    color: 'rgba(2, 71, 91, 0.6)',
+    ...theme.fonts.IBMPlexSansMedium(14),
+    marginBottom: 10,
+  },
+  countText: { marginLeft: 10, ...theme.fonts.IBMPlexSansMedium(16), color: '#02475b' },
+  timeofthedayText: {
+    color: 'rgba(2, 71, 91, 0.6)',
+    ...theme.fonts.IBMPlexSansMedium(14),
+    marginBottom: 10,
+  },
+  foodmedicineview: {
+    flexDirection: 'row',
+    marginBottom: 24,
+    flex: 1,
+    marginRight: 16,
+  },
+  daysview: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginRight: 16,
+    marginBottom: 16,
+  },
+  addDoctorText: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    letterSpacing: 0,
+    color: '#fc9916',
+    marginTop: 2,
+  },
+  normalSliderText: {
+    textAlign: 'center',
+    color: '#00b38e',
+    ...theme.fonts.IBMPlexSansSemiBold(16),
+  },
+  sliderText: {
+    textAlign: 'center',
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansMedium(12),
   },
 });
 
@@ -347,14 +436,20 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [lifeStyleData, setLifeStyleData] = useState<string>(
     'Patient doesn’t smoke\nRecovered from chickenpox 6 months\nago'
   );
-
+  const [medinceName, setMedinceName] = useState<string>('Ibuprofen, 200mg');
   const [showButtons, setShowButtons] = useState(false);
   const [show, setShow] = useState(false);
   const [patientHistoryshow, setpatientHistoryshow] = useState(false);
   const [otherInstructions, setOtherInstructions] = useState(false);
   const [diagonisticPrescription, setdiagonisticPrescription] = useState(false);
   const [medicinePrescription, setMedicinePrescription] = useState(false);
+  const [followup, setFollowUp] = useState(false);
   const [count, setCount] = useState(0);
+  const [diagnosisvalues, setDiagnosisvalues] = useState<string>('');
+  const [otherinstrutionsValue, setOtherinstrutionsValue] = useState<string>('');
+  const [switchValue, setSwitchValue] = useState(false);
+  const [sliderValue, setSliderValue] = useState(2);
+  const [stepValue, setStepValue] = useState(3);
   const renderButtonsView = () => {
     return (
       <View style={{ backgroundColor: '#f0f4f5' }}>
@@ -362,7 +457,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <View style={styles.footerButtonsContainersave}>
             <Button
               title="START CONSULT"
-              buttonIcon={<Notification />}
+              buttonIcon={<Start />}
               onPress={() => setShowButtons(true)}
               style={styles.buttonStyle}
             />
@@ -518,8 +613,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <TextInputComponent
               placeholder="Start Typing"
               multiline={true}
-              value={value}
-              onChangeText={() => setValue(value)}
+              value={otherinstrutionsValue}
+              onChangeText={(otherinstrutionsValue) =>
+                setOtherinstrutionsValue(otherinstrutionsValue)
+              }
               autoCorrect={true}
               conatinerstyles={[styles.otherInstructionsInput]}
             />
@@ -582,8 +679,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <TextInputComponent
             placeholder="Enter here..."
             multiline={true}
-            value={value}
-            onChangeText={() => setValue(value)}
+            value={diagnosisvalues}
+            onChangeText={(diagnosisvalues) => setDiagnosisvalues(diagnosisvalues)}
             autoCorrect={true}
             conatinerstyles={[styles.otherInstructionsInput]}
           />
@@ -631,29 +728,33 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         collapse={medicinePrescription}
         onPress={() => setMedicinePrescription(!medicinePrescription)}
       >
-        <View style={styles.otherMainView}></View>
+        <View style={styles.medicineunderline}></View>
+        <View style={{ marginLeft: 16, marginBottom: 20 }}>
+          <Text style={styles.medicineText}>Medicine Name</Text>
+          <View style={styles.medicineTextInputView}>
+            <TextInput
+              style={{
+                color: '#01475b',
+                ...theme.fonts.IBMPlexSansMedium(14),
+              }}
+              onChangeText={(medinceName) => setMedinceName(medinceName)}
+              value={medinceName}
+              underlineColorAndroid="transparent"
+            />
+          </View>
+        </View>
+
         <View style={{ marginLeft: 16 }}>
-          <Text
-            style={{
-              color: 'rgba(2, 71, 91, 0.6)',
-              ...theme.fonts.IBMPlexSansMedium(14),
-              marginBottom: 10,
-            }}
-          >
-            Dosage
-          </Text>
+          <Text style={styles.dosage}>Dosage</Text>
           <View style={{ flexDirection: 'row', marginBottom: 24 }}>
             <TouchableOpacity onPress={() => setCount(count - 1)}>
               <View>
                 <Up />
               </View>
             </TouchableOpacity>
-            <Text
-              style={{ marginLeft: 10, ...theme.fonts.IBMPlexSansMedium(16), color: '#02475b' }}
-            >
+            <Text style={styles.countText}>
               {count} tablet{count > 1 ? 's' : ''}
             </Text>
-
             <TouchableOpacity onPress={() => setCount(count + 1)}>
               <View style={{ marginLeft: 10 }}>
                 <Down />
@@ -661,66 +762,100 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             </TouchableOpacity>
           </View>
           <View>
-            <Text
-              style={{
-                color: 'rgba(2, 71, 91, 0.6)',
-                ...theme.fonts.IBMPlexSansMedium(14),
-                marginBottom: 10,
-              }}
-            >
-              Time of the Day
-            </Text>
-            <View
-              style={{
-                flexDirection: 'row',
-                marginBottom: 24,
-                flex: 2,
-                marginRight: 16,
-              }}
-            >
-              <View style={{ flex: 1 }}>
-                <ChipViewCard text="Morning" selected={true} />
-              </View>
-              <View style={{ flex: 0.1 }} />
-              <View style={{ flex: 1 }}>
-                <ChipViewCard text="Noon" selected={false} />
-              </View>
-              <View style={{ flex: 0.1 }} />
-              <View style={{ flex: 1 }}>
-                <ChipViewCard text="Evening" selected={false} />
-              </View>
-              <View style={{ flex: 0.1 }} />
-              <View style={{ flex: 1 }}>
-                <ChipViewCard text="Night" selected={true} />
-              </View>
+            <Text style={styles.timeofthedayText}>Time of the Day</Text>
+            <View style={styles.daysview}>
+              <ChipViewCard text="Morning" selected={true} container={{ marginBottom: 8 }} />
+              <ChipViewCard text="Noon" selected={false} container={{ marginBottom: 8 }} />
+              <ChipViewCard text="Evening" selected={false} container={{ marginBottom: 8 }} />
+              <ChipViewCard text="Night" selected={true} container={{ marginBottom: 8 }} />
             </View>
           </View>
           <View>
-            <Text
-              style={{
-                color: 'rgba(2, 71, 91, 0.6)',
-                ...theme.fonts.IBMPlexSansMedium(14),
-                marginBottom: 10,
-              }}
-            >
-              To be taken
-            </Text>
-            <View
-              style={{
-                flexDirection: 'row',
-                marginBottom: 24,
-                flex: 1,
-                marginRight: 16,
-              }}
-            >
+            <Text style={styles.timeofthedayText}>To be taken</Text>
+            <View style={styles.foodmedicineview}>
               <ChipViewCard text="After Food" selected={true} />
-
               <View style={{ flex: 0.1 }} />
               <ChipViewCard text=" BeforeFood" selected={false} />
             </View>
           </View>
+          <View
+            style={{
+              height: 2,
+              opacity: 0.3,
+              borderStyle: 'solid',
+              borderWidth: 1,
+              borderColor: '#979797',
+              marginRight: 16,
+              marginBottom: 23,
+            }}
+          ></View>
+          <View style={{ flexDirection: 'row', marginBottom: 23 }}>
+            <Add />
+            <TouchableOpacity>
+              <Text style={styles.addDoctorText}>Add Medicine</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </CollapseCard>
+    );
+  };
+
+  const renderFollowUpView = () => {
+    return (
+      <View>
+        <CollapseCard
+          heading="Follow Up"
+          collapse={followup}
+          onPress={() => setFollowUp(!followup)}
+        >
+          <View style={styles.medicineunderline}></View>
+          <View style={{ marginLeft: 16, marginBottom: 20 }}>
+            <Text style={styles.medicineText}>Do you recommend a follow up?</Text>
+            <Switch onValueChange={() => setSwitchValue(!switchValue)} value={switchValue} />
+          </View>
+          <View style={styles.medicineunderline}></View>
+          <View style={{ marginLeft: 16, marginBottom: 20, marginRight: 16 }}>
+            <Text style={styles.medicineText}>Follow Up After:</Text>
+            <View style={{ flex: 1, justifyContent: 'center' }}>
+              <Slider
+                value={sliderValue}
+                step={stepValue}
+                onValueChange={(sliderValue) => setSliderValue(sliderValue)}
+                minimumValue={2}
+                maximumValue={10}
+              />
+
+              <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'space-between' }}>
+                <Text style={sliderValue == 2 ? styles.normalSliderText : styles.sliderText}>
+                  2{'\n'}days
+                </Text>
+
+                <Text style={sliderValue == 5 ? styles.normalSliderText : styles.sliderText}>
+                  5{'\n'}days
+                </Text>
+                <Text style={sliderValue == 7 ? styles.normalSliderText : styles.sliderText}>
+                  7{'\n'}days
+                </Text>
+                <Text style={sliderValue > 8 ? styles.normalSliderText : styles.sliderText}>
+                  more
+                </Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.medicineunderline}></View>
+          <View style={{ marginLeft: 16, marginBottom: 20 }}>
+            <Text style={styles.medicineText}>Consult Type Recommended:</Text>
+            <View style={{ flexDirection: 'row' }}>
+              <View>
+                <PlaceHolderDoctor />
+              </View>
+              <View>
+                <PlaceHolderDoctors />
+              </View>
+            </View>
+          </View>
+        </CollapseCard>
+      </View>
     );
   };
   return (
@@ -734,7 +869,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         <Diagnosis />
         {renderMedicinePrescription()}
         {renderDiagonisticPrescription()}
-        <FollowUp />
+        {renderFollowUpView()}
         {renderOtherInstructionsView()}
         <View style={styles.underlineend} />
         <View style={styles.inputBorderView}>

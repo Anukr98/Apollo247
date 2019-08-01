@@ -350,3 +350,25 @@ export const StartConsult: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/start_consult.png')}
   />
 );
+export const PlaceHolderDoctor: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 44, width: 44 }}
+    {...props}
+    source={require('../../images/icons/placeholderdoctor.png')}
+  />
+);
+export const PlaceHolderDoctors: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 44, width: 44 }}
+    {...props}
+    source={require('../../images/icons/PlaceHolderDoctor2.png')}
+  />
+);
+
+export const Start: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/start.png')}
+  />
+);

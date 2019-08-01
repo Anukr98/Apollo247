@@ -54,11 +54,12 @@ export interface ChipViewCardProps {
   containerSelectedStyle?: StyleProp<ViewStyle>;
   textUnSelectedStyle?: StyleProp<TextStyle>;
   textSelectedStyle?: StyleProp<TextStyle>;
+  container?: StyleProp<ViewStyle>;
 }
 
 export const ChipViewCard: React.FC<ChipViewCardProps> = (props) => {
   return (
-    <View>
+    <View style={props.container}>
       {props.selected ? (
         <>
           <View style={[styles.containerSelectedStyle, props.containerSelectedStyle]}>
