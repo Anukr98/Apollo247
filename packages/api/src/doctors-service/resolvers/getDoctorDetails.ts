@@ -4,8 +4,8 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { Doctor } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
-import { getCustomRepository } from 'typeorm';
-import { DoctorRepository } from 'doctors-service/repos/doctorRepository';
+import { getCustomRepository, getConnection } from 'typeorm';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum AccountType {
@@ -160,11 +160,11 @@ export const getDoctorDetailsTypeDefs = gql`
 const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor[]> = async (
   parent,
   args,
-  { mobileNumber }
+  { mobileNumber, dbConnect }
 ) => {
   let doctordata: Doctor[] = [];
   try {
-    const doctorRepository = getCustomRepository(DoctorRepository);
+    const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
     doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
   } catch (getProfileError) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });

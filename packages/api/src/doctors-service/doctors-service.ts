@@ -29,7 +29,7 @@ import {
 
 import gql from 'graphql-tag';
 import { GraphQLTime } from 'graphql-iso-date';
-import { createConnection } from 'typeorm';
+import { createConnection, getConnection } from 'typeorm';
 import {
   Doctor,
   DoctorSpecialty,
@@ -73,7 +73,8 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       const headers = req.headers as GatewayHeaders;
       const firebaseUid = headers.firebaseuid;
       const mobileNumber = headers.mobilenumber;
-      const context: DoctorsServiceContext = { firebaseUid, mobileNumber };
+      const dbConnect = getConnection('doctorsDbConnection');
+      const context: DoctorsServiceContext = { firebaseUid, mobileNumber, dbConnect };
       return context;
     },
     schema: buildFederatedSchema([
