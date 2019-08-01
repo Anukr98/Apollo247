@@ -46,6 +46,88 @@ describe('Login', () => {
     cy.contains('This seems like a wrong number');
   });
 
+  it.only('Submit should not be enabled until 10 digits are entered', () => {
+    cy.get('[data-cypress="SignIn"]') //first
+      .find('input[name*="mobileNumber"]')
+      .type('9');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+
+    cy.get('[data-cypress="SignIn"]') //second
+      .find('input[name*="mobileNumber"]')
+      .type('9');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+
+    cy.get('[data-cypress="SignIn"]') //third
+      .find('input[name*="mobileNumber"]')
+      .type('9');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+
+    cy.get('[data-cypress="SignIn"]') //fourth
+      .find('input[name*="mobileNumber"]')
+      .type('9');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+
+    cy.get('[data-cypress="SignIn"]') //fifth
+      .find('input[name*="mobileNumber"]')
+      .type('9');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+
+    cy.get('[data-cypress="SignIn"]') //sixth
+      .find('input[name*="mobileNumber"]')
+      .type('9');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+
+    cy.get('[data-cypress="SignIn"]') //seventh
+      .find('input[name*="mobileNumber"]')
+      .type('9');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+
+    cy.get('[data-cypress="SignIn"]') //eighth
+      .find('input[name*="mobileNumber"]')
+      .type('9');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+
+    cy.get('[data-cypress="SignIn"]') //ninth
+      .find('input[name*="mobileNumber"]')
+      .type('9');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+
+    cy.get('[data-cypress="SignIn"]') //tenth
+      .find('input[name*="mobileNumber"]')
+      .type('9');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('button[type="submit"]')
+      .should('not.be.disabled');
+  });
+
   it('Ten digit numbers starting with non-zero should be considered valid', () => {
     cy.get('[data-cypress="SignIn"]')
       .find('input[name*="mobileNumber"]')
