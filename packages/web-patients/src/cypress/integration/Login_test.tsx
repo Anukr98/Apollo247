@@ -1,5 +1,5 @@
 import { clientRoutes } from 'helpers/clientRoutes';
-import { jane, john } from 'cypress/fixtures/patientsFixtures';
+import { janeNoRelation, johnBrother } from 'cypress/fixtures/patientsFixtures';
 import { Relation } from 'graphql/types/globalTypes';
 
 describe('Login', () => {
@@ -59,8 +59,8 @@ describe('Login', () => {
 
 describe('Login (Firebase)', () => {
   beforeEach(() => {
-    const johnMe = { ...john, relation: Relation.ME };
-    const patients = [jane, johnMe];
+    const johnMe = { ...johnBrother, relation: Relation.ME };
+    const patients = [janeNoRelation, johnMe];
     cy.signIn(patients);
     cy.visitAph(clientRoutes.welcome()).wait(500);
     cy.get('[data-cypress="Header"]')
@@ -89,5 +89,51 @@ describe('Login (Firebase)', () => {
       .should('not.exist');
 
     cy.get('[data-cypress="Navigation"]').should('exist');
+  });
+
+  it('Firebase: Resend OTP', () => {
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[type="tel"]')
+      .type('9999999999')
+      .get('button[type="submit"]')
+      .click()
+      .find('[class*="MuiCircularProgress"]')
+      .should('not.exist');
+
+    cy.contains('Type in the OTP sent to you, to authenticate');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[type*="tel"]')
+      .each(($el) => cy.wrap($el).type('9'));
+
+    cy.get('[data-cypress="SignIn"]')
+      .should('be.visible')
+      .contains('button', 'Resend OTP')
+      .click()
+      .should('be.disabled');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[type*="tel"]')
+      .each(($el) => cy.wrap($el).should('be.empty'));
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('[class*="MuiCircularProgress"]')
+      .should('not.exist');
+
+    cy.contains('Type in the OTP that has been resent to you for authentication');
+  });
+});
+
+describe('Login state for single user without Relation status selected', () => {
+  const patient = [janeNoRelation];
+
+  beforeEach(() => {
+    cy.signIn(patient);
+    cy.visitAph(clientRoutes.welcome()).wait(500);
+  });
+
+  it('Status should autofill to Relation.ME, as indicated in welcome banner', () => {
+    cy.get('[data-cypress="HeroBanner"]').click({ force: true });
+    cy.should('contain', patient[0].firstName!.toLowerCase());
   });
 });

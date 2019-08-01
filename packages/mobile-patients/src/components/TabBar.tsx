@@ -14,7 +14,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigation';
 
-const routeToIcon: Partial<Record<keyof typeof AppRoutes, any>> = {
+const routeToIcon: Partial<Record<keyof typeof AppRoutes, NavigationRouteConfig>> = {
   ConsultRoom: <ConsultationRoom />,
   HealthRecords: <MyHealth />,
   Medicine: <ShoppingCart />,
@@ -35,5 +35,13 @@ export const TabBar = createBottomTabNavigator(routeConfigMap, {
   tabBarOptions: {
     activeTintColor: theme.colors.TAB_BAR_ACTIVE_TINT_COLOR,
     inactiveTintColor: theme.colors.TAB_BAR_INACTIVE_TINT_COLOR,
+    labelStyle: {
+      fontFamily: 'IBMPlexSans-SemiBold',
+      fontSize: 8,
+      letterSpacing: 0.5,
+      textAlign: 'center',
+      textTransform: 'uppercase',
+      top: -2,
+    },
   },
 });

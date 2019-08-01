@@ -10,6 +10,7 @@ import { UpdatePatientVariables, UpdatePatient } from 'graphql/types/UpdatePatie
 import { UPDATE_PATIENT } from 'graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _capitalize from 'lodash/capitalize';
+import _sortBy from 'lodash/sortBy';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -123,6 +124,23 @@ interface PatientProfileProps {
   onUpdatePatient: (patient: Patient) => void;
 }
 const PatientProfile: React.FC<PatientProfileProps> = (props) => {
+  const relationOrderMap = {
+    [Relation.ME]: 0,
+    [Relation.MOTHER]: 1,
+    [Relation.FATHER]: 2,
+    [Relation.SISTER]: 3,
+    [Relation.BROTHER]: 4,
+    [Relation.WIFE]: 5,
+    [Relation.HUSBAND]: 6,
+    [Relation.COUSIN]: 7,
+    [Relation.OTHER]: 8,
+  };
+
+  const allRelations = Object.values(Relation);
+  const orderedRelations = _sortBy(allRelations, (rel: Relation) =>
+    relationOrderMap[rel] != null ? relationOrderMap[rel] : 99
+  );
+
   const classes = useStyles();
   const { patient, number } = props;
   const [selectedRelation, setSelectedRelation] = React.useState<Relation | ''>(
@@ -152,7 +170,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
           <MenuItem className={classes.menuItemHide} disabled>
             Relation
           </MenuItem>
-          {Object.values(Relation).map((relationOption) => (
+          {orderedRelations.map((relationOption) => (
             <MenuItem
               selected={relationOption === selectedRelation}
               value={relationOption}

@@ -92,6 +92,7 @@ export const Header: React.FC = (props) => {
   const { isSigningIn, isSignedIn } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [isHelpPopupOpen, setIsHelpPopupOpen] = React.useState(false);
+  const [stickyPopup, setStickyPopup] = React.useState(true);
   return (
     <header className={classes.header}>
       <div className={classes.container}>
@@ -124,7 +125,6 @@ export const Header: React.FC = (props) => {
             <Popover
               open={isHelpPopupOpen}
               anchorEl={avatarRef.current}
-              onClose={() => setIsHelpPopupOpen(false)}
               anchorOrigin={{
                 vertical: 'top',
                 horizontal: 'right',
@@ -146,7 +146,9 @@ export const Header: React.FC = (props) => {
             <Popover
               open={isLoginPopupVisible}
               anchorEl={avatarRef.current}
-              onClose={() => setIsLoginPopupVisible(false)}
+              onClose={() => {
+                stickyPopup && setIsLoginPopupVisible(false);
+              }}
               anchorOrigin={{
                 vertical: 'top',
                 horizontal: 'right',
@@ -161,6 +163,9 @@ export const Header: React.FC = (props) => {
                 <SignIn
                   popup={() => {
                     setIsLoginPopupVisible(false);
+                  }}
+                  setStickyPopupValue={() => {
+                    setStickyPopup(!stickyPopup);
                   }}
                 />
               </Paper>

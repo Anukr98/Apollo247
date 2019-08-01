@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 20,
     },
     serviceItem: {
-      padding: 20,
+      padding: '20px 15px',
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: theme.palette.common.white,

@@ -22,23 +22,40 @@ import {
   getSpecialtyDoctorsTypeDefs,
   getSpecialtyDoctorsResolvers,
 } from 'doctors-service/resolvers/getSpecialtyDoctorsWithFilters';
+import {
+  getDoctorDetailsTypeDefs,
+  getDoctorDetailsResolvers,
+} from 'doctors-service/resolvers/getDoctorDetails';
 
-import { GatewayContext } from 'api-gateway';
 import gql from 'graphql-tag';
 import { GraphQLTime } from 'graphql-iso-date';
-import { createConnection } from 'typeorm';
-import { Doctor } from 'doctors-service/entity/doctor';
-import { DoctorSpecialty } from 'doctors-service/entity/doctorSpecialty';
-import { StarTeam } from 'doctors-service/entity/starTeam';
-import { DoctorAndHospital } from 'doctors-service/entity/doctorAndHospital';
-import { Facility } from 'doctors-service/entity/facility';
-import { ConsultHours } from 'doctors-service/entity/consultHours';
-
-export interface DoctorsServiceContext extends GatewayContext {}
+import { createConnection, getConnection } from 'typeorm';
+import {
+  Doctor,
+  DoctorSpecialty,
+  StarTeam,
+  DoctorAndHospital,
+  Facility,
+  ConsultHours,
+  DoctorBankAccounts,
+  Packages,
+} from 'doctors-service/entities';
+import { GatewayHeaders } from 'api-gateway';
+import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 
 (async () => {
   await createConnection({
-    entities: [Doctor, DoctorSpecialty, StarTeam, DoctorAndHospital, Facility, ConsultHours],
+    entities: [
+      Doctor,
+      DoctorSpecialty,
+      StarTeam,
+      DoctorAndHospital,
+      Facility,
+      ConsultHours,
+      DoctorBankAccounts,
+      Packages,
+    ],
+    name: 'doctorsDbConnection',
     type: 'postgres',
     host: 'doctors-db',
     port: 5432,
@@ -52,6 +69,14 @@ export interface DoctorsServiceContext extends GatewayContext {}
   });
 
   const server = new ApolloServer({
+    context: async ({ req }) => {
+      const headers = req.headers as GatewayHeaders;
+      const firebaseUid = headers.firebaseuid;
+      const mobileNumber = headers.mobilenumber;
+      const dbConnect = getConnection('doctorsDbConnection');
+      const context: DoctorsServiceContext = { firebaseUid, mobileNumber, dbConnect };
+      return context;
+    },
     schema: buildFederatedSchema([
       {
         typeDefs: gql`
@@ -84,6 +109,10 @@ export interface DoctorsServiceContext extends GatewayContext {}
       {
         typeDefs: starDoctorTypeDefs,
         resolvers: starDoctorProgramResolvers,
+      },
+      {
+        typeDefs: getDoctorDetailsTypeDefs,
+        resolvers: getDoctorDetailsResolvers,
       },
     ]),
   });

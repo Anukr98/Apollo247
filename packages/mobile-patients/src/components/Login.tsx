@@ -1,7 +1,7 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { ArrowDisabled, ArrowYellow } from '@aph/mobile-patients/src/components/ui/Icons';
-import { string } from '@aph/mobile-patients/src/strings/string';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -14,12 +14,17 @@ import {
   ActivityIndicator,
   Keyboard,
   Alert,
-  PermissionsAndroid,
+  // PermissionsAndroid,
   AsyncStorage,
+  EmitterSubscription,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, NavigationEventSubscription } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 import SmsListener from 'react-native-android-sms-listener';
+import {
+  timeOutDataType,
+  ReceivedSmsMessage,
+} from '@aph/mobile-patients/src/components/OTPVerification';
 
 const styles = StyleSheet.create({
   container: {
@@ -78,40 +83,38 @@ const isPhoneNumberValid = (number: string) => {
 };
 
 let otpString = '';
-let didBlurSubscription: any;
+let didBlurSubscription: NavigationEventSubscription;
 
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const { analytics, sendOtp, isSendingOtp } = useAuth();
-  const [subscriptionId, setSubscriptionId] = useState<any>();
+  const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
   }, [, analytics]);
 
   const requestReadSmsPermission = async () => {
-    try {
-      const resuts = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.READ_SMS,
-        PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
-      ]);
-
-      if (resuts[PermissionsAndroid.PERMISSIONS.READ_SMS] !== PermissionsAndroid.RESULTS.GRANTED) {
-        console.log(resuts, 'READ_SMS');
-      }
-      if (
-        resuts[PermissionsAndroid.PERMISSIONS.RECEIVE_SMS] !== PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        console.log(resuts, 'RECEIVE_SMS');
-      }
-
-      if (resuts) {
-        console.log(resuts, 'RECEIVE_SMS');
-      }
-    } catch (error) {
-      console.log('error', error);
-    }
+    // try {
+    //   const resuts = await PermissionsAndroid.requestMultiple([
+    //     PermissionsAndroid.PERMISSIONS.READ_SMS,
+    //     PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
+    //   ]);
+    //   if (resuts[PermissionsAndroid.PERMISSIONS.READ_SMS] !== PermissionsAndroid.RESULTS.GRANTED) {
+    //     console.log(resuts, 'READ_SMS');
+    //   }
+    //   if (
+    //     resuts[PermissionsAndroid.PERMISSIONS.RECEIVE_SMS] !== PermissionsAndroid.RESULTS.GRANTED
+    //   ) {
+    //     console.log(resuts, 'RECEIVE_SMS');
+    //   }
+    //   if (resuts) {
+    //     console.log(resuts, 'RECEIVE_SMS');
+    //   }
+    // } catch (error) {
+    //   console.log('error', error);
+    // }
   };
 
   useEffect(() => {
@@ -120,14 +123,12 @@ export const Login: React.FC<LoginProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    const subscriptionId = SmsListener.addListener((message: any) => {
+    const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
       const newOtp = message.body.match(/-*[0-9]+/);
-      console.log(newOtp[0], 'wertyuio');
       otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
     });
     setSubscriptionId(subscriptionId);
-
-    didBlurSubscription = props.navigation.addListener('didBlur', (payload) => {
+    didBlurSubscription = props.navigation.addListener('didBlur', () => {
       setPhoneNumber('');
     });
   }, [props.navigation, subscriptionId]);
@@ -154,7 +155,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       const data = await AsyncStorage.getItem('timeOutData');
       if (data) {
         const timeOutData = JSON.parse(data);
-        timeOutData.map((obj) => {
+        timeOutData.map((obj: timeOutDataType) => {
           if (obj.phoneNumber === `+91${phoneNumber}`) {
             const t1 = new Date();
             const t2 = new Date(obj.startTime);
@@ -182,8 +183,8 @@ export const Login: React.FC<LoginProps> = (props) => {
         <View style={{ height: 56 }} />
         <Card
           cardContainer={{ marginTop: 0, height: 270 }}
-          heading={string.LocalStrings.hello}
-          description={string.LocalStrings.please_enter_no}
+          heading={string.login.hello}
+          description={string.login.please_enter_no}
           buttonIcon={
             phoneNumberIsValid && phoneNumber.replace(/^0+/, '').length === 10 ? (
               <ArrowYellow />
@@ -225,7 +226,7 @@ export const Login: React.FC<LoginProps> = (props) => {
               phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
             ]}
           >
-            <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
+            <Text style={styles.inputTextStyle}>{string.login.numberPrefix}</Text>
             <TextInput
               autoFocus
               style={styles.inputStyle}
@@ -243,8 +244,8 @@ export const Login: React.FC<LoginProps> = (props) => {
             }
           >
             {phoneNumber == '' || phoneNumberIsValid
-              ? string.LocalStrings.otp_sent_to
-              : string.LocalStrings.wrong_number}
+              ? string.login.otp_sent_to
+              : string.login.wrong_number}
           </Text>
         </Card>
       </SafeAreaView>

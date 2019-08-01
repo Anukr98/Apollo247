@@ -3,7 +3,7 @@ import { Resolver } from 'api-gateway';
 import { Appointments, STATUS, APPOINTMENT_TYPE } from 'profiles-service/entity/appointment';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
-import { ProfilesServiceContext } from 'profiles-service/profiles-service';
+import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
     IN_PROGRESS

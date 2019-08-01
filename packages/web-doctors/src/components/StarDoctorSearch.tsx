@@ -40,7 +40,7 @@ function renderInputComponent(inputProps: any) {
           inputRef(node);
         },
         classes: {
-          input: classes.input,
+          root: classes.customInput,
         },
       }}
       {...other}
@@ -59,10 +59,7 @@ function renderSuggestion(
     <MenuItem selected={isHighlighted} component="div">
       <div>
         {parts.map((part: Search, index: number) => (
-          <span
-            key={index.toString()}
-            style={{ fontWeight: part.highlight ? 400 : 400, color: '#000' }}
-          >
+          <span key={index.toString()} style={{ fontWeight: part.highlight ? 700 : 400 }}>
             {part.text}
           </span>
         ))}
@@ -79,6 +76,25 @@ function getSuggestionValue(
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    customInput: {
+      marginTop: 5,
+      color: '#01475b',
+      fontSize: 18,
+      fontWeight: theme.typography.fontWeightMedium,
+      borderBottom: '2px solid #00b38e',
+      '&:hover': {
+        borderBottom: '2px solid #00b38e',
+        '&:before': {
+          borderBottom: 'none !important',
+        },
+      },
+      '&:before': {
+        borderBottom: 'none',
+      },
+      '&:after': {
+        borderBottom: 'none',
+      },
+    },
     root: {
       flexGrow: 1,
     },
@@ -94,6 +110,10 @@ const useStyles = makeStyles((theme: Theme) =>
       borderRadius: '10px',
       '& li': {
         borderBottom: '1px solid rgba(2,71,91,0.2)',
+        color: '#02475b',
+        '&:last-child': {
+          borderBottom: 'none',
+        },
       },
     },
     suggestion: {
@@ -103,22 +123,21 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: 0,
       padding: 0,
       listStyleType: 'none',
+      '& li': {
+        '&:hover': {
+          '& div': {
+            backgroundColor: 'transparent',
+            color: '#00b38e',
+            '&:hover': {
+              backgroundColor: 'transparent',
+              color: '#00b38e',
+            },
+          },
+        },
+      },
     },
     divider: {
       height: theme.spacing(2),
-    },
-    input: {
-      marginTop: 11,
-      color: '#01475b',
-      fontSize: 18,
-      fontWeight: theme.typography.fontWeightMedium,
-      borderBottom: '2px solid #00b38e',
-      '&:before': {
-        borderBottom: '2px solid #00b38e',
-      },
-      '&:after': {
-        borderBottom: '2px solid #00b38e',
-      },
     },
     posRelative: {
       position: 'relative',
@@ -126,7 +145,7 @@ const useStyles = makeStyles((theme: Theme) =>
     addBtn: {
       position: 'absolute',
       right: 0,
-      top: '20px',
+      top: 10,
     },
   })
 );

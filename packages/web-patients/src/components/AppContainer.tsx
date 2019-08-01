@@ -15,13 +15,14 @@ import DateFnsUtils from '@date-io/date-fns';
 import { DoctorsLanding } from 'components/DoctorsLanding';
 import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
+import { MedicineLanding } from 'components/MedicineLanding';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     app: {
       minHeight: '100vh',
       backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
-      paddingBottom: 70,
+      paddingBottom: 20,
       [theme.breakpoints.down('xs')]: {
         paddingBottom: 90,
       },
@@ -41,6 +42,7 @@ const App: React.FC = () => {
       <Route exact path={clientRoutes.patients()} component={PatientsList} />
       <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
       <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
+      <AuthRouted exact path={clientRoutes.searchMedicines()} component={MedicineLanding} />
     </div>
   );
 };
