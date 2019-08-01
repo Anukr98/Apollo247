@@ -19,12 +19,12 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface sectionHeaderProps {
+export interface SectionHeaderProps {
   style?: StyleProp<ViewStyle>;
   sectionTitle: string;
 }
 
-export const SectionHeaderComponent: React.FC<sectionHeaderProps> = (props) => {
+export const SectionHeaderComponent: React.FC<SectionHeaderProps> = (props) => {
   return (
     <View style={[styles.headerView, props.style]}>
       <Text style={styles.titleStyles}>{props.sectionTitle}</Text>
