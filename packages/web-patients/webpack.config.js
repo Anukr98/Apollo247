@@ -4,6 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const DotenvWebpack = require('dotenv-webpack');
 const webpack = require('webpack');
 const dotenv = require('dotenv');
+const CircularDependencyPlugin = require('circular-dependency-plugin');
 
 const envFile = path.resolve(__dirname, '../../.env');
 const dotEnvConfig = dotenv.config({ path: envFile });
@@ -16,6 +17,12 @@ const distDir = path.resolve(__dirname, 'dist');
 
 const plugins = [
   new DotenvWebpack({ path: envFile }),
+  new CircularDependencyPlugin({
+    exclude: /node_modules/,
+    failOnError: true,
+    allowAsyncCycles: false,
+    cwd: process.cwd(),
+  }),
   new HtmlWebpackPlugin({
     filename: 'index.html',
     chunks: ['index'],
