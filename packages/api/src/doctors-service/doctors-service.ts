@@ -25,12 +25,14 @@ import {
 import gql from 'graphql-tag';
 import { GraphQLTime } from 'graphql-iso-date';
 import { createConnection } from 'typeorm';
-import { Doctor } from 'doctors-service/entities/doctor';
-import { DoctorSpecialty } from 'doctors-service/entities/doctorSpecialty';
-import { StarTeam } from 'doctors-service/entities/starTeam';
-import { DoctorAndHospital } from 'doctors-service/entities/doctorAndHospital';
-import { Facility } from 'doctors-service/entities/facility';
-import { ConsultHours } from 'doctors-service/entities/consultHours';
+import {
+  Doctor,
+  DoctorSpecialty,
+  StarTeam,
+  DoctorAndHospital,
+  Facility,
+  ConsultHours,
+} from 'doctors-service/entities';
 
 (async () => {
   await createConnection({
