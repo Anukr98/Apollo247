@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, FormControlLabel } from '@material-ui/core';
+import { Theme, FormControlLabel, Paper, Popover, Typography } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { AphCheckbox } from 'components/AphCheckbox';
 
@@ -121,11 +121,38 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    medicineInformationPopup: {
+      width: 328,
+      padding: 15,
+      paddingBottom: 5,
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#0087ba',
+      '& h4': {
+        color: '#02475b',
+        fontSize: 12,
+        margin: 0,
+        paddingBottom: 3,
+      },
+      '& p': {
+        lineHeight: 1.67,
+        marginTop: 0,
+        marginBottom: 10,
+      },
+      '& ol': {
+        margin: 0,
+        marginBottom: 10,
+        padding: 0,
+        paddingLeft: 15,
+      },
+    },
   };
 });
 
 export const MedicineStripCard: React.FC = (props) => {
   const classes = useStyles();
+  const medicineRef = useRef(null);
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   return (
     <div className={classes.root}>
@@ -139,7 +166,11 @@ export const MedicineStripCard: React.FC = (props) => {
               Metformin 500mg <div className={classes.tabInfo}>Tablet / Type 2 Diabetes</div>
             </div>
           </div>
-          <div className={classes.helpText}>
+          <div
+            className={classes.helpText}
+            ref={medicineRef}
+            onClick={() => setIsPopoverOpen(true)}
+          >
             <img src={require('images/ic_info.svg')} alt="" />
           </div>
           <div className={classes.medicinePrice}>
@@ -166,6 +197,46 @@ export const MedicineStripCard: React.FC = (props) => {
           />
         </div>
       </div>
+      <Popover
+        open={isPopoverOpen}
+        anchorEl={medicineRef.current}
+        onClose={() => setIsPopoverOpen(false)}
+        anchorOrigin={{
+          vertical: 'center',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'center',
+          horizontal: 'left',
+        }}
+      >
+        <Paper className={classes.medicineInformationPopup}>
+          <Typography variant="h4">How Metformin 500mg Works</Typography>
+          <p>
+            Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus
+            id quod maxime placeat facere possimus.
+          </p>
+          <Typography variant="h4">Important Information</Typography>
+          <p>
+            Any warnings related to medicine intake if there’s alcohol usage / pregnancy / breast
+            feeding
+          </p>
+          <Typography variant="h4">Alternative Medicines</Typography>
+          <ol>
+            <li>Medicine a</li>
+            <li>Medicine b</li>
+            <li>Medicine c</li>
+          </ol>
+          <Typography variant="h4">Generic Salt Composition</Typography>
+          <ol>
+            <li>Salt a</li>
+            <li>Salt b</li>
+            <li>Salt c</li>
+          </ol>
+          <Typography variant="h4">Side Effects / Warnings</Typography>
+          <p>quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est.</p>
+        </Paper>
+      </Popover>
     </div>
   );
 };
