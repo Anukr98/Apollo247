@@ -60,6 +60,12 @@ const styles = StyleSheet.create({
   textView: { ...theme.fonts.IBMPlexSansLight(10), color: 'rgba(1, 71, 91, 0.6)' },
   messageText: { ...theme.fonts.IBMPlexSansSemiBold(15), color: '#01475b' },
   commonview: { justifyContent: 'center', marginLeft: 5, flex: 1 },
+  underline: {
+    height: 1,
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#f0f4f5',
+  },
 });
 
 const showHeaderView = () => {
@@ -84,32 +90,14 @@ const renderNotificationsListView = () => {
       {notifications.map((i, index, array) => {
         return (
           <View>
-            {index < 3 ? (
-              <View style={styles.dataView}>
-                <PlaceHolderDoctors />
-                <View style={styles.commonview}>
-                  <Text style={styles.messageText}>{i.messagename}</Text>
-                  <Text style={styles.textView}>{i.id}</Text>
-                </View>
+            <View style={styles.dataView}>
+              {index < 3 ? <PlaceHolderDoctors /> : <PlaceHolderDoctor />}
+              <View style={styles.commonview}>
+                <Text style={styles.messageText}>{i.messagename}</Text>
+                <Text style={styles.textView}>{i.id}</Text>
               </View>
-            ) : (
-              <View style={styles.dataView}>
-                <PlaceHolderDoctor />
-                <View style={styles.commonview}>
-                  <Text style={styles.messageText}>{i.messagename}</Text>
-                  <Text style={styles.textView}>{i.id}</Text>
-                </View>
-              </View>
-            )}
-
-            <View
-              style={{
-                height: 1,
-                width: '100%',
-                borderWidth: 1,
-                borderColor: '#f0f4f5',
-              }}
-            ></View>
+            </View>
+            <View style={styles.underline}></View>
           </View>
         );
       })}
