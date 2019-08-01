@@ -40,7 +40,6 @@ const styles = StyleSheet.create({
 export interface OTPTextViewProps {
   defaultValue?: string;
   inputCount?: number;
-  offTintColor?: string;
   tintColor?: string;
   containerStyle?: StyleProp<ViewStyle>;
   textInputStyle?: StyleProp<ViewStyle>;
@@ -59,7 +58,6 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
   const {
     defaultValue,
     inputCount = 4,
-    offTintColor,
     tintColor,
     containerStyle,
     // textInputStyle,
@@ -119,7 +117,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
 
   for (let i = 0; i < inputCount; i += 1) {
     const defaultChars: string[] = [];
-    const inputStyle = [styles.textInput, styles.textInputStyle, { borderColor: offTintColor }];
+    const inputStyle = [styles.textInput, styles.textInputStyle, { borderColor: tintColor }];
     if (focusedInput === i) {
       inputStyle.push({ borderColor: tintColor });
     }

@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { ConsultServiceContext } from 'consults-service/consults-service';
+import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { addMinutes } from 'date-fns';
 
 export const getAvailableSlotsTypeDefs = gql`

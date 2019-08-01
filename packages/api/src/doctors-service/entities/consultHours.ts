@@ -7,9 +7,7 @@ import {
   BeforeUpdate,
   ManyToOne,
 } from 'typeorm';
-import { DoctorAndHospital } from 'doctors-service/entity/doctorAndHospital';
-import { Doctor } from 'doctors-service/entity/doctor';
-import { Facility } from 'doctors-service/entity/facility';
+import { DoctorAndHospital, Doctor, Facility } from 'doctors-service/entities';
 
 export enum WeekDay {
   SUNDAY = 'SUNDAY',

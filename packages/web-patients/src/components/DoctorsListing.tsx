@@ -9,7 +9,7 @@ import _filter from 'lodash/filter';
 
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { DOCTORS_BY_SPECIALITY } from 'graphql/doctors';
-import { SearchObject } from 'components/DoctorsLanding';
+import { SearchObject } from 'components/DoctorsFilter';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 

@@ -7,7 +7,7 @@ import {
   BeforeUpdate,
   ManyToOne,
 } from 'typeorm';
-import { Doctor } from 'doctors-service/entity/doctor';
+import { Doctor } from 'doctors-service/entities';
 
 @Entity()
 export class StarTeam extends BaseEntity {

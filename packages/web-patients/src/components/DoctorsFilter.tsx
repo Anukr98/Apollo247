@@ -3,7 +3,6 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { Gender } from 'graphql/types/globalTypes';
-import { SearchObject } from 'components/DoctorsLanding';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import _filter from 'lodash/filter';
 import _reverse from 'lodash/reverse';
@@ -134,6 +133,18 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   });
 });
+
+export interface SearchObject {
+  searchKeyword: string;
+  cityName: string[] | null;
+  experience: string[] | null;
+  availability: string[] | null;
+  fees: string[] | null;
+  gender: string[] | null;
+  language: string[] | null;
+  dateSelected: string;
+  specialtyName: string;
+}
 
 export interface DoctorsFilterProps {
   handleFilterOptions: (filterOptions: SearchObject) => void;

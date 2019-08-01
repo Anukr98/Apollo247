@@ -341,21 +341,29 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               title={'SUBMIT'}
               disabled={isDisabled()}
               onPress={async () => {
-                setVerifyingPhoneNumber(true);
-
-                profiles &&
-                  profiles.forEach(async (profile: updatePatient_updatePatient_patient) => {
-                    const patientsDetails: updatePateint = {
-                      id: profile.id || '',
-                      relation: Relation[profile.relation!], // profile ? profile.relation!.toUpperCase() : '',
-                    };
-                    console.log('patientsDetails', patientsDetails);
-                    mutate({
-                      variables: {
-                        patientInput: patientsDetails,
-                      },
-                    });
+                if (profiles) {
+                  const result = profiles.filter((obj) => {
+                    return obj.relation == Relation['ME'];
                   });
+                  if (result.length === 0) {
+                    Alert.alert('Apollo', 'There should be 1 profile with relation set as Me');
+                  } else {
+                    setVerifyingPhoneNumber(true);
+
+                    profiles.forEach(async (profile: updatePatient_updatePatient_patient) => {
+                      const patientsDetails: updatePateint = {
+                        id: profile.id || '',
+                        relation: Relation[profile.relation!], // profile ? profile.relation!.toUpperCase() : '',
+                      };
+                      console.log('patientsDetails', patientsDetails);
+                      mutate({
+                        variables: {
+                          patientInput: patientsDetails,
+                        },
+                      });
+                    });
+                  }
+                }
               }}
             >
               {data

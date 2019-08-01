@@ -10,12 +10,11 @@ import {
 } from 'typeorm';
 
 import { Gender } from 'profiles-service/entity/patient';
-import { DoctorSpecialty } from 'doctors-service/entity/doctorSpecialty';
+import { DoctorSpecialty } from 'doctors-service/entities/doctorSpecialty';
 import { Validate, IsDate } from 'class-validator';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
-import { StarTeam } from 'doctors-service/entity/starTeam';
-import { DoctorAndHospital } from 'doctors-service/entity/doctorAndHospital';
-import { ConsultHours } from 'doctors-service/entity/consultHours';
+import { StarTeam, DoctorAndHospital, ConsultHours } from 'doctors-service/entities';
+
 export enum DoctorType {
   APOLLO = 'APOLLO',
   PAYROLL = 'PAYROLL',
