@@ -24,10 +24,9 @@
     <div id="root"></div>
     <style>
       .OT_subscriber {
-        position: inherit;
-        margin-top: 50px;
-        width: 50%;
-        height: 50%;
+        width: 100% !important;
+        min-height: 700px !important;
+        top: 0;
       }
       .OT_publisher {
         position: absolute;
@@ -38,6 +37,11 @@
         top: 100px;
         right: 40px;
         z-index: 9;
+        border-radius: 10px;
+      }
+      .OT_publisher .OT_edge-bar-item,
+      .OT_subscriber .OT_edge-bar-item {
+        display: none !important;
       }
     </style>
   </body>
