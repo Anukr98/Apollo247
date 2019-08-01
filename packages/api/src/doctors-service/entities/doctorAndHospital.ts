@@ -8,9 +8,9 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { Doctor } from 'doctors-service/entity/doctor';
-import { Facility } from 'doctors-service/entity/facility';
-import { ConsultHours } from 'doctors-service/entity/consultHours';
+import { Doctor } from 'doctors-service/entities/doctor';
+import { Facility } from 'doctors-service/entities/facility';
+import { ConsultHours } from 'doctors-service/entities/consultHours';
 @Entity()
 export class DoctorAndHospital extends BaseEntity {
   @OneToMany((type) => ConsultHours, (consultHours) => consultHours.doctorHospital)

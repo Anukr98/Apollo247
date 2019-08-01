@@ -5,23 +5,26 @@ import {
   BaseEntity,
   BeforeInsert,
   BeforeUpdate,
-  ManyToOne,
+  OneToMany,
 } from 'typeorm';
-import { Doctor } from 'doctors-service/entity/doctor';
+import { Doctor } from 'doctors-service/entities/doctor';
 
 @Entity()
-export class StarTeam extends BaseEntity {
+export class DoctorSpecialty extends BaseEntity {
   @Column()
   createdDate: Date;
-
-  @Column()
-  associatedDoctor: String;
 
   @PrimaryGeneratedColumn('uuid')
   id: String;
 
-  @ManyToOne((type) => Doctor, (doctor) => doctor.starTeam)
-  starDoctor: Doctor;
+  @Column()
+  name: String;
+
+  @Column({ nullable: true, type: 'text' })
+  image: String;
+
+  @OneToMany((type) => Doctor, (doctor) => doctor.specialty)
+  doctor: Doctor[];
 
   @Column({ nullable: true })
   updatedDate: Date;

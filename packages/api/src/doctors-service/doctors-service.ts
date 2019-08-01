@@ -27,12 +27,12 @@ import { GatewayContext } from 'api-gateway';
 import gql from 'graphql-tag';
 import { GraphQLTime } from 'graphql-iso-date';
 import { createConnection } from 'typeorm';
-import { Doctor } from 'doctors-service/entity/doctor';
-import { DoctorSpecialty } from 'doctors-service/entity/doctorSpecialty';
-import { StarTeam } from 'doctors-service/entity/starTeam';
-import { DoctorAndHospital } from 'doctors-service/entity/doctorAndHospital';
-import { Facility } from 'doctors-service/entity/facility';
-import { ConsultHours } from 'doctors-service/entity/consultHours';
+import { Doctor } from 'doctors-service/entities/doctor';
+import { DoctorSpecialty } from 'doctors-service/entities/doctorSpecialty';
+import { StarTeam } from 'doctors-service/entities/starTeam';
+import { DoctorAndHospital } from 'doctors-service/entities/doctorAndHospital';
+import { Facility } from 'doctors-service/entities/facility';
+import { ConsultHours } from 'doctors-service/entities/consultHours';
 
 export interface DoctorsServiceContext extends GatewayContext {}
 

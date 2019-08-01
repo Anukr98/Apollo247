@@ -10,8 +10,8 @@ import {
 
 import { Validate } from 'class-validator';
 import { NameValidator } from 'validators/entityValidators';
-import { DoctorAndHospital } from 'doctors-service/entity/doctorAndHospital';
-import { ConsultHours } from 'doctors-service/entity/consultHours';
+import { DoctorAndHospital } from 'doctors-service/entities/doctorAndHospital';
+import { ConsultHours } from 'doctors-service/entities/consultHours';
 
 export enum FacilityType {
   HOSPITAL = 'HOSPITAL',
