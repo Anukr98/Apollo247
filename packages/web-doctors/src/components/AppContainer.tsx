@@ -10,6 +10,8 @@ import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
 import { DoctorsProfile } from 'components/DoctorsProfile';
 import { Calendar } from 'components/Calendar';
+import { ConsultRoom } from 'components/ConsultRoom';
+
 import { AuthProvider } from 'components/AuthProvider';
 import { useAuth } from 'hooks/authHooks';
 import { aphTheme, AphThemeProvider } from '@aph/web-ui-components';
@@ -26,6 +28,7 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.patients()} component={PatientsList} />
       <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
       <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
+      <AuthRouted exact path={clientRoutes.consultRoom()} component={ConsultRoom} />
     </div>
   ) : (
     <div className={classes.app}>
