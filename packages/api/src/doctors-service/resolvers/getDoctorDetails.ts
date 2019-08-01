@@ -69,12 +69,12 @@ export const getDoctorDetailsTypeDefs = gql`
     delegateNumber: String
     emailAddress: String
     experience: String
-    firstName: String
+    firstName: String!
     gender: Gender
     isActive: Boolean!
     id: ID!
     languages: String
-    lastName: String
+    lastName: String!
     mobileNumber: String!
     onlineConsultationFees: String!
     photoUrl: String
@@ -106,14 +106,14 @@ export const getDoctorDetailsTypeDefs = gql`
   }
 
   type Facility {
-    city: String!
-    country: String!
+    city: String
+    country: String
     facilityType: String!
     latitude: String
     longitude: String
     name: String!
-    state: String!
-    streetLine1: String!
+    state: String
+    streetLine1: String
     streetLine2: String
     streetLine3: String
   }

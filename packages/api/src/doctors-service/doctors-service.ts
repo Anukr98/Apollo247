@@ -40,6 +40,8 @@ import {
   DoctorBankAccounts,
   Packages,
 } from 'doctors-service/entities';
+import { GatewayHeaders } from 'api-gateway';
+import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 
 (async () => {
   await createConnection({
