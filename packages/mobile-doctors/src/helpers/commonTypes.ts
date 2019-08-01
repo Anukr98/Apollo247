@@ -9,7 +9,7 @@ export type LocalStorage = {
 };
 
 export type DummyQueryResult = {
-  error: string;
+  error: string | null;
   loading: boolean;
   data: {
     getDoctorProfile?: DoctorProfile;
@@ -77,6 +77,6 @@ export type Appointments = {
   doctorname: string;
   timings: string;
   disease: string;
-  type: 'audio' | 'video';
-  timeslottype: string; //=> 'MISSED' | 'UP NEXT'
+  wayOfContact: 'audio' | 'video';
+  timeslottype: 'past' | 'missed' | 'up-next' | 'next'; //=> 'MISSED' | 'UP NEXT'
 };

@@ -296,3 +296,27 @@ export const Block: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/block.png')}
   />
 );
+
+export const PastAppointmentIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    style={{ height: 20, width: 20 }}
+    source={require('../../images/icons/ic_status_complete.png')}
+  />
+);
+
+export const MissedAppointmentIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    style={{ height: 20, width: 20 }}
+    source={require('../../images/icons/ic_status_missed.png')}
+  />
+);
+
+export const NextAppointmentIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    style={{ height: 20, width: 20 }}
+    source={require('../../images/icons/ic_status_incomplete.png')}
+  />
+);
