@@ -2,7 +2,6 @@ import { BottomNavigation, Theme, Grid } from '@material-ui/core';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import { ManageProfile } from 'components/ManageProfile';
 import React, { useState, useEffect } from 'react';
 import { DoctorsFilter } from 'components/DoctorsFilter';
 import { PastSearches } from 'components/PastSearches';
@@ -14,7 +13,6 @@ import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { SEARCH_DOCTORS_AND_SPECIALITY } from 'graphql/doctors';
 import Scrollbars from 'react-custom-scrollbars';
@@ -398,6 +396,7 @@ export const DoctorsLanding: React.FC = (props) => {
           </div>
         </div>
       </div>
+
       <BottomNavigation showLabels className={classes.bottomMenuRoot}>
         <BottomNavigationAction
           label="Consult Room"
@@ -436,7 +435,6 @@ export const DoctorsLanding: React.FC = (props) => {
           }}
         />
       </BottomNavigation>
-      <ManageProfile />
     </div>
   );
 };
