@@ -13,9 +13,7 @@ import { Gender } from 'profiles-service/entity/patient';
 import { DoctorSpecialty } from 'doctors-service/entities/doctorSpecialty';
 import { Validate, IsDate } from 'class-validator';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
-import { StarTeam } from 'doctors-service/entities/starTeam';
-import { DoctorAndHospital } from 'doctors-service/entities/doctorAndHospital';
-import { ConsultHours } from 'doctors-service/entities/consultHours';
+import { StarTeam, DoctorAndHospital, ConsultHours } from 'doctors-service/entities';
 export enum DoctorType {
   APOLLO = 'APOLLO',
   PAYROLL = 'PAYROLL',
