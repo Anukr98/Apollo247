@@ -3,6 +3,8 @@ import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctors-service';
 import { Doctor } from 'doctors-service/entity/doctor';
 import { getRepository } from 'typeorm';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum AccountType {
@@ -10,8 +12,8 @@ export const getDoctorDetailsTypeDefs = gql`
     SAVINGS
   }
   enum ConsultType {
-    SUNDAY
-    MONDAY
+    FIXED
+    PREFERRED
   }
   enum ConsultMode {
     ONLINE
@@ -38,47 +40,47 @@ export const getDoctorDetailsTypeDefs = gql`
     FRIDAY
     SATURDAY
   }
-
   type BankAccount {
-    accountHolderName: String
-    accountNumber: String
-    accountType: AccountType
-    bankName: String
-    city: String
-    id: String
-    IFSCcode: String
+    accountHolderName: String!
+    accountNumber: String!
+    accountType: AccountType!
+    bankName: String!
+    city: String!
+    id: ID!
+    IFSCcode: String!
     state: String
     streetLine1: String
   }
   type ConsultHours {
-    consultMode: ConsultMode
-    consultType: ConsultType
-    endTime: String
-    id: String
-    isActive: Boolean
-    startTime: String
-    weekDay: WeekDay
+    consultMode: ConsultMode!
+    consultType: ConsultType!
+    endTime: String!
+    id: ID!
+    isActive: Boolean!
+    startTime: String!
+    weekDay: WeekDay!
   }
   type DoctorDetails {
     awards: String
     city: String
     country: String
     dateOfBirth: String
-    doctorType: DoctorType
+    doctorType: DoctorType!
     delegateNumber: String
     emailAddress: String
     experience: String
     firstName: String
     gender: Gender
-    isActive: Boolean
+    isActive: Boolean!
+    id: ID!
     languages: String
     lastName: String
-    mobileNumber: String
-    onlineConsultationFees: String
+    mobileNumber: String!
+    onlineConsultationFees: String!
     photoUrl: String
-    physicalConsultationFees: String
+    physicalConsultationFees: String!
     qualification: String
-    registrationNumber: String
+    registrationNumber: String!
     salutation: Salutation
     specialization: String
     state: String
@@ -86,21 +88,67 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine2: String
     streetLine3: String
     zip: String
-    BankAccount: [BankAccount]
-    ConsultHours: [[ConsultHours]]
-    Packages: [Packages]
-    Specialty: [DoctorSpecialties]
+    bankAccount: [BankAccount]
+    consultHours: [ConsultHours]
+    doctorHospital: [DoctorHospital!]!
+    packages: [Packages]
+    specialty: DoctorSpecialties!
+    starTeam: [StarTeam]
   }
-
-  type Packages {
-    name: String
-    id: String
-    fees: String
+  type DoctorHospital {
+    facility: Facility!
   }
 
   type DoctorSpecialties {
-    name: String
+    createdDate: String
+    name: String!
     image: String
+  }
+
+  type Facility {
+    city: String!
+    country: String!
+    facilityType: String!
+    latitude: String
+    longitude: String
+    name: String!
+    state: String!
+    streetLine1: String!
+    streetLine2: String
+    streetLine3: String
+  }
+
+  type Packages {
+    name: String!
+    id: String!
+    fees: String!
+  }
+
+  type Profile {
+    city: String
+    country: String
+    doctorType: DoctorType!
+    delegateNumber: String
+    emailAddress: String
+    experience: String
+    firstName: String
+    gender: Gender
+    isActive: Boolean!
+    id: ID!
+    lastName: String
+    mobileNumber: String!
+    photoUrl: String
+    qualification: String
+    salutation: Salutation
+    state: String
+    streetLine1: String
+    streetLine2: String
+    streetLine3: String
+    zip: String
+  }
+
+  type StarTeam {
+    associatedDoctor: Profile
   }
 
   extend type Query {
@@ -114,18 +162,24 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor[]> = as
   { mobileNumber }
 ) => {
   const doctorRepository = getRepository(Doctor);
-  const doctordata = await doctorRepository.find({
-    where: { mobileNumber: mobileNumber, isActive: true },
-    relations: [
-      'specialty',
-      'doctorHospital',
-      'consultHours',
-      'starTeam',
-      'bankAccount',
-      'packages',
-    ],
-  });
-  console.log(doctordata);
+  let doctordata: Doctor[] = [];
+  try {
+    doctordata = await doctorRepository.find({
+      where: { mobileNumber: mobileNumber, isActive: true },
+      relations: [
+        'specialty',
+        'doctorHospital',
+        'consultHours',
+        'starTeam',
+        'bankAccount',
+        'packages',
+        'doctorHospital.facility',
+        'starTeam.associatedDoctor',
+      ],
+    });
+  } catch (getPprofileError) {
+    throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getPprofileError });
+  }
   return doctordata;
 };
 

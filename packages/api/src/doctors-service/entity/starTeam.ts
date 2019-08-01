@@ -6,6 +6,8 @@ import {
   BeforeInsert,
   BeforeUpdate,
   ManyToOne,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Doctor } from 'doctors-service/entity/doctor';
 
@@ -14,8 +16,9 @@ export class StarTeam extends BaseEntity {
   @Column()
   createdDate: Date;
 
-  @Column()
-  associatedDoctor: String;
+  @OneToOne((type) => Doctor)
+  @JoinColumn()
+  associatedDoctor: Doctor;
 
   @PrimaryGeneratedColumn('uuid')
   id: String;
