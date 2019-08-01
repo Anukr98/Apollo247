@@ -27,13 +27,10 @@ import {
   bookAppointmentResolvers,
 } from 'profiles-service/resolvers/bookAppointment';
 import gql from 'graphql-tag';
-import { GatewayContext, GatewayHeaders } from 'api-gateway';
+import { GatewayHeaders } from 'api-gateway';
+import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 // import { AphAuthenticationError } from 'AphError';
 // import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
-
-export interface ProfilesServiceContext extends GatewayContext {
-  currentPatient: Patient | null;
-}
 
 (async () => {
   await createConnection({

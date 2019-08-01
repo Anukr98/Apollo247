@@ -14,7 +14,7 @@ import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-
+import { SearchObject } from 'components/DoctorsFilter';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { SEARCH_DOCTORS_AND_SPECIALITY } from 'graphql/doctors';
 import Scrollbars from 'react-custom-scrollbars';
@@ -194,19 +194,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface SearchObject {
-  searchKeyword: string;
-  cityName: string[] | null;
-  experience: string[] | null;
-  availability: string[] | null;
-  fees: string[] | null;
-  gender: string[] | null;
-  language: string[] | null;
-  dateSelected: string;
-  specialtyName: string;
-}
-
-const searchObject = {
+const searchObject: SearchObject = {
   searchKeyword: '',
   cityName: [],
   experience: [],

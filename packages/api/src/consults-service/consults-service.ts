@@ -7,9 +7,7 @@ import {
   getAvailableSlotsTypeDefs,
   getAvailableSlotsResolvers,
 } from 'consults-service/resolvers/getDoctorAvailability';
-import { GatewayContext } from 'api-gateway';
 
-export interface ConsultServiceContext extends GatewayContext {}
 (async () => {
   const server = new ApolloServer({
     schema: buildFederatedSchema([
