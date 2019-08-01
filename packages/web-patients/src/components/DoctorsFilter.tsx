@@ -3,7 +3,6 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { Gender } from 'graphql/types/globalTypes';
-import { SearchObject } from 'components/DoctorsLanding';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import _filter from 'lodash/filter';
 import _reverse from 'lodash/reverse';
@@ -135,6 +134,18 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
+export interface SearchObject {
+  searchKeyword: string;
+  cityName: string[] | null;
+  experience: string[] | null;
+  availability: string[] | null;
+  fees: string[] | null;
+  gender: string[] | null;
+  language: string[] | null;
+  dateSelected: string;
+  specialtyName: string;
+}
+
 export interface DoctorsFilterProps {
   handleFilterOptions: (filterOptions: SearchObject) => void;
   existingFilters: SearchObject;
@@ -179,7 +190,9 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   const filterGenders = _reverse(_filter(Object.values(Gender), (gender) => gender !== 'OTHER')); // show MALE, FEMALE instead of FEMALE, MALE
   const filterLanguages = { hindi: 'Hindi', english: 'English', telugu: 'Telugu' };
 
-  const [searchKeyword, setSearchKeyword] = useState<string>(existingFilters.searchKeyword || '');
+  const [searchKeyword, setSearchKeyword] = useState<string>(
+    (existingFilters.searchKeyword.length > 0 ? existingFilters.searchKeyword : '') || ''
+  );
   const [cityName, setCityName] = useState<string[]>(existingFilters.cityName || []);
   const [experience, setExperience] = useState<string[]>(existingFilters.experience || []);
   const [availability, setAvailability] = useState<string[]>(existingFilters.availability || []);
@@ -190,9 +203,10 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
 
   const prevDateSelected = usePrevious(dateSelected);
+  const selectedSpecialtyName = existingFilters.specialtyName;
 
   const filterOptions = {
-    searchKeyword: searchKeyword === '' ? existingFilters.searchKeyword : '',
+    searchKeyword: searchKeyword,
     cityName: cityName,
     experience: experience,
     availability: availability,
@@ -200,6 +214,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     gender: gender,
     language: language,
     dateSelected: dateSelected,
+    specialtyName: selectedSpecialtyName,
   };
 
   // we should keep the previous value and render only when prop changes to prevent infinite renders.
@@ -208,8 +223,13 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     if (prevDateSelected !== dateSelected) handleFilterOptions(filterOptions);
   });
 
-  const emptyFilters = () => {
-    filterOptions.searchKeyword = '';
+  // assign selected speciality into search keyword. this should happen only once when the component mounts.
+  useEffect(() => {
+    setSearchKeyword(existingFilters.searchKeyword);
+  }, [existingFilters]);
+
+  const emptyFilters = (emptySearchKeyword: boolean) => {
+    if (emptySearchKeyword) filterOptions.searchKeyword = '';
     showNormal(true);
     emptySpeciality('');
     manageFilter(true);
@@ -229,15 +249,18 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
         classes={{ root: classes.searchInput }}
         placeholder="Search doctors or specialities"
         onChange={(event) => {
+          if (selectedSpecialtyName !== '' && selectedSpecialtyName !== event.currentTarget.value) {
+            emptyFilters(false);
+          }
           setSearchKeyword(event.target.value);
           filterOptions.searchKeyword = event.currentTarget.value;
           if (event.target.value.length === 0) {
-            emptyFilters();
+            emptyFilters(true);
           } else if (event.target.value.length > 3) {
             handleFilterOptions(filterOptions);
           }
         }}
-        value={searchKeyword.length > 0 ? searchKeyword : existingFilters.searchKeyword}
+        value={searchKeyword}
         error={showError}
       />
       {showError ? (

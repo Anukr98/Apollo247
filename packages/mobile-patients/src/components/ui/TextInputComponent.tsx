@@ -8,6 +8,7 @@ import {
   TextInputProps,
   View,
   ViewStyle,
+  TextStyle,
 } from 'react-native';
 import { theme } from '../../theme/theme';
 
@@ -30,23 +31,25 @@ const styles = StyleSheet.create({
     paddingBottom: 3,
     paddingLeft: Platform.OS === 'ios' ? 0 : -3,
     paddingTop: 0,
+    color: theme.colors.SHERPA_BLUE,
   },
   textview: {
     flexDirection: 'row',
   },
 });
 
-export interface textInputComponentProps {
+export interface TextInputComponentProps {
   conatinerstyles?: StyleProp<ViewStyle>;
   label?: string;
   noInput?: boolean;
   placeholder?: string;
   value?: string;
-  inputStyle?: StyleProp<ViewStyle>;
+  inputStyle?: StyleProp<TextStyle>;
   multiline?: boolean;
   numberOfLines?: number;
   placeholderTextColor?: TextInputProps['placeholderTextColor'];
   onFocus?: TextInputProps['onFocus'];
+  onBlur?: TextInputProps['onBlur'];
   onChangeText?: TextInputProps['onChangeText'];
   underlineColorAndroid?: string;
   autoCorrect?: boolean;
@@ -54,7 +57,7 @@ export interface textInputComponentProps {
   textInputprops?: TextInputProps;
 }
 
-export const TextInputComponent: React.FC<textInputComponentProps> = (props) => {
+export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => {
   return (
     <View style={[styles.mainveiw, props.conatinerstyles]}>
       {props.label && (
@@ -71,9 +74,11 @@ export const TextInputComponent: React.FC<textInputComponentProps> = (props) => 
           numberOfLines={props.numberOfLines}
           placeholderTextColor={theme.colors.placeholderTextColor || props.placeholderTextColor}
           onFocus={props.onFocus}
+          onBlur={props.onBlur}
           onChangeText={props.onChangeText}
-          underlineColorAndroid={props.underlineColorAndroid}
+          underlineColorAndroid={'transparent'}
           autoCorrect={props.autoCorrect}
+          selectionColor={theme.colors.INPUT_CURSOR_COLOR}
           {...props.textInputprops}
         />
       )}

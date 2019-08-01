@@ -27,4 +27,27 @@ export const viewStyles = {
   footerButtonStyle: {
     margin: 16,
   },
+  cardViewStyle: {
+    borderRadius: 10,
+    backgroundColor: colors.WHITE,
+    shadowColor: colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  cardContainer: {
+    shadowColor: colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 8,
+    backgroundColor: colors.CARD_BG,
+  },
+  shadowStyle: {
+    shadowColor: colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 5 },
+    shadowRadius: 10,
+    elevation: 8,
+  },
 };
