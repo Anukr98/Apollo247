@@ -1,10 +1,11 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { Doctor } from 'doctors-service/entities/doctor';
-import { getRepository } from 'typeorm';
+import { Doctor } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { getCustomRepository } from 'typeorm';
+import { DoctorRepository } from 'doctors-service/repos/doctorRepository';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum AccountType {
@@ -161,24 +162,12 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor[]> = as
   args,
   { mobileNumber }
 ) => {
-  const doctorRepository = getRepository(Doctor);
   let doctordata: Doctor[] = [];
   try {
-    doctordata = await doctorRepository.find({
-      where: { mobileNumber: mobileNumber, isActive: true },
-      relations: [
-        'specialty',
-        'doctorHospital',
-        'consultHours',
-        'starTeam',
-        'bankAccount',
-        'packages',
-        'doctorHospital.facility',
-        'starTeam.associatedDoctor',
-      ],
-    });
-  } catch (getPprofileError) {
-    throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getPprofileError });
+    const doctorRepository = getCustomRepository(DoctorRepository);
+    doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  } catch (getProfileError) {
+    throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
   }
   return doctordata;
 };

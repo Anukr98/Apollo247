@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { DoctorSpecialty } from 'doctors-service/entities/doctorSpecialty';
+import { DoctorSpecialty } from 'doctors-service/entities/';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { getRepository } from 'typeorm';
 
