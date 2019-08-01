@@ -4,7 +4,6 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { Doctor } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
-import { getCustomRepository, getConnection } from 'typeorm';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const getDoctorDetailsTypeDefs = gql`
