@@ -1,7 +1,8 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, FormControlLabel } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
+import { AphCheckbox } from 'components/AphCheckbox';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -13,6 +14,8 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       borderRadius: 5,
       padding: 10,
+    },
+    medicineStripWrap: {
       display: 'flex',
       alignItems: 'center',
     },
@@ -100,6 +103,24 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
       },
     },
+    subscriptionLink: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#02475b',
+      borderTop: 'solid 0.5px rgba(2,71,91,0.2)',
+      paddingTop: 10,
+      marginTop: 10,
+      textAlign: 'right',
+      '& label': {
+        margin: 0,
+        '& span:last-child': {
+          fontSize: 12,
+          fontWeight: 500,
+          color: '#02475b',
+          paddingRight: 20,
+        },
+      },
+    },
   };
 });
 
@@ -109,31 +130,40 @@ export const MedicineStripCard: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.medicineStrip}>
-        <div className={classes.medicineInformation}>
-          <div className={classes.medicineIcon}>
-            <img src={require('images/ic_tablets.svg')} alt="" />
+        <div className={classes.medicineStripWrap}>
+          <div className={classes.medicineInformation}>
+            <div className={classes.medicineIcon}>
+              <img src={require('images/ic_tablets.svg')} alt="" />
+            </div>
+            <div className={classes.medicineName}>
+              Metformin 500mg <div className={classes.tabInfo}>Tablet / Type 2 Diabetes</div>
+            </div>
           </div>
-          <div className={classes.medicineName}>
-            Metformin 500mg <div className={classes.tabInfo}>Tablet / Type 2 Diabetes</div>
+          <div className={classes.helpText}>
+            <img src={require('images/ic_info.svg')} alt="" />
+          </div>
+          <div className={classes.medicinePrice}>
+            Rs. 120 <span>/strip</span>
+          </div>
+          <div className={classes.medicineCount}>
+            <div className={classes.minusIcon}>
+              <img src={require('images/ic_minus.svg')} alt="" />
+            </div>
+            <span>1 Strip</span>
+            <div className={classes.plusIcon}>
+              <img src={require('images/ic_plus.svg')} alt="" />
+            </div>
+          </div>
+          <div className={classes.addToCart}>
+            <AphButton color="primary">Add to cart</AphButton>
           </div>
         </div>
-        <div className={classes.helpText}>
-          <img src={require('images/ic_info.svg')} alt="" />
-        </div>
-        <div className={classes.medicinePrice}>
-          Rs. 120 <span>/strip</span>
-        </div>
-        <div className={classes.medicineCount}>
-          <div className={classes.minusIcon}>
-            <img src={require('images/ic_minus.svg')} alt="" />
-          </div>
-          <span>1 Strip</span>
-          <div className={classes.plusIcon}>
-            <img src={require('images/ic_plus.svg')} alt="" />
-          </div>
-        </div>
-        <div className={classes.addToCart}>
-          <AphButton color="primary">Add to cart</AphButton>
+        <div className={classes.subscriptionLink}>
+          <FormControlLabel
+            control={<AphCheckbox color="primary" />}
+            label="Need to take this regularly?"
+            labelPlacement="start"
+          />
         </div>
       </div>
     </div>
