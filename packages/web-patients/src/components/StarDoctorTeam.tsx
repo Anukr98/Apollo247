@@ -2,7 +2,7 @@ import { Theme, Grid, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import _uniqueId from 'lodash/uniqueId';
-import { GetDoctorProfileById as DoctorDetails } from 'graphql/types/getDoctorProfileById';
+import { GetDoctorProfileById as DoctorDetails } from 'graphql/types/GetDoctorProfileById';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 

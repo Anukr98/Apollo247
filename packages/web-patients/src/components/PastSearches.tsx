@@ -4,7 +4,7 @@ import { Theme, Grid, Avatar } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { GET_PAST_SEARCHES } from 'graphql/pastsearches';
-import { GetPastSearches } from 'graphql/types/getPastSearches';
+import { GetPastSearches } from 'graphql/types/GetPastSearches';
 import { SEARCH_TYPE } from 'graphql/types/globalTypes';
 import _uniqueId from 'lodash/uniqueId';
 import LinearProgress from '@material-ui/core/LinearProgress';
