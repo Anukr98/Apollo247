@@ -9,7 +9,7 @@ import {
   OneToMany,
 } from 'typeorm';
 
-import { Gender } from 'profiles-service/entity/patient';
+//import { Gender } from 'profiles-service/entity/patient';
 import { DoctorSpecialty } from 'doctors-service/entities/doctorSpecialty';
 import { Validate, IsDate } from 'class-validator';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
@@ -20,6 +20,12 @@ import {
   DoctorBankAccounts,
   Packages,
 } from 'doctors-service/entities';
+
+export enum Gender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
+}
 
 export enum DoctorType {
   APOLLO = 'APOLLO',
