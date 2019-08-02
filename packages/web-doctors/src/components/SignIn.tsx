@@ -371,7 +371,9 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             verifyOtp(otp.join(''));
             setSubmitCount(submitCount + 1);
           }}
-          disabled={isSendingOtp || otp.join('').length !== numOtpDigits || showTimer}
+          disabled={
+            isSendingOtp || isVerifyingOtp || otp.join('').length !== numOtpDigits || showTimer
+          }
         >
           {isSigningIn || isSendingOtp || isVerifyingOtp ? (
             <CircularProgress className={classes.loader} />

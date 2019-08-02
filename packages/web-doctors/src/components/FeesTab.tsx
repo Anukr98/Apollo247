@@ -203,6 +203,14 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       marginLeft: 20,
     },
+    accountDetails: {
+      fontWeight: theme.typography.fontWeightBold,
+      color: '#02475b',
+    },
+    accountDetailsHeading: {
+      fontWeight: theme.typography.fontWeightBold,
+      color: '#02475b',
+    },
     pointerNone: {
       pointerEvents: 'none',
     },
@@ -249,7 +257,7 @@ export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
 
           <Grid item lg={10} sm={6} xs={12}>
             <div className={classes.tabContent}>
-              <ExpansionPanel className={`${classes.pointerNone} ${classes.serviceItem}`}>
+              <ExpansionPanel className={`${classes.serviceItem}`}>
                 <ExpansionPanelSummary
                   expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
                 >
@@ -264,10 +272,33 @@ export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
                     </Typography>
                   </div>
                 </ExpansionPanelSummary>
-                <ExpansionPanelDetails className={classes.details}>
-                  <div className={classes.column}>
-                    <Typography variant="h5">More bank details.</Typography>
-                  </div>
+                <ExpansionPanelDetails className={classes.serviceItem}>
+                  <Grid container alignItems="flex-start" spacing={0}>
+                    <Grid item lg={6} sm={6} xs={12}>
+                      <div className={classes.accountDetailsHeading}>
+                        <Typography variant="h5">Account Holder’s Name </Typography>
+                      </div>
+                      <Typography variant="h5" className={classes.accountDetails}>
+                        Dr. Simran Rao
+                      </Typography>
+                    </Grid>
+                    <Grid item lg={6} sm={6} xs={12}>
+                      <div className={classes.accountDetailsHeading}>
+                        <Typography variant="h5">IFSC Code</Typography>
+                      </div>
+                      <Typography variant="h5" className={classes.accountDetails}>
+                        000 123 456 7890
+                      </Typography>
+                    </Grid>
+                    <Grid item lg={6} sm={6} xs={12}>
+                      <div className={classes.accountDetailsHeading}>
+                        <Typography variant="h5">Account Type</Typography>
+                      </div>
+                      <Typography variant="h5" className={classes.accountDetails}>
+                        Savings Account
+                      </Typography>
+                    </Grid>
+                  </Grid>
                 </ExpansionPanelDetails>
               </ExpansionPanel>
             </div>
