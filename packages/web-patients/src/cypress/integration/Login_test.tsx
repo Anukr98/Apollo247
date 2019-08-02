@@ -49,7 +49,7 @@ describe('Login', () => {
   it('Ten digit numbers starting with non-zero should be considered valid', () => {
     cy.get('[data-cypress="SignIn"]')
       .find('input[name*="mobileNumber"]')
-      .type('934567890');
+      .type('9234567890');
     cy.get('[data-cypress="SignIn"]')
       .find('button[type="submit"]')
       .should('be.enabled');
