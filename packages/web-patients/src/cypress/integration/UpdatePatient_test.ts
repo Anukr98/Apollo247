@@ -138,7 +138,7 @@ describe('UpdatePatient (without uhids)', () => {
   it('Should update the patient', () => {
     const janeTheMan = {
       ...janeNoRelation,
-      firstName: 'Jane The Man',
+      firstName: "Jane The 'Man",
       relation: Relation.ME,
       gender: Gender.MALE,
     };
@@ -193,5 +193,40 @@ describe('UpdatePatient (without uhids)', () => {
       .eq(2)
       .find('span[class*="MuiButton-label"]')
       .should('contain', 'Other');
+  });
+
+  it('Should allow single quotation marks to be added to first and last names', () => {
+    const janeTheApostropheLover = {
+      ...janeNoRelation,
+      firstName: "Jane 'The Apostrophe Lover'",
+      lastName: "John'son",
+      relation: Relation.ME,
+    };
+
+    cy.mockAphGraphqlOps({
+      operations: {
+        UpdatePatient: {
+          updatePatient: {
+            __typename: 'UpdatePatientResult',
+            patient: janeTheApostropheLover,
+          },
+        },
+      },
+    });
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find(`input[value="${janeNoRelation.firstName!}"]`)
+      .clear()
+      .type(janeTheApostropheLover.firstName!);
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('button[type="submit"]')
+      .click();
+
+    cy.contains('congratulations!');
+
+    cy.get('[data-cypress="HeroBanner"]')
+      .contains(janeTheApostropheLover.firstName!.toLowerCase())
+      .should('exist');
   });
 });

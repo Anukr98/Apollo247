@@ -5,10 +5,7 @@ import { Doctor } from 'doctors-service/entities';
 export class DoctorRepository extends Repository<Doctor> {
   findByMobileNumber(mobileNumber: string, isActive: Boolean) {
     return this.findOne({
-      where: [
-        { mobileNumber: mobileNumber, isActive: isActive },
-        { delegateNumber: mobileNumber, isActive: isActive },
-      ],
+      where: [{ mobileNumber, isActive }, { delegateNumber: mobileNumber, isActive: isActive }],
       relations: [
         'specialty',
         'doctorHospital',
@@ -20,5 +17,9 @@ export class DoctorRepository extends Repository<Doctor> {
         'starTeam.associatedDoctor',
       ],
     });
+  }
+
+  updateFirebaseId(id: string, firebaseToken: string) {
+    return this.update(id, { firebaseToken: firebaseToken });
   }
 }
