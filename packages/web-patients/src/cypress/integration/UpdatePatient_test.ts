@@ -135,6 +135,22 @@ describe('UpdatePatient (multiple, without uhids)', () => {
     cy.contains('Invalid date of birth');
   });
 
+  it('Wont allow future dates in the dateOfBirth field', () => {
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('input[name="dateOfBirth"]')
+      .clear()
+      .type('01/01/2099')
+      .blur();
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .get('button[type="submit"]')
+      .should('be.disabled');
+
+    cy.contains('Invalid date of birth');
+  });
+
   it('Should update the patient', () => {
     const janeTheMan = {
       ...janeNoRelation,

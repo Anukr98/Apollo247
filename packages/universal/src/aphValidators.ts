@@ -3,14 +3,19 @@ import isEmail from 'validator/lib/isEmail';
 
 export const isEmailValid = isEmail;
 
-export const isMobileNumberValid = (number: string) =>
-  isMobilePhone(number, 'en-IN');
+export const isMobileNumberValid = (number: string) => isMobilePhone(number, 'en-IN');
 
 export const isNameValid = (name: string) => {
   return /^[a-zA-Z ']*$/.test(name.trim()) && name.trim().length > 1;
 };
 
 export const aphClientDateFormat = /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/;
+
+export const isDobValid = (ddmmyyyy: string) => {
+  const today = new Date();
+  const dob = new Date(ddmmyyyy);
+  return today > dob;
+};
 
 export const isDateValid = (ddmmyyyy: string) => {
   const isCorrectFormat = aphClientDateFormat.test(ddmmyyyy);
