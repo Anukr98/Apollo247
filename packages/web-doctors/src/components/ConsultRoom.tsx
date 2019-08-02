@@ -51,6 +51,9 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '60 %',
       align: 'left',
     },
+    showIncomingBox: {
+      color: "#f00",
+    }
   };
 });
 interface MessagesProps {
@@ -58,6 +61,7 @@ interface MessagesProps {
 }
 export const ConsultRoom: React.FC = (props) => {
   const classes = useStyles();
+  const [isCalled, setIsCalled] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
 
@@ -104,6 +108,10 @@ export const ConsultRoom: React.FC = (props) => {
       });
       if (messages.length !== newmessage.length) {
         setMessages(newmessage);
+        const lastMessage = newmessage[newmessage.length - 1];
+        if(lastMessage && lastMessage.message === 'callme'){
+          setIsCalled(true);
+        }
       }
     });
   };
@@ -121,9 +129,6 @@ export const ConsultRoom: React.FC = (props) => {
         sendByPost: true,
       },
       (status, response) => {
-        /*
-         * Do something
-         */
         console.log('response', response);
         console.log('status', status);
         setMessageText('');
@@ -158,7 +163,7 @@ export const ConsultRoom: React.FC = (props) => {
   };
   const messagessHtml =
     messages && messages.length > 0
-      ? messages.map((item: MessagesProps, index: number) => {
+      ? messages.map((item: any, index: number) => {
           return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
         })
       : '';
@@ -167,19 +172,29 @@ export const ConsultRoom: React.FC = (props) => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      <div className={classes.chatContainer}>{messagessHtml}</div>
+      {isCalled && 
+         <div> 
+         <Button variant="text" className={classes.sendMsgBtn}>
+           Incoming Call
+         </Button>
+       </div>
+      }
+     
       <div>
-        <AphInput
-          className={classes.inputWidth}
-          inputProps={{ type: 'text' }}
-          value={messageText}
-          onChange={(event) => {
-            setMessageText(event.currentTarget.value);
-          }}
-        />
-        <Button variant="text" className={classes.sendMsgBtn} onClick={() => send()}>
-          Send
-        </Button>
+        <div className={classes.chatContainer}>{messagessHtml}</div>
+        <div>
+          <AphInput
+            className={classes.inputWidth}
+            inputProps={{ type: 'text' }}
+            value={messageText}
+            onChange={(event) => {
+              setMessageText(event.currentTarget.value);
+            }}
+          />
+          <Button variant="text" className={classes.sendMsgBtn} onClick={() => send()}>
+            Send
+          </Button>
+        </div>
       </div>
     </div>
   );
