@@ -4,8 +4,11 @@ import { Doctor } from 'doctors-service/entities';
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
   findByMobileNumber(mobileNumber: string, isActive: Boolean) {
-    return this.find({
-      where: { mobileNumber: mobileNumber, isActive: isActive },
+    return this.findOne({
+      where: [
+        { mobileNumber: mobileNumber, isActive: isActive },
+        { delegateNumber: mobileNumber, isActive: isActive },
+      ],
       relations: [
         'specialty',
         'doctorHospital',

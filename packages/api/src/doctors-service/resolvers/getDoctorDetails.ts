@@ -4,7 +4,6 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { Doctor } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
-import { getCustomRepository, getConnection } from 'typeorm';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const getDoctorDetailsTypeDefs = gql`
@@ -153,19 +152,19 @@ export const getDoctorDetailsTypeDefs = gql`
   }
 
   extend type Query {
-    getDoctorDetails: [DoctorDetails]
+    getDoctorDetails: DoctorDetails
   }
 `;
 
-const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor[]> = async (
+const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = async (
   parent,
   args,
   { mobileNumber, dbConnect }
 ) => {
-  let doctordata: Doctor[] = [];
+  let doctordata: Doctor;
   try {
     const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
-    doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+    doctordata = (await doctorRepository.findByMobileNumber(mobileNumber, true)) as Doctor;
   } catch (getProfileError) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
   }
