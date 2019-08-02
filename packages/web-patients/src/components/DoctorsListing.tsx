@@ -6,8 +6,6 @@ import { AphButton } from '@aph/web-ui-components';
 import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
 import _filter from 'lodash/filter';
-import _imEmpty from 'lodash/isEmpty';
-
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { DOCTORS_BY_SPECIALITY } from 'graphql/doctors';
 import { SearchObject } from 'components/DoctorsLanding';
