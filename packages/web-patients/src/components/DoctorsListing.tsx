@@ -182,19 +182,18 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     variables: { filterInput: apiVairables },
   });
 
+  // this effect will watch for data loaded and triggers popup 20 and 40 secs.
   useEffect(() => {
     if (data) {
       const timer1 = setTimeout(() => {
         setShow20SecPopup(true);
         setIsPopoverOpen(true);
-      }, 2000);
-
+      }, 20000);
       const timer2 = setTimeout(() => {
         setShow40SecPopup(true);
         setShow20SecPopup(false);
         setIsPopoverOpen(true);
-      }, 4000);
-
+      }, 40000);
       // this will clear Timeout when component unmount like in willComponentUnmount
       return () => {
         clearTimeout(timer1);
@@ -237,21 +236,6 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   };
 
   if (data && data.getSpecialtyDoctorsWithFilters.doctors.length > 0) {
-    // apply auto popup when the user selected speciality and idle for 20 or 40 seconds.
-    console.log(show20SecPopup, show40SecPopup);
-
-    // const show20SecPopupTimeoutHandler = setTimeout(() => {
-    //   setIsPopoverOpen(true);
-    //   setShow20SecPopup(true);
-    // }, 2000);
-
-    // const show40SecPopupTimeoutHandler = setTimeout(() => {
-    //   clearTimeout(show20SecPopupTimeoutHandler);
-    //   setIsPopoverOpen(true);
-    //   setShow40SecPopup(true);
-    //   setShow20SecPopup(false);
-    // }, 4000);
-
     doctorsList =
       selectedFilterOption === 'all'
         ? data.getSpecialtyDoctorsWithFilters.doctors
@@ -314,7 +298,6 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
             anchorReference="anchorPosition"
             anchorPosition={{ top: 200, left: 400 }}
             className={classes.bottomPopover}
-            onClose={() => setIsPopoverOpen(false)}
             anchorOrigin={{
               vertical: 'bottom',
               horizontal: 'right',
@@ -322,6 +305,9 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
             transformOrigin={{
               vertical: 'bottom',
               horizontal: 'right',
+            }}
+            onClose={(e, reason) => {
+              console.log('hello', e, reason);
             }}
             classes={{ paper: classes.bottomPopover }}
           >
