@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { Appointments, STATUS, APPOINTMENT_TYPE } from 'profiles-service/entity/appointment';
-import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
+import { Appointment, STATUS, APPOINTMENT_TYPE } from 'consults-service/entities/appointment';
+import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 
 export const getAppointmentHistoryTypeDefs = gql`
   type AppointmentHistory {
@@ -56,10 +56,10 @@ type AppointmentInputArgs = { appointmentHistoryInput: AppointmentHistoryInput }
 const getAppointmentHistory: Resolver<
   null,
   AppointmentInputArgs,
-  ProfilesServiceContext,
+  ConsultServiceContext,
   AppointmentResult
 > = async (parent, { appointmentHistoryInput }) => {
-  const appointmentsHistory = await Appointments.find({
+  const appointmentsHistory = await Appointment.find({
     where: {
       doctorId: appointmentHistoryInput.doctorId,
       patientId: appointmentHistoryInput.patientId,
