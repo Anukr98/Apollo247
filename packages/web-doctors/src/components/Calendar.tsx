@@ -153,15 +153,6 @@ export const Calendar: React.FC = () => {
               dayClickHandler={(e, date) => {
                 setData(startOfDay(date));
               }}
-              monthChangeHandler={(e, selectedMonth, startOfWeekDate) => {
-                setData(startOfWeekDate);
-              }}
-              onNext={(e, date, startOfWeekDate) => {
-                setData(startOfWeekDate);
-              }}
-              onPrev={(e, date, startOfWeekDate) => {
-                setData(startOfWeekDate);
-              }}
             />
           </div>
 

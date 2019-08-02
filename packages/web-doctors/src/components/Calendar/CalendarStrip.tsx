@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { MonthList } from './MonthList';
 import { Days } from './Days';
 import { makeStyles } from '@material-ui/styles';
@@ -115,13 +115,6 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
   const today = startOfToday();
   const [date, setDate] = useState<Date>(today);
   const [month, setMonth] = useState<number>(getMonth(today));
-  const [highlightStartOfMonth, setHighlightStartOfMonth] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (!highlightStartOfMonth) {
-      setMonth(getMonth(startOfWeek(date)));
-    }
-  }, [date, highlightStartOfMonth]);
 
   return (
     <div className={classes.calendarContainer}>
@@ -138,7 +131,6 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
 
             setDate(newDate);
             setMonth(monthSelected);
-            setHighlightStartOfMonth(true);
 
             if (monthChangeHandler) {
               monthChangeHandler(
@@ -155,7 +147,6 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
             const newDate = subWeeks(date, 1);
             const weekStartDate: Date = startOfWeek(startOfDay(newDate));
             setDate(newDate);
-            setHighlightStartOfMonth(false);
 
             if (onPrev) {
               onPrev(e, newDate, weekStartDate);
@@ -170,20 +161,17 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
           date={date}
           handler={(e, date) => {
             setMonth(getMonth(date));
-            setHighlightStartOfMonth(false);
 
             if (dayClickHandler) {
               dayClickHandler(e, date);
             }
           }}
-          highlightStartOfMonth={highlightStartOfMonth}
         />
         <div
           className={classes.nextBtn}
           onClick={(e) => {
             const newDate = addWeeks(date, 1);
             setDate(newDate);
-            setHighlightStartOfMonth(false);
 
             if (onNext) {
               onNext(e, newDate, startOfWeek(startOfDay(newDate)));
