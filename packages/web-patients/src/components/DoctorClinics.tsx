@@ -1,7 +1,7 @@
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
-import { GetDoctorProfileById as DoctorDetails } from 'graphql/types/getDoctorProfileById';
+import { GetDoctorProfileById as DoctorDetails } from 'graphql/types/GetDoctorProfileById';
 import _uniqueId from 'lodash/uniqueId';
 
 const useStyles = makeStyles((theme: Theme) => {

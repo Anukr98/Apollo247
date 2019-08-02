@@ -129,7 +129,7 @@ const arrayTest: ArrayTest[] = [
     id: 1,
     title: 'Are you looking for a particular doctor?',
     descripiton: 'SEARCH SPECIALIST',
-    image: require('@aph/mobile-patients/src/images/doctor/doctor.png'),
+    image: require('@aph/mobile-patients/src/images/home/doctor.png'),
   },
   {
     id: 2,
@@ -228,7 +228,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   setShowMenu(false);
                 }}
               >
-                {profile.firstName ? profile.firstName.split(' ')[0] : ''}
+                {profile.firstName
+                  ? profile.firstName
+                      .split(' ')[0]
+                      .replace(/\w+/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
+                  : ''}
               </Text>
             </View>
           ))}

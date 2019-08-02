@@ -4,6 +4,7 @@ const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const NodemonPlugin = require('nodemon-webpack-plugin');
 const DotenvPlugin = require('dotenv-webpack');
+const CircularDependencyPlugin = require('circular-dependency-plugin');
 const dotenv = require('dotenv');
 
 const envFile = path.resolve(__dirname, '../../.env');
@@ -14,7 +15,15 @@ const isLocal = process.env.NODE_ENV === 'local';
 // const isDev = process.env.NODE_ENV === 'dev';
 const isProduction = process.env.NODE_ENV === 'production';
 
-const plugins = [new DotenvPlugin({ path: envFile })];
+const plugins = [
+  new DotenvPlugin({ path: envFile }),
+  new CircularDependencyPlugin({
+    exclude: /node_modules/,
+    failOnError: true,
+    allowAsyncCycles: false,
+    cwd: process.cwd(),
+  }),
+];
 if (isLocal) plugins.push(new NodemonPlugin());
 
 const tsLoader = { loader: 'awesome-typescript-loader' };
