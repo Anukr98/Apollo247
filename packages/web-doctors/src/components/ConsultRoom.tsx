@@ -129,8 +129,6 @@ export const ConsultRoom: React.FC = (props) => {
         sendByPost: true,
       },
       (status, response) => {
-        console.log('response', response);
-        console.log('status', status);
         setMessageText('');
       }
     );
