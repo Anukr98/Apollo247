@@ -9,6 +9,7 @@ import { Welcome } from 'components/Welcome';
 import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
 import { DoctorsProfile } from 'components/DoctorsProfile';
+import { Consult } from 'components/Consult';
 import { Calendar } from 'components/Calendar';
 import { ConsultRoom } from 'components/ConsultRoom';
 
@@ -29,6 +30,7 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
       <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
       <AuthRouted exact path={clientRoutes.consultRoom()} component={ConsultRoom} />
+      <AuthRouted exact path={clientRoutes.consult()} component={Consult} />
     </div>
   ) : (
     <div className={classes.app}>
