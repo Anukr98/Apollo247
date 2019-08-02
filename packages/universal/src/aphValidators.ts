@@ -4,7 +4,7 @@ import isEmail from 'validator/lib/isEmail';
 export const isEmailValid = isEmail;
 
 export const isMobileNumberValid = (number: string) =>
-  parseInt(number[0], 10) > 5 || isMobilePhone(number, 'en-IN');
+  isMobilePhone(number, 'en-IN');
 
 export const isNameValid = (name: string) => {
   return /^[a-zA-Z ']*$/.test(name.trim()) && name.trim().length > 1;
