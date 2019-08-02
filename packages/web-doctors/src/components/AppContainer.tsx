@@ -12,7 +12,6 @@ import { DoctorsProfile } from 'components/DoctorsProfile';
 import { Consult } from 'components/Consult';
 import { Calendar } from 'components/Calendar';
 import { ConsultRoom } from 'components/ConsultRoom';
-
 import { AuthProvider } from 'components/AuthProvider';
 import { useAuth } from 'hooks/authHooks';
 import { aphTheme, AphThemeProvider } from '@aph/web-ui-components';
