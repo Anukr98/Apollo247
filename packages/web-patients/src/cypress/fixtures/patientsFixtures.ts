@@ -80,3 +80,16 @@ export const julieNoRelation: Patient = {
   dateOfBirth: '1999-01-01',
   emailAddress: '',
 };
+
+export const quentinQuotes: Patient = {
+  __typename: 'Patient',
+  id: '7',
+  uhid: '',
+  firstName: "Quen'tin",
+  lastName: "Quo'tes",
+  gender: Gender.MALE,
+  mobileNumber: '+91123456789',
+  relation: Relation.ME,
+  dateOfBirth: '1999-01-01',
+  emailAddress: '',
+};
