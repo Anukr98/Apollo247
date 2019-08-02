@@ -182,7 +182,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     variables: { filterInput: apiVairables },
   });
 
-  // this effect will watch for data loaded and triggers popup 20 and 40 secs.
+  // this effect will watch for data loaded and triggers popup after 20 and 40 secs.
   useEffect(() => {
     if (data) {
       const timer1 = setTimeout(() => {
