@@ -65,6 +65,7 @@ const useStyles = makeStyles((theme: Theme) => {
         letterSpacing: '0.3px',
         marginLeft: 20,
         fontSize: 12,
+        fontWeight: 600,
         '& span': {
           padding: '0 2px',
         },
@@ -170,7 +171,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fc9916',
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
-        backgroundColor: '#fc9916',
+        backgroundColor: '#e28913',
       },
     },
     backButton: {
@@ -192,7 +193,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.action.selected,
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
-      pointerEvents: 'none',
+      // pointerEvents: 'none',
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
@@ -270,7 +271,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     starDoctorHeading: {
+      fontSize: 16,
       marginBottom: 15,
+      fontWeight: 600,
+      color: '#02475b',
     },
     starDoctordelete: {
       color: '#951717',
@@ -597,10 +601,7 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
 
       {doctorProfile.isStarDoctor && (
         <div>
-          <Typography
-            variant="h3"
-            className={numStarDoctors === 0 ? classes.none : classes.starDoctorHeading}
-          >
+          <Typography className={numStarDoctors === 0 ? classes.none : classes.starDoctorHeading}>
             Your Star Doctors Team ({numStarDoctors})
           </Typography>
           <StarDoctorsList currentDocId={doctorProfile.id} starDoctors={starDoctors} />

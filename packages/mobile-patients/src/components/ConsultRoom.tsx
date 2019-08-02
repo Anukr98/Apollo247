@@ -1,35 +1,33 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import {
-  DoctorImage,
-  DoctorPlaceholder,
-  DropdownGreen,
-  Mascot,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { DoctorImage, DropdownGreen, Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
+  AsyncStorage,
   Dimensions,
   Image,
+  ImageSourcePropType,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  AsyncStorage,
-  Platform,
+  View,
 } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 const { width, height } = Dimensions.get('window');
 import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   viewName: {
-    backgroundColor: 'white',
-    marginTop: 10,
+    backgroundColor: theme.colors.WHITE,
     width: '100%',
     height: 294,
   },
@@ -43,38 +41,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(13),
     lineHeight: 24,
     color: '#fc9916',
-  },
-  showPopUp: {
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    justifyContent: 'flex-end',
-    flex: 1,
-  },
-  subViewPopup: {
-    backgroundColor: 'white',
-    width: '100%',
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 15,
-  },
-  congratulationsTextStyle: {
-    marginHorizontal: 24,
-    marginTop: 28,
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(18),
-  },
-  congratulationsDescriptionStyle: {
-    marginHorizontal: 24,
-    marginTop: 8,
-    color: '#0087ba',
-    ...theme.fonts.IBMPlexSansMedium(17),
-    lineHeight: 24,
   },
   hiTextStyle: {
     marginLeft: 20,
@@ -95,7 +61,7 @@ const styles = StyleSheet.create({
   descriptionTextStyle: {
     marginLeft: 20,
     marginTop: 12,
-    color: '#0087ba',
+    color: theme.colors.SKY_BLUE,
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
@@ -117,17 +83,12 @@ const styles = StyleSheet.create({
     elevation: 15,
   },
   titleBtnStyles: {
-    color: '#0087ba',
+    color: theme.colors.SKY_BLUE,
   },
   doctorView: {
     width: '100%',
     height: 277,
-    shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 8,
-    backgroundColor: 'white',
+    ...theme.viewStyles.cardContainer,
   },
   doctorStyle: {
     marginLeft: 20,
@@ -157,73 +118,53 @@ const styles = StyleSheet.create({
 });
 
 type ArrayTest = {
+  id: number;
   title: string;
   descripiton: string;
+  image: ImageSourcePropType;
 };
 
 const arrayTest: ArrayTest[] = [
   {
+    id: 1,
     title: 'Are you looking for a particular doctor?',
     descripiton: 'SEARCH SPECIALIST',
+    image: require('@aph/mobile-patients/src/images/home/doctor.png'),
   },
   {
+    id: 2,
     title: 'Do you want to buy some medicines?',
     descripiton: 'SEARCH MEDICINE',
+    image: require('@aph/mobile-patients/src/images/home/medicine.png'),
   },
   {
+    id: 3,
     title: 'Do you want to get some tests done?',
     descripiton: 'BOOK A TEST',
-  },
-];
-
-type ArrayDoctor = {
-  name: string;
-  status: string;
-  Program: string;
-  doctors: string;
-  Patients: string;
-};
-
-const arrayDoctor: ArrayDoctor[] = [
-  {
-    name: 'Dr. Narayana Rao’s',
-    status: 'AVAILABLE',
-    Program: 'Star Cardiology Program',
-    doctors: '09',
-    Patients: '18',
-  },
-  {
-    name: 'Dr. Simran Rao',
-    status: 'AVAILABLE',
-    Program: 'Star Cardiology Program',
-    doctors: '05',
-    Patients: '20',
-  },
-  {
-    name: 'Dr. Sekhar Rao’s',
-    status: 'AVAILABLE',
-    Program: 'Star Cardiology Program',
-    doctors: '12',
-    Patients: '10',
+    image: require('@aph/mobile-patients/src/images/home/test.png'),
   },
 ];
 
 export interface ConsultRoomProps extends NavigationScreenProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
+  const startDoctor = string.home.startDoctor;
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
   const [showPopUp, setshowPopUp] = useState<boolean>(true);
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [userName, setuserName] = useState<string>('');
-  const { currentPatient, analytics, allCurrentPatients } = useAuth();
+  const { analytics } = useAuth();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
   useEffect(() => {
     let userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
-
+    currentPatient && setshowSpinner(false);
+    console.log('consult room', currentPatient);
     analytics.setCurrentScreen(AppRoutes.ConsultRoom);
-  }, [currentPatient, allCurrentPatients, analytics, userName, props.navigation.state.params]);
+  }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
   useEffect(() => {
     async function fetchData() {
@@ -276,19 +217,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           allCurrentPatients.map((profile: PatientSignIn_patientSignIn_patients, i: number) => (
             <View style={styles.textViewStyle} key={i}>
               <Text
-                style={styles.textStyle}
+                style={[
+                  styles.textStyle,
+                  profile.firstName &&
+                  userName === profile.firstName.split(' ')[0].toLocaleLowerCase()
+                    ? { color: theme.colors.APP_GREEN }
+                    : null,
+                ]}
                 onPress={() => {
                   setShowMenu(false);
                 }}
               >
-                {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : ''}
+                {profile.firstName
+                  ? profile.firstName
+                      .split(' ')[0]
+                      .replace(/\w+/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
+                  : ''}
               </Text>
             </View>
           ))}
 
         <Text
           style={{
-            paddingTop: 20,
+            paddingTop: 15,
             paddingBottom: 4,
             paddingRight: 16,
             textAlign: 'right',
@@ -302,9 +253,154 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     </TouchableOpacity>
   );
 
+  const renderStarDoctors = () => {
+    return (
+      <View style={styles.doctorView}>
+        <Text style={styles.doctorStyle}>{string.home.start_doctor_title}</Text>
+        <ScrollView
+          style={{ backgroundColor: 'transparent' }}
+          contentContainerStyle={{
+            flexDirection: 'row',
+            width: scrollViewWidth,
+          }}
+          horizontal={true}
+          automaticallyAdjustContentInsets={false}
+          showsHorizontalScrollIndicator={false}
+          directionalLockEnabled={true}
+        >
+          {startDoctor.map((serviceTitle, i) => (
+            <View key={i}>
+              <TouchableHighlight key={i}>
+                <View
+                  style={{
+                    ...theme.viewStyles.cardViewStyle,
+                    marginTop: 20,
+                    marginLeft: i === 0 ? 20 : 8,
+                    marginRight: startDoctor.length === i + 1 ? 20 : 8,
+                    marginBottom: 16,
+                    width: 244,
+                    height: 207,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderWidth: 0.1,
+                    borderColor: 'rgba(0,0,0,0.4)',
+                    position: 'relative',
+                    borderBottomWidth: 0,
+                  }}
+                  key={i}
+                >
+                  <View
+                    style={{
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'absolute',
+                      right: 0,
+                      top: 0,
+                      width: 77,
+                      height: 24,
+                      borderRadius: 5,
+                      backgroundColor: '#ff748e',
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: 'white',
+                        textAlign: 'center',
+                        ...theme.fonts.IBMPlexSansSemiBold(9),
+                      }}
+                    >
+                      {serviceTitle.status}
+                    </Text>
+                  </View>
+                  <DoctorImage style={{ height: 80, width: 80 }} />
+                  <Text
+                    style={{
+                      ...theme.fonts.IBMPlexSansMedium(18),
+                      color: '#02475b',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {serviceTitle.name}
+                  </Text>
+                  <Text
+                    style={{
+                      ...theme.fonts.IBMPlexSansMedium(12),
+                      color: theme.colors.SKY_BLUE,
+                      textAlign: 'center',
+                    }}
+                  >
+                    {serviceTitle.Program}
+                  </Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      marginTop: 16,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <View>
+                      <Text
+                        style={{
+                          ...theme.fonts.IBMPlexSansMedium(14),
+                          color: '#02475b',
+                          textAlign: 'center',
+                        }}
+                      >
+                        {serviceTitle.doctors}
+                      </Text>
+                      <Text
+                        style={{
+                          ...theme.fonts.IBMPlexSansMedium(10),
+                          color: '#02475b',
+                          textAlign: 'center',
+                        }}
+                      >
+                        {string.home.doctors_label}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        backgroundColor: '#02475b',
+                        width: 1,
+                        height: 31,
+                        marginLeft: 40,
+                        marginRight: 16,
+                      }}
+                    />
+                    <View>
+                      <Text
+                        style={{
+                          ...theme.fonts.IBMPlexSansMedium(14),
+                          color: '#02475b',
+                          textAlign: 'center',
+                        }}
+                      >
+                        {serviceTitle.Patients}
+                      </Text>
+                      <Text
+                        style={{
+                          ...theme.fonts.IBMPlexSansMedium(10),
+                          color: '#02475b',
+                          textAlign: 'center',
+                        }}
+                      >
+                        {string.home.patients_enrolled_label}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </TouchableHighlight>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
+      <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {showMenu && Popup()}
         <ScrollView style={{ flex: 1 }} bounces={false}>
           <Image
@@ -318,11 +414,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           />
           <View style={{ top: 200, position: 'absolute', zIndex: 3 }}>
             <Button
-              title="CONSULT A DOCTOR"
+              title={string.home.consult_doctor}
               style={styles.buttonStyles}
-              onPress={() => {
-                props.navigation.navigate(AppRoutes.DoctorSearch);
-              }}
+              onPress={() => {}}
             />
           </View>
           <View style={{ width: '100%', height: 456 }}>
@@ -340,7 +434,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }}
               >
                 <View style={{ flexDirection: 'row' }}>
-                  <Text style={styles.hiTextStyle}>hi</Text>
+                  <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
                   <View>
                     <View
                       style={{
@@ -355,32 +449,34 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   </View>
                 </View>
               </TouchableOpacity>
-              <Text style={styles.descriptionTextStyle}>Are you not feeling well today?</Text>
+              <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
             </View>
           </View>
           <View>
             {arrayTest.map((serviceTitle, i) => (
               <View key={i} style={{}}>
-                <TouchableHighlight key={i}>
+                <TouchableOpacity
+                  key={i}
+                  onPress={() => {
+                    if (i === 0) {
+                      props.navigation.navigate(AppRoutes.DoctorSearch);
+                    }
+                  }}
+                >
                   <View
                     style={{
-                      borderRadius: 10,
-                      height: 104,
+                      ...theme.viewStyles.cardViewStyle,
                       padding: 16,
-                      backgroundColor: '#f7f8f5',
-                      flexDirection: 'row',
                       marginHorizontal: 20,
+                      backgroundColor: theme.colors.CARD_BG,
+                      flexDirection: 'row',
+                      height: 104,
                       marginTop: i === 0 ? 0 : 8,
                       marginBottom: arrayTest.length === i + 1 ? 16 : 8,
-                      shadowColor: '#808080',
-                      shadowOffset: { width: 0, height: 1 },
-                      shadowOpacity: 0.4,
-                      shadowRadius: 10,
-                      elevation: 5,
                     }}
                     key={i}
                   >
-                    <View style={{ width: width - 144 }}>
+                    <View style={{ width: width - 144, justifyContent: 'space-between' }}>
                       <Text
                         style={{
                           color: '#02475b',
@@ -393,7 +489,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       </Text>
                       <Text
                         style={{
-                          // marginHorizontal: 16,
                           marginTop: 8,
                           color: '#fc9916',
                           textAlign: 'left',
@@ -403,165 +498,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         {serviceTitle.descripiton}
                       </Text>
                     </View>
-                    {/* <View> */}
-                    <DoctorPlaceholder />
-                    {/* </View> */}
+                    <Image style={{ height: 72, width: 72 }} source={serviceTitle.image} />
                   </View>
-                </TouchableHighlight>
+                </TouchableOpacity>
               </View>
             ))}
           </View>
-          <View style={styles.doctorView}>
-            <Text style={styles.doctorStyle}>Learn about Apollo Star Doctor Program</Text>
-            <ScrollView
-              style={{ backgroundColor: 'transparent' }}
-              contentContainerStyle={{
-                flexDirection: 'row',
-                width: scrollViewWidth,
-              }}
-              horizontal={true}
-              automaticallyAdjustContentInsets={false}
-              showsHorizontalScrollIndicator={false}
-              directionalLockEnabled={true}
-            >
-              {arrayDoctor.map((serviceTitle, i) => (
-                <View key={i}>
-                  <TouchableHighlight key={i}>
-                    <View
-                      style={{
-                        marginTop: 20,
-                        marginLeft: i === 0 ? 20 : 8,
-                        marginRight: arrayDoctor.length === i + 1 ? 20 : 8,
-                        marginBottom: 16,
-                        width: 244,
-                        height: 207,
-                        backgroundColor: 'white',
-                        shadowColor: '#808080',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.5,
-                        shadowRadius: 5,
-                        elevation: 4,
-                        borderRadius: 5,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderWidth: 0.1,
-                        borderColor: 'rgba(0,0,0,0.4)',
-                        position: 'relative',
-                        borderBottomWidth: 0,
-                      }}
-                      key={i}
-                    >
-                      <View
-                        style={{
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          position: 'absolute',
-                          right: 0,
-                          top: 0,
-                          width: 77,
-                          height: 24,
-                          borderRadius: 5,
-                          backgroundColor: '#ff748e',
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: 'white',
-                            textAlign: 'center',
-                            ...theme.fonts.IBMPlexSansSemiBold(9),
-                          }}
-                        >
-                          AVAILABLE
-                        </Text>
-                      </View>
-                      <DoctorImage style={{ height: 80, width: 80 }} />
-                      <Text
-                        style={{
-                          ...theme.fonts.IBMPlexSansMedium(18),
-                          color: '#02475b',
-                          textAlign: 'center',
-                        }}
-                      >
-                        {serviceTitle.name}
-                      </Text>
-                      <Text
-                        style={{
-                          ...theme.fonts.IBMPlexSansMedium(12),
-                          color: '#0087ba',
-                          textAlign: 'center',
-                        }}
-                      >
-                        {serviceTitle.Program}
-                      </Text>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          justifyContent: 'space-between',
-                          marginTop: 16,
-                          alignItems: 'center',
-                        }}
-                      >
-                        <View>
-                          <Text
-                            style={{
-                              ...theme.fonts.IBMPlexSansMedium(14),
-                              color: '#02475b',
-                              textAlign: 'center',
-                            }}
-                          >
-                            {serviceTitle.doctors}
-                          </Text>
-                          <Text
-                            style={{
-                              ...theme.fonts.IBMPlexSansMedium(10),
-                              color: '#02475b',
-                              textAlign: 'center',
-                            }}
-                          >
-                            Doctors
-                          </Text>
-                        </View>
-                        <View
-                          style={{
-                            backgroundColor: '#02475b',
-                            width: 1,
-                            height: 31,
-                            marginLeft: 40,
-                            marginRight: 16,
-                          }}
-                        />
-                        <View>
-                          <Text
-                            style={{
-                              ...theme.fonts.IBMPlexSansMedium(14),
-                              color: '#02475b',
-                              textAlign: 'center',
-                            }}
-                          >
-                            {serviceTitle.Patients}
-                          </Text>
-                          <Text
-                            style={{
-                              ...theme.fonts.IBMPlexSansMedium(10),
-                              color: '#02475b',
-                              textAlign: 'center',
-                            }}
-                          >
-                            Patients Enrolled
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  </TouchableHighlight>
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-
+          {renderStarDoctors()}
           <View style={styles.helpView}>
             <Mascot style={{ height: 80, width: 80 }} />
             <Button
-              title="Need Help?"
+              title={string.home.need_help}
               style={styles.needhelpbuttonStyles}
               titleTextStyle={styles.titleBtnStyles}
             />
@@ -569,28 +516,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </ScrollView>
       </SafeAreaView>
       {showPopUp && (
-        <View style={styles.showPopUp}>
-          <View style={styles.subViewPopup}>
-            <Text style={styles.congratulationsTextStyle}>Congratulations! :)</Text>
-            <Text style={styles.congratulationsDescriptionStyle}>
-              Welcome to the Apollo family. You can add more family members any time from ‘My
-              Account’.
-            </Text>
-            <View style={{ height: 60, alignItems: 'flex-end' }}>
-              <TouchableOpacity
-                style={styles.gotItStyles}
-                onPress={() => {
-                  AsyncStorage.setItem('gotIt', 'true');
-                  setshowPopUp(false);
-                }}
-              >
-                <Text style={styles.gotItTextStyles}>OK, GOT IT</Text>
-              </TouchableOpacity>
-            </View>
-            <Mascot style={{ position: 'absolute', top: -32, right: 20 }} />
+        <BottomPopUp
+          title={string.home.welcome_popup.title}
+          description={string.home.welcome_popup.description}
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={styles.gotItStyles}
+              onPress={() => {
+                AsyncStorage.setItem('gotIt', 'true');
+                setshowPopUp(false);
+              }}
+            >
+              <Text style={styles.gotItTextStyles}>{string.home.welcome_popup.cta_label}</Text>
+            </TouchableOpacity>
           </View>
-        </View>
+        </BottomPopUp>
       )}
+      {showSpinner && <Spinner />}
     </View>
   );
 };

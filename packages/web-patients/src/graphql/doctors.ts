@@ -92,7 +92,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY = gql`
 `;
 
 export const DOCTORS_BY_SPECIALITY = gql`
-  query getSpecialtyDoctorsWithFilters($filterInput: filterInput) {
+  query GetSpecialtyDoctorsWithFilters($filterInput: filterInput) {
     getSpecialtyDoctorsWithFilters(filterInput: $filterInput) {
       doctors {
         id

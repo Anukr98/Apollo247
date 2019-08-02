@@ -11,6 +11,8 @@ module.exports = {
     '@typescript-eslint/no-array-constructor': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
+    'import/newline-after-import': 'warn',
+    'import/no-cycle': 'error',
     'import/no-default-export': 'warn',
     'import/no-extraneous-dependencies': 'error',
     'import/no-relative-parent-imports': 'warn',

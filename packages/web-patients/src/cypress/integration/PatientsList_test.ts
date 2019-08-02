@@ -1,9 +1,9 @@
 import { clientRoutes } from 'helpers/clientRoutes';
-import { jane, john } from 'cypress/fixtures/patientsFixtures';
+import { janeNoRelation, johnBrother } from 'cypress/fixtures/patientsFixtures';
 import schema from '@aph/api-schema/schema.json';
 
 describe('PatientsList', () => {
-  const patients = [jane, john];
+  const patients = [janeNoRelation, johnBrother];
 
   beforeEach(() => {
     cy.server()

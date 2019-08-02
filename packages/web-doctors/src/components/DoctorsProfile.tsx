@@ -45,6 +45,11 @@ TabContainer.propTypes = {
 };
 const useStyles = makeStyles((theme: Theme) => {
   return {
+    lowlightActive: {
+      borderBottom: '3px solid #02475b',
+      opacity: 1,
+      fontWeight: theme.typography.fontWeightMedium,
+    },
     highlightActive: {
       borderBottom: '3px solid #02475b',
       opacity: 1,
@@ -55,6 +60,7 @@ const useStyles = makeStyles((theme: Theme) => {
       opacity: 0.4,
       cursor: 'default',
       fontWeight: theme.typography.fontWeightMedium,
+      pointerEvents: 'none',
     },
     profile: {
       paddingTop: 68,
@@ -79,6 +85,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.secondary.dark,
       paddingLeft: 40,
       minWidth: 120,
+      boxShadow: '0 5px 20px rgba(128,128,128,0.1)',
       '& button': {
         textTransform: 'capitalize',
         fontSize: 16,
@@ -117,15 +124,15 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '8px 16px',
       lineHeight: '24px',
       fontWeight: theme.typography.fontWeightBold,
-      margin: theme.spacing(3, 1, 1, 1),
+      margin: theme.spacing(3, 1, 1, 0),
       backgroundColor: '#fc9916',
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
-        backgroundColor: '#fc9916',
+        backgroundColor: '#e28913',
       },
     },
     tabBarHeading: {
-      boxShadow: 'inset 0px 8px 6px -6px rgba(128,128,128,0.3)',
+      boxShadow: 'inset 0px 5px 6px -6px rgba(128,128,128,0.3)',
       backgroundColor: theme.palette.secondary.contrastText,
     },
   };
@@ -143,7 +150,11 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
       <Tab
         key={item}
         className={
-          selectedTabIndex > index - 1 ? classes.highlightActive : classes.highlightInactive
+          selectedTabIndex === index
+            ? classes.highlightActive
+            : selectedTabIndex > index
+            ? classes.lowlightActive
+            : classes.highlightInactive
         }
         label={item}
       />

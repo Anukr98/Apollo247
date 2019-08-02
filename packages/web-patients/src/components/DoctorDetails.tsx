@@ -19,7 +19,7 @@ import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import {
   GetDoctorProfileById,
   GetDoctorProfileByIdVariables,
-} from 'graphql/types/getDoctorProfileById';
+} from 'graphql/types/GetDoctorProfileById';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';

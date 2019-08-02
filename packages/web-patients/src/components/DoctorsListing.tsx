@@ -1,20 +1,46 @@
 import { Theme, Typography, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { DoctorCard } from 'components/DoctorCard';
 import { AphButton } from '@aph/web-ui-components';
 import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
 import _filter from 'lodash/filter';
-
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { DOCTORS_BY_SPECIALITY } from 'graphql/doctors';
-import { SearchObject } from 'components/DoctorsLanding';
+import { SearchObject } from 'components/DoctorsFilter';
+
+import Popover from '@material-ui/core/Popover';
+import { MascotWithMessage } from 'components/MascotWithMessage';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
+    mascotCircle: {
+      cursor: 'pointer',
+      [theme.breakpoints.up('sm')]: {
+        marginLeft: 'auto',
+        position: 'fixed',
+        bottom: 10,
+        right: 15,
+      },
+      '& img': {
+        maxWidth: 72,
+        maxHeight: 72,
+      },
+    },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'none',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
     pageHeader: {
       fontSize: 17,
       fontWeight: 500,
@@ -135,6 +161,12 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const [selectedFilterOption, setSelectedFilterOption] = useState<string>('all');
   const consultOptions = { all: 'All Consults', online: 'Online Consult', clinic: 'Clinic Visit' };
 
+  const [show20SecPopup, setShow20SecPopup] = useState<boolean>(false);
+  const [show40SecPopup, setShow40SecPopup] = useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+
+  const mascotRef = useRef(null);
+
   const apiVairables = {
     specialty: specialityName,
     city: filter.cityName,
@@ -147,6 +179,26 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const { data, loading, error } = useQueryWithSkip(DOCTORS_BY_SPECIALITY, {
     variables: { filterInput: apiVairables },
   });
+
+  // this effect will watch for data loaded and triggers popup after 20 and 40 secs.
+  useEffect(() => {
+    if (data) {
+      const timer1 = setTimeout(() => {
+        setShow20SecPopup(true);
+        setIsPopoverOpen(true);
+      }, 20000);
+      const timer2 = setTimeout(() => {
+        setShow40SecPopup(true);
+        setShow20SecPopup(false);
+        setIsPopoverOpen(true);
+      }, 40000);
+      // this will clear Timeout when component unmount like in willComponentUnmount
+      return () => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+      };
+    }
+  }, [data]);
 
   if (loading) {
     return <CircularProgress />;
@@ -200,7 +252,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   return (
     <>
-      <div className={classes.sectionHead}>
+      <div className={classes.sectionHead} ref={mascotRef}>
         <Typography variant="h2">Okay!</Typography>
         <div className={classes.pageHeader}>
           <div>Here are our best {specialityName}</div>
@@ -238,6 +290,41 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
               );
             })}
           </Grid>
+
+          <Popover
+            open={isPopoverOpen}
+            anchorReference="anchorPosition"
+            anchorPosition={{ top: 200, left: 400 }}
+            className={classes.bottomPopover}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            onClose={(e, reason) => {
+              console.log('hello', e, reason);
+            }}
+            classes={{ paper: classes.bottomPopover }}
+          >
+            {show20SecPopup ? (
+              <MascotWithMessage
+                messageTitle="hi! :)"
+                message="These doctors are best suited for your needs, please select from list."
+                closeButtonLabel="OK, GOT IT"
+                closeMascot={() => setIsPopoverOpen(false)}
+              />
+            ) : show40SecPopup ? (
+              <MascotWithMessage
+                messageTitle="relax :)"
+                message="We're selecting the best doctor suitable for your symptoms."
+                closeButtonLabel="NO, WAIT"
+                closeMascot={() => setIsPopoverOpen(false)}
+              />
+            ) : null}
+          </Popover>
         </div>
       ) : (
         consultErrorMessage()

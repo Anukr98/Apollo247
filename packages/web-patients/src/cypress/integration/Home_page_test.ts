@@ -1,5 +1,10 @@
 import { clientRoutes } from 'helpers/clientRoutes';
-import { jane, john, jimmy } from 'cypress/fixtures/patientsFixtures';
+import {
+  janeNoRelation,
+  johnBrother,
+  jimmyCousin,
+  quentinQuotes,
+} from 'cypress/fixtures/patientsFixtures';
 import { Relation } from 'graphql/types/globalTypes';
 
 describe('Home page (when signed out)', () => {
@@ -15,8 +20,8 @@ describe('Home page (when signed out)', () => {
 });
 
 describe('Home page (when signed in)', () => {
-  const me = { ...jimmy, relation: Relation.ME };
-  const patients = [jane, john, me];
+  const me = { ...jimmyCousin, relation: Relation.ME };
+  const patients = [janeNoRelation, johnBrother, me];
 
   beforeEach(() => {
     cy.signIn(patients);
@@ -32,6 +37,21 @@ describe('Home page (when signed in)', () => {
   });
 
   it('Shows "me" selected in hello dropdown', () => {
+    cy.contains('hello');
+    cy.contains(me!.firstName!.toLowerCase());
+  });
+});
+
+describe('Home page (when signed in)', () => {
+  const patient = [quentinQuotes];
+  const me = { ...quentinQuotes };
+
+  beforeEach(() => {
+    cy.signIn(patient);
+    cy.visitAph(clientRoutes.welcome()).wait(500);
+  });
+
+  it('Displays name of user whose name contains single quotes', () => {
     cy.contains('hello');
     cy.contains(me!.firstName!.toLowerCase());
   });

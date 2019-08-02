@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { specialties } from 'doctors-service/data/specialty';
-import { DoctorsServiceContext } from 'doctors-service/doctors-service';
+import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 
 export const getSpecialtyTypeDefs = gql`
   type Specialty {

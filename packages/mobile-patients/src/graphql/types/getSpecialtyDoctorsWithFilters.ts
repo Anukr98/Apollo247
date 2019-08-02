@@ -11,15 +11,22 @@ import { filterInput } from "./globalTypes";
 export interface getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors {
   __typename: "Doctor";
   id: string;
+  salutation: string;
   firstName: string;
   lastName: string;
+  experience: string | null;
   speciality: string;
+  specialization: string | null;
+  isStarDoctor: boolean;
+  education: string;
+  services: string | null;
+  languages: string | null;
+  city: string | null;
+  address: string | null;
+  photoUrl: string | null;
   availableForPhysicalConsultation: boolean;
   availableForVirtualConsultation: boolean;
-  education: string;
-  city: string | null;
-  photoUrl: string | null;
-  experience: string | null;
+  availableIn: string | null;
 }
 
 export interface getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters {

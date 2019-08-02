@@ -2,7 +2,7 @@ import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
-import { GetDoctorProfileById as DoctorDetails } from 'graphql/types/getDoctorProfileById';
+import { GetDoctorProfileById as DoctorDetails } from 'graphql/types/GetDoctorProfileById';
 import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
