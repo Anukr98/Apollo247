@@ -22,9 +22,14 @@ import {
   getSpecialtyDoctorsTypeDefs,
   getSpecialtyDoctorsResolvers,
 } from 'doctors-service/resolvers/getSpecialtyDoctorsWithFilters';
+import {
+  getDoctorDetailsTypeDefs,
+  getDoctorDetailsResolvers,
+} from 'doctors-service/resolvers/getDoctorDetails';
+
 import gql from 'graphql-tag';
 import { GraphQLTime } from 'graphql-iso-date';
-import { createConnection } from 'typeorm';
+import { createConnection, getConnection } from 'typeorm';
 import {
   Doctor,
   DoctorSpecialty,
@@ -32,11 +37,25 @@ import {
   DoctorAndHospital,
   Facility,
   ConsultHours,
+  DoctorBankAccounts,
+  Packages,
 } from 'doctors-service/entities';
+import { GatewayHeaders } from 'api-gateway';
+import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 
 (async () => {
   await createConnection({
-    entities: [Doctor, DoctorSpecialty, StarTeam, DoctorAndHospital, Facility, ConsultHours],
+    entities: [
+      Doctor,
+      DoctorSpecialty,
+      StarTeam,
+      DoctorAndHospital,
+      Facility,
+      ConsultHours,
+      DoctorBankAccounts,
+      Packages,
+    ],
+    name: 'doctorsDbConnection',
     type: 'postgres',
     host: 'doctors-db',
     port: 5432,
@@ -50,6 +69,14 @@ import {
   });
 
   const server = new ApolloServer({
+    context: async ({ req }) => {
+      const headers = req.headers as GatewayHeaders;
+      const firebaseUid = headers.firebaseuid;
+      const mobileNumber = headers.mobilenumber;
+      const dbConnect = getConnection('doctorsDbConnection');
+      const context: DoctorsServiceContext = { firebaseUid, mobileNumber, dbConnect };
+      return context;
+    },
     schema: buildFederatedSchema([
       {
         typeDefs: gql`
@@ -82,6 +109,10 @@ import {
       {
         typeDefs: starDoctorTypeDefs,
         resolvers: starDoctorProgramResolvers,
+      },
+      {
+        typeDefs: getDoctorDetailsTypeDefs,
+        resolvers: getDoctorDetailsResolvers,
       },
     ]),
   });

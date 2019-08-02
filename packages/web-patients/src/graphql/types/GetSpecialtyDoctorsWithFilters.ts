@@ -5,10 +5,10 @@
 import { filterInput } from "./globalTypes";
 
 // ====================================================
-// GraphQL query operation: getSpecialtyDoctorsWithFilters
+// GraphQL query operation: GetSpecialtyDoctorsWithFilters
 // ====================================================
 
-export interface getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors {
+export interface GetSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors {
   __typename: "Doctor";
   id: string;
   firstName: string;
@@ -22,15 +22,15 @@ export interface getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_d
   experience: string | null;
 }
 
-export interface getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters {
+export interface GetSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters {
   __typename: "filteredDoctorsResult";
-  doctors: (getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors | null)[] | null;
+  doctors: (GetSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors | null)[] | null;
 }
 
-export interface getSpecialtyDoctorsWithFilters {
-  getSpecialtyDoctorsWithFilters: getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters | null;
+export interface GetSpecialtyDoctorsWithFilters {
+  getSpecialtyDoctorsWithFilters: GetSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters | null;
 }
 
-export interface getSpecialtyDoctorsWithFiltersVariables {
+export interface GetSpecialtyDoctorsWithFiltersVariables {
   filterInput?: filterInput | null;
 }
