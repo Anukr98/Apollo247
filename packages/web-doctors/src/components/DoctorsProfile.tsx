@@ -14,6 +14,7 @@ import { FeesTab } from 'components/FeesTab';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 import { Link } from 'react-router-dom';
+
 const AntTabs = withStyles({
   root: {
     borderBottom: '1px solid #e8e8e8',
