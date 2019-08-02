@@ -2,7 +2,6 @@ import React from 'react';
 import { Theme } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import { Header } from 'components/Header';
-// import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
 import { OTSession, OTPublisher, OTStreams, OTSubscriber } from 'opentok-react';
 
