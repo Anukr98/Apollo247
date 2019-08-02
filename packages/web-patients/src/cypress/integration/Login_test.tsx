@@ -46,7 +46,7 @@ describe('Login', () => {
     cy.contains('This seems like a wrong number');
   });
 
-  it.only('Submit should not be enabled until 10 digits are entered', () => {
+  it('Submit should not be enabled until 10 digits are entered', () => {
     cy.get('[data-cypress="SignIn"]') //first
       .find('input[name*="mobileNumber"]')
       .type('9');
@@ -217,5 +217,12 @@ describe('Login state for single user without Relation status selected', () => {
   it('Status should autofill to Relation.ME, as indicated in welcome banner', () => {
     cy.get('[data-cypress="HeroBanner"]').click({ force: true });
     cy.should('contain', patient[0].firstName!.toLowerCase());
+  });
+  it('Email validity should not be tested until submit button is pressed', () => {
+    cy.get('input[name="emailAddress"]')
+      .scrollIntoView()
+      .type('test@test...'); //valid email addresses cannot contain consecutive periods
+
+    cy.get('div[class*="makeStyles-showMessage"]').should('not.contain', 'invalid email address');
   });
 });
