@@ -190,13 +190,16 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-interface MessagesProps {
-  [index: number]: { id: string; message: string; username: string; text: string };
+interface MessagesObjectProps {
+  id: string;
+  message: string;
+  username: string;
+  text: string;
 }
 export const ConsultRoom: React.FC = (props) => {
   const classes = useStyles();
   const [isCalled, setIsCalled] = useState<boolean>(false);
-  const [messages, setMessages] = useState<MessagesProps[]>([]);
+  const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
 
   const config: Pubnub.PubnubConfig = {
@@ -232,11 +235,11 @@ export const ConsultRoom: React.FC = (props) => {
     return function cleanup() {
       pubnub.unsubscribe({ channels: ['Channel3'] });
     };
-  }, []);
+  });
 
   const getHistory = () => {
     pubnub.history({ channel: 'Channel3', reverse: true, count: 1000 }, (status, res) => {
-      const newmessage: MessagesProps[] = [];
+      const newmessage: MessagesObjectProps[] = [];
       res.messages.forEach((element, index) => {
         newmessage[index] = element.entry;
       });
@@ -268,7 +271,7 @@ export const ConsultRoom: React.FC = (props) => {
     );
   };
 
-  const renderChatRow = (rowData: any, index: number) => {
+  const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     if (rowData.id === 'Ravi') {
       leftComponent++;
       rightComponent = 0;
@@ -303,7 +306,7 @@ export const ConsultRoom: React.FC = (props) => {
   };
   const messagessHtml =
     messages && messages.length > 0
-      ? messages.map((item: any, index: number) => {
+      ? messages.map((item: MessagesObjectProps, index: number) => {
           return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
         })
       : '';
