@@ -136,6 +136,7 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
             const newDate = subWeeks(date, 1);
             const weekStartDate: Date = startOfWeek(startOfDay(newDate));
             setDate(newDate);
+            setMonth(getMonth(newDate));
 
             if (onPrev) {
               onPrev(e, newDate, weekStartDate);
@@ -160,6 +161,7 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
           onClick={(e) => {
             const newDate = addWeeks(date, 1);
             setDate(newDate);
+            setMonth(getMonth(newDate));
 
             if (onNext) {
               onNext(e, newDate, startOfWeek(startOfDay(newDate)));
