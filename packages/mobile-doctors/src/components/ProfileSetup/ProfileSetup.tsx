@@ -4,7 +4,7 @@ import { Fees } from '@aph/mobile-doctors/src/components/ProfileSetup/Fees';
 import { Profile } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/Profile';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import { RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { RoundIcon, ApploLogo } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
 
@@ -32,9 +32,10 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { NavigationScreenProps } from 'react-navigation';
 import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
 import { useQuery } from 'react-apollo-hooks';
-import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
+import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
+//import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
-//const isMobileNumberValid = (n: string) => true;
+const isMobileNumberValid = (n: string) => true;
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -194,10 +195,15 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
 
   const renderHeader = (
     <Header
+      leftIcons={[
+        {
+          icon: <ApploLogo />,
+        },
+      ]}
       rightIcons={[
         {
           icon: <RoundIcon />,
-          onPress: () => setmodelvisible(true),
+          onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment), //setmodelvisible(true),
         },
       ]}
     />

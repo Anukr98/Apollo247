@@ -1,5 +1,5 @@
 import { DoctorCard } from '@aph/mobile-doctors/src/components/ProfileSetup/DoctorCard';
-import { Add, Send } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Add, Send, Up, Down } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
 import {
   ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM,
@@ -37,6 +37,8 @@ import {
 } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { getDoctorsForStarDoctorProgram as getDoctorsForStarDoctorProgramData } from '@aph/mobile-doctors/src/helpers/APIDummyData';
+import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { Dropdown } from 'react-native-material-dropdown';
 
 const styles = StyleSheet.create({
   inputTextStyle: {
@@ -48,12 +50,8 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(18),
     width: '100%',
     color: theme.colors.INPUT_TEXT,
-    paddingBottom: 4,
-    marginTop: 12,
     borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
     borderBottomWidth: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   addDoctorText: {
     fontFamily: 'IBMPlexSans',
@@ -73,59 +71,48 @@ export interface StarDoctorsTeamProps {
 
 export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _profileData }) => {
   const [addshow, setAddShow] = useState<boolean>(false);
-  const [doctorSearchText, setDoctorSearchText] = useState<string>('');
+  const [doctorSearchText, setDoctorSearchText] = useState<string>('Search Doctor');
   const [filteredStarDoctors, setFilteredStarDoctors] = useState<
     (GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram['profile'] | null)[] | null
   >([]);
-  const [isShowAddDoctorButton, setIsShowAddDoctorButton] = useState<boolean>(false);
+  const [isShowAddDoctorButton, setIsShowAddDoctorButton] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(false);
 
   const [profileData, setProfileData] = useState(_profileData);
-
-  const [isSuggestionExist, setIsSuggestionExist] = useState<boolean>(false);
   const client = useApolloClient();
 
-  const filterDoctors = (searchText: string) => {
-    if (searchText != '' && !/^[A-Za-z .]+$/.test(searchText)) {
-      return;
-    }
-    if (isSuggestionExist) {
-      setIsSuggestionExist(false);
-      setIsShowAddDoctorButton(false);
-    }
-    setDoctorSearchText(searchText);
-    console.log(searchText);
-    if (searchText == '') {
+  const filterDoctors = (searchText: boolean) => {
+    console.log('searchText', searchText);
+    setIsShowAddDoctorButton(!isShowAddDoctorButton);
+    if (searchText) {
+      // do api call
+      // client
+      //   .query<GetDoctorsForStarDoctorProgram, GetDoctorsForStarDoctorProgramVariables>({
+      //     query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
+      //     variables: { searchString: searchText.replace('Dr. ', '') },
+      //   })
+      getDoctorsForStarDoctorProgramData.data.getDoctorsForStarDoctorProgram!('')
+        .then((_data) => {
+          console.log('flitered array', _data);
+          // const doctorProfile =
+          //   (_data.data.getDoctorsForStarDoctorProgram &&
+          //     _data.data.getDoctorsForStarDoctorProgram.map((i) => i!.profile)) ||
+          //   [];
+          const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
+          setFilteredStarDoctors(doctorProfile);
+        })
+        .catch((e) => {
+          console.log('Error occured while searching for Doctors', e);
+          //Alert.alert('Error', 'Error occured while searching for Doctors');
+        });
+    } else {
       setFilteredStarDoctors([]);
-      return;
     }
-    // do api call
-    client
-      .query<GetDoctorsForStarDoctorProgram, GetDoctorsForStarDoctorProgramVariables>({
-        query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
-        variables: { searchString: searchText.replace('Dr. ', '') },
-      })
-      // getDoctorsForStarDoctorProgramData.data.getDoctorsForStarDoctorProgram!(
-      //   searchText.replace('Dr. ', '')
-      // )
-      .then((_data) => {
-        console.log('flitered array', _data);
-        const doctorProfile =
-          (_data.data.getDoctorsForStarDoctorProgram &&
-            _data.data.getDoctorsForStarDoctorProgram.map((i) => i!.profile)) ||
-          [];
-        // const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
-        setFilteredStarDoctors(doctorProfile);
-      })
-      .catch((e) => {
-        console.log('Error occured while searching for Doctors', e);
-        //Alert.alert('Error', 'Error occured while searching for Doctors');
-      });
   };
 
   const onPressDoctorSearchListItem = (text: string) => {
     Keyboard.dismiss();
-    setIsSuggestionExist(true);
+    addDoctorToProgram(text);
     setDoctorSearchText(text);
     setFilteredStarDoctors([]);
     setIsShowAddDoctorButton(true);
@@ -134,7 +121,6 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
   const addDoctorToProgram = (name: string) => {
     setIsShowAddDoctorButton(false);
     setDoctorSearchText('');
-    setIsSuggestionExist(false);
     setIsLoading(true);
     client
       .mutate<addDoctorToStartDoctorProgram, addDoctorToStartDoctorProgramVariables>({
@@ -153,6 +139,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
           inviteStatus: INVITEDSTATUS.ACCEPTED,
         });
         setProfileData({ ...profileData, starDoctorTeam: array });
+        setDoctorSearchText('Search Doctor');
       })
       .catch((e) => {
         setIsLoading(false);
@@ -201,15 +188,22 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
       {filteredStarDoctors!.length > 0 ? (
         <View
           style={{
+            marginTop: Platform.OS == 'android' ? -35 : -35,
+            marginBottom: 26,
             paddingTop: 16,
             paddingBottom: 15,
-            position: Platform.OS == 'android' ? 'relative' : 'absolute',
+            //position: Platform.OS == 'android' ? 'relative' : 'absolute',
             top: 0,
             zIndex: 2,
-            width: '100%',
+            width: '80%',
             alignSelf: 'center',
             justifyContent: 'flex-end',
             ...theme.viewStyles.whiteRoundedCornerCard,
+            shadowColor: '#808080',
+            shadowOffset: { width: 0, height: 5 },
+            shadowOpacity: 0.4,
+            shadowRadius: 20,
+            elevation: 16,
           }}
         >
           {filteredStarDoctors!.map((item, i) => {
@@ -230,9 +224,6 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
                       marginBottom: 7,
                       height: 1,
                       opacity: 0.1,
-                      borderStyle: 'solid',
-                      borderWidth: 0.5,
-                      borderColor: theme.colors.darkBlueColor(),
                     }}
                   ></View>
                 ) : null}
@@ -280,38 +271,49 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
           </TouchableOpacity>
         </View>
       ) : (
-        <View
-          style={{
-            ...theme.viewStyles.whiteRoundedCornerCard,
-            margin: 20,
-            marginTop: 0,
-            borderRadius: 10,
-          }}
-        >
-          <View style={{ margin: 20 }}>
-            <Text style={styles.inputTextStyle}>Add a doctor to your team</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-              <TextInput
-                maxLength={20}
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoFocus
-                style={styles.inputStyle}
-                value={doctorSearchText}
-                onChange={(text) => filterDoctors(text.nativeEvent.text.replace(/\\/g, ''))}
-              />
-              {isShowAddDoctorButton ? (
-                <TouchableOpacity
-                  style={{ marginLeft: -20 }}
-                  onPress={() => addDoctorToProgram(doctorSearchText)}
+        <View>
+          <View
+            style={{
+              ...theme.viewStyles.whiteRoundedCornerCard,
+              margin: 20,
+              marginTop: 0,
+              borderRadius: 10,
+              //marginBottom: 0,
+            }}
+          >
+            <View style={{ margin: 20 }}>
+              <Text style={styles.inputTextStyle}>Add a doctor to your team</Text>
+
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text
+                  style={{
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                    color: '#02475b',
+                    opacity: 0.4,
+                    marginTop: 10,
+                    marginBottom: 9,
+                  }}
                 >
-                  <Send />
-                  <View style={{ height: 6 }} />
-                </TouchableOpacity>
-              ) : null}
+                  {doctorSearchText}
+                </Text>
+                <View style={{ alignItems: 'flex-end', alignSelf: 'flex-end' }}>
+                  {isShowAddDoctorButton ? (
+                    <TouchableOpacity onPress={() => filterDoctors(isShowAddDoctorButton)}>
+                      <Down />
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={() => filterDoctors(isShowAddDoctorButton)} //setIsShowAddDoctorButton(!isShowAddDoctorButton)}
+                    >
+                      <Up />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+              <View style={styles.inputStyle}></View>
             </View>
-            {renderSuggestionCard()}
           </View>
+          <View style={{ top: 0 }}>{renderSuggestionCard()}</View>
         </View>
       )}
     </SquareCardWithTitle>

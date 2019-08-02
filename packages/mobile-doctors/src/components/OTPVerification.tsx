@@ -414,7 +414,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             <Text style={[styles.errorTextfincal]}>
               Try again after {minutes} : {seconds.toString().length < 2 ? '0' + seconds : seconds}
             </Text>
-            <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.NeedHelp)}>
+            <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.HelpScreen)}>
               <Text style={[styles.gethelpText]}>GET HELP</Text>
             </TouchableOpacity>
           </OtpCard>

@@ -6,6 +6,7 @@ import { SelectableButton } from '../ui/SelectableButton';
 import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
 import { GetDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
 import { format } from 'date-fns';
+import { Notification } from '@aph/mobile-doctors/src/components/ui/Icons';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -22,6 +23,12 @@ const styles = StyleSheet.create({
     color: theme.colors.darkBlueColor(0.5),
     marginTop: 16,
     marginHorizontal: 20,
+  },
+  descriptionview: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: '#0087ba',
+    lineHeight: 24,
+    //marginTop: 20,
   },
 });
 
@@ -50,7 +57,18 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
           <Text style={styles.consultDescText}>
             What type of consults will you be available for?
           </Text>
-          <View style={styles.consultTypeSelection}>
+          <Text
+            style={{
+              marginLeft: 20,
+              marginTop: 8,
+              ...theme.fonts.IBMPlexSansMedium(16),
+              color: '#02475b',
+              marginBottom: 20,
+            }}
+          >
+            Physical, Online
+          </Text>
+          {/* <View style={styles.consultTypeSelection}>
             <SelectableButton
               containerStyle={{ marginRight: 20 }}
               onChange={(isChecked) => {
@@ -74,7 +92,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
               title="Online"
               isChecked={consultationType.online}
             />
-          </View>
+          </View> */}
         </SquareCardWithTitle>
       ) : null}
       <SquareCardWithTitle
@@ -92,6 +110,22 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
           />
         ))}
       </SquareCardWithTitle>
+      <View style={{ margin: 20, flexDirection: 'row', marginBottom: -10 }}>
+        <View style={{ marginTop: 4 }}>
+          <Notification />
+        </View>
+
+        <View style={{ marginLeft: 14 }}>
+          <Text style={styles.descriptionview}>
+            Call
+            <Text style={{ color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(18) }}>
+              {' '}
+              1800 - 3455 - 3455{' '}
+            </Text>
+            to make any{'\n'}changes
+          </Text>
+        </View>
+      </View>
     </View>
   );
 };

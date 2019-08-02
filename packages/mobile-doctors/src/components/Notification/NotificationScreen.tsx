@@ -1,3 +1,4 @@
+import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
   BackArrow,
   PlaceHolderDoctor,
@@ -5,7 +6,8 @@ import {
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 
 const notifications = [
   {
@@ -68,22 +70,6 @@ const styles = StyleSheet.create({
   },
 });
 
-const showHeaderView = () => {
-  return (
-    <View style={styles.mainview}>
-      <View style={{ flex: 1 }}>
-        <TouchableOpacity>
-          <View style={{ marginLeft: 20 }}>
-            <BackArrow />
-          </View>
-        </TouchableOpacity>
-      </View>
-      <View style={{ flex: 8 }}>
-        <Text style={styles.notificationText}>NOTIFICATIONS</Text>
-      </View>
-    </View>
-  );
-};
 const renderNotificationsListView = () => {
   return (
     <View>
@@ -105,9 +91,23 @@ const renderNotificationsListView = () => {
   );
 };
 
-export interface NotificationScreenProps {}
+export interface NotificationScreenProps extends NavigationScreenProps {}
 
 export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => {
+  const showHeaderView = () => {
+    return (
+      <Header
+        containerStyle={{ height: 50 }}
+        leftIcons={[
+          {
+            icon: <BackArrow />,
+            onPress: () => props.navigation.pop(),
+          },
+        ]}
+        headerText="NEED HELP?"
+      />
+    );
+  };
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
       {showHeaderView()}

@@ -85,7 +85,7 @@ export const NotificationHeader: React.FC<HeaderProps> = (props) => {
         </View>
       )}
       <View style={{ flexDirection: 'column', marginTop: 30 }}>
-        <Text style={styles.doctorNameStyles}>{props.middleText}</Text>
+        <Text style={[styles.doctorNameStyles, props.textStyles]}>{props.middleText}</Text>
         <Text style={styles.timerTextStyle}>{props.timerText}</Text>
       </View>
 
