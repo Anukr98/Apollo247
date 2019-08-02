@@ -5,6 +5,8 @@ import { Doctor } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { isNull } from 'util';
+import { isNotNullOrUndefined } from 'apollo-env';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum AccountType {
@@ -69,6 +71,7 @@ export const getDoctorDetailsTypeDefs = gql`
     delegateNumber: String
     emailAddress: String
     experience: String
+    firebaseToken: String
     firstName: String!
     gender: Gender
     isActive: Boolean!
@@ -159,12 +162,15 @@ export const getDoctorDetailsTypeDefs = gql`
 const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = async (
   parent,
   args,
-  { mobileNumber, dbConnect }
+  { mobileNumber, dbConnect, firebaseUid }
 ) => {
   let doctordata: Doctor;
   try {
     const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
     doctordata = (await doctorRepository.findByMobileNumber(mobileNumber, true)) as Doctor;
+    if (isNotNullOrUndefined(doctordata) && isNull(doctordata.firebaseToken)) {
+      await doctorRepository.updateFirebaseId(<string>doctordata.id, firebaseUid);
+    }
   } catch (getProfileError) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
   }

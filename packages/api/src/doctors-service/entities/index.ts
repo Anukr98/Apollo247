@@ -158,6 +158,9 @@ export class Doctor extends BaseEntity {
   firstName: String;
 
   @Column({ nullable: true })
+  firebaseToken: string;
+
+  @Column({ nullable: true })
   gender: Gender;
 
   @PrimaryGeneratedColumn('uuid')

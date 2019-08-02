@@ -21,4 +21,8 @@ export class DoctorRepository extends Repository<Doctor> {
       ],
     });
   }
+
+  updateFirebaseId(id: string, firebaseToken: string) {
+    return this.update(id, { firebaseToken: firebaseToken });
+  }
 }
