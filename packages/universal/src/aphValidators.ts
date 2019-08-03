@@ -12,13 +12,23 @@ export const isNameValid = (name: string) => {
 export const aphClientDateFormat = /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/;
 
 export const isDobValid = (ddmmyyyy: string) => {
+  const toIsoString = (ddmmyyyy: string) => {
+    const dateParts = ddmmyyyy.split('/');
+    const dd = dateParts[0];
+    const mm = dateParts[1];
+    const yyyy = dateParts[2];
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
   const today = new Date();
-  const dob = new Date(ddmmyyyy);
+  const dob = new Date(toIsoString(ddmmyyyy));
   return today > dob;
 };
 
 export const isDateValid = (ddmmyyyy: string) => {
   const isCorrectFormat = aphClientDateFormat.test(ddmmyyyy);
+  console.log('DATE INPUT IS: ', ddmmyyyy);
+  console.log('IS CORRECT FORMAT? : ', isCorrectFormat);
   if (!isCorrectFormat) return false;
 
   const dateParts = ddmmyyyy.split('/');

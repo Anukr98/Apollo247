@@ -119,36 +119,56 @@ describe('UpdatePatient (multiple, without uhids)', () => {
       .should('be.disabled');
   });
 
-  it('Wont allow improper dates in dateOfBirth field', () => {
+  it("Won' allow non-dates to be submitted in dateOfBirth field", () => {
     cy.get('[data-cypress="NewProfile"]')
       .find('form')
       .find('input[name="dateOfBirth"]')
       .clear()
-      .type('test')
-      .blur();
+      .type('test');
 
     cy.get('[data-cypress="NewProfile"]')
       .find('form')
-      .get('button[type="submit"]')
+      .find('button[type="submit"]')
       .should('be.disabled');
-
-    cy.contains('Invalid date of birth');
   });
 
-  it('Wont allow future dates in the dateOfBirth field', () => {
+  it("Won't allow future dates to be submitted in the dateOfBirth field", () => {
     cy.get('[data-cypress="NewProfile"]')
       .find('form')
       .find('input[name="dateOfBirth"]')
       .clear()
-      .type('01/01/2099')
-      .blur();
+      .type('01/01/2099');
 
     cy.get('[data-cypress="NewProfile"]')
       .find('form')
-      .get('button[type="submit"]')
+      .find('button[type="submit"]')
       .should('be.disabled');
+  });
 
-    cy.contains('Invalid date of birth');
+  it("Won't allow impossible dates to be submitted in the dateOfBirth field", () => {
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('input[name="dateOfBirth"]')
+      .clear()
+      .type('31/02/2001');
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+  });
+
+  it('Will allow possible dates in the dateOfBirth field', () => {
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('input[name="dateOfBirth"]')
+      .clear()
+      .type('31/01/2001');
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('button[type="submit"]')
+      .should('be.enabled');
   });
 
   it('Should update the patient', () => {
