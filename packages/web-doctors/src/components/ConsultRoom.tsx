@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Theme, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphInput } from '@aph/web-ui-components';
+import { Consult } from 'components/Consult';
 import { Header } from 'components/Header';
 import Pubnub from 'pubnub';
 
@@ -199,6 +200,7 @@ interface MessagesObjectProps {
 export const ConsultRoom: React.FC = (props) => {
   const classes = useStyles();
   const [isCalled, setIsCalled] = useState<boolean>(false);
+  const [showVideo, setShowVideo] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
 
@@ -326,34 +328,44 @@ export const ConsultRoom: React.FC = (props) => {
           CONSULT ROOM
           <span className={classes.timeLeft}> &nbsp; | &nbsp; Consult Duration 00:25</span>
         </div>
+        {showVideo && <Consult />}
+
         <div>
-          <div className={classes.chatContainer}>{messagessHtml}</div>
-          <div>
-            {isCalled && (
-              <div className={classes.incomingContainer}>
-                <div className={classes.incomingBtn}>
-                  <img src={require('images/ic_patientchat.png')} />
-                  <div>
-                    <span>Ringing</span>
-                    <img src={require('images/ic_stopcall.svg')} className={classes.endcall} />
+          {!showVideo && <div className={classes.chatContainer}>{messagessHtml}</div>}
+          {!showVideo && (
+            <div>
+              {isCalled && (
+                <div className={classes.incomingContainer}>
+                  <div className={classes.incomingBtn}>
+                    <img src={require('images/ic_patientchat.png')} />
+                    <div>
+                      <span>Ringing</span>
+                      <img
+                        src={require('images/ic_stopcall.svg')}
+                        className={classes.endcall}
+                        onClick={() => setShowVideo(true)}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-          <div>
-            <AphInput
-              className={classes.inputWidth}
-              inputProps={{ type: 'text' }}
-              value={messageText}
-              onChange={(event) => {
-                setMessageText(event.currentTarget.value);
-              }}
-            />
-            <Button variant="text" className={classes.sendMsgBtn} onClick={() => send()}>
-              Send
-            </Button>
-          </div>
+              )}
+            </div>
+          )}
+          {!showVideo && (
+            <div>
+              <AphInput
+                className={classes.inputWidth}
+                inputProps={{ type: 'text' }}
+                value={messageText}
+                onChange={(event) => {
+                  setMessageText(event.currentTarget.value);
+                }}
+              />
+              <Button variant="text" className={classes.sendMsgBtn} onClick={() => send()}>
+                Send
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

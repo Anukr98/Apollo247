@@ -128,7 +128,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const Consult: React.FC = (props) => {
   const classes = useStyles();
-  const [isCall, setIscall] = React.useState(false);
+  const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
   const [publishVideo, setPublishVideo] = React.useState(true);
   //const [joined, setJoined] = React.useState(false);
@@ -138,7 +138,7 @@ export const Consult: React.FC = (props) => {
         <Header />
       </div>
       <div className={classes.container}>
-        <div className={classes.breadcrumbs}>
+        {/* <div className={classes.breadcrumbs}>
           <div>
             <div className={classes.backArrow}>
               <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
@@ -146,7 +146,7 @@ export const Consult: React.FC = (props) => {
             </div>
           </div>
           CONSULT ROOM <span className={classes.timeLeft}> &nbsp; | &nbsp; Time Left 08:25</span>
-        </div>
+        </div> */}
         <div>
           {isCall && (
             <OTSession
