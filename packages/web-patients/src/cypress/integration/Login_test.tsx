@@ -218,11 +218,14 @@ describe('Login state for single user without Relation status selected', () => {
     cy.get('[data-cypress="HeroBanner"]').click({ force: true });
     cy.should('contain', patient[0].firstName!.toLowerCase());
   });
-  it('Email validity should not be tested until submit button is pressed', () => {
+  it.only('Email validity should not be tested until submit button is pressed', () => {
     cy.get('input[name="emailAddress"]')
       .scrollIntoView()
+      .clear()
       .type('test@test...'); //valid email addresses cannot contain consecutive periods
 
-    cy.get('div[class*="makeStyles-showMessage"]').should('not.contain', 'invalid email address');
+    cy.contains('Invalid email address').should('not.exist');
+    cy.get('input[name="emailAddress"]').blur();
+    cy.contains('Invalid email address').should('exist');
   });
 });
