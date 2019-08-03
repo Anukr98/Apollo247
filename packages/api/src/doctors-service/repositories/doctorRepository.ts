@@ -22,4 +22,20 @@ export class DoctorRepository extends Repository<Doctor> {
   updateFirebaseId(id: string, firebaseToken: string) {
     return this.update(id, { firebaseToken: firebaseToken });
   }
+
+  findById(id: string) {
+    return this.findOne({
+      where: [{ id }],
+      relations: [
+        'specialty',
+        'doctorHospital',
+        'consultHours',
+        'starTeam',
+        'bankAccount',
+        'packages',
+        'doctorHospital.facility',
+        'starTeam.associatedDoctor',
+      ],
+    });
+  }
 }
