@@ -323,7 +323,7 @@ export const ConsultRoom: React.FC = (props) => {
               <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
             </div>
           </div>
-          CONSULT ROOM{' '}
+          CONSULT ROOM
           <span className={classes.timeLeft}> &nbsp; | &nbsp; Consult Duration 00:25</span>
         </div>
         <div>
