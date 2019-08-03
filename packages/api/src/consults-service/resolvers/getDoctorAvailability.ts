@@ -39,57 +39,48 @@ const getDoctorAvailableSlots: Resolver<
   AvailabilityResult
 > = async (parent, { DoctorAvailabilityInput }, { doctorsDbConnect }) => {
   const consultHourRep = doctorsDbConnect.getCustomRepository(ConsultHoursRepository);
-  const timeSlots = await consultHourRep
-    .findByDoctorId(DoctorAvailabilityInput.doctorId)
-    .then(async (consultHoursResp) => {
-      let availableSlots: string[] = [];
-      if (consultHoursResp) {
-        const st = `${DoctorAvailabilityInput.availableDate.toDateString()} ${consultHoursResp[0].startTime.toString()}`;
-        const ed = `${DoctorAvailabilityInput.availableDate.toDateString()} ${consultHoursResp[0].endTime.toString()}`;
-        const consultStartTime = new Date(st);
-        const consultEndTime = new Date(ed);
-        const slotsCount = differenceInHours(consultEndTime, consultStartTime) * 4;
-        const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
-        let startTime = new Date(
-          DoctorAvailabilityInput.availableDate.toDateString() + ' ' + stTime
-        );
-        availableSlots = Array(slotsCount)
-          .fill(0)
-          .map(() => {
-            const stTime = startTime;
-            startTime = addMinutes(startTime, 15);
-            const stTimeHours = stTime
-              .getHours()
-              .toString()
-              .padStart(2, '0');
-            const stTimeMins = stTime
-              .getMinutes()
-              .toString()
-              .padStart(2, '0');
-            return `${stTimeHours}:${stTimeMins}`;
-          });
-        return availableSlots;
-      } else {
-        return availableSlots;
-      }
-    });
+  const timeSlots = await consultHourRep.findByDoctorId(DoctorAvailabilityInput.doctorId);
+  let availableSlots: string[] = [];
+  if (timeSlots) {
+    const st = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlots[0].startTime.toString()}`;
+    const ed = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlots[0].endTime.toString()}`;
+    const consultStartTime = new Date(st);
+    const consultEndTime = new Date(ed);
+    const slotsCount = differenceInHours(consultEndTime, consultStartTime) * 4;
+    const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
+    let startTime = new Date(DoctorAvailabilityInput.availableDate.toDateString() + ' ' + stTime);
+    availableSlots = Array(slotsCount)
+      .fill(0)
+      .map(() => {
+        const stTime = startTime;
+        startTime = addMinutes(startTime, 15);
+        const stTimeHours = stTime
+          .getHours()
+          .toString()
+          .padStart(2, '0');
+        const stTimeMins = stTime
+          .getMinutes()
+          .toString()
+          .padStart(2, '0');
+        return `${stTimeHours}:${stTimeMins}`;
+      });
+  }
   const con = getConnection();
   const appts = con.getCustomRepository(AppointmentRepository);
-  const apptSlots = await appts
-    .findByDateDoctorId(DoctorAvailabilityInput.doctorId, DoctorAvailabilityInput.availableDate)
-    .then((apptsResp) => {
-      if (apptsResp.length > 0) {
-        const slots = apptsResp.map((appt) => {
-          const sl = `${appt.appointmentTime
-            .getHours()
-            .toString()}:${appt.appointmentTime.getMinutes().toString()}`;
-          timeSlots.splice(timeSlots.indexOf(sl), 1);
-          return sl;
-        });
-        return slots;
-      }
+  const apptSlots = await appts.findByDateDoctorId(
+    DoctorAvailabilityInput.doctorId,
+    DoctorAvailabilityInput.availableDate
+  );
+  if (apptSlots) {
+    apptSlots.map((appt) => {
+      const sl = `${appt.appointmentTime
+        .getHours()
+        .toString()}:${appt.appointmentTime.getMinutes().toString()}`;
+      availableSlots.splice(availableSlots.indexOf(sl), 1);
     });
-  return { availableSlots: timeSlots };
+  }
+
+  return { availableSlots };
 };
 
 export const getAvailableSlotsResolvers = {
