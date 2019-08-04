@@ -9,10 +9,10 @@ import Pubnub from 'pubnub';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     consultRoom: {
-      paddingTop: 68,
-      paddingBottom: 45,
+      paddingTop: 0,
+      paddingBottom: 0,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 68,
+        paddingTop: 0,
       },
     },
     booksLink: {
@@ -26,8 +26,7 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 0,
     },
     chatContainer: {
-      marginTop: 50,
-      minHeight: 500,
+      marginTop: 40,
     },
     petient: {
       color: '#0087ba',
@@ -71,71 +70,8 @@ const useStyles = makeStyles((theme: Theme) => {
       maxWidth: 1064,
       margin: 'auto',
       position: 'relative',
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: '#f7f7f7',
-      minHeight: 700,
       paddingBottom: 120,
-    },
-    breadcrumbs: {
-      marginLeft: 20,
-      marginRight: 20,
-      fontSize: 13,
-      paddingTop: 36,
-      paddingBottom: 11,
-      fontWeight: 600,
-      color: '#02475b',
-      textTransform: 'uppercase',
-      position: 'relative',
-      display: 'flex',
-      alignItems: 'center',
-      [theme.breakpoints.down('xs')]: {
-        position: 'fixed',
-        zIndex: 2,
-        top: 0,
-        width: '100%',
-        backgroundColor: theme.palette.common.white,
-        margin: 0,
-        paddingLeft: 20,
-        paddingRight: 20,
-        paddingBottom: 20,
-        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
-      },
-    },
-    timeLeft: {
-      fontSize: 12,
-      fontWeight: 500,
-      color: 'rgba(2, 71, 91, 0.6)',
-      textTransform: 'capitalize',
-    },
-    backArrow: {
-      cursor: 'pointer',
-      marginRight: 50,
-      [theme.breakpoints.up(1220)]: {
-        position: 'absolute',
-        left: -82,
-        top: 20,
-        width: 48,
-        height: 48,
-        lineHeight: '36px',
-        borderRadius: '50%',
-        textAlign: 'center',
-        backgroundColor: '#02475b',
-      },
-      '& img': {
-        verticalAlign: 'bottom',
-      },
-    },
-    whiteArrow: {
-      verticalAlign: 'middle',
-      [theme.breakpoints.down(1220)]: {
-        display: 'none',
-      },
-    },
-    blackArrow: {
-      verticalAlign: 'middle',
-      [theme.breakpoints.up(1220)]: {
-        display: 'none',
-      },
     },
     docterChat: {
       display: 'block',
@@ -331,18 +267,7 @@ export const ConsultRoom: React.FC = (props) => {
         <Header />
       </div>
       <div className={classes.container}>
-        <div className={classes.breadcrumbs}>
-          <div>
-            <div className={classes.backArrow}>
-              <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-              <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-            </div>
-          </div>
-          CONSULT ROOM
-          <span className={classes.timeLeft}> &nbsp; | &nbsp; Consult Duration 00:25</span>
-        </div>
         {showVideo && <Consult />}
-
         <div>
           {!showVideo && <div className={classes.chatContainer}>{messagessHtml}</div>}
           {!showVideo && (
@@ -374,7 +299,7 @@ export const ConsultRoom: React.FC = (props) => {
                   setMessageText(event.currentTarget.value);
                 }}
               />
-              <Button variant="text" className={classes.chatsendcircle} onClick={() => send()}>
+              <Button className={classes.chatsendcircle} onClick={() => send()}>
                 <img src={require('images/ic_add_circle.svg')} alt="" />
               </Button>
             </div>
