@@ -24,6 +24,19 @@ services:
     ports:
       - 8081:8081
 
+  rabbitmq:
+    image: rabbitmq:3.7.16-management-alpine
+    hostname: 'rabbitmq'
+    ports:
+      - '15672:15672'
+      - '5672:5672'
+    environment:
+      RABBITMQ_DEFAULT_USER: 'rabbitmq'
+      RABBITMQ_DEFAULT_PASS: 'rabbitmq'
+      RABBITMQ_DEFAULT_VHOST: '/'
+    volumes:
+      - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+
   api-gateway:
     image: node:12.6.0
     env_file: .env
@@ -44,6 +57,7 @@ services:
       - doctors-service
       - consults-service
       - nginx
+      - rabbitmq
 
   profiles-service:
     image: node:12.6.0
