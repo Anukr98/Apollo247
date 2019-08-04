@@ -156,6 +156,7 @@ export const getDoctorDetailsTypeDefs = gql`
 
   extend type Query {
     getDoctorDetails: DoctorDetails
+    getDoctorDetailsById(id: String): DoctorDetails
   }
 `;
 
@@ -177,8 +178,24 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
   return doctordata;
 };
 
+const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext, Doctor> = async (
+  parent,
+  args,
+  { dbConnect, firebaseUid }
+) => {
+  let doctordata: Doctor;
+  try {
+    const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
+    doctordata = (await doctorRepository.findById(args.id)) as Doctor;
+  } catch (getProfileError) {
+    throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
+  }
+  return doctordata;
+};
+
 export const getDoctorDetailsResolvers = {
   Query: {
     getDoctorDetails,
+    getDoctorDetailsById,
   },
 };

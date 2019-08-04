@@ -32,7 +32,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& h5': {
         padding: '5px 5px 3px 20px',
-        color: '#658f9b',
       },
       '& h6': {
         color: '#658f9b',
@@ -203,6 +202,26 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       marginLeft: 20,
     },
+    accountDetails: {
+      fontWeight: theme.typography.fontWeightMedium,
+      color: '#02475b',
+      display: 'inline-block',
+      width: '80%',
+      fontSize: 14,
+    },
+    accountDetailsHeading: {
+      color: '#658F9B',
+      fontSize: 12,
+      display: 'inline-block',
+      width: '20%',
+      fontWeight: 'normal',
+    },
+    topBorder: {
+      borderTop: 'solid 1px rgba(101,143,155,0.2)',
+      width: '100%',
+      paddingTop: 20,
+      marginTop: '-5px',
+    },
     pointerNone: {
       pointerEvents: 'none',
     },
@@ -249,7 +268,7 @@ export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
 
           <Grid item lg={10} sm={6} xs={12}>
             <div className={classes.tabContent}>
-              <ExpansionPanel className={`${classes.pointerNone} ${classes.serviceItem}`}>
+              <ExpansionPanel className={`${classes.serviceItem}`}>
                 <ExpansionPanelSummary
                   expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
                 >
@@ -264,9 +283,29 @@ export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
                     </Typography>
                   </div>
                 </ExpansionPanelSummary>
-                <ExpansionPanelDetails className={classes.details}>
-                  <div className={classes.column}>
-                    <Typography variant="h5">More bank details.</Typography>
+
+                <ExpansionPanelDetails className={classes.serviceItem}>
+                  <div className={classes.topBorder}>
+                    <Grid container alignItems="flex-start" spacing={0}>
+                      <Grid item lg={12} sm={12} xs={12}>
+                        <div className={classes.accountDetailsHeading}>Account Holder’s Name</div>
+                        <Typography variant="h5" className={classes.accountDetails}>
+                          Dr. Simran Rao
+                        </Typography>
+                      </Grid>
+                      <Grid item lg={12} sm={12} xs={12}>
+                        <div className={classes.accountDetailsHeading}>IFSC Code</div>
+                        <Typography variant="h5" className={classes.accountDetails}>
+                          000 123 456 7890
+                        </Typography>
+                      </Grid>
+                      <Grid item lg={12} sm={12} xs={12}>
+                        <div className={classes.accountDetailsHeading}>Account Type</div>
+                        <Typography variant="h5" className={classes.accountDetails}>
+                          Savings Account
+                        </Typography>
+                      </Grid>
+                    </Grid>
                   </div>
                 </ExpansionPanelDetails>
               </ExpansionPanel>

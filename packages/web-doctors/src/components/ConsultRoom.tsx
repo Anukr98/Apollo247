@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Theme, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphInput } from '@aph/web-ui-components';
+import { Consult } from 'components/Consult';
 import { Header } from 'components/Header';
 import Pubnub from 'pubnub';
 
@@ -203,13 +204,17 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-interface MessagesProps {
-  [index: number]: { id: string; message: string; username: string; text: string };
+interface MessagesObjectProps {
+  id: string;
+  message: string;
+  username: string;
+  text: string;
 }
 export const ConsultRoom: React.FC = (props) => {
   const classes = useStyles();
   const [isCalled, setIsCalled] = useState<boolean>(false);
-  const [messages, setMessages] = useState<MessagesProps[]>([]);
+  const [showVideo, setShowVideo] = useState<boolean>(false);
+  const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
 
   const config: Pubnub.PubnubConfig = {
@@ -245,11 +250,11 @@ export const ConsultRoom: React.FC = (props) => {
     return function cleanup() {
       pubnub.unsubscribe({ channels: ['Channel3'] });
     };
-  }, []);
+  });
 
   const getHistory = () => {
     pubnub.history({ channel: 'Channel3', reverse: true, count: 1000 }, (status, res) => {
-      const newmessage: MessagesProps[] = [];
+      const newmessage: MessagesObjectProps[] = [];
       res.messages.forEach((element, index) => {
         newmessage[index] = element.entry;
       });
@@ -281,7 +286,7 @@ export const ConsultRoom: React.FC = (props) => {
     );
   };
 
-  const renderChatRow = (rowData: any, index: number) => {
+  const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     if (rowData.id === 'Ravi') {
       leftComponent++;
       rightComponent = 0;
@@ -316,7 +321,7 @@ export const ConsultRoom: React.FC = (props) => {
   };
   const messagessHtml =
     messages && messages.length > 0
-      ? messages.map((item: any, index: number) => {
+      ? messages.map((item: MessagesObjectProps, index: number) => {
           return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
         })
       : '';
@@ -333,37 +338,47 @@ export const ConsultRoom: React.FC = (props) => {
               <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
             </div>
           </div>
-          CONSULT ROOM{' '}
+          CONSULT ROOM
           <span className={classes.timeLeft}> &nbsp; | &nbsp; Consult Duration 00:25</span>
         </div>
+        {showVideo && <Consult />}
+
         <div>
-          <div className={classes.chatContainer}>{messagessHtml}</div>
-          <div>
-            {isCalled && (
-              <div className={classes.incomingContainer}>
-                <div className={classes.incomingBtn}>
-                  <img src={require('images/ic_patientchat.png')} />
-                  <div>
-                    <span>Ringing</span>
-                    <img src={require('images/ic_stopcall.svg')} className={classes.endcall} />
+          {!showVideo && <div className={classes.chatContainer}>{messagessHtml}</div>}
+          {!showVideo && (
+            <div>
+              {isCalled && (
+                <div className={classes.incomingContainer}>
+                  <div className={classes.incomingBtn}>
+                    <img src={require('images/ic_patientchat.png')} />
+                    <div>
+                      <span>Ringing</span>
+                      <img
+                        src={require('images/ic_stopcall.svg')}
+                        className={classes.endcall}
+                        onClick={() => setShowVideo(true)}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-          <div className={classes.chatFooterSection}>
-            <AphInput
-              className={classes.inputWidth}
-              inputProps={{ type: 'text' }}
-              value={messageText}
-              onChange={(event) => {
-                setMessageText(event.currentTarget.value);
-              }}
-            />
-            <Button variant="text" className={classes.chatsendcircle} onClick={() => send()}>
-              <img src={require('images/ic_add_circle.svg')} alt="" />
-            </Button>
-          </div>
+              )}
+            </div>
+          )}
+          {!showVideo && (
+            <div className={classes.chatFooterSection}>
+              <AphInput
+                className={classes.inputWidth}
+                inputProps={{ type: 'text' }}
+                value={messageText}
+                onChange={(event) => {
+                  setMessageText(event.currentTarget.value);
+                }}
+              />
+              <Button variant="text" className={classes.chatsendcircle} onClick={() => send()}>
+                <img src={require('images/ic_add_circle.svg')} alt="" />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>
