@@ -5,6 +5,7 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
+    "amqp": "webpack --config webpack.config.amqp.js",
     "apollo:download": "apollo schema:download ./node_modules/@aph/api-schema/schema.json --endpoint=http://localhost:${API_GATEWAY_PORT}/graphql",
     "format": "prettier --list-different '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "format:fix": "prettier --write '**/*.{js,jsx,ts,tsx,json,htm,html}'",
@@ -65,8 +66,10 @@
     "pg": "^7.11.0",
     "pg-hstore": "^2.3.3",
     "reflect-metadata": "^0.1.13",
+    "rhea": "^1.0.8",
     "sequelize": "^5.8.10",
     "typeorm": "^0.2.18",
+    "url": "^0.11.0",
     "validator": "^11.1.0"
   }
 }
