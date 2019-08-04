@@ -28,11 +28,11 @@ const useStyles = makeStyles({
 export interface DaysProps {
   date: Date;
   className?: string;
-  highlightStartOfMonth?: boolean;
+  userSelection: Date;
   handler: (e: React.MouseEvent<HTMLLIElement>, date: Date) => void;
 }
 
-export const Days: React.FC<DaysProps> = ({ date, handler, highlightStartOfMonth, className }) => {
+export const Days: React.FC<DaysProps> = ({ date, userSelection, handler, className }) => {
   const today: Date = date;
   const weekStart: Date = startOfWeek(today, { weekStartsOn: 0 });
   const weekEnd: Date = endOfWeek(today);
@@ -49,6 +49,10 @@ export const Days: React.FC<DaysProps> = ({ date, handler, highlightStartOfMonth
 
     setRange(range);
   }, [date]);
+
+  useEffect(() => {
+    setUserSelectedDate(userSelection);
+  }, [userSelection]);
 
   useEffect(() => {
     setCurrentSelection(range.findIndex((item) => getTime(item) == getTime(userSelectedDate)));

@@ -96,11 +96,7 @@ const useStyles = makeStyles({
 
 export interface CalendarStripProps {
   dayClickHandler?: (e: React.MouseEvent, date: Date) => void;
-  monthChangeHandler?: (
-    e: SelectInputProps['onChange'],
-    monthSelected: number,
-    startOfWeek: Date
-  ) => void;
+  monthChangeHandler?: (date: Date) => void;
   onNext?: (e: React.MouseEvent, newDate: Date, startOfWeek: Date) => void;
   onPrev?: (e: React.MouseEvent, newDate: Date, startOfWeek: Date) => void;
 }
@@ -114,7 +110,7 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
   const classes = useStyles();
   const today = startOfToday();
   const [date, setDate] = useState<Date>(today);
-  const [month, setMonth] = useState<number>(getMonth(today));
+  const [userSelection, setUserSelection] = useState<Date>(today);
 
   return (
     <div className={classes.calendarContainer}>
@@ -124,20 +120,13 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
       <div className={classes.weekView}>
         <MonthList
           className={classes.monthPopup}
-          month={month}
-          onChange={(e) => {
-            const monthSelected: number = (e.target.value as unknown) as number;
-            const newDate = new Date(getYear(date), monthSelected, 1, 0, 0, 0);
-
-            setDate(newDate);
-            setMonth(monthSelected);
+          date={date}
+          onChange={(newDate) => {
+            setDate(newDate as Date);
+            setUserSelection(newDate as Date);
 
             if (monthChangeHandler) {
-              monthChangeHandler(
-                (e as unknown) as SelectInputProps['onChange'], // the default type of `e` is React.ChangeEvent need to convert it to `SelectInputProps.onChange`
-                monthSelected,
-                startOfWeek(startOfDay(newDate))
-              );
+              monthChangeHandler(newDate as Date);
             }
           }}
         />
@@ -147,7 +136,6 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
             const newDate = subWeeks(date, 1);
             const weekStartDate: Date = startOfWeek(startOfDay(newDate));
             setDate(newDate);
-            setMonth(getMonth(newDate));
 
             if (onPrev) {
               onPrev(e, newDate, weekStartDate);
@@ -158,11 +146,10 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
           &lt;{' '}
         </div>
         <Days
+          userSelection={userSelection}
           className={classes.daysList}
           date={date}
           handler={(e, date) => {
-            setMonth(getMonth(date));
-
             if (dayClickHandler) {
               dayClickHandler(e, date);
             }
@@ -173,7 +160,6 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
           onClick={(e) => {
             const newDate = addWeeks(date, 1);
             setDate(newDate);
-            setMonth(getMonth(newDate));
 
             if (onNext) {
               onNext(e, newDate, startOfWeek(startOfDay(newDate)));

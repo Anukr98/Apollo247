@@ -1,14 +1,12 @@
-import React from 'react';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import IconButton from '@material-ui/core/IconButton';
-import { SelectInputProps } from '@material-ui/core/Select/SelectInput';
+import { DatePicker, MuiPickersUtilsProvider, MaterialUiPickersDate } from '@material-ui/pickers';
+import DateFnsUtils from '@date-io/date-fns';
 
 export interface MonthListProps {
-  month?: number;
+  date?: Date;
   className?: string;
-  onChange?: SelectInputProps['onChange'];
+  onChange?: (date: MaterialUiPickersDate) => void;
 }
 const useStyles = makeStyles({
   monthList: {
@@ -62,58 +60,33 @@ const useStyles = makeStyles({
     width: 28,
   },
 });
-export const MonthList: React.FC<MonthListProps> = ({ month, onChange }) => {
+export const MonthList: React.FC<MonthListProps> = ({ date, onChange }) => {
   const classes = useStyles();
+  const [selectedDate, handleDateChange] = useState<MaterialUiPickersDate>(new Date());
+
+  useEffect(() => {
+    handleDateChange(date as MaterialUiPickersDate);
+  }, [date]);
 
   return (
-    <div className={classes.monthList}>
-      <Select
-        className={classes.monthListPopup}
-        value={month}
-        onChange={onChange}
-        IconComponent={() => (
-          <IconButton aria-label="down arrow">
-            <img src={require('images/ic_downarrow.svg')} className={classes.monthArrow} alt="" />
-          </IconButton>
-        )}
-      >
-        <MenuItem className={classes.monthListItem} value={0}>
-          Jan
-        </MenuItem>
-        <MenuItem className={classes.monthListItem} value={1}>
-          Feb
-        </MenuItem>
-        <MenuItem className={classes.monthListItem} value={2}>
-          Mar
-        </MenuItem>
-        <MenuItem className={classes.monthListItem} value={3}>
-          Apr
-        </MenuItem>
-        <MenuItem className={classes.monthListItem} value={4}>
-          May
-        </MenuItem>
-        <MenuItem className={classes.monthListItem} value={5}>
-          Jun
-        </MenuItem>
-        <MenuItem className={classes.monthListItem} value={6}>
-          Jul
-        </MenuItem>
-        <MenuItem className={classes.monthListItem} value={7}>
-          Aug
-        </MenuItem>
-        <MenuItem className={classes.monthListItem} value={8}>
-          Sep
-        </MenuItem>
-        <MenuItem className={classes.monthListItem} value={9}>
-          Oct
-        </MenuItem>
-        <MenuItem className={classes.monthListItem} value={10}>
-          Nov
-        </MenuItem>
-        <MenuItem className={classes.monthListItem} value={11}>
-          Dec
-        </MenuItem>
-      </Select>
-    </div>
+    <MuiPickersUtilsProvider utils={DateFnsUtils}>
+      <div className={classes.monthList}>
+        <DatePicker
+          disableToolbar
+          inputVariant="standard"
+          autoOk
+          format="MMM"
+          variant="inline"
+          value={selectedDate}
+          onChange={(date) => {
+            handleDateChange(date);
+
+            if (onChange) {
+              onChange(date);
+            }
+          }}
+        />
+      </div>
+    </MuiPickersUtilsProvider>
   );
 };

@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Theme, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import { CalendarStrip } from 'components/Calendar/CalendarStrip';
-import { Appointments, Appointment } from 'components/Appointments';
-import { addMinutes, startOfDay, getTime } from 'date-fns';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import { Week as WeekView } from 'components/Calendar/Views/Week';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -61,80 +61,12 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
-    calendarContainer: {
-      backgroundColor: '#f7f7f7',
-      padding: '15px',
-      fontSize: 18,
-      color: 'rgba(101, 143, 155, 0.6)',
-    },
   };
 });
 
 export const Calendar: React.FC = () => {
-  const dummyData: Appointment[] = [
-    {
-      startTime: Date.now(),
-      endTime: getTime(addMinutes(Date.now(), 1)),
-      details: {
-        patientName: 'Prateek Sharma',
-        checkups: ['Fever', 'Cough & Cold', 'Nausea', 'Sore Eyes'],
-        avatar:
-          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-      },
-      isNew: true,
-      type: 'walkin',
-    },
-    {
-      startTime: getTime(addMinutes(Date.now(), 3)),
-      endTime: getTime(addMinutes(Date.now(), 5)),
-      details: {
-        patientName: 'George',
-        checkups: ['Fever', 'Cough & Cold', 'Nausea'],
-        avatar:
-          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-      },
-      isNew: false,
-      type: 'walkin',
-    },
-    {
-      startTime: getTime(addMinutes(Date.now(), 5)),
-      endTime: getTime(addMinutes(Date.now(), 10)),
-      details: {
-        patientName: 'George',
-        checkups: ['Fever', 'Cough & Cold', 'Nausea'],
-        avatar:
-          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-      },
-      isNew: false,
-      type: 'walkin',
-    },
-    {
-      startTime: getTime(addMinutes(Date.now(), 10)),
-      endTime: getTime(addMinutes(Date.now(), 30)),
-      details: {
-        patientName: 'George',
-        checkups: ['Fever', 'Cough & Cold', 'Nausea'],
-        avatar:
-          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-      },
-      isNew: false,
-      type: 'walkin',
-    },
-  ];
-  const [appointments, setAppointments] = useState<Appointment[]>(dummyData);
-
-  const setData = (startOfWeekDate: Date) => {
-    if (
-      getTime(startOfWeekDate) === getTime(startOfDay(Date.now())) ||
-      getTime(startOfWeekDate) === getTime(startOfDay(new Date(2019, 11, 1, 0, 0)))
-    ) {
-      return setAppointments(dummyData);
-    }
-
-    setAppointments([]);
-  };
-
   const classes = useStyles();
+  const [viewSelection, setViewSelection] = useState<string>('day');
 
   return (
     <div className={classes.welcome}>
@@ -146,17 +78,18 @@ export const Calendar: React.FC = () => {
           <Typography variant="h1">hello dr.rao :)</Typography>
           <p>here’s your schedule for today</p>
         </div>
-        <div style={{ background: 'black' }}>
-          <div></div>
-          <div className={classes.calendarContainer}>
-            <CalendarStrip
-              dayClickHandler={(e, date) => {
-                setData(startOfDay(date));
-              }}
-            />
+        <div>
+          <div>
+            <ToggleButtonGroup exclusive value={viewSelection}>
+              <ToggleButton value="day" onClick={() => setViewSelection('day')}>
+                Day
+              </ToggleButton>
+              <ToggleButton value="month" onClick={() => setViewSelection('month')}>
+                Month
+              </ToggleButton>
+            </ToggleButtonGroup>
           </div>
-
-          <Appointments values={appointments} />
+          {viewSelection === 'day' && <WeekView />}
         </div>
       </div>
     </div>
