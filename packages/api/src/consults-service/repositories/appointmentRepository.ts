@@ -18,4 +18,8 @@ export class AppointmentRepository extends Repository<Appointment> {
         throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
       });
   }
+
+  getPatientAppointments(doctorId: string, patientId: string) {
+    return this.find({ where: { doctorId, patientId } });
+  }
 }

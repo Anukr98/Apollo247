@@ -74,10 +74,12 @@ import { GatewayHeaders } from 'api-gateway';
       const firebaseUid = headers.firebaseuid;
       const mobileNumber = headers.mobilenumber;
       const doctorsDbConnect = getConnection('doctorsDbConnection');
+      const consultsDbConnect = getConnection();
       const context: ConsultServiceContext = {
         firebaseUid,
         mobileNumber,
         doctorsDbConnect,
+        consultsDbConnect,
       };
       return context;
     },

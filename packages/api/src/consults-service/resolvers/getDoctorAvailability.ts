@@ -37,7 +37,7 @@ const getDoctorAvailableSlots: Resolver<
   AvailabilityInputArgs,
   ConsultServiceContext,
   AvailabilityResult
-> = async (parent, { DoctorAvailabilityInput }, { doctorsDbConnect }) => {
+> = async (parent, { DoctorAvailabilityInput }, { doctorsDbConnect, consultsDbConnect }) => {
   const consultHourRep = doctorsDbConnect.getCustomRepository(ConsultHoursRepository);
   const timeSlots = await consultHourRep.findByDoctorId(DoctorAvailabilityInput.doctorId);
   let availableSlots: string[] = [];
@@ -65,8 +65,7 @@ const getDoctorAvailableSlots: Resolver<
         return `${stTimeHours}:${stTimeMins}`;
       });
   }
-  const con = getConnection();
-  const appts = con.getCustomRepository(AppointmentRepository);
+  const appts = consultsDbConnect.getCustomRepository(AppointmentRepository);
   const apptSlots = await appts.findByDateDoctorId(
     DoctorAvailabilityInput.doctorId,
     DoctorAvailabilityInput.availableDate

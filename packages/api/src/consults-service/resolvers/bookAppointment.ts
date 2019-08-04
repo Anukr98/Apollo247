@@ -3,7 +3,6 @@ import { Resolver } from 'api-gateway';
 import { Appointment, STATUS, APPOINTMENT_TYPE } from 'consults-service/entities/appointment';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { getConnection } from 'typeorm';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -77,13 +76,12 @@ const bookAppointment: Resolver<
   AppointmentInputArgs,
   ConsultServiceContext,
   BookAppointmentResult
-> = async (parent, { appointmentInput }, { doctorsDbConnect }) => {
+> = async (parent, { appointmentInput }, { doctorsDbConnect, consultsDbConnect }) => {
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
     ...appointmentInput,
     status: STATUS.IN_PROGRESS,
   };
-  const con = getConnection();
-  const appts = con.getCustomRepository(AppointmentRepository);
+  const appts = consultsDbConnect.getCustomRepository(AppointmentRepository);
   const appointment = await appts.saveAppointment(appointmentAttrs);
   return { appointment };
 };
