@@ -7,8 +7,9 @@ import Pubnub from 'pubnub';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    welcome: {
+    consultRoom: {
       paddingTop: 68,
+      paddingBottom: 45,
       [theme.breakpoints.down('xs')]: {
         paddingTop: 68,
       },
@@ -72,6 +73,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: '#f7f7f7',
       minHeight: 700,
+      paddingBottom: 120,
     },
     breadcrumbs: {
       marginLeft: 20,
@@ -85,7 +87,6 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       display: 'flex',
       alignItems: 'center',
-
       [theme.breakpoints.down('xs')]: {
         position: 'fixed',
         zIndex: 2,
@@ -163,7 +164,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       width: 170,
       height: 168,
-      float: 'right',
+      display: 'inline-block',
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(0,0,0,0.6)',
       overflow: 'hidden',
@@ -187,6 +188,18 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       width: 40,
       bottom: 20,
+    },
+    chatFooterSection: {
+      position: 'absolute',
+      padding: '60px 20px 20px 20px',
+      clear: 'both',
+      bottom: 0,
+      backgroundColor: '#fff',
+      width: '100%',
+    },
+    chatsendcircle: {
+      position: 'absolute',
+      right: 0,
     },
   };
 });
@@ -308,7 +321,7 @@ export const ConsultRoom: React.FC = (props) => {
         })
       : '';
   return (
-    <div className={classes.welcome}>
+    <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
         <Header />
       </div>
@@ -338,7 +351,7 @@ export const ConsultRoom: React.FC = (props) => {
               </div>
             )}
           </div>
-          <div>
+          <div className={classes.chatFooterSection}>
             <AphInput
               className={classes.inputWidth}
               inputProps={{ type: 'text' }}
@@ -347,8 +360,8 @@ export const ConsultRoom: React.FC = (props) => {
                 setMessageText(event.currentTarget.value);
               }}
             />
-            <Button variant="text" className={classes.sendMsgBtn} onClick={() => send()}>
-              Send
+            <Button variant="text" className={classes.chatsendcircle} onClick={() => send()}>
+              <img src={require('images/ic_add_circle.svg')} alt="" />
             </Button>
           </div>
         </div>
