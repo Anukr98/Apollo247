@@ -18,14 +18,6 @@ import {
   getPastSearchesTypeDefs,
   getPastSearchesResolvers,
 } from 'profiles-service/resolvers/getPastSearches';
-import {
-  getAppointmentHistoryTypeDefs,
-  getAppointmentHistoryResolvers,
-} from 'profiles-service/resolvers/getAppointmentHistory';
-import {
-  bookAppointmentTypeDefs,
-  bookAppointmentResolvers,
-} from 'profiles-service/resolvers/bookAppointment';
 import gql from 'graphql-tag';
 import { GatewayHeaders } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
@@ -88,16 +80,8 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
         resolvers: getPatientResolvers,
       },
       {
-        typeDefs: bookAppointmentTypeDefs,
-        resolvers: bookAppointmentResolvers,
-      },
-      {
         typeDefs: getPastSearchesTypeDefs,
         resolvers: getPastSearchesResolvers,
-      },
-      {
-        typeDefs: getAppointmentHistoryTypeDefs,
-        resolvers: getAppointmentHistoryResolvers,
       },
     ]),
   });

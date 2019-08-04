@@ -80,3 +80,10 @@ services:
     command: bash -c "npm run start:consults-service"
     volumes:
       - ./:/apollo-hospitals:cached
+    depends_on:
+      - consults-db
+
+  consults-db:
+    image: postgres:10.8-alpine
+    volumes:
+      - ./packages/api/src/consults-service/init-consults-db.sql:/docker-entrypoint-initdb.d/init.sql

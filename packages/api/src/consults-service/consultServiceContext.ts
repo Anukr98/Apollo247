@@ -1,3 +1,7 @@
 import { GatewayContext } from 'api-gateway';
+import { Connection } from 'typeorm';
 
-export interface ConsultServiceContext extends GatewayContext {}
+export interface ConsultServiceContext extends GatewayContext {
+  doctorsDbConnect: Connection;
+  consultsDbConnect: Connection;
+}
