@@ -128,7 +128,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 170,
       height: 170,
       position: 'absolute',
-      bottom: 125,
+      bottom: 170,
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       borderRadius: 10,
     },

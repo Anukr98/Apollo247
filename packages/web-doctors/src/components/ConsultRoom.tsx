@@ -70,7 +70,7 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
       position: 'relative',
       backgroundColor: '#f7f7f7',
-      paddingBottom: 120,
+      paddingBottom: 20,
     },
     docterChat: {
       display: 'block',
@@ -126,10 +126,9 @@ const useStyles = makeStyles((theme: Theme) => {
       bottom: 20,
     },
     chatFooterSection: {
-      position: 'absolute',
+      position: 'relative',
       padding: '60px 20px 20px 20px',
       clear: 'both',
-      bottom: 0,
       backgroundColor: '#fff',
       width: '100%',
     },
