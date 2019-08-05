@@ -178,9 +178,10 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'none',
     },
     noContent: {
-      "min-height": 500,
-      "text-align": "center"
-    }
+      'min-height': 500,
+      'text-align': 'center',
+      color: 'rgba(2, 71, 91, 0.6)',
+    },
   })
 );
 
@@ -300,7 +301,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
                                     className={classes.subHeading}
                                   >
                                     New
-                                </Typography>
+                                  </Typography>
                                 )}
                                 <Typography
                                   gutterBottom
@@ -326,7 +327,11 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
                                   />
                                 ))}
                                 {appointment.details.checkups.length > 3 && (
-                                  <Typography gutterBottom variant="caption" className={classes.bold}>
+                                  <Typography
+                                    gutterBottom
+                                    variant="caption"
+                                    className={classes.bold}
+                                  >
                                     +{appointment.details.checkups.length - 2}
                                   </Typography>
                                 )}
@@ -356,9 +361,9 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
     );
   }
 
-  return (<div className={classes.calendarContent}>
-    <div className={classes.noContent}>
-      No consults scheduled today!
+  return (
+    <div className={classes.calendarContent}>
+      <div className={classes.noContent}>No consults scheduled today!</div>
     </div>
-  </div>);
+  );
 };
