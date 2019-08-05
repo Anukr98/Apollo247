@@ -10,6 +10,7 @@ export const clientRoutes = {
   patients: () => '/patients',
   searchMedicines: () => '/search-medicines',
   cartLanding: () => '/cart',
+  cartPoc: () => '/cart-poc',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
