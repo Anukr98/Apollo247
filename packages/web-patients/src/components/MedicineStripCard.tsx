@@ -90,6 +90,17 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 4,
       paddingBottom: 4,
     },
+    medicineFor: {
+      fontSize: 13,
+      fontWeight: 600,
+      color: '#02475b',
+      letterSpacing: 0.33,
+      borderLeft: 'solid 0.5px rgba(2,71,91,0.2)',
+      paddingLeft: 20,
+      paddingRight: 20,
+      paddingTop: 4,
+      paddingBottom: 4,
+    },
     helpText: {
       marginLeft: 'auto',
       paddingRight: 10,
@@ -237,6 +248,18 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
+    selectMenuItemFor: {
+      backgroundColor: 'transparent',
+      fontSize: 13,
+      color: '#02475b',
+      letterSpacing: 0.33,
+      paddingTop: 7,
+      paddingBottom: 6,
+      paddingLeft: 2,
+      '&:focus': {
+        backgroundColor: 'transparent',
+      },
+    },
     menuRoot: {
       fontSize: 13,
       fontWeight: 500,
@@ -256,6 +279,8 @@ export const MedicineStripCard: React.FC = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [selectedPackQty] = React.useState<number>(1);
   const [selectedPackQty1] = React.useState<number>(1);
+  const [selectedPackQty2] = React.useState<number>(1);
+  const [selectedForName] = React.useState<number>(1);
 
   return (
     <div className={classes.root}>
@@ -463,6 +488,79 @@ export const MedicineStripCard: React.FC = (props) => {
           <span>You have subscribed to this already</span>
           <AphButton>Edit</AphButton>
           <AphButton>Add New Subscription</AphButton>
+        </div>
+      </div>
+      {/** medice card section end */}
+      {/** medice card section start */}
+      <div className={classes.medicineStrip}>
+        <div className={classes.medicineStripWrap}>
+          <div className={classes.medicineInformation}>
+            <div className={classes.medicineIcon}>
+              <img src={require('images/ic_tablets.svg')} alt="" />
+            </div>
+            <div className={classes.medicineName}>
+              Metformin 500mg <div className={classes.tabInfo}>Pack Of 10</div>
+            </div>
+          </div>
+          <div className={classes.cartRight}>
+            <div className={classes.medicineFor}>
+              For
+              <AphCustomDropdown
+                classes={{ selectMenu: classes.selectMenuItemFor }}
+                value={selectedForName}
+              >
+                <MenuItem
+                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+                  value={1}
+                >
+                  Surj
+                </MenuItem>
+                <MenuItem
+                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+                  value={2}
+                >
+                  Surj
+                </MenuItem>
+                <MenuItem
+                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+                  value={3}
+                >
+                  Surj
+                </MenuItem>
+              </AphCustomDropdown>
+            </div>
+            <div className={classes.medicinePack}>
+              <AphCustomDropdown
+                classes={{ selectMenu: classes.selectMenuItem }}
+                value={selectedPackQty2}
+              >
+                <MenuItem
+                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+                  value={1}
+                >
+                  1 Pack
+                </MenuItem>
+                <MenuItem
+                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+                  value={2}
+                >
+                  2 Pack
+                </MenuItem>
+                <MenuItem
+                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+                  value={3}
+                >
+                  3 Pack
+                </MenuItem>
+              </AphCustomDropdown>
+            </div>
+            <div className={classes.medicinePrice}>Rs. 120</div>
+            <div className={classes.addToCart}>
+              <AphButton>
+                <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
+              </AphButton>
+            </div>
+          </div>
         </div>
       </div>
       {/** medice card section end */}
