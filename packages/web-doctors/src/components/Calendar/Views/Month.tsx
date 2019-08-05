@@ -2,10 +2,10 @@ import React from 'react';
 import { Calendar } from 'react-big-calendar';
 import momentLocalizer from 'react-big-calendar/lib/localizers/moment';
 import moment from 'moment';
-import 'react-big-calendar/lib/css/react-big-calendar.css'
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { makeStyles } from '@material-ui/styles';
 
-const now = new Date()
+const now = new Date();
 
 const events = [
   {
@@ -118,16 +118,16 @@ const events = [
     start: now,
     end: now,
   },
-]
+];
 
 const useStyles = makeStyles(() => {
   return {
     container: {
-      "min-height": 700,
-      color: "black",
-      background: "white",
-      padding: 15
-    }
+      'min-height': 700,
+      color: 'black',
+      background: 'white',
+      padding: 15,
+    },
   };
 });
 
@@ -144,4 +144,4 @@ export const Month: React.FC = () => {
       views={{ month: true }}
     />
   );
-}
+};
