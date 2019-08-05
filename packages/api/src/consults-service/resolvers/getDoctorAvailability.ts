@@ -4,7 +4,6 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { addMinutes, differenceInHours } from 'date-fns';
 import { ConsultHoursRepository } from 'doctors-service/repositories/consultHoursRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { getConnection } from 'typeorm';
 
 export const getAvailableSlotsTypeDefs = gql`
   input DoctorAvailabilityInput {
