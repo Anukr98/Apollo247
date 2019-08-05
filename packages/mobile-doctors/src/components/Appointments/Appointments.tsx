@@ -15,71 +15,85 @@ import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileT
 import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useRef, useState } from 'react';
+import moment from 'moment';
+import React, { useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { CalendarHeader } from './CalendarHeader';
+import { NavigationScreenProps } from 'react-navigation';
+import { WeekView } from './WeekView';
 
 const styles = StyleSheet.create({
-  noappointments: {
+  noAppointmentsText: {
     ...theme.fonts.IBMPlexSansMedium(12),
     color: 'rgba(2, 71, 91, 0.6)',
     textAlign: 'center',
   },
-  calendershow: {
+  calenderView: {
     position: 'absolute',
     zIndex: 2,
     top: 0,
     width: '100%',
-    height: 300,
+    // height: 'auto',
   },
-  calenderdropdown: {
+  menuDropdown: {
     position: 'absolute',
     zIndex: 2,
-    top: -40,
+    top: 0,
     width: '100%',
     alignItems: 'flex-end',
-    marginLeft: 10,
+    // marginLeft: 10,
+  },
+  calendarSeparator: {
+    height: 1,
+    opacity: 0.1,
+    borderWidth: 0.5,
+    borderColor: '#02475b',
+    marginLeft: 16,
+    marginRight: 16,
+  },
+  noAppointmentsView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  weekViewContainer: {
+    marginTop: 12,
+    backgroundColor: theme.colors.WHITE,
+    shadowColor: '#808080',
+    shadowOpacity: 0.7,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 1,
+    elevation: 5,
   },
 });
+
+const monthsName = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
 export interface AppointmentsProps extends NavigationScreenProps {
   profileData: DoctorProfile;
 }
 
 export const Appointments: React.FC<AppointmentsProps> = (props) => {
-  const doctorName = props.navigation.state.params && props.navigation.state.params.Firstname;
+  const doctorName: string | null =
+    props.navigation.state.params && props.navigation.state.params.Firstname;
   const [date, setDate] = useState<Date>(new Date());
-  const CalendarHeaderRef = useRef<{ scrollToCurrentDate: () => void }>();
-  const [show, setshow] = useState(false);
-  const [dropdownshow, setDropDownShow] = useState(false);
-  const monthsName = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
-
-  const currentDate = new Date();
-  const currentMonth = currentDate.getMonth();
-
-  const [currentmonth, setCurrentMonth] = useState(monthsName[currentMonth]);
-  console.log('thisMonth', currentmonth);
-
-  const renderMonthSelection = (
-    <View style={{ flexDirection: 'row' }}>
-      <Text style={{ color: '#02475b', ...theme.fonts.IBMPlexSansBold(14) }}>{currentmonth}</Text>
-      <TouchableOpacity onPress={() => setshow(!show)}>{show ? <Up /> : <Down />}</TouchableOpacity>
-    </View>
-  );
+  const [calendarDate, setCalendarDate] = useState<Date | null>(new Date()); // to maintain a sync between week view change and calendar month
+  const [isCalendarVisible, setCalendarVisible] = useState(false);
+  const [isDropdownVisible, setDropdownVisible] = useState(false);
+  const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
 
   const {
     data: { getDoctorProfile },
@@ -90,22 +104,36 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   } else {
     //console.log('Calender', getDoctorProfile!.appointments.length);
   }
-  const showCalenderView = () => {
+
+  const renderMonthSelection = () => {
     return (
-      <View>
+      <TouchableOpacity
+        style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}
+        onPress={() => setCalendarVisible(!isCalendarVisible)}
+      >
+        <Text style={{ color: '#02475b', ...theme.fonts.IBMPlexSansBold(14), marginRight: 4 }}>
+          {currentmonth}
+        </Text>
+        {isCalendarVisible ? <Up /> : <Down />}
+      </TouchableOpacity>
+    );
+  };
+
+  const renderCalenderView = () => {
+    return (
+      <View style={styles.calenderView}>
+        <View style={styles.calendarSeparator} />
         <CalendarList
-          style={{
-            height: 310,
-          }}
+          style={{ height: 'auto' }}
           horizontal={true}
           pagingEnabled={true}
-          current={'2019-07-25'}
-          minDate={'2019-07-01'}
-          maxDate={'2019-12-31'}
+          current={calendarDate || date}
           onDayPress={(day) => {
-            console.log('selected day', day);
+            setDate(new Date(day.dateString));
+            setCalendarDate(new Date(day.dateString));
+            setCurrentMonth(monthsName[moment(day.timestamp).get('month')]);
+            setCalendarVisible(false);
           }}
-          monthFormat={''}
           onVisibleMonthsChange={(months) => {
             setCurrentMonth(monthsName[months[0].month - 1]);
           }}
@@ -140,14 +168,15 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             textDayFontSize: 14,
             textMonthFontSize: 14,
             textDayHeaderFontSize: 12,
+            'stylesheet.calendar.header': { header: { height: 0 } },
           }}
         />
       </View>
     );
   };
 
-  return (
-    <SafeAreaView style={theme.viewStyles.container}>
+  const renderMainHeader = () => {
+    return (
       <Header
         rightIcons={[
           {
@@ -160,88 +189,105 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           },
         ]}
       />
+    );
+  };
+
+  const renderDoctorGreeting = () => {
+    return (
       <ProfileTabHeader
-        title={`hello dr. ${doctorName} :)`}
+        title={`hello dr. ${(doctorName || '').toLowerCase()} :)`}
         description="here’s your schedule for today"
         activeTabIndex={0}
       />
-      <View>
-        <Header
-          leftComponent={renderMonthSelection}
-          rightIcons={[
+    );
+  };
+
+  const renderHeader = () => {
+    return (
+      <Header
+        leftComponent={renderMonthSelection()}
+        rightIcons={[
+          {
+            icon: <CalendarTodayIcon />,
+            onPress: () => {
+              setDate(new Date());
+              setCurrentMonth(monthsName[new Date().getMonth()]);
+            },
+          },
+          {
+            icon: <DotIcon />,
+            onPress: () => {
+              setDropdownVisible(!isDropdownVisible);
+            },
+          },
+        ]}
+      />
+    );
+  };
+
+  const renderDropdown = () => {
+    return (
+      <View style={styles.menuDropdown}>
+        <DropDown
+          options={[
             {
-              icon: <CalendarTodayIcon />,
+              optionText: '  Block Calendar',
+              icon: <Block />,
               onPress: () => {
-                setDropDownShow(!dropdownshow);
+                setDropdownVisible(false);
               },
             },
             {
-              icon: <DotIcon />,
-              onPress: () => Alert.alert('click'),
+              optionText: '  Manage Calendar',
+              icon: <CalendarIcon />,
+              onPress: () => {
+                setDropdownVisible(false);
+              },
             },
           ]}
         />
-        <View>
-          {show ? (
-            <View style={styles.calendershow}>
-              <View
-                style={{
-                  borderBottomColor: '#f7f7f7',
-                  borderBottomWidth: 1,
-                  marginLeft: 16,
-                  marginRight: 16,
-                }}
-              ></View>
-              {showCalenderView()}
-            </View>
-          ) : null}
-        </View>
       </View>
+    );
+  };
+
+  const renderNoConsultsView = () => {
+    return (
+      <View style={styles.noAppointmentsView}>
+        <Notification />
+        <Text style={styles.noAppointmentsText}>No consults scheduled today!</Text>
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={theme.viewStyles.container}>
+      {renderMainHeader()}
+      {renderDoctorGreeting()}
       <View>
-        {dropdownshow ? (
-          <View style={styles.calenderdropdown}>
-            <DropDown
-              options={[
-                {
-                  optionText: '  Block Calendar',
-                  icon: <Block />,
-                  onPress: () => {
-                    setDropDownShow(false);
-                  },
-                },
-                {
-                  optionText: '  Manage Calendar',
-                  icon: <CalendarIcon />,
-                  onPress: () => {
-                    setDropDownShow(false);
-                  },
-                },
-              ]}
-            />
-          </View>
-        ) : null}
+        {renderHeader()}
+        <View>{isCalendarVisible ? renderCalenderView() : null}</View>
       </View>
-      <View style={{ zIndex: -1 }}>
-        <View style={{ marginTop: 12 }} />
-        <CalendarHeader
-          ref={(ref) => (CalendarHeaderRef.current = ref!)}
-          date={date}
-          onTapDate={(date: Date) => {
-            setDate(date);
-          }}
-        />
-        <ScrollView bounces={false}>
-          <View>
-            {getDoctorProfile!.appointments.length == 0 ? (
-              <View style={{ justifyContent: 'center', flex: 1, alignItems: 'center' }}>
-                <Notification />
-                <Text style={styles.noappointments}>No consults scheduled today!</Text>
-              </View>
-            ) : (
-              <AppointmentsList getDoctorProfile={getDoctorProfile!} />
-            )}
-          </View>
-        </ScrollView>
+      <View style={isDropdownVisible ? {} : { zIndex: -1 }}>
+        {isDropdownVisible ? renderDropdown() : null}
+        <View style={styles.weekViewContainer}>
+          <WeekView
+            date={date}
+            onTapDate={(date: Date) => {
+              setDate(date);
+              setCalendarDate(date);
+              setCurrentMonth(monthsName[moment(date).get('month')]);
+            }}
+            onWeekChanged={(date) => {
+              setCalendarDate(moment(date).toDate());
+              setCurrentMonth(monthsName[moment(date).get('month')]);
+            }}
+          />
+        </View>
+        {getDoctorProfile!.appointments.length == 0 ? (
+          renderNoConsultsView()
+        ) : (
+          <AppointmentsList doctorProfile={getDoctorProfile!} />
+        )}
       </View>
     </SafeAreaView>
   );
