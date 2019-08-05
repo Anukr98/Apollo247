@@ -16,7 +16,11 @@ import { DoctorsLanding } from 'components/DoctorsLanding';
 import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
 import { MedicineLanding } from 'components/MedicineLanding';
+<<<<<<< HEAD
 import { CartLanding } from 'components/CartLanding';
+=======
+import { ShoppingCartProvider } from 'components/ShoppingCartProvider';
+>>>>>>> Render it in web-patients AppContainer
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -57,7 +61,9 @@ const AppContainer: React.FC = () => {
       <AuthProvider>
         <AphThemeProvider theme={theme}>
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <App />
+            <ShoppingCartProvider>
+              <App />
+            </ShoppingCartProvider>
           </MuiPickersUtilsProvider>
         </AphThemeProvider>
       </AuthProvider>
