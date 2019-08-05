@@ -119,6 +119,27 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    subscriptionAdded: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#02475b',
+      borderTop: 'solid 0.5px rgba(2,71,91,0.2)',
+      paddingTop: 10,
+      marginTop: 10,
+      display: 'flex',
+      alignItems: 'center',
+      lineHeight: '24px',
+      '& span': {
+        marginLeft: 'auto',
+      },
+      '& button': {
+        boxShadow: 'none',
+        color: '#fc9916',
+        padding: 0,
+        minWidth: 'auto',
+        marginLeft: 40,
+      },
+    },
     preRequired: {
       paddingLeft: 44,
       color: '#890000',
@@ -233,7 +254,8 @@ export const MedicineStripCard: React.FC = (props) => {
   const classes = useStyles();
   const medicineRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-  const [selectedQty] = React.useState<number>(1);
+  const [selectedPackQty] = React.useState<number>(1);
+  const [selectedPackQty1] = React.useState<number>(1);
 
   return (
     <div className={classes.root}>
@@ -346,7 +368,7 @@ export const MedicineStripCard: React.FC = (props) => {
             <div className={classes.medicinePack}>
               <AphCustomDropdown
                 classes={{ selectMenu: classes.selectMenuItem }}
-                value={selectedQty}
+                value={selectedPackQty}
               >
                 <MenuItem
                   classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
@@ -382,6 +404,65 @@ export const MedicineStripCard: React.FC = (props) => {
             label="Need to take this regularly?"
             labelPlacement="start"
           />
+        </div>
+      </div>
+      {/** medice card section end */}
+      {/** medice card section start */}
+      <div className={classes.medicineStrip}>
+        <div className={classes.medicineStripWrap}>
+          <div className={classes.medicineInformation}>
+            <div className={classes.medicineIcon}>
+              <img src={require('images/ic_tablets.svg')} alt="" />
+            </div>
+            <div className={classes.medicineName}>
+              Metformin 500mg <div className={classes.tabInfo}>Pack Of 10</div>
+            </div>
+          </div>
+          <div className={classes.cartRight}>
+            <div
+              className={classes.helpText}
+              ref={medicineRef}
+              onClick={() => setIsPopoverOpen(true)}
+            >
+              <img src={require('images/ic_info.svg')} alt="" />
+            </div>
+            <div className={classes.medicinePack}>
+              <AphCustomDropdown
+                classes={{ selectMenu: classes.selectMenuItem }}
+                value={selectedPackQty1}
+              >
+                <MenuItem
+                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+                  value={1}
+                >
+                  1 Pack
+                </MenuItem>
+                <MenuItem
+                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+                  value={2}
+                >
+                  2 Pack
+                </MenuItem>
+                <MenuItem
+                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+                  value={3}
+                >
+                  3 Pack
+                </MenuItem>
+              </AphCustomDropdown>
+            </div>
+            <div className={classes.medicinePrice}>Rs. 120</div>
+            <div className={classes.addToCart}>
+              <AphButton>
+                <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
+              </AphButton>
+            </div>
+          </div>
+        </div>
+        <div className={classes.subscriptionAdded}>
+          <span>You have subscribed to this already</span>
+          <AphButton>Edit</AphButton>
+          <AphButton>Add New Subscription</AphButton>
         </div>
       </div>
       {/** medice card section end */}

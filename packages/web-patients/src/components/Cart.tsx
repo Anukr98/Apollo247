@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineCard } from 'components/MedicineCard';
 import { MedicineStripCard } from 'components/MedicineStripCard';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -118,6 +119,24 @@ const useStyles = makeStyles((theme: Theme) => {
     topHeader: {
       paddingTop: 0,
     },
+    addItemBtn: {
+      padding: 0,
+      color: '#fc9916',
+      boxShadow: 'none',
+      fontWeight: 'bold',
+      paddingLeft: 20,
+      marginLeft: 20,
+      position: 'relative',
+      '&:before': {
+        position: 'absolute',
+        content: '""',
+        left: 0,
+        right: 0,
+        width: 0.5,
+        height: 41,
+        backgroundColor: 'rgba(2,71,91,0.1)',
+      },
+    },
   };
 });
 
@@ -131,6 +150,7 @@ export const Cart: React.FC = (props) => {
             <div className={classes.sectionHeader}>
               <span>Items In Your Cart</span>
               <span className={classes.count}>03</span>
+              <AphButton className={classes.addItemBtn}>Add Items</AphButton>
             </div>
             <MedicineStripCard />
             <div className={classes.sectionHeader}>
