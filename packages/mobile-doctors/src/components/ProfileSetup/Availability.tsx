@@ -122,7 +122,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
               {' '}
               1800 - 3455 - 3455{' '}
             </Text>
-            to make any{'\n'}changes
+            to make any changes
           </Text>
         </View>
       </View>

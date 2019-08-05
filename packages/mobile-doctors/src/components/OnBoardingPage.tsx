@@ -31,18 +31,17 @@ import { ifIphoneX } from 'react-native-iphone-x-helper';
 
 const styles = StyleSheet.create({
   container: {
-    //...theme.viewStyles.container,
     flex: 1,
     width: '100%',
-    height: 600,
     backgroundColor: '#f0f4f5',
   },
   mainView: {
-    flex: 9,
+    flex: 6,
     backgroundColor: '#f0f4f5',
   },
   itemContainer: {
-    height: 490, //height === 812 || height === 896 ? height - 160 : height - 100,
+    flex: 1,
+    height: 'auto', //height === 812 || height === 896 ? height - 160 : height - 100,
     margin: 20,
     backgroundColor: '#ffffff',
     alignItems: 'center',
@@ -53,16 +52,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 10,
     elevation: 8,
-    marginBottom: 30,
+    marginBottom: 118,
   },
   descptionText: {
-    marginTop: 20,
     color: 'rgba(0,0,0,0.4)',
     textAlign: 'center',
-    marginHorizontal: 40,
     lineHeight: 20,
     ...theme.fonts.IBMPlexSansMedium(14),
-    paddingBottom: 50,
+    marginTop: 20,
   },
   titleStyle: {
     color: '#02475b',
@@ -73,8 +70,7 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'flex-start',
     backgroundColor: 'transparent',
-    // backgroundColor: 'red',
-    top: -70,
+    top: -30,
   },
   imageStyle: {
     marginTop: -90,
@@ -85,7 +81,8 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     ...theme.fonts.IBMPlexSansBold(13),
     textAlign: 'center',
-    // top: -70,
+    //top: -50,
+    //backgroundColor: 'red',
   },
   statusBarBg: {
     width: '100%',
@@ -160,8 +157,6 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
   const appIntroSliderRef = React.useRef<any>(null);
   // const { currentUser } = useAuth();
   const [state, setState] = useState(true);
-  const { currentUser, authError } = useAuth();
-  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
 
   useEffect(() => {
     firebase.analytics().setCurrentScreen('Onboarding');
@@ -172,7 +167,7 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
       <View style={styles.statusBarBg} />
       <SafeAreaView style={styles.container}>
         <View style={styles.mainView}>
-          <View style={{ flex: 2 }}>
+          <View style={{ flex: 15 }}>
             <AppIntroSlider
               ref={appIntroSliderRef}
               hidePagination
@@ -180,12 +175,13 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
               renderItem={(item: Slide) => (
                 <View style={styles.itemContainer}>
                   <Image source={item.image} style={styles.imageStyle} resizeMode="contain" />
-                  <View style={{ marginTop: -135 }}>
+
+                  <View style={{ marginBottom: 53, marginTop: -90 }}>
                     <Text style={styles.titleStyle}>{item.title}</Text>
                     <Text style={styles.descptionText}>{item.text}</Text>
                   </View>
                   <TouchableOpacity
-                    style={{ marginTop: -30 }}
+                    style={{ marginBottom: 25 }}
                     onPress={() => {
                       if (item.index === slides.length) {
                         AsyncStorage.setItem('onboarding', 'true');
@@ -204,22 +200,32 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
               )}
             />
           </View>
-
-          {!state ? null : (
-            <View style={styles.skipView}>
-              <TouchableOpacity
-                onPress={() => {
-                  AsyncStorage.setItem('onboarding', 'true').then(() => {
-                    console.log('view');
-                  });
-                  props.navigation.replace(AppRoutes.Login);
-                }}
-              >
-                <Text style={styles.skipTextStyle}>SKIP</Text>
-              </TouchableOpacity>
-            </View>
-          )}
         </View>
+
+        {!state ? null : (
+          // <TouchableOpacity
+          //   onPress={() => {
+          //     AsyncStorage.setItem('onboarding', 'true').then(() => {
+          //       console.log('view');
+          //       props.navigation.replace(AppRoutes.Login);
+          //     });
+          //   }}
+          // >
+          <View style={styles.skipView}>
+            <Text
+              style={styles.skipTextStyle}
+              onPress={() => {
+                AsyncStorage.setItem('onboarding', 'true').then(() => {
+                  console.log('view');
+                  props.navigation.replace(AppRoutes.Login);
+                });
+              }}
+            >
+              SKIP
+            </Text>
+          </View>
+          // </TouchableOpacity>
+        )}
       </SafeAreaView>
     </View>
   );

@@ -14,6 +14,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(16),
     color: '#0087ba',
     lineHeight: 24,
+    marginRight: 16,
   },
   fullview: {
     borderRadius: 10,
@@ -52,7 +53,7 @@ export const NeedHelpAppointment: React.FC<NeedHelpAppointmentProps> = (props) =
               {' '}
               1800 - 3455 - 3455{' '}
             </Text>
-            to reach an{'\n'}expert from our team who will resolve{'\n'}your issue.
+            to reach an expert from our team who will resolve your issue.
           </Text>
         </View>
       </View>

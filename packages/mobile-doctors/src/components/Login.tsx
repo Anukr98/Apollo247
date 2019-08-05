@@ -312,7 +312,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           </Text>
           {phoneNumber == '' || phoneNumberIsValid ? null : (
             <TouchableOpacity
-              onPress={() => props.navigation.push(AppRoutes.NeedHelp)}
+              onPress={() => props.navigation.push(AppRoutes.HelpScreen)}
               style={{ marginTop: -10 }}
             >
               <Text style={[styles.gethelpText]}>{string.LocalStrings.gethelp}</Text>

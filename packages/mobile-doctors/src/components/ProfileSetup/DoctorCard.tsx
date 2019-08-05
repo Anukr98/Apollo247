@@ -36,6 +36,7 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.SEARCH_DOCTOR_NAME,
+    flex: 0.9,
   },
   invitetext: {
     ...theme.fonts.IBMPlexSansMedium(15),
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
     height: 24,
     width: 24,
     marginTop: 16,
-    marginRight: 12,
+    marginRight: 20,
   },
   doctorSpecializationStyles: {
     paddingTop: 4,
@@ -129,8 +130,13 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
             </View>
             <View style={{ flex: 1 }}>
               <View style={styles.iconview}>
-                <Text style={styles.doctorNameStyles}>Dr. {props.doctorName}</Text>
-                <TouchableOpacity onPress={() => setisMenuHidden(!isMenuHidden)}>
+                <Text style={styles.doctorNameStyles} numberOfLines={1}>
+                  Dr. {props.doctorName}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setisMenuHidden(!isMenuHidden)}
+                  style={{ flex: 0.2 }}
+                >
                   <Image
                     style={styles.imageremovestyles}
                     source={require('../../images/icons/remove.png')}

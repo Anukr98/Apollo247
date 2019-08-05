@@ -12,6 +12,12 @@ import {
   GetDoctorProfile,
   GetDoctorProfile_getDoctorProfile,
 } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+
+import {
+  GetDoctorDetails,
+  GetDoctorDetails_getDoctorDetails,
+} from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+
 import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -31,6 +37,7 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
 import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
+import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
 import { useQuery } from 'react-apollo-hooks';
 import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 //import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
@@ -178,17 +185,19 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
 
-  const { data, error, loading } = useQuery<GetDoctorProfile, GetDoctorProfile_getDoctorProfile>(
-    GET_DOCTOR_PROFILE
+  const { data, error, loading } = useQuery<GetDoctorDetails, GetDoctorDetails_getDoctorDetails>(
+    GET_DOCTOR_DETAILS
   );
-  const getDoctorProfile = data && data.getDoctorProfile;
+  console.log('GetDoctorDetails', data);
+  const getDoctorProfile = data && data.getDoctorDetails;
   // const {
   //   data: { getDoctorProfile },
   //   error,
   //   loading,
   // } = doctorProfile;
   if (!loading && error) {
-    Alert.alert('Error', 'Unable to get the data');
+    console.log('getDoctorProfileerror', error);
+    //Alert.alert('Error', 'Unable to get the data');
   } else {
     console.log('getDoctorProfile', getDoctorProfile);
   }

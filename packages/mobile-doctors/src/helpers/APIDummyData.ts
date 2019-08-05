@@ -150,6 +150,16 @@ const _doctors = [
       isStarDoctor: false,
     },
   },
+  {
+    profile: {
+      id: '4',
+      firstName: 'Neha',
+      lastName: 'Agarwal',
+      mobileNumber: '',
+      experience: '',
+      isStarDoctor: false,
+    },
+  },
 ] as DoctorProfile[];
 
 export const _filterDoctors = (searchString: string): DoctorProfile[] => {

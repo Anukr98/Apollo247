@@ -90,7 +90,7 @@ export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
 
   return (
     <View style={styles.container}>
-      <SquareCardWithTitle title="Your Profile" containerStyle={{ marginTop: 16 }}>
+      <SquareCardWithTitle title="Your Profile" containerStyle={{ marginTop: 6 }}>
         <View style={styles.cardView}>
           <View style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}>
             {profileData!.profile!.photoUrl ? (
@@ -109,7 +109,7 @@ export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
           </View>
           {profileData!.profile!.isStarDoctor ? <Star style={styles.starIconStyle}></Star> : null}
           <View style={styles.columnContainer}>
-            <Text style={styles.drname}>
+            <Text style={[styles.drname]} numberOfLines={1}>
               {`Dr. ${profileData!.profile!.firstName} ${profileData!.profile!.lastName}`}
             </Text>
             <Text style={styles.drnametext}>

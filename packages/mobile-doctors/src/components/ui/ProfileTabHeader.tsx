@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
   tabContainerShadow: {
     ...theme.viewStyles.whiteRoundedCornerCard,
     borderRadius: 0,
-    marginBottom: 1,
+    marginBottom: 10,
   },
   tabContainer: {
     flexDirection: 'row',

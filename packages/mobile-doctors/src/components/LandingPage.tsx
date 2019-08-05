@@ -5,7 +5,7 @@ import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { fonts } from '@aph/mobile-doctors/src/theme/fonts';
 import * as React from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View, ScrollView } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '././../theme/theme';
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 2,
-    marginTop: 32,
+    marginBottom: 70,
   },
 
   titleTextStyle: {
@@ -99,25 +99,27 @@ export const LandingPage: React.FC<LandingPageProps> = (props) => {
   return (
     <View style={styles.mainView}>
       <View style={styles.statusBarBg} />
-      <View style={{ backgroundColor: '#FFF' }}>
-        <SplashLogo style={styles.splashview} resizeMode="stretch" />
-        <View style={{ margin: 20 }}>
-          <Text style={styles.landingText}>
-            The best way to connect with your {'\n'}patients, grow your practice and {'\n'}enhance
-            your professional network; {'\n'}
-            <Text style={styles.landingText2}>anytime, anywhere :)</Text>
-          </Text>
+      <ScrollView bounces={false}>
+        <View style={{ backgroundColor: '#FFF', marginBottom: 32 }}>
+          <SplashLogo style={styles.splashview} resizeMode="stretch" />
+          <View style={{ margin: 20 }}>
+            <Text style={styles.landingText}>
+              The best way to connect with your {'\n'}patients, grow your practice and {'\n'}enhance
+              your professional network; {'\n'}
+              <Text style={styles.landingText2}>anytime, anywhere :)</Text>
+            </Text>
+          </View>
+          <View style={{ marginTop: 15 }}>
+            <LandingPageImage style={styles.landpageview} resizeMode="stretch" />
+          </View>
         </View>
-        <View style={{ marginTop: 15 }}>
-          <LandingPageImage style={styles.landpageview} resizeMode="stretch" />
-        </View>
-      </View>
-      <Button
-        title="GET STARTED"
-        titleTextStyle={styles.titleTextStyle}
-        style={styles.buttonView}
-        onPress={() => navigateToNextScreen()}
-      />
+        <Button
+          title="GET STARTED"
+          titleTextStyle={styles.titleTextStyle}
+          style={styles.buttonView}
+          onPress={() => navigateToNextScreen()}
+        />
+      </ScrollView>
     </View>
   );
 };

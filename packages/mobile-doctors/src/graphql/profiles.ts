@@ -1,5 +1,64 @@
 import gql from 'graphql-tag';
 
+export const GET_DOCTOR_DETAILS = gql`
+  query GetDoctorDetails {
+    getDoctorDetails {
+      awards
+      city
+      country
+      dateOfBirth
+      doctorType
+      delegateNumber
+      emailAddress
+      experience
+      firebaseToken
+      firstName
+      gender
+      isActive
+      id
+      languages
+      lastName
+      mobileNumber
+      onlineConsultationFees
+      photoUrl
+      physicalConsultationFees
+      qualification
+      registrationNumber
+      salutation
+      specialization
+      state
+      streetLine1
+      streetLine2
+      streetLine3
+      zip
+      specialty {
+        name
+      }
+      consultHours {
+        consultMode
+        consultType
+        startTime
+        endTime
+        weekDay
+      }
+      packages {
+        name
+        fees
+      }
+      doctorHospital {
+        facility {
+          name
+        }
+      }
+      starTeam {
+        associatedDoctor {
+          firstName
+        }
+      }
+    }
+  }
+`;
+
 export const GET_DOCTOR_PROFILE = gql`
   query GetDoctorProfile {
     getDoctorProfile {
