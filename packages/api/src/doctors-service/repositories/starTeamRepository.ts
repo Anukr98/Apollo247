@@ -10,12 +10,6 @@ export class StarTeamRepository extends Repository<StarTeam> {
     });
   }
 
-  /*checkIfAssociatedDoctorIsInStarTeam(associatedDoctor: string) {
-    return this.findOne({
-      where: { associatedDoctor, addedToStarTeam: true },
-    });
-  }*/
-
   ActivateTeamDoctor(id: string) {
     return this.update(id, { isActive: true });
   }
