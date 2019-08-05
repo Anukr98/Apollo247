@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, Typography, Tabs, Tab } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineCard } from 'components/MedicineCard';
@@ -137,11 +137,78 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'rgba(2,71,91,0.1)',
       },
     },
+    deliveryAddress: {
+      backgroundColor: '#f7f8f5',
+      borderRadius: 5,
+    },
+    tabsRoot: {
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+    },
+    tabRoot: {
+      fontSize: 14,
+      fontWeight: 500,
+      textAlign: 'center',
+      padding: '11px 10px',
+      color: '#01475b',
+      opacity: 0.6,
+      minWidth: '50%',
+      textTransform: 'none',
+    },
+    tabSelected: {
+      color: theme.palette.secondary.dark,
+      opacity: 1,
+    },
+    tabsIndicator: {
+      backgroundColor: '#00b38e',
+      height: 5,
+    },
+    rootTabContainer: {
+      padding: 0,
+    },
+    priceSection: {
+      backgroundColor: '#f7f8f5',
+      borderRadius: 10,
+      padding: 10,
+      paddingbottom: 8,
+      color: '#01475b',
+      fontSize: 14,
+      fontWeight: 500,
+    },
+    topSection: {
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      paddingBottom: 5,
+    },
+    priceRow: {
+      display: 'flex',
+      alignItems: 'center',
+      paddingBottom: 5,
+    },
+    bottomSection: {
+      paddingTop: 5,
+    },
+    priceCol: {
+      marginLeft: 'auto',
+    },
+    totalPrice: {
+      marginLeft: 'auto',
+      fontWeight: 'bold',
+    },
+    checkoutBtn: {
+      padding: 15,
+      paddingTop: 10,
+      paddingBottom: 0,
+    },
   };
 });
 
+const TabContainer: React.FC = (props) => {
+  return <Typography component="div">{props.children}</Typography>;
+};
+
 export const Cart: React.FC = (props) => {
   const classes = useStyles();
+  const [tabValue, setTabValue] = useState<number>(0);
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -164,21 +231,32 @@ export const Cart: React.FC = (props) => {
         </Scrollbars>
       </div>
       <div className={classes.rightSection}>
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 189px)'}>
+        <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 239px)' }}>
           <div className={classes.medicineSection}>
             <div className={`${classes.sectionHeader} ${classes.topHeader}`}>
               <span>Where Should We Deliver?</span>
             </div>
             <div className={classes.sectionGroup}>
-              <Link className={classes.serviceType} to="/search-medicines">
-                <span className={classes.serviceImg}>
-                  <img src={require('images/ic_medicines.png')} alt="" />
-                </span>
-                <span className={classes.linkText}>Need to find a medicine/ alternative?</span>
-                <span className={classes.rightArrow}>
-                  <img src={require('images/ic_arrow_right.svg')} alt="" />
-                </span>
-              </Link>
+              <div className={classes.deliveryAddress}>
+                <Tabs
+                  value={tabValue}
+                  classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+                  onChange={(e, newValue) => {
+                    setTabValue(newValue);
+                  }}
+                >
+                  <Tab
+                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                    label="Home Delivery"
+                  />
+                  <Tab
+                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                    label="Store Pick Up"
+                  />
+                </Tabs>
+                {tabValue === 0 && <TabContainer>Mallesh</TabContainer>}
+                {tabValue === 1 && <TabContainer>Test</TabContainer>}
+              </div>
             </div>
             <div className={classes.sectionHeader}>
               <span>Total Charges</span>
@@ -197,8 +275,33 @@ export const Cart: React.FC = (props) => {
                 </span>
               </Link>
             </div>
+            <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
+              <div className={classes.priceSection}>
+                <div className={classes.topSection}>
+                  <div className={classes.priceRow}>
+                    <span>Subtotal</span>
+                    <span className={classes.priceCol}>Rs. 450</span>
+                  </div>
+                  <div className={classes.priceRow}>
+                    <span>Delivery Charges</span>
+                    <span className={classes.priceCol}>+ Rs. 30</span>
+                  </div>
+                </div>
+                <div className={classes.bottomSection}>
+                  <div className={classes.priceRow}>
+                    <span>To Pay</span>
+                    <span className={classes.totalPrice}>Rs. 480 </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </Scrollbars>
+        <div className={classes.checkoutBtn}>
+          <AphButton color="primary" fullWidth>
+            Proceed to pay — RS. 480
+          </AphButton>
+        </div>
       </div>
     </div>
   );
