@@ -146,7 +146,10 @@ interface MessagesObjectProps {
   username: string;
   text: string;
 }
-export const ConsultRoom: React.FC = (props) => {
+interface ConsultRoomProps {
+  toggleTabs: () => void;
+}
+export const ConsultRoom: React.FC = (ConsultRoomProps) => {
   const classes = useStyles();
   const [isCalled, setIsCalled] = useState<boolean>(false);
   const [showVideo, setShowVideo] = useState<boolean>(false);
@@ -261,13 +264,16 @@ export const ConsultRoom: React.FC = (props) => {
           return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
         })
       : '';
+  const toggelChatVideo = () => {
+    console.log(11111111111);
+  };
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
         <Header />
       </div>
       <div className={classes.container}>
-        {showVideo && <Consult />}
+        {showVideo && <Consult toggelChatVideo={() => toggelChatVideo()} />}
         <div>
           {!showVideo && <div className={classes.chatContainer}>{messagessHtml}</div>}
           {!showVideo && (

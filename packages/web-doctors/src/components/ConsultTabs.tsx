@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Theme, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import Icon from '@material-ui/core/Icon';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
@@ -143,19 +142,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-interface MessagesObjectProps {
-  id: string;
-  message: string;
-  username: string;
-  text: string;
-}
 export const ConsultTabs: React.FC = (props) => {
   const classes = useStyles();
-  const [value, setValue] = React.useState(0);
-  const [isCalled, setIsCalled] = useState<boolean>(false);
-  const [showVideo, setShowVideo] = useState<boolean>(false);
-  const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
-  const [messageText, setMessageText] = useState<string>('');
   const [tabValue, setTabValue] = useState<number>(0);
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;

@@ -125,13 +125,14 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-
-export const Consult: React.FC = (props) => {
+interface ConsultProps {
+  toggelChatVideo: () => void;
+}
+export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
   const [publishVideo, setPublishVideo] = React.useState(true);
-  //const [joined, setJoined] = React.useState(false);
   return (
     <div className={classes.consult}>
       <div className={classes.headerSticky}>
@@ -210,7 +211,7 @@ export const Consult: React.FC = (props) => {
           <Grid container alignItems="flex-start" spacing={0}>
             <Grid item lg={1} sm={2} xs={2}>
               {isCall && (
-                <button className={classes.muteBtn} onClick={() => setIscall(false)}>
+                <button className={classes.muteBtn} onClick={() => props.toggelChatVideo()}>
                   <img
                     className={classes.whiteArrow}
                     src={require('images/ic_message.svg')}
