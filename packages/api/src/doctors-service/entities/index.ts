@@ -454,15 +454,18 @@ export class Packages extends BaseEntity {
 //starTeam starts
 @Entity()
 export class StarTeam extends BaseEntity {
-  @Column()
-  createdDate: Date;
-
   @OneToOne((type) => Doctor)
   @JoinColumn()
   associatedDoctor: Doctor;
 
+  @Column()
+  createdDate: Date;
+
   @PrimaryGeneratedColumn('uuid')
   id: String;
+
+  @Column({ default: false })
+  isActive: Boolean;
 
   @ManyToOne((type) => Doctor, (doctor) => doctor.starTeam)
   starDoctor: Doctor;
