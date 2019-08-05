@@ -219,21 +219,21 @@ describe('Login state for single user without Relation status selected', () => {
     cy.should('contain', patient[0].firstName!.toLowerCase());
   });
 
-  it.only('Email validity should not be tested until submit button is blurred', () => {
-    cy.get('input[name="emailAddress"]')
-      .scrollIntoView()
-      .clear()
-      .type('test@test...') //valid email addresses cannot contain consecutive periods
-      // .blur();
-      .focus();
+  // it.only('Email validity should not be tested until submit button is blurred', () => {
+  //   cy.get('input[name="emailAddress"]')
+  //     .scrollIntoView()
+  //     .clear()
+  //     .type('test@test...') //valid email addresses cannot contain consecutive periods
+  //     // .blur();
+  //     .focus();
 
-    // cy.get('button[type="submit"]').should('be.disabled');
-    // cy.get('[data-cypress="NewProfile"]')
-    // .find('button[type="submit"]')
-    // .should('be.disabled');
+  //   // cy.get('button[type="submit"]').should('be.disabled');
+  //   // cy.get('[data-cypress="NewProfile"]')
+  //   // .find('button[type="submit"]')
+  //   // .should('be.disabled');
 
-    // cy.contains('Invalid email address').should('not.exist');
-    // cy.get('input[name="emailAddress"]').blur();
-    // cy.contains('Invalid email address').should('exist');
-  });
+  //   // cy.contains('Invalid email address').should('not.exist');
+  //   // cy.get('input[name="emailAddress"]').blur();
+  //   // cy.contains('Invalid email address').should('exist');
+  // });
 });
