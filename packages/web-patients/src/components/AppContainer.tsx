@@ -1,7 +1,7 @@
 import { setConfig, Config } from 'react-hot-loader';
 import { hot } from 'react-hot-loader/root';
 import React, { useEffect } from 'react';
-import { BrowserRouter, Route } from 'react-router-dom';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Welcome } from 'components/Welcome';
 import { AuthProvider } from 'components/AuthProvider';
@@ -16,11 +16,9 @@ import { DoctorsLanding } from 'components/DoctorsLanding';
 import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
 import { MedicineLanding } from 'components/MedicineLanding';
-<<<<<<< HEAD
 import { CartLanding } from 'components/CartLanding';
-=======
 import { ShoppingCartProvider } from 'components/ShoppingCartProvider';
->>>>>>> Render it in web-patients AppContainer
+import { CartPoc } from 'components/CartPoc';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -43,12 +41,15 @@ const App: React.FC = () => {
   }, [signInError]);
   return (
     <div className={classes.app}>
-      <Route exact path={clientRoutes.welcome()} component={Welcome} />
-      <Route exact path={clientRoutes.patients()} component={PatientsList} />
-      <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
-      <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
-      <AuthRouted exact path={clientRoutes.searchMedicines()} component={MedicineLanding} />
-      <AuthRouted exact path={clientRoutes.cartLanding()} component={CartLanding} />
+      <Switch>
+        <Route exact path={clientRoutes.welcome()} component={Welcome} />
+        <Route exact path={clientRoutes.patients()} component={PatientsList} />
+        <Route exact path={clientRoutes.cartPoc()} component={CartPoc} />
+        <AuthRouted exact path={clientRoutes.cartLanding()} component={CartLanding} />
+        <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
+        <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
+        <AuthRouted exact path={clientRoutes.searchMedicines()} component={MedicineLanding} />
+      </Switch>
     </div>
   );
 };
