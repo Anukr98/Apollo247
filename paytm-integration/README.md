@@ -39,7 +39,7 @@ $ npm start
 ### STEPS
 
 - Open below url in browser!
-  http://localhost:4000/paywithpaytm?amount=10
+  http://localhost:7000/paywithpaytm?amount=10
 
 - Follow these links https://developer.paytm.com/docs/testing-integration/, https://developer.paytm.com/docs/v1/payment-gateway
 
