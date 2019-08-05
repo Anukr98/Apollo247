@@ -174,6 +174,23 @@ describe('UpdatePatient (without uhids)', () => {
       .should('exist');
   });
 
+  // it.only('Email validity should not be tested until submit button is blurred', () => {
+  //   cy.get('input[name="emailAddress"]')
+  //     .scrollIntoView()
+  //     .clear()
+  //     .type('test@test...') //valid email addresses cannot contain consecutive periods
+  //     .blur();
+
+  //   cy.get('button[type="submit"]').should('be.disabled');
+  //   // cy.get('[data-cypress="NewProfile"]')
+  //   // .find('button[type="submit"]')
+  //   // .should('be.disabled');
+
+  //   cy.contains('Invalid email address').should('not.exist');
+  //   cy.get('input[name="emailAddress"]').blur();
+  //   cy.contains('Invalid email address').should('exist');
+  // });
+
   it('Shows genders in the order Male, Female, Other', () => {
     cy.get('[data-cypress="NewProfile"]')
       .find('div[class*="makeStyles-btnGroup"]')
