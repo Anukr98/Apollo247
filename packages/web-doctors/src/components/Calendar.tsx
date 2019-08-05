@@ -5,6 +5,7 @@ import { Header } from 'components/Header';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import { Week as WeekView } from 'components/Calendar/Views/Week';
+import { Month as MonthView } from 'components/Calendar/Views/Month';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -90,6 +91,7 @@ export const Calendar: React.FC = () => {
             </ToggleButtonGroup>
           </div>
           {viewSelection === 'day' && <WeekView />}
+          {viewSelection === 'month' && <MonthView />}
         </div>
       </div>
     </div>

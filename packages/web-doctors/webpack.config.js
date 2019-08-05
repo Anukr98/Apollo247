@@ -79,6 +79,10 @@ module.exports = {
         test: /\.(png|jpg|jpeg|svg|gif)$/,
         use: [urlLoader],
       },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      }
     ],
   },
 
@@ -87,8 +91,8 @@ module.exports = {
     modules: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'node_modules')],
     alias: isLocal
       ? {
-          'react-dom': '@hot-loader/react-dom',
-        }
+        'react-dom': '@hot-loader/react-dom',
+      }
       : undefined,
   },
 
@@ -101,18 +105,18 @@ module.exports = {
 
   devServer: isLocal
     ? {
-        publicPath: '/', // URL path where the webpack files are served from
-        contentBase: distDir, // A directory to serve files non-webpack files from (Absolute path)
-        host: '0.0.0.0',
-        port: process.env.WEB_DOCTORS_PORT,
-        disableHostCheck: true,
-        hot: true,
-        inline: true,
-        historyApiFallback: true,
-        watchOptions: {
-          ignored: [/node_modules([\\]+|\/)+(?!@aph)/],
-        },
-      }
+      publicPath: '/', // URL path where the webpack files are served from
+      contentBase: distDir, // A directory to serve files non-webpack files from (Absolute path)
+      host: '0.0.0.0',
+      port: process.env.WEB_DOCTORS_PORT,
+      disableHostCheck: true,
+      hot: true,
+      inline: true,
+      historyApiFallback: true,
+      watchOptions: {
+        ignored: [/node_modules([\\]+|\/)+(?!@aph)/],
+      },
+    }
     : undefined,
 
   plugins,
