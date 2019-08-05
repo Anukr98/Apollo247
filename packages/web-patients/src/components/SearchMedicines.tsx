@@ -235,8 +235,6 @@ export const SearchMedicines: React.FC = (props) => {
               <span className={classes.count}>03</span>
             </div>
             <MedicineStripCard />
-            <MedicineStripCard />
-            <MedicineStripCard />
           </div>
         </Scrollbars>
       </div>
