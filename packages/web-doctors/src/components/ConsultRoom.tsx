@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       boxShadow: '0 2px 4px 0 #00000026',
       minWidth: 120,
-      marginRight: 30,
+      marginRight: 40,
     },
     boldTxt: {
       fontWeight: 700,
@@ -94,7 +94,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     incomingContainer: {
       textAlign: 'right',
-      paddingRight: 20,
+      paddingRight: 32,
     },
     incomingBtn: {
       position: 'relative',
