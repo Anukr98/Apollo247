@@ -3,15 +3,15 @@ import _uniqueId from 'lodash/uniqueId';
 import { useShoppingCart } from '@aph/shared-ui-components/ShoppingCartProvider';
 
 export const CartPoc: React.FC = (props) => {
-  const { items, addItem, removeItem, updateItem, total } = useShoppingCart();
+  const { cartItems, addCartItem, removeCartItem, updateCartItem, cartTotal } = useShoppingCart();
   return (
     <div style={{ color: 'black', padding: 30 }}>
       <h2>Shopping Cart POC</h2>
-      <h3>Total: ₹{total}</h3>
+      <h3>Total: ₹{cartTotal}</h3>
       <button
         onClick={() => {
           const id = _uniqueId('cart-item-');
-          addItem({
+          addCartItem({
             id,
             name: `Some Medicine ${id}`,
             description: 'Take 1-2 tablets daily',
@@ -26,7 +26,7 @@ export const CartPoc: React.FC = (props) => {
       </button>
       <br />
       <br />
-      {items.map((item) => (
+      {cartItems.map((item) => (
         <div key={item.id}>
           <div>
             <b>
@@ -38,14 +38,14 @@ export const CartPoc: React.FC = (props) => {
             <button
               style={{ display: 'inline-block' }}
               disabled={item.quantity === 1}
-              onClick={() => updateItem({ id: item.id, quantity: item.quantity - 1 })}
+              onClick={() => updateCartItem({ id: item.id, quantity: item.quantity - 1 })}
             >
               -
             </button>
             <div style={{ display: 'inline-block' }}>{item.quantity} Packs</div>
             <button
               style={{ display: 'inline-block' }}
-              onClick={() => updateItem({ id: item.id, quantity: item.quantity + 1 })}
+              onClick={() => updateCartItem({ id: item.id, quantity: item.quantity + 1 })}
             >
               +
             </button>
@@ -56,10 +56,10 @@ export const CartPoc: React.FC = (props) => {
             <input
               type="checkbox"
               checked={item.subscribed}
-              onChange={(e) => updateItem({ id: item.id, subscribed: e.currentTarget.checked })}
+              onChange={(e) => updateCartItem({ id: item.id, subscribed: e.currentTarget.checked })}
             />
           </div>
-          <button onClick={() => removeItem(item.id)}>remove</button>
+          <button onClick={() => removeCartItem(item.id)}>remove</button>
           <hr />
         </div>
       ))}

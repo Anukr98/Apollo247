@@ -11,40 +11,40 @@ export interface ShoppingCartItem {
 }
 
 export interface ShoppingCartContextProps {
-  items: ShoppingCartItem[];
-  addItem: ((item: ShoppingCartItem) => void) | null;
-  removeItem: ((itemId: ShoppingCartItem['id']) => void) | null;
-  updateItem:
+  cartItems: ShoppingCartItem[];
+  addCartItem: ((item: ShoppingCartItem) => void) | null;
+  removeCartItem: ((itemId: ShoppingCartItem['id']) => void) | null;
+  updateCartItem:
     | ((itemUpdates: Partial<ShoppingCartItem> & { id: ShoppingCartItem['id'] }) => void)
     | null;
-  total: number;
+  cartTotal: number;
 }
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
-  items: [],
-  addItem: null,
-  removeItem: null,
-  updateItem: null,
-  total: 0,
+  cartItems: [],
+  addCartItem: null,
+  removeCartItem: null,
+  updateCartItem: null,
+  cartTotal: 0,
 });
 
 export const ShoppingCartProvider: React.FC = (props) => {
-  const [items, setItems] = useState<ShoppingCartContextProps['items']>([]);
+  const [cartItems, setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
 
-  const addItem: ShoppingCartContextProps['addItem'] = (itemToAdd) =>
-    setItems([...items, itemToAdd]);
+  const addCartItem: ShoppingCartContextProps['addCartItem'] = (itemToAdd) =>
+    setCartItems([...cartItems, itemToAdd]);
 
-  const removeItem: ShoppingCartContextProps['removeItem'] = (id) =>
-    setItems(items.filter((item) => item.id !== id));
+  const removeCartItem: ShoppingCartContextProps['removeCartItem'] = (id) =>
+    setCartItems(cartItems.filter((item) => item.id !== id));
 
-  const updateItem: ShoppingCartContextProps['updateItem'] = (itemUpdates) => {
-    const foundIndex = items.findIndex((item) => item.id == itemUpdates.id);
+  const updateCartItem: ShoppingCartContextProps['updateCartItem'] = (itemUpdates) => {
+    const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
     if (foundIndex !== -1) {
-      items[foundIndex] = { ...items[foundIndex], ...itemUpdates };
-      setItems([...items]);
+      cartItems[foundIndex] = { ...cartItems[foundIndex], ...itemUpdates };
+      setCartItems([...cartItems]);
     }
   };
 
-  const total: ShoppingCartContextProps['total'] = items.reduce(
+  const cartTotal: ShoppingCartContextProps['cartTotal'] = cartItems.reduce(
     (currTotal, currItem) => currTotal + currItem.quantity * currItem.price,
     0
   );
@@ -52,11 +52,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
   return (
     <ShoppingCartContext.Provider
       value={{
-        items,
-        addItem,
-        removeItem,
-        updateItem,
-        total,
+        cartItems,
+        addCartItem,
+        removeCartItem,
+        updateCartItem,
+        cartTotal,
       }}
     >
       {props.children}
@@ -67,9 +67,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
 const useShoppingCartContext = () => useContext<ShoppingCartContextProps>(ShoppingCartContext);
 
 export const useShoppingCart = () => ({
-  items: useShoppingCartContext().items,
-  addItem: useShoppingCartContext().addItem!,
-  removeItem: useShoppingCartContext().removeItem!,
-  updateItem: useShoppingCartContext().updateItem!,
-  total: useShoppingCartContext().total,
+  cartItems: useShoppingCartContext().cartItems,
+  addCartItem: useShoppingCartContext().addCartItem!,
+  removeCartItem: useShoppingCartContext().removeCartItem!,
+  updateCartItem: useShoppingCartContext().updateCartItem!,
+  cartTotal: useShoppingCartContext().cartTotal,
 });
