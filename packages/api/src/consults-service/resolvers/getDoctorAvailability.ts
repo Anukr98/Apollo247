@@ -2,9 +2,8 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { addMinutes, differenceInHours } from 'date-fns';
-import { ConsultHoursRepository } from 'doctors-service/repositories/consultHoursRepository';
+import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { getConnection } from 'typeorm';
 
 export const getAvailableSlotsTypeDefs = gql`
   input DoctorAvailabilityInput {
@@ -38,7 +37,7 @@ const getDoctorAvailableSlots: Resolver<
   ConsultServiceContext,
   AvailabilityResult
 > = async (parent, { DoctorAvailabilityInput }, { doctorsDbConnect, consultsDbConnect }) => {
-  const consultHourRep = doctorsDbConnect.getCustomRepository(ConsultHoursRepository);
+  const consultHourRep = doctorsDbConnect.getCustomRepository(DoctorConsultHoursRepository);
   const timeSlots = await consultHourRep.findByDoctorId(DoctorAvailabilityInput.doctorId);
   let availableSlots: string[] = [];
   if (timeSlots) {
