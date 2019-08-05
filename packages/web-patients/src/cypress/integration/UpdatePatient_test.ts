@@ -119,7 +119,7 @@ describe('UpdatePatient (multiple, without uhids)', () => {
       .should('be.disabled');
   });
 
-  it("Won' allow non-dates to be submitted in dateOfBirth field", () => {
+  it("Won't allow non-dates to be submitted in dateOfBirth field", () => {
     cy.get('[data-cypress="NewProfile"]')
       .find('form')
       .find('input[name="dateOfBirth"]')
@@ -143,6 +143,24 @@ describe('UpdatePatient (multiple, without uhids)', () => {
       .find('form')
       .find('button[type="submit"]')
       .should('be.disabled');
+  });
+
+  it.only("Won't validate DOB unless the user dirties the form with an actual validation error", () => {
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('input[name="dateOfBirth"]')
+      .clear()
+      .type('01/01/2099')
+      .blur();
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .should('contain', 'Invalid date of birth');
   });
 
   it("Won't allow impossible dates to be submitted in the dateOfBirth field", () => {
