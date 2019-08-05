@@ -17,7 +17,7 @@ import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
 import { MedicineLanding } from 'components/MedicineLanding';
 import { CartLanding } from 'components/CartLanding';
-import { ShoppingCartProvider } from 'components/ShoppingCartProvider';
+import { ShoppingCartProvider } from '@aph/shared-ui-components/ShoppingCartProvider';
 import { CartPoc } from 'components/CartPoc';
 
 const useStyles = makeStyles((theme: Theme) => {

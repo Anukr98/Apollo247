@@ -1,6 +1,6 @@
 import React from 'react';
 import _uniqueId from 'lodash/uniqueId';
-import { useShoppingCart } from 'components/ShoppingCartProvider';
+import { useShoppingCart } from '@aph/shared-ui-components/ShoppingCartProvider';
 
 export const CartPoc: React.FC = (props) => {
   const { items, addItem, removeItem, updateItem, total } = useShoppingCart();
@@ -29,7 +29,9 @@ export const CartPoc: React.FC = (props) => {
       {items.map((item) => (
         <div key={item.id}>
           <div>
-            <b>{item.name}</b>
+            <b>
+              {item.name} - ₹{item.price}
+            </b>
           </div>
           <div>{item.description}</div>
           <div>
