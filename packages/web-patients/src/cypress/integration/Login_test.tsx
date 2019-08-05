@@ -206,7 +206,7 @@ describe('Login (Firebase)', () => {
   });
 });
 
-describe('Login state for single user without Relation status selected', () => {
+describe('Single user without Relation status selected confirming email', () => {
   const patient = [janeNoRelation];
 
   beforeEach(() => {
@@ -214,26 +214,32 @@ describe('Login state for single user without Relation status selected', () => {
     cy.visitAph(clientRoutes.welcome()).wait(500);
   });
 
-  it('Status should autofill to Relation.ME, as indicated in welcome banner', () => {
-    cy.get('[data-cypress="HeroBanner"]').click({ force: true });
-    cy.should('contain', patient[0].firstName!.toLowerCase());
+  it('Email validity should not be tested until submit button is blurred', () => {
+    cy.get('input[name="emailAddress"]')
+      .scrollIntoView()
+      .clear()
+      .type('test@test...'); //valid email addresses cannot contain consecutive periods
+
+    cy.get('[data-cypress="NewProfile"]') // button not disabled, but I believe that's the TDD goal
+      .find('button[type="submit"]')
+      .should('be.disabled');
+
+    cy.contains('Invalid email address').should('not.exist');
+    cy.get('input[name="emailAddress"]').blur();
+    cy.contains('Invalid email address').should('exist');
   });
 
-  // it.only('Email validity should not be tested until submit button is blurred', () => {
-  //   cy.get('input[name="emailAddress"]')
-  //     .scrollIntoView()
-  //     .clear()
-  //     .type('test@test...') //valid email addresses cannot contain consecutive periods
-  //     // .blur();
-  //     .focus();
+  it('A valid email should have an enabled submit button', () => {
+    cy.get('input[name="emailAddress"]')
+      .scrollIntoView()
+      .clear()
+      .type('test@test.com')
+      .blur();
 
-  //   // cy.get('button[type="submit"]').should('be.disabled');
-  //   // cy.get('[data-cypress="NewProfile"]')
-  //   // .find('button[type="submit"]')
-  //   // .should('be.disabled');
+    cy.get('[data-cypress="NewProfile"]')
+      .find('button[type="submit"]')
+      .should('be.enabled');
 
-  //   // cy.contains('Invalid email address').should('not.exist');
-  //   // cy.get('input[name="emailAddress"]').blur();
-  //   // cy.contains('Invalid email address').should('exist');
-  // });
+    cy.contains('Invalid email address').should('not.exist');
+  });
 });

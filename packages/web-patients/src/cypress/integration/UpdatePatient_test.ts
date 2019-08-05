@@ -174,23 +174,6 @@ describe('UpdatePatient (without uhids)', () => {
       .should('exist');
   });
 
-  it('Email validity should not be tested until submit button is blurred', () => {
-    cy.get('input[name="emailAddress"]')
-      .scrollIntoView()
-      .clear()
-      .type('test@test...') //valid email addresses cannot contain consecutive periods
-      .blur();
-
-    cy.get('button[type="submit"]').should('be.disabled');
-    // cy.get('[data-cypress="NewProfile"]')
-    // .find('button[type="submit"]')
-    // .should('be.disabled');
-
-    cy.contains('Invalid email address').should('not.exist');
-    cy.get('input[name="emailAddress"]').blur();
-    cy.contains('Invalid email address').should('exist');
-  });
-
   it('Shows genders in the order Male, Female, Other', () => {
     cy.get('[data-cypress="NewProfile"]')
       .find('div[class*="makeStyles-btnGroup"]')
@@ -245,5 +228,19 @@ describe('UpdatePatient (without uhids)', () => {
     cy.get('[data-cypress="HeroBanner"]')
       .contains(janeTheApostropheLover.firstName!.toLowerCase())
       .should('exist');
+  });
+});
+
+describe('Login state for single user without Relation status selected', () => {
+  const patient = [janeNoRelation];
+
+  beforeEach(() => {
+    cy.signIn(patient);
+    cy.visitAph(clientRoutes.welcome()).wait(500);
+  });
+
+  it('Status should autofill to Relation.ME, as indicated in welcome banner', () => {
+    cy.get('[data-cypress="HeroBanner"]').click({ force: true });
+    cy.should('contain', patient[0].firstName!.toLowerCase());
   });
 });
