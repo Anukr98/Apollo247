@@ -286,7 +286,7 @@ export const ConsultRoom: React.FC = (ConsultRoomProps) => {
                     <div>
                       <span>Ringing</span>
                       <img
-                        src={require('images/ic_stopcall.svg')}
+                        src={require('images/ic_callpick.svg')}
                         className={classes.endcall}
                         onClick={() => setShowVideo(true)}
                       />

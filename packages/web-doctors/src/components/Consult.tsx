@@ -91,9 +91,12 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     videoButtonContainer: {
-      borderTop: '1px solid #02475b',
+      zIndex: 9,
       paddingTop: 20,
-      margin: '0 20px 0 20px',
+      margin: 0,
+      position: 'absolute',
+      width: '100%',
+      bottom: 0,
       '& button': {
         backgroundColor: 'transparent',
         border: 'none',
@@ -118,6 +121,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       margin: 20,
       overflow: 'hidden',
+      position: 'relative',
     },
     hideVideoContainer: {
       right: 20,
@@ -133,6 +137,24 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     hidePublisherVideo: {
       display: 'none',
+    },
+    minimizeBtns: {
+      position: 'absolute',
+      width: 170,
+      height: 190,
+      zIndex: 9,
+    },
+    stopCallIcon: {
+      width: 40,
+      position: 'absolute',
+      bottom: 20,
+      right: 10,
+    },
+    fullscreenIcon: {
+      width: 34,
+      position: 'absolute',
+      bottom: 26,
+      left: 10,
     },
   };
 });
@@ -167,82 +189,93 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 <OTStreams>
                   <OTSubscriber />
                 </OTStreams>
+                {props.showVideoChat && (
+                  <div className={classes.minimizeBtns}>
+                    <img src={require('images/ic_stopcall.svg')} className={classes.stopCallIcon} />
+                    <img
+                      src={require('images/ic_maximize.svg')}
+                      className={classes.fullscreenIcon}
+                      onClick={() => props.toggelChatVideo()}
+                    />
+                  </div>
+                )}
+                {!props.showVideoChat && (
+                  <div className={classes.videoButtonContainer}>
+                    <Grid container alignItems="flex-start" spacing={0}>
+                      <Grid item lg={1} sm={2} xs={2}>
+                        {isCall && (
+                          <button
+                            className={classes.muteBtn}
+                            onClick={() => props.toggelChatVideo()}
+                          >
+                            <img
+                              className={classes.whiteArrow}
+                              src={require('images/ic_message.svg')}
+                              alt="msgicon"
+                            />
+                          </button>
+                        )}
+                      </Grid>
+                      <Grid item lg={10} sm={8} xs={8} className={classes.VideoAlignment}>
+                        {isCall && mute && (
+                          <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
+                            <img
+                              className={classes.whiteArrow}
+                              src={require('images/ic_mute.svg')}
+                              alt="mute"
+                            />
+                          </button>
+                        )}
+                        {isCall && !mute && (
+                          <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
+                            <img
+                              className={classes.whiteArrow}
+                              src={require('images/ic_unmute.svg')}
+                              alt="unmute"
+                            />
+                          </button>
+                        )}
+                        {isCall && publishVideo && (
+                          <button
+                            className={classes.muteBtn}
+                            onClick={() => setPublishVideo(!publishVideo)}
+                          >
+                            <img
+                              className={classes.whiteArrow}
+                              src={require('images/ic_videoon.svg')}
+                              alt="videoon"
+                            />
+                          </button>
+                        )}
+                        {isCall && !publishVideo && (
+                          <button
+                            className={classes.muteBtn}
+                            onClick={() => setPublishVideo(!publishVideo)}
+                          >
+                            <img
+                              className={classes.whiteArrow}
+                              src={require('images/ic_videooff.svg')}
+                              alt="videooff"
+                            />
+                          </button>
+                        )}
+                        {isCall && (
+                          <button onClick={() => setIscall(false)}>
+                            <img
+                              className={classes.whiteArrow}
+                              src={require('images/ic_stopcall.svg')}
+                              alt="stopcall"
+                            />
+                          </button>
+                        )}
+                      </Grid>
+                    </Grid>
+                  </div>
+                )}
               </div>
             </OTSession>
           )}
         </div>
-        {!props.showVideoChat && (
-          <div className={classes.videoButtonContainer}>
-            <Grid container alignItems="flex-start" spacing={0}>
-              <Grid item lg={1} sm={2} xs={2}>
-                {isCall && (
-                  <button className={classes.muteBtn} onClick={() => props.toggelChatVideo()}>
-                    <img
-                      className={classes.whiteArrow}
-                      src={require('images/ic_message.svg')}
-                      alt="msgicon"
-                    />
-                  </button>
-                )}
-              </Grid>
-              <Grid item lg={10} sm={8} xs={8} className={classes.VideoAlignment}>
-                {isCall && mute && (
-                  <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
-                    <img
-                      className={classes.whiteArrow}
-                      src={require('images/ic_mute.svg')}
-                      alt="mute"
-                    />
-                  </button>
-                )}
-                {isCall && !mute && (
-                  <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
-                    <img
-                      className={classes.whiteArrow}
-                      src={require('images/ic_unmute.svg')}
-                      alt="unmute"
-                    />
-                  </button>
-                )}
-                {isCall && publishVideo && (
-                  <button
-                    className={classes.muteBtn}
-                    onClick={() => setPublishVideo(!publishVideo)}
-                  >
-                    <img
-                      className={classes.whiteArrow}
-                      src={require('images/ic_videoon.svg')}
-                      alt="videoon"
-                    />
-                  </button>
-                )}
-                {isCall && !publishVideo && (
-                  <button
-                    className={classes.muteBtn}
-                    onClick={() => setPublishVideo(!publishVideo)}
-                  >
-                    <img
-                      className={classes.whiteArrow}
-                      src={require('images/ic_videooff.svg')}
-                      alt="videooff"
-                    />
-                  </button>
-                )}
-              </Grid>
-              <Grid item lg={1} sm={2} xs={2}>
-                {isCall && (
-                  <button className={classes.stopCall} onClick={() => setIscall(false)}>
-                    <img
-                      className={classes.whiteArrow}
-                      src={require('images/ic_stopcall.svg')}
-                      alt="stopcall"
-                    />
-                  </button>
-                )}
-              </Grid>
-            </Grid>
-          </div>
-        )}
       </div>
     </div>
   );
