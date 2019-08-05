@@ -1,7 +1,6 @@
 import React from 'react';
 import { Theme } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
-import { Header } from 'components/Header';
 import { makeStyles } from '@material-ui/styles';
 import { OTSession, OTPublisher, OTStreams, OTSubscriber } from 'opentok-react';
 
@@ -120,13 +119,26 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 20,
       overflow: 'hidden',
     },
+    hideVideoContainer: {
+      right: 20,
+      width: 170,
+      height: 170,
+      position: 'absolute',
+      bottom: 125,
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
+      borderRadius: 10,
+    },
     VideoAlignment: {
       textAlign: 'center',
+    },
+    hidePublisherVideo: {
+      display: 'none',
     },
   };
 });
 interface ConsultProps {
   toggelChatVideo: () => void;
+  showVideoChat: boolean;
 }
 export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
@@ -135,147 +147,102 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [publishVideo, setPublishVideo] = React.useState(true);
   return (
     <div className={classes.consult}>
-      <div className={classes.headerSticky}>
-        <Header />
-      </div>
-      <div className={classes.container}>
-        {/* <div className={classes.breadcrumbs}>
-          <div>
-            <div className={classes.backArrow}>
-              <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-              <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-            </div>
-          </div>
-          CONSULT ROOM <span className={classes.timeLeft}> &nbsp; | &nbsp; Time Left 08:25</span>
-        </div> */}
-        <div>
+      <div>
+        <div className={props.showVideoChat ? 'chatVideo' : ''}>
           {isCall && (
             <OTSession
               apiKey="46346642"
               sessionId="1_MX40NjM0NjY0Mn5-MTU2NDI5MDk1MjA2Nn5UV2E1Mmw3V0ovWTdhTVR6akltYWtlWVl-UH4"
               token="T1==cGFydG5lcl9pZD00NjM0NjY0MiZzaWc9YzRhYTk1YmU1ODJiYzMzMmZlMGExM2IxNjZmOTJmMDVkYzQ5OGYxOTpzZXNzaW9uX2lkPTFfTVg0ME5qTTBOalkwTW41LU1UVTJOREk1TURrMU1qQTJObjVVVjJFMU1tdzNWMG92V1RkaFRWUjZha2x0WVd0bFdWbC1VSDQmY3JlYXRlX3RpbWU9MTU2NDI5MjAzNyZub25jZT0wLjE2NTYxNTI3NzMyOTg4NjQ2JnJvbGU9cHVibGlzaGVyJmV4cGlyZV90aW1lPTE1NjY4ODQwMzcmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0="
-              eventHandlers={{
-                streamCreated: (event: any) => {
-                  console.log('Publisher stream created!');
-                },
-                streamDestroyed: (event: any) => {
-                  console.log('Publisher stream destroyed!');
-                },
-                sessionConnected: (event: any) => {
-                  console.log('sessionConnected!', event);
-                },
-                sessionDisconnected: (event: any) => {
-                  console.log('sessionConnected!', event);
-                },
-                connectionCreated: (event: any) => {
-                  console.log('session connectionCreated!', event);
-                },
-                connectionDestroyed: (event: any) => {
-                  //setIscall(false);
-                },
-              }}
             >
               <OTPublisher
+                className={props.showVideoChat ? classes.hidePublisherVideo : ''}
                 properties={{ publishAudio: mute, publishVideo: publishVideo }}
-                eventHandlers={{
-                  streamCreated: (event: any) => {
-                    console.log('Publisher stream created111!');
-                  },
-                  streamDestroyed: (event: any) => {
-                    console.log('Publisher stream destroyed1111!');
-                  },
-                }}
               />
-              <div className={classes.videoContainer}>
+              <div
+                className={
+                  props.showVideoChat ? classes.hideVideoContainer : classes.videoContainer
+                }
+              >
                 <OTStreams>
-                  <OTSubscriber
-                    eventHandlers={{
-                      error: (error: any) => {
-                        console.log(`There was an error with the subscriber: ${error}`);
-                      },
-                      connected: (event: any) => {
-                        console.log('Subscribe stream connected222222!', event);
-                        //setJoined(true);
-                      },
-                      disconnected: (event: any) => {
-                        console.log('Subscribe stream disconnected222222222!', event);
-                      },
-                    }}
-                  />
+                  <OTSubscriber />
                 </OTStreams>
               </div>
             </OTSession>
           )}
         </div>
-        <div className={classes.videoButtonContainer}>
-          <Grid container alignItems="flex-start" spacing={0}>
-            <Grid item lg={1} sm={2} xs={2}>
-              {isCall && (
-                <button className={classes.muteBtn} onClick={() => props.toggelChatVideo()}>
-                  <img
-                    className={classes.whiteArrow}
-                    src={require('images/ic_message.svg')}
-                    alt="msgicon"
-                  />
-                </button>
-              )}
+        {!props.showVideoChat && (
+          <div className={classes.videoButtonContainer}>
+            <Grid container alignItems="flex-start" spacing={0}>
+              <Grid item lg={1} sm={2} xs={2}>
+                {isCall && (
+                  <button className={classes.muteBtn} onClick={() => props.toggelChatVideo()}>
+                    <img
+                      className={classes.whiteArrow}
+                      src={require('images/ic_message.svg')}
+                      alt="msgicon"
+                    />
+                  </button>
+                )}
+              </Grid>
+              <Grid item lg={10} sm={8} xs={8} className={classes.VideoAlignment}>
+                {isCall && mute && (
+                  <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
+                    <img
+                      className={classes.whiteArrow}
+                      src={require('images/ic_mute.svg')}
+                      alt="mute"
+                    />
+                  </button>
+                )}
+                {isCall && !mute && (
+                  <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
+                    <img
+                      className={classes.whiteArrow}
+                      src={require('images/ic_unmute.svg')}
+                      alt="unmute"
+                    />
+                  </button>
+                )}
+                {isCall && publishVideo && (
+                  <button
+                    className={classes.muteBtn}
+                    onClick={() => setPublishVideo(!publishVideo)}
+                  >
+                    <img
+                      className={classes.whiteArrow}
+                      src={require('images/ic_videoon.svg')}
+                      alt="videoon"
+                    />
+                  </button>
+                )}
+                {isCall && !publishVideo && (
+                  <button
+                    className={classes.muteBtn}
+                    onClick={() => setPublishVideo(!publishVideo)}
+                  >
+                    <img
+                      className={classes.whiteArrow}
+                      src={require('images/ic_videooff.svg')}
+                      alt="videooff"
+                    />
+                  </button>
+                )}
+              </Grid>
+              <Grid item lg={1} sm={2} xs={2}>
+                {isCall && (
+                  <button className={classes.stopCall} onClick={() => setIscall(false)}>
+                    <img
+                      className={classes.whiteArrow}
+                      src={require('images/ic_stopcall.svg')}
+                      alt="stopcall"
+                    />
+                  </button>
+                )}
+              </Grid>
             </Grid>
-            <Grid item lg={10} sm={8} xs={8} className={classes.VideoAlignment}>
-              {!isCall && (
-                <button className={classes.muteBtn} onClick={() => setIscall(true)}>
-                  Join Call
-                </button>
-              )}
-              {isCall && mute && (
-                <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
-                  <img
-                    className={classes.whiteArrow}
-                    src={require('images/ic_mute.svg')}
-                    alt="mute"
-                  />
-                </button>
-              )}
-              {isCall && !mute && (
-                <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
-                  <img
-                    className={classes.whiteArrow}
-                    src={require('images/ic_unmute.svg')}
-                    alt="unmute"
-                  />
-                </button>
-              )}
-              {isCall && publishVideo && (
-                <button className={classes.muteBtn} onClick={() => setPublishVideo(!publishVideo)}>
-                  <img
-                    className={classes.whiteArrow}
-                    src={require('images/ic_videoon.svg')}
-                    alt="videoon"
-                  />
-                </button>
-              )}
-              {isCall && !publishVideo && (
-                <button className={classes.muteBtn} onClick={() => setPublishVideo(!publishVideo)}>
-                  <img
-                    className={classes.whiteArrow}
-                    src={require('images/ic_videooff.svg')}
-                    alt="videooff"
-                  />
-                </button>
-              )}
-            </Grid>
-            <Grid item lg={1} sm={2} xs={2}>
-              {isCall && (
-                <button className={classes.stopCall} onClick={() => setIscall(false)}>
-                  <img
-                    className={classes.whiteArrow}
-                    src={require('images/ic_stopcall.svg')}
-                    alt="stopcall"
-                  />
-                </button>
-              )}
-            </Grid>
-          </Grid>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

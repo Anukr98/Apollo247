@@ -3,7 +3,6 @@ import { Theme, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphInput } from '@aph/web-ui-components';
 import { Consult } from 'components/Consult';
-import { Header } from 'components/Header';
 import Pubnub from 'pubnub';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -153,6 +152,7 @@ export const ConsultRoom: React.FC = (ConsultRoomProps) => {
   const classes = useStyles();
   const [isCalled, setIsCalled] = useState<boolean>(false);
   const [showVideo, setShowVideo] = useState<boolean>(false);
+  const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
 
@@ -265,17 +265,18 @@ export const ConsultRoom: React.FC = (ConsultRoomProps) => {
         })
       : '';
   const toggelChatVideo = () => {
-    console.log(11111111111);
+    setShowVideoChat(!showVideoChat);
   };
   return (
     <div className={classes.consultRoom}>
-      <div className={classes.headerSticky}>
-        <Header />
-      </div>
       <div className={classes.container}>
-        {showVideo && <Consult toggelChatVideo={() => toggelChatVideo()} />}
+        {showVideo && (
+          <Consult toggelChatVideo={() => toggelChatVideo()} showVideoChat={showVideoChat} />
+        )}
         <div>
-          {!showVideo && <div className={classes.chatContainer}>{messagessHtml}</div>}
+          {(!showVideo || showVideoChat) && (
+            <div className={classes.chatContainer}>{messagessHtml}</div>
+          )}
           {!showVideo && (
             <div>
               {isCalled && (
@@ -295,12 +296,17 @@ export const ConsultRoom: React.FC = (ConsultRoomProps) => {
               )}
             </div>
           )}
-          {!showVideo && (
+          {(!showVideo || showVideoChat) && (
             <div className={classes.chatFooterSection}>
               <AphInput
                 className={classes.inputWidth}
                 inputProps={{ type: 'text' }}
                 value={messageText}
+                onKeyPress={(e) => {
+                  if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
+                    send();
+                  }
+                }}
                 onChange={(event) => {
                   setMessageText(event.currentTarget.value);
                 }}
