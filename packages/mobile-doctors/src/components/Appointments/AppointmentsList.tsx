@@ -1,149 +1,101 @@
-import { CalenderCard } from '@aph/mobile-doctors/src/components/Appointments/CalenderCard';
+import { CalendarCard } from '@aph/mobile-doctors/src/components/Appointments/CalendarCard';
+import {
+  MissedAppointmentIcon,
+  NextAppointmentIcon,
+  PastAppointmentIcon,
+} from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Appointments, DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { ScrollView } from 'react-navigation';
 
-const styles = StyleSheet.create({});
-
-type AppointmentStatus = 'prev' | 'current' | 'next';
+const styles = StyleSheet.create({
+  leftTimeLineContainer: {
+    // marginBottom: -40,
+    marginRight: 9,
+    marginLeft: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  verticalLine: {
+    flex: 1,
+    width: 2,
+  },
+});
 
 export interface AppointmentsListProps {
-  getDoctorProfile: DoctorProfile;
+  doctorProfile: DoctorProfile;
 }
 
 export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
-  const getDoctorProfile = props.getDoctorProfile;
+  const getDoctorProfile = props.doctorProfile;
 
-  const getStatusCircle = (status: AppointmentStatus) => {
-    const color = status == 'current' ? '#0087ba' : '#ff748e';
-    if (status == 'current')
-      return (
+  const getStatusCircle = (status: Appointments['timeslottype']) =>
+    status == 'past' ? (
+      <PastAppointmentIcon />
+    ) : status == 'missed' ? (
+      <MissedAppointmentIcon />
+    ) : (
+      <NextAppointmentIcon />
+    );
+
+  const renderLeftTimeLineView = (
+    status: Appointments['timeslottype'],
+    showTop: boolean,
+    showBottom: boolean
+  ) => {
+    return (
+      <View style={styles.leftTimeLineContainer}>
         <View
-          style={{
-            marginLeft: 20,
-            borderRadius: 10,
-            height: 20,
-            width: 20,
-            backgroundColor: color,
-          }}
-        ></View>
-      );
-    return (
-      <View
-        style={{
-          marginLeft: 20,
-          borderRadius: 10,
-          height: 20,
-          width: 20,
-          backgroundColor: color,
-        }}
-      />
-    );
-  };
-  const renderLeftTimeLineView = () => {
-    // console.log('prev', type.prev);
-    // console.log('current', type.current);
-    // console.log('next', type.next);
-    return (
-      <View
-        style={{
-          // flex: 1,
-          height: 100,
-          width: 2,
-          backgroundColor: true ? '#ff748e' : '#f7f7f7',
-          marginRight: 9,
-          marginLeft: 30,
-        }}
-      />
-    );
-  };
-
-  const showText = (apdata: Appointments) => {
-    return (
-      <View>
-        <Text
           style={[
+            styles.verticalLine,
             {
-              color:
-                apdata.timeslottype == 'MISSED'
-                  ? '#890000'
-                  : apdata.timeslottype == 'UP NEXT'
-                  ? '#ff748e'
-                  : apdata.timeslottype == ''
-                  ? '#0087ba'
-                  : '#0087ba',
-              marginLeft: 50,
-              marginTop: 20,
+              backgroundColor: showTop ? '#0087ba' : '#f7f7f7',
             },
-            apdata.timeslottype == ''
-              ? theme.fonts.IBMPlexSansMedium(12)
-              : theme.fonts.IBMPlexSansBold(12),
-            ,
           ]}
-        >
-          {apdata.timings}
-        </Text>
+        />
+        {getStatusCircle(status)}
+        <View
+          style={[
+            styles.verticalLine,
+            {
+              backgroundColor: showBottom ? '#0087ba' : '#f7f7f7',
+            },
+          ]}
+        />
       </View>
     );
   };
 
   return (
-    <ScrollView bounces={false}>
-      <View style={{ backgroundColor: '#f7f7f7', flex: 1, flexDirection: 'row' }}>
-        <View style={{ marginTop: 70 }}>
-          {getDoctorProfile.appointments.map((i, index, array) => {
-            return (
-              <>
-                {getStatusCircle('current')}
-                {index == array.length - 1 ? null : renderLeftTimeLineView()}
-              </>
-            );
-          })}
-        </View>
-
-        <View>
-          {getDoctorProfile.appointments.map((i, index, array) => {
-            console.log('array', array);
-            const containerStyle =
-              i.timeslottype == 'MISSED'
-                ? {
-                    borderColor: '#e50000',
-                    borderWidth: 1,
-                    backgroundColor: '#f0f4f5',
-                  }
-                : i.timeslottype == 'UP NEXT'
-                ? {
-                    borderColor: '#ff748e',
-                    borderWidth: 2,
-                    backgroundColor: '#ffffff',
-                  }
-                : i.timeslottype == 'OLD'
-                ? {
-                    borderColor: '#0087ba',
-                    borderWidth: 2,
-                    backgroundColor: '#ffffff',
-                  }
-                : {
-                    borderColor: 'rgba(2, 71, 91, 0.1)',
-                    borderWidth: 1,
-                    backgroundColor: '#f0f4f5',
-                  };
-            return (
-              <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-                <View>
-                  {showText(i)}
-                  <CalenderCard
-                    doctorname={i.doctorname}
-                    type={i.type}
-                    containerStyle={containerStyle}
-                  />
-                </View>
-              </View>
-            );
-          })}
-        </View>
+    <ScrollView>
+      <View style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+        {getDoctorProfile.appointments.map((i, index, array) => {
+          return (
+            <View
+              style={{
+                flex: 1,
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {renderLeftTimeLineView(
+                i.timeslottype,
+                index == 0 ? false : true,
+                index == array.length - 1 ? false : true
+              )}
+              <CalendarCard
+                onPress={(id) => {}}
+                doctorname={i.doctorname}
+                wayOfContact={i.wayOfContact}
+                type={i.timeslottype}
+                timing={i.timings}
+                symptoms={['FEVER', 'COUGH & COLD']}
+              />
+            </View>
+          );
+        })}
       </View>
     </ScrollView>
   );
