@@ -10,7 +10,7 @@ export class StarTeamRepository extends Repository<StarTeam> {
     });
   }
 
-  ActivateTeamDoctor(id: string) {
+  activateTeamDoctor(id: string) {
     return this.update(id, { isActive: true });
   }
 

@@ -80,7 +80,7 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       const dbConnect = getConnection('doctorsDbConnection');
 
       const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
-      const doctordata = (await doctorRepository.getDoctorId(firebaseUid)) as Doctor;
+      const doctordata = (await doctorRepository.getDoctorDetails(firebaseUid)) as Doctor;
       const currentUser = doctordata;
 
       const context: DoctorsServiceContext = {

@@ -3,7 +3,7 @@ import { Doctor } from 'doctors-service/entities';
 
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
-  getDoctorId(firebaseToken: string) {
+  getDoctorDetails(firebaseToken: string) {
     return this.findOne({
       where: [{ firebaseToken }],
     });
