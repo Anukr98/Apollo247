@@ -6,6 +6,8 @@ import Scrollbars from 'react-custom-scrollbars';
 import { MedicineCard } from 'components/MedicineCard';
 import { MedicineStripCard } from 'components/MedicineStripCard';
 import { AphButton } from '@aph/web-ui-components';
+import { HomeDelivery } from 'components/HomeDelivery';
+import { StorePickUp } from 'components/StorePickUp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -86,7 +88,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
     },
     marginNone: {
-      marginBottom: 'none',
+      marginBottom: 5,
     },
     bottomImgGroup: {
       marginTop: 40,
@@ -212,7 +214,7 @@ export const Cart: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 214px)'}>
+        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 148px)'}>
           <div className={classes.medicineListGroup}>
             <div className={classes.sectionHeader}>
               <span>Items In Your Cart</span>
@@ -254,8 +256,16 @@ export const Cart: React.FC = (props) => {
                     label="Store Pick Up"
                   />
                 </Tabs>
-                {tabValue === 0 && <TabContainer>Mallesh</TabContainer>}
-                {tabValue === 1 && <TabContainer>Test</TabContainer>}
+                {tabValue === 0 && (
+                  <TabContainer>
+                    <HomeDelivery />
+                  </TabContainer>
+                )}
+                {tabValue === 1 && (
+                  <TabContainer>
+                    <StorePickUp />
+                  </TabContainer>
+                )}
               </div>
             </div>
             <div className={classes.sectionHeader}>
@@ -275,7 +285,7 @@ export const Cart: React.FC = (props) => {
                 </span>
               </Link>
             </div>
-            <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
+            <div className={`${classes.sectionGroup}`}>
               <div className={classes.priceSection}>
                 <div className={classes.topSection}>
                   <div className={classes.priceRow}>
