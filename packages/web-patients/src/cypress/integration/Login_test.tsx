@@ -31,9 +31,30 @@ describe('Login', () => {
     cy.get('[data-cypress="SignIn"]')
       .find('input[name*="mobileNumber"]')
       .type('0123456789');
+
     cy.get('[data-cypress="SignIn"]')
       .find('button[type="submit"]')
       .should('be.disabled');
+  });
+
+  it('Error message should display immediately upon entering an invalid number starting with a digit 0-5', () => {
+    for (let digit = 0; digit <= 5; digit++) {
+      cy.get('[data-cypress="SignIn"]')
+
+        .find('input[name*="mobileNumber"]')
+        .clear()
+
+        .type(String(digit));
+
+      cy.get('div[class*="Mui-error"]').should('contain', 'This seems like a wrong number');
+    }
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[name*="mobileNumber"]')
+      .clear()
+      .type('6');
+
+    cy.get('div[class*="Mui-error"]').should('not.contain', 'This seems like a wrong number');
   });
 
   it('There should be validation upon entering mobile number starting with zero', () => {
