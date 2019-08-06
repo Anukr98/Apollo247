@@ -13,7 +13,8 @@ const useStyles = makeStyles({
     width: '15%',
     display: 'inline-block',
     textAlign: 'center',
-    padding: '9px 16px 16px 16px',
+    padding: '21px 16px',
+    verticalAlign: 'top',
     marginLeft: '-38px',
     borderRadius: '10px 0 0 10px',
     backgroundColor: '#f7f7f7',
@@ -59,6 +60,35 @@ const useStyles = makeStyles({
   monthArrow: {
     width: 28,
   },
+  datepicker: {
+    '& div': {
+      '&:before': {
+        borderBottom: '#f7f7f7 !important',
+      },
+      '&:after': {
+        borderBottom: '#f7f7f7 !important',
+      },
+    },
+
+    '& input': {
+      color: '#02475b',
+      fontSize: 18,
+      fontWeight: 600,
+      borderBottom: 'none',
+      '&:hover': {
+        borderBottom: 'none',
+        '&:before': {
+          borderBottom: 'none',
+        },
+      },
+      '&:before': {
+        borderBottom: 'none',
+      },
+      '&:after': {
+        borderBottom: 'none',
+      },
+    },
+  },
 });
 export const MonthList: React.FC<MonthListProps> = ({ date, onChange }) => {
   const classes = useStyles();
@@ -77,6 +107,7 @@ export const MonthList: React.FC<MonthListProps> = ({ date, onChange }) => {
           autoOk
           format="MMM"
           variant="inline"
+          className={classes.datepicker}
           value={selectedDate}
           onChange={(date) => {
             handleDateChange(date);
