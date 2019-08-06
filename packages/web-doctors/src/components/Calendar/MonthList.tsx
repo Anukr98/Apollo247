@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { makeStyles } from '@material-ui/styles';
+import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { DatePicker, MuiPickersUtilsProvider, MaterialUiPickersDate } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
+import { createMuiTheme } from '@material-ui/core';
 
 export interface MonthListProps {
   date?: Date;
@@ -101,6 +102,32 @@ const useStyles = makeStyles({
     }
   }
 });
+
+const defaultMaterialTheme = createMuiTheme({
+  palette: {
+    primary: {
+      main: '#00b38e',
+    },
+    text: {
+      primary: '#00b38e',
+    },
+    action: {
+      selected: '#fff',
+    },
+  },
+  typography: {
+    fontWeightMedium: 600,
+    htmlFontSize: 14,
+    fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
+    body1: {
+      fontSize: 14,
+    },
+    body2: {
+      fontWeight: 600,
+    },
+  },
+});
+
 export const MonthList: React.FC<MonthListProps> = ({ date, onChange }) => {
   const classes = useStyles();
   const [selectedDate, handleDateChange] = useState<MaterialUiPickersDate>(new Date());
@@ -113,27 +140,29 @@ export const MonthList: React.FC<MonthListProps> = ({ date, onChange }) => {
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <div className={classes.monthList}>
-        <DatePicker
-          disableToolbar
-          inputVariant="standard"
-          autoOk
-          format="MMM"
-          variant="inline"
-          className={classes.datepicker}
-          onOpen={() => setIsOpen(true)}
-          onClose={() => setIsOpen(false)}
-          value={selectedDate}
-          InputProps={{
-            className: `${classes.datePickerOpen} ${isOpen ? '' : classes.datePickerClose}`
-          }}
-          onChange={(date) => {
-            handleDateChange(date);
+        <ThemeProvider theme={defaultMaterialTheme}>
+          <DatePicker
+            disableToolbar
+            inputVariant="standard"
+            autoOk
+            format="MMM"
+            variant="inline"
+            className={classes.datepicker}
+            onOpen={() => setIsOpen(true)}
+            onClose={() => setIsOpen(false)}
+            value={selectedDate}
+            InputProps={{
+              className: `${classes.datePickerOpen} ${isOpen ? '' : classes.datePickerClose}`
+            }}
+            onChange={(date) => {
+              handleDateChange(date);
 
-            if (onChange) {
-              onChange(date);
-            }
-          }}
-        />
+              if (onChange) {
+                onChange(date);
+              }
+            }}
+          />
+        </ThemeProvider>
       </div>
     </MuiPickersUtilsProvider>
   );
