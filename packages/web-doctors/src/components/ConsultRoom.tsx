@@ -25,13 +25,16 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 0,
     },
     chatContainer: {
-      marginTop: 40,
+      paddingTop: 40,
+      maxHeight: 'calc(100vh - 330px)',
+      overflowY: 'auto',
+      overflowX: 'hidden',
     },
     petient: {
       color: '#0087ba',
       textAlign: 'left',
       backgroundColor: '#fff',
-      padding: 15,
+      padding: 12,
       fontWeight: theme.typography.fontWeightMedium,
       display: 'inline-block',
       borderRadius: 5,
@@ -40,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     doctor: {
       backgroundColor: '#f0f4f5',
-      padding: 15,
+      padding: 12,
       color: '#02475b',
       fontWeight: theme.typography.fontWeightMedium,
       display: 'inline-block',
@@ -70,7 +73,14 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
       position: 'relative',
       backgroundColor: '#f7f7f7',
-      paddingBottom: 120,
+      paddingBottom: 95,
+    },
+    audioVideoContainer: {
+      maxWidth: 1064,
+      margin: 'auto',
+      position: 'relative',
+      backgroundColor: '#f7f7f7',
+      paddingBottom: 0,
     },
     docterChat: {
       display: 'block',
@@ -95,6 +105,9 @@ const useStyles = makeStyles((theme: Theme) => {
     incomingContainer: {
       textAlign: 'right',
       paddingRight: 20,
+      position: 'absolute',
+      right: 0,
+      top: 10,
     },
     incomingBtn: {
       position: 'relative',
@@ -127,9 +140,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     chatFooterSection: {
       position: 'absolute',
-      padding: '60px 20px 20px 20px',
+      padding: '40px 20px 20px 20px',
       clear: 'both',
-      bottom: 0,
+      // bottom: 0,
       backgroundColor: '#fff',
       width: '100%',
     },
@@ -155,6 +168,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
+  const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
 
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
@@ -273,9 +287,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
   return (
     <div className={classes.consultRoom}>
-      <div className={classes.container}>
+      <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
+        {/* {!showVideo && (
+          <div>
+            <button onClick={() => setIsVideoCall(false)}>Audio Call</button>
+            <button onClick={() => setIsVideoCall(true)}>Video Call</button>
+          </div>
+        )} */}
         {showVideo && (
-          <Consult toggelChatVideo={() => toggelChatVideo()} showVideoChat={showVideoChat} />
+          <Consult
+            toggelChatVideo={() => toggelChatVideo()}
+            showVideoChat={showVideoChat}
+            isVideoCall={isVideoCall}
+          />
         )}
         <div>
           {(!showVideo || showVideoChat) && (
@@ -305,6 +329,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <AphInput
                 className={classes.inputWidth}
                 inputProps={{ type: 'text' }}
+                placeholder="Type here..."
                 value={messageText}
                 onKeyPress={(e) => {
                   if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {

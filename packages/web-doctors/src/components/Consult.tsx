@@ -7,10 +7,15 @@ import { OTSession, OTPublisher, OTStreams, OTSubscriber } from 'opentok-react';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     consult: {
-      paddingTop: 68,
+      paddingTop: 0,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 68,
+        paddingTop: 0,
       },
+      position: 'absolute',
+      top: -69,
+      zIndex: 9999,
+      width: '100%',
+      background: '#fff',
     },
     muteBtn: {
       zIndex: 9999,
@@ -38,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     videoContainer: {
-      minHeight: 700,
+      minHeight: 470,
       backgroundColor: '#000',
       borderRadius: 10,
       margin: 20,
@@ -50,9 +55,11 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 170,
       height: 170,
       position: 'absolute',
-      bottom: 125,
+      // bottom: 125,
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       borderRadius: 10,
+      overflow: 'hidden',
+      top: 80,
     },
     VideoAlignment: {
       textAlign: 'center',
@@ -63,36 +70,52 @@ const useStyles = makeStyles((theme: Theme) => {
     minimizeBtns: {
       position: 'absolute',
       width: 170,
-      height: 190,
+      height: 170,
       zIndex: 9,
     },
     stopCallIcon: {
       width: 40,
       position: 'absolute',
-      bottom: 20,
+      bottom: 10,
       right: 10,
     },
     fullscreenIcon: {
       width: 34,
       position: 'absolute',
-      bottom: 26,
+      bottom: 14,
       left: 10,
+    },
+    minimizeVideoImg: {
+      zIndex: 9,
+      width: 170,
+      height: 170,
+      position: 'absolute',
+    },
+    minimizeImg: {
+      position: 'absolute',
+      left: 0,
+      bottom: 0,
+      width: '100%',
+      zIndex: 9,
     },
   };
 });
 interface ConsultProps {
   toggelChatVideo: () => void;
   showVideoChat: boolean;
+  isVideoCall: boolean;
 }
 export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
-  const [publishVideo, setPublishVideo] = React.useState(true);
+  //const [publishVideo, setPublishVideo] = React.useState(true);
+  const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
+  const [subscribeToAudio, setSubscribeToAudio] = React.useState(props.isVideoCall ? false : true);
   return (
     <div className={classes.consult}>
       <div>
-        <div className={props.showVideoChat ? 'chatVideo' : ''}>
+        <div className={props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''}>
           {isCall && (
             <OTSession
               apiKey="46393582"
@@ -100,29 +123,60 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               token="T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9Y2UxMDhkODEzNTU3MmE4M2ExZTZkNmVlYjVkZDE0ODA3NGZhM2QyZTpzZXNzaW9uX2lkPTFfTVg0ME5qTTVNelU0TW41LU1UVTJOVEEzTVRVd05EazRNWDU2YlZkM1pXOTZNRk51UzJWdWEyZERNblo1VlRaTk5sSi1VSDQmY3JlYXRlX3RpbWU9MTU2NTA3MTYxMCZub25jZT0wLjExNjA5MzQ3Njk5NjI3MzM3JnJvbGU9cHVibGlzaGVyJmV4cGlyZV90aW1lPTE1Njc2NjM2MDcmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0="
             >
               <OTPublisher
-                className={props.showVideoChat ? classes.hidePublisherVideo : ''}
-                properties={{ publishAudio: mute, publishVideo: publishVideo }}
+                className={
+                  props.showVideoChat || !subscribeToVideo ? classes.hidePublisherVideo : ''
+                }
+                properties={{
+                  publishAudio: mute,
+                  publishVideo: subscribeToVideo,
+                  subscribeToVideo: subscribeToVideo,
+                  subscribeToAudio: subscribeToAudio,
+                }}
               />
+
               <div
                 className={
                   props.showVideoChat ? classes.hideVideoContainer : classes.videoContainer
                 }
               >
+                {!subscribeToVideo && !props.showVideoChat && (
+                  <img className={classes.minimizeImg} src={require('images/patient_01.png')} />
+                )}
+                {/* <div
+                  className={
+                    props.showVideoChat ? classes.hideVideoContainer : classes.videoContainer
+                  }
+                > */}
                 <OTStreams>
-                  <OTSubscriber />
+                  <OTSubscriber
+                    properties={{
+                      subscribeToVideo: subscribeToVideo,
+                      subscribeToAudio: subscribeToAudio,
+                    }}
+                  />
                 </OTStreams>
+                {/* </div> */}
+
                 {props.showVideoChat && (
-                  <div className={classes.minimizeBtns}>
-                    <img
-                      src={require('images/ic_stopcall.svg')}
-                      className={classes.stopCallIcon}
-                      onClick={() => setIscall(false)}
-                    />
-                    <img
-                      src={require('images/ic_maximize.svg')}
-                      className={classes.fullscreenIcon}
-                      onClick={() => props.toggelChatVideo()}
-                    />
+                  <div>
+                    {!subscribeToVideo && (
+                      <img
+                        src={require('images/ic_patientchat.png')}
+                        className={classes.minimizeVideoImg}
+                      />
+                    )}
+                    <div className={classes.minimizeBtns}>
+                      <img
+                        src={require('images/ic_stopcall.svg')}
+                        className={classes.stopCallIcon}
+                        onClick={() => setIscall(false)}
+                      />
+                      <img
+                        src={require('images/ic_maximize.svg')}
+                        className={classes.fullscreenIcon}
+                        onClick={() => props.toggelChatVideo()}
+                      />
+                    </div>
                   </div>
                 )}
                 {!props.showVideoChat && (
@@ -161,10 +215,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             />
                           </button>
                         )}
-                        {isCall && publishVideo && (
+                        {isCall && subscribeToVideo && (
                           <button
                             className={classes.muteBtn}
-                            onClick={() => setPublishVideo(!publishVideo)}
+                            onClick={() => setSubscribeToVideo(!subscribeToVideo)}
                           >
                             <img
                               className={classes.whiteArrow}
@@ -173,10 +227,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             />
                           </button>
                         )}
-                        {isCall && !publishVideo && (
+                        {isCall && !subscribeToVideo && (
                           <button
                             className={classes.muteBtn}
-                            onClick={() => setPublishVideo(!publishVideo)}
+                            onClick={() => setSubscribeToVideo(!subscribeToVideo)}
                           >
                             <img
                               className={classes.whiteArrow}

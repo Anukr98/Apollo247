@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
     app: {
       minHeight: '100vh',
       backgroundImage: 'linear-gradient(to bottom, #f5f8f9, #e6edef)',
-      paddingBottom: 70,
+      paddingBottom: 20,
       [theme.breakpoints.down('xs')]: {
         paddingBottom: 20,
       },
