@@ -19,6 +19,8 @@ const useStyles = makeStyles((theme: Theme) => {
     bigAvatar: {
       width: 48,
       height: 48,
+      lineHeight: '60px',
+      textAlign: 'center',
       backgroundColor: '#dcdfcf',
       margin: 'auto',
       marginTop: -20,
@@ -35,25 +37,33 @@ export const MedicineCard: React.FC = (props) => {
     <Grid container spacing={2}>
       <Grid item xs={6} sm={6} md={4} lg={3}>
         <div className={classes.root}>
-          <div className={classes.bigAvatar}></div>
+          <div className={classes.bigAvatar}>
+            <img src={require('images/ic_tablets.svg')} alt="" />
+          </div>
           Metformin
         </div>
       </Grid>
       <Grid item xs={6} sm={6} md={4} lg={3}>
         <div className={classes.root}>
-          <div className={classes.bigAvatar}></div>
+          <div className={classes.bigAvatar}>
+            <img src={require('images/ic_tablets.svg')} alt="" />
+          </div>
           Sulfonylureas
         </div>
       </Grid>
       <Grid item xs={6} sm={6} md={4} lg={3}>
         <div className={classes.root}>
-          <div className={classes.bigAvatar}></div>
+          <div className={classes.bigAvatar}>
+            <img src={require('images/ic_tablets.svg')} alt="" />
+          </div>
           Crocin
         </div>
       </Grid>
       <Grid item xs={6} sm={6} md={4} lg={3}>
         <div className={classes.root}>
-          <div className={classes.bigAvatar}></div>
+          <div className={classes.bigAvatar}>
+            <img src={require('images/ic_tablets.svg')} alt="" />
+          </div>
           DPP-4 Inhibitors
         </div>
       </Grid>

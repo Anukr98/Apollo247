@@ -9,6 +9,7 @@ export const clientRoutes = {
   healthRecords: () => '#',
   patients: () => '/patients',
   searchMedicines: () => '/search-medicines',
+  cartLanding: () => '/cart',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

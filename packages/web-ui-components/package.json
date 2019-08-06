@@ -39,7 +39,8 @@
     "typescript": "^3.5.2"
   },
   "dependencies": {
-    "@aph/universal": "file:../universal"
+    "@aph/universal": "file:../universal",
+    "@types/node": "^12.6.9"
   },
   "author": "sarink",
   "license": "ISC"
