@@ -234,7 +234,7 @@ export const SignIn: React.FC = (props) => {
                       dirty &&
                       !sendOtpError &&
                       Boolean(errors.mobileNumber) &&
-                      (finishedTyping || touched.mobileNumber);
+                      (finishedTyping || touched.mobileNumber || Number(field.value[0]) < 6);
                     const showSendOtpError = sendOtpError;
                     return (
                       <FormControl fullWidth>
