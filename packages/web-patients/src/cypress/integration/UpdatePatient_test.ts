@@ -119,20 +119,67 @@ describe('UpdatePatient (multiple, without uhids)', () => {
       .should('be.disabled');
   });
 
-  it('Wont allow improper dates in dateOfBirth field', () => {
+  const checkInvalidDob = () => {
+    cy.contains('Invalid date of birth').should('exist');
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+  };
+
+  const enterDob = (dob: string) => {
     cy.get('[data-cypress="NewProfile"]')
       .find('form')
       .find('input[name="dateOfBirth"]')
       .clear()
-      .type('test')
+      .type(dob)
       .blur();
+  };
+
+  it("Won't allow non-dates to be submitted in dateOfBirth field", () => {
+    enterDob('test');
+    checkInvalidDob();
+  });
+
+  it("Won't allow future dates to be submitted in the dateOfBirth field", () => {
+    enterDob('01/01/2099');
+    checkInvalidDob();
+  });
+
+  it("Won't allow impossible dates to be submitted in the dateOfBirth field", () => {
+    enterDob('31/02/2001');
+    checkInvalidDob();
+  });
+
+  it("Won't validate DOB until input is blurred once", () => {
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('input[name="dateOfBirth"]')
+      .clear()
+      .type('01/01/2099');
 
     cy.get('[data-cypress="NewProfile"]')
       .find('form')
-      .get('button[type="submit"]')
+      .find('button[type="submit"]')
       .should('be.disabled');
 
-    cy.contains('Invalid date of birth');
+    cy.contains('Invalid date of birth').should('not.exist');
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('input[name="dateOfBirth"]')
+      .blur();
+
+    cy.contains('Invalid date of birth').should('exist');
+  });
+
+  it('Will allow possible dates in the dateOfBirth field', () => {
+    enterDob('31/01/2001');
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('button[type="submit"]')
+      .should('be.enabled');
+    cy.contains('Invalid date of birth').should('not.exist');
   });
 
   it('Should update the patient', () => {
