@@ -22,6 +22,21 @@ describe('UpdatePatient (multiple, with uhids)', () => {
     cy.get('[data-cypress="ExistingProfile"]').should('exist');
   });
 
+  it.only("upon clicking submit, show an error if there is no Me, and don't submit", () => {
+    //fails
+    cy.get('[data-cypress="ExistingProfile"]')
+      .contains('Please tell us who is who')
+      .should('exist');
+  });
+
+  // it('upon clicking submit, show an error if there is more than 1 Me, and don\'t submit', ()=>{
+
+  // })
+
+  // it('if everything is good, let the submit through, and save the relationship', ()=>{
+
+  // })
+
   it('Welcomes you by prompting for complete family data', () => {
     cy.get('[data-cypress="ExistingProfile"]')
       .contains('Please tell us who is who')

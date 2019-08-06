@@ -143,6 +143,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
 
   const classes = useStyles();
   const { patient, number } = props;
+
   const [selectedRelation, setSelectedRelation] = React.useState<Relation | ''>(
     patient.relation || ''
   );
@@ -196,7 +197,9 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const classes = useStyles();
   const [patients, setPatients] = useState(props.patients);
   const [loading, setLoading] = useState(false);
-  const disabled = patients.some(isPatientInvalid);
+  const arePatientsValid = patients.filter((x) => x.relation === Relation.ME).length === 1;
+  const disabled = patients.some(isPatientInvalid) || !arePatientsValid;
+  // const disabled = patients.some(isPatientInvalid); // original
 
   return (
     <div className={classes.signUpPop} data-cypress="ExistingProfile">
@@ -209,6 +212,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
             welcome
             <br /> to apollo 24/7
           </Typography>
+          {console.log('EXISTINGPROFILE PATIENTS VAR IS: ', patients)}
           {patients.length > 1 ? (
             <p>
               We have found {patients.length} accounts registered with this mobile number. Please
