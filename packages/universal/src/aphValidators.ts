@@ -18,6 +18,7 @@ export const toIsoString = (ddmmyyyy: string) => {
   const yyyy = dateParts[2];
   return `${yyyy}-${mm}-${dd}`;
 };
+
 export const isDobValid = (ddmmyyyy: string) => {
   if (!isDateValid(ddmmyyyy)) return false;
   const isoStr = toIsoString(ddmmyyyy);
@@ -25,6 +26,7 @@ export const isDobValid = (ddmmyyyy: string) => {
   const isInPast = new Date() > date;
   return isInPast;
 };
+
 export const isDateValid = (ddmmyyyy: string) => {
   const isCorrectFormat = aphClientDateFormat.test(ddmmyyyy);
   if (!isCorrectFormat) return false;
