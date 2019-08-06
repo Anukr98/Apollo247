@@ -6,7 +6,7 @@ services:
     tty: true
     env_file: .env
     command: ash -c "
-      envsubst '$$API_GATEWAY_PORT' < /etc/nginx/conf.d/development.conf.template > /etc/nginx/conf.d/development.conf &&
+      envsubst '$$API_GATEWAY_PORT $$NODE_ENV' < /etc/nginx/conf.d/development.conf.template > /etc/nginx/conf.d/development.conf &&
       nginx -t &&
       nginx -g 'daemon off;'"
     ports:
@@ -45,7 +45,9 @@ services:
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
     command: bash -c "
-      while ! < /dev/tcp/profiles-db/5432; do echo waiting for profiles-db...; sleep 5; done;
+      while ! < /dev/tcp/profiles-db/${PROFILES_DB_PORT};
+      do echo waiting for profiles-db...; sleep 5;
+      done;
       node profiles-service.bundle.js"
     volumes:
       - ./:/apollo-hospitals:cached
@@ -62,7 +64,9 @@ services:
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
     command: bash -c "
-      while ! < /dev/tcp/doctors-db/5432; do echo waiting for doctors-db...; sleep 5; done;
+      while ! < /dev/tcp/doctors-db/${DOCTORS_DB_PORT};
+      do echo waiting for doctors-db...; sleep 5;
+      done;
       node doctors-service.bundle.js"
     volumes:
       - ./:/apollo-hospitals:cached
@@ -78,11 +82,16 @@ services:
     image: node:12.6.0
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
-    command: bash -c "node consults-service.bundle.js"
+    command: bash -c "
+      while ! ((< /dev/tcp/consults-db/${CONSULTS_DB_PORT}) || (/dev/tcp/consults-db/${DOCTORS_DB_PORT}));
+      do echo waiting for consults-db and doctors-db...; sleep 5;
+      done;
+      node consults-service.bundle.js"
     volumes:
       - ./:/apollo-hospitals:cached
     depends_on:
       - consults-db
+      - doctors-db
 
   consults-db:
     image: postgres:10.8-alpine

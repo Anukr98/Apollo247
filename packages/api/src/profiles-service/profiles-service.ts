@@ -1,3 +1,4 @@
+import '@aph/universal/global';
 import 'reflect-metadata';
 import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
 import { ApolloServer } from 'apollo-server';
@@ -29,10 +30,10 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
     name: 'profiles-db',
     entities: [Patient, Appointments],
     type: 'postgres',
-    host: 'profiles-db',
-    port: 5432,
-    username: 'postgres',
-    password: 'postgres',
+    host: process.env.PROFILES_DB_HOST,
+    port: parseInt(process.env.PROFILES_DB_PORT, 10),
+    username: process.env.PROFILES_DB_USER,
+    password: process.env.PROFILES_DB_PASSWORD,
     database: `profiles_${process.env.NODE_ENV}`,
     logging: true,
     synchronize: true,
