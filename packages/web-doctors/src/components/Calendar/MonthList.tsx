@@ -89,6 +89,12 @@ const useStyles = makeStyles({
       },
     },
   },
+  inputContainer: {
+    '& input': {
+      'background': `url(${require('images/ic_downarrow.svg')}) no-repeat right center`,
+      cursor: 'pointer'
+    }
+  }
 });
 export const MonthList: React.FC<MonthListProps> = ({ date, onChange }) => {
   const classes = useStyles();
@@ -109,6 +115,9 @@ export const MonthList: React.FC<MonthListProps> = ({ date, onChange }) => {
           variant="inline"
           className={classes.datepicker}
           value={selectedDate}
+          InputProps={{
+            className: classes.inputContainer
+          }}
           onChange={(date) => {
             handleDateChange(date);
 
