@@ -193,9 +193,10 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
             'dateOfBirth',
             'gender',
           ];
-          const submitIsDisabled =
-            !dirty ||
-            requiredFields.some((field) => _isEmpty(values[field]) || Boolean(errors[field]));
+          const formIsUntouched = !dirty;
+          const formHasErrors = !_isEmpty(errors);
+          const someRequiredFieldsMissing = requiredFields.some((field) => _isEmpty(values[field]));
+          const submitIsDisabled = formIsUntouched || formHasErrors || someRequiredFieldsMissing;
           return (
             <Form>
               <div className={classes.mascotIcon}>
