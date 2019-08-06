@@ -12,6 +12,7 @@ const dotEnvConfig = dotenv.config({ path: envFile });
 if (dotEnvConfig.error) throw dotEnvConfig.error;
 Object.values(dotEnvConfig).forEach((val, KEY) => (process.env[KEY] = val));
 const isLocal = process.env.NODE_ENV === 'local';
+const isStaging = process.env.NODE_ENV === 'staging';
 const isProduction = process.env.NODE_ENV === 'production';
 
 const plugins = [
@@ -32,7 +33,7 @@ module.exports = {
 
   externals: [nodeExternals()],
 
-  mode: isProduction ? 'production' : 'development',
+  mode: isProduction || isStaging ? 'production' : 'development',
 
   context: path.resolve(__dirname, 'src'),
 
