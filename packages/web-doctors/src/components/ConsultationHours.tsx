@@ -313,7 +313,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                       <Typography className={classes.heading}>
                         {item.weekDay} &nbsp; | &nbsp;
                         {item.consultMode === 'PHYSICAL' && 'Physical'}
-                        {/* {item.consultMode === 'BOTH' && ', '} */}
+                        {item.consultMode === 'BOTH' && 'Physical , Online'}
                         {item.consultMode === 'ONLINE' && 'Online'}
                       </Typography>
                     </div>
