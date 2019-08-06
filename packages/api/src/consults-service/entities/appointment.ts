@@ -23,12 +23,9 @@ export class Appointment extends BaseEntity {
   @Column()
   doctorId: string;
 
-  @Column({ type: 'date' })
-  @IsDate()
-  appointmentDate: Date;
-
   @Column({ type: 'timestamp' })
-  appointmentTime: Date;
+  @IsDate()
+  appointmentDateTime: Date;
 
   @Column()
   appointmentType: APPOINTMENT_TYPE;
