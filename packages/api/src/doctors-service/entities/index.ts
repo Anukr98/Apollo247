@@ -26,6 +26,7 @@ export enum ConsultType {
 export enum ConsultMode {
   ONLINE = 'ONLINE',
   PHYSICAL = 'PHYSICAL',
+  BOTH = 'BOTH',
 }
 
 export enum DoctorType {

@@ -19,6 +19,7 @@ export const getDoctorDetailsTypeDefs = gql`
   enum ConsultMode {
     ONLINE
     PHYSICAL
+    BOTH
   }
   enum DoctorType {
     APOLLO
