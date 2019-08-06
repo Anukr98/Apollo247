@@ -32,7 +32,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       where: { doctorId, appointmentDateTime: Between(curDate, curEndDate) },
       order: { appointmentDateTime: 'ASC' },
     }).then((resp) => {
-      console.log(resp, 'resp');
       let prev = 0;
       let done = 0;
       if (resp) {
