@@ -31,9 +31,60 @@ describe('Login', () => {
     cy.get('[data-cypress="SignIn"]')
       .find('input[name*="mobileNumber"]')
       .type('0123456789');
+
     cy.get('[data-cypress="SignIn"]')
       .find('button[type="submit"]')
       .should('be.disabled');
+  });
+
+  it.only('Error message should display immediately upon entering an invalid number starting with a digit 1-5', () => {
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[name*="mobileNumber"]')
+      .type('0');
+
+    cy.get('div[class*="Mui-error"]').should('contain', 'This seems like a wrong number');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[name*="mobileNumber"]')
+      .clear()
+      .type('1');
+
+    cy.get('div[class*="Mui-error"]').should('contain', 'This seems like a wrong number');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[name*="mobileNumber"]')
+      .clear()
+      .type('2');
+
+    cy.get('div[class*="Mui-error"]').should('contain', 'This seems like a wrong number');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[name*="mobileNumber"]')
+      .clear()
+      .type('3');
+
+    cy.get('div[class*="Mui-error"]').should('contain', 'This seems like a wrong number');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[name*="mobileNumber"]')
+      .clear()
+      .type('4');
+
+    cy.get('div[class*="Mui-error"]').should('contain', 'This seems like a wrong number');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[name*="mobileNumber"]')
+      .clear()
+      .type('5');
+
+    cy.get('div[class*="Mui-error"]').should('contain', 'This seems like a wrong number');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[name*="mobileNumber"]')
+      .clear()
+      .type('6');
+
+    cy.get('div[class*="Mui-error"]').should('not.contain', 'This seems like a wrong number');
   });
 
   it('There should be validation upon entering mobile number starting with zero', () => {
