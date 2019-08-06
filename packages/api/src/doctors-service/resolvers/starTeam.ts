@@ -22,10 +22,15 @@ const makeTeamDoctorActive: Resolver<
   Boolean
 > = async (parent, args, { dbConnect, currentUser }) => {
   const starRepo = dbConnect.getCustomRepository(StarTeamRepository);
-  const doctorDetails = (await starRepo.getTeamDoctorData(
-    args.associatedDoctor,
-    args.starDoctor
-  )) as StarTeam;
+  let doctorDetails: StarTeam;
+  try {
+    doctorDetails = (await starRepo.getTeamDoctorData(
+      args.associatedDoctor,
+      args.starDoctor
+    )) as StarTeam;
+  } catch (invalidDetails) {
+    throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, { invalidDetails });
+  }
 
   if (isUndefined(doctorDetails)) throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES);
 
@@ -50,10 +55,15 @@ const removeTeamDoctorFromStarTeam: Resolver<
   Doctor
 > = async (parent, args, { dbConnect, currentUser }) => {
   const starRepo = dbConnect.getCustomRepository(StarTeamRepository);
-  const doctorDetails = (await starRepo.getTeamDoctorData(
-    args.associatedDoctor,
-    args.starDoctor
-  )) as StarTeam;
+  let doctorDetails: StarTeam;
+  try {
+    doctorDetails = (await starRepo.getTeamDoctorData(
+      args.associatedDoctor,
+      args.starDoctor
+    )) as StarTeam;
+  } catch (invalidDetails) {
+    throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, { invalidDetails });
+  }
 
   if (isUndefined(doctorDetails)) throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES);
 
