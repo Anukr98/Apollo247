@@ -80,19 +80,19 @@ export class ConsultHours extends BaseEntity {
   doctorHospital: DoctorAndHospital;
 
   @Column({ type: 'time' })
-  endTime: String;
+  endTime: string;
 
   @ManyToOne((type) => Facility, (facility) => facility.consultHours)
   facility: Facility;
 
   @PrimaryGeneratedColumn('uuid')
-  id: String;
+  id: string;
 
   @Column({ default: true })
   isActive: Boolean;
 
   @Column({ type: 'time' })
-  startTime: String;
+  startTime: string;
 
   @Column({ nullable: true })
   updatedDate: Date;
@@ -119,16 +119,16 @@ export class Doctor extends BaseEntity {
   bankAccount: DoctorBankAccounts[];
 
   @Column({ nullable: true, type: 'text' })
-  awards: String;
+  awards: string;
 
   @Column({ nullable: true })
-  city: String;
+  city: string;
 
   @OneToMany((type) => ConsultHours, (consultHours) => consultHours.doctor)
   consultHours: ConsultHours[];
 
   @Column({ nullable: true })
-  country: String;
+  country: string;
 
   @Column()
   createdDate: Date;
@@ -144,18 +144,18 @@ export class Doctor extends BaseEntity {
   doctorType: DoctorType;
 
   @Column({ nullable: true })
-  delegateNumber: String;
+  delegateNumber: string;
 
   @Column({ nullable: true, type: 'text' })
   @Validate(EmailValidator)
-  emailAddress: String;
+  emailAddress: string;
 
   @Column({ nullable: true })
   experience: Number;
 
   @Column()
   @Validate(NameValidator)
-  firstName: String;
+  firstName: string;
 
   @Column({ nullable: true })
   firebaseToken: string;
@@ -164,21 +164,21 @@ export class Doctor extends BaseEntity {
   gender: Gender;
 
   @PrimaryGeneratedColumn('uuid')
-  id: String;
+  id: string;
 
   @Column({ default: true })
   isActive: Boolean;
 
   @Column({ nullable: true, type: 'text' })
-  languages: String;
+  languages: string;
 
   @Column()
   @Validate(NameValidator)
-  lastName: String;
+  lastName: string;
 
   @Column()
   @Validate(MobileNumberValidator)
-  mobileNumber: String;
+  mobileNumber: string;
 
   @Column({ type: 'float8' })
   onlineConsultationFees: Number;
@@ -187,16 +187,16 @@ export class Doctor extends BaseEntity {
   packages: Packages[];
 
   @Column({ nullable: true, type: 'text' })
-  photoUrl: String;
+  photoUrl: string;
 
   @Column({ type: 'float8' })
   physicalConsultationFees: Number;
 
   @Column({ nullable: true, type: 'text' })
-  qualification: String;
+  qualification: string;
 
   @Column()
-  registrationNumber: String;
+  registrationNumber: string;
 
   @Column({ nullable: true })
   salutation: Salutation;
@@ -205,28 +205,28 @@ export class Doctor extends BaseEntity {
   specialty: DoctorSpecialty;
 
   @Column({ nullable: true, type: 'text' })
-  specialization: String;
+  specialization: string;
 
   @OneToMany((type) => StarTeam, (starTeam) => starTeam.starDoctor)
   starTeam: StarTeam[];
 
   @Column({ nullable: true })
-  state: String;
+  state: string;
 
   @Column({ nullable: true, type: 'text' })
-  streetLine1: String;
+  streetLine1: string;
 
   @Column({ nullable: true, type: 'text' })
-  streetLine2: String;
+  streetLine2: string;
 
   @Column({ nullable: true, type: 'text' })
-  streetLine3: String;
+  streetLine3: string;
 
   @Column({ nullable: true })
   updatedDate: Date;
 
   @Column({ nullable: true })
-  zip: String;
+  zip: string;
 
   @BeforeInsert()
   updateDateCreation() {
@@ -256,7 +256,7 @@ export class DoctorAndHospital extends BaseEntity {
   facility: Facility;
 
   @PrimaryGeneratedColumn('uuid')
-  id: String;
+  id: string;
 
   @Column({ nullable: true })
   updatedDate: Date;
@@ -277,19 +277,19 @@ export class DoctorAndHospital extends BaseEntity {
 @Entity()
 export class DoctorBankAccounts extends BaseEntity {
   @Column()
-  accountHolderName: String;
+  accountHolderName: string;
 
   @Column()
-  accountNumber: String;
+  accountNumber: string;
 
   @Column({ type: String })
   accountType: AccountType;
 
   @Column()
-  bankName: String;
+  bankName: string;
 
   @Column({ nullable: true })
-  city: String;
+  city: string;
 
   @Column()
   createdDate: Date;
@@ -298,16 +298,16 @@ export class DoctorBankAccounts extends BaseEntity {
   doctor: Doctor;
 
   @PrimaryGeneratedColumn('uuid')
-  id: String;
+  id: string;
 
   @Column()
-  IFSCcode: String;
+  IFSCcode: string;
 
   @Column({ nullable: true })
-  state: String;
+  state: string;
 
   @Column({ nullable: true, type: 'text' })
-  streetLine1: String;
+  streetLine1: string;
 
   @Column({ nullable: true })
   updatedDate: Date;
@@ -331,13 +331,13 @@ export class DoctorSpecialty extends BaseEntity {
   createdDate: Date;
 
   @PrimaryGeneratedColumn('uuid')
-  id: String;
+  id: string;
 
   @Column()
-  name: String;
+  name: string;
 
   @Column({ nullable: true, type: 'text' })
-  image: String;
+  image: string;
 
   @OneToMany((type) => Doctor, (doctor) => doctor.specialty)
   doctor: Doctor[];
@@ -361,13 +361,13 @@ export class DoctorSpecialty extends BaseEntity {
 @Entity()
 export class Facility extends BaseEntity {
   @Column({ nullable: true })
-  city: String;
+  city: string;
 
   @OneToMany((type) => ConsultHours, (consultHours) => consultHours.facility)
   consultHours: ConsultHours[];
 
   @Column({ nullable: true })
-  country: String;
+  country: string;
 
   @Column()
   createdDate: Date;
@@ -379,29 +379,29 @@ export class Facility extends BaseEntity {
   facilityType: FacilityType;
 
   @PrimaryGeneratedColumn('uuid')
-  id: String;
+  id: string;
 
   @Column({ nullable: true })
-  latitude: String;
+  latitude: string;
 
   @Column({ nullable: true })
-  longitude: String;
+  longitude: string;
 
   @Column()
   @Validate(NameValidator)
-  name: String;
+  name: string;
 
   @Column({ nullable: true })
-  state: String;
+  state: string;
 
   @Column({ nullable: true, type: 'text' })
-  streetLine1: String;
+  streetLine1: string;
 
   @Column({ nullable: true, type: 'text' })
-  streetLine2: String;
+  streetLine2: string;
 
   @Column({ nullable: true, type: 'text' })
-  streetLine3: String;
+  streetLine3: string;
 
   @Column({ nullable: true })
   updatedDate: Date;
@@ -428,10 +428,10 @@ export class Packages extends BaseEntity {
   doctor: Doctor;
 
   @PrimaryGeneratedColumn('uuid')
-  id: String;
+  id: string;
 
   @Column()
-  name: String;
+  name: string;
 
   @Column({ type: 'float8' })
   fees: Number;
@@ -462,7 +462,7 @@ export class StarTeam extends BaseEntity {
   createdDate: Date;
 
   @PrimaryGeneratedColumn('uuid')
-  id: String;
+  id: string;
 
   @Column({ default: false })
   isActive: Boolean;

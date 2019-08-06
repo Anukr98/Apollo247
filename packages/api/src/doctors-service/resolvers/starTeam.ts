@@ -4,7 +4,7 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 import { StarTeamRepository } from 'doctors-service/repositories/starTeamRepository';
-import { StarTeam, Doctor } from 'doctors-service/entities/';
+import { Doctor } from 'doctors-service/entities/';
 import { isUndefined } from 'util';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
@@ -22,12 +22,11 @@ const makeTeamDoctorActive: Resolver<
   Boolean
 > = async (parent, args, { dbConnect, currentUser }) => {
   const starRepo = dbConnect.getCustomRepository(StarTeamRepository);
-  let doctorDetails: StarTeam;
+  let doctorDetails;
+
   try {
-    doctorDetails = (await starRepo.getTeamDoctorData(
-      args.associatedDoctor,
-      args.starDoctor
-    )) as StarTeam;
+    doctorDetails = await starRepo.getTeamDoctorData(args.associatedDoctor, args.starDoctor);
+    if (doctorDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   } catch (invalidDetails) {
     throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, { invalidDetails });
   }
@@ -41,10 +40,11 @@ const makeTeamDoctorActive: Resolver<
 
   await starRepo.activateTeamDoctor(doctorDetails.isActive);
 
-  const updatedDoctorDetails = (await starRepo.getTeamDoctorData(
+  const updatedDoctorDetails = await starRepo.getTeamDoctorData(
     args.associatedDoctor,
     args.starDoctor
-  )) as StarTeam;
+  );
+  if (updatedDoctorDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   return updatedDoctorDetails.isActive;
 };
 
@@ -55,12 +55,9 @@ const removeTeamDoctorFromStarTeam: Resolver<
   Doctor
 > = async (parent, args, { dbConnect, currentUser }) => {
   const starRepo = dbConnect.getCustomRepository(StarTeamRepository);
-  let doctorDetails: StarTeam;
+  let doctorDetails;
   try {
-    doctorDetails = (await starRepo.getTeamDoctorData(
-      args.associatedDoctor,
-      args.starDoctor
-    )) as StarTeam;
+    doctorDetails = await starRepo.getTeamDoctorData(args.associatedDoctor, args.starDoctor);
   } catch (invalidDetails) {
     throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, { invalidDetails });
   }
@@ -72,10 +69,11 @@ const removeTeamDoctorFromStarTeam: Resolver<
 
   await starRepo.removeFromStarteam(<string>doctorDetails.id);
 
-  let doctordata: Doctor;
+  let doctordata;
   try {
     const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
-    doctordata = (await doctorRepository.findById(args.starDoctor)) as Doctor;
+    doctordata = await doctorRepository.findById(args.starDoctor);
+    if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   } catch (getProfileError) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
   }
