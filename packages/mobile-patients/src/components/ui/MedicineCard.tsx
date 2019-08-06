@@ -283,7 +283,9 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           {renderTitleAndIcon()}
           {isCardExpanded ? (
             <>
-              {packOfCount && <Text style={styles.packOfTextStyle}>{packOfCount}</Text>}
+              {(packOfCount || 10) && (
+                <Text style={styles.packOfTextStyle}>{`Pack of ${packOfCount || 10}`}</Text>
+              )}
               <View style={[styles.separator, { marginTop: 0 }]} />
               {renderUnitDropdownAndPrice()}
             </>

@@ -1,6 +1,5 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -41,6 +40,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../theme/theme';
 import { Button } from './ui/Button';
 import { DoctorCard } from './ui/DoctorCard';
+import { NeedHelpAssistant } from './ui/NeedHelpAssistant';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -88,22 +88,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   helpView: {
-    width: '100%',
-    height: 212,
-    backgroundColor: 'transparent',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  needhelpbuttonStyles: {
-    backgroundColor: 'white',
-    height: 50,
-    width: 120,
-    marginTop: 5,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 15,
-  },
-  titleBtnStyles: {
-    color: theme.colors.SKY_BLUE,
+    marginTop: 40,
+    marginBottom: 20,
   },
 });
 
@@ -478,16 +464,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const renderHelpView = () => {
     if (needHelp) {
-      return (
-        <View style={styles.helpView}>
-          <Mascot style={{ height: 80, width: 80 }} />
-          <Button
-            title="Need Help?"
-            style={styles.needhelpbuttonStyles}
-            titleTextStyle={styles.titleBtnStyles}
-          />
-        </View>
-      );
+      return <NeedHelpAssistant containerStyle={styles.helpView} />;
     }
   };
 
