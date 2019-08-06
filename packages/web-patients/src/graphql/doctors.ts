@@ -126,3 +126,11 @@ export const PATIENT_APPOINTMENT_HISTORY = gql`
     }
   }
 `;
+
+export const GET_DOCTOR_AVAILABLE_SLOTS = gql`
+  query GetDoctorAvailableSlots($DoctorAvailabilityInput: DoctorAvailabilityInput) {
+    getDoctorAvailableSlots(DoctorAvailabilityInput: $DoctorAvailabilityInput) {
+      availableSlots
+    }
+  }
+`;

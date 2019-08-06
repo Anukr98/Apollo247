@@ -52,6 +52,11 @@ export interface AppointmentHistoryInput {
   doctorId: string;
 }
 
+export interface DoctorAvailabilityInput {
+  availableDate: any;
+  doctorId: string;
+}
+
 export interface UpdatePatientInput {
   id: string;
   firstName?: string | null;

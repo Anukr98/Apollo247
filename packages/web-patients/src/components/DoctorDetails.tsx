@@ -234,8 +234,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const doctorDetails = data && data.getDoctorProfileById ? data : null;
 
   if (doctorDetails) {
-    console.log(doctorDetails);
-
     const isStarDoctor =
       doctorDetails &&
       doctorDetails.getDoctorProfileById &&
@@ -249,6 +247,20 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       doctorDetails.getDoctorProfileById.profile
         ? doctorDetails.getDoctorProfileById.profile.id
         : '';
+
+    const availableForPhysicalConsultation =
+      doctorDetails &&
+      doctorDetails.getDoctorProfileById &&
+      doctorDetails.getDoctorProfileById.profile
+        ? doctorDetails.getDoctorProfileById.profile.availableForPhysicalConsultation
+        : false;
+
+    const availableForVirtualConsultation =
+      doctorDetails &&
+      doctorDetails.getDoctorProfileById &&
+      doctorDetails.getDoctorProfileById.profile
+        ? doctorDetails.getDoctorProfileById.profile.onlineConsultationFees
+        : false;
 
     return (
       <div className={classes.welcome}>
@@ -297,23 +309,27 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 setTabValue(newValue);
               }}
             >
-              <Tab
-                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                label="Consult Online"
-              />
-              <Tab
-                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                label="Visit Clinic"
-              />
+              {availableForVirtualConsultation && (
+                <Tab
+                  classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                  label="Consult Online"
+                />
+              )}
+              {availableForPhysicalConsultation && (
+                <Tab
+                  classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                  label="Visit Clinic"
+                />
+              )}
             </Tabs>
-            {tabValue === 0 && (
+            {tabValue === 0 && availableForVirtualConsultation && (
               <TabContainer>
-                <OnlineConsult />
+                <OnlineConsult doctorDetails={doctorDetails} />
               </TabContainer>
             )}
-            {tabValue === 1 && (
+            {tabValue === 1 && availableForPhysicalConsultation && (
               <TabContainer>
-                <VisitClinic />
+                <VisitClinic doctorDetails={doctorDetails} />
               </TabContainer>
             )}
           </Paper>
