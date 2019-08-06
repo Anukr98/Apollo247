@@ -4,6 +4,7 @@ import { useQuery } from 'react-apollo-hooks';
 import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
 import { GET_CURRENT_PATIENTS } from 'graphql/profiles';
 import { Relation } from 'graphql/types/globalTypes';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
 
 const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
 
@@ -42,11 +43,7 @@ export const useAuth = () => {
 export const useCurrentPatient = () => useAllCurrentPatients().currentPatient;
 
 export const useAllCurrentPatients = () => {
-  const isSigningIn = useAuthContext().isSigningIn;
-  const hasAuthToken = useAuthContext().hasAuthToken;
-  const { loading, data, error } = useQuery<GetCurrentPatients>(GET_CURRENT_PATIENTS, {
-    skip: isSigningIn || !hasAuthToken,
-  });
+  const { loading, data, error } = useQueryWithSkip<GetCurrentPatients>(GET_CURRENT_PATIENTS);
   const setCurrentPatientId = useAuthContext().setCurrentPatientId!;
   const currentPatientId = useAuthContext().currentPatientId;
   const allCurrentPatients =
