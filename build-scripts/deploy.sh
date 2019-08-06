@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# $1 refers the environment: 'local' | 'dev' | 'qa' | 'production'
+# $1 refers the environment: 'local' | 'development' | 'staging' | 'production'
 
 ./build-scripts/build.sh $1
 

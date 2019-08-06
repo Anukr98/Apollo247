@@ -12,7 +12,6 @@ const dotEnvConfig = dotenv.config({ path: envFile });
 if (dotEnvConfig.error) throw dotEnvConfig.error;
 Object.values(dotEnvConfig).forEach((val, KEY) => (process.env[KEY] = val));
 const isLocal = process.env.NODE_ENV === 'local';
-// const isDev = process.env.NODE_ENV === 'dev';
 const isProduction = process.env.NODE_ENV === 'production';
 
 const plugins = [

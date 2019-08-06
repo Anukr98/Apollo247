@@ -8,10 +8,18 @@ import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl } from '@aph/universal/aphRoutes';
 
 declare global {
+  interface Window {
+    __TEST__: string;
+  }
   namespace NodeJS {
     interface ProcessEnv {
-      NODE_ENV: 'local' | 'dev';
+      NODE_ENV: 'local' | 'development' | 'staging' | 'production';
+      USE_SSL: 'true' | 'false';
+      WEB_PATIENTS_HOST: string;
       WEB_PATIENTS_PORT: string;
+      WEB_DOCTORS_HOST: string;
+      WEB_DOCTORS_PORT: string;
+      API_GATEWAY_HOST: string;
       API_GATEWAY_PORT: string;
       GOOGLE_APPLICATION_CREDENTIALS: string;
       FIREBASE_PROJECT_ID: string;
@@ -36,7 +44,7 @@ export type Resolver<Parent, Args, Context, Result> = (
 ) => AsyncIterator<Result> | Promise<Result>;
 
 const isLocal = process.env.NODE_ENV == 'local';
-const isDev = process.env.NODE_ENV == 'dev';
+const isDev = process.env.NODE_ENV == 'development';
 
 (async () => {
   const gateway = new ApolloGateway({

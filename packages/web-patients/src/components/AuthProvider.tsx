@@ -55,13 +55,13 @@ export const AuthContext = React.createContext<AuthContextProps>({
 });
 
 const isLocal = process.env.NODE_ENV === 'local';
-const isDev = process.env.NODE_ENV === 'dev';
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 let apolloClient: ApolloClient<any>;
 const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
   const errorLink = onError((error) => {
     const { graphQLErrors, operation, forward } = error;
-    if (isLocal || isDev) console.error(error);
+    if (isLocal || isDevelopment) console.error(error);
     if (graphQLErrors) {
       const unauthenticatedError = graphQLErrors.some(
         (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
