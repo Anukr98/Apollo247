@@ -25,6 +25,12 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.find({ where: { doctorId, patientId } });
   }
 
+  getDoctorAppointments(doctorId: string, startDate: Date, endDate: Date) {
+    return this.find({
+      where: { doctorId, appointmentDateTime: Between(startDate, endDate) },
+    });
+  }
+
   getDoctorNextAvailability(doctorId: string) {
     const curDate = new Date();
     const curEndDate = new Date(format(new Date(), 'yyyy-MM-dd').toString() + 'T11:59');

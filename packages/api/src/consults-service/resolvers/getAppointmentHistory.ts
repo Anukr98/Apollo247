@@ -3,6 +3,8 @@ import { Resolver } from 'api-gateway';
 import { STATUS, APPOINTMENT_TYPE } from 'consults-service/entities/appointment';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 
 export const getAppointmentHistoryTypeDefs = gql`
   type AppointmentHistory {
@@ -27,6 +29,7 @@ export const getAppointmentHistoryTypeDefs = gql`
 
   extend type Query {
     getAppointmentHistory(appointmentHistoryInput: AppointmentHistoryInput): AppointmentResult!
+    getDoctorAppointments(doctorId: String, startDate: Date, endDate: Date): AppointmentResult
   }
 `;
 
@@ -58,16 +61,38 @@ const getAppointmentHistory: Resolver<
   ConsultServiceContext,
   AppointmentResult
 > = async (parent, { appointmentHistoryInput }, { consultsDbConnect, doctorsDbConnect }) => {
-  const appts = consultsDbConnect.getCustomRepository(AppointmentRepository);
-  const appointmentsHistory = await appts.getPatientAppointments(
+  const appointmentRepo = consultsDbConnect.getCustomRepository(AppointmentRepository);
+  const appointmentsHistory = await appointmentRepo.getPatientAppointments(
     appointmentHistoryInput.doctorId,
     appointmentHistoryInput.patientId
   );
   return { appointmentsHistory };
 };
 
+const getDoctorAppointments: Resolver<
+  null,
+  { doctorId: string; startDate: Date; endDate: Date },
+  ConsultServiceContext,
+  AppointmentResult
+> = async (parent, args, { consultsDbConnect, doctorsDbConnect }) => {
+  const appointmentRepo = consultsDbConnect.getCustomRepository(AppointmentRepository);
+  let appointmentsHistory;
+  try {
+    appointmentsHistory = await appointmentRepo.getDoctorAppointments(
+      args.doctorId,
+      args.startDate,
+      args.endDate
+    );
+  } catch (invalidGrant) {
+    throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, { invalidGrant });
+  }
+
+  return { appointmentsHistory };
+};
+
 export const getAppointmentHistoryResolvers = {
   Query: {
     getAppointmentHistory,
+    getDoctorAppointments,
   },
 };
