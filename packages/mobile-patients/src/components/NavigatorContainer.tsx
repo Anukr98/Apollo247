@@ -1,5 +1,4 @@
 import { createStackNavigator, createAppContainer, StackNavigatorConfig } from 'react-navigation';
-
 import { Login } from '@aph/mobile-patients/src/components/Login';
 import { Onboarding } from '@aph/mobile-patients/src/components/Onboarding';
 import { TabBar } from '@aph/mobile-patients/src/components/TabBar';
@@ -18,6 +17,8 @@ import { Consult } from '@aph/mobile-patients/src/components/Consult';
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { DoctorDetails } from '@aph/mobile-patients/src/components/DoctorDetails';
 import { AppointmentDetails } from '@aph/mobile-patients/src/components/AppointmentDetails';
+import { SearchMedicineScene } from '@aph/mobile-patients/src/components/SearchMedicineScene';
+import { MedicineDetailsScene } from '@aph/mobile-patients/src/components/MedicineDetailsScene';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -37,6 +38,9 @@ export enum AppRoutes {
   FilterScene = 'FilterScene',
   DoctorDetails = 'DoctorDetails',
   AppointmentDetails = 'AppointmentDetails',
+  SearchMedicineScene = 'SearchMedicineScene',
+  MedicineDetailsScene = 'MedicineDetailsScene',
+  ApplyCouponScene = 'ApplyCouponScene',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -64,7 +68,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
       header: null,
     },
   },
-
   [AppRoutes.SignUp]: {
     screen: SignUp,
     navigationOptions: {
@@ -109,6 +112,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.AppointmentDetails]: {
     screen: AppointmentDetails,
+  },
+  [AppRoutes.SearchMedicineScene]: {
+    screen: SearchMedicineScene,
+  },
+  [AppRoutes.MedicineDetailsScene]: {
+    screen: MedicineDetailsScene,
   },
 };
 
