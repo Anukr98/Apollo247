@@ -270,6 +270,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           ];
           return (
             <MedicineCard
+              personName="Surj"
               containerStyle={medicineCardContainerStyle}
               key={medicine.id}
               onPress={(_, sku) => {
