@@ -90,7 +90,11 @@ export const MedicineLanding: React.FC = (props) => {
               classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
               label="Medicines"
             />
-            <Tab classes={{ root: classes.tabRoot, selected: classes.tabSelected }} label="Tests" />
+            <Tab
+              disabled
+              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+              label="Tests"
+            />
           </Tabs>
           {tabValue === 0 && (
             <TabContainer>
