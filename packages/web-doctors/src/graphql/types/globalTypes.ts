@@ -12,6 +12,7 @@ export enum AccountType {
 }
 
 export enum ConsultMode {
+  BOTH = "BOTH",
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
 }
@@ -56,6 +57,16 @@ export enum Salutation {
   DR = "DR",
   MR = "MR",
   MRS = "MRS",
+}
+
+export enum WeekDay {
+  FRIDAY = "FRIDAY",
+  MONDAY = "MONDAY",
+  SATURDAY = "SATURDAY",
+  SUNDAY = "SUNDAY",
+  THURSDAY = "THURSDAY",
+  TUESDAY = "TUESDAY",
+  WEDNESDAY = "WEDNESDAY",
 }
 
 export interface UpdatePatientInput {

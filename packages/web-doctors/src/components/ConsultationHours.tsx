@@ -3,7 +3,7 @@ import { Theme } from '@material-ui/core';
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import { DaySelector, Day } from 'components/DaySelector';
+import { DaySelector } from 'components/DaySelector';
 import { AphButton, AphInput } from '@aph/web-ui-components';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
@@ -311,6 +311,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                     </div>
                     <div className={classes.columnDays}>
                       <Typography className={classes.heading}>
+                        {item.weekDay} &nbsp; | &nbsp;
                         {item.consultMode === 'PHYSICAL' && 'Physical'}
                         {/* {item.consultMode === 'BOTH' && ', '} */}
                         {item.consultMode === 'ONLINE' && 'Online'}
@@ -344,7 +345,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                           <Typography variant="h5" className={classes.timeForm}>
                             Which days you wish to apply these hours to?
                           </Typography>
-                          {/* <DaySelector selectedDays={item.weekDay as Day} /> */}
+                          <DaySelector selectedDays={item.weekDay} />
                         </div>
                         <div>
                           <Typography variant="h5" className={classes.timeForm}>

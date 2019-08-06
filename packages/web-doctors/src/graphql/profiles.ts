@@ -51,6 +51,7 @@ export const GET_DOCTOR_DETAILS = gql`
         startTime
         endTime
         consultType
+        weekDay
       }
       packages {
         name
@@ -75,15 +76,14 @@ export const GET_DOCTOR_DETAILS = gql`
         }
       }
       starTeam {
+        isActive
         associatedDoctor {
-          city
           country
           doctorType
           delegateNumber
           emailAddress
           experience
           firstName
-          isActive
           id
           lastName
           mobileNumber

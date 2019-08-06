@@ -6,12 +6,7 @@ import Popover from '@material-ui/core/Popover';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
-import {
-  GetDoctorProfile_getDoctorProfile_starDoctorTeam,
-  GetDoctorProfile_getDoctorProfile_clinics,
-  GetDoctorProfile,
-} from 'graphql/types/GetDoctorProfile';
-import { INVITEDSTATUS } from 'graphql/types/globalTypes';
+import { GetDoctorProfile } from 'graphql/types/GetDoctorProfile';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   REMOVE_STAR_DOCTOR,
@@ -397,7 +392,8 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
               <h4>
                 Dr. {doctor!.associatedDoctor!.firstName} {doctor!.associatedDoctor!.lastName}
               </h4>
-              {doctor!.associatedDoctor!.inviteStatus === INVITEDSTATUS.ACCEPTED || true ? (
+              {console.log(doctor!.isActive)}
+              {doctor!.isActive === true ? (
                 <h6>
                   <span>GENERAL PHYSICIAN | {doctor!.associatedDoctor!.experience} YRS</span>
                 </h6>
@@ -411,7 +407,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           }
           subheader={
             <div>
-              {doctor!.associatedDoctor!.inviteStatus === INVITEDSTATUS.ACCEPTED && (
+              {doctor!.isActive === true && (
                 <span className={classes.qualification}>
                   MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
                 </span>
@@ -573,7 +569,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   <Typography variant="h5">In-person Consult Location</Typography>
                   {clinics.map((clinic, index) => (
                     <Typography variant="h3" key={index} className={index > 0 ? classes.none : ''}>
-                      {clinic.facility.name}, {clinic.facility.streetLine1},
+                      {clinic.facility.name}, {clinic.facility.streetLine1}
                       {clinic.facility.streetLine2}
                       {clinic.facility.streetLine3}, {clinic.facility.city}
                     </Typography>
@@ -614,7 +610,7 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
     <div className={classes.ProfileContainer}>
       <DoctorDetails doctor={doctorProfile} clinics={clinics} />
 
-      {doctorProfile && (
+      {doctorProfile.doctorType === 'STAR_APOLLO' && (
         <div>
           <Typography className={numStarDoctors === 0 ? classes.none : classes.starDoctorHeading}>
             Your Star Doctors Team ({numStarDoctors})

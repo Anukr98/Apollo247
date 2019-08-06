@@ -31,28 +31,36 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-export type Day = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
+export type Day =
+  | 'Monday'
+  | 'Tuesday'
+  | 'Wednesday'
+  | 'Thursday'
+  | 'Friday'
+  | 'Saturday'
+  | 'Sunday';
 export interface DaySelectorProps {
-  selectedDays: Day;
+  selectedDays: string;
 }
 export const DaySelector: React.FC<DaySelectorProps> = (selectedDays) => {
   const classes = useStyles();
-  const days: Day[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const days: Day[] = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
   const dayshtml = days.map((day) => (
     <AphButton
       key={day}
       className={
-        selectedDays.selectedDays.indexOf(day) > -1 ? classes.btnActive : classes.btnInactive
+        selectedDays.selectedDays.toLowerCase().indexOf(day.toLowerCase()) > -1
+          ? classes.btnActive
+          : classes.btnInactive
       }
-      // onClick={() => {
-      //   const newDays = new Set(selectedDays);
-      //   if (selectedDays.has(day)) {
-      //     newDays.delete(day);
-      //   } else {
-      //     newDays.add(day);
-      //   }
-      //   setSelectedDays(newDays);
-      // }}
     >
       {day}
     </AphButton>

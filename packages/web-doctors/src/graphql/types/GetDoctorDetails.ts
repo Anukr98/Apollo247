@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, Salutation, ConsultMode, ConsultType, AccountType } from "./globalTypes";
+import { DoctorType, Salutation, ConsultMode, ConsultType, WeekDay, AccountType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorDetails
@@ -14,6 +14,7 @@ export interface GetDoctorDetails_getDoctorDetails_consultHours {
   startTime: string;
   endTime: string;
   consultType: ConsultType;
+  weekDay: WeekDay;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_packages {
@@ -51,14 +52,12 @@ export interface GetDoctorDetails_getDoctorDetails_doctorHospital {
 
 export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor {
   __typename: "Profile";
-  city: string | null;
   country: string | null;
   doctorType: DoctorType;
   delegateNumber: string | null;
   emailAddress: string | null;
   experience: string | null;
   firstName: string | null;
-  isActive: boolean;
   id: string;
   lastName: string | null;
   mobileNumber: string;
@@ -74,6 +73,7 @@ export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor {
 
 export interface GetDoctorDetails_getDoctorDetails_starTeam {
   __typename: "StarTeam";
+  isActive: boolean | null;
   associatedDoctor: GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor | null;
 }
 
