@@ -3,11 +3,11 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, Tabs, Tab } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
-import { MedicineCard } from 'components/MedicineCard';
-import { MedicineStripCard } from 'components/MedicineStripCard';
 import { AphButton } from '@aph/web-ui-components';
-import { HomeDelivery } from 'components/HomeDelivery';
-import { StorePickUp } from 'components/StorePickUp';
+import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
+import { MedicineCard } from 'components/Medicine/MedicineCard';
+import { HomeDelivery } from 'components/Locations/HomeDelivery';
+import { StorePickUp } from 'components/Locations/StorePickUp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

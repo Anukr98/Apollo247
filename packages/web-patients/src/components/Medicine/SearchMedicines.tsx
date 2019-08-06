@@ -4,8 +4,8 @@ import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphTextField } from '@aph/web-ui-components';
-import { MedicineCard } from 'components/MedicineCard';
-import { MedicineStripCard } from 'components/MedicineStripCard';
+import { MedicineCard } from 'components/Medicine/MedicineCard';
+import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
