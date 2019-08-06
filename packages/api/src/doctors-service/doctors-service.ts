@@ -27,6 +27,10 @@ import {
   getDoctorDetailsResolvers,
 } from 'doctors-service/resolvers/getDoctorDetails';
 
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+
+import { starTeamTypeDefs, starTeamResolvers } from 'doctors-service/resolvers/starTeam';
+
 import gql from 'graphql-tag';
 import { GraphQLTime } from 'graphql-iso-date';
 import { createConnection, getConnection } from 'typeorm';
@@ -74,7 +78,17 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       const firebaseUid = headers.firebaseuid;
       const mobileNumber = headers.mobilenumber;
       const dbConnect = getConnection('doctorsDbConnection');
-      const context: DoctorsServiceContext = { firebaseUid, mobileNumber, dbConnect };
+
+      const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
+      const doctordata = (await doctorRepository.getDoctorDetails(firebaseUid)) as Doctor;
+      const currentUser = doctordata;
+
+      const context: DoctorsServiceContext = {
+        firebaseUid,
+        mobileNumber,
+        dbConnect,
+        currentUser,
+      };
       return context;
     },
     schema: buildFederatedSchema([
@@ -113,6 +127,10 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       {
         typeDefs: getDoctorDetailsTypeDefs,
         resolvers: getDoctorDetailsResolvers,
+      },
+      {
+        typeDefs: starTeamTypeDefs,
+        resolvers: starTeamResolvers,
       },
     ]),
   });

@@ -4,8 +4,8 @@ import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphTextField } from '@aph/web-ui-components';
-import { MedicineCard } from 'components/MedicineCard';
-import { MedicineStripCard } from 'components/MedicineStripCard';
+import { MedicineCard } from 'components/Medicine/MedicineCard';
+import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -234,8 +234,6 @@ export const SearchMedicines: React.FC = (props) => {
               <span>Matching Medicines</span>
               <span className={classes.count}>03</span>
             </div>
-            <MedicineStripCard />
-            <MedicineStripCard />
             <MedicineStripCard />
           </div>
         </Scrollbars>

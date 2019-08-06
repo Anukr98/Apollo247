@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleProp, StyleSheet, Text, TouchableOpacityProps, View, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { theme } from '../../theme/theme';
 
 const styles = StyleSheet.create({
@@ -28,7 +28,9 @@ export interface CapsuleViewProps {
 export const CapsuleView: React.FC<CapsuleViewProps> = (props) => {
   return (
     <View style={[styles.containerStyle, props.containerStyle]}>
-      <Text style={styles.doctorNameStyles}>{props.diseaseName}</Text>
+      <Text numberOfLines={1} style={styles.doctorNameStyles}>
+        {props.diseaseName}
+      </Text>
     </View>
   );
 };
