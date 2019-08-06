@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { Appointment, STATUS, APPOINTMENT_TYPE } from 'consults-service/entities/appointment';
+import { STATUS, APPOINTMENT_TYPE } from 'consults-service/entities/appointment';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
@@ -9,8 +9,7 @@ export const getAppointmentHistoryTypeDefs = gql`
     id: ID!
     patientId: ID!
     doctorId: ID!
-    appointmentDate: Date!
-    appointmentTime: Time!
+    appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
     hospitalId: ID
     status: STATUS!
@@ -44,8 +43,7 @@ type AppointmentHistory = {
   id: string;
   patientId: string;
   doctorId: string;
-  appointmentDate: Date;
-  appointmentTime: Date;
+  appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId?: string;
   status: STATUS;
