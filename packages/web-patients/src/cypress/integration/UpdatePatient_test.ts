@@ -7,7 +7,7 @@ import {
 } from 'cypress/fixtures/patientsFixtures';
 import { Relation, Gender } from 'graphql/types/globalTypes';
 
-describe('UpdatePatient (with uhids)', () => {
+describe('UpdatePatient (multiple, with uhids)', () => {
   const patients = [janeNoRelation, johnBrother, jimmyCousin].map((pat) => ({
     ...pat,
     uhid: 'uhid-1234',
@@ -89,7 +89,7 @@ describe('UpdatePatient (with uhids)', () => {
   });
 });
 
-describe('UpdatePatient (without uhids)', () => {
+describe('UpdatePatient (multiple, without uhids)', () => {
   const patients = [janeNoRelation, julieNoRelation];
 
   beforeEach(() => {
@@ -228,5 +228,50 @@ describe('UpdatePatient (without uhids)', () => {
     cy.get('[data-cypress="HeroBanner"]')
       .contains(janeTheApostropheLover.firstName!.toLowerCase())
       .should('exist');
+  });
+});
+
+describe('UpdatePatient (single, without uhids)', () => {
+  const patient = [janeNoRelation];
+
+  beforeEach(() => {
+    cy.signIn(patient);
+    cy.visitAph(clientRoutes.welcome()).wait(500);
+  });
+
+  it('Status should autofill to Relation.ME, as indicated in welcome banner', () => {
+    cy.get('[data-cypress="HeroBanner"]').click({ force: true });
+    cy.should('contain', patient[0].firstName!.toLowerCase());
+  });
+
+  it('Email validity should not be tested until submit button is blurred', () => {
+    cy.get('input[name="emailAddress"]')
+      .scrollIntoView()
+      .clear()
+      .type('test@test...');
+
+    cy.contains('Invalid email address').should('not.exist');
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+
+    cy.get('input[name="emailAddress"]').blur();
+
+    cy.contains('Invalid email address').should('exist');
+  });
+
+  it('A valid email should have an enabled submit button', () => {
+    cy.get('input[name="emailAddress"]')
+      .scrollIntoView()
+      .clear()
+      .type('test@test.com')
+      .blur();
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('button[type="submit"]')
+      .should('be.enabled');
+
+    cy.contains('Invalid email address').should('not.exist');
   });
 });

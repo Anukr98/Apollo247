@@ -46,7 +46,7 @@ describe('Login', () => {
     cy.contains('This seems like a wrong number');
   });
 
-  it.only('Submit should not be enabled until 10 digits are entered', () => {
+  it('Submit should not be enabled until 10 digits are entered', () => {
     cy.get('[data-cypress="SignIn"]') //first
       .find('input[name*="mobileNumber"]')
       .type('9');
@@ -203,19 +203,5 @@ describe('Login (Firebase)', () => {
       .should('not.exist');
 
     cy.contains('Type in the OTP that has been resent to you for authentication');
-  });
-});
-
-describe('Login state for single user without Relation status selected', () => {
-  const patient = [janeNoRelation];
-
-  beforeEach(() => {
-    cy.signIn(patient);
-    cy.visitAph(clientRoutes.welcome()).wait(500);
-  });
-
-  it('Status should autofill to Relation.ME, as indicated in welcome banner', () => {
-    cy.get('[data-cypress="HeroBanner"]').click({ force: true });
-    cy.should('contain', patient[0].firstName!.toLowerCase());
   });
 });
