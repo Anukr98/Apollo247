@@ -33,6 +33,7 @@ import { GatewayHeaders } from 'api-gateway';
 (async () => {
   await createConnections([
     {
+      name: 'consults-db',
       entities: [Appointment],
       type: 'postgres',
       host: 'consults-db',
@@ -44,7 +45,7 @@ import { GatewayHeaders } from 'api-gateway';
       synchronize: true,
     },
     {
-      name: 'doctorsDbConnection',
+      name: 'doctors-db',
       entities: [
         Doctor,
         DoctorSpecialty,
@@ -73,13 +74,13 @@ import { GatewayHeaders } from 'api-gateway';
       const headers = req.headers as GatewayHeaders;
       const firebaseUid = headers.firebaseuid;
       const mobileNumber = headers.mobilenumber;
-      const doctorsDbConnect = getConnection('doctorsDbConnection');
-      const consultsDbConnect = getConnection();
+      const doctorsDb = getConnection('doctors-db');
+      const consultsDb = getConnection('consults-db');
       const context: ConsultServiceContext = {
         firebaseUid,
         mobileNumber,
-        doctorsDbConnect,
-        consultsDbConnect,
+        doctorsDb,
+        consultsDb,
       };
       return context;
     },

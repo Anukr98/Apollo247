@@ -3,6 +3,6 @@ import { Connection } from 'typeorm';
 import { Doctor } from 'doctors-service/entities';
 
 export interface DoctorsServiceContext extends GatewayContext {
-  dbConnect: Connection;
+  doctorsDb: Connection;
   currentUser: Doctor;
 }

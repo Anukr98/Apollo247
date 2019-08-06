@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
-import { createConnection } from 'typeorm';
+import { createConnection, getConnection } from 'typeorm';
 import { Patient } from 'profiles-service/entity/patient';
 import { Appointments } from 'profiles-service/entity/appointment';
 import {
@@ -26,6 +26,7 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
 
 (async () => {
   await createConnection({
+    name: 'profiles-db',
     entities: [Patient, Appointments],
     type: 'postgres',
     host: 'profiles-db',
@@ -50,8 +51,14 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
       //   : await Patient.findOneOrFail({ where: { firebaseUid } }).catch(() => {
       //       throw new AphAuthenticationError(AphErrorMessages.NO_CURRENT_USER);
       //     });
+      const profilesDb = getConnection('profiles-db');
       const currentPatient = null;
-      const context: ProfilesServiceContext = { firebaseUid, mobileNumber, currentPatient };
+      const context: ProfilesServiceContext = {
+        firebaseUid,
+        mobileNumber,
+        profilesDb,
+        currentPatient,
+      };
       return context;
     },
     schema: buildFederatedSchema([

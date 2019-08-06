@@ -49,6 +49,7 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 
 (async () => {
   await createConnection({
+    name: 'doctors-db',
     entities: [
       Doctor,
       DoctorSpecialty,
@@ -77,16 +78,16 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       const headers = req.headers as GatewayHeaders;
       const firebaseUid = headers.firebaseuid;
       const mobileNumber = headers.mobilenumber;
-      const dbConnect = getConnection('doctorsDbConnection');
+      const doctorsDb = getConnection('doctors-db');
 
-      const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
+      const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
       const doctordata = (await doctorRepository.getDoctorDetails(firebaseUid)) as Doctor;
       const currentUser = doctordata;
 
       const context: DoctorsServiceContext = {
         firebaseUid,
         mobileNumber,
-        dbConnect,
+        doctorsDb,
         currentUser,
       };
       return context;
