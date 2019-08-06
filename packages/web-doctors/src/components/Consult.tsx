@@ -128,7 +128,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 170,
       height: 170,
       position: 'absolute',
-      bottom: 170,
+      bottom: 125,
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       borderRadius: 10,
     },
@@ -191,7 +191,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 </OTStreams>
                 {props.showVideoChat && (
                   <div className={classes.minimizeBtns}>
-                    <img src={require('images/ic_stopcall.svg')} className={classes.stopCallIcon} />
+                    <img
+                      src={require('images/ic_stopcall.svg')}
+                      className={classes.stopCallIcon}
+                      onClick={() => setIscall(false)}
+                    />
                     <img
                       src={require('images/ic_maximize.svg')}
                       className={classes.fullscreenIcon}

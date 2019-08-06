@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       boxShadow: '0 2px 4px 0 #00000026',
       minWidth: 120,
-      marginRight: 40,
+      marginRight: 30,
     },
     boldTxt: {
       fontWeight: 700,
@@ -70,7 +70,7 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
       position: 'relative',
       backgroundColor: '#f7f7f7',
-      paddingBottom: 20,
+      paddingBottom: 120,
     },
     docterChat: {
       display: 'block',
@@ -94,7 +94,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     incomingContainer: {
       textAlign: 'right',
-      paddingRight: 32,
+      paddingRight: 20,
     },
     incomingBtn: {
       position: 'relative',
@@ -126,9 +126,10 @@ const useStyles = makeStyles((theme: Theme) => {
       bottom: 20,
     },
     chatFooterSection: {
-      position: 'relative',
+      position: 'absolute',
       padding: '60px 20px 20px 20px',
       clear: 'both',
+      bottom: 0,
       backgroundColor: '#fff',
       width: '100%',
     },
@@ -147,7 +148,7 @@ interface MessagesObjectProps {
 interface ConsultRoomProps {
   toggleTabs: () => void;
 }
-export const ConsultRoom: React.FC = (ConsultRoomProps) => {
+export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const classes = useStyles();
   const [isCalled, setIsCalled] = useState<boolean>(false);
   const [showVideo, setShowVideo] = useState<boolean>(false);
@@ -266,6 +267,10 @@ export const ConsultRoom: React.FC = (ConsultRoomProps) => {
   const toggelChatVideo = () => {
     setShowVideoChat(!showVideoChat);
   };
+  const actionBtn = () => {
+    setShowVideo(true);
+    // props.toggleTabs();
+  };
   return (
     <div className={classes.consultRoom}>
       <div className={classes.container}>
@@ -287,7 +292,7 @@ export const ConsultRoom: React.FC = (ConsultRoomProps) => {
                       <img
                         src={require('images/ic_callpick.svg')}
                         className={classes.endcall}
-                        onClick={() => setShowVideo(true)}
+                        onClick={() => actionBtn()}
                       />
                     </div>
                   </div>

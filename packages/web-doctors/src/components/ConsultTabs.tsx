@@ -140,13 +140,21 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '0 5px',
       minWidth: 20,
     },
+    DisplayNone: {
+      display: 'none !important',
+    },
   };
 });
 export const ConsultTabs: React.FC = (props) => {
   const classes = useStyles();
   const [tabValue, setTabValue] = useState<number>(0);
+  const [showTabs, setshowTabs] = useState<boolean>(true);
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
+  };
+  const toggleTabs = () => {
+    console.log(showTabs);
+    setshowTabs(!showTabs);
   };
   return (
     <div className={classes.consultRoom}>
@@ -179,24 +187,29 @@ export const ConsultTabs: React.FC = (props) => {
           </div>
         </div>
         <div>
-          <Tabs
-            value={tabValue}
-            variant="fullWidth"
-            classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
-            onChange={(e, newValue) => {
-              setTabValue(newValue);
-            }}
-          >
-            <Tab
-              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-              label="Case Sheet"
-            />
-            <Tab classes={{ root: classes.tabRoot, selected: classes.tabSelected }} label="Chat" />
-          </Tabs>
+          <div className={showTabs ? '' : classes.DisplayNone}>
+            <Tabs
+              value={tabValue}
+              variant="fullWidth"
+              classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+              onChange={(e, newValue) => {
+                setTabValue(newValue);
+              }}
+            >
+              <Tab
+                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                label="Case Sheet"
+              />
+              <Tab
+                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                label="Chat"
+              />
+            </Tabs>
+          </div>
           {tabValue === 0 && <TabContainer>case sheet</TabContainer>}
           {tabValue === 1 && (
             <TabContainer>
-              <ConsultRoom />
+              <ConsultRoom toggleTabs={() => toggleTabs()} />
             </TabContainer>
           )}
         </div>
