@@ -150,6 +150,8 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
           className={classes.daysList}
           date={date}
           handler={(e, date) => {
+            setDate(date);
+
             if (dayClickHandler) {
               dayClickHandler(e, date);
             }
