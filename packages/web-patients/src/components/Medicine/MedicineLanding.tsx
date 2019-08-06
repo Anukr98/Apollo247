@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
 import React, { useState } from 'react';
 import { Header } from 'components/Header';
-import { SearchMedicines } from 'components/SearchMedicines';
+import { SearchMedicines } from 'components/Medicine/SearchMedicines';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
