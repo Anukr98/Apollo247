@@ -6,6 +6,27 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum AccountType {
+  CURRENT = "CURRENT",
+  SAVINGS = "SAVINGS",
+}
+
+export enum ConsultMode {
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+}
+
+export enum ConsultType {
+  FIXED = "FIXED",
+  PREFERRED = "PREFERRED",
+}
+
+export enum DoctorType {
+  APOLLO = "APOLLO",
+  PAYROLL = "PAYROLL",
+  STAR_APOLLO = "STAR_APOLLO",
+}
+
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
@@ -29,6 +50,12 @@ export enum Relation {
   OTHER = "OTHER",
   SISTER = "SISTER",
   WIFE = "WIFE",
+}
+
+export enum Salutation {
+  DR = "DR",
+  MR = "MR",
+  MRS = "MRS",
 }
 
 export interface UpdatePatientInput {

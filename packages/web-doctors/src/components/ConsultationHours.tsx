@@ -9,9 +9,9 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import {
-  GetDoctorProfile_getDoctorProfile_consultationHours,
-  GetDoctorProfile_getDoctorProfile,
-} from 'graphql/types/GetDoctorProfile';
+  GetDoctorDetails_getDoctorDetails_consultHours,
+  GetDoctorDetails_getDoctorDetails,
+} from 'graphql/types/GetDoctorDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Divider from '@material-ui/core/Divider';
 import format from 'date-fns/format';
@@ -284,7 +284,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 interface ConsultationHoursProps {
-  values: GetDoctorProfile_getDoctorProfile;
+  values: GetDoctorDetails_getDoctorDetails;
 }
 
 export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) => {
@@ -294,9 +294,10 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
     return format(new Date('1970-01-01T' + time), 'p');
   }
   const AvailabilityHtml =
-    data && data.consultationHours
-      ? data.consultationHours.map(
-          (item: GetDoctorProfile_getDoctorProfile_consultationHours, index: number) => {
+    data && data.consultHours
+      ? data.consultHours.map(
+          (_item: GetDoctorDetails_getDoctorDetails_consultHours | null, index: number) => {
+            const item = _item!;
             return (
               <div key={index.toString()} className={classes.tabContent}>
                 <ExpansionPanel className={classes.serviceItem}>
@@ -310,17 +311,12 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                     </div>
                     <div className={classes.columnDays}>
                       <Typography className={classes.heading}>
-                        {item.days} &nbsp; | &nbsp;{' '}
-                        {item.availableForPhysicalConsultation && 'Physical'}
-                        {item.availableForPhysicalConsultation &&
-                          item.availableForVirtualConsultation &&
-                          ', '}
-                        {item.availableForVirtualConsultation && 'Online'}
+                        {item.consultMode === 'PHYSICAL' && 'Physical'}
+                        {/* {item.consultMode === 'BOTH' && ', '} */}
+                        {item.consultMode === 'ONLINE' && 'Online'}
                       </Typography>
                     </div>
-                    {item.type && item.type !== '' && (
-                      <div className={classes.columnType}>(FIXED)</div>
-                    )}
+                    {item.consultType && <div className={classes.columnType}>(FIXED)</div>}
                   </ExpansionPanelSummary>
                   <ExpansionPanelDetails className={classes.details}>
                     <div>
@@ -348,7 +344,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                           <Typography variant="h5" className={classes.timeForm}>
                             Which days you wish to apply these hours to?
                           </Typography>
-                          <DaySelector selectedDays={item.days as Day} />
+                          {/* <DaySelector selectedDays={item.weekDay as Day} /> */}
                         </div>
                         <div>
                           <Typography variant="h5" className={classes.timeForm}>
@@ -357,7 +353,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                           <AphButton
                             variant="contained"
                             classes={
-                              item.availableForPhysicalConsultation
+                              item.consultMode === 'PHYSICAL'
                                 ? { root: classes.btnActive }
                                 : { root: classes.btnInactive }
                             }
@@ -368,7 +364,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                           <AphButton
                             variant="contained"
                             classes={
-                              item.availableForVirtualConsultation
+                              item.consultMode === 'ONLINE'
                                 ? { root: classes.btnActive }
                                 : { root: classes.btnInactive }
                             }
@@ -391,7 +387,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                               variant="contained"
                               color="primary"
                               classes={{ root: classes.cancelBtn }}
-                              //onClick={() => onBack()}
+                              // onClick={() => onBack()}
                             >
                               CANCEL
                             </AphButton>
@@ -399,7 +395,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                               variant="contained"
                               color="primary"
                               classes={{ root: classes.saveBtn }}
-                              //onClick={() => onNext()}
+                              // onClick={() => onNext()}
                             >
                               SAVE
                             </AphButton>

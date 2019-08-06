@@ -9,7 +9,7 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { GetDoctorProfile_getDoctorProfile } from 'graphql/types/GetDoctorProfile';
+import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -228,7 +228,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 interface FeesProps {
-  values: GetDoctorProfile_getDoctorProfile;
+  values: GetDoctorDetails_getDoctorDetails;
   onNext: () => void;
   onBack: () => void;
 }
@@ -247,20 +247,18 @@ export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
           <div className={classes.tabContent}>
             <Paper className={classes.serviceItem}>
               <Typography variant="subtitle1">What are your online consultation fees?</Typography>
-              <Typography className={classes.bold}>
-                Rs. {data.profile.onlineConsultationFees}
-              </Typography>
+              <Typography className={classes.bold}>Rs. {data.onlineConsultationFees}</Typography>
               <Typography variant="subtitle1">What are your physical consultation fees?</Typography>
-              <Typography className={classes.bold}>
-                Rs. {data.profile.physicalConsultationFees}
-              </Typography>
+              <Typography className={classes.bold}>Rs. {data.physicalConsultationFees}</Typography>
               <Typography variant="subtitle1">What packages do you offer your patients?</Typography>
-              <Typography className={classes.bold}>{data.profile.package}</Typography>
+              <Typography className={classes.bold}>
+                {data.packages ? data.packages![0]!.name : ''}
+              </Typography>
             </Paper>
           </div>
         </Grid>
       </Grid>
-      {data.paymentDetails && data.paymentDetails.length > 0 && (
+      {data.bankAccount && (
         <Grid container alignItems="flex-start" spacing={0}>
           <Grid item lg={2} sm={6} xs={12}>
             <Typography variant="h2">Payment Method</Typography>
@@ -274,12 +272,12 @@ export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
                 >
                   <div className={classes.columnAC}>
                     <Typography className={classes.heading}>
-                      A/C Number: {data.paymentDetails[0].accountNumber}
+                      A/C Number: {data.bankAccount && data.bankAccount![0]!.accountNumber}
                     </Typography>
                   </div>
                   <div>
                     <Typography className={classes.secondaryHeading}>
-                      {data.paymentDetails[0].address}
+                      {data.bankAccount![0]!.state}
                     </Typography>
                   </div>
                 </ExpansionPanelSummary>
@@ -290,19 +288,19 @@ export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
                       <Grid item lg={12} sm={12} xs={12}>
                         <div className={classes.accountDetailsHeading}>Account Holder’s Name</div>
                         <Typography variant="h5" className={classes.accountDetails}>
-                          Dr. Simran Rao
+                          {data.lastName}
                         </Typography>
                       </Grid>
                       <Grid item lg={12} sm={12} xs={12}>
                         <div className={classes.accountDetailsHeading}>IFSC Code</div>
                         <Typography variant="h5" className={classes.accountDetails}>
-                          000 123 456 7890
+                          {data.bankAccount![0]!.IFSCcode}
                         </Typography>
                       </Grid>
                       <Grid item lg={12} sm={12} xs={12}>
                         <div className={classes.accountDetailsHeading}>Account Type</div>
                         <Typography variant="h5" className={classes.accountDetails}>
-                          Savings Account
+                          {data.bankAccount![0]!.accountType}
                         </Typography>
                       </Grid>
                     </Grid>

@@ -8,11 +8,94 @@ export const GET_PATIENTS = gql`
         mobileNumber
         firstName
         lastName
-        relation
         gender
         uhid
         dateOfBirth
         emailAddress
+      }
+    }
+  }
+`;
+export const GET_DOCTOR_DETAILS = gql`
+  query GetDoctorDetails {
+    getDoctorDetails {
+      awards
+      city
+      country
+      dateOfBirth
+      doctorType
+      delegateNumber
+      emailAddress
+      experience
+      firebaseToken
+      firstName
+      isActive
+      id
+      languages
+      lastName
+      mobileNumber
+      onlineConsultationFees
+      photoUrl
+      physicalConsultationFees
+      qualification
+      registrationNumber
+      salutation
+      specialization
+      state
+      streetLine1
+      streetLine2
+      streetLine3
+      zip
+      consultHours {
+        consultMode
+        startTime
+        endTime
+        consultType
+      }
+      packages {
+        name
+        fees
+      }
+      bankAccount {
+        accountNumber
+        state
+        IFSCcode
+        accountType
+      }
+      specialty {
+        name
+      }
+      doctorHospital {
+        facility {
+          name
+          streetLine1
+          streetLine2
+          streetLine3
+          city
+        }
+      }
+      starTeam {
+        associatedDoctor {
+          city
+          country
+          doctorType
+          delegateNumber
+          emailAddress
+          experience
+          firstName
+          isActive
+          id
+          lastName
+          mobileNumber
+          photoUrl
+          qualification
+          salutation
+          state
+          streetLine1
+          streetLine2
+          streetLine3
+          zip
+        }
       }
     }
   }

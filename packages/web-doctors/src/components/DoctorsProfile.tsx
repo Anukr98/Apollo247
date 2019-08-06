@@ -12,7 +12,9 @@ import { DoctorProfileTab } from 'components/DoctorProfileTab';
 import { AvailabilityTab } from 'components/AvailabilityTab';
 import { FeesTab } from 'components/FeesTab';
 import { useQuery } from 'react-apollo-hooks';
-import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
+//import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
+import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
+
 import { Link } from 'react-router-dom';
 
 const AntTabs = withStyles({
@@ -144,7 +146,18 @@ export interface DoctorsProfileProps {}
 export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) => {
   const classes = useStyles();
   const [selectedTabIndex, setselectedTabIndex] = React.useState(0);
-  const { data } = useQuery(GET_DOCTOR_PROFILE);
+  const { data, error, loading } = useQuery(GET_DOCTOR_DETAILS);
+
+  if (loading) {
+    return <div>loading...</div>;
+  }
+
+  if (error) {
+    return <div>error</div>;
+  }
+
+  console.log(data);
+
   const tabsArray = ['Profile', 'Availability', 'Fees', ''];
   const tabsHtml = tabsArray.map((item, index) => {
     return (
@@ -173,21 +186,21 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
         <Header />
       </div>
       <div className={classes.container}>
-        {data && data.getDoctorProfile && (
+        {data && data.getDoctorDetails && (
           <div>
             <div className={classes.tabHeading}>
               <Typography variant="h1">
                 {selectedTabIndex === 0 && (
-                  <span>{`hi dr. ${data.getDoctorProfile.profile.lastName.toLowerCase()} !`}</span>
+                  <span>{`hi dr. ${data.getDoctorDetails.lastName.toLowerCase()} !`}</span>
                 )}
                 {selectedTabIndex === 1 && (
-                  <span>{` ok dr. ${data.getDoctorProfile.profile.lastName.toLowerCase()}`}!</span>
+                  <span>{` ok dr. ${data.getDoctorDetails.lastName.toLowerCase()}`}!</span>
                 )}
                 {selectedTabIndex === 2 && (
-                  <span>{`ok dr. ${data.getDoctorProfile.profile.lastName.toLowerCase()}`}!</span>
+                  <span>{`ok dr. ${data.getDoctorDetails.lastName.toLowerCase()}`}!</span>
                 )}
                 {selectedTabIndex === 3 && (
-                  <span>{`thank you, dr. ${data.getDoctorProfile.profile.lastName.toLowerCase()} :)`}</span>
+                  <span>{`thank you, dr. ${data.getDoctorDetails.lastName.toLowerCase()} :)`}</span>
                 )}
               </Typography>
               {selectedTabIndex === 0 && (
@@ -233,9 +246,9 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
             )}
             {selectedTabIndex === 0 && (
               <TabContainer>
-                {!!data.getDoctorProfile && (
+                {!!data.getDoctorDetails && (
                   <DoctorProfileTab
-                    // values={data.getDoctorProfile}
+                    //values={data.getDoctorDetails}
                     onNext={() => onNext()}
                     key={1}
                   />
@@ -244,9 +257,9 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
             )}
             {selectedTabIndex === 1 && (
               <TabContainer>
-                {!!data.getDoctorProfile && (
+                {!!data.getDoctorDetails && (
                   <AvailabilityTab
-                    values={data.getDoctorProfile}
+                    values={data.getDoctorDetails}
                     onNext={() => onNext()}
                     onBack={() => onBack()}
                     key={2}
@@ -256,9 +269,9 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
             )}
             {selectedTabIndex === 2 && (
               <TabContainer>
-                {!!data.getDoctorProfile && (
+                {!!data.getDoctorDetails && (
                   <FeesTab
-                    values={data.getDoctorProfile}
+                    values={data.getDoctorDetails}
                     onNext={() => onNext()}
                     onBack={() => onBack()}
                     key={3}

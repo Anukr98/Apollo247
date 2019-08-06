@@ -5,7 +5,8 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import { AphButton } from '@aph/web-ui-components';
 import { ConsultationHours } from 'components/ConsultationHours';
-import { GetDoctorProfile_getDoctorProfile } from 'graphql/types/GetDoctorProfile';
+import { isNull } from 'util';
+import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -252,7 +253,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 interface AvailabilityTabProps {
-  values: GetDoctorProfile_getDoctorProfile;
+  values: GetDoctorDetails_getDoctorDetails;
   onNext: () => void;
   onBack: () => void;
 }
@@ -276,7 +277,7 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
               <AphButton
                 variant="contained"
                 classes={
-                  data && data.profile && data.profile.availableForPhysicalConsultation
+                  data.consultHours && data.consultHours![0]!.consultMode === 'PHYSICAL'
                     ? { root: classes.btnActive }
                     : { root: classes.btnInactive }
                 }
@@ -286,7 +287,7 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
               <AphButton
                 variant="contained"
                 classes={
-                  data && data.profile && data.profile.availableForVirtualConsultation
+                  data.consultHours && data.consultHours![0]!.consultMode === 'ONLINE'
                     ? { root: classes.btnActive }
                     : { root: classes.btnInactive }
                 }
@@ -302,7 +303,7 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
           <Typography variant="h2">Consultation Hours</Typography>
         </Grid>
         <Grid item lg={10} sm={6} xs={12}>
-          {data.consultationHours && data.consultationHours.length && (
+          {data && data.consultHours && data.consultHours.length && (
             <ConsultationHours values={data} />
           )}
           {!showOperatingHoursForm && (
