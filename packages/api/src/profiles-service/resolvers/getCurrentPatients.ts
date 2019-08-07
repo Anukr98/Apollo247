@@ -12,6 +12,7 @@ import {
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Resolver } from 'api-gateway';
+import { getConnection } from 'typeorm';
 
 export const getCurrentPatientsTypeDefs = gql`
   enum Gender {
@@ -136,6 +137,14 @@ const getCurrentPatients: Resolver<
 };
 
 export const getCurrentPatientsResolvers = {
+  PatientDetails: {
+    async __resolveReference(object: Patient) {
+      const connection = getConnection();
+      const patientsRepo = connection.getRepository(Patient);
+      return await patientsRepo.find({ where: { id: object.id } });
+      //return Doctor.findOne({ doctorId: object.doctorId });
+    },
+  },
   Query: {
     getCurrentPatients,
   },
