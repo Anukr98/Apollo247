@@ -135,7 +135,7 @@ export const GET_DOCTOR_AVAILABLE_SLOTS = gql`
 `;
 
 export const BOOK_APPOINTMENT = gql`
-  mutation bookAppointment($bookAppointment: BookAppointmentInput!) {
+  mutation BookAppointment($bookAppointment: BookAppointmentInput!) {
     bookAppointment(appointmentInput: $bookAppointment) {
       appointment {
         id

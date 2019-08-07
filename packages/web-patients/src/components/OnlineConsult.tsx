@@ -14,6 +14,7 @@ import {
 } from 'graphql/types/GetDoctorAvailableSlots';
 import { GET_DOCTOR_AVAILABLE_SLOTS } from 'graphql/doctors';
 import { getTime } from 'date-fns/esm';
+import { Mutation } from 'react-apollo';
 
 const getTimestamp = (today: Date, slotTime: string) => {
   const hhmm = slotTime.split(':');
