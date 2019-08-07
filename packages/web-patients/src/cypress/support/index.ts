@@ -1,4 +1,4 @@
-import '@aph/universal/global';
+import '@aph/universal/dist/global';
 
 // ***********************************************************
 // This example support/index.js is processed and

@@ -6,18 +6,13 @@ import Popover from '@material-ui/core/Popover';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
-import {
-  GetDoctorProfile_getDoctorProfile_starDoctorTeam,
-  GetDoctorProfile_getDoctorProfile_clinics,
-  GetDoctorProfile,
-  GetDoctorProfile_getDoctorProfile_profile,
-} from 'graphql/types/GetDoctorProfile';
-import { INVITEDSTATUS } from 'graphql/types/globalTypes';
+import { GetDoctorProfile } from 'graphql/types/GetDoctorProfile';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   REMOVE_STAR_DOCTOR,
   GET_DOCTOR_PROFILE,
   ADD_DOCTOR_TO_STAR_PROGRAM,
+  GET_DOCTOR_DETAILS,
 } from 'graphql/profiles';
 import { MoreVert } from '@material-ui/icons';
 import {
@@ -30,6 +25,12 @@ import {
 } from 'graphql/types/AddDoctorToStarDoctorProgram';
 import { Mutation } from 'react-apollo';
 import { StarDoctorSearch } from 'components/StarDoctorSearch';
+import {
+  GetDoctorDetails_getDoctorDetails,
+  GetDoctorDetails,
+  GetDoctorDetails_getDoctorDetails_doctorHospital,
+  GetDoctorDetails_getDoctorDetails_starTeam,
+} from 'graphql/types/GetDoctorDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -287,7 +288,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export interface StarDoctorCardProps {
-  doctor: GetDoctorProfile_getDoctorProfile_starDoctorTeam;
+  doctor: GetDoctorDetails_getDoctorDetails_starTeam;
 }
 const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
   const { doctor } = props;
@@ -322,12 +323,19 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
             >
               {(mutate, { loading }) => (
                 <>
-                  <IconButton onClick={(e) => handleClick(e, doctor.firstName)} disabled={loading}>
+                  <IconButton
+                    onClick={(e) => handleClick(e, doctor!.associatedDoctor!.firstName!)}
+                    disabled={loading}
+                  >
                     {loading ? <CircularProgress /> : <MoreVert />}
                   </IconButton>
                   <Popover
-                    id={currentDoctor === doctor.firstName ? doctor.firstName : undefined}
-                    open={currentDoctor === doctor.firstName}
+                    id={
+                      currentDoctor === doctor!.associatedDoctor!.firstName
+                        ? doctor!.associatedDoctor!.firstName
+                        : undefined
+                    }
+                    open={currentDoctor === doctor!.associatedDoctor!.firstName}
                     anchorEl={anchorEl}
                     onClose={handleClose}
                     anchorOrigin={{
@@ -358,7 +366,8 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                               existingData.getDoctorProfile.starDoctorTeam) ||
                             [];
                           const newStarDoctorTeam = existingStarDoctorTeam.filter(
-                            (existingDoc) => existingDoc.firstName !== doctor.firstName
+                            (existingDoc) =>
+                              existingDoc.firstName !== doctor!.associatedDoctor!.firstName
                           );
                           const dataAfterMutation: GetDoctorProfile = {
                             ...existingData,
@@ -381,23 +390,18 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           title={
             <div>
               <h4>
-                Dr. {doctor.firstName} {doctor.lastName}
+                Dr. {doctor!.associatedDoctor!.firstName} {doctor!.associatedDoctor!.lastName}
               </h4>
-              {doctor.inviteStatus === INVITEDSTATUS.ACCEPTED ? (
+              {doctor!.isActive === true && (
                 <h6>
-                  <span>GENERAL PHYSICIAN | {doctor.experience} YRS</span>
+                  <span>GENERAL PHYSICIAN | {doctor!.associatedDoctor!.experience} YRS</span>
                 </h6>
-              ) : (
-                <Typography className={classes.invited}>
-                  <img alt="" src={require('images/ic_invite.svg')} />
-                  Invited
-                </Typography>
               )}
             </div>
           }
           subheader={
             <div>
-              {doctor.inviteStatus === INVITEDSTATUS.ACCEPTED && (
+              {doctor!.isActive === true && (
                 <span className={classes.qualification}>
                   MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
                 </span>
@@ -413,7 +417,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
 
 export interface StarDoctorsListProps {
   currentDocId: string;
-  starDoctors: GetDoctorProfile_getDoctorProfile_starDoctorTeam[];
+  starDoctors: (GetDoctorDetails_getDoctorDetails_starTeam | null)[];
 }
 
 const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
@@ -428,13 +432,17 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
     >
       {(mutate, { loading }) => (
         <Grid container alignItems="flex-start" spacing={0}>
-          {starDoctors.map((doctor, index) => (
-            <Grid item lg={4} sm={6} xs={12} key={index}>
-              <div className={classes.tabContentStarDoctor}>
-                <StarDoctorCard doctor={doctor} />
-              </div>
-            </Grid>
-          ))}
+          {starDoctors.map((doctor, index) => {
+            return (
+              doctor!.isActive === true && (
+                <Grid item lg={4} sm={6} xs={12} key={index}>
+                  <div className={classes.tabContentStarDoctor}>
+                    <StarDoctorCard doctor={doctor!} />
+                  </div>
+                </Grid>
+              )
+            );
+          })}
           {showAddDoc && (
             <Grid item lg={4} sm={6} xs={12}>
               <div className={classes.addStarDoctor}>
@@ -491,8 +499,8 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
 };
 
 interface DoctorDetailsProps {
-  doctor: GetDoctorProfile_getDoctorProfile_profile;
-  clinics: GetDoctorProfile_getDoctorProfile_clinics[];
+  doctor: GetDoctorDetails_getDoctorDetails;
+  clinics: GetDoctorDetails_getDoctorDetails_doctorHospital[];
 }
 const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { doctor, clinics } = props;
@@ -517,7 +525,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 Dr. {doctor.firstName} {doctor.lastName}
               </Typography>
               <Typography variant="h6">
-                {(doctor.specialization || '').toUpperCase()} <span> | </span>
+                {(doctor.specialty.name || '').toUpperCase()} <span> | </span>
                 <span> {doctor.experience}YRS </span>
               </Typography>
             </Paper>
@@ -527,7 +535,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Education</Typography>
-                  <Typography variant="h3">{doctor.education}</Typography>
+                  <Typography variant="h3">{doctor.qualification}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
@@ -539,7 +547,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Speciality</Typography>
-                  <Typography variant="h3">{doctor.speciality}</Typography>
+                  <Typography variant="h3">{doctor.specialty.name}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
@@ -551,7 +559,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Services</Typography>
-                  <Typography variant="h3">{doctor.services}</Typography>
+                  <Typography variant="h3">{doctor.specialization}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
@@ -559,8 +567,9 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   <Typography variant="h5">In-person Consult Location</Typography>
                   {clinics.map((clinic, index) => (
                     <Typography variant="h3" key={index} className={index > 0 ? classes.none : ''}>
-                      {clinic.name}, {clinic.addressLine1}, {clinic.addressLine2}
-                      {clinic.addressLine3}, {clinic.city}
+                      {clinic.facility.name}, {clinic.facility.streetLine1}
+                      {clinic.facility.streetLine2}
+                      {clinic.facility.streetLine3}, {clinic.facility.city}
                     </Typography>
                   ))}
                 </Paper>
@@ -584,22 +593,22 @@ interface DoctorProfileTabProps {
 }
 export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
   const classes = useStyles();
-  const { data, error, loading } = useQuery<GetDoctorProfile>(GET_DOCTOR_PROFILE);
-  const getDoctorProfileData = data && data.getDoctorProfile ? data.getDoctorProfile : null;
+  const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
+  const getDoctorDetailsData = data && data.getDoctorDetails ? data.getDoctorDetails : null;
 
   if (loading) return <CircularProgress />;
-  if (error || !getDoctorProfileData) return <div>error :(</div>;
+  if (error || !getDoctorDetailsData) return <div>error :(</div>;
 
-  const doctorProfile = getDoctorProfileData.profile;
-  const clinics = getDoctorProfileData.clinics || [];
-  const starDoctors = getDoctorProfileData.starDoctorTeam || [];
+  const doctorProfile = getDoctorDetailsData;
+  const clinics = getDoctorDetailsData.doctorHospital || [];
+  const starDoctors = getDoctorDetailsData.starTeam || [];
   const numStarDoctors = starDoctors.length;
 
   return (
     <div className={classes.ProfileContainer}>
       <DoctorDetails doctor={doctorProfile} clinics={clinics} />
 
-      {doctorProfile.isStarDoctor && (
+      {doctorProfile.doctorType === 'STAR_APOLLO' && (
         <div>
           <Typography className={numStarDoctors === 0 ? classes.none : classes.starDoctorHeading}>
             Your Star Doctors Team ({numStarDoctors})

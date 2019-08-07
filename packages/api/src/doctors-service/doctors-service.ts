@@ -1,4 +1,4 @@
-import '@aph/universal/global';
+import '@aph/universal/dist/global';
 import 'reflect-metadata';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';

@@ -1,8 +1,6 @@
 {
   "name": "@aph/universal",
   "version": "0.0.1",
-  "main": "",
-  "types": "",
   "scripts": {
     "build": "tsc --project .",
     "format": "prettier --list-different src/**/*.js src/**/*.jsx src/**/*.ts src/**/*.tsx src/**/*.json",

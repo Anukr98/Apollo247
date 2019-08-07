@@ -16,7 +16,7 @@ import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
 import { Formik, FormikProps, Form, Field, FieldProps } from 'formik';
-import { isMobileNumberValid } from '@aph/universal/aphValidators';
+import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

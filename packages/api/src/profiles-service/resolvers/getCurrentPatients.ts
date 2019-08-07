@@ -10,7 +10,7 @@ import {
   PrismGetUsersResponse,
 } from 'types/prism';
 import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Resolver } from 'api-gateway';
 
 export const getCurrentPatientsTypeDefs = gql`
