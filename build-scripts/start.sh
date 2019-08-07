@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# $1 refers the environment: 'local' | 'dev' | 'qa' | 'production'
+# $1 refers the environment: 'local' | 'development' | 'staging' | 'production'
 # This script should run while ssh'ed into the remote server
 
 if [ -d "./apollo-hospitals" ] 

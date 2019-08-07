@@ -72,12 +72,12 @@ const bookAppointment: Resolver<
   AppointmentInputArgs,
   ConsultServiceContext,
   BookAppointmentResult
-> = async (parent, { appointmentInput }, { doctorsDbConnect, consultsDbConnect }) => {
+> = async (parent, { appointmentInput }, { consultsDb }) => {
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
     ...appointmentInput,
     status: STATUS.IN_PROGRESS,
   };
-  const appts = consultsDbConnect.getCustomRepository(AppointmentRepository);
+  const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appts.saveAppointment(appointmentAttrs);
   return { appointment };
 };

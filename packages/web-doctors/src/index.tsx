@@ -1,3 +1,4 @@
+import '@aph/universal/global';
 import 'unfetch/polyfill';
 
 import { AppContainer } from 'components/AppContainer';
