@@ -92,15 +92,15 @@ const useStyles = makeStyles({
   },
   datePickerOpen: {
     '& input': {
-      'background': `url(${require('images/ic_cal_up.svg')}) no-repeat right center`,
-      cursor: 'pointer'
-    }
+      background: `url(${require('images/ic_cal_up.svg')}) no-repeat right center`,
+      cursor: 'pointer',
+    },
   },
   datePickerClose: {
     '& input': {
       'background-image': `url(${require('images/ic_cal_down.svg')})`,
-    }
-  }
+    },
+  },
 });
 
 const defaultMaterialTheme = createMuiTheme({
@@ -131,7 +131,7 @@ const defaultMaterialTheme = createMuiTheme({
 export const MonthList: React.FC<MonthListProps> = ({ date, onChange }) => {
   const classes = useStyles();
   const [selectedDate, handleDateChange] = useState<MaterialUiPickersDate>(new Date());
-  const [isOpen, setIsOpen] = useState<boolean>(false)
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
     handleDateChange(date as MaterialUiPickersDate);
@@ -152,7 +152,7 @@ export const MonthList: React.FC<MonthListProps> = ({ date, onChange }) => {
             onClose={() => setIsOpen(false)}
             value={selectedDate}
             InputProps={{
-              className: `${classes.datePickerOpen} ${isOpen ? '' : classes.datePickerClose}`
+              className: `${classes.datePickerOpen} ${isOpen ? '' : classes.datePickerClose}`,
             }}
             onChange={(date) => {
               handleDateChange(date);
