@@ -6,7 +6,6 @@ import {
   julieNoRelation,
 } from 'cypress/fixtures/patientsFixtures';
 import { Relation, Gender } from 'graphql/types/globalTypes';
-import { shouldInclude } from 'apollo-utilities';
 
 describe('UpdatePatient (multiple, with uhids)', () => {
   const patients = [janeNoRelation, johnBrother, jimmyCousin].map((pat) => ({
@@ -37,6 +36,10 @@ describe('UpdatePatient (multiple, with uhids)', () => {
       .should('exist');
 
     cy.get('button[type="submit"]').should('be.disabled');
+
+    cy.get('[data-cypress="ExistingProfile"]')
+      .contains('There should be 1 profile with relation set as Me')
+      .should('exist');
   });
 
   it('Upon clicking submit, show an error if there is more than 1 Me, and disable submit', () => {
@@ -63,6 +66,10 @@ describe('UpdatePatient (multiple, with uhids)', () => {
     cy.get('li[data-value*="ME"]').click();
 
     cy.get('button[type="submit"]').should('be.disabled');
+
+    cy.get('[data-cypress="ExistingProfile"]')
+      .contains('Relation can be set as Me for only 1 profile')
+      .should('exist');
   });
 
   it('If one user has a relation of "Me", and others have complete profiles, let the user submit', () => {
