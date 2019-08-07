@@ -1,6 +1,6 @@
 import React from 'react';
 import _uniqueId from 'lodash/uniqueId';
-import { useShoppingCart } from '@aph/shared-ui-components/ShoppingCartProvider';
+import { useShoppingCart } from '@aph/shared-ui-components/dist/ShoppingCartProvider';
 
 export const CartPoc: React.FC = (props) => {
   const { cartItems, addCartItem, removeCartItem, updateCartItem, cartTotal } = useShoppingCart();
