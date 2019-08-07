@@ -84,6 +84,14 @@ const useStyles = makeStyles((theme: Theme) => {
         textTransform: 'none',
       },
     },
+    noSlotsAvailable: {
+      fontSize: 14,
+      color: '#0087ba',
+      fontWeight: 500,
+      lineHeight: 1.71,
+      paddingTop: 15,
+      paddingBottom: 5,
+    },
     customScrollBar: {
       paddingTop: 10,
       paddingBottom: 10,
@@ -148,7 +156,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const afternoonTime = getTimestamp(new Date(), '17:00');
   const eveningTime = getTimestamp(new Date(), '21:00');
 
-  const doctorId = 'c91c5155-ce3a-488b-8865-654588fef776';
+  const doctorId = '00e106b4-0018-44a6-9e26-dd4ed47c5718';
 
   console.log(
     'dateSelected......',
@@ -191,7 +199,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     });
   }
 
-  // console.log(morningSlots, afternoonSlots, eveningSlots, lateNightSlots);
+  console.log(morningSlots, afternoonSlots, eveningSlots, lateNightSlots);
 
   return (
     <div className={classes.root}>
@@ -251,7 +259,11 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
               />
             </div>
-          ) : null}
+          ) : (
+            <div className={classes.noSlotsAvailable}>
+              Oops! No slots are available with Dr. {doctorName} :(
+            </div>
+          )}
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
