@@ -1,0 +1,86 @@
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import moment from 'moment';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import CalendarStrip from 'react-native-calendar-strip';
+
+const styles = StyleSheet.create({
+  viewStyle: {
+    paddingVertical: 8,
+    // paddingRight: 2,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    // height: 48,
+    width: 44,
+    backgroundColor: theme.colors.WHITE,
+  },
+  highlightedViewStyle: {
+    // width: 48,
+    backgroundColor: '#00b38e', //theme.colors.darkBlueColor(),
+  },
+  textStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    letterSpacing: 0.3,
+    color: 'rgba(101, 143, 155, 0.6)',
+  },
+  textStyleToday: {
+    backgroundColor: '#00b38e',
+    ...theme.fonts.IBMPlexSansBold(14),
+    letterSpacing: 0.35,
+    color: theme.colors.WHITE,
+  },
+});
+
+export interface WeekViewProps {
+  date: Date;
+  onTapDate: (date: Date) => void;
+  onWeekChanged: (date: Date) => void;
+}
+
+export const WeekView: React.FC<WeekViewProps> = (props) => {
+  const renderDayComponent = (item: Date) => {
+    const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    const isHighlitedDate =
+      props.date.getDate() == item.getDate() &&
+      props.date.getMonth() == item.getMonth() &&
+      props.date.getFullYear() == item.getFullYear();
+    const now = new Date();
+    const isTodaysDate =
+      now.getDate() == item.getDate() &&
+      now.getMonth() == item.getMonth() &&
+      now.getFullYear() == item.getFullYear();
+    return (
+      <TouchableOpacity
+        onPress={() => props.onTapDate(item)}
+        style={[styles.viewStyle, isHighlitedDate ? styles.highlightedViewStyle : {}]}
+      >
+        <Text
+          numberOfLines={1}
+          style={[isHighlitedDate ? styles.textStyleToday : styles.textStyle, { marginBottom: 6 }]}
+        >
+          {isTodaysDate ? 'today' : days[item.getDay()]}
+        </Text>
+        <Text numberOfLines={1} style={isHighlitedDate ? styles.textStyleToday : styles.textStyle}>
+          {moment(item).format('DD')}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  return (
+    <CalendarStrip
+      showMonth={false}
+      onDateSelected={(date) => props.onTapDate(date)}
+      selectedDate={props.date}
+      onWeekChanged={(date) => props.onWeekChanged(date)}
+      style={{ height: 54, backgroundColor: 'white' }}
+      // dateNameStyle={styles.textStyle}
+      // dateNumberStyle={styles.textStyle}
+      // highlightDateNameStyle={[styles.textStyleToday, {}]}
+      // highlightDateNumberStyle={[styles.textStyleToday, {}]}
+      dayComponent={(dayComponentProps) => {
+        return renderDayComponent(new Date(dayComponentProps.date.toISOString()));
+      }}
+    />
+  );
+};

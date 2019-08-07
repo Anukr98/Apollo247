@@ -31,9 +31,30 @@ describe('Login', () => {
     cy.get('[data-cypress="SignIn"]')
       .find('input[name*="mobileNumber"]')
       .type('0123456789');
+
     cy.get('[data-cypress="SignIn"]')
       .find('button[type="submit"]')
       .should('be.disabled');
+  });
+
+  it('Error message should display immediately upon entering an invalid number starting with a digit 0-5', () => {
+    for (let digit = 0; digit <= 5; digit++) {
+      cy.get('[data-cypress="SignIn"]')
+
+        .find('input[name*="mobileNumber"]')
+        .clear()
+
+        .type(String(digit));
+
+      cy.get('div[class*="Mui-error"]').should('contain', 'This seems like a wrong number');
+    }
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[name*="mobileNumber"]')
+      .clear()
+      .type('6');
+
+    cy.get('div[class*="Mui-error"]').should('not.contain', 'This seems like a wrong number');
   });
 
   it('There should be validation upon entering mobile number starting with zero', () => {
@@ -46,7 +67,7 @@ describe('Login', () => {
     cy.contains('This seems like a wrong number');
   });
 
-  it.only('Submit should not be enabled until 10 digits are entered', () => {
+  it('Submit should not be enabled until 10 digits are entered', () => {
     cy.get('[data-cypress="SignIn"]') //first
       .find('input[name*="mobileNumber"]')
       .type('9');
@@ -203,19 +224,5 @@ describe('Login (Firebase)', () => {
       .should('not.exist');
 
     cy.contains('Type in the OTP that has been resent to you for authentication');
-  });
-});
-
-describe('Login state for single user without Relation status selected', () => {
-  const patient = [janeNoRelation];
-
-  beforeEach(() => {
-    cy.signIn(patient);
-    cy.visitAph(clientRoutes.welcome()).wait(500);
-  });
-
-  it('Status should autofill to Relation.ME, as indicated in welcome banner', () => {
-    cy.get('[data-cypress="HeroBanner"]').click({ force: true });
-    cy.should('contain', patient[0].firstName!.toLowerCase());
   });
 });

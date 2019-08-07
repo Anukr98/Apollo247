@@ -6,7 +6,6 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { isNull } from 'util';
-import { isNotNullOrUndefined } from 'apollo-env';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum AccountType {
@@ -20,6 +19,7 @@ export const getDoctorDetailsTypeDefs = gql`
   enum ConsultMode {
     ONLINE
     PHYSICAL
+    BOTH
   }
   enum DoctorType {
     APOLLO
@@ -136,7 +136,6 @@ export const getDoctorDetailsTypeDefs = gql`
     experience: String
     firstName: String
     gender: Gender
-    isActive: Boolean!
     id: ID!
     lastName: String
     mobileNumber: String!
@@ -151,6 +150,7 @@ export const getDoctorDetailsTypeDefs = gql`
   }
 
   type StarTeam {
+    isActive: Boolean
     associatedDoctor: Profile
   }
 
@@ -165,12 +165,15 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
   args,
   { mobileNumber, dbConnect, firebaseUid }
 ) => {
-  let doctordata: Doctor;
+  let doctordata;
   try {
     const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
-    doctordata = (await doctorRepository.findByMobileNumber(mobileNumber, true)) as Doctor;
-    if (isNotNullOrUndefined(doctordata) && isNull(doctordata.firebaseToken)) {
-      await doctorRepository.updateFirebaseId(<string>doctordata.id, firebaseUid);
+    doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+
+    if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+    if (doctordata != null && isNull(doctordata.firebaseToken)) {
+      await doctorRepository.updateFirebaseId(doctordata.id, firebaseUid);
     }
   } catch (getProfileError) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });

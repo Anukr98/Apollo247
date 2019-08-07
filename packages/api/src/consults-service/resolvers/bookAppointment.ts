@@ -1,9 +1,9 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { Appointments, STATUS, APPOINTMENT_TYPE } from 'profiles-service/entity/appointment';
-import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
-import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
+import { Appointment, STATUS, APPOINTMENT_TYPE } from 'consults-service/entities/appointment';
+import { ConsultServiceContext } from 'consults-service/consultServiceContext';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
     IN_PROGRESS
@@ -16,12 +16,11 @@ export const bookAppointmentTypeDefs = gql`
     PHYSICAL
   }
 
-  type Appointment {
+  type AppointmentBooking {
     id: ID!
     patientId: ID!
     doctorId: ID!
-    appointmentDate: Date!
-    appointmentTime: Time!
+    appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
     hospitalId: ID
     status: STATUS!
@@ -30,14 +29,13 @@ export const bookAppointmentTypeDefs = gql`
   input BookAppointmentInput {
     patientId: ID!
     doctorId: ID!
-    appointmentDate: Date!
-    appointmentTime: Time!
+    appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
     hospitalId: ID
   }
 
   type BookAppointmentResult {
-    appointment: Appointment
+    appointment: AppointmentBooking
   }
 
   extend type Mutation {
@@ -52,18 +50,16 @@ type BookAppointmentResult = {
 type BookAppointmentInput = {
   patientId: string;
   doctorId: string;
-  appointmentDate: Date;
-  appointmentTime: Date;
+  appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId?: string;
 };
 
-type Appointment = {
+type AppointmentBooking = {
   id: string;
   patientId: string;
   doctorId: string;
-  appointmentDate: Date;
-  appointmentTime: Date;
+  appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId?: string;
   status: STATUS;
@@ -74,18 +70,15 @@ type AppointmentInputArgs = { appointmentInput: BookAppointmentInput };
 const bookAppointment: Resolver<
   null,
   AppointmentInputArgs,
-  ProfilesServiceContext,
+  ConsultServiceContext,
   BookAppointmentResult
-> = async (parent, { appointmentInput }) => {
-  const appointmentAttrs: Omit<Appointment, 'id'> = {
+> = async (parent, { appointmentInput }, { doctorsDbConnect, consultsDbConnect }) => {
+  const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
     ...appointmentInput,
     status: STATUS.IN_PROGRESS,
   };
-  const appointment = await Appointments.create(appointmentAttrs)
-    .save()
-    .catch((createErrors) => {
-      throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
-    });
+  const appts = consultsDbConnect.getCustomRepository(AppointmentRepository);
+  const appointment = await appts.saveAppointment(appointmentAttrs);
   return { appointment };
 };
 
