@@ -9,20 +9,19 @@ import { ConsultRoom } from 'components/ConsultRoom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    consultRoom: {
+    consultRoomContainer: {
       paddingTop: 68,
       [theme.breakpoints.down('xs')]: {
         paddingTop: 68,
       },
     },
-
     headerSticky: {
       position: 'fixed',
       width: '100%',
       zIndex: 99,
       top: 0,
     },
-    container: {
+    consultTabcontainer: {
       maxWidth: 1064,
       margin: 'auto',
       position: 'relative',
@@ -157,11 +156,11 @@ export const ConsultTabs: React.FC = (props) => {
     setshowTabs(!showTabs);
   };
   return (
-    <div className={classes.consultRoom}>
+    <div className={classes.consultRoomContainer}>
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      <div className={classes.container}>
+      <div className={classes.consultTabcontainer}>
         <div className={classes.breadcrumbs}>
           <div>
             <div className={classes.backArrow}>
@@ -209,7 +208,7 @@ export const ConsultTabs: React.FC = (props) => {
           {tabValue === 0 && <TabContainer>case sheet</TabContainer>}
           {tabValue === 1 && (
             <TabContainer>
-              <ConsultRoom toggleTabs={() => toggleTabs()} />
+              <ConsultRoom />
             </TabContainer>
           )}
         </div>

@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) => {
       zIndex: 9999,
       marginTop: 0,
     },
-    whiteArrow: {
+    whiteArrowBtn: {
       verticalAlign: 'middle',
       [theme.breakpoints.down(1220)]: {
         display: 'none',
@@ -109,7 +109,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
-  //const [publishVideo, setPublishVideo] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const [subscribeToAudio, setSubscribeToAudio] = React.useState(props.isVideoCall ? false : true);
   return (
@@ -189,7 +188,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             onClick={() => props.toggelChatVideo()}
                           >
                             <img
-                              className={classes.whiteArrow}
+                              className={classes.whiteArrowBtn}
                               src={require('images/ic_message.svg')}
                               alt="msgicon"
                             />
@@ -200,7 +199,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         {isCall && mute && (
                           <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
                             <img
-                              className={classes.whiteArrow}
+                              className={classes.whiteArrowBtn}
                               src={require('images/ic_mute.svg')}
                               alt="mute"
                             />
@@ -209,7 +208,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         {isCall && !mute && (
                           <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
                             <img
-                              className={classes.whiteArrow}
+                              className={classes.whiteArrowBtn}
                               src={require('images/ic_unmute.svg')}
                               alt="unmute"
                             />
@@ -221,7 +220,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             onClick={() => setSubscribeToVideo(!subscribeToVideo)}
                           >
                             <img
-                              className={classes.whiteArrow}
+                              className={classes.whiteArrowBtn}
                               src={require('images/ic_videoon.svg')}
                               alt="videoon"
                             />
@@ -233,7 +232,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             onClick={() => setSubscribeToVideo(!subscribeToVideo)}
                           >
                             <img
-                              className={classes.whiteArrow}
+                              className={classes.whiteArrowBtn}
                               src={require('images/ic_videooff.svg')}
                               alt="videooff"
                             />
@@ -242,7 +241,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         {isCall && (
                           <button onClick={() => setIscall(false)}>
                             <img
-                              className={classes.whiteArrow}
+                              className={classes.whiteArrowBtn}
                               src={require('images/ic_stopcall.svg')}
                               alt="stopcall"
                             />
