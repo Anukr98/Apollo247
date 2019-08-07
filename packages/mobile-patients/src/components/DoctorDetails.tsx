@@ -16,6 +16,9 @@ import {
   View,
   Platform,
   Animated,
+  TouchableOpacity,
+  Share,
+  Alert,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -136,7 +139,7 @@ const Appointments: Appointments[] = [
   },
 ];
 
-export interface DoctorDetailsProps extends NavigationScreenProps {}
+export interface DoctorDetailsProps extends NavigationScreenProps { }
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [dispalyoverlay, setdispalyoverlay] = useState<boolean>(false);
   const [
@@ -148,8 +151,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   >([]);
   const [doctorId, setDoctorId] = useState<String>('');
   const { currentPatient } = useAllCurrentPatients();
-  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [scrollY, setscrollY] = useState(new Animated.Value(0));
+  const [availableSlots, setavailableSlots] = useState<getDoctorAvailableSlots | undefined>();
+
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
     outputRange: [0, -105, -105],
@@ -200,6 +205,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     console.log('error', availabilityData.error);
   } else {
     console.log(availabilityData.data, 'availabilityData');
+    // if (availabilityData &&
+    //   availabilityData.data && availabilityData.data.getDoctorAvailableSlots &&
+    //   availabilityData.data.getDoctorAvailableSlots.availableSlots !== undefined &&
+    //   availableSlots !== availabilityData.data.getDoctorAvailableSlots!.availableSlots) {
+
+    //   setavailableSlots(availabilityData.data.getDoctorAvailableSlots!.availableSlots)
+    // }
   }
 
   const formatTime = (time: string) => Moment(time, 'HH:mm:ss.SSSz').format('hh:mm a');
@@ -410,7 +422,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             </Text>
           </View>
           <FlatList
-            // horizontal={true}
             contentContainerStyle={{
               marginVertical: 12,
             }}
@@ -442,9 +453,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     color: theme.colors.SEARCH_DOCTOR_NAME,
                   }}
                 >
-                  {Moment(item.appointmentDate).format('DD MMMM')}
+                  {Moment(item.appointmentDateTime).format('DD MMMM')}
                   {' , '}
-                  {formatTime(item.appointmentTime)}
+                  {formatTime(item.appointmentDateTime)}
                 </Text>
                 <View style={styles.separatorStyle} />
                 <View style={{ flexDirection: 'row' }}>
@@ -465,7 +476,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     }
   };
 
-  // console.log(props.navigation.state.params!.doctorId, 'doctorIddoctorIddoctorId');
+  console.log(props.navigation.state.params!.doctorId, 'doctorIddoctorIddoctorId');
   const { data, error } = useQuery<getDoctorProfileById, getDoctorProfileByIdVariables>(
     GET_DOCTOR_PROFILE_BY_ID,
     {
@@ -488,6 +499,26 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const handleScroll = () => {
     // console.log(e, 'jvjhvhm');
   };
+  const onShare = async () => {
+    try {
+      const result = await Share.share({
+        message:
+          'React Native | A framework for building native apps using React',
+      });
+
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          // shared with activity type of result.activityType
+        } else {
+          // shared
+        }
+      } else if (result.action === Share.dismissedAction) {
+        // dismissed
+      }
+    } catch (error) {
+      // Alert(error.message);
+    }
+  };
 
   console.log(dispalyoverlay, 'dispalyoverlay', doctorDetails);
   return (
@@ -497,21 +528,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           ...theme.viewStyles.container,
         }}
       >
-        {/* <Header
-          container={{
-            zIndex: 3,
-            position: 'absolute',
-            top: Platform.OS === 'ios' ? (height === 812 || height === 896 ? 40 : 20) : 0,
-            left: 0,
-            right: 0,
-            // height: 56,
-            backgroundColor: 'transparent',
-            borderBottomWidth: 0,
-          }}
-          leftIcon="backArrowWhite"
-          rightComponent={<ShareWhite />}
-          onPressLeftIcon={() => props.navigation.goBack()}
-        /> */}
         <Animated.ScrollView
           bounces={false}
           scrollEventThrottle={16}
@@ -557,6 +573,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           doctor={doctorDetails.profile ? doctorDetails.profile : null}
           patientId={currentPatient ? currentPatient.id : ''}
           clinics={doctorDetails.clinics ? doctorDetails.clinics : []}
+          availableSlots={availableSlots}
         />
       )}
       {showSpinner && <Spinner />}
@@ -604,7 +621,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           borderBottomWidth: 0,
         }}
         leftIcon="backArrowWhite"
-        rightComponent={<ShareWhite />}
+        rightComponent={
+          <TouchableOpacity onPress={onShare} >
+            <ShareWhite />
+          </TouchableOpacity>
+        }
         onPressLeftIcon={() => props.navigation.goBack()}
       />
     </View>

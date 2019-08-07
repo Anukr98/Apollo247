@@ -93,7 +93,7 @@ type currentProfiles = {
   uhid: string;
 };
 
-export interface ConsultProps extends NavigationScreenProps {}
+export interface ConsultProps extends NavigationScreenProps { }
 export const Consult: React.FC<ConsultProps> = (props) => {
   const thingsToDo = string.consult_room.things_to_do.data;
   const articles = string.consult_room.articles.data;
@@ -109,7 +109,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     userName = userName.toLowerCase();
     setuserName(userName);
     console.log('consult room', currentPatient);
-    analytics.setCurrentScreen(AppRoutes.ConsultRoom);
+    analytics.setCurrentScreen(AppRoutes.Consult);
   }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
   useEffect(() => {
@@ -319,7 +319,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           <View style={{ width: '100%' }}>
             <View style={styles.viewName}>
               <View style={{ alignItems: 'flex-end', marginTop: 20 }}>
-                <ApolloLogo style={{ right: 20 }} />
+                <TouchableOpacity onPress={() => props.navigation.navigate(AppRoutes.ConsultRoom)}>
+                  <ApolloLogo style={{ right: 20 }} />
+                </TouchableOpacity>
               </View>
               <TouchableOpacity
                 onPress={() => setShowMenu(true)}

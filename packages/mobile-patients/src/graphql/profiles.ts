@@ -53,21 +53,18 @@ export const UPDATE_PATIENT = gql`
 `;
 
 export const BOOK_APPOINTMENT = gql`
-  mutation bookAppointment($appointmentInput: BookAppointmentInput!) {
-    bookAppointment(appointmentInput: $appointmentInput) {
-      appointment {
-        id
-        patientId
-        doctorId
-        appointmentDate
-        appointmentTime
-        appointmentType
-        hospitalId
-        status
-      }
+  mutation bookAppointment($bookAppointment: BookAppointmentInput!){
+  bookAppointment(appointmentInput:$bookAppointment){
+    appointment{
+      id
+      doctorId
+      appointmentDateTime
+      status
+      appointmentType
+      patientId
     }
   }
-`;
+}`;
 
 export const GET_SPECIALTIES = gql`
   query getSpecialties {
@@ -248,8 +245,7 @@ export const GET_APPOINTMENT_HISTORY = gql`
         id
         patientId
         doctorId
-        appointmentDate
-        appointmentTime
+        appointmentDateTime
         appointmentType
         hospitalId
         status

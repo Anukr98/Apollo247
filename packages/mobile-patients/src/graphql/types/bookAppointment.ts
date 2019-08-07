@@ -9,12 +9,11 @@ import { BookAppointmentInput, APPOINTMENT_TYPE, STATUS } from "./globalTypes";
 // ====================================================
 
 export interface bookAppointment_bookAppointment_appointment {
-  __typename: "Appointment";
+  __typename: "AppointmentBooking";
   id: string;
   patientId: string;
   doctorId: string;
-  appointmentDate: any;
-  appointmentTime: any;
+  appointmentDateTime: any;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId: string | null;
   status: STATUS;
