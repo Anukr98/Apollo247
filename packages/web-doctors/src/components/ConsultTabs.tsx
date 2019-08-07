@@ -6,22 +6,24 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
+import Popover from '@material-ui/core/Popover';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    consultRoomContainer: {
+    consultRoom: {
       paddingTop: 68,
       [theme.breakpoints.down('xs')]: {
         paddingTop: 68,
       },
     },
+
     headerSticky: {
       position: 'fixed',
       width: '100%',
       zIndex: 99,
       top: 0,
     },
-    consultTabcontainer: {
+    container: {
       maxWidth: 1064,
       margin: 'auto',
       position: 'relative',
@@ -142,12 +144,16 @@ const useStyles = makeStyles((theme: Theme) => {
     DisplayNone: {
       display: 'none !important',
     },
+    typography: {
+      padding: theme.spacing(2),
+    },
   };
 });
 export const ConsultTabs: React.FC = (props) => {
   const classes = useStyles();
   const [tabValue, setTabValue] = useState<number>(0);
   const [showTabs, setshowTabs] = useState<boolean>(true);
+  const [startConsult, setStartConsult] = useState<boolean>(false);
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
@@ -155,12 +161,23 @@ export const ConsultTabs: React.FC = (props) => {
     console.log(showTabs);
     setshowTabs(!showTabs);
   };
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  function handleClick(event: any) {
+    setAnchorEl(event.currentTarget);
+  }
+
+  function handleClose() {
+    setAnchorEl(null);
+  }
+  const open = Boolean(anchorEl);
+  const id = open ? 'simple-popover' : undefined;
   return (
-    <div className={classes.consultRoomContainer}>
+    <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      <div className={classes.consultTabcontainer}>
+      <div className={classes.container}>
         <div className={classes.breadcrumbs}>
           <div>
             <div className={classes.backArrow}>
@@ -171,12 +188,45 @@ export const ConsultTabs: React.FC = (props) => {
           CONSULT ROOM
           <div className={classes.consultButtonContainer}>
             <span className={classes.timeLeft}> Consult Duration 00:25</span>
-            <Button className={classes.consultButton}>
+            {/* <Button className={classes.consultButton} onClick={() => setStartConsult(true)}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path fill="#fff" d="M8 5v14l11-7z" />
+              </svg>
+              Start Consult
+            </Button> */}
+
+            <Button
+              aria-describedby={id}
+              variant="contained"
+              onClick={(e) => handleClick(e)}
+              className={classes.consultButton}
+              //onClick={() => setStartConsult(true)}
+            >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                 <path fill="#fff" d="M8 5v14l11-7z" />
               </svg>
               Start Consult
             </Button>
+            {/* <Button aria-describedby={id} variant="contained" onClick={handleClick}>
+                Open Popover
+              </Button> */}
+            <Popover
+              id={id}
+              open={open}
+              anchorEl={anchorEl}
+              onClose={handleClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'center',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'center',
+              }}
+            >
+              <Typography className={classes.typography}>The content of the Popover.</Typography>
+            </Popover>
+
             <Button className={classes.consultIcon}>
               <img src={require('images/ic_call.svg')} />
             </Button>
@@ -208,7 +258,7 @@ export const ConsultTabs: React.FC = (props) => {
           {tabValue === 0 && <TabContainer>case sheet</TabContainer>}
           {tabValue === 1 && (
             <TabContainer>
-              <ConsultRoom />
+              <ConsultRoom startConsult={startConsult} toggleTabs={() => toggleTabs()} />
             </TabContainer>
           )}
         </div>
