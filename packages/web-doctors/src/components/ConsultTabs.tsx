@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -199,12 +199,18 @@ export const ConsultTabs: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
   const setStartConsultAction = (flag: boolean) => {
-    console.log(flag);
-    setStartConsult(flag);
+    if (startConsult !== flag) {
+      console.log(flag);
+      setStartConsult(flag);
+    }
   };
   const toggleTabs = () => {
     setshowTabs(!showTabs);
   };
+  useEffect(() => {
+    console.log(1111111111);
+  }, [startConsult]);
+
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>

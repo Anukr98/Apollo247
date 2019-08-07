@@ -21,14 +21,15 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 0,
     },
     consultButton: {
-      fontSize: 12,
-      fontWeight: theme.typography.fontWeightMedium,
+      fontSize: 13,
+      fontWeight: theme.typography.fontWeightBold,
       color: '#fff',
-      padding: '6px 16px',
+      padding: '8px 16px',
       backgroundColor: '#fc9916',
       marginLeft: 20,
+      minWidth: 168,
       marginRight: 10,
-      borderRadius: 15,
+      borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
       '&:hover': {
         backgroundColor: '#e28913',
@@ -74,7 +75,6 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface CallPopoverProps {
-  // setStartConsultAction: () => void;
   setStartConsultAction(isVideo: boolean): void;
 }
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {

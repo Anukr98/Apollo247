@@ -60,6 +60,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       overflow: 'hidden',
       top: 80,
+      backgroundColor: '#000',
     },
     VideoAlignment: {
       textAlign: 'center',
@@ -72,7 +73,6 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 170,
       height: 170,
       zIndex: 9,
-      backgroundColor: '#000',
     },
     stopCallIcon: {
       width: 40,
