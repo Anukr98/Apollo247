@@ -4,6 +4,7 @@ import React from 'react';
 import { Header } from 'components/Header';
 import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { ThingsToDo } from 'components/ConsultRoom/ThingsToDo';
+import { ConsultationsCard } from 'components/ConsultRoom/ConsultationsCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -32,9 +33,12 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 40,
       paddingRight: 20,
       paddingTop: 46,
-    },
-    noConsultations: {
       paddingBottom: 40,
+    },
+    consultationsHeader: {
+      paddingBottom: 60,
+      width: 'calc(100% - 328px)',
+      paddingRight: 20,
       '& h1': {
         display: 'flex',
         fontSize: 50,
@@ -101,10 +105,14 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     leftSection: {
       width: 'calc(100% - 328px)',
+      marginTop: -60,
     },
     rightSection: {
       width: 328,
       marginTop: -183,
+    },
+    noConsultations: {
+      paddingBottom: 0,
     },
   };
 });
@@ -122,7 +130,7 @@ export const ConsultRoom: React.FC = (props) => {
       </div>
       <div className={classes.container}>
         <div className={classes.consultPage}>
-          <div className={classes.noConsultations}>
+          <div className={`${classes.consultationsHeader} ${classes.noConsultations}`}>
             <Typography variant="h1">
               <span>hi</span>
               <AphSelect
@@ -148,7 +156,9 @@ export const ConsultRoom: React.FC = (props) => {
           </div>
         </div>
         <div className={classes.consultSection}>
-          <div className={classes.leftSection}>Mallesh</div>
+          <div className={classes.leftSection}>
+            <ConsultationsCard />
+          </div>
           <div className={classes.rightSection}>
             <ThingsToDo />
           </div>
