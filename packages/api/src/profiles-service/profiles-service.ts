@@ -27,7 +27,7 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
 
 (async () => {
   await createConnection({
-    name: 'profiles-db',
+    //name: 'profiles-db',
     entities: [Patient, Appointments],
     type: 'postgres',
     host: process.env.PROFILES_DB_HOST,
@@ -52,7 +52,7 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
       //   : await Patient.findOneOrFail({ where: { firebaseUid } }).catch(() => {
       //       throw new AphAuthenticationError(AphErrorMessages.NO_CURRENT_USER);
       //     });
-      const profilesDb = getConnection('profiles-db');
+      const profilesDb = getConnection();
       const currentPatient = null;
       const context: ProfilesServiceContext = {
         firebaseUid,
