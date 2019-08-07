@@ -3,7 +3,7 @@ import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { Doctor } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { isNull } from 'util';
 

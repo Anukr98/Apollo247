@@ -1,12 +1,12 @@
-import '@aph/universal/global';
+import '@aph/universal/dist/global';
 import { ApolloServer } from 'apollo-server';
 import { ApolloGateway, RemoteGraphQLDataSource } from '@apollo/gateway';
 import { GraphQLExecutor } from 'apollo-server-core';
 import * as firebaseAdmin from 'firebase-admin';
 import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
-import { webPatientsBaseUrl, webDoctorsBaseUrl } from '@aph/universal/aphRoutes';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { webPatientsBaseUrl, webDoctorsBaseUrl } from '@aph/universal/dist/aphRoutes';
 
 export interface GatewayContext {
   firebaseUid: string;

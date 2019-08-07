@@ -1,4 +1,4 @@
-import '@aph/universal/global';
+import '@aph/universal/dist/global';
 import 'reflect-metadata';
 import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
 import { ApolloServer } from 'apollo-server';
@@ -23,7 +23,7 @@ import gql from 'graphql-tag';
 import { GatewayHeaders } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 // import { AphAuthenticationError } from 'AphError';
-// import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+// import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 (async () => {
   await createConnection({

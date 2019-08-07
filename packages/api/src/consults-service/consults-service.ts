@@ -1,4 +1,4 @@
-import '@aph/universal/global';
+import '@aph/universal/dist/global';
 import 'reflect-metadata';
 import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
 import { ApolloServer } from 'apollo-server';
