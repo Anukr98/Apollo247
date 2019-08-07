@@ -220,7 +220,21 @@ export const SignIn: React.FC = (props) => {
           if (displayOtpInput) return <OtpInput mobileNumber={values.mobileNumber} />;
           return (
             <div className={classes.loginFormWrap}>
-              <Typography variant="h2">hi</Typography>
+              <Typography
+                variant="h2"
+                {...console.log(
+                  'touched',
+                  touched,
+                  ', touchedMobile: ',
+                  touched.mobileNumber,
+                  ', dirty: ',
+                  dirty,
+                  ', values: ',
+                  values
+                )}
+              >
+                hi
+              </Typography>
               <p>Please enter your mobile number to login</p>
               <Form>
                 <Field
@@ -234,7 +248,7 @@ export const SignIn: React.FC = (props) => {
                       dirty &&
                       !sendOtpError &&
                       Boolean(errors.mobileNumber) &&
-                      (finishedTyping || touched.mobileNumber || Number(field.value[0]) < 6);
+                      (finishedTyping || touched.mobileNumber || Number(field.value[0]) < 6); //commented for testing
                     const showSendOtpError = sendOtpError;
                     return (
                       <FormControl fullWidth>
