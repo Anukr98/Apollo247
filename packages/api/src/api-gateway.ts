@@ -1,3 +1,4 @@
+import '@aph/universal/global';
 import { ApolloServer } from 'apollo-server';
 import { ApolloGateway, RemoteGraphQLDataSource } from '@apollo/gateway';
 import { GraphQLExecutor } from 'apollo-server-core';
@@ -6,18 +7,6 @@ import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl } from '@aph/universal/aphRoutes';
-
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      NODE_ENV: 'local' | 'dev';
-      WEB_PATIENTS_PORT: string;
-      API_GATEWAY_PORT: string;
-      GOOGLE_APPLICATION_CREDENTIALS: string;
-      FIREBASE_PROJECT_ID: string;
-    }
-  }
-}
 
 export interface GatewayContext {
   firebaseUid: string;
@@ -36,7 +25,7 @@ export type Resolver<Parent, Args, Context, Result> = (
 ) => AsyncIterator<Result> | Promise<Result>;
 
 const isLocal = process.env.NODE_ENV == 'local';
-const isDev = process.env.NODE_ENV == 'dev';
+const isDev = process.env.NODE_ENV == 'development';
 
 (async () => {
   const gateway = new ApolloGateway({

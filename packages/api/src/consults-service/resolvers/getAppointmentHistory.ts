@@ -60,8 +60,8 @@ const getAppointmentHistory: Resolver<
   AppointmentInputArgs,
   ConsultServiceContext,
   AppointmentResult
-> = async (parent, { appointmentHistoryInput }, { consultsDbConnect, doctorsDbConnect }) => {
-  const appointmentRepo = consultsDbConnect.getCustomRepository(AppointmentRepository);
+> = async (parent, { appointmentHistoryInput }, { consultsDb, doctorsDb }) => {
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentsHistory = await appointmentRepo.getPatientAppointments(
     appointmentHistoryInput.doctorId,
     appointmentHistoryInput.patientId
@@ -74,8 +74,8 @@ const getDoctorAppointments: Resolver<
   { doctorId: string; startDate: Date; endDate: Date },
   ConsultServiceContext,
   AppointmentResult
-> = async (parent, args, { consultsDbConnect, doctorsDbConnect }) => {
-  const appointmentRepo = consultsDbConnect.getCustomRepository(AppointmentRepository);
+> = async (parent, args, { consultsDb, doctorsDb }) => {
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   let appointmentsHistory;
   try {
     appointmentsHistory = await appointmentRepo.getDoctorAppointments(

@@ -163,11 +163,11 @@ export const getDoctorDetailsTypeDefs = gql`
 const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = async (
   parent,
   args,
-  { mobileNumber, dbConnect, firebaseUid }
+  { mobileNumber, doctorsDb, firebaseUid }
 ) => {
   let doctordata;
   try {
-    const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
+    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
 
     if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
@@ -184,11 +184,11 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
 const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext, Doctor> = async (
   parent,
   args,
-  { dbConnect, firebaseUid }
+  { doctorsDb, firebaseUid }
 ) => {
   let doctordata: Doctor;
   try {
-    const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
+    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     doctordata = (await doctorRepository.findById(args.id)) as Doctor;
   } catch (getProfileError) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
