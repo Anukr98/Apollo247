@@ -1,3 +1,4 @@
+import '@aph/universal/dist/global';
 import 'reflect-metadata';
 import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
 import { ApolloServer } from 'apollo-server';
@@ -33,18 +34,19 @@ import { GatewayHeaders } from 'api-gateway';
 (async () => {
   await createConnections([
     {
+      name: 'consults-db',
       entities: [Appointment],
       type: 'postgres',
-      host: 'consults-db',
-      port: 5432,
-      username: 'postgres',
-      password: 'postgres',
+      host: process.env.CONSULTS_DB_HOST,
+      port: parseInt(process.env.CONSULTS_DB_PORT, 10),
+      username: process.env.CONSULTS_DB_USER,
+      password: process.env.CONSULTS_DB_PASSWORD,
       database: `consults_${process.env.NODE_ENV}`,
       logging: true,
       synchronize: true,
     },
     {
-      name: 'doctorsDbConnection',
+      name: 'doctors-db',
       entities: [
         Doctor,
         DoctorSpecialty,
@@ -56,10 +58,10 @@ import { GatewayHeaders } from 'api-gateway';
         Packages,
       ],
       type: 'postgres',
-      host: 'doctors-db',
-      port: 5432,
-      username: 'postgres',
-      password: 'postgres',
+      host: process.env.DOCTORS_DB_HOST,
+      port: parseInt(process.env.DOCTORS_DB_PORT, 10),
+      username: process.env.DOCTORS_DB_USER,
+      password: process.env.DOCTORS_DB_PASSWORD,
       database: `doctors_${process.env.NODE_ENV}`,
       logging: true,
       synchronize: true,
@@ -73,13 +75,13 @@ import { GatewayHeaders } from 'api-gateway';
       const headers = req.headers as GatewayHeaders;
       const firebaseUid = headers.firebaseuid;
       const mobileNumber = headers.mobilenumber;
-      const doctorsDbConnect = getConnection('doctorsDbConnection');
-      const consultsDbConnect = getConnection();
+      const doctorsDb = getConnection('doctors-db');
+      const consultsDb = getConnection('consults-db');
       const context: ConsultServiceContext = {
         firebaseUid,
         mobileNumber,
-        doctorsDbConnect,
-        consultsDbConnect,
+        doctorsDb,
+        consultsDb,
       };
       return context;
     },

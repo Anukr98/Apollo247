@@ -9,7 +9,7 @@ import {
 import { makeStyles } from '@material-ui/styles';
 import { AphInput } from '@aph/web-ui-components';
 import React, { useState } from 'react';
-import { isMobileNumberValid } from '@aph/universal/aphValidators';
+import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import isNumeric from 'validator/lib/isNumeric';
 
 const useStyles = makeStyles((theme: Theme) => {

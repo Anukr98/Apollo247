@@ -6,7 +6,7 @@ import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { Gender, Relation } from 'graphql/types/globalTypes';
 import React, { useState } from 'react';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import { isNameValid, isDateValid, isEmailValid } from '@aph/universal/aphValidators';
+import { isNameValid, isEmailValid, isDobValid } from '@aph/universal/dist/aphValidators';
 import _isEmpty from 'lodash/isEmpty';
 import { UpdatePatient, UpdatePatientVariables } from 'graphql/types/UpdatePatient';
 import { UPDATE_PATIENT } from 'graphql/profiles';
@@ -193,9 +193,10 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
             'dateOfBirth',
             'gender',
           ];
-          const submitIsDisabled =
-            !dirty ||
-            requiredFields.some((field) => _isEmpty(values[field]) || Boolean(errors[field]));
+          const formIsUntouched = !dirty;
+          const formHasErrors = !_isEmpty(errors);
+          const someRequiredFieldsMissing = requiredFields.some((field) => _isEmpty(values[field]));
+          const submitIsDisabled = formIsUntouched || formHasErrors || someRequiredFieldsMissing;
           return (
             <Form>
               <div className={classes.mascotIcon}>
@@ -275,7 +276,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                     <Field
                       name="dateOfBirth"
                       validate={(dob: string) =>
-                        isDateValid(dob) ? undefined : 'Invalid date of birth'
+                        isDobValid(dob) ? undefined : 'Invalid date of birth'
                       }
                       render={({ field }: FieldProps<{ firstName: string }>) => (
                         <FormControl className={classes.formControl} fullWidth>

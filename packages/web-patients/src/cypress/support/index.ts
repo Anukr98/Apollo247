@@ -1,3 +1,5 @@
+import '@aph/universal/dist/global';
+
 // ***********************************************************
 // This example support/index.js is processed and
 // loaded automatically before your test files.
@@ -16,13 +18,9 @@
 // Using import here no longer works. for reasons unkown
 require('./commands');
 
-interface Win extends Window {
-  __TEST__: string;
-}
-
 let currentTestTitle = 'test';
 
-Cypress.on('window:before:load', (win: Win) => {
+Cypress.on('window:before:load', (win) => {
   // Cypress will not intercept `fetch` calls (only xhrs)
   // Nullify `window.fetch` to trick it into using a polyfill (which will fallback to xhrs)
   // And use `Cypress` instead of `cy` so that this persists across all tests

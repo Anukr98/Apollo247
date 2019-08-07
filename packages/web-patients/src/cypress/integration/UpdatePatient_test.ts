@@ -7,7 +7,7 @@ import {
 } from 'cypress/fixtures/patientsFixtures';
 import { Relation, Gender } from 'graphql/types/globalTypes';
 
-describe('UpdatePatient (with uhids)', () => {
+describe('UpdatePatient (multiple, with uhids)', () => {
   const patients = [janeNoRelation, johnBrother, jimmyCousin].map((pat) => ({
     ...pat,
     uhid: 'uhid-1234',
@@ -89,7 +89,7 @@ describe('UpdatePatient (with uhids)', () => {
   });
 });
 
-describe('UpdatePatient (without uhids)', () => {
+describe('UpdatePatient (multiple, without uhids)', () => {
   const patients = [janeNoRelation, julieNoRelation];
 
   beforeEach(() => {
@@ -119,20 +119,67 @@ describe('UpdatePatient (without uhids)', () => {
       .should('be.disabled');
   });
 
-  it('Wont allow improper dates in dateOfBirth field', () => {
+  const checkInvalidDob = () => {
+    cy.contains('Invalid date of birth').should('exist');
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+  };
+
+  const enterDob = (dob: string) => {
     cy.get('[data-cypress="NewProfile"]')
       .find('form')
       .find('input[name="dateOfBirth"]')
       .clear()
-      .type('test')
+      .type(dob)
       .blur();
+  };
+
+  it("Won't allow non-dates to be submitted in dateOfBirth field", () => {
+    enterDob('test');
+    checkInvalidDob();
+  });
+
+  it("Won't allow future dates to be submitted in the dateOfBirth field", () => {
+    enterDob('01/01/2099');
+    checkInvalidDob();
+  });
+
+  it("Won't allow impossible dates to be submitted in the dateOfBirth field", () => {
+    enterDob('31/02/2001');
+    checkInvalidDob();
+  });
+
+  it("Won't validate DOB until input is blurred once", () => {
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('input[name="dateOfBirth"]')
+      .clear()
+      .type('01/01/2099');
 
     cy.get('[data-cypress="NewProfile"]')
       .find('form')
-      .get('button[type="submit"]')
+      .find('button[type="submit"]')
       .should('be.disabled');
 
-    cy.contains('Invalid date of birth');
+    cy.contains('Invalid date of birth').should('not.exist');
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('input[name="dateOfBirth"]')
+      .blur();
+
+    cy.contains('Invalid date of birth').should('exist');
+  });
+
+  it('Will allow possible dates in the dateOfBirth field', () => {
+    enterDob('31/01/2001');
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('button[type="submit"]')
+      .should('be.enabled');
+    cy.contains('Invalid date of birth').should('not.exist');
   });
 
   it('Should update the patient', () => {
@@ -228,5 +275,50 @@ describe('UpdatePatient (without uhids)', () => {
     cy.get('[data-cypress="HeroBanner"]')
       .contains(janeTheApostropheLover.firstName!.toLowerCase())
       .should('exist');
+  });
+});
+
+describe('UpdatePatient (single, without uhids)', () => {
+  const patient = [janeNoRelation];
+
+  beforeEach(() => {
+    cy.signIn(patient);
+    cy.visitAph(clientRoutes.welcome()).wait(500);
+  });
+
+  it('Status should autofill to Relation.ME, as indicated in welcome banner', () => {
+    cy.get('[data-cypress="HeroBanner"]').click({ force: true });
+    cy.should('contain', patient[0].firstName!.toLowerCase());
+  });
+
+  it('Email validity should not be tested until submit button is blurred', () => {
+    cy.get('input[name="emailAddress"]')
+      .scrollIntoView()
+      .clear()
+      .type('test@test...');
+
+    cy.contains('Invalid email address').should('not.exist');
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+
+    cy.get('input[name="emailAddress"]').blur();
+
+    cy.contains('Invalid email address').should('exist');
+  });
+
+  it('A valid email should have an enabled submit button', () => {
+    cy.get('input[name="emailAddress"]')
+      .scrollIntoView()
+      .clear()
+      .type('test@test.com')
+      .blur();
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('button[type="submit"]')
+      .should('be.enabled');
+
+    cy.contains('Invalid email address').should('not.exist');
   });
 });

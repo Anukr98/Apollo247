@@ -3,6 +3,12 @@ import { Doctor } from 'doctors-service/entities';
 
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
+  getDoctorDetails(firebaseToken: string) {
+    return this.findOne({
+      where: [{ firebaseToken }],
+    });
+  }
+
   findByMobileNumber(mobileNumber: string, isActive: Boolean) {
     return this.findOne({
       where: [{ mobileNumber, isActive }, { delegateNumber: mobileNumber, isActive: isActive }],
@@ -15,6 +21,9 @@ export class DoctorRepository extends Repository<Doctor> {
         'packages',
         'doctorHospital.facility',
         'starTeam.associatedDoctor',
+        'starTeam.associatedDoctor.specialty',
+        'starTeam.associatedDoctor.doctorHospital',
+        'starTeam.associatedDoctor.doctorHospital.facility',
       ],
     });
   }

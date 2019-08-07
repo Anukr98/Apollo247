@@ -1,3 +1,4 @@
+import '@aph/universal/dist/global';
 import 'reflect-metadata';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
@@ -27,6 +28,10 @@ import {
   getDoctorDetailsResolvers,
 } from 'doctors-service/resolvers/getDoctorDetails';
 
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+
+import { starTeamTypeDefs, starTeamResolvers } from 'doctors-service/resolvers/starTeam';
+
 import gql from 'graphql-tag';
 import { GraphQLTime } from 'graphql-iso-date';
 import { createConnection, getConnection } from 'typeorm';
@@ -45,6 +50,7 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 
 (async () => {
   await createConnection({
+    name: 'doctors-db',
     entities: [
       Doctor,
       DoctorSpecialty,
@@ -55,12 +61,11 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       DoctorBankAccounts,
       Packages,
     ],
-    name: 'doctorsDbConnection',
     type: 'postgres',
-    host: 'doctors-db',
-    port: 5432,
-    username: 'postgres',
-    password: 'postgres',
+    host: process.env.DOCTORS_DB_HOST,
+    port: parseInt(process.env.DOCTORS_DB_PORT, 10),
+    username: process.env.DOCTORS_DB_USER,
+    password: process.env.DOCTORS_DB_PASSWORD,
     database: `doctors_${process.env.NODE_ENV}`,
     logging: true,
     synchronize: true,
@@ -73,8 +78,18 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       const headers = req.headers as GatewayHeaders;
       const firebaseUid = headers.firebaseuid;
       const mobileNumber = headers.mobilenumber;
-      const dbConnect = getConnection('doctorsDbConnection');
-      const context: DoctorsServiceContext = { firebaseUid, mobileNumber, dbConnect };
+      const doctorsDb = getConnection('doctors-db');
+
+      const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+      const doctordata = (await doctorRepository.getDoctorDetails(firebaseUid)) as Doctor;
+      const currentUser = doctordata;
+
+      const context: DoctorsServiceContext = {
+        firebaseUid,
+        mobileNumber,
+        doctorsDb,
+        currentUser,
+      };
       return context;
     },
     schema: buildFederatedSchema([
@@ -113,6 +128,10 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       {
         typeDefs: getDoctorDetailsTypeDefs,
         resolvers: getDoctorDetailsResolvers,
+      },
+      {
+        typeDefs: starTeamTypeDefs,
+        resolvers: starTeamResolvers,
       },
     ]),
   });

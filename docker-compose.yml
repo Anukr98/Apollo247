@@ -1,3 +1,5 @@
+# This file is for NODE_ENV 'local'
+
 version: '3.4'
 
 services:
@@ -52,11 +54,15 @@ services:
       - ./:/apollo-hospitals:cached
     depends_on:
       - profiles-db
+      - doctors-db
 
   profiles-db:
     image: postgres:10.8-alpine
     volumes:
       - ./packages/api/src/profiles-service/init-profiles-db.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=${PROFILES_DB_USER}
+      - POSTGRES_PASSWORD=${PROFILES_DB_PASSWORD}
 
   doctors-service:
     image: node:12.6.0
@@ -72,6 +78,9 @@ services:
     image: postgres:10.8-alpine
     volumes:
       - ./packages/api/src/doctors-service/init-doctors-db.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=${DOCTORS_DB_USER}
+      - POSTGRES_PASSWORD=${DOCTORS_DB_PASSWORD}
 
   consults-service:
     image: node:12.6.0
@@ -87,3 +96,6 @@ services:
     image: postgres:10.8-alpine
     volumes:
       - ./packages/api/src/consults-service/init-consults-db.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=${CONSULTS_DB_USER}
+      - POSTGRES_PASSWORD=${CONSULTS_DB_PASSWORD}

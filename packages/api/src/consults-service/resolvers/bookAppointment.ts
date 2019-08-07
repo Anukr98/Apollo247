@@ -20,8 +20,7 @@ export const bookAppointmentTypeDefs = gql`
     id: ID!
     patientId: ID!
     doctorId: ID!
-    appointmentDate: Date!
-    appointmentTime: Time!
+    appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
     hospitalId: ID
     status: STATUS!
@@ -30,8 +29,7 @@ export const bookAppointmentTypeDefs = gql`
   input BookAppointmentInput {
     patientId: ID!
     doctorId: ID!
-    appointmentDate: Date!
-    appointmentTime: Time!
+    appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
     hospitalId: ID
   }
@@ -52,8 +50,7 @@ type BookAppointmentResult = {
 type BookAppointmentInput = {
   patientId: string;
   doctorId: string;
-  appointmentDate: Date;
-  appointmentTime: Date;
+  appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId?: string;
 };
@@ -62,8 +59,7 @@ type AppointmentBooking = {
   id: string;
   patientId: string;
   doctorId: string;
-  appointmentDate: Date;
-  appointmentTime: Date;
+  appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId?: string;
   status: STATUS;
@@ -76,12 +72,12 @@ const bookAppointment: Resolver<
   AppointmentInputArgs,
   ConsultServiceContext,
   BookAppointmentResult
-> = async (parent, { appointmentInput }, { doctorsDbConnect, consultsDbConnect }) => {
+> = async (parent, { appointmentInput }, { consultsDb }) => {
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
     ...appointmentInput,
     status: STATUS.IN_PROGRESS,
   };
-  const appts = consultsDbConnect.getCustomRepository(AppointmentRepository);
+  const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appts.saveAppointment(appointmentAttrs);
   return { appointment };
 };

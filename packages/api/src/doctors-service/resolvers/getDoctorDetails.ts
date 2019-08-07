@@ -3,10 +3,9 @@ import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { Doctor } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { isNull } from 'util';
-import { isNotNullOrUndefined } from 'apollo-env';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum AccountType {
@@ -20,6 +19,7 @@ export const getDoctorDetailsTypeDefs = gql`
   enum ConsultMode {
     ONLINE
     PHYSICAL
+    BOTH
   }
   enum DoctorType {
     APOLLO
@@ -136,7 +136,6 @@ export const getDoctorDetailsTypeDefs = gql`
     experience: String
     firstName: String
     gender: Gender
-    isActive: Boolean!
     id: ID!
     lastName: String
     mobileNumber: String!
@@ -148,9 +147,12 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine2: String
     streetLine3: String
     zip: String
+    doctorHospital: [DoctorHospital!]!
+    specialty: DoctorSpecialties!
   }
 
   type StarTeam {
+    isActive: Boolean
     associatedDoctor: Profile
   }
 
@@ -163,14 +165,17 @@ export const getDoctorDetailsTypeDefs = gql`
 const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = async (
   parent,
   args,
-  { mobileNumber, dbConnect, firebaseUid }
+  { mobileNumber, doctorsDb, firebaseUid }
 ) => {
-  let doctordata: Doctor;
+  let doctordata;
   try {
-    const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
-    doctordata = (await doctorRepository.findByMobileNumber(mobileNumber, true)) as Doctor;
-    if (isNotNullOrUndefined(doctordata) && isNull(doctordata.firebaseToken)) {
-      await doctorRepository.updateFirebaseId(<string>doctordata.id, firebaseUid);
+    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+    doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+
+    if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+    if (doctordata != null && isNull(doctordata.firebaseToken)) {
+      await doctorRepository.updateFirebaseId(doctordata.id, firebaseUid);
     }
   } catch (getProfileError) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
@@ -181,11 +186,11 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
 const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext, Doctor> = async (
   parent,
   args,
-  { dbConnect, firebaseUid }
+  { doctorsDb, firebaseUid }
 ) => {
   let doctordata: Doctor;
   try {
-    const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
+    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     doctordata = (await doctorRepository.findById(args.id)) as Doctor;
   } catch (getProfileError) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });

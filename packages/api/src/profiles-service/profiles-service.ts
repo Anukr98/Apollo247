@@ -1,8 +1,9 @@
+import '@aph/universal/dist/global';
 import 'reflect-metadata';
 import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
-import { createConnection } from 'typeorm';
+import { createConnection, getConnection } from 'typeorm';
 import { Patient } from 'profiles-service/entity/patient';
 import { Appointments } from 'profiles-service/entity/appointment';
 import {
@@ -22,16 +23,17 @@ import gql from 'graphql-tag';
 import { GatewayHeaders } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 // import { AphAuthenticationError } from 'AphError';
-// import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+// import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 (async () => {
   await createConnection({
+    name: 'profiles-db',
     entities: [Patient, Appointments],
     type: 'postgres',
-    host: 'profiles-db',
-    port: 5432,
-    username: 'postgres',
-    password: 'postgres',
+    host: process.env.PROFILES_DB_HOST,
+    port: parseInt(process.env.PROFILES_DB_PORT, 10),
+    username: process.env.PROFILES_DB_USER,
+    password: process.env.PROFILES_DB_PASSWORD,
     database: `profiles_${process.env.NODE_ENV}`,
     logging: true,
     synchronize: true,
@@ -50,8 +52,14 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
       //   : await Patient.findOneOrFail({ where: { firebaseUid } }).catch(() => {
       //       throw new AphAuthenticationError(AphErrorMessages.NO_CURRENT_USER);
       //     });
+      const profilesDb = getConnection('profiles-db');
       const currentPatient = null;
-      const context: ProfilesServiceContext = { firebaseUid, mobileNumber, currentPatient };
+      const context: ProfilesServiceContext = {
+        firebaseUid,
+        mobileNumber,
+        profilesDb,
+        currentPatient,
+      };
       return context;
     },
     schema: buildFederatedSchema([

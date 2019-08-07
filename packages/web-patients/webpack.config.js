@@ -11,6 +11,8 @@ const dotEnvConfig = dotenv.config({ path: envFile });
 if (dotEnvConfig.error) throw dotEnvConfig.error;
 Object.values(dotEnvConfig).forEach((val, KEY) => (process.env[KEY] = val));
 const isLocal = process.env.NODE_ENV === 'local';
+const isDevelopment = process.env.NODE_ENV === 'development';
+const isStaging = process.env.NODE_ENV === 'staging';
 const isProduction = process.env.NODE_ENV === 'production';
 
 const distDir = path.resolve(__dirname, 'dist');
@@ -51,8 +53,9 @@ const urlLoader = {
 };
 
 module.exports = {
-  mode: isProduction ? 'production' : 'development',
-  devtool: isLocal ? 'source-map' : false,
+  mode: isStaging || isProduction ? 'production' : 'development',
+
+  devtool: isLocal || isDevelopment ? 'source-map' : false,
 
   context: path.resolve(__dirname, 'src'),
 
