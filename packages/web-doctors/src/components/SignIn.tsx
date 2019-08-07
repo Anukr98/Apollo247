@@ -410,7 +410,9 @@ export const SignIn: React.FC<PopupProps> = (props) => {
               setShowErrorMessage(false);
             }
           }}
-          error={mobileNumber.trim() !== '' && !isMobileNumberValid(mobileNumber)}
+          error={
+            mobileNumber.trim() !== '' && showErrorMessage && !isMobileNumberValid(mobileNumber)
+          }
           onKeyPress={(e) => {
             if (isNaN(parseInt(e.key, 10))) {
               e.preventDefault();
