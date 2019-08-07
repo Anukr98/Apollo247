@@ -277,7 +277,7 @@ export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
                   </div>
                   <div>
                     <Typography className={classes.secondaryHeading}>
-                      {data.bankAccount![0]!.bankName}
+                      {data.bankAccount![0]!.state}
                     </Typography>
                   </div>
                 </ExpansionPanelSummary>

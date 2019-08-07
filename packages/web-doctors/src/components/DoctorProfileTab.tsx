@@ -392,10 +392,16 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
               <h4>
                 Dr. {doctor!.associatedDoctor!.firstName} {doctor!.associatedDoctor!.lastName}
               </h4>
-              {doctor!.isActive === true && (
+              {console.log(doctor!.isActive)}
+              {doctor!.isActive === true ? (
                 <h6>
                   <span>GENERAL PHYSICIAN | {doctor!.associatedDoctor!.experience} YRS</span>
                 </h6>
+              ) : (
+                <Typography className={classes.invited}>
+                  <img alt="" src={require('images/ic_invite.svg')} />
+                  Invited
+                </Typography>
               )}
             </div>
           }
@@ -432,17 +438,13 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
     >
       {(mutate, { loading }) => (
         <Grid container alignItems="flex-start" spacing={0}>
-          {starDoctors.map((doctor, index) => {
-            return (
-              doctor!.isActive === true && (
-                <Grid item lg={4} sm={6} xs={12} key={index}>
-                  <div className={classes.tabContentStarDoctor}>
-                    <StarDoctorCard doctor={doctor!} />
-                  </div>
-                </Grid>
-              )
-            );
-          })}
+          {starDoctors.map((doctor, index) => (
+            <Grid item lg={4} sm={6} xs={12} key={index}>
+              <div className={classes.tabContentStarDoctor}>
+                <StarDoctorCard doctor={doctor!} />
+              </div>
+            </Grid>
+          ))}
           {showAddDoc && (
             <Grid item lg={4} sm={6} xs={12}>
               <div className={classes.addStarDoctor}>
@@ -525,7 +527,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 Dr. {doctor.firstName} {doctor.lastName}
               </Typography>
               <Typography variant="h6">
-                {(doctor.specialty.name || '').toUpperCase()} <span> | </span>
+                {(doctor.specialization || '').toUpperCase()} <span> | </span>
                 <span> {doctor.experience}YRS </span>
               </Typography>
             </Paper>
@@ -559,7 +561,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">Services</Typography>
-                  <Typography variant="h3">{doctor.specialization}</Typography>
+                  <Typography variant="h3">{doctor.specialty.name}</Typography>
                 </Paper>
               </Grid>
               <Grid item lg={6} sm={12} xs={12}>
