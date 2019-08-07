@@ -6,7 +6,7 @@ import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { Gender, Relation } from 'graphql/types/globalTypes';
 import React, { useState } from 'react';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import { isNameValid, isEmailValid, isDobValid } from '@aph/universal/aphValidators';
+import { isNameValid, isEmailValid, isDobValid } from '@aph/universal/dist/aphValidators';
 import _isEmpty from 'lodash/isEmpty';
 import { UpdatePatient, UpdatePatientVariables } from 'graphql/types/UpdatePatient';
 import { UPDATE_PATIENT } from 'graphql/profiles';

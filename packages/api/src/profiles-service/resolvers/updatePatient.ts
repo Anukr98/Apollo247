@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { Patient } from 'profiles-service/entity/patient';
 import { BaseEntity } from 'typeorm';
 import { AphError, AphUserInputError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { validate } from 'class-validator';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';

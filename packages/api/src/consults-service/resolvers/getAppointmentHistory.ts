@@ -4,7 +4,7 @@ import { STATUS, APPOINTMENT_TYPE } from 'consults-service/entities/appointment'
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const getAppointmentHistoryTypeDefs = gql`
   type AppointmentHistory {

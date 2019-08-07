@@ -15,7 +15,7 @@ import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
-import { isMobileNumberValid } from '@aph/universal/aphValidators';
+import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import { AphTextField } from '@aph/web-ui-components';
 import { HelpPopup } from 'components/Help';
 import isNumeric from 'validator/lib/isNumeric';
