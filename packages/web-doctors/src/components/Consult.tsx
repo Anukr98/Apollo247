@@ -109,6 +109,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
+  //const [publishVideo, setPublishVideo] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const [subscribeToAudio, setSubscribeToAudio] = React.useState(props.isVideoCall ? false : true);
   return (

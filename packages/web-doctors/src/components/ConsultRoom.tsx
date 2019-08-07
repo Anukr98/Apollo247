@@ -383,24 +383,19 @@ interface ConsultRoomProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const classes = useStyles();
   const [tabValue, setTabValue] = useState<number>(0);
-  const [showTabs, setshowTabs] = useState<boolean>(true);
   const [isCalled, setIsCalled] = useState<boolean>(false);
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
-  const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
+  const isVideoCall = true;
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(isVideoCall ? true : false);
-  const [subscribeToAudio, setSubscribeToAudio] = React.useState(isVideoCall ? false : true);
+  const subscribeToAudio = isVideoCall ? false : true;
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
-  // const toggleTabs = () => {
-  //   console.log(showTabs);
-  //   setshowTabs(!showTabs);
-  // };
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
     publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
@@ -477,7 +472,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       return (
         <div className={classes.docterChat}>
           <div className={classes.doctor}>
-            {leftComponent == 1 && <span className={classes.boldTxt}></span>}
+            {leftComponent == 1 && <span className={classes.boldTxt} />}
             <span>{rowData.message}</span>
           </div>
         </div>
@@ -546,21 +541,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </div>
         </div>
         <div>
-          <div className={showTabs ? '' : classes.DisplayNone}>
+          <div>
             <Tabs
               value={tabValue}
               variant="fullWidth"
-              classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+              classes={{
+                root: classes.tabsRoot,
+                indicator: classes.tabsIndicator,
+              }}
               onChange={(e, newValue) => {
                 setTabValue(newValue);
               }}
             >
               <Tab
-                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                classes={{
+                  root: classes.tabRoot,
+                  selected: classes.tabSelected,
+                }}
                 label="Case Sheet"
               />
               <Tab
-                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                classes={{
+                  root: classes.tabRoot,
+                  selected: classes.tabSelected,
+                }}
                 label="Chat"
               />
             </Tabs>
