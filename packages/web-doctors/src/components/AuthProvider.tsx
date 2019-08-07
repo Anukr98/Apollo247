@@ -10,7 +10,7 @@ import {
   GetDoctorProfile,
   GetDoctorProfile_getDoctorProfile,
 } from 'graphql/types/GetDoctorProfile';
-import { apiRoutes } from '@aph/universal/aphRoutes';
+import { apiRoutes } from '@aph/universal/dist/aphRoutes';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';

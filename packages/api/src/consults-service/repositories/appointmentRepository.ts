@@ -1,7 +1,7 @@
 import { EntityRepository, Repository, Between } from 'typeorm';
 import { Appointment } from 'consults-service/entities/appointment';
 import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { differenceInMinutes } from 'date-fns';
 import { format } from 'date-fns';
 

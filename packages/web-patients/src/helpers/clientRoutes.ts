@@ -1,4 +1,4 @@
-import { webPatientsBaseUrl } from '@aph/universal/aphRoutes';
+import { webPatientsBaseUrl } from '@aph/universal/dist/aphRoutes';
 
 export const clientRoutes = {
   welcome: () => '/',

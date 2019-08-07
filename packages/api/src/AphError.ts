@@ -1,4 +1,4 @@
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ApolloError, AuthenticationError, UserInputError } from 'apollo-server';
 
 export class AphError {

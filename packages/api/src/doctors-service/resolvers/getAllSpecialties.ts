@@ -5,7 +5,7 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { getRepository } from 'typeorm';
 
 import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const getAllSpecialtiesTypeDefs = gql`
   type DoctorSpecialty {

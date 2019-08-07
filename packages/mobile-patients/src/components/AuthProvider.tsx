@@ -1,5 +1,5 @@
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
-// import { apiRoutes } from '@aph/universal/aphRoutes';
+// import { apiRoutes } from '@aph/universal/dist/aphRoutes';
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory';
 import { ApolloClient } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
