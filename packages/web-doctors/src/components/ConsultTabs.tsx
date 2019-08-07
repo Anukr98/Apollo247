@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
 import Popover from '@material-ui/core/Popover';
@@ -147,6 +148,43 @@ const useStyles = makeStyles((theme: Theme) => {
     typography: {
       padding: theme.spacing(2),
     },
+    loginForm: {
+      width: 280,
+      minHeight: 290,
+      padding: 20,
+      borderRadius: 10,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    cross: {
+      position: 'absolute',
+      right: 0,
+      top: '10px',
+      fontSize: '18px',
+      color: '#02475b',
+    },
+    loginFormWrap: {
+      padding: '30px 0 50px 0',
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 10,
+        marginBottom: 10,
+      },
+    },
+    helpWrap: {
+      paddingBottom: 0,
+    },
+    needHelp: {
+      padding: '8px',
+      width: '100%',
+      marginTop: 15,
+      borderRadius: '5px',
+      boxShadow: 'none',
+      backgroundColor: '#fc9916',
+    },
   };
 });
 export const ConsultTabs: React.FC = (props) => {
@@ -224,7 +262,22 @@ export const ConsultTabs: React.FC = (props) => {
                 horizontal: 'center',
               }}
             >
-              <Typography className={classes.typography}>The content of the Popover.</Typography>
+              <Paper className={classes.loginForm}>
+                <Button className={classes.cross}>
+                  <img src={require('images/ic_cross.svg')} alt="" />
+                </Button>
+                <div className={`${classes.loginFormWrap} ${classes.helpWrap}`}>
+                  <p>How do you want to talk to the patient?</p>
+                  <Button variant="contained" color="primary" className={classes.needHelp}>
+                    <img src={require('images/call_popup.svg')} alt="" />
+                    AUDIO CALL
+                  </Button>
+                  <Button variant="contained" color="primary" className={classes.needHelp}>
+                    <img src={require('images/video_popup.svg')} alt="" />
+                    VIDEO CALL
+                  </Button>
+                </div>
+              </Paper>
             </Popover>
 
             <Button className={classes.consultIcon}>
