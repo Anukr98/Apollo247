@@ -370,7 +370,10 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                 <div
                   className={`${classes.calendarView} ${showCalendar ? classes.showCalendar : ''}`}
                 >
-                  <AphCalendar getDate={(dateSelected: string) => setDateSelected(dateSelected)} />
+                  <AphCalendar
+                    getDate={(dateSelected: string) => setDateSelected(dateSelected)}
+                    selectedDate={new Date()}
+                  />
                 </div>
                 {_map(filterAvailability, (filterAvailability, index) => {
                   return !showCalendar ? (

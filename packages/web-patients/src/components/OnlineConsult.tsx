@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
@@ -106,6 +106,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+const getYyMmDd = (ddmmyyyy: string) => {
+  const splitString = ddmmyyyy.split('/');
+  return `${splitString[2]}-${splitString[1]}-${splitString[0]}`;
+};
+
 interface OnlineConsultProps {
   doctorDetails: GetDoctorProfileById;
 }
@@ -113,13 +118,10 @@ interface OnlineConsultProps {
 export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const classes = useStyles();
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
-  const [dateSelected, setDateSelected] = useState<string>(
-    new Date().toISOString().substring(0, 10)
-  );
-
-  console.log(dateSelected);
-
-  const showTimeSlots = false;
+  const [timeSelected, setTimeSelected] = useState<string>();
+  const [dateSelected, setDateSelected] = useState<string>('');
+  const today = new Date();
+  const currentTime = new Date().getTime();
 
   const { doctorDetails } = props;
 
@@ -137,37 +139,36 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       ? doctorDetails.getDoctorProfileById.profile.onlineConsultationFees
       : '';
 
-  let morningSlots = [],
-    afternoonSlots = [],
-    eveningSlots = [],
-    lateNightSlots = [];
+  const morningSlots: number[] = [],
+    afternoonSlots: number[] = [],
+    eveningSlots: number[] = [],
+    lateNightSlots: number[] = [];
 
   const morningTime = getTimestamp(new Date(), '12:00');
-  const afternoonTime = getTimestamp(new Date(), '13:00');
-  const eveningTime = getTimestamp(new Date(), '17:00');
-  const lateNightTime = getTimestamp(new Date(), '21:00');
-
-  console.log(morningTime, afternoonTime, eveningTime, lateNightTime);
-
-  // const doctorId =
-  //   doctorDetails &&
-  //   doctorDetails.getDoctorProfileById &&
-  //   doctorDetails.getDoctorProfileById.profile
-  //     ? doctorDetails.getDoctorProfileById.profile.id
-  //     : '';
+  const afternoonTime = getTimestamp(new Date(), '17:00');
+  const eveningTime = getTimestamp(new Date(), '21:00');
 
   const doctorId = 'c91c5155-ce3a-488b-8865-654588fef776';
+
+  console.log(
+    'dateSelected......',
+    dateSelected,
+    dateSelected !== '' ? getYyMmDd(dateSelected) : ''
+  );
+
+  const apiDateFormat =
+    dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorAvailableSlots,
     GetDoctorAvailableSlotsVariables
   >(GET_DOCTOR_AVAILABLE_SLOTS, {
     variables: {
-      DoctorAvailabilityInput: { doctorId: doctorId, availableDate: dateSelected },
+      DoctorAvailabilityInput: { doctorId: doctorId, availableDate: apiDateFormat },
     },
   });
 
-  console.log(data);
+  // console.log(data);
 
   if (loading) {
     return <CircularProgress />;
@@ -178,16 +179,19 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   }
 
   if (data) {
-    const today = new Date();
-    const currentTime = new Date().getTime();
     const availableSlots = data.getDoctorAvailableSlots.availableSlots || [];
     availableSlots.map((slot) => {
       const slotTime = getTimestamp(today, slot);
       if (slotTime > currentTime) {
-        console.log('available slots.....', slotTime);
+        if (slotTime < morningTime) morningSlots.push(slotTime);
+        else if (slotTime > morningTime && slotTime <= afternoonTime) afternoonSlots.push(slotTime);
+        else if (slotTime > afternoonTime && slotTime <= eveningTime) eveningSlots.push(slotTime);
+        else lateNightSlots.push(slotTime);
       }
     });
   }
+
+  // console.log(morningSlots, afternoonSlots, eveningSlots, lateNightSlots);
 
   return (
     <div className={classes.root}>
@@ -224,15 +228,28 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               showCalendar ? classes.showCalendar : ''
             }`}
           >
-            <AphCalendar getDate={(dateSelected: string) => setDateSelected(dateSelected)} />
+            <AphCalendar
+              getDate={(dateSelected: string) => setDateSelected(dateSelected)}
+              selectedDate={new Date(apiDateFormat)}
+            />
           </div>
-          {showTimeSlots ? (
+          {morningSlots.length > 0 ||
+          afternoonSlots.length > 0 ||
+          eveningSlots.length > 0 ||
+          lateNightSlots.length > 0 ? (
             <div
               className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
                 showCalendar ? classes.showTimeSlot : ''
               }`}
             >
-              <DayTimeSlots />
+              <DayTimeSlots
+                morningSlots={morningSlots}
+                afternoonSlots={afternoonSlots}
+                eveningSlots={eveningSlots}
+                latenightSlots={lateNightSlots}
+                doctorName={doctorName}
+                timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
+              />
             </div>
           ) : null}
         </div>

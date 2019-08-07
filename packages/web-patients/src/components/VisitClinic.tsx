@@ -1,11 +1,20 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem } from '@material-ui/core';
+import { Theme, MenuItem, CircularProgress } from '@material-ui/core';
 import React, { useState } from 'react';
 import { AphButton, AphSelect } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
 import Scrollbars from 'react-custom-scrollbars';
+import _uniqueId from 'lodash/uniqueId';
+
 import { GetDoctorProfileById } from 'graphql/types/GetDoctorProfileById';
+import {
+  GetDoctorAvailableSlots,
+  GetDoctorAvailableSlotsVariables,
+} from 'graphql/types/GetDoctorAvailableSlots';
+import { GET_DOCTOR_AVAILABLE_SLOTS } from 'graphql/doctors';
+import { getTime } from 'date-fns/esm';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -110,6 +119,26 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+const getTimestamp = (today: Date, slotTime: string) => {
+  const hhmm = slotTime.split(':');
+  return getTime(
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      parseInt(hhmm[0], 10),
+      parseInt(hhmm[1], 10),
+      0,
+      0
+    )
+  );
+};
+
+const getYyMmDd = (ddmmyyyy: string) => {
+  const splitString = ddmmyyyy.split('/');
+  return `${splitString[2]}-${splitString[1]}-${splitString[0]}`;
+};
+
 interface VisitClinicProps {
   doctorDetails: GetDoctorProfileById;
 }
@@ -117,33 +146,141 @@ interface VisitClinicProps {
 export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const classes = useStyles();
   const [dateSelected, setDateSelected] = useState<string>('');
+  const [timeSelected, setTimeSelected] = useState<string>('');
+  const [clinicSelected, setClinicSelected] = useState<string>('');
+  const [clinicAddress, setClinicAddress] = useState<string>('');
+
+  const { doctorDetails } = props;
+  const today = new Date();
+  const currentTime = new Date().getTime();
+
+  const doctorName =
+    doctorDetails &&
+    doctorDetails.getDoctorProfileById &&
+    doctorDetails.getDoctorProfileById.profile
+      ? doctorDetails.getDoctorProfileById.profile.firstName
+      : '';
+
+  const physicalConsultationFees =
+    doctorDetails &&
+    doctorDetails.getDoctorProfileById &&
+    doctorDetails.getDoctorProfileById.profile
+      ? doctorDetails.getDoctorProfileById.profile.physicalConsultationFees
+      : '';
+
+  const morningSlots: number[] = [],
+    afternoonSlots: number[] = [],
+    eveningSlots: number[] = [],
+    lateNightSlots: number[] = [];
+
+  const morningTime = getTimestamp(new Date(), '12:00');
+  const afternoonTime = getTimestamp(new Date(), '17:00');
+  const eveningTime = getTimestamp(new Date(), '21:00');
+
+  const doctorId = 'c91c5155-ce3a-488b-8865-654588fef776';
+
+  const apiDateFormat =
+    dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
+
+  const { data, loading, error } = useQueryWithSkip<
+    GetDoctorAvailableSlots,
+    GetDoctorAvailableSlotsVariables
+  >(GET_DOCTOR_AVAILABLE_SLOTS, {
+    variables: {
+      DoctorAvailabilityInput: { doctorId: doctorId, availableDate: apiDateFormat },
+    },
+  });
+
+  if (loading) {
+    return <CircularProgress />;
+  }
+
+  if (error) {
+    return <div>Unable to load Available slots.</div>;
+  }
+
+  const availableSlots = (data && data.getDoctorAvailableSlots.availableSlots) || [];
+  availableSlots.map((slot) => {
+    const slotTime = getTimestamp(today, slot);
+    if (slotTime > currentTime) {
+      if (slotTime < morningTime) morningSlots.push(slotTime);
+      else if (slotTime > morningTime && slotTime <= afternoonTime) afternoonSlots.push(slotTime);
+      else if (slotTime > afternoonTime && slotTime <= eveningTime) eveningSlots.push(slotTime);
+      else lateNightSlots.push(slotTime);
+    }
+  });
+  const clinics =
+    doctorDetails &&
+    doctorDetails.getDoctorProfileById &&
+    doctorDetails.getDoctorProfileById.clinics &&
+    doctorDetails.getDoctorProfileById.clinics.length > 0
+      ? doctorDetails.getDoctorProfileById.clinics
+      : [];
+
+  const defaultClinicId = clinics.length > 0 ? clinics[0].id : '';
+  const defaultClinicAddress =
+    clinics.length > 0
+      ? `${clinics[0].addressLine1},${clinics[0].addressLine2},${clinics[0].addressLine3}`
+      : '';
 
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'50vh'}>
         <div className={classes.customScrollBar}>
           <div className={classes.consultGroup}>
-            <AphCalendar getDate={(dateSelected: string) => setDateSelected(dateSelected)} />
+            <AphCalendar
+              getDate={(dateSelected: string) => setDateSelected(dateSelected)}
+              selectedDate={new Date()}
+            />
           </div>
           <div className={`${classes.consultGroup} ${classes.timeSlots}`}>
-            <AphSelect value="Apollo Hospital">
-              <MenuItem classes={{ selected: classes.menuSelected }}>Apollo Hospital</MenuItem>
+            <AphSelect
+              value={clinicSelected === '' ? defaultClinicId : clinicSelected}
+              onChange={(e) => {
+                setClinicSelected(e.target.value as string);
+              }}
+            >
+              {clinics.map((clinicDetails) => {
+                return clinicDetails.isClinic ? (
+                  <MenuItem
+                    classes={{ selected: classes.menuSelected }}
+                    key={_uniqueId('clinic_')}
+                    value={clinicDetails.id}
+                  >
+                    {clinicDetails.name}
+                  </MenuItem>
+                ) : null;
+              })}
             </AphSelect>
             <div className={classes.selectedAddress}>
-              <div className={classes.clinicAddress}>Road No 72, Film Nagar, Jubilee Hills</div>
+              <div className={classes.clinicAddress}>
+                {clinicAddress === '' ? defaultClinicAddress : clinicAddress}
+              </div>
               <div className={classes.clinicDistance}>
                 <img src={require('images/ic_location.svg')} alt="" />
                 <br />
                 2.5 Kms
               </div>
             </div>
-            <DayTimeSlots />
+            {morningSlots.length > 0 ||
+            afternoonSlots.length > 0 ||
+            eveningSlots.length > 0 ||
+            lateNightSlots.length > 0 ? (
+              <DayTimeSlots
+                morningSlots={morningSlots}
+                afternoonSlots={afternoonSlots}
+                eveningSlots={eveningSlots}
+                latenightSlots={lateNightSlots}
+                doctorName={doctorName}
+                timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
+              />
+            ) : null}
           </div>
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
         <AphButton fullWidth color="primary">
-          PAY Rs. 499
+          PAY Rs. {physicalConsultationFees}
         </AphButton>
       </div>
     </div>
