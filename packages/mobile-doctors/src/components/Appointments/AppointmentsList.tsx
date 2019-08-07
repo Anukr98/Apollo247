@@ -6,8 +6,10 @@ import {
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Appointments, DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Dimensions } from 'react-native';
 import { ScrollView } from 'react-navigation';
+
+const screenHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
   leftTimeLineContainer: {
@@ -68,8 +70,13 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
   };
 
   return (
-    <ScrollView>
-      <View style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+    <ScrollView bounces={false}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: '#f7f7f7',
+        }}
+      >
         {getDoctorProfile.appointments.map((i, index, array) => {
           return (
             <View

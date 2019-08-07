@@ -18,7 +18,15 @@ import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Platform,
+} from 'react-native';
 import { CalendarList } from 'react-native-calendars';
 import { NavigationScreenProps } from 'react-navigation';
 import { WeekView } from './WeekView';
@@ -38,11 +46,19 @@ const styles = StyleSheet.create({
   },
   menuDropdown: {
     position: 'absolute',
-    zIndex: 2,
     top: 0,
     width: '100%',
     alignItems: 'flex-end',
-    // marginLeft: 10,
+    ...Platform.select({
+      ios: {
+        zIndex: 2,
+      },
+      android: {
+        //elevation: 12,
+        // zIndex: 2,
+        overflow: 'visible',
+      },
+    }),
   },
   calendarSeparator: {
     height: 1,
@@ -65,6 +81,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowRadius: 1,
     elevation: 5,
+    overflow: 'visible',
+    //marginBottom: 20,
   },
 });
 
@@ -268,8 +286,11 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         {renderHeader()}
         <View>{isCalendarVisible ? renderCalenderView() : null}</View>
       </View>
-      <View style={isDropdownVisible ? {} : { zIndex: -1 }}>
+
+      {/* <View style={isDropdownVisible ? {} : { zIndex: -1 }}> */}
+      <View style={{ zIndex: -1 }}>
         {isDropdownVisible ? renderDropdown() : null}
+
         <View style={styles.weekViewContainer}>
           <WeekView
             date={date}
@@ -284,6 +305,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             }}
           />
         </View>
+
         {getDoctorProfile!.appointments.length == 0 ? (
           renderNoConsultsView()
         ) : (

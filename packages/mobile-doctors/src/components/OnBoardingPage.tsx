@@ -70,7 +70,12 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'flex-start',
     backgroundColor: 'transparent',
-    top: -30,
+
+    ...Platform.select({
+      ios: {
+        top: -30,
+      },
+    }),
   },
   imageStyle: {
     marginTop: -90,

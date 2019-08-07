@@ -53,13 +53,15 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     marginHorizontal: 20,
     flexDirection: 'row',
+    width: '92%',
   },
   buttonStyle: {
-    width: 152,
+    width: '46%',
   },
   buttonTextStyle: {
     ...theme.fonts.IBMPlexSansBold(13),
     textAlign: 'center',
+    margin: 1.5,
   },
   buttonView: {
     borderRadius: 10,
@@ -188,7 +190,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const { data, error, loading } = useQuery<GetDoctorDetails, GetDoctorDetails_getDoctorDetails>(
     GET_DOCTOR_DETAILS
   );
-  console.log('GetDoctorDetails', data);
+
   const getDoctorProfile = data && data.getDoctorDetails;
   // const {
   //   data: { getDoctorProfile },
@@ -197,9 +199,9 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   // } = doctorProfile;
   if (!loading && error) {
     console.log('getDoctorProfileerror', error);
-    //Alert.alert('Error', 'Unable to get the data');
+    Alert.alert('Error', 'Unable to get the data');
   } else {
-    console.log('getDoctorProfile', getDoctorProfile);
+    console.log('getDoctorProfile', getDoctorProfile!);
   }
 
   const renderHeader = (
@@ -218,18 +220,18 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
     />
   );
 
-  const renderProgressBar = (tabIndex: number, data: GetDoctorProfile_getDoctorProfile) => (
+  const renderProgressBar = (tabIndex: number, data: GetDoctorDetails_getDoctorDetails) => (
     <ProfileTabHeader
-      title={headerContent[tabIndex].heading(data!.profile!.firstName)}
+      title={headerContent[tabIndex].heading(data!.lastName)}
       description={headerContent[tabIndex].description}
-      tabs={(data!.profile!.isStarDoctor
+      tabs={(data!.doctorType == 'STAR_APOLLO' || data!.doctorType == 'APOLLO'
         ? headerContent
         : [headerContent[0], headerContent[1]]
       ).map((content) => content.tab)}
       activeTabIndex={tabIndex}
     />
   );
-  const renderComponent = (tabIndex: number, data: GetDoctorProfile_getDoctorProfile) =>
+  const renderComponent = (tabIndex: number, data: GetDoctorDetails_getDoctorDetails) =>
     tabIndex == 0 ? (
       <Profile profileData={data} />
     ) : tabIndex == 1 ? (
@@ -238,16 +240,16 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       <Fees profileData={data} />
     );
 
-  const renderFooterButtons = (tabIndex: number, data: GetDoctorProfile_getDoctorProfile) => {
+  const renderFooterButtons = (tabIndex: number, data: GetDoctorDetails_getDoctorDetails) => {
     const onPressProceed = () => {
-      const tabsCount = data!.profile!.isStarDoctor ? 3 : 2;
+      const tabsCount = data!.doctorType == 'STAR_APOLLO' || data!.doctorType == 'APOLLO' ? 3 : 2;
       if (tabIndex < tabsCount - 1) {
         setActiveTabIndex(tabIndex + 1);
         scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0, false);
       } else {
         setProfileFlowDone(true).finally(() => {
           props.navigation.navigate(AppRoutes.TransitionPage, {
-            doctorName: data.profile!.firstName,
+            doctorName: data.firstName,
           });
         });
       }
@@ -261,7 +263,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         {tabIndex == 0 ? (
           <Button
             onPress={onPressProceed}
-            title={data!.profile!.isStarDoctor ? 'SAVE AND PROCEED' : 'PROCEED'}
+            title={data!.doctorType == 'STAR_APOLLO' ? 'SAVE AND PROCEED' : 'PROCEED'}
             titleTextStyle={styles.buttonTextStyle}
             style={{ width: 240 }}
           />
@@ -276,7 +278,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
             />
             <Button
               onPress={onPressProceed}
-              title={'SAVE AND PROCEED'}
+              title={data!.doctorType == 'STAR_APOLLO' ? 'SAVE AND PROCEED' : 'PROCEED'}
               titleTextStyle={styles.buttonTextStyle}
               style={styles.buttonStyle}
             />

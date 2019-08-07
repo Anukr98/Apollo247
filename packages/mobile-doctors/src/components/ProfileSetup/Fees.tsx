@@ -3,7 +3,8 @@ import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/Squar
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { GetDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import console = require('console');
 
 const styles = StyleSheet.create({
   feeeducation: {
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    width: '120%',
+    width: 300,
     marginRight: 0,
     marginLeft: 15,
     backgroundColor: '#658f9b',
@@ -59,14 +60,13 @@ const styles = StyleSheet.create({
 });
 
 export interface FeesProps {
-  profileData: GetDoctorProfile_getDoctorProfile;
+  profileData: GetDoctorDetails_getDoctorDetails;
 }
 
 export const Fees: React.FC<FeesProps> = ({ profileData }) => {
-  const Feedata = profileData!.profile;
-  const BankDetails = profileData!.paymentDetails![0];
-  console.log('fee', Feedata);
-  console.log('BankDetails', BankDetails);
+  const Feedata = profileData!;
+  const BankDetails = profileData!.packages![0];
+  console.log(Feedata.bankAccount!.length);
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
   const renderCard = (title: string, children: Element) => (
     <SquareCardWithTitle title={title} containerStyle={{ marginTop: 16 }}>
@@ -84,7 +84,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
     if (!description) return null;
     return (
       <View style={styles.commonView}>
-        <Text style={styles.feeeducation}>{title}</Text>
+        <Text style={styles.feeeducation}> {title}</Text>
         <Text style={styles.feeeducationtext}>{description}</Text>
       </View>
     );
@@ -137,37 +137,46 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
             </Text>,
             Feedata!.physicalConsultationFees
           )}
-          {feeprofileRow('What package do you offer your patients?', Feedata!.package || '')}
+          {feeprofileRow(
+            'What package do you offer your patients?',
+            [BankDetails!.name, '@Rs. '.concat(BankDetails!.fees)].join(', ') || ''
+          )}
         </View>
       )}
+
       {renderCard(
         'Payment Details',
-        <View style={{ flexDirection: 'row', marginTop: 16, justifyContent: 'space-between' }}>
-          <View>
-            {feeprofileRowbankname(
-              'A/C Number: xxx xxx xxx 7890',
-              (profileData!.paymentDetails![0] && profileData!.paymentDetails![0]!.address) || ''
-            )}
-            {showPaymentDetails ? (
-              <>
-                <View style={styles.separator}></View>
-                {feeprofileRowdetails(
-                  'Account Holder’s Name',
-                  `Dr. ${Feedata!.firstName} ${Feedata!.lastName}`
+        <View>
+          {Feedata.bankAccount!.length > 0 ? (
+            <View style={{ flexDirection: 'row', marginTop: 16, justifyContent: 'space-between' }}>
+              <View>
+                {feeprofileRowbankname(
+                  Feedata.bankAccount![0]!.accountNumber,
+                  Feedata.bankAccount![0]!.bankName
                 )}
-                {feeprofileRowdetails('IFSC Code', 'SBIN 000 1109')}
-                {feeprofileRowdetails('Account Type', 'Savings Account')}
-              </>
-            ) : null}
-          </View>
-          <View>
-            <TouchableOpacity
-              style={styles.paymentbutton}
-              onPress={() => setShowPaymentDetails(!showPaymentDetails)}
-            >
-              {showPaymentDetails ? <Up /> : <Down />}
-            </TouchableOpacity>
-          </View>
+
+                {showPaymentDetails ? (
+                  <>
+                    <View style={styles.separator}></View>
+                    {feeprofileRowdetails(
+                      'Account Holder’s Name',
+                      `Dr. ${Feedata.bankAccount![0]!.accountHolderName}`
+                    )}
+                    {feeprofileRowdetails('IFSC Code', 'SBIN 000 1109')}
+                    {feeprofileRowdetails('Account Type', Feedata.bankAccount![0]!.accountType)}
+                  </>
+                ) : null}
+              </View>
+              <View>
+                <TouchableOpacity
+                  style={styles.paymentbutton}
+                  onPress={() => setShowPaymentDetails(!showPaymentDetails)}
+                >
+                  {showPaymentDetails ? <Up /> : <Down />}
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : null}
         </View>
       )}
     </View>

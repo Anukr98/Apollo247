@@ -5,7 +5,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
-import { GetDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 
 const styles = StyleSheet.create({
   container: {
@@ -71,10 +71,12 @@ const styles = StyleSheet.create({
 });
 
 export interface ProfileProps {
-  profileData: GetDoctorProfile_getDoctorProfile;
+  profileData: GetDoctorDetails_getDoctorDetails;
 }
 
 export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
+  console.log('p', profileData.doctorHospital[0].facility);
+
   const profileRow = (title: string, description: string) => {
     if (!description) return null;
     return (
@@ -93,11 +95,11 @@ export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
       <SquareCardWithTitle title="Your Profile" containerStyle={{ marginTop: 6 }}>
         <View style={styles.cardView}>
           <View style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}>
-            {profileData!.profile!.photoUrl ? (
+            {profileData!.photoUrl ? (
               <Image
                 style={styles.imageview}
                 source={{
-                  uri: profileData!.profile!.photoUrl,
+                  uri: profileData!.photoUrl,
                 }}
               />
             ) : (
@@ -107,36 +109,46 @@ export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
               />
             )}
           </View>
-          {profileData!.profile!.isStarDoctor ? <Star style={styles.starIconStyle}></Star> : null}
+          {profileData!.doctorType == 'STAR_APOLLO' ? (
+            <Star style={styles.starIconStyle}></Star>
+          ) : null}
           <View style={styles.columnContainer}>
             <Text style={[styles.drname]} numberOfLines={1}>
-              {`Dr. ${profileData!.profile!.firstName} ${profileData!.profile!.lastName}`}
+              {`Dr. ${profileData!.firstName} ${profileData!.lastName}`}
             </Text>
             <Text style={styles.drnametext}>
               {formatSpecialityAndExperience(
-                profileData!.profile!.speciality,
-                profileData!.profile!.experience || ''
+                profileData!.specialty.name,
+                profileData!.experience || ''
               )}
             </Text>
             <View style={styles.understatusline} />
           </View>
-          {profileRow('Education', profileData!.profile!.education)}
-          {profileRow('Speciality', profileData!.profile!.speciality)}
-          {profileRow('Services', profileData!.profile!.services || '')}
-          {profileRow('Awards', profileData!.profile!.awards || '')}
-          {profileRow('Speaks', (profileData!.profile!.languages || '').split(',').join(', '))}
-          {profileRow('MCI Number', profileData!.profile!.registrationNumber)}
+          {profileRow('Education', profileData!.qualification!)}
+          {profileRow('Speciality', profileData!.specialty.name!)}
+          {profileRow('Services', profileData!.specialization || '')}
+          {profileRow('Awards', profileData!.awards || '')}
+          {profileRow('Speaks', (profileData!.languages || '').split(',').join(', '))}
+          {profileRow('MCI Number', profileData!.registrationNumber)}
           {profileRow(
             'In-person Consult Location',
             [
-              profileData!.clinics![0]!.addressLine1,
-              profileData!.clinics![0]!.addressLine2,
-              profileData!.clinics![0]!.addressLine3,
-            ].join(', ')
+              profileData.doctorHospital[0].facility.streetLine1,
+              profileData.doctorHospital[0].facility.streetLine2,
+              profileData.doctorHospital[0].facility.streetLine3,
+              profileData.doctorHospital[0].facility.city,
+              profileData.doctorHospital[0].facility.state,
+              profileData.doctorHospital[0].facility.country,
+            ]
+              .filter(Boolean)
+              .join(', ')
           )}
         </View>
       </SquareCardWithTitle>
-      <StarDoctorsTeam profileData={profileData} />
+      {profileData!.doctorType == 'STAR_APOLLO' ? (
+        <StarDoctorsTeam profileData={profileData} />
+      ) : null}
+      {/* <StarDoctorsTeam profileData={profileData} /> */}
     </View>
   );
 };

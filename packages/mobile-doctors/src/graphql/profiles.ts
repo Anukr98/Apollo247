@@ -13,7 +13,6 @@ export const GET_DOCTOR_DETAILS = gql`
       experience
       firebaseToken
       firstName
-      gender
       isActive
       id
       languages
@@ -47,13 +46,37 @@ export const GET_DOCTOR_DETAILS = gql`
       }
       doctorHospital {
         facility {
+          city
+          country
+          facilityType
+          latitude
+          longitude
           name
+          state
+          streetLine1
+          streetLine2
+          streetLine3
         }
       }
       starTeam {
         associatedDoctor {
+          gender
           firstName
+          lastName
+          emailAddress
+          id
+          experience
+          photoUrl
+          mobileNumber
+          salutation
+          qualification
         }
+      }
+      bankAccount {
+        bankName
+        accountType
+        accountNumber
+        accountHolderName
       }
     }
   }

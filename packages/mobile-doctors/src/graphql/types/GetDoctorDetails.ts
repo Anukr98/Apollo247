@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, Gender, Salutation, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
+import { DoctorType, Salutation, ConsultMode, ConsultType, WeekDay, Gender, AccountType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorDetails
@@ -30,7 +30,16 @@ export interface GetDoctorDetails_getDoctorDetails_packages {
 
 export interface GetDoctorDetails_getDoctorDetails_doctorHospital_facility {
   __typename: "Facility";
+  city: string | null;
+  country: string | null;
+  facilityType: string;
+  latitude: string | null;
+  longitude: string | null;
   name: string;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_doctorHospital {
@@ -40,12 +49,29 @@ export interface GetDoctorDetails_getDoctorDetails_doctorHospital {
 
 export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor {
   __typename: "Profile";
+  gender: Gender | null;
   firstName: string | null;
+  lastName: string | null;
+  emailAddress: string | null;
+  id: string;
+  experience: string | null;
+  photoUrl: string | null;
+  mobileNumber: string;
+  salutation: Salutation | null;
+  qualification: string | null;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_starTeam {
   __typename: "StarTeam";
   associatedDoctor: GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor | null;
+}
+
+export interface GetDoctorDetails_getDoctorDetails_bankAccount {
+  __typename: "BankAccount";
+  bankName: string;
+  accountType: AccountType;
+  accountNumber: string;
+  accountHolderName: string;
 }
 
 export interface GetDoctorDetails_getDoctorDetails {
@@ -60,7 +86,6 @@ export interface GetDoctorDetails_getDoctorDetails {
   experience: string | null;
   firebaseToken: string | null;
   firstName: string;
-  gender: Gender | null;
   isActive: boolean;
   id: string;
   languages: string | null;
@@ -83,6 +108,7 @@ export interface GetDoctorDetails_getDoctorDetails {
   packages: (GetDoctorDetails_getDoctorDetails_packages | null)[] | null;
   doctorHospital: GetDoctorDetails_getDoctorDetails_doctorHospital[];
   starTeam: (GetDoctorDetails_getDoctorDetails_starTeam | null)[] | null;
+  bankAccount: (GetDoctorDetails_getDoctorDetails_bankAccount | null)[] | null;
 }
 
 export interface GetDoctorDetails {

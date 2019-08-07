@@ -10,12 +10,17 @@ import {
   addDoctorToStartDoctorProgram,
   addDoctorToStartDoctorProgramVariables,
 } from '@aph/mobile-doctors/src/graphql/types/addDoctorToStartDoctorProgram';
-import { GetDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import {
+  GetDoctorDetails_getDoctorDetails,
+  GetDoctorDetails_getDoctorDetails_starTeam,
+} from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+
 import {
   GetDoctorsForStarDoctorProgram,
   GetDoctorsForStarDoctorProgramVariables,
   GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram,
 } from '@aph/mobile-doctors/src/graphql/types/getDoctorsForStarDoctorProgram';
+
 import { INVITEDSTATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   removeDoctorFromStartDoctorProgram,
@@ -66,12 +71,13 @@ const styles = StyleSheet.create({
 });
 
 export interface StarDoctorsTeamProps {
-  profileData: GetDoctorProfile_getDoctorProfile;
+  profileData: GetDoctorDetails_getDoctorDetails;
 }
 
 export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _profileData }) => {
+  console.log('flitered _profileData', _profileData);
   const [addshow, setAddShow] = useState<boolean>(false);
-  const [doctorSearchText, setDoctorSearchText] = useState<string>('Search Doctor');
+  const [doctorSearchText, setDoctorSearchText] = useState<string>('Select Doctor');
   const [filteredStarDoctors, setFilteredStarDoctors] = useState<
     (GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram['profile'] | null)[] | null
   >([]);
@@ -99,7 +105,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
           //     _data.data.getDoctorsForStarDoctorProgram.map((i) => i!.profile)) ||
           //   [];
           const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
-          setFilteredStarDoctors(doctorProfile);
+          setFilteredStarDoctors(doctorProfile!);
         })
         .catch((e) => {
           console.log('Error occured while searching for Doctors', e);
@@ -130,16 +136,25 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
       .then((_data) => {
         setIsLoading(false);
         // Note: This is for demo/testing purpose only, do real implementation after real API
-        const array = [...profileData.starDoctorTeam!];
+        const array = [...profileData.starTeam!];
         array.push({
-          ...profileData.starDoctorTeam![0]!,
-          id: Math.random().toString(36),
-          firstName: name.replace('Dr. ', ''),
-          lastName: '',
-          inviteStatus: INVITEDSTATUS.ACCEPTED,
-        });
-        setProfileData({ ...profileData, starDoctorTeam: array });
-        setDoctorSearchText('Search Doctor');
+          ...profileData.starTeam![0],
+          associatedDoctor: {
+            id: Math.random().toString(36),
+            firstName: name.replace('Dr. ', ''),
+            lastName: '',
+            gender: '',
+            emailAddress: '',
+            mobileNumber: '+918790159226',
+            photoUrl: 'Radhika22881.jpg',
+            qualification: 'MBBS',
+            salutation: 'DR',
+            experience: '5',
+          },
+          __typename: 'StarTeam',
+        } as any);
+        setProfileData({ ...profileData, starTeam: array });
+        setDoctorSearchText('Select Doctor');
       })
       .catch((e) => {
         setIsLoading(false);
@@ -149,8 +164,10 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
   };
 
   const removeDoctorFromProgram = (id: string) => {
-    const array = [...profileData.starDoctorTeam!];
-    setProfileData({ ...profileData, starDoctorTeam: array.filter((i) => i!.id !== id) });
+    console.log('id', id);
+    const array = [...profileData.starTeam!];
+    console.log('array', array);
+    setProfileData({ ...profileData, starTeam: array.filter((i) => i!.id !== id) });
 
     client
       .mutate<removeDoctorFromStartDoctorProgram, removeDoctorFromStartDoctorProgramVariables>({
@@ -237,29 +254,30 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
 
   return (
     <SquareCardWithTitle
-      title={`Your Star Doctors Team (${profileData!.starDoctorTeam!.length})`}
+      title={`Your Star Doctors Team (${profileData!.starTeam!.length})`}
       containerStyle={{ marginTop: 20 }}
     >
       <View style={{ height: 16 }} />
-      {profileData!.starDoctorTeam!.map((starDoctor, i) => (
+      {profileData!.starTeam!.map((starDoctor, i) => (
         <DoctorCard
           onRemove={(id) => {
             removeDoctorFromProgram(id);
           }}
-          doctorId={starDoctor!.id}
+          doctorId={starDoctor!.associatedDoctor!.id}
           key={i}
-          image={starDoctor!.photoUrl || ''}
-          doctorName={`${starDoctor!.firstName} ${starDoctor!.lastName}`}
-          experience={starDoctor!.experience || ''}
-          // specialization={'GENERAL PHYSICIAN '} //{starDoctor.designation}
-          specialization={(starDoctor!.specialization || '').toUpperCase()}
-          education={starDoctor!.education}
+          image={starDoctor!.associatedDoctor!.photoUrl || ''}
+          doctorName={`${starDoctor!.associatedDoctor!.firstName} ${
+            starDoctor!.associatedDoctor!.lastName
+          }`}
+          experience={starDoctor!.associatedDoctor!.experience || ''}
+          specialization={profileData.specialty.name.toLocaleUpperCase()} //{(starDoctor!.associatedDoctor!.qualification || '').toUpperCase()}
+          education={starDoctor!.associatedDoctor!.qualification!}
           location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
-          inviteStatus={
-            starDoctor!.inviteStatus! == 'ACCEPTED'
-              ? INVITEDSTATUS.ACCEPTED
-              : INVITEDSTATUS.NOTAPPLICABLE
-          }
+          // inviteStatus={
+          //   starDoctor!.inviteStatus! == 'ACCEPTED'
+          //     ? INVITEDSTATUS.ACCEPTED
+          //     : INVITEDSTATUS.NOTAPPLICABLE
+          // }
         />
       ))}
       {isLoading && <ActivityIndicator style={{ marginBottom: 16 }} />}

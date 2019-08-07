@@ -6,6 +6,11 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum AccountType {
+  CURRENT = "CURRENT",
+  SAVINGS = "SAVINGS",
+}
+
 export enum ConsultMode {
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
@@ -26,6 +31,13 @@ export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
   OTHER = "OTHER",
+}
+
+export enum INVITEDSTATUS {
+  ACCEPTED = "ACCEPTED",
+  NONE = "NONE",
+  NOTAPPLICABLE = "NOTAPPLICABLE",
+  REJECTED = "REJECTED",
 }
 
 export enum Relation {

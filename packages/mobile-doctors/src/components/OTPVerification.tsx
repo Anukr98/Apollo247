@@ -305,6 +305,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       phoneNumberVerificationCredential,
       otp
     );
+    console.log('credential', credential);
     signIn(credential)
       .then((_) => {
         firebase.auth().onAuthStateChanged(async (updatedUser) => {
@@ -320,6 +321,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             }
             await AsyncStorage.setItem('onAuthStateChanged', 'false');
             setIsLoading(false);
+            //
             props.navigation.replace(AppRoutes.ProfileSetup);
           } else {
             console.log('no new user');
