@@ -131,7 +131,7 @@ const slides: Slide[] = [
   {
     key: 'somethun-dos',
     title: 'easy follow ups',
-    text: 'Follow up with your patients virtually  and whenever you want',
+    text: 'Follow up with your patients virtually\nand whenever you want',
     image: require('@aph/mobile-doctors/src/images/onboard/img_onboarding_easy_follow_ups.png'),
     backgroundColor: '#FBFCFD',
     index: 2,
@@ -140,7 +140,7 @@ const slides: Slide[] = [
   {
     key: 'somethun1',
     title: 'anytime anywhere',
-    text: ' Consult virtually, at a time of your convenience',
+    text: ' Consult virtually, at a time of your\nconvenience',
     image: require('@aph/mobile-doctors/src/images/onboard/img_onboarding_anytime_anywhere.png'),
     backgroundColor: '#FBFCFD',
     index: 3,
@@ -149,7 +149,7 @@ const slides: Slide[] = [
   {
     key: 'somethun2',
     title: 'medico-legal assistance',
-    text: 'Get immediate help from our expert medico legal team',
+    text: 'Get immediate help from our expert\nmedico legal team',
     image: require('@aph/mobile-doctors/src/images/onboard/img_onboarding_medico_legal_assistance.png'),
     backgroundColor: '#FBFCFD',
     index: 4,

@@ -320,6 +320,13 @@ export const NextAppointmentIcon: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/ic_status_incomplete.png')}
   />
 );
+export const UpComingIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    style={{ height: 20, width: 20 }}
+    source={require('../../images/icons/ic_status_upcoming.png')}
+  />
+);
 export const Call: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 24, width: 24, resizeMode: 'contain' }}

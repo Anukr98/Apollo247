@@ -10,6 +10,7 @@ import {
   Text,
 } from 'react-native';
 import { theme } from '../../theme/theme';
+
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
@@ -17,8 +18,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'white',
     paddingHorizontal: 20,
-    // paddingVertical: 8,
-    // //height: 56,
   },
   iconContainer: {
     flexDirection: 'row',
@@ -84,7 +83,7 @@ export const NotificationHeader: React.FC<HeaderProps> = (props) => {
             ))}
         </View>
       )}
-      <View style={{ flexDirection: 'column', marginTop: 30 }}>
+      <View style={{ flexDirection: 'column', marginTop: 0 }}>
         <Text style={[styles.doctorNameStyles, props.textStyles]}>{props.middleText}</Text>
         <Text style={styles.timerTextStyle}>{props.timerText}</Text>
       </View>

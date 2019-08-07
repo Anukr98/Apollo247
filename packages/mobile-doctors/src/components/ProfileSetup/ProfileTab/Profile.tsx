@@ -96,11 +96,15 @@ export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
         <View style={styles.cardView}>
           <View style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}>
             {profileData!.photoUrl ? (
+              // <Image
+              //   style={styles.imageview}
+              //   source={{
+              //     uri: profileData!.photoUrl,
+              //   }}
+              // />
               <Image
                 style={styles.imageview}
-                source={{
-                  uri: profileData!.photoUrl,
-                }}
+                source={require('../../../images/doctor/doctor.png')}
               />
             ) : (
               <Image

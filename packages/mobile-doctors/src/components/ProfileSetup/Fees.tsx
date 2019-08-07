@@ -162,7 +162,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
                       'Account Holder’s Name',
                       `Dr. ${Feedata.bankAccount![0]!.accountHolderName}`
                     )}
-                    {feeprofileRowdetails('IFSC Code', 'SBIN 000 1109')}
+                    {feeprofileRowdetails('IFSC Code', Feedata.bankAccount![0]!.IFSCcode)}
                     {feeprofileRowdetails('Account Type', Feedata.bankAccount![0]!.accountType)}
                   </>
                 ) : null}

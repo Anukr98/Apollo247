@@ -77,11 +77,11 @@ export const GET_DOCTOR_DETAILS = gql`
         accountType
         accountNumber
         accountHolderName
+        IFSCcode
       }
     }
   }
 `;
-
 export const GET_DOCTOR_PROFILE = gql`
   query GetDoctorProfile {
     getDoctorProfile {
@@ -152,6 +152,24 @@ export const GET_DOCTOR_PROFILE = gql`
     }
   }
 `;
+// export const GET_DOCTOR_APPOINTMENTS = gql`
+//   query GetDoctorAppointments( $doctorId: String,$startDate: Date,$endDate: Date){
+//     getDoctorAppointments( $doctorId: $doctorId,
+//     $startDate: startDate,
+//     $endDate: endDate) {
+//       appointmentsHistory {
+//         appointmentType
+//         doctorId
+//         status
+//         hospitalId
+//         id
+//         patientId
+//         appointmentDateTime
+//         bookingDate
+//       }
+//     }
+//   }
+// `;
 
 /**
  * @returns {DoctorProfile}

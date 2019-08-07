@@ -72,6 +72,7 @@ export interface GetDoctorDetails_getDoctorDetails_bankAccount {
   accountType: AccountType;
   accountNumber: string;
   accountHolderName: string;
+  IFSCcode: string;
 }
 
 export interface GetDoctorDetails_getDoctorDetails {

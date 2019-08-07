@@ -10,7 +10,7 @@ import MaterialTabs from 'react-native-material-tabs';
 const styles = StyleSheet.create({
   mainview: {
     backgroundColor: '#ffffff',
-    height: 80,
+    height: 50,
   },
   shadowview: {
     shadowOffset: {
@@ -42,7 +42,7 @@ const showHeaderView = () => {
       leftIcons={[
         {
           icon: (
-            <View style={{ marginTop: 30 }}>
+            <View style={{ marginTop: 0 }}>
               <BackArrow />
             </View>
           ),
@@ -51,11 +51,11 @@ const showHeaderView = () => {
       ]}
       middleText="CONSULT ROOM"
       timerText="Time to Consult  04:25"
-      textStyles={{ marginTop: 30 }}
+      //textStyles={{ marginTop: 30 }}
       rightIcons={[
         {
           icon: (
-            <View style={{ marginTop: 30 }}>
+            <View style={{ marginTop: 0 }}>
               <Call />
             </View>
           ),
@@ -63,7 +63,7 @@ const showHeaderView = () => {
         },
         {
           icon: (
-            <View style={{ marginTop: 30 }}>
+            <View style={{ marginTop: 0 }}>
               <DotIcon />
             </View>
           ),
