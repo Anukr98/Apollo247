@@ -196,7 +196,6 @@ export const ConsultTabs: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
   const toggleTabs = () => {
-    console.log(showTabs);
     setshowTabs(!showTabs);
   };
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -226,28 +225,17 @@ export const ConsultTabs: React.FC = (props) => {
           CONSULT ROOM
           <div className={classes.consultButtonContainer}>
             <span className={classes.timeLeft}> Consult Duration 00:25</span>
-            {/* <Button className={classes.consultButton} onClick={() => setStartConsult(true)}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                <path fill="#fff" d="M8 5v14l11-7z" />
-              </svg>
-              Start Consult
-            </Button> */}
-
             <Button
               aria-describedby={id}
               variant="contained"
               onClick={(e) => handleClick(e)}
               className={classes.consultButton}
-              //onClick={() => setStartConsult(true)}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                 <path fill="#fff" d="M8 5v14l11-7z" />
               </svg>
               Start Consult
             </Button>
-            {/* <Button aria-describedby={id} variant="contained" onClick={handleClick}>
-                Open Popover
-              </Button> */}
             <Popover
               id={id}
               open={open}
@@ -268,11 +256,21 @@ export const ConsultTabs: React.FC = (props) => {
                 </Button>
                 <div className={`${classes.loginFormWrap} ${classes.helpWrap}`}>
                   <p>How do you want to talk to the patient?</p>
-                  <Button variant="contained" color="primary" className={classes.needHelp}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    className={classes.needHelp}
+                    onClick={() => setStartConsult(true)}
+                  >
                     <img src={require('images/call_popup.svg')} alt="" />
                     AUDIO CALL
                   </Button>
-                  <Button variant="contained" color="primary" className={classes.needHelp}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    className={classes.needHelp}
+                    onClick={() => setStartConsult(true)}
+                  >
                     <img src={require('images/video_popup.svg')} alt="" />
                     VIDEO CALL
                   </Button>
