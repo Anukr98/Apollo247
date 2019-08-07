@@ -151,7 +151,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const [clinicAddress, setClinicAddress] = useState<string>('');
 
   const { doctorDetails } = props;
-  const today = new Date();
+
   const currentTime = new Date().getTime();
 
   const doctorName =
@@ -173,14 +173,14 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
 
-  const morningTime = getTimestamp(new Date(), '12:00');
-  const afternoonTime = getTimestamp(new Date(), '17:00');
-  const eveningTime = getTimestamp(new Date(), '21:00');
-
-  const doctorId = 'c91c5155-ce3a-488b-8865-654588fef776';
-
   const apiDateFormat =
     dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
+
+  const morningTime = getTimestamp(new Date(apiDateFormat), '12:00');
+  const afternoonTime = getTimestamp(new Date(apiDateFormat), '17:00');
+  const eveningTime = getTimestamp(new Date(apiDateFormat), '21:00');
+
+  const doctorId = 'c91c5155-ce3a-488b-8865-654588fef776';
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorAvailableSlots,
@@ -201,14 +201,24 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
 
   const availableSlots = (data && data.getDoctorAvailableSlots.availableSlots) || [];
   availableSlots.map((slot) => {
-    const slotTime = getTimestamp(today, slot);
+    const slotTime = getTimestamp(new Date(apiDateFormat), slot);
     if (slotTime > currentTime) {
       if (slotTime < morningTime) morningSlots.push(slotTime);
-      else if (slotTime > morningTime && slotTime <= afternoonTime) afternoonSlots.push(slotTime);
-      else if (slotTime > afternoonTime && slotTime <= eveningTime) eveningSlots.push(slotTime);
+      else if (slotTime >= morningTime && slotTime < afternoonTime) afternoonSlots.push(slotTime);
+      else if (slotTime >= afternoonTime && slotTime < eveningTime) eveningSlots.push(slotTime);
       else lateNightSlots.push(slotTime);
     }
   });
+
+  const disableSubmit =
+    (morningSlots.length > 0 ||
+      afternoonSlots.length > 0 ||
+      eveningSlots.length > 0 ||
+      lateNightSlots.length > 0) &&
+    timeSelected !== ''
+      ? false
+      : true;
+
   const clinics =
     doctorDetails &&
     doctorDetails.getDoctorProfileById &&
@@ -230,7 +240,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           <div className={classes.consultGroup}>
             <AphCalendar
               getDate={(dateSelected: string) => setDateSelected(dateSelected)}
-              selectedDate={new Date()}
+              selectedDate={new Date(apiDateFormat)}
             />
           </div>
           <div className={`${classes.consultGroup} ${classes.timeSlots}`}>
@@ -279,7 +289,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
-        <AphButton fullWidth color="primary">
+        <AphButton fullWidth color="primary" disabled={disableSubmit} onClick={() => {}}>
           PAY Rs. {physicalConsultationFees}
         </AphButton>
       </div>

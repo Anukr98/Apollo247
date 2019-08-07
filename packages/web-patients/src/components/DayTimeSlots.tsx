@@ -80,7 +80,6 @@ const getTimeFromTimestamp = (today: Date, slotTime: number) => {
   const hours = new Date(slotTime).getHours();
   const minutes = new Date(slotTime).getMinutes();
   const minutesFormat = minutes > 9 ? minutes : `0${minutes}`;
-  console.log(minutesFormat);
   return `${hours}:${minutesFormat}`;
 };
 
@@ -162,7 +161,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                       key={_uniqueId('morning_')}
                     >
                       {formattedHour}:{timeStringArray[1]}
-                      am
+                      {formattedHour >= 12 ? 'pm' : 'am'}
                     </AphButton>
                   );
                 })
@@ -191,7 +190,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                         setTimeSelected(e.currentTarget.value);
                         timeSelected(e.currentTarget.value);
                       }}
-                      key={_uniqueId('morning_')}
+                      key={_uniqueId('afternoon_')}
                     >
                       {formattedHour}:{timeStringArray[1]}
                       pm
@@ -223,7 +222,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                         setTimeSelected(e.currentTarget.value);
                         timeSelected(e.currentTarget.value);
                       }}
-                      key={_uniqueId('morning_')}
+                      key={_uniqueId('evening_')}
                     >
                       {formattedHour}:{timeStringArray[1]}
                       pm
@@ -255,7 +254,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                         setTimeSelected(e.currentTarget.value);
                         timeSelected(e.currentTarget.value);
                       }}
-                      key={_uniqueId('morning_')}
+                      key={_uniqueId('latenight_')}
                     >
                       {formattedHour}:{timeStringArray[1]}
                       pm

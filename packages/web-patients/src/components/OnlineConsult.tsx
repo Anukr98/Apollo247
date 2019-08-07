@@ -126,9 +126,9 @@ interface OnlineConsultProps {
 export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const classes = useStyles();
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
-  const [timeSelected, setTimeSelected] = useState<string>();
+  const [timeSelected, setTimeSelected] = useState<string>('');
   const [dateSelected, setDateSelected] = useState<string>('');
-  const today = new Date();
+
   const currentTime = new Date().getTime();
 
   const { doctorDetails } = props;
@@ -152,20 +152,21 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
 
-  const morningTime = getTimestamp(new Date(), '12:00');
-  const afternoonTime = getTimestamp(new Date(), '17:00');
-  const eveningTime = getTimestamp(new Date(), '21:00');
-
   const doctorId = '00e106b4-0018-44a6-9e26-dd4ed47c5718';
 
-  console.log(
-    'dateSelected......',
-    dateSelected,
-    dateSelected !== '' ? getYyMmDd(dateSelected) : ''
-  );
+  // console.log(
+  //   'dateSelected......',
+  //   dateSelected,
+  //   dateSelected !== '' ? getYyMmDd(dateSelected) : ''
+  // );
+  // console.log(dateSelected, timeSelected);
 
   const apiDateFormat =
     dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
+
+  const morningTime = getTimestamp(new Date(apiDateFormat), '12:00');
+  const afternoonTime = getTimestamp(new Date(apiDateFormat), '17:00');
+  const eveningTime = getTimestamp(new Date(apiDateFormat), '21:00');
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorAvailableSlots,
@@ -176,8 +177,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     },
   });
 
-  // console.log(data);
-
   if (loading) {
     return <CircularProgress />;
   }
@@ -186,20 +185,27 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     return <div>Unable to load Available slots.</div>;
   }
 
-  if (data) {
-    const availableSlots = data.getDoctorAvailableSlots.availableSlots || [];
-    availableSlots.map((slot) => {
-      const slotTime = getTimestamp(today, slot);
-      if (slotTime > currentTime) {
-        if (slotTime < morningTime) morningSlots.push(slotTime);
-        else if (slotTime > morningTime && slotTime <= afternoonTime) afternoonSlots.push(slotTime);
-        else if (slotTime > afternoonTime && slotTime <= eveningTime) eveningSlots.push(slotTime);
-        else lateNightSlots.push(slotTime);
-      }
-    });
-  }
+  const availableSlots = (data && data.getDoctorAvailableSlots.availableSlots) || [];
+  availableSlots.map((slot) => {
+    const slotTime = getTimestamp(new Date(apiDateFormat), slot);
+    if (slotTime > currentTime) {
+      if (slotTime < morningTime) morningSlots.push(slotTime);
+      else if (slotTime >= morningTime && slotTime < afternoonTime) afternoonSlots.push(slotTime);
+      else if (slotTime >= afternoonTime && slotTime < eveningTime) eveningSlots.push(slotTime);
+      else lateNightSlots.push(slotTime);
+    }
+  });
 
-  console.log(morningSlots, afternoonSlots, eveningSlots, lateNightSlots);
+  const disableSubmit =
+    (morningSlots.length > 0 ||
+      afternoonSlots.length > 0 ||
+      eveningSlots.length > 0 ||
+      lateNightSlots.length > 0) &&
+    timeSelected !== ''
+      ? false
+      : true;
+
+  // console.log(morningSlots, afternoonSlots, eveningSlots, lateNightSlots);
 
   return (
     <div className={classes.root}>
@@ -267,7 +273,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
-        <AphButton fullWidth color="primary">
+        <AphButton fullWidth color="primary" disabled={disableSubmit} onClick={() => {}}>
           PAY Rs. {onlineConsultationFees}
         </AphButton>
       </div>
