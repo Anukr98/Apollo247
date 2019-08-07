@@ -1,28 +1,18 @@
-declare global {
-  interface Window {
-    __TEST__: string;
-  }
-  namespace NodeJS {
-    interface ProcessEnv {
-      NODE_ENV: 'local' | 'dev';
-      WEB_PATIENTS_PORT: string;
-      WEB_DOCTORS_PORT: string;
-      API_GATEWAY_PORT: string;
-      GOOGLE_APPLICATION_CREDENTIALS: string;
-      FIREBASE_PROJECT_ID: string;
-      TEST: string;
-    }
-  }
-}
+export const protocol = process.env.USE_SSL === 'true' ? 'https' : 'http';
 
-export const getPortStr = (port: string) => (port === '80' ? '' : `:${port}`);
+const environment = process.env.NODE_ENV;
+
+const buildUrl = ({ application, port }: { application: string; port: string }) =>
+  environment === 'local'
+    ? `${protocol}://localhost${getPortStr(port)}`
+    : `${protocol}://aph.${environment}.${application}.popcornapps.com${getPortStr(port)}`;
+
+export const getPortStr = (port: string) => (port === '80' || port === '443' ? '' : `:${port}`);
 
 export const apiBaseUrl = () => {
-  const envToUrl: Record<NodeJS.ProcessEnv['NODE_ENV'], string> = {
-    local: `http://localhost${getPortStr(process.env.API_GATEWAY_PORT)}`,
-    dev: 'http://dev.api.aph.popcornapps.com',
-  };
-  return envToUrl[process.env.NODE_ENV];
+  const application = 'api';
+  const port = process.env.API_GATEWAY_PORT;
+  return buildUrl({ application, port });
 };
 
 export const apiRoutes = {
@@ -30,17 +20,13 @@ export const apiRoutes = {
 };
 
 export const webPatientsBaseUrl = () => {
-  const envToUrl: Record<NodeJS.ProcessEnv['NODE_ENV'], string> = {
-    local: `http://localhost${getPortStr(process.env.WEB_PATIENTS_PORT)}`,
-    dev: 'http://dev.web-patients.aph.popcornapps.com',
-  };
-  return envToUrl[process.env.NODE_ENV];
+  const application = 'web-patients';
+  const port = process.env.WEB_PATIENTS_PORT;
+  return buildUrl({ application, port });
 };
 
 export const webDoctorsBaseUrl = () => {
-  const envToUrl: Record<NodeJS.ProcessEnv['NODE_ENV'], string> = {
-    local: `http://localhost${getPortStr(process.env.WEB_DOCTORS_PORT)}`,
-    dev: 'http://dev.web-doctors.aph.popcornapps.com',
-  };
-  return envToUrl[process.env.NODE_ENV];
+  const application = 'web-doctors';
+  const port = process.env.WEB_DOCTORS_PORT;
+  return buildUrl({ application, port });
 };

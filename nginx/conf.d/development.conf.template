@@ -1,6 +1,6 @@
 server {
-    listen 80;
-    server_name dev.api.aph.popcornapps.com;
+    listen $API_GATEWAY_PORT;
+    server_name aph.$NODE_ENV.api.popcornapps.com;
     
     location / {
         # 127.0.0.11 is the default docker network's built in DNS
@@ -16,8 +16,8 @@ server {
 }
 
 server {
-        listen 80;
-        server_name dev.web-patients.aph.popcornapps.com;
+        listen $WEB_PATIENTS_PORT;
+        server_name aph.$NODE_ENV.web-patients.popcornapps.com;
 
         access_log /var/log/nginx/web-patients-access.log;
         error_log /var/log/nginx/web-patients-error.log;
@@ -58,8 +58,8 @@ server {
 }
 
 server {
-        listen 80;
-        server_name dev.web-doctors.aph.popcornapps.com;
+        listen $WEB_DOCTORS_PORT;
+        server_name aph.$NODE_ENV.web-doctors.popcornapps.com;
 
         access_log /var/log/nginx/web-doctors-access.log;
         error_log /var/log/nginx/web-doctors-error.log;

@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { StarTeamRepository } from 'doctors-service/repositories/starTeamRepository';
 import { Doctor } from 'doctors-service/entities/';
 import { isUndefined } from 'util';
@@ -20,10 +20,9 @@ const makeTeamDoctorActive: Resolver<
   { associatedDoctor: string; starDoctor: string },
   DoctorsServiceContext,
   Boolean
-> = async (parent, args, { dbConnect, currentUser }) => {
-  const starRepo = dbConnect.getCustomRepository(StarTeamRepository);
+> = async (parent, args, { doctorsDb, currentUser }) => {
+  const starRepo = doctorsDb.getCustomRepository(StarTeamRepository);
   let doctorDetails;
-
   try {
     doctorDetails = await starRepo.getTeamDoctorData(args.associatedDoctor, args.starDoctor);
     if (doctorDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
@@ -53,8 +52,8 @@ const removeTeamDoctorFromStarTeam: Resolver<
   { associatedDoctor: string; starDoctor: string },
   DoctorsServiceContext,
   Doctor
-> = async (parent, args, { dbConnect, currentUser }) => {
-  const starRepo = dbConnect.getCustomRepository(StarTeamRepository);
+> = async (parent, args, { doctorsDb, currentUser }) => {
+  const starRepo = doctorsDb.getCustomRepository(StarTeamRepository);
   let doctorDetails;
   try {
     doctorDetails = await starRepo.getTeamDoctorData(args.associatedDoctor, args.starDoctor);
@@ -71,7 +70,7 @@ const removeTeamDoctorFromStarTeam: Resolver<
 
   let doctordata;
   try {
-    const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
+    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     doctordata = await doctorRepository.findById(args.starDoctor);
     if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   } catch (getProfileError) {

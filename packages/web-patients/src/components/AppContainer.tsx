@@ -15,10 +15,11 @@ import DateFnsUtils from '@date-io/date-fns';
 import { DoctorsLanding } from 'components/DoctorsLanding';
 import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
-import { ShoppingCartProvider } from '@aph/shared-ui-components/ShoppingCartProvider';
+import { ShoppingCartProvider } from '@aph/shared-ui-components/dist/ShoppingCartProvider';
 import { CartPoc } from 'components/CartPoc';
 import { CartLanding } from 'components/Cart/CartLanding';
 import { MedicineLanding } from 'components/Medicine/MedicineLanding';
+import { ConsultRoom } from 'components/ConsultRoom/ConsultRoom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -49,6 +50,7 @@ const App: React.FC = () => {
         <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
         <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
         <AuthRouted exact path={clientRoutes.searchMedicines()} component={MedicineLanding} />
+        <AuthRouted exact path={clientRoutes.consultRoom()} component={ConsultRoom} />
       </Switch>
     </div>
   );

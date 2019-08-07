@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# $1 refers the environment: 'local' | 'dev' | 'qa' | 'production'
+# $1 refers the environment: 'local' | 'development' | 'staging' | 'production'
 
 echo -e "\nusing $1 env..."
 cp -fv .env _original.env
@@ -46,30 +46,30 @@ mkdir -pv skeleton || exit 2
 
 echo -e "\ncopying nginx files..."
 mkdir -pv skeleton/apollo-hospitals/nginx || exit 2
-cp -rv nginx/conf.d skeleton/apollo-hospitals/nginx || exit 2
+cp -Rv nginx/conf.d skeleton/apollo-hospitals/nginx || exit 2
 
 echo -e "\ncopying all api files..."
 mkdir -pv skeleton/apollo-hospitals/packages/api/ || exit 2
-cp -rv packages/api/dist/* skeleton/apollo-hospitals/packages/api/ || exit 2
-cp -rv packages/api/src/**/*.sql skeleton/apollo-hospitals/packages/api/ || exit 2
+cp -Rv packages/api/dist/* skeleton/apollo-hospitals/packages/api/ || exit 2
+cp -Rv packages/api/src/**/*.sql skeleton/apollo-hospitals/packages/api/ || exit 2
 echo "'packages/api/node_modules' -> 'skeleton/apollo-hospitals/packages/api/node_modules'" 
-cp -rL packages/api/node_modules skeleton/apollo-hospitals/packages/api/ || exit 2
+cp -RL packages/api/node_modules skeleton/apollo-hospitals/packages/api/ || exit 2
 cp packages/api/firebase-secrets.json skeleton/apollo-hospitals/packages/api/ || exit 2
 
 echo -e "\ncopying web-patients files..."
 mkdir -pv skeleton/apollo-hospitals/packages/web-patients/ || exit 2
-cp -rv packages/web-patients/dist/* skeleton/apollo-hospitals/packages/web-patients/ || exit 2
+cp -Rv packages/web-patients/dist/* skeleton/apollo-hospitals/packages/web-patients/ || exit 2
 
 echo -e "\ncopying web-doctors files..."
 mkdir -pv skeleton/apollo-hospitals/packages/web-doctors/ || exit 2
-cp -rv packages/web-doctors/dist/* skeleton/apollo-hospitals/packages/web-doctors/ || exit 2
+cp -Rv packages/web-doctors/dist/* skeleton/apollo-hospitals/packages/web-doctors/ || exit 2
 
 echo -e "\ncopying env and docker-compose files..."
 cp -v .env skeleton/apollo-hospitals || exit 2
 cp -v docker-compose-$1.yml skeleton/apollo-hospitals/docker-compose.yml || exit 2
 
 echo -e "\ncopying build-scripts..."
-cp -rv build-scripts skeleton/apollo-hospitals/ || exit 2
+cp -Rv build-scripts skeleton/apollo-hospitals/ || exit 2
 
 echo -e "\nbuilding aph-$1.tar.gz artifact..."
 tar -czf aph-$1.tar.gz -C skeleton apollo-hospitals || exit 2

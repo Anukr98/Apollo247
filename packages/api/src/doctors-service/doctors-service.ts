@@ -1,3 +1,4 @@
+import '@aph/universal/dist/global';
 import 'reflect-metadata';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
@@ -49,6 +50,7 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 
 (async () => {
   await createConnection({
+    name: 'doctors-db',
     entities: [
       Doctor,
       DoctorSpecialty,
@@ -59,12 +61,11 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       DoctorBankAccounts,
       Packages,
     ],
-    name: 'doctorsDbConnection',
     type: 'postgres',
-    host: 'doctors-db',
-    port: 5432,
-    username: 'postgres',
-    password: 'postgres',
+    host: process.env.DOCTORS_DB_HOST,
+    port: parseInt(process.env.DOCTORS_DB_PORT, 10),
+    username: process.env.DOCTORS_DB_USER,
+    password: process.env.DOCTORS_DB_PASSWORD,
     database: `doctors_${process.env.NODE_ENV}`,
     logging: true,
     synchronize: true,
@@ -77,16 +78,16 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       const headers = req.headers as GatewayHeaders;
       const firebaseUid = headers.firebaseuid;
       const mobileNumber = headers.mobilenumber;
-      const dbConnect = getConnection('doctorsDbConnection');
+      const doctorsDb = getConnection('doctors-db');
 
-      const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
+      const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
       const doctordata = (await doctorRepository.getDoctorDetails(firebaseUid)) as Doctor;
       const currentUser = doctordata;
 
       const context: DoctorsServiceContext = {
         firebaseUid,
         mobileNumber,
-        dbConnect,
+        doctorsDb,
         currentUser,
       };
       return context;

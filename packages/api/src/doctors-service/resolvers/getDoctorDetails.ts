@@ -3,9 +3,10 @@ import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { Doctor } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { isNull } from 'util';
+import { getConnection } from 'typeorm';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum AccountType {
@@ -62,7 +63,7 @@ export const getDoctorDetailsTypeDefs = gql`
     startTime: String!
     weekDay: WeekDay!
   }
-  type DoctorDetails {
+  type DoctorDetails @key(fields: "id") {
     awards: String
     city: String
     country: String
@@ -147,6 +148,8 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine2: String
     streetLine3: String
     zip: String
+    doctorHospital: [DoctorHospital!]!
+    specialty: DoctorSpecialties!
   }
 
   type StarTeam {
@@ -163,11 +166,11 @@ export const getDoctorDetailsTypeDefs = gql`
 const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = async (
   parent,
   args,
-  { mobileNumber, dbConnect, firebaseUid }
+  { mobileNumber, doctorsDb, firebaseUid }
 ) => {
   let doctordata;
   try {
-    const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
+    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
 
     if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
@@ -184,11 +187,11 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
 const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext, Doctor> = async (
   parent,
   args,
-  { dbConnect, firebaseUid }
+  { doctorsDb, firebaseUid }
 ) => {
   let doctordata: Doctor;
   try {
-    const doctorRepository = dbConnect.getCustomRepository(DoctorRepository);
+    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     doctordata = (await doctorRepository.findById(args.id)) as Doctor;
   } catch (getProfileError) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
@@ -197,6 +200,13 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
 };
 
 export const getDoctorDetailsResolvers = {
+  DoctorDetails: {
+    async __resolveReference(object: Doctor) {
+      const con = getConnection('doctors-db');
+      const doctorRepo = con.getCustomRepository(DoctorRepository);
+      return await doctorRepo.findById(object.id.toString());
+    },
+  },
   Query: {
     getDoctorDetails,
     getDoctorDetailsById,

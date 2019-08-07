@@ -1,23 +1,12 @@
+import '@aph/universal/dist/global';
 import { ApolloServer } from 'apollo-server';
 import { ApolloGateway, RemoteGraphQLDataSource } from '@apollo/gateway';
 import { GraphQLExecutor } from 'apollo-server-core';
 import * as firebaseAdmin from 'firebase-admin';
 import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
-import { webPatientsBaseUrl, webDoctorsBaseUrl } from '@aph/universal/aphRoutes';
-
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      NODE_ENV: 'local' | 'dev';
-      WEB_PATIENTS_PORT: string;
-      API_GATEWAY_PORT: string;
-      GOOGLE_APPLICATION_CREDENTIALS: string;
-      FIREBASE_PROJECT_ID: string;
-    }
-  }
-}
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { webPatientsBaseUrl, webDoctorsBaseUrl, protocol } from '@aph/universal/dist/aphRoutes';
 
 export interface GatewayContext {
   firebaseUid: string;
@@ -36,14 +25,14 @@ export type Resolver<Parent, Args, Context, Result> = (
 ) => AsyncIterator<Result> | Promise<Result>;
 
 const isLocal = process.env.NODE_ENV == 'local';
-const isDev = process.env.NODE_ENV == 'dev';
+const isDev = process.env.NODE_ENV == 'development';
 
 (async () => {
   const gateway = new ApolloGateway({
     serviceList: [
-      { name: 'profiles', url: 'http://profiles-service/graphql' },
-      { name: 'doctors', url: 'http://doctors-service/graphql' },
-      { name: 'consults', url: 'http://consults-service/graphql' },
+      { name: 'profiles', url: `${protocol}://${process.env.PROFILES_SERVICE_HOST}/graphql` },
+      { name: 'doctors', url: `${protocol}://${process.env.DOCTORS_SERVICE_HOST}/graphql` },
+      { name: 'consults', url: `${protocol}://${process.env.CONSULTS_SERVICE_HOST}/graphql` },
     ],
     buildService({ name, url }) {
       return new RemoteGraphQLDataSource({

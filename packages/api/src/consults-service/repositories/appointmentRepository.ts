@@ -1,7 +1,7 @@
 import { EntityRepository, Repository, Between } from 'typeorm';
 import { Appointment } from 'consults-service/entities/appointment';
 import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/AphErrorMessages';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { differenceInMinutes } from 'date-fns';
 import { format } from 'date-fns';
 
@@ -30,6 +30,13 @@ export class AppointmentRepository extends Repository<Appointment> {
       where: { doctorId, appointmentDateTime: Between(startDate, endDate) },
       order: { appointmentDateTime: 'DESC' },
     });
+  }
+
+  getPatientDateAppointments(appointmentDateTime: Date, patientId: string) {
+    const inputDate = format(appointmentDateTime, 'yyyy-MM-dd');
+    const startDate = new Date(inputDate + 'T00:00');
+    const endDate = new Date(inputDate + 'T23:59');
+    return this.find({ where: { patientId, appointmentDateTime: Between(startDate, endDate) } });
   }
 
   getDoctorNextAvailability(doctorId: string) {

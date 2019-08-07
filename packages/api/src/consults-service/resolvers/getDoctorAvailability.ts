@@ -36,10 +36,9 @@ const getDoctorAvailableSlots: Resolver<
   AvailabilityInputArgs,
   ConsultServiceContext,
   AvailabilityResult
-> = async (parent, { DoctorAvailabilityInput }, { doctorsDbConnect, consultsDbConnect }) => {
-  const consultHourRep = doctorsDbConnect.getCustomRepository(DoctorConsultHoursRepository);
-
-  const timeSlots = await consultHourRep.findByDoctorId(DoctorAvailabilityInput.doctorId);
+> = async (parent, { DoctorAvailabilityInput }, { doctorsDb, consultsDb }) => {
+  const consultHourRep = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+  const timeSlots = await consultHourRep.getConsultHours(DoctorAvailabilityInput.doctorId);
   let availableSlots: string[] = [];
   if (timeSlots) {
     const st = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlots[0].startTime.toString()}`;
@@ -65,7 +64,7 @@ const getDoctorAvailableSlots: Resolver<
         return `${stTimeHours}:${stTimeMins}`;
       });
   }
-  const appts = consultsDbConnect.getCustomRepository(AppointmentRepository);
+  const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const apptSlots = await appts.findByDateDoctorId(
     DoctorAvailabilityInput.doctorId,
     DoctorAvailabilityInput.availableDate
