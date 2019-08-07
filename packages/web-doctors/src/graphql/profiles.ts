@@ -62,6 +62,7 @@ export const GET_DOCTOR_DETAILS = gql`
         state
         IFSCcode
         accountType
+        bankName
       }
       specialty {
         name

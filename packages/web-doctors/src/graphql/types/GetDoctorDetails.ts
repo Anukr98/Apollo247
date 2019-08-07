@@ -29,6 +29,7 @@ export interface GetDoctorDetails_getDoctorDetails_bankAccount {
   state: string | null;
   IFSCcode: string;
   accountType: AccountType;
+  bankName: string;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_specialty {
