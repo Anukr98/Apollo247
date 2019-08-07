@@ -74,8 +74,8 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface CallPopoverProps {
-  setStartConsultAction: () => void;
-  //setStartConsultAction(isVideo: boolean): void;
+  // setStartConsultAction: () => void;
+  setStartConsultAction(isVideo: boolean): void;
 }
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
@@ -131,7 +131,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               className={classes.needHelp}
               onClick={() => {
                 handleClose();
-                props.setStartConsultAction();
+                props.setStartConsultAction(false);
               }}
             >
               <img src={require('images/call_popup.svg')} alt="" />
@@ -143,7 +143,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               className={classes.needHelp}
               onClick={() => {
                 handleClose();
-                props.setStartConsultAction();
+                props.setStartConsultAction(true);
               }}
             >
               <img src={require('images/video_popup.svg')} alt="" />

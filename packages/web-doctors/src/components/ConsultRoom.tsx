@@ -25,7 +25,8 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 0,
     },
     chatContainer: {
-      paddingTop: 40,
+      paddingTop: 20,
+      minHeight: 'calc(100vh - 330px)',
       maxHeight: 'calc(100vh - 330px)',
       overflowY: 'auto',
       overflowX: 'hidden',
@@ -164,7 +165,6 @@ interface ConsultRoomProps {
 }
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const classes = useStyles();
-  //const [isCalled, setIsCalled] = useState<boolean>(false);
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
@@ -181,52 +181,38 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const pubnub = new Pubnub(config);
   useEffect(() => {
     pubnub.subscribe({
-      channels: ['Channel4'],
+      channels: ['Channel5'],
       withPresence: true,
     });
 
     getHistory();
     pubnub.addListener({
-      status: (statusEvent) => {
-        if (statusEvent.category === Pubnub.CATEGORIES.PNConnectedCategory) {
-          console.log(statusEvent.category);
-        } else if (statusEvent.operation === Pubnub.OPERATIONS.PNAccessManagerAudit) {
-          console.log(statusEvent.operation);
-        }
-      },
+      status: (statusEvent) => {},
       message: (message) => {
         getHistory();
       },
-      presence: (presenceEvent) => {
-        console.log('presenceEvent', presenceEvent);
-      },
     });
     return function cleanup() {
-      pubnub.unsubscribe({ channels: ['Channel4'] });
+      pubnub.unsubscribe({ channels: ['Channel5'] });
     };
   });
 
   useEffect(() => {
-    console.log(props.startConsult);
     if (props.startConsult !== isVideoCall) {
       setIsVideoCall(props.startConsult);
       setMessageText('callme');
       autoSend();
-      console.log(1111111111);
     }
   }, [props.startConsult, isVideoCall]);
+
   const getHistory = () => {
-    pubnub.history({ channel: 'Channel4', reverse: true, count: 1000 }, (status, res) => {
+    pubnub.history({ channel: 'Channel5', reverse: true, count: 1000 }, (status, res) => {
       const newmessage: MessagesObjectProps[] = [];
       res.messages.forEach((element, index) => {
         newmessage[index] = element.entry;
       });
       if (messages.length !== newmessage.length) {
         setMessages(newmessage);
-        // const lastMessage = newmessage[newmessage.length - 1];
-        // if (lastMessage && lastMessage.message === 'callme') {
-        //   setIsCalled(true);
-        // }
       }
     });
   };
@@ -238,7 +224,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     };
     pubnub.publish(
       {
-        channel: 'Channel4',
+        channel: 'Channel5',
         message: text,
         storeInHistory: true,
         sendByPost: true,
@@ -255,7 +241,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     };
     pubnub.publish(
       {
-        channel: 'Channel4',
+        channel: 'Channel5',
         message: text,
         storeInHistory: true,
         sendByPost: true,
@@ -264,7 +250,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setMessageText('');
       }
     );
-    setIsVideoCall(true);
+    //setIsVideoCall(true);
     //setIsCalled(true);
     actionBtn();
   };

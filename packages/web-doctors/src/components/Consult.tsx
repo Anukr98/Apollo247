@@ -72,6 +72,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 170,
       height: 170,
       zIndex: 9,
+      backgroundColor: '#000',
     },
     stopCallIcon: {
       width: 40,

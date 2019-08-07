@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Theme, Button } from '@material-ui/core';
+import React, { useState } from 'react';
+import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { CallPopover } from 'components/CallPopover';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
-import Popover from '@material-ui/core/Popover';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -18,7 +16,9 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingTop: 68,
       },
     },
-
+    caseSheet: {
+      minHeight: 'calc(100vh - 235px)',
+    },
     headerSticky: {
       position: 'fixed',
       width: '100%',
@@ -198,12 +198,9 @@ export const ConsultTabs: React.FC = (props) => {
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
-  // const setStartConsultAction = (value: boolean) => {
-  //   console.log(value);
-  //   //setStartConsult(value);
-  // };
-  const setStartConsultAction = () => {
-    setStartConsult(true);
+  const setStartConsultAction = (flag: boolean) => {
+    console.log(flag);
+    setStartConsult(flag);
   };
   const toggleTabs = () => {
     setshowTabs(!showTabs);
@@ -224,16 +221,7 @@ export const ConsultTabs: React.FC = (props) => {
           CONSULT ROOM &nbsp; | &nbsp;
           <span className={classes.timeLeft}> Consult Duration 00:25</span>
           <div className={classes.consultButtonContainer}>
-            {/* <Button className={classes.consultButton}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                <path fill="#fff" d="M8 5v14l11-7z" />
-              </svg>
-              Start Consult
-            </Button> */}
-            <CallPopover setStartConsultAction={() => setStartConsultAction()} />
-            {/* <Button className={classes.consultIcon}>
-              <img src={require('images/ic_more.svg')} />
-            </Button> */}
+            <CallPopover setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)} />
           </div>
         </div>
         <div>
@@ -256,7 +244,11 @@ export const ConsultTabs: React.FC = (props) => {
               />
             </Tabs>
           </div>
-          {tabValue === 0 && <TabContainer>case sheet</TabContainer>}
+          {tabValue === 0 && (
+            <TabContainer>
+              <div className={classes.caseSheet}>Case sheet</div>
+            </TabContainer>
+          )}
           {tabValue === 1 && (
             <TabContainer>
               <ConsultRoom startConsult={startConsult} toggleTabs={() => toggleTabs()} />
