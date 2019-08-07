@@ -164,7 +164,7 @@ interface ConsultRoomProps {
 }
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const classes = useStyles();
-  const [isCalled, setIsCalled] = useState<boolean>(false);
+  //const [isCalled, setIsCalled] = useState<boolean>(false);
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
@@ -181,7 +181,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const pubnub = new Pubnub(config);
   useEffect(() => {
     pubnub.subscribe({
-      channels: ['Channel3'],
+      channels: ['Channel4'],
       withPresence: true,
     });
 
@@ -202,22 +202,31 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
     });
     return function cleanup() {
-      pubnub.unsubscribe({ channels: ['Channel3'] });
+      pubnub.unsubscribe({ channels: ['Channel4'] });
     };
   });
 
+  useEffect(() => {
+    console.log(props.startConsult);
+    if (props.startConsult !== isVideoCall) {
+      setIsVideoCall(props.startConsult);
+      setMessageText('callme');
+      autoSend();
+      console.log(1111111111);
+    }
+  }, [props.startConsult, isVideoCall]);
   const getHistory = () => {
-    pubnub.history({ channel: 'Channel3', reverse: true, count: 1000 }, (status, res) => {
+    pubnub.history({ channel: 'Channel4', reverse: true, count: 1000 }, (status, res) => {
       const newmessage: MessagesObjectProps[] = [];
       res.messages.forEach((element, index) => {
         newmessage[index] = element.entry;
       });
       if (messages.length !== newmessage.length) {
         setMessages(newmessage);
-        const lastMessage = newmessage[newmessage.length - 1];
-        if (lastMessage && lastMessage.message === 'callme') {
-          setIsCalled(true);
-        }
+        // const lastMessage = newmessage[newmessage.length - 1];
+        // if (lastMessage && lastMessage.message === 'callme') {
+        //   setIsCalled(true);
+        // }
       }
     });
   };
@@ -229,7 +238,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     };
     pubnub.publish(
       {
-        channel: 'Channel3',
+        channel: 'Channel4',
         message: text,
         storeInHistory: true,
         sendByPost: true,
@@ -238,6 +247,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setMessageText('');
       }
     );
+  };
+  const autoSend = () => {
+    const text = {
+      id: 'Ravi',
+      message: 'callme',
+    };
+    pubnub.publish(
+      {
+        channel: 'Channel4',
+        message: text,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        setMessageText('');
+      }
+    );
+    setIsVideoCall(true);
+    //setIsCalled(true);
+    actionBtn();
   };
 
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
@@ -286,11 +315,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setShowVideo(true);
     // props.toggleTabs();
   };
-  // if (props.startConsult) {
-  //   console.log(111111111111111);
-  //   setMessageText('callme');
-  //   send();
-  // }
   return (
     <div className={classes.consultRoom}>
       <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
@@ -311,7 +335,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatContainer}>{messagessHtml}</div>
           )}
-          {!showVideo && (
+          {/* {!showVideo && (
             <div>
               {isCalled && (
                 <div className={classes.incomingContainer}>
@@ -329,7 +353,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 </div>
               )}
             </div>
-          )}
+          )} */}
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatFooterSection}>
               <AphInput

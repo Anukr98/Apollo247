@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
+import { CallPopover } from 'components/CallPopover';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Paper from '@material-ui/core/Paper';
@@ -61,6 +62,8 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: 'rgba(2, 71, 91, 0.6)',
       textTransform: 'capitalize',
+      position: 'relative',
+      top: -1,
     },
     backArrow: {
       cursor: 'pointer',
@@ -195,20 +198,16 @@ export const ConsultTabs: React.FC = (props) => {
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
+  // const setStartConsultAction = (value: boolean) => {
+  //   console.log(value);
+  //   //setStartConsult(value);
+  // };
+  const setStartConsultAction = () => {
+    setStartConsult(true);
+  };
   const toggleTabs = () => {
     setshowTabs(!showTabs);
   };
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
-  function handleClick(event: any) {
-    setAnchorEl(event.currentTarget);
-  }
-
-  function handleClose() {
-    setAnchorEl(null);
-  }
-  const open = Boolean(anchorEl);
-  const id = open ? 'simple-popover' : undefined;
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
@@ -222,68 +221,19 @@ export const ConsultTabs: React.FC = (props) => {
               <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
             </div>
           </div>
-          CONSULT ROOM
+          CONSULT ROOM &nbsp; | &nbsp;
+          <span className={classes.timeLeft}> Consult Duration 00:25</span>
           <div className={classes.consultButtonContainer}>
-            <span className={classes.timeLeft}> Consult Duration 00:25</span>
-            <Button
-              aria-describedby={id}
-              variant="contained"
-              onClick={(e) => handleClick(e)}
-              className={classes.consultButton}
-            >
+            {/* <Button className={classes.consultButton}>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                 <path fill="#fff" d="M8 5v14l11-7z" />
               </svg>
               Start Consult
-            </Button>
-            <Popover
-              id={id}
-              open={open}
-              anchorEl={anchorEl}
-              onClose={handleClose}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'center',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'center',
-              }}
-            >
-              <Paper className={classes.loginForm}>
-                <Button className={classes.cross}>
-                  <img src={require('images/ic_cross.svg')} alt="" />
-                </Button>
-                <div className={`${classes.loginFormWrap} ${classes.helpWrap}`}>
-                  <p>How do you want to talk to the patient?</p>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className={classes.needHelp}
-                    onClick={() => setStartConsult(true)}
-                  >
-                    <img src={require('images/call_popup.svg')} alt="" />
-                    AUDIO CALL
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className={classes.needHelp}
-                    onClick={() => setStartConsult(true)}
-                  >
-                    <img src={require('images/video_popup.svg')} alt="" />
-                    VIDEO CALL
-                  </Button>
-                </div>
-              </Paper>
-            </Popover>
-
-            <Button className={classes.consultIcon}>
-              <img src={require('images/ic_call.svg')} />
-            </Button>
-            <Button className={classes.consultIcon}>
+            </Button> */}
+            <CallPopover setStartConsultAction={() => setStartConsultAction()} />
+            {/* <Button className={classes.consultIcon}>
               <img src={require('images/ic_more.svg')} />
-            </Button>
+            </Button> */}
           </div>
         </div>
         <div>
