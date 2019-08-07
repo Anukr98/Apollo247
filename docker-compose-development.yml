@@ -89,7 +89,7 @@ services:
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
     command: bash -c "
-      while  (!(< /dev/tcp/${CONSULTS_DB_HOST}/${CONSULTS_DB_PORT}) || !(/dev/tcp/consults-db/${DOCTORS_DB_PORT}));
+      while  (!(< /dev/tcp/${CONSULTS_DB_HOST}/${CONSULTS_DB_PORT}) || !(< /dev/tcp/consults-db/${DOCTORS_DB_PORT}));
       do echo waiting for ${CONSULTS_DB_HOST} and ${DOCTORS_DB_HOST}...; sleep 5;
       done;
       node consults-service.bundle.js"
