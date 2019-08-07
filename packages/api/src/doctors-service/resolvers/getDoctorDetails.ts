@@ -148,6 +148,8 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine2: String
     streetLine3: String
     zip: String
+    doctorHospital: [DoctorHospital!]!
+    specialty: DoctorSpecialties!
   }
 
   type StarTeam {
