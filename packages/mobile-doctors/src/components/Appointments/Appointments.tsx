@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   },
   menuDropdown: {
     position: 'absolute',
-    top: 0,
+    top: 184,
     width: '100%',
     alignItems: 'flex-end',
     ...Platform.select({
@@ -77,12 +77,17 @@ const styles = StyleSheet.create({
     marginTop: 12,
     backgroundColor: theme.colors.WHITE,
     shadowColor: '#808080',
-    shadowOpacity: 0.7,
     shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 1,
-    elevation: 5,
-    overflow: 'visible',
-    //marginBottom: 20,
+    ...Platform.select({
+      ios: {
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+      },
+      android: {
+        shadowOpacity: 0.1,
+        elevation: 12,
+      },
+    }),
   },
 });
 
@@ -248,6 +253,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     return (
       <View style={styles.menuDropdown}>
         <DropDown
+          containerStyle={{ marginRight: 20 }}
           options={[
             {
               optionText: '  Block Calendar',
@@ -286,12 +292,11 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         {renderHeader()}
         <View>{isCalendarVisible ? renderCalenderView() : null}</View>
       </View>
+      {isDropdownVisible ? renderDropdown() : null}
 
       {/* <View style={isDropdownVisible ? {} : { zIndex: -1 }}> */}
-      <View style={{ zIndex: -1 }}>
-        {isDropdownVisible ? renderDropdown() : null}
-
-        <View style={styles.weekViewContainer}>
+      <View style={{ zIndex: -1, flex: 1 }}>
+        <View style={[styles.weekViewContainer, { zIndex: 1 }]}>
           <WeekView
             date={date}
             onTapDate={(date: Date) => {

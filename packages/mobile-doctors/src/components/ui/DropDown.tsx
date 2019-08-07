@@ -1,18 +1,10 @@
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  TouchableOpacityProps,
-  View,
-  ViewStyle,
-} from 'react-native';
+import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 const styles = StyleSheet.create({
-  cardContainer: {
-    margin: 40,
+  containerStyle: {
+    margin: 16,
     borderRadius: 10,
     backgroundColor: theme.colors.CARD_BG,
     padding: 20,
@@ -44,13 +36,13 @@ export type Option = {
 };
 
 export interface DropDownProps {
-  cardContainer?: StyleProp<ViewStyle>;
+  containerStyle?: StyleProp<ViewStyle>;
   options: Option[];
 }
 
 export const DropDown: React.FC<DropDownProps> = (props) => {
   return (
-    <View style={[styles.cardContainer, props.cardContainer]}>
+    <View style={[styles.containerStyle, props.containerStyle]}>
       {props.options.map((option, index, array) => {
         return (
           <TouchableOpacity onPress={option.onPress}>

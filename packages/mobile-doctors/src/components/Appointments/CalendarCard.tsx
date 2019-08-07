@@ -19,7 +19,6 @@ import { colors } from '@aph/mobile-doctors/src/theme/colors';
 const styles = StyleSheet.create({
   containerStyle: {
     marginTop: 6,
-    marginLeft: 8,
     marginRight: 20,
     marginBottom: 20,
     borderRadius: 10,
@@ -80,7 +79,6 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
                 ? '#890000'
                 : '#ff748e',
             lineHeight: 18,
-            marginLeft: 8,
             marginRight: 20,
           },
           timeSlotType == 'past'
@@ -111,7 +109,7 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
           elevation: 5,
         };
   return (
-    <TouchableOpacity style={{ flex: 1 }} onPress={() => props.onPress('')}>
+    <TouchableOpacity activeOpacity={1} style={{ flex: 1 }} onPress={() => props.onPress('')}>
       {renderSlotTiming(props.type, props.timing!)}
       <View style={[styles.containerStyle, containerStyle, props.containerStyle]}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>

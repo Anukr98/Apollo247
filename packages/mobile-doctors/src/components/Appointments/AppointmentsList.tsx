@@ -79,28 +79,31 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       >
         {getDoctorProfile.appointments.map((i, index, array) => {
           return (
-            <View
-              style={{
-                flex: 1,
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              {renderLeftTimeLineView(
-                i.timeslottype,
-                index == 0 ? false : true,
-                index == array.length - 1 ? false : true
-              )}
-              <CalendarCard
-                onPress={(id) => {}}
-                doctorname={i.doctorname}
-                wayOfContact={i.wayOfContact}
-                type={i.timeslottype}
-                timing={i.timings}
-                symptoms={['FEVER', 'COUGH & COLD']}
-              />
-            </View>
+            <>
+              {index == 0 && <View style={{ height: 20 }} />}
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                {renderLeftTimeLineView(
+                  i.timeslottype,
+                  index == 0 ? false : true,
+                  index == array.length - 1 ? false : true
+                )}
+                <CalendarCard
+                  onPress={(id) => {}}
+                  doctorname={i.doctorname}
+                  wayOfContact={i.wayOfContact}
+                  type={i.timeslottype}
+                  timing={i.timings}
+                  symptoms={['FEVER', 'COUGH & COLD']}
+                />
+              </View>
+            </>
           );
         })}
       </View>
