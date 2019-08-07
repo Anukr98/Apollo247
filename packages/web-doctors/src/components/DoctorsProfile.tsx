@@ -155,9 +155,6 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
   if (error) {
     return <div>error</div>;
   }
-
-  console.log(data);
-
   const tabsArray = ['Profile', 'Availability', 'Fees', ''];
   const tabsHtml = tabsArray.map((item, index) => {
     return (
