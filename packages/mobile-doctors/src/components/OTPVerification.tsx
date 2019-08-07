@@ -441,14 +441,18 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 value={otp}
                 textInputStyle={styles.codeInputStyle}
                 tintColor={
-                  isValidOTP && (otp.length === 0 || otp.length === 6)
+                  invalidOtpCount > 0 && otp.length === 0
+                    ? theme.colors.INPUT_BORDER_FAILURE
+                    : isValidOTP && otp.length === 6
                     ? theme.colors.INPUT_BORDER_SUCCESS
-                    : theme.colors.INPUT_BORDER_FAILURE
+                    : '#000000'
                 }
                 offTintColor={
-                  isValidOTP && (otp.length === 0 || otp.length === 6)
+                  invalidOtpCount > 0 && otp.length === 0
+                    ? theme.colors.INPUT_BORDER_FAILURE
+                    : isValidOTP && otp.length === 6
                     ? theme.colors.INPUT_BORDER_SUCCESS
-                    : theme.colors.INPUT_BORDER_FAILURE
+                    : '#000000'
                 }
                 containerStyle={{ flex: 1 }}
               />
