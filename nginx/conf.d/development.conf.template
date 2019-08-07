@@ -1,5 +1,5 @@
 server {
-    listen 80;
+    listen $API_GATEWAY_PORT;
     server_name aph.$NODE_ENV.api.popcornapps.com;
     
     location / {
@@ -16,7 +16,7 @@ server {
 }
 
 server {
-        listen 80;
+        listen $WEB_PATIENTS_PORT;
         server_name aph.$NODE_ENV.web-patients.popcornapps.com;
 
         access_log /var/log/nginx/web-patients-access.log;
@@ -58,7 +58,7 @@ server {
 }
 
 server {
-        listen 80;
+        listen $WEB_DOCTORS_PORT;
         server_name aph.$NODE_ENV.web-doctors.popcornapps.com;
 
         access_log /var/log/nginx/web-doctors-access.log;
