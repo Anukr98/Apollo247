@@ -29,12 +29,15 @@ import {
   getAppointmentHistoryTypeDefs,
   getAppointmentHistoryResolvers,
 } from 'consults-service/resolvers/getAppointmentHistory';
+import {
+  getPatinetAppointmentsTypeDefs,
+  getPatinetAppointmentsResolvers,
+} from 'consults-service/resolvers/getPatientAppointments';
 import { GatewayHeaders } from 'api-gateway';
 
 (async () => {
   await createConnections([
     {
-      name: 'consults-db',
       entities: [Appointment],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -76,7 +79,7 @@ import { GatewayHeaders } from 'api-gateway';
       const firebaseUid = headers.firebaseuid;
       const mobileNumber = headers.mobilenumber;
       const doctorsDb = getConnection('doctors-db');
-      const consultsDb = getConnection('consults-db');
+      const consultsDb = getConnection();
       const context: ConsultServiceContext = {
         firebaseUid,
         mobileNumber,
@@ -109,6 +112,10 @@ import { GatewayHeaders } from 'api-gateway';
       {
         typeDefs: getAppointmentHistoryTypeDefs,
         resolvers: getAppointmentHistoryResolvers,
+      },
+      {
+        typeDefs: getPatinetAppointmentsTypeDefs,
+        resolvers: getPatinetAppointmentsResolvers,
       },
     ]),
   });

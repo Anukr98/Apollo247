@@ -6,7 +6,7 @@ services:
     tty: true
     env_file: .env
     command: ash -c "
-      envsubst '$$API_GATEWAY_PORT $$NODE_ENV' < /etc/nginx/conf.d/development.conf.template > /etc/nginx/conf.d/development.conf &&
+      envsubst '$$NODE_ENV $$API_GATEWAY_PORT $$WEB_PATIENTS_PORT $$WEB_DOCTORS_PORT' < /etc/nginx/conf.d/staging.conf.template > /etc/nginx/conf.d/staging.conf &&
       nginx -t &&
       nginx -g 'daemon off;'"
     ports:
@@ -14,7 +14,7 @@ services:
     volumes:
       # Docker runs as root and so these files cannot be deleted by our deployment user, just disable mounting logs for now
       # - ./nginx/log/:/var/log/nginx
-      - ./nginx/conf.d/development.conf.template:/etc/nginx/conf.d/development.conf.template:ro
+      - ./nginx/conf.d/staging.conf.template:/etc/nginx/conf.d/staging.conf.template:ro
       - ./packages/web-patients/:/usr/share/nginx/html/web-patients:ro
       - ./packages/web-doctors/:/usr/share/nginx/html/web-doctors:ro
 
@@ -28,7 +28,7 @@ services:
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
     command: bash -c "
-      while ((! curl -s http://profiles-service/graphql) || (! curl -s http://doctors-service/graphql) || (! curl -s http://consults-service/graphql)) > /dev/null;
+      while ((! curl -s http://${PROFILES_SERVICE_HOST}/graphql) || (! curl -s http://${DOCTORS_SERVICE_HOST}/graphql) || (! curl -s http://${CONSULTS_SERVICE_HOST}/graphql)) > /dev/null;
       do echo waiting for services to start...; sleep 5;
       done;
       node api-gateway.bundle.js"
@@ -45,8 +45,8 @@ services:
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
     command: bash -c "
-      while ! < /dev/tcp/profiles-db/${PROFILES_DB_PORT};
-      do echo waiting for profiles-db...; sleep 5;
+      while ! < /dev/tcp/${PROFILES_DB_HOST}/${PROFILES_DB_PORT};
+      do echo waiting for ${PROFILES_DB_HOST}...; sleep 5;
       done;
       node profiles-service.bundle.js"
     volumes:
@@ -58,14 +58,17 @@ services:
     image: postgres:10.8-alpine
     volumes:
       - ./packages/api/init-profiles-db.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=${PROFILES_DB_USER}
+      - POSTGRES_PASSWORD=${PROFILES_DB_PASSWORD}
 
   doctors-service:
     image: node:12.6.0
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
     command: bash -c "
-      while ! < /dev/tcp/doctors-db/${DOCTORS_DB_PORT};
-      do echo waiting for doctors-db...; sleep 5;
+      while ! < /dev/tcp/${DOCTORS_DB_HOST}/${DOCTORS_DB_PORT};
+      do echo waiting for ${DOCTORS_DB_HOST}...; sleep 5;
       done;
       node doctors-service.bundle.js"
     volumes:
@@ -77,14 +80,17 @@ services:
     image: postgres:10.8-alpine
     volumes:
       - ./packages/api/init-doctors-db.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=${DOCTORS_DB_USER}
+      - POSTGRES_PASSWORD=${DOCTORS_DB_PASSWORD}
 
   consults-service:
     image: node:12.6.0
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
     command: bash -c "
-      while ! ((< /dev/tcp/consults-db/${CONSULTS_DB_PORT}) || (/dev/tcp/consults-db/${DOCTORS_DB_PORT}));
-      do echo waiting for consults-db and doctors-db...; sleep 5;
+      while  (!(< /dev/tcp/${CONSULTS_DB_HOST}/${CONSULTS_DB_PORT}) || !(< /dev/tcp/consults-db/${DOCTORS_DB_PORT}));
+      do echo waiting for ${CONSULTS_DB_HOST} and ${DOCTORS_DB_HOST}...; sleep 5;
       done;
       node consults-service.bundle.js"
     volumes:
@@ -96,4 +102,7 @@ services:
   consults-db:
     image: postgres:10.8-alpine
     volumes:
-      - ./packages/api/src/consults-service/init-consults-db.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./packages/api/init-consults-db.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=${CONSULTS_DB_USER}
+      - POSTGRES_PASSWORD=${CONSULTS_DB_PASSWORD}
