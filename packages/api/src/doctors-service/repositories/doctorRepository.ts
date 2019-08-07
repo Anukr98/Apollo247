@@ -21,6 +21,9 @@ export class DoctorRepository extends Repository<Doctor> {
         'packages',
         'doctorHospital.facility',
         'starTeam.associatedDoctor',
+        'starTeam.associatedDoctor.specialty',
+        'starTeam.associatedDoctor.doctorHospital',
+        'starTeam.associatedDoctor.doctorHospital.facility',
       ],
     });
   }
