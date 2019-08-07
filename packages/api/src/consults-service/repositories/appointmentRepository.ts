@@ -32,6 +32,13 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  getPatientDateAppointments(appointmentDateTime: Date, patientId: string) {
+    const inputDate = format(appointmentDateTime, 'yyyy-MM-dd');
+    const startDate = new Date(inputDate + 'T00:00');
+    const endDate = new Date(inputDate + 'T23:59');
+    return this.find({ where: { patientId, appointmentDateTime: Between(startDate, endDate) } });
+  }
+
   getDoctorNextAvailability(doctorId: string) {
     const curDate = new Date();
     const curEndDate = new Date(format(new Date(), 'yyyy-MM-dd').toString() + 'T11:59');
