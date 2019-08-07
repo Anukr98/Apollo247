@@ -225,7 +225,9 @@ export const ConsultTabs: React.FC = (props) => {
             </div>
           </div>
           CONSULT ROOM &nbsp; | &nbsp;
-          <span className={classes.timeLeft}> Consult Duration 00:25</span>
+          <span className={classes.timeLeft}>
+            Time to Consult <b>00:25</b>
+          </span>
           <div className={classes.consultButtonContainer}>
             <CallPopover setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)} />
           </div>
