@@ -6,6 +6,7 @@ export const getPortStr = (port: string) => (port === '80' || port === '443' ? '
 export const apiBaseUrl = () => {
   const application = 'api';
   const port = getPortStr(process.env.API_GATEWAY_PORT);
+  if (environment === 'local') return `${protocol}://localhost${port}`;
   return `${protocol}://aph.${environment}.${application}.popcornapps.com${port}`;
 };
 
