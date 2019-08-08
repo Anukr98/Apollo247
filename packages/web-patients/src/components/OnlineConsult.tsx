@@ -234,13 +234,15 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     }
   });
 
+  console.log('next available slots....', slotAvailableNext, autoSlot);
+
   const disableSubmit =
     ((morningSlots.length > 0 ||
       afternoonSlots.length > 0 ||
       eveningSlots.length > 0 ||
       lateNightSlots.length > 0) &&
       timeSelected !== '') ||
-    (consultNow && (autoSlot !== '' || timeSelected !== ''))
+    (consultNow && (slotAvailableNext !== '' || timeSelected !== ''))
       ? false
       : true;
 
