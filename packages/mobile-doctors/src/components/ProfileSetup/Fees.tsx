@@ -4,7 +4,6 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-import console = require('console');
 
 const styles = StyleSheet.create({
   feeeducation: {
@@ -149,7 +148,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
         <View>
           {Feedata.bankAccount!.length > 0 ? (
             <View style={{ flexDirection: 'row', marginTop: 16, justifyContent: 'space-between' }}>
-              <View>
+              <View style={{ flex: 1 }}>
                 {feeprofileRowbankname(
                   Feedata.bankAccount![0]!.accountNumber,
                   Feedata.bankAccount![0]!.bankName

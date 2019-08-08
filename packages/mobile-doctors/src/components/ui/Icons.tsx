@@ -101,19 +101,66 @@ export const Star: React.FC<IconProps> = (props) => (
 );
 
 export const ConsultationRoom: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('../../images/icons/ic_consultroom.png')} />
+  <IconBase
+    size="sm"
+    style={{ marginTop: 8 }}
+    {...props}
+    source={require('../../images/icons/ic_consultroom.png')}
+  />
+);
+
+export const ConsultationRoomFocused: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    style={{ marginTop: 8 }}
+    {...props}
+    source={require('../../images/icons/ic_consultroom_white.png')}
+  />
 );
 
 export const MyHealth: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('../../images/icons/ic_myhealth.png')} />
+  <IconBase
+    size="sm"
+    style={{ marginTop: 8 }}
+    {...props}
+    source={require('../../images/icons/ic_myhealth.png')}
+  />
+);
+
+export const MyHealthFocused: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    style={{ marginTop: 8 }}
+    {...props}
+    source={require('../../images/icons/ic_myhealth_best.png')}
+  />
 );
 
 export const InboxIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('../../images/icons/ic_round_inbox.png')} />
+  <IconBase
+    size="sm"
+    style={{ marginTop: 8 }}
+    {...props}
+    source={require('../../images/icons/ic_round_inbox.png')}
+  />
 );
 
 export const Person: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('../../images/icons/ic_account.png')} />
+  <IconBase
+    size="sm"
+    style={{ marginTop: 8 }}
+    {...props}
+    source={require('../../images/icons/ic_account.png')}
+  />
+);
+
+export const PersonFocused: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    style={{ marginTop: 8 }}
+    {...props}
+    source={require('../../images/icons/ic_account_white.png')}
+  />
 );
 
 export const GeneralPhysician: React.FC<IconProps> = (props) => (
