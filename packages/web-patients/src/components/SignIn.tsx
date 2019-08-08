@@ -17,6 +17,7 @@ import _times from 'lodash/times';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
 import { Formik, FormikProps, Form, Field, FieldProps } from 'formik';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
+import isNumeric from 'validator/lib/isNumeric';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -252,6 +253,9 @@ export const SignIn: React.FC = (props) => {
                             maxLength: 10,
                           }}
                           error={showValidationError}
+                          onPaste={(e) => {
+                            if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
+                          }}
                           onKeyPress={(e) => {
                             if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
                           }}
