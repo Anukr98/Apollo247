@@ -17,9 +17,41 @@
         padding-right: 0 !important;
       }
     </style>
+    <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
   </head>
 
   <body>
     <div id="root"></div>
+    <style>
+      .OT_subscriber {
+        width: 100% !important;
+        min-height: 700px !important;
+        top: 0;
+      }
+      .chatVideo .OT_subscriber {
+        position: absolute;
+        width: 100% !important;
+        min-height: auto !important;
+        bottom: 0;
+      }
+      .chatVideo .OT_publisher {
+        display: none !important;
+      }
+      .OT_publisher {
+        position: absolute;
+        min-width: 48px;
+        min-height: 48px;
+        width: 80%;
+        height: 80%;
+        top: 108px;
+        right: 40px;
+        z-index: 9;
+        border-radius: 10px;
+      }
+      .OT_publisher .OT_edge-bar-item,
+      .OT_subscriber .OT_edge-bar-item {
+        display: none !important;
+      }
+    </style>
   </body>
 </html>
