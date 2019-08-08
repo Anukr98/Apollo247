@@ -15,7 +15,7 @@ import {
   GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
 } from 'graphql/types/GetDoctorAppointments';
 import { ApolloConsumer } from 'react-apollo';
-import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
+import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -164,14 +164,15 @@ export const Calendar: React.FC<CalendarProps> = ({ doctorId }) => {
       {(client) => {
         client
           .query({
-            query: GET_DOCTOR_PROFILE,
+            query: GET_DOCTOR_DETAILS,
           })
           .then(({ data }) => {
+            console.log(data);
             client
               .query({
                 query: GET_DOCTOR_APPOINTMENTS,
                 variables: {
-                  doctorId: data.getDoctorProfile.profile.id,
+                  doctorId: data.getDoctorDetails.id,
                   startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
                   endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
                 },
