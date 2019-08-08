@@ -224,7 +224,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                             label="Full Name"
                             placeholder="First Name"
                             error={showError('firstName')}
-                            inputProps={{ maxLength: 20 }}
+                            inputProps={{ maxLength: 50 }}
                           />
                           {showError('firstName') ? (
                             <FormHelperText
@@ -254,7 +254,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                             {...field}
                             placeholder="Last Name"
                             error={showError('lastName')}
-                            inputProps={{ maxLength: 20 }}
+                            inputProps={{ maxLength: 50 }}
                           />
                           {showError('lastName') ? (
                             <FormHelperText
