@@ -53,14 +53,14 @@ type DoctorAvailability = {
 };
 
 type OtherDoctors = {
-  doctors: Doctor[] | undefined;
-  doctorsAvailability: DoctorAvailability[] | undefined;
+  doctors?: Doctor[];
+  doctorsAvailability?: DoctorAvailability[];
 };
 
 type PossibleSearchMatches = {
-  doctors: Doctor[] | undefined;
-  doctorsAvailability: DoctorAvailability[] | undefined;
-  specialties: DoctorSpecialty[] | undefined;
+  doctors?: Doctor[];
+  doctorsAvailability?: DoctorAvailability[];
+  specialties?: DoctorSpecialty[];
 };
 
 type SearchDoctorAndSpecialtyByNameResult = {
