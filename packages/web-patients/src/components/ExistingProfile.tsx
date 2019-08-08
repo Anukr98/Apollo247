@@ -11,6 +11,7 @@ import { UPDATE_PATIENT } from 'graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _capitalize from 'lodash/capitalize';
 import _sortBy from 'lodash/sortBy';
+import FormHelperText from '@material-ui/core/FormHelperText';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -143,6 +144,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
 
   const classes = useStyles();
   const { patient, number } = props;
+
   const [selectedRelation, setSelectedRelation] = React.useState<Relation | ''>(
     patient.relation || ''
   );
@@ -196,7 +198,15 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const classes = useStyles();
   const [patients, setPatients] = useState(props.patients);
   const [loading, setLoading] = useState(false);
-  const disabled = patients.some(isPatientInvalid);
+  const onePrimaryUser = patients.filter((x) => x.relation === Relation.ME).length === 1;
+  const multiplePrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length > 1;
+  const noPrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length < 1;
+  const disabled = patients.some(isPatientInvalid) || !onePrimaryUser;
+  let primaryUserErrorMessage;
+  if (multiplePrimaryUsers)
+    primaryUserErrorMessage = 'Relation can be set as Me for only 1 profile';
+  else if (noPrimaryUsers)
+    primaryUserErrorMessage = 'There should be 1 profile with relation set as Me';
 
   return (
     <div className={classes.signUpPop} data-cypress="ExistingProfile">
@@ -215,6 +225,11 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
               tell us who is who? :)
             </p>
           ) : null}
+          {primaryUserErrorMessage && (
+            <FormHelperText component="div" error={true}>
+              {primaryUserErrorMessage}
+            </FormHelperText>
+          )}
           <div className={classes.formGroup}>
             {patients &&
               patients.map((p, i) => (
