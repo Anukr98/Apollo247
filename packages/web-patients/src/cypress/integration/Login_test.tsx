@@ -15,21 +15,20 @@ describe('Login', () => {
     cy.get('[data-cypress="SignIn"]').contains('+91');
   });
 
-  it("Blurring a mobile input after submission doesn't cancel action (CAPTCHA)", () => {
+  it("Firebase (Captcha Disabled): Blurring a mobile input after submission doesn't cancel action", () => {
     cy.get('[data-cypress="SignIn"]')
       .find('input[type="tel"]')
       .type('9999999999');
 
-    cy.get('button[type="submit"]');
-    //   .click()
-    //   // .blur();
-    //   .find('[class*="MuiCircularProgress"]')
-    //   .should('not.exist');
+    cy.get('button[type="submit"]')
+      .click()
+      .blur()
+      .find('[class*="MuiCircularProgress"]')
+      .should('exist');
 
-    // cy.get('[data-cypress="SignIn"]')
-    //   .find('input[type*="tel"]')
-    //   .contains('Type in the OTP sent to you, to authenticate')
-    //   .should('exist');
+    cy.get('[data-cypress="SignIn"]')
+      .contains('Type in the OTP sent to you, to authenticate')
+      .should('exist');
   });
 
   it('There should be validation upon entering anything non-numerical', () => {
@@ -188,22 +187,22 @@ describe('Login (Firebase)', () => {
       .click();
   });
 
-  it.only("Firebase (Captcha Disabled): Blurring a mobile input after submission doesn't cancel action (NO CAPTCHA)", () => {
-    // cy.get('[data-cypress="Navigation"]').should('not.exist'); //SignIn 224
-    cy.get('[data-cypress="SignIn"]')
-      .find('input[type="tel"]')
-      .type('9999999999');
+  // it("Firebase (Captcha Disabled): Blurring a mobile input after submission doesn't cancel action (NO CAPTCHA)", () => {
+  //   cy.get('[data-cypress="SignIn"]')
+  //     .find('input[type="tel"]')
+  //     .type('9999999999');
 
-    cy.get('button[type="submit"]')
-      .click()
-      .blur()
-      .find('[class*="MuiCircularProgress"]')
-      .should('not.exist');
-    cy.get('[data-cypress="SignIn"]')
-      .find('input[type*="tel"]')
-      .contains('Type in the OTP sent to you, to authenticate')
-      .should('exist');
-  });
+  //   cy.get('button[type="submit"]')
+  //     .click()
+  //     .blur()
+  //     .find('[class*="MuiCircularProgress"]')
+  //     .should('not.exist');
+
+  //   cy.get('[data-cypress="SignIn"]').should(
+  //     'contain',
+  //     'Type in the OTP sent to you, to authenticate'
+  //   );
+  // });
 
   it('Firebase (Captcha Disabled): Can do a real login', () => {
     cy.get('[data-cypress="Navigation"]').should('not.exist');
@@ -228,7 +227,7 @@ describe('Login (Firebase)', () => {
     cy.get('[data-cypress="Navigation"]').should('exist');
   });
 
-  it('Firebase: Resend OTP', () => {
+  it('Firebase (Captcha Disabled): Resend OTP', () => {
     cy.get('[data-cypress="SignIn"]')
       .find('input[type="tel"]')
       .type('9999999999')

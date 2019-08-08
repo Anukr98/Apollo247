@@ -88,6 +88,7 @@ export const Header: React.FC = (props) => {
   const { signOut, isSigningIn, isSignedIn } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const signInProcessing = isSigningIn || isSignedIn;
 
   return (
     <header className={classes.header} data-cypress="Header">
@@ -133,7 +134,9 @@ export const Header: React.FC = (props) => {
           <Popover
             open={isLoginPopupVisible}
             anchorEl={avatarRef.current}
-            onClose={() => setIsLoginPopupVisible(false)}
+            onClose={() =>
+              signInProcessing ? setIsLoginPopupVisible(true) : setIsLoginPopupVisible(false)
+            }
             anchorOrigin={{
               vertical: 'top',
               horizontal: 'right',
