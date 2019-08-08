@@ -5,11 +5,11 @@ import { ErrorResponse, onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
-import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
+import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 import {
-  GetDoctorProfile,
-  GetDoctorProfile_getDoctorProfile,
-} from 'graphql/types/GetDoctorProfile';
+  GetDoctorDetails,
+  GetDoctorDetails_getDoctorDetails,
+} from 'graphql/types/GetDoctorDetails';
 import { apiRoutes } from '@aph/universal/dist/aphRoutes';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
@@ -20,7 +20,7 @@ function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
 }
 
-export interface AuthContextProps<Doctor = GetDoctorProfile_getDoctorProfile> {
+export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
   currentPatient: Doctor | null;
   //allCurrentPatients: Patient[] | null;
   setCurrentPatient: ((p: Doctor) => void) | null;
@@ -188,18 +188,18 @@ export const AuthProvider: React.FC = (props) => {
 
         setIsSigningIn(true);
         const [signInResult, signInError] = await wait(
-          apolloClient.mutate<GetDoctorProfile, GetDoctorProfile>({
-            mutation: GET_DOCTOR_PROFILE,
+          apolloClient.mutate<GetDoctorDetails, GetDoctorDetails>({
+            mutation: GET_DOCTOR_DETAILS,
           })
         );
-        if (signInError || !signInResult.data || !signInResult.data.getDoctorProfile) {
+        if (signInError || !signInResult.data || !signInResult.data.getDoctorDetails) {
           if (signInError) console.error(signInError);
           setSignInError(true);
           setIsSigningIn(false);
           app.auth().signOut();
           return;
         }
-        const doctors = signInResult.data.getDoctorProfile;
+        const doctors = signInResult.data.getDoctorDetails;
         setCurrentPatient(doctors);
         setSignInError(false);
       }

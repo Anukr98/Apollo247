@@ -103,7 +103,7 @@ export const HelpPopup: React.FC<HelpProps> = (props) => {
           onChange={(event) => {
             setMobileNumber(event.currentTarget.value);
             if (event.currentTarget.value !== '') {
-              if (isMobileNumberValid(event.currentTarget.value)) {
+              if (parseInt(event.currentTarget.value[0], 10) > 5) {
                 setPhoneMessage(validPhoneMessage);
                 setShowErrorMessage(false);
               } else {
@@ -115,7 +115,9 @@ export const HelpPopup: React.FC<HelpProps> = (props) => {
               setShowErrorMessage(false);
             }
           }}
-          error={mobileNumber.trim() !== '' && !isMobileNumberValid(mobileNumber)}
+          error={
+            mobileNumber.trim() !== '' && showErrorMessage && !isMobileNumberValid(mobileNumber)
+          }
           onKeyPress={(e) => {
             if (isNaN(parseInt(e.key, 10))) {
               e.preventDefault();
