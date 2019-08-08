@@ -108,12 +108,6 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
     setOtpInputRefs(refs);
   }, []);
 
-  useEffect(() => {
-    if (verifyOtpError) {
-      setOtp([]);
-    }
-  }, [verifyOtpError]);
-
   return (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">hi</Typography>
