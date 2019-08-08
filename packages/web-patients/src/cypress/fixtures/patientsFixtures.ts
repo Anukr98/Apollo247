@@ -38,7 +38,7 @@ export const jimmyCousin: Patient = {
   gender: Gender.MALE,
   mobileNumber: '+91123456789',
   relation: Relation.COUSIN,
-  dateOfBirth: null,
+  dateOfBirth: '1999-01-01',
   emailAddress: '',
 };
 

@@ -11,6 +11,8 @@ import { PatientsList } from 'components/PatientsList';
 import { DoctorsProfile } from 'components/DoctorsProfile';
 import { Consult } from 'components/Consult';
 import { Calendar } from 'components/Calendar';
+import { ConsultRoom } from 'components/ConsultRoom';
+import { ConsultTabs } from 'components/ConsultTabs';
 import { AuthProvider } from 'components/AuthProvider';
 import { useAuth } from 'hooks/authHooks';
 import { aphTheme, AphThemeProvider } from '@aph/web-ui-components';
@@ -27,6 +29,8 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.patients()} component={PatientsList} />
       <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
       <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
+      <AuthRouted exact path={clientRoutes.consultRoom()} component={ConsultRoom} />
+      <AuthRouted exact path={clientRoutes.ConsultTabs()} component={ConsultTabs} />
       <AuthRouted exact path={clientRoutes.consult()} component={Consult} />
     </div>
   ) : (
@@ -41,9 +45,9 @@ const useStyles = makeStyles((theme: Theme) => {
     app: {
       minHeight: '100vh',
       backgroundImage: 'linear-gradient(to bottom, #f5f8f9, #e6edef)',
-      paddingBottom: 70,
+      paddingBottom: 20,
       [theme.breakpoints.down('xs')]: {
-        paddingBottom: 90,
+        paddingBottom: 20,
       },
     },
   };

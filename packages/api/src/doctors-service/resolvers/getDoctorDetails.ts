@@ -6,6 +6,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { isNull } from 'util';
+import { getConnection } from 'typeorm';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum AccountType {
@@ -62,7 +63,7 @@ export const getDoctorDetailsTypeDefs = gql`
     startTime: String!
     weekDay: WeekDay!
   }
-  type DoctorDetails {
+  type DoctorDetails @key(fields: "id") {
     awards: String
     city: String
     country: String
@@ -147,6 +148,8 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine2: String
     streetLine3: String
     zip: String
+    doctorHospital: [DoctorHospital!]!
+    specialty: DoctorSpecialties!
   }
 
   type StarTeam {
@@ -197,6 +200,13 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
 };
 
 export const getDoctorDetailsResolvers = {
+  DoctorDetails: {
+    async __resolveReference(object: Doctor) {
+      const con = getConnection('doctors-db');
+      const doctorRepo = con.getCustomRepository(DoctorRepository);
+      return await doctorRepo.findById(object.id.toString());
+    },
+  },
   Query: {
     getDoctorDetails,
     getDoctorDetailsById,

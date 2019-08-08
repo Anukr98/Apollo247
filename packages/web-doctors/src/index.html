@@ -25,8 +25,17 @@
     <style>
       .OT_subscriber {
         width: 100% !important;
-        min-height: 700px !important;
+        min-height: calc(100vh - 186px) !important;
         top: 0;
+      }
+      .chatVideo .OT_subscriber {
+        position: absolute;
+        width: 100% !important;
+        min-height: auto !important;
+        bottom: 0;
+      }
+      .chatVideo .OT_publisher {
+        display: none !important;
       }
       .OT_publisher {
         position: absolute;
@@ -34,7 +43,7 @@
         min-height: 48px;
         width: 80%;
         height: 80%;
-        top: 100px;
+        top: 40px;
         right: 40px;
         z-index: 9;
         border-radius: 10px;
