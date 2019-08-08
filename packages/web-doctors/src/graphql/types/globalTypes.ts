@@ -6,6 +6,11 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum APPOINTMENT_TYPE {
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+}
+
 export enum AccountType {
   CURRENT = "CURRENT",
   SAVINGS = "SAVINGS",
@@ -51,6 +56,12 @@ export enum Relation {
   OTHER = "OTHER",
   SISTER = "SISTER",
   WIFE = "WIFE",
+}
+
+export enum STATUS {
+  CANCELLED = "CANCELLED",
+  CONFIRMED = "CONFIRMED",
+  IN_PROGRESS = "IN_PROGRESS",
 }
 
 export enum Salutation {
