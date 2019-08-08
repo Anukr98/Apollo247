@@ -62,41 +62,31 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: '50%',
       },
     },
-    incomingContainer: {
-      textAlign: 'right',
-      paddingRight: 20,
+    incomingCallContainer: {
       position: 'absolute',
-      right: 0,
+      right: 17,
       top: 10,
     },
-    incomingBtn: {
+    incomingCallWindow: {
       position: 'relative',
-      width: 170,
-      height: 168,
-      display: 'inline-block',
+      width: 154,
+      height: 204,
       borderRadius: 10,
-      boxShadow: '0 5px 20px 0 rgba(0,0,0,0.6)',
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       overflow: 'hidden',
+      backgroundColor: '#000',
       '& img': {
-        maxWidth: '100%',
-      },
-      '& div': {
-        position: 'absolute',
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0,0,0,0.2)',
-        top: 0,
-        textAlign: 'center',
-        paddingTop: 10,
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: 500,
+        maxHeight: 204,
+        verticalAlign: 'middle',
       },
     },
-    endcall: {
+    callOverlay: {
       position: 'absolute',
-      width: 40,
-      bottom: 20,
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(0,0,0,0.2)',
+      top: 0,
+      left: 0,
     },
     chatSection: {
       position: 'relative',
@@ -109,7 +99,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
     },
     chatWindowFooter: {
-      borderTop: 'solid 0.5px #02475b',
+      borderTop: 'solid 0.5px rgba(2,71,91,0.5)',
       paddingTop: 12,
       marginTop: 15,
       position: 'relative',
@@ -133,6 +123,33 @@ const useStyles = makeStyles((theme: Theme) => {
     customScroll: {
       paddingLeft: 20,
       paddingRight: 17,
+    },
+    topText: {
+      textAlign: 'center',
+      color: '#fff',
+      fontSize: 14,
+      fontWeight: 500,
+      paddingTop: 10,
+    },
+    callActions: {
+      position: 'absolute',
+      bottom: 0,
+      width: '100%',
+      padding: 10,
+    },
+    callPickIcon: {
+      padding: 0,
+      boxShadow: 'none',
+      minWidth: 'auto',
+      backgroundColor: 'transparent',
+      '&:hover': {
+        boxShadow: 'none',
+        backgroundColor: 'transparent',
+      },
+      '&:focus': {
+        boxShadow: 'none',
+        backgroundColor: 'transparent',
+      },
     },
   };
 });
@@ -293,16 +310,16 @@ export const ChatWindow: React.FC = (props) => {
           {!showVideo && (
             <div>
               {isCalled && (
-                <div className={classes.incomingContainer}>
-                  <div className={classes.incomingBtn}>
+                <div className={classes.incomingCallContainer}>
+                  <div className={classes.incomingCallWindow}>
                     <img src={require('images/ic_patientchat.png')} />
-                    <div>
-                      <span>Ringing</span>
-                      <img
-                        src={require('images/ic_callpick.svg')}
-                        className={classes.endcall}
-                        onClick={() => actionBtn()}
-                      />
+                    <div className={classes.callOverlay}>
+                      <div className={classes.topText}>Ringing</div>
+                      <div className={classes.callActions}>
+                        <Button className={classes.callPickIcon} onClick={() => actionBtn()}>
+                          <img src={require('images/ic_callpick.svg')} alt="" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
