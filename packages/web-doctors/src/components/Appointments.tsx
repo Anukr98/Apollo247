@@ -143,26 +143,30 @@ const useStyles = makeStyles((theme: Theme) =>
         borderRadius: '50%',
       },
       '& .cardRow': {
-        border: '2px solid #0087ba',
+        border: '1px solid #0087ba',
         backgroundColor: '#fff',
         position: 'relative',
         top: -70,
+        height: 96,
         marginLeft: '5%',
         width: '95%',
+        boxShadow: '0 2px 4px 0 rgba(0,0,0,0.3)',
       },
       '&.upcoming': {
         '& .stepIcon': {
           color: '#fff',
           border: '2px solid #ff748e',
           borderRadius: '50%',
+          backgroundColor: '#fff',
         },
         '& .cardRow': {
-          border: '2px solid #ff748e',
+          border: '1px solid #ff748e',
           backgroundColor: '#fff',
           position: 'relative',
           top: -70,
           marginLeft: '5%',
           width: '95%',
+          boxShadow: '0 2px 4px 0 rgba(0,0,0,0.3)',
         },
       },
     },
@@ -174,6 +178,7 @@ const useStyles = makeStyles((theme: Theme) =>
       '& .cardRow': {
         backgroundColor: '#f0f4f5',
         border: 'solid 1px rgba(2, 71, 91, 0.1)',
+        boxShadow: 'none',
       },
     },
     hide: {
