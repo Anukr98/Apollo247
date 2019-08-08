@@ -1,6 +1,6 @@
-import { Theme, Typography, Button } from '@material-ui/core';
+import { Theme, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React, { useState } from 'react';
+import React from 'react';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 
