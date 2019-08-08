@@ -170,7 +170,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
-
+  const videoCallMsg = 'callme';
+  const channel = 'Channel5';
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
     publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
@@ -181,7 +182,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const pubnub = new Pubnub(config);
   useEffect(() => {
     pubnub.subscribe({
-      channels: ['Channel5'],
+      channels: [channel],
       withPresence: true,
     });
 
@@ -193,20 +194,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
     });
     return function cleanup() {
-      pubnub.unsubscribe({ channels: ['Channel5'] });
+      pubnub.unsubscribe({ channels: [channel] });
     };
   });
 
   useEffect(() => {
     if (props.startConsult !== isVideoCall) {
       setIsVideoCall(props.startConsult);
-      setMessageText('callme');
+      setMessageText(videoCallMsg);
       autoSend();
     }
   }, [props.startConsult, isVideoCall]);
 
   const getHistory = () => {
-    pubnub.history({ channel: 'Channel5', reverse: true, count: 1000 }, (status, res) => {
+    pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
       const newmessage: MessagesObjectProps[] = [];
       res.messages.forEach((element, index) => {
         newmessage[index] = element.entry;
@@ -224,7 +225,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     };
     pubnub.publish(
       {
-        channel: 'Channel5',
+        channel: channel,
         message: text,
         storeInHistory: true,
         sendByPost: true,
@@ -237,11 +238,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const autoSend = () => {
     const text = {
       id: 'Ravi',
-      message: 'callme',
+      message: videoCallMsg,
     };
     pubnub.publish(
       {
-        channel: 'Channel5',
+        channel: channel,
         message: text,
         storeInHistory: true,
         sendByPost: true,
