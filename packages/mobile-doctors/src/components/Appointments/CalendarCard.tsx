@@ -94,12 +94,12 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
   const containerStyle =
     props.type == 'past' || props.type == 'missed'
       ? {
-          borderColor: 'rgba(2, 71, 91, 0.1)',
+          borderColor: props.type == 'missed' ? '#e50000' : 'rgba(2, 71, 91, 0.1)',
           borderWidth: 1,
           backgroundColor: '#f0f4f5',
         }
       : {
-          borderColor: '#0087ba',
+          borderColor: props.type == 'up-next' ? '#ff748e' : '#0087ba',
           borderWidth: 1,
           backgroundColor: '#ffffff',
           shadowColor: colors.CARD_SHADOW_COLOR,
