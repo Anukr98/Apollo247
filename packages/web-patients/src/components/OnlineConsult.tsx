@@ -131,6 +131,22 @@ const getYyMmDd = (ddmmyyyy: string) => {
   return `${splitString[2]}-${splitString[1]}-${splitString[0]}`;
 };
 
+const getAutoSlot = () => {
+  const nearestFiveMinutes = Math.ceil(new Date().getMinutes() / 5) * 5;
+
+  let nearestHours = new Date().getHours();
+  let nearestFifteenMinutes = 0;
+
+  if (nearestFiveMinutes > 5 && nearestFiveMinutes <= 15) nearestFifteenMinutes = 15;
+  if (nearestFiveMinutes > 15 && nearestFiveMinutes <= 30) nearestFifteenMinutes = 30;
+  if (nearestFiveMinutes > 30 && nearestFiveMinutes <= 45) nearestFifteenMinutes = 45;
+  if (nearestFiveMinutes > 45 && nearestFifteenMinutes <= 60) {
+    nearestFifteenMinutes = 0;
+    nearestHours++;
+  }
+  return `${nearestHours}:${nearestFifteenMinutes > 9 ? nearestFifteenMinutes : '00'}`;
+};
+
 interface OnlineConsultProps {
   doctorDetails: GetDoctorProfileById;
 }
@@ -138,15 +154,18 @@ interface OnlineConsultProps {
 export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const classes = useStyles();
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
-  const [timeSelected, setTimeSelected] = useState<string>('');
   const [dateSelected, setDateSelected] = useState<string>('');
+  const [timeSelected, setTimeSelected] = useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [mutationSuccess, setMutationSuccess] = React.useState(false);
+  const [consultNow, setConsultNow] = React.useState(true);
 
   const { currentPatient } = useAllCurrentPatients();
 
   const currentTime = new Date().getTime();
+  const autoSlot = getAutoSlot();
+  let slotAvailableNext = '';
 
   const { doctorDetails } = props;
 
@@ -205,6 +224,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const availableSlots = (data && data.getDoctorAvailableSlots.availableSlots) || [];
   availableSlots.map((slot) => {
     const slotTime = getTimestamp(new Date(apiDateFormat), slot);
+    if (slot === autoSlot) slotAvailableNext = autoSlot;
+    // console.log(slot, autoSlot);
     if (slotTime > currentTime) {
       if (slotTime < morningTime) morningSlots.push(slotTime);
       else if (slotTime >= morningTime && slotTime < afternoonTime) afternoonSlots.push(slotTime);
@@ -214,11 +235,12 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   });
 
   const disableSubmit =
-    (morningSlots.length > 0 ||
+    ((morningSlots.length > 0 ||
       afternoonSlots.length > 0 ||
       eveningSlots.length > 0 ||
       lateNightSlots.length > 0) &&
-    timeSelected !== ''
+      timeSelected !== '') ||
+    (consultNow && (autoSlot !== '' || timeSelected !== ''))
       ? false
       : true;
 
@@ -250,6 +272,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               <AphButton
                 onClick={(e) => {
                   setShowCalendar(!showCalendar);
+                  setConsultNow(false);
                 }}
                 color="secondary"
                 className={`${classes.button} ${showCalendar ? classes.buttonActive : ''}`}
@@ -300,7 +323,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             bookAppointment: {
               patientId: currentPatient ? currentPatient.id : '',
               doctorId: doctorId,
-              appointmentDateTime: `${apiDateFormat}T${timeSelected}:00.000Z`,
+              appointmentDateTime: `${apiDateFormat}T${
+                timeSelected !== '' ? timeSelected : slotAvailableNext
+              }:00.000Z`,
               appointmentType: APPOINTMENT_TYPE.ONLINE,
               hospitalId: '',
             },
