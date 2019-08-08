@@ -107,10 +107,6 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
-    customScroll: {
-      paddingLeft: 20,
-      paddingRight: 17,
-    },
   };
 });
 
@@ -140,9 +136,7 @@ export const ChatRoom: React.FC = (props) => {
               <ConsultDoctorProfile />
             </div>
             <div className={classes.rightSection}>
-              <div className={classes.customScroll}>
-                <ChatWindow />
-              </div>
+              <ChatWindow />
             </div>
           </div>
         </div>
