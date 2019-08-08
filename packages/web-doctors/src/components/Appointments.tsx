@@ -185,10 +185,10 @@ const useStyles = makeStyles((theme: Theme) =>
       color: 'rgba(2, 71, 91, 0.6)',
       fontSize: 16,
       fontWeight: 600,
-      '& img' :{
+      '& img': {
         width: 200,
         marginBottom: 60,
-      }
+      },
     },
   })
 );
@@ -374,9 +374,11 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
   return (
     <div className={classes.calendarContent}>
       <div className={classes.noContent}>
-      <div><img src={require('images/no_data.svg')} alt="" /></div>
-        No consults scheduled today!
+        <div>
+          <img src={require('images/no_data.svg')} alt="" />
         </div>
+        No consults scheduled today!
+      </div>
     </div>
   );
 };

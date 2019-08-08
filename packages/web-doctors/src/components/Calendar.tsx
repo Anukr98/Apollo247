@@ -93,11 +93,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:first-child': {
         borderRadius: '17px !important',
       },
-
     },
     nopionter: {
       pointerEvents: 'none',
-    }
+    },
   };
 });
 
@@ -231,7 +230,7 @@ export const Calendar: React.FC<CalendarProps> = ({ doctorId }) => {
                     date={selectedDate}
                     onMonthChange={(range) => {
                       setStartOfMonthDate(range as { start: string; end: string });
-                      setRange(getMonthRange(range as { start: string; end: string }))
+                      setRange(getMonthRange(range as { start: string; end: string }));
                     }}
                   />
                 )}

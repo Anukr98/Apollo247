@@ -13,7 +13,7 @@ const useStyles = makeStyles(() => {
         pointerEvents: 'none',
       },
       '& .rbc-current': {
-        fontWeight: 'bold'
+        fontWeight: 'bold',
       },
       'min-height': 700,
       color: 'black',
