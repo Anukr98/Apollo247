@@ -74,7 +74,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     toggleBtn: {
-      backgroundColor: '#f0f4f5',      
+      backgroundColor: '#f0f4f5',
       position: 'absolute',
       top: 55,
       right: 16,
@@ -88,7 +88,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     customeSelect: {
-      backgroundColor: '#00b38e !important', 
+      backgroundColor: '#00b38e !important',
       color: '#fff !important',
       '&:first-child': {
         borderRadius: '17px !important',
@@ -100,21 +100,6 @@ const useStyles = makeStyles((theme: Theme) => {
     }
   };
 });
-
-// const dummyData: Appointment[] = [
-//   {
-//     startTime: Date.now(),
-//     endTime: getTime(addMinutes(Date.now(), 1)),
-//     details: {
-//       patientName: 'Prateek Sharma',
-//       checkups: ['Fever', 'Cough & Cold', 'Nausea', 'Sore Eyes'],
-//       avatar:
-//         'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-//     },
-//     isNew: true,
-//     type: 'walkin',
-//   }
-// ];
 
 const dataAdapter = (data: GetDoctorAppointments | undefined) => {
   if (!data || !data.getDoctorAppointments) {
@@ -209,7 +194,7 @@ export const Calendar: React.FC<CalendarProps> = ({ doctorId }) => {
                 <div>
                   <ToggleButtonGroup exclusive value={viewSelection} className={classes.toggleBtn}>
                     <ToggleButton
-                    className={classes.customeSelect}
+                      className={classes.customeSelect}
                       value="day"
                       onClick={() => {
                         setViewSelection('day');
@@ -219,7 +204,7 @@ export const Calendar: React.FC<CalendarProps> = ({ doctorId }) => {
                       Day
                     </ToggleButton>
                     <ToggleButton
-                     className={classes.nopionter}
+                      className={classes.nopionter}
                       value="month"
                       onClick={() => {
                         setViewSelection('month');
