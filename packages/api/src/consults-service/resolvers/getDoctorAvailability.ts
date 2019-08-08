@@ -73,7 +73,11 @@ const getDoctorAvailableSlots: Resolver<
     apptSlots.map((appt) => {
       const sl = `${appt.appointmentDateTime
         .getHours()
-        .toString()}:${appt.appointmentDateTime.getMinutes().toString()}`;
+        .toString()
+        .padStart(2, '0')}:${appt.appointmentDateTime
+        .getMinutes()
+        .toString()
+        .padStart(2, '0')}`;
       availableSlots.splice(availableSlots.indexOf(sl), 1);
     });
   }
