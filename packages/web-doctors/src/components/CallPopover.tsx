@@ -76,10 +76,13 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
+  //startAppointmentAction(isStatrt: boolean): void;
+  //startAppointmentAction: () => void;
 }
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
 
   function handleClick(event: any) {
     setAnchorEl(event.currentTarget);
@@ -91,11 +94,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const id = open ? 'simple-popover' : undefined;
   return (
     <span>
-      <Button className={classes.consultButton}>
+      <Button
+        className={classes.consultButton}
+        onClick={() => {
+          setStartAppointment(!startAppointment);
+        }}
+      >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
           <path fill="#fff" d="M8 5v14l11-7z" />
         </svg>
-        Start Consult
+        {startAppointment ? 'End Consult' : 'Start Consult'}
       </Button>
       <Button
         className={classes.consultIcon}
