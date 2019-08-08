@@ -5,6 +5,17 @@ import { Header } from 'components/Header';
 import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { ThingsToDo } from 'components/ConsultRoom/ThingsToDo';
 import { ConsultationsCard } from 'components/ConsultRoom/ConsultationsCard';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { GET_PATIENT_APPOINTMENTS } from 'graphql/doctors';
+import {
+  GetPatientAppointments,
+  GetPatientAppointmentsVariables,
+} from 'graphql/types/GetPatientAppointments';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { Route } from 'react-router-dom';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -120,7 +131,44 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const ConsultRoom: React.FC = (props) => {
   const classes = useStyles();
+  const { currentPatient } = useAllCurrentPatients();
   const [currentPatientName] = React.useState<number>(1);
+  const currentDate = new Date().toISOString().substring(0, 10);
+
+  const { data, loading, error } = useQueryWithSkip<
+    GetPatientAppointments,
+    GetPatientAppointmentsVariables
+  >(GET_PATIENT_APPOINTMENTS, {
+    variables: {
+      patientAppointmentsInput: {
+        patientId: (currentPatient && currentPatient.id) || '',
+        appointmentDate: currentDate,
+      },
+    },
+  });
+  if (loading) {
+    return <LinearProgress />;
+  }
+  if (error) {
+    return <div>Unable to load Consults...</div>;
+  }
+
+  const appointments =
+    data && data.getPatinetAppointments && data.getPatinetAppointments.patinetAppointments
+      ? data.getPatinetAppointments.patinetAppointments
+      : [];
+
+  const currentTime = new Date().getTime();
+
+  // filter appointments that are greater than current time.
+  const filterAppointments = appointments.filter((appointmentDetails) => {
+    const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
+    if (
+      appointmentTime > currentTime &&
+      appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+    )
+      return appointmentDetails;
+  });
 
   return (
     <div className={classes.root}>
@@ -131,7 +179,11 @@ export const ConsultRoom: React.FC = (props) => {
       </div>
       <div className={classes.container}>
         <div className={classes.consultPage}>
-          <div className={`${classes.consultationsHeader} ${classes.noConsultations}`}>
+          <div
+            className={`${classes.consultationsHeader} ${
+              appointments.length === 0 ? classes.noConsultations : ''
+            }`}
+          >
             <Typography variant="h1">
               <span>hi</span>
               <AphSelect
@@ -148,17 +200,33 @@ export const ConsultRoom: React.FC = (props) => {
                 </MenuItem>
               </AphSelect>
             </Typography>
-            <p>You have no consultations today :) Hope you are doing well?</p>
-            <div className={classes.bottomActions}>
-              <AphButton fullWidth color="primary">
-                Consult Doctor
-              </AphButton>
-            </div>
+            {filterAppointments.length === 0 ? (
+              <>
+                <p>You have no consultations today :) Hope you are doing well?</p>
+                <div className={classes.bottomActions}>
+                  <Route
+                    render={({ history }) => (
+                      <AphButton
+                        fullWidth
+                        color="primary"
+                        onClick={() => {
+                          history.push(clientRoutes.doctorsLanding());
+                        }}
+                      >
+                        Consult Doctor
+                      </AphButton>
+                    )}
+                  />
+                </div>
+              </>
+            ) : (
+              <p>You have {appointments.length} consultations today!</p>
+            )}
           </div>
         </div>
         <div className={classes.consultSection}>
           <div className={classes.leftSection}>
-            <ConsultationsCard />
+            {data ? <ConsultationsCard appointments={data} /> : null}
           </div>
           <div className={classes.rightSection}>
             <ThingsToDo />
@@ -167,4 +235,5 @@ export const ConsultRoom: React.FC = (props) => {
       </div>
     </div>
   );
+  // return <LinearProgress />;
 };

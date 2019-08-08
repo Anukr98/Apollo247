@@ -2,6 +2,12 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid, Avatar } from '@material-ui/core';
 import React from 'react';
 import Scrollbars from 'react-custom-scrollbars';
+import {
+  GetPatientAppointments,
+  GetPatientAppointments_getPatinetAppointments_patinetAppointments as appointmentDetails,
+} from 'graphql/types/GetPatientAppointments';
+import { getTime } from 'date-fns/esm';
+import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -125,46 +131,89 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ConsultationsCard: React.FC = (props) => {
+interface ConsultationsCardProps {
+  appointments: GetPatientAppointments;
+}
+
+const getTimestamp = (today: Date, slotTime: string) => {
+  const hhmm = slotTime.split(':');
+  return getTime(
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      parseInt(hhmm[0], 10),
+      parseInt(hhmm[1], 10),
+      0,
+      0
+    )
+  );
+};
+
+export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const classes = useStyles();
+
+  let bookedAppointments: appointmentDetails[] = [];
+
+  if (
+    props.appointments.getPatinetAppointments.patinetAppointments &&
+    props.appointments.getPatinetAppointments.patinetAppointments.length > 0
+  ) {
+    bookedAppointments = props.appointments.getPatinetAppointments.patinetAppointments;
+  }
+
+  const currentTime = new Date().getTime();
+
+  // filter appointments that are greater than current time.
+  const filterAppointments = bookedAppointments.filter((appointmentDetails) => {
+    const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
+    if (
+      appointmentTime > currentTime &&
+      appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+    )
+      return appointmentDetails;
+  });
 
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 214px)'}>
         <div className={classes.consultationSection}>
           <Grid container spacing={2}>
-            <Grid item sm={6}>
-              <div className={classes.consultCard}>
-                <div className={classes.startDoctor}>
-                  <Avatar
-                    alt=""
-                    src={require('images/ic_placeholder.png')}
-                    className={classes.doctorAvatar}
-                  />
-                  <span>
-                    <img src={require('images/ic_star.svg')} alt="" />
-                  </span>
+            {filterAppointments.map(() => (
+              <Grid item sm={6}>
+                <div className={classes.consultCard}>
+                  <div className={classes.startDoctor}>
+                    <Avatar
+                      alt=""
+                      src={require('images/ic_placeholder.png')}
+                      className={classes.doctorAvatar}
+                    />
+                    <span>
+                      <img src={require('images/ic_star.svg')} alt="" />
+                    </span>
+                  </div>
+                  <div className={classes.doctorInfo}>
+                    <div className={`${classes.availability} ${classes.availableNow}`}>
+                      Available in 15 mins
+                    </div>
+                    <div className={classes.doctorName}>Dr. Simran Rai</div>
+                    <div className={classes.doctorType}>
+                      General Physician
+                      <span className={classes.doctorExp}>7 YRS</span>
+                    </div>
+                    <div className={classes.consultaitonType}>Online Consultaiton</div>
+                    <div className={classes.appointBooked}>
+                      <ul>
+                        <li>Fever</li>
+                        <li>Cough &amp; Cold</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
-                <div className={classes.doctorInfo}>
-                  <div className={`${classes.availability} ${classes.availableNow}`}>
-                    Available in 15 mins
-                  </div>
-                  <div className={classes.doctorName}>Dr. Simran Rai</div>
-                  <div className={classes.doctorType}>
-                    General Physician
-                    <span className={classes.doctorExp}>7 YRS</span>
-                  </div>
-                  <div className={classes.consultaitonType}>Online Consultaiton</div>
-                  <div className={classes.appointBooked}>
-                    <ul>
-                      <li>Fever</li>
-                      <li>Cough &amp; Cold</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </Grid>
-            <Grid item sm={6}>
+              </Grid>
+            ))}
+
+            {/* <Grid item sm={6}>
               <div className={classes.consultCard}>
                 <div className={classes.startDoctor}>
                   <Avatar
@@ -192,7 +241,7 @@ export const ConsultationsCard: React.FC = (props) => {
                   </div>
                 </div>
               </div>
-            </Grid>
+            </Grid> */}
           </Grid>
         </div>
       </Scrollbars>

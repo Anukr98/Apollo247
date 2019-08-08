@@ -65,6 +65,11 @@ export interface DoctorAvailabilityInput {
   doctorId: string;
 }
 
+export interface PatientAppointmentsInput {
+  patientId: string;
+  appointmentDate: any;
+}
+
 export interface UpdatePatientInput {
   id: string;
   firstName?: string | null;
