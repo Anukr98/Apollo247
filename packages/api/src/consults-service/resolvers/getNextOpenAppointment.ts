@@ -1,8 +1,8 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
-import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
-import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+//import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
+//import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
 export const getNextOpenAppointmentTypeDefs = gql`
   input NextOpenAppointmentInput {
@@ -38,18 +38,18 @@ const getNextOpenAppointment: Resolver<
   ConsultServiceContext,
   NextOpenAppointmentResult
 > = async (parent, { doctorId }, { doctorsDb, consultsDb }) => {
-  const consultHours = await doctorsDb
-    .getCustomRepository(DoctorConsultHoursRepository)
-    .getConsultHours(doctorId);
+  // const consultHours = await doctorsDb
+  //   .getCustomRepository(DoctorConsultHoursRepository)
+  //   .getConsultHours(doctorId);
 
-  const { ONLINE, PHYSICAL } = await consultsDb
-    .getCustomRepository(AppointmentRepository)
-    .findNextOpenAppointment(doctorId, consultHours);
+  // const { ONLINE, PHYSICAL } = await consultsDb
+  //   .getCustomRepository(AppointmentRepository)
+  //   .findNextOpenAppointment(doctorId, consultHours);
 
   return {
     doctorId,
-    online: ONLINE,
-    physical: PHYSICAL,
+    online: new Date(),
+    physical: new Date(),
   };
 };
 
