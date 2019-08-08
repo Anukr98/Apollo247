@@ -198,9 +198,10 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
     },
     bold: {
-      fontWeight: theme.typography.fontWeightBold,
+      fontWeight: theme.typography.fontWeightMedium,
       color: '#02475b',
       marginLeft: 20,
+      fontSize: 16,
     },
     accountDetails: {
       fontWeight: theme.typography.fontWeightMedium,
