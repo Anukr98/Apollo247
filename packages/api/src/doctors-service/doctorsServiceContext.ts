@@ -4,5 +4,6 @@ import { Doctor } from 'doctors-service/entities';
 
 export interface DoctorsServiceContext extends GatewayContext {
   doctorsDb: Connection;
+  consultsDb: Connection;
   currentUser: Doctor;
 }

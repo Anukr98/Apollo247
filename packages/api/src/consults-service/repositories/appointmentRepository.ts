@@ -2,8 +2,8 @@ import { EntityRepository, Repository, Between } from 'typeorm';
 import { Appointment, AppointmentSessions } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { differenceInMinutes } from 'date-fns';
 import { format } from 'date-fns';
+import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
@@ -47,37 +47,10 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.find({ where: { patientId, appointmentDateTime: Between(startDate, endDate) } });
   }
 
-  getDoctorNextAvailability(doctorId: string) {
-    const curDate = new Date();
-    const curEndDate = new Date(format(new Date(), 'yyyy-MM-dd').toString() + 'T11:59');
-    return this.find({
-      where: { doctorId, appointmentDateTime: Between(curDate, curEndDate) },
-      order: { appointmentDateTime: 'ASC' },
-    }).then((resp) => {
-      let prev = 0;
-      let done = 0;
-      if (resp) {
-        resp.map((appt) => {
-          if (done == 0) {
-            const diffMins = differenceInMinutes(appt.appointmentDateTime, curDate);
-            if (prev > 0) {
-              if (diffMins - prev >= 30) {
-                done = 1;
-              } else {
-                prev = diffMins;
-              }
-            } else {
-              prev = diffMins;
-              if (diffMins >= 30) {
-                prev = 0;
-                done = 1;
-              }
-            }
-          }
-        });
-      }
-      prev += 15;
-      return prev;
-    });
+  async findNextOpenAppointment(doctorId: string, consultHours: ConsultHours[]) {
+    return {
+      [ConsultMode.ONLINE]: new Date(),
+      [ConsultMode.PHYSICAL]: new Date(),
+    };
   }
 }

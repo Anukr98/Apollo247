@@ -160,7 +160,7 @@ interface MessagesObjectProps {
 }
 interface ConsultRoomProps {
   toggleTabs: () => void;
-  startConsult: boolean;
+  startConsult: string;
 }
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const classes = useStyles();
@@ -173,7 +173,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const audioCallMsg = '^^callme`audio^^';
   const doctorId = 'Ravi';
   const patientId = 'Sai';
-  const channel = 'Channel5';
+  const channel = 'Channel6';
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
     publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
@@ -199,16 +199,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       pubnub.unsubscribe({ channels: [channel] });
     };
   });
-
+  function getCookieValue() {
+    const name = 'action=';
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) === 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return '';
+  }
   useEffect(() => {
-    console.log(1111111111, props.startConsult, isVideoCall);
-    if (props.startConsult !== isVideoCall) {
-      setIsVideoCall(props.startConsult);
+    //if (props.startConsult !== isVideoCall) {
+    console.log(1111111);
+    if (getCookieValue() !== '') {
+      console.log(22222222);
+      setIsVideoCall(props.startConsult === 'videocall' ? true : false);
       setMessageText(videoCallMsg);
       autoSend();
-      console.log(2222222222222);
     }
-  }, [props.startConsult, isVideoCall]);
+  }, []);
 
   const getHistory = () => {
     pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
@@ -236,6 +250,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
       (status, response) => {
         setMessageText('');
+        // const scrollDiv = document.getElementById('scrollDiv');
+        // scrollDiv!.scrollIntoView(false);
+        const scrollDiv = document.getElementById('scrollDiv');
+        scrollDiv!.scrollTo(0, 100000);
       }
     );
   };
@@ -313,19 +331,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const actionBtn = () => {
     setShowVideo(true);
   };
+  const stopAudioVideoCall = () => {
+    setShowVideo(false);
+    setShowVideoChat(false);
+    const cookieStr = `action=`;
+    document.cookie = cookieStr + ';path=/;';
+    //setIsVideoCall(false);
+  };
   return (
     <div className={classes.consultRoom}>
       <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
         {showVideo && (
           <Consult
             toggelChatVideo={() => toggelChatVideo()}
+            stopAudioVideoCall={() => stopAudioVideoCall()}
             showVideoChat={showVideoChat}
             isVideoCall={isVideoCall}
           />
         )}
         <div>
           {(!showVideo || showVideoChat) && (
-            <div className={classes.chatContainer}>{messagessHtml}</div>
+            <div className={classes.chatContainer} id="scrollDiv">
+              {messagessHtml}
+            </div>
           )}
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatFooterSection}>

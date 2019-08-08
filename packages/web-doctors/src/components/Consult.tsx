@@ -103,6 +103,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 interface ConsultProps {
   toggelChatVideo: () => void;
+  stopAudioVideoCall: () => void;
   showVideoChat: boolean;
   isVideoCall: boolean;
 }
@@ -170,7 +171,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       <img
                         src={require('images/ic_stopcall.svg')}
                         className={classes.stopCallIcon}
-                        onClick={() => setIscall(false)}
+                        onClick={() => {
+                          setIscall(false);
+                          props.stopAudioVideoCall();
+                        }}
                       />
                       <img
                         src={require('images/ic_maximize.svg')}
@@ -244,6 +248,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           <button
                             onClick={() => {
                               props.toggelChatVideo();
+                              props.stopAudioVideoCall();
                               setIscall(false);
                             }}
                           >

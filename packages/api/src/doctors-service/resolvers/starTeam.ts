@@ -37,7 +37,7 @@ const makeTeamDoctorActive: Resolver<
 
   if (doctorDetails.isActive) throw new AphError(AphErrorMessages.ALREADY_ACTIVE_IN_STARTEAM);
 
-  await starRepo.activateTeamDoctor(doctorDetails.isActive);
+  await starRepo.activateTeamDoctor(doctorDetails.id);
 
   const updatedDoctorDetails = await starRepo.getTeamDoctorData(
     args.associatedDoctor,

@@ -16,12 +16,14 @@ import {
   Typography,
 } from '@material-ui/core';
 import { format, getTime, setSeconds, setMilliseconds } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 export interface Appointment {
   startTime: number;
   endTime: number;
   isNew: boolean;
   type: string;
+  status: string;
   details: {
     patientName: string;
     checkups: string[];
@@ -177,6 +179,17 @@ const useStyles = makeStyles((theme: Theme) =>
     hide: {
       display: 'none',
     },
+    noContent: {
+      'min-height': 320,
+      'text-align': 'center',
+      color: 'rgba(2, 71, 91, 0.6)',
+      fontSize: 16,
+      fontWeight: 600,
+      '& img': {
+        width: 200,
+        marginBottom: 60,
+      },
+    },
   })
 );
 
@@ -221,132 +234,151 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
     udpateActiveStep(values, activeStep, setActiveStep);
   }, [values]);
 
-  return (
-    <div>
-      <Stepper
-        activeStep={activeStep}
-        orientation="vertical"
-        connector={
-          <StepConnector
-            classes={{
-              line: classes.hide,
-            }}
-          />
-        }
-        className={classes.calendarContent}
-      >
-        {appointments.map((appointment, idx) => (
-          <Step
-            key={idx}
-            active={true}
-            className={
-              activeStep === idx ? 'upcoming' : activeStep - 1 >= idx ? classes.completed : ''
-            }
-            classes={{
-              root: classes.step,
-            }}
-          >
-            <StepLabel
-              classes={{ iconContainer: classes.iconContainer }}
-              StepIconProps={{
-                classes: {
-                  root: 'stepIcon',
-                },
-              }}
-            >
-              <Typography variant="h5" className={classes.AppointmentTime}>
-                <span>
-                  {`${format(appointment.startTime, 'hh:mm')} - ${format(
-                    appointment.endTime,
-                    'hh:mm aa'
-                  )}`}
-                </span>
-              </Typography>
-            </StepLabel>
-            <StepContent
+  if (appointments && appointments.length) {
+    return (
+      <div>
+        <Stepper
+          activeStep={activeStep}
+          orientation="vertical"
+          connector={
+            <StepConnector
               classes={{
-                root: 'stepContent',
+                line: classes.hide,
+              }}
+            />
+          }
+          className={classes.calendarContent}
+        >
+          {appointments.map((appointment, idx) => (
+            <Step
+              key={idx}
+              active={true}
+              className={
+                activeStep === idx ? 'upcoming' : activeStep - 1 >= idx ? classes.completed : ''
+              }
+              classes={{
+                root: classes.step,
               }}
             >
-              <div>
-                <Card
-                  className={classes.card}
-                  classes={{
-                    root: 'cardRow',
-                  }}
-                >
-                  <CardContent>
-                    <Grid item xs={12}>
-                      <Grid item container spacing={2}>
-                        <Grid item lg={4} sm={5} xs={4} key={1} container>
-                          <Grid sm={3} xs={2} key={5} item>
-                            <Avatar
-                              alt={appointment.details.patientName}
-                              src={appointment.details.avatar}
-                              className={classes.bigAvatar}
-                            />
-                          </Grid>
-                          <Grid sm={9} xs={10} key={6} item className={classes.valign}>
-                            <div className={classes.section2}>
-                              {appointment.isNew && (
+              <StepLabel
+                classes={{ iconContainer: classes.iconContainer }}
+                StepIconProps={{
+                  classes: {
+                    root: 'stepIcon',
+                  },
+                }}
+              >
+                <Typography variant="h5" className={classes.AppointmentTime}>
+                  <span>
+                    {`${format(appointment.startTime, 'hh:mm')} - ${format(
+                      appointment.endTime,
+                      'hh:mm aa'
+                    )}`}
+                  </span>
+                </Typography>
+              </StepLabel>
+              <StepContent
+                classes={{
+                  root: 'stepContent',
+                }}
+              >
+                <div>
+                  <Card
+                    className={classes.card}
+                    classes={{
+                      root: 'cardRow',
+                    }}
+                  >
+                    <CardContent>
+                      <Grid item xs={12}>
+                        <Grid item container spacing={2}>
+                          <Grid item lg={4} sm={5} xs={4} key={1} container>
+                            <Grid sm={3} xs={2} key={5} item>
+                              <Avatar
+                                alt={appointment.details.patientName}
+                                src={appointment.details.avatar}
+                                className={classes.bigAvatar}
+                              />
+                            </Grid>
+                            <Grid sm={9} xs={10} key={6} item className={classes.valign}>
+                              <div className={classes.section2}>
+                                {appointment.isNew && (
+                                  <Typography
+                                    gutterBottom
+                                    variant="caption"
+                                    className={classes.subHeading}
+                                  >
+                                    New
+                                  </Typography>
+                                )}
                                 <Typography
                                   gutterBottom
-                                  variant="caption"
-                                  className={classes.subHeading}
+                                  variant="body1"
+                                  className={classes.mainHeading}
                                 >
-                                  New
+                                  {appointment.details.patientName}
                                 </Typography>
-                              )}
-                              <Typography
-                                gutterBottom
-                                variant="body1"
-                                className={classes.mainHeading}
-                              >
-                                {appointment.details.patientName}
-                              </Typography>
+                              </div>
+                            </Grid>
+                          </Grid>
+                          {appointment.details.checkups && appointment.details.checkups.length && (
+                            <Grid lg={5} sm={5} xs={5} key={2} item className={classes.valign}>
+                              <div className={classes.section1}>
+                                {(appointment.details.checkups.length > 3
+                                  ? appointment.details.checkups.slice(0, 2)
+                                  : appointment.details.checkups
+                                ).map((checkup, idx) => (
+                                  <Chip
+                                    key={idx}
+                                    className={classes.chip}
+                                    label={checkup.toUpperCase()}
+                                  />
+                                ))}
+                                {appointment.details.checkups.length > 3 && (
+                                  <Typography
+                                    gutterBottom
+                                    variant="caption"
+                                    className={classes.bold}
+                                  >
+                                    +{appointment.details.checkups.length - 2}
+                                  </Typography>
+                                )}
+                              </div>
+                            </Grid>
+                          )}
+                          <Grid lg={3} sm={2} xs={3} key={3} className={classes.valign} item>
+                            <div className={classes.section2}>
+                              <IconButton aria-label="Video call">
+                                <img src={require('images/ic_video.svg')} alt="" />
+                              </IconButton>
+                              <Link to="/consultTabs">
+                                <IconButton aria-label="Navigate next">
+                                  <NavigateNextIcon />
+                                </IconButton>
+                              </Link>
                             </div>
                           </Grid>
-                        </Grid>
-                        {appointment.details.checkups && appointment.details.checkups.length && (
-                          <Grid lg={5} sm={5} xs={5} key={2} item className={classes.valign}>
-                            <div className={classes.section1}>
-                              {(appointment.details.checkups.length > 3
-                                ? appointment.details.checkups.slice(0, 2)
-                                : appointment.details.checkups
-                              ).map((checkup, idx) => (
-                                <Chip
-                                  key={idx}
-                                  className={classes.chip}
-                                  label={checkup.toUpperCase()}
-                                />
-                              ))}
-                              {appointment.details.checkups.length > 3 && (
-                                <Typography gutterBottom variant="caption" className={classes.bold}>
-                                  +{appointment.details.checkups.length - 2}
-                                </Typography>
-                              )}
-                            </div>
-                          </Grid>
-                        )}
-                        <Grid lg={3} sm={2} xs={3} key={3} className={classes.valign} item>
-                          <div className={classes.section2}>
-                            <IconButton aria-label="Video call">
-                              <img src={require('images/ic_video.svg')} alt="" />
-                            </IconButton>
-                            <IconButton aria-label="Navigate next">
-                              <NavigateNextIcon />
-                            </IconButton>
-                          </div>
                         </Grid>
                       </Grid>
-                    </Grid>
-                  </CardContent>
-                </Card>
-              </div>
-            </StepContent>
-          </Step>
-        ))}
-      </Stepper>
+                    </CardContent>
+                  </Card>
+                </div>
+              </StepContent>
+            </Step>
+          ))}
+        </Stepper>
+      </div>
+    );
+  }
+
+  return (
+    <div className={classes.calendarContent}>
+      <div className={classes.noContent}>
+        <div>
+          <img src={require('images/no_data.svg')} alt="" />
+        </div>
+        No consults scheduled today!
+      </div>
     </div>
   );
 };

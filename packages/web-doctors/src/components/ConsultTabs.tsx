@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -7,6 +7,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -194,22 +195,20 @@ export const ConsultTabs: React.FC = (props) => {
   const classes = useStyles();
   const [tabValue, setTabValue] = useState<number>(0);
   const [showTabs, setshowTabs] = useState<boolean>(true);
-  const [startConsult, setStartConsult] = useState<boolean>(false);
+  const [startConsult, setStartConsult] = useState<string>('');
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
   const setStartConsultAction = (flag: boolean) => {
-    if (startConsult !== flag) {
-      console.log(flag);
-      setStartConsult(flag);
-    }
+    setStartConsult('');
+    const cookieStr = `action=${flag ? 'videocall' : 'audiocall'}`;
+    document.cookie = cookieStr + ';path=/;';
+    //setStartConsult('');
+    setStartConsult(flag ? 'videocall' : 'audiocall');
   };
   const toggleTabs = () => {
     setshowTabs(!showTabs);
   };
-  useEffect(() => {
-    console.log(1111111111);
-  }, [startConsult]);
 
   return (
     <div className={classes.consultRoom}>
@@ -219,17 +218,22 @@ export const ConsultTabs: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.breadcrumbs}>
           <div>
-            <div className={classes.backArrow}>
-              <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-              <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-            </div>
+            <Link to="/calendar">
+              <div className={classes.backArrow}>
+                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+              </div>
+            </Link>
           </div>
           CONSULT ROOM &nbsp; | &nbsp;
           <span className={classes.timeLeft}>
             Time to Consult <b>00:25</b>
           </span>
           <div className={classes.consultButtonContainer}>
-            <CallPopover setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)} />
+            <CallPopover
+              setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+              // startAppointmentAction={(flag: boolean) => startAppointmentAction(flag)}
+            />
           </div>
         </div>
         <div>
