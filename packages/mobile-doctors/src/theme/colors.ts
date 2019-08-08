@@ -16,9 +16,9 @@ const colorsWithCustomOpacity = {
 };
 
 const TabBar = {
-  TAB_BAR_ACTIVE_BG_COLOR: whiteColor(),
-  TAB_BAR_ACTIVE_TEXT_COLOR: darkBlueColor(),
-  TAB_BAR_INACTIVE_TEXT_COLOR: darkBlueColor(),
+  TAB_BAR_ACTIVE_BG_COLOR: darkBlueColor(),
+  TAB_BAR_ACTIVE_TEXT_COLOR: whiteColor(0.6),
+  TAB_BAR_INACTIVE_TEXT_COLOR: darkBlueColor(0.6),
 };
 
 const Buttons = {
