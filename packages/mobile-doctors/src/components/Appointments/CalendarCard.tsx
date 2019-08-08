@@ -55,12 +55,12 @@ const styles = StyleSheet.create({
 export interface CalendarCardProps {
   containerStyle?: StyleProp<ViewStyle>;
   doctorname?: string;
-  timing: string;
+  timing?: string;
   onPress: (id: string) => void;
   image?: ImageSourcePropType;
   imageStyle?: StyleProp<ImageStyle>;
   wayOfContact?: 'audio' | 'video';
-  type: Appointments['timeslottype'];
+  type?: Appointments['timeslottype'];
   symptoms?: string[];
 }
 

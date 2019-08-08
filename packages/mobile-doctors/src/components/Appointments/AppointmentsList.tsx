@@ -3,13 +3,17 @@ import {
   MissedAppointmentIcon,
   NextAppointmentIcon,
   PastAppointmentIcon,
+  UpComingIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Appointments, DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import {
+  GetDoctorAppointments,
+  GetDoctorAppointments_getDoctorAppointments,
+  GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
+} from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 import React from 'react';
 import { StyleSheet, View, Dimensions } from 'react-native';
 import { ScrollView } from 'react-navigation';
-
-const screenHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
   leftTimeLineContainer: {
@@ -26,19 +30,20 @@ const styles = StyleSheet.create({
 });
 
 export interface AppointmentsListProps {
-  doctorProfile: DoctorProfile;
+  appointmentsHistory: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory[];
 }
 
 export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
-  const getDoctorProfile = props.doctorProfile;
-
+  console.log('getAppointmentsSSSSSS', props.appointmentsHistory);
   const getStatusCircle = (status: Appointments['timeslottype']) =>
     status == 'past' ? (
       <PastAppointmentIcon />
     ) : status == 'missed' ? (
       <MissedAppointmentIcon />
-    ) : (
+    ) : status == 'next' ? (
       <NextAppointmentIcon />
+    ) : (
+      <UpComingIcon />
     );
 
   const renderLeftTimeLineView = (
@@ -77,7 +82,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
           backgroundColor: '#f7f7f7',
         }}
       >
-        {getDoctorProfile.appointments.map((i, index, array) => {
+        {props.appointmentsHistory.map((i, index, array) => {
           return (
             <>
               {index == 0 && <View style={{ height: 20 }} />}
@@ -90,16 +95,14 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                 }}
               >
                 {renderLeftTimeLineView(
-                  i.timeslottype,
+                  i.appointmentDateTime,
                   index == 0 ? false : true,
                   index == array.length - 1 ? false : true
                 )}
                 <CalendarCard
                   onPress={(id) => {}}
-                  doctorname={i.doctorname}
-                  wayOfContact={i.wayOfContact}
-                  type={i.timeslottype}
-                  timing={i.timings}
+                  doctorname={i.status}
+                  timing={i.appointmentDateTime}
                   symptoms={['FEVER', 'COUGH & COLD']}
                 />
               </View>

@@ -30,6 +30,15 @@ import {
 import { CalendarList } from 'react-native-calendars';
 import { NavigationScreenProps } from 'react-navigation';
 import { WeekView } from './WeekView';
+import { colors } from '@aph/mobile-doctors/src/theme/colors';
+import { GET_DOCTOR_APPOINTMENTS } from '@aph/mobile-doctors/src/graphql/profiles';
+
+import { useQuery } from 'react-apollo-hooks';
+
+import {
+  GetDoctorAppointments,
+  GetDoctorAppointmentsVariables,
+} from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 
 const styles = StyleSheet.create({
   noAppointmentsText: {
@@ -49,14 +58,14 @@ const styles = StyleSheet.create({
     top: 184,
     width: '100%',
     alignItems: 'flex-end',
+    overflow: 'hidden',
     ...Platform.select({
       ios: {
-        zIndex: 2,
+        zIndex: 1,
       },
       android: {
-        //elevation: 12,
-        // zIndex: 2,
-        overflow: 'visible',
+        elevation: 12,
+        zIndex: 2,
       },
     }),
   },
@@ -74,7 +83,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   weekViewContainer: {
-    marginTop: 12,
+    marginTop: 16,
     backgroundColor: theme.colors.WHITE,
     shadowColor: '#808080',
     shadowOffset: { width: 0, height: 1 },
@@ -119,15 +128,30 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
 
-  const {
-    data: { getDoctorProfile },
-    error,
-  } = doctorProfile;
-  if (error) {
-    Alert.alert('Error', 'Unable to get the data');
-  } else {
-    //console.log('Calender', getDoctorProfile!.appointments.length);
-  }
+  const startDate = moment(date).format('YYYY-MM-DD');
+  const endDate = moment(date.setDate(date.getDate() + 1)).format('YYYY-MM-DD');
+  const { data, errorr, loading } = useQuery<GetDoctorAppointments, GetDoctorAppointmentsVariables>(
+    GET_DOCTOR_APPOINTMENTS,
+    {
+      variables: {
+        doctorId: 'ae394a65-7335-49d5-a559-0bd2be626a04',
+        startDate: '2019-09-12', //startDate,
+        endDate: '2019-09-13', //startDate,
+      },
+    }
+  );
+  const getAppointments = data && data.getDoctorAppointments;
+  console.log('getAppointments', getAppointments && getAppointments.appointmentsHistory);
+
+  // const {
+  //   data: { getDoctorProfile },
+  //   error,
+  // } = doctorProfile;
+  // if (error) {
+  //   Alert.alert('Error', 'Unable to get the data');
+  // } else {
+  //   //console.log('Calender', getDoctorProfile!.appointments);
+  // }
 
   const renderMonthSelection = () => {
     return (
@@ -148,7 +172,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       <View style={styles.calenderView}>
         <View style={styles.calendarSeparator} />
         <CalendarList
-          style={{ height: 'auto' }}
+          style={{ height: 300 }}
           horizontal={true}
           pagingEnabled={true}
           current={calendarDate || date}
@@ -285,12 +309,17 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   };
 
   return (
-    <SafeAreaView style={theme.viewStyles.container}>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: colors.DEFAULT_BACKGROUND_COLOR,
+      }}
+    >
       {renderMainHeader()}
       {renderDoctorGreeting()}
       <View>
         {renderHeader()}
-        <View>{isCalendarVisible ? renderCalenderView() : null}</View>
+        <View style={{ flex: 1 }}>{isCalendarVisible ? renderCalenderView() : null}</View>
       </View>
       {isDropdownVisible ? renderDropdown() : null}
 
@@ -311,11 +340,13 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           />
         </View>
 
-        {getDoctorProfile!.appointments.length == 0 ? (
-          renderNoConsultsView()
-        ) : (
-          <AppointmentsList doctorProfile={getDoctorProfile!} />
-        )}
+        {getAppointments &&
+        getAppointments.appointmentsHistory &&
+        getAppointments.appointmentsHistory.length == 0
+          ? renderNoConsultsView()
+          : !loading && (
+              <AppointmentsList appointmentsHistory={getAppointments!.appointmentsHistory!} />
+            )}
       </View>
     </SafeAreaView>
   );

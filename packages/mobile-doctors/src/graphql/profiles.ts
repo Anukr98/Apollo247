@@ -152,24 +152,23 @@ export const GET_DOCTOR_PROFILE = gql`
     }
   }
 `;
-// export const GET_DOCTOR_APPOINTMENTS = gql`
-//   query GetDoctorAppointments( $doctorId: String,$startDate: Date,$endDate: Date){
-//     getDoctorAppointments( $doctorId: $doctorId,
-//     $startDate: startDate,
-//     $endDate: endDate) {
-//       appointmentsHistory {
-//         appointmentType
-//         doctorId
-//         status
-//         hospitalId
-//         id
-//         patientId
-//         appointmentDateTime
-//         bookingDate
-//       }
-//     }
-//   }
-// `;
+
+export const GET_DOCTOR_APPOINTMENTS = gql`
+  query GetDoctorAppointments($doctorId: String, $startDate: Date, $endDate: Date) {
+    getDoctorAppointments(doctorId: $doctorId, startDate: $startDate, endDate: $endDate) {
+      appointmentsHistory {
+        appointmentType
+        doctorId
+        status
+        hospitalId
+        id
+        patientId
+        appointmentDateTime
+        bookingDate
+      }
+    }
+  }
+`;
 
 /**
  * @returns {DoctorProfile}
