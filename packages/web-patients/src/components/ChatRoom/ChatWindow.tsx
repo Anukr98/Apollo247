@@ -3,7 +3,7 @@ import { Theme, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphInput } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
-import { Consult } from 'components/ChatRoom/Consult';
+import { ChatVideo } from 'components/ChatRoom/ChatVideo';
 import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -11,9 +11,6 @@ const useStyles = makeStyles((theme: Theme) => {
     consultRoom: {
       paddingTop: 0,
       paddingBottom: 0,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 0,
-      },
     },
     chatContainer: {
       paddingRight: 5,
@@ -42,7 +39,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       textAlign: 'left',
       display: 'inline-block',
-      borderRadius: 5,
+      borderRadius: 10,
       maxWidth: 244,
     },
     boldTxt: {
@@ -65,7 +62,7 @@ const useStyles = makeStyles((theme: Theme) => {
     incomingCallContainer: {
       position: 'absolute',
       right: 17,
-      top: 10,
+      top: 0,
     },
     incomingCallWindow: {
       position: 'relative',
@@ -93,7 +90,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 10,
     },
     audioVideoContainer: {
-      position: 'relative',
+      paddingBottom: 0,
     },
     chatWindowContainer: {
       position: 'relative',
@@ -293,7 +290,7 @@ export const ChatWindow: React.FC = (props) => {
         }`}
       >
         {showVideo && (
-          <Consult
+          <ChatVideo
             toggelChatVideo={() => toggelChatVideo()}
             showVideoChat={showVideoChat}
             isVideoCall={isVideoCall}
