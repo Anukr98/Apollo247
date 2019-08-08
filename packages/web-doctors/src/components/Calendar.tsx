@@ -34,6 +34,7 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
+      position: 'relative',
     },
 
     labelRoot: {
@@ -72,6 +73,31 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    toggleBtn: {
+      backgroundColor: '#f0f4f5',      
+      position: 'absolute',
+      top: 55,
+      right: 16,
+      borderRadius: 17,
+      '& button': {
+        padding: '6px 40px',
+        height: 36,
+        borderRadius: 17,
+        color: '#02475b',
+        textTransform: 'capitalize',
+      },
+    },
+    customeSelect: {
+      backgroundColor: '#00b38e !important', 
+      color: '#fff !important',
+      '&:first-child': {
+        borderRadius: '17px !important',
+      },
+
+    },
+    nopionter: {
+      pointerEvents: 'none',
+    }
   };
 });
 
@@ -181,8 +207,9 @@ export const Calendar: React.FC<CalendarProps> = ({ doctorId }) => {
               </div>
               <div>
                 <div>
-                  <ToggleButtonGroup exclusive value={viewSelection}>
+                  <ToggleButtonGroup exclusive value={viewSelection} className={classes.toggleBtn}>
                     <ToggleButton
+                    className={classes.customeSelect}
                       value="day"
                       onClick={() => {
                         setViewSelection('day');
@@ -192,6 +219,7 @@ export const Calendar: React.FC<CalendarProps> = ({ doctorId }) => {
                       Day
                     </ToggleButton>
                     <ToggleButton
+                     className={classes.nopionter}
                       value="month"
                       onClick={() => {
                         setViewSelection('month');
