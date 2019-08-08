@@ -219,12 +219,13 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
             welcome
             <br /> to apollo 24/7
           </Typography>
-          {patients.length > 1 ? (
+
+          {patients.length === 0 ? null : (
             <p>
-              We have found {patients.length} accounts registered with this mobile number. Please
-              tell us who is who? :)
+              We have found {patients.length} {patients.length > 1 ? 'accounts ' : 'account '}
+              registered with this mobile number. Please tell us who is who? :
             </p>
-          ) : null}
+          )}
           {primaryUserErrorMessage && (
             <FormHelperText component="div" error={true}>
               {primaryUserErrorMessage}
