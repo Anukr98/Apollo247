@@ -143,7 +143,6 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       padding: '40px 20px 20px 20px',
       clear: 'both',
-      // bottom: 0,
       backgroundColor: '#fff',
       width: '100%',
     },
@@ -170,7 +169,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
-  const videoCallMsg = 'callme';
+  const videoCallMsg = '^^callme`video^^';
+  const audioCallMsg = '^^callme`audio^^';
   const channel = 'Channel5';
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
@@ -257,7 +257,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
-    if (rowData.id === 'Ravi') {
+    if (
+      rowData.id === 'Ravi' &&
+      rowData.message !== videoCallMsg &&
+      rowData.message !== audioCallMsg
+    ) {
       leftComponent++;
       rightComponent = 0;
       return (
@@ -269,7 +273,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </div>
       );
     }
-    if (rowData.id === 'Sai') {
+    if (
+      rowData.id === 'Sai' &&
+      rowData.message !== videoCallMsg &&
+      rowData.message !== audioCallMsg
+    ) {
       leftComponent = 0;
       rightComponent++;
       return (
@@ -300,17 +308,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
   const actionBtn = () => {
     setShowVideo(true);
-    // props.toggleTabs();
   };
   return (
     <div className={classes.consultRoom}>
       <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
-        {/* {!showVideo && (
-          <div>
-            <button onClick={() => setIsVideoCall(false)}>Audio Call</button>
-            <button onClick={() => setIsVideoCall(true)}>Video Call</button>
-          </div>
-        )} */}
         {showVideo && (
           <Consult
             toggelChatVideo={() => toggelChatVideo()}
@@ -322,25 +323,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatContainer}>{messagessHtml}</div>
           )}
-          {/* {!showVideo && (
-            <div>
-              {isCalled && (
-                <div className={classes.incomingContainer}>
-                  <div className={classes.incomingBtn}>
-                    <img src={require('images/ic_patientchat.png')} />
-                    <div>
-                      <span>Ringing</span>
-                      <img
-                        src={require('images/ic_callpick.svg')}
-                        className={classes.endcall}
-                        onClick={() => actionBtn()}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )} */}
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatFooterSection}>
               <AphInput
