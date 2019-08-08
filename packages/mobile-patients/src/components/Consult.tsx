@@ -15,9 +15,15 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
 } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, FlatList } from 'react-navigation';
+import { useQuery } from 'react-apollo-hooks';
+import { getPatinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
+import { GET_PATIENT_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
+import moment from 'moment';
+import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 
 const { width, height } = Dimensions.get('window');
 
@@ -82,6 +88,72 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
   },
+  cardContainerStyle: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 172,
+    zIndex: 2
+  },
+  doctorView: {
+    // flex: 1,
+    marginHorizontal: 8,
+    ...theme.viewStyles.cardViewStyle,
+    marginBottom: 16,
+    borderRadius: 10,
+    // marginBottom
+  },
+  buttonView: {
+    height: 44,
+    backgroundColor: theme.colors.BUTTON_BG,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    ...theme.fonts.IBMPlexSansBold(14),
+    color: theme.colors.BUTTON_TEXT,
+  },
+  availableView: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    width: 112
+  },
+  imageView: {
+    margin: 16,
+    marginTop: 32,
+    width: 60
+  },
+  doctorNameStyles: {
+    paddingTop: 40,
+    paddingLeft: 0,
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.SEARCH_DOCTOR_NAME,
+  },
+  doctorSpecializationStyles: {
+    paddingTop: 4,
+    paddingBottom: 11.5,
+    paddingLeft: 0,
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+    color: theme.colors.SKY_BLUE,
+  },
+  doctorLocation: {
+    marginBottom: 16,
+    paddingTop: 2,
+    paddingLeft: 0,
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: theme.colors.SEARCH_EDUCATION_COLOR,
+  },
+  consultTextStyles: {
+    paddingVertical: 11.5,
+    paddingLeft: 0,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.LIGHT_BLUE,
+  },
+  separatorStyle: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(2, 71, 91, 0.3)',
+  },
 });
 
 type currentProfiles = {
@@ -102,6 +174,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [userName, setuserName] = useState<string>('');
   const { analytics } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const [consultations, setconsultations] = useState<[]>([]);
+
 
   useEffect(() => {
     let userName =
@@ -120,6 +194,28 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     }
     fetchData();
   }, []);
+
+  const inputData = {
+    patientId: "ac24883c-4f7c-4e46-a9e4-155e4092263c",
+    // appointmentDate: "2019-08-08"
+    // patientId: currentPatient ? currentPatient!.id : '',
+    appointmentDate: "2019-08-08"// moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD')
+  }
+  console.log(inputData, 'inputData')
+  const { data, error } = useQuery<getPatinetAppointments>(
+    GET_PATIENT_APPOINTMENTS,
+    {
+      variables: {
+        patientAppointmentsInput: inputData
+      },
+    }
+  );
+
+  if (error) {
+    console.log('error', error);
+  } else {
+    console.log(data, 'GET_PATIENT_APPOINTMENTS')
+  }
   const Popup = () => (
     <TouchableOpacity
       style={{
@@ -348,17 +444,109 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   </View>
                 </View>
               </TouchableOpacity>
-              <Text style={styles.descriptionTextStyle}>{string.consult_room.description}</Text>
-              <Button
-                title={string.home.consult_doctor}
-                style={styles.buttonStyles}
-                onPress={() => {
-                  props.navigation.navigate(AppRoutes.DoctorSearch);
-                }}
-              />
+              <Text style={styles.descriptionTextStyle}>{consultations.length > 0 ? `You have ${consultations.length} consultation${consultations.length > 1 ? 's' : ''} today!` : string.consult_room.description}</Text>
+              <View style={{ height: consultations.length > 0 ? 94 : 58 }} />
+
             </View>
+            <View style={styles.cardContainerStyle}>
+
+              {
+                consultations.length > 0 ?
+                  <FlatList
+                    contentContainerStyle={{ padding: 12 }}
+                    horizontal={true}
+                    data={[{}, {}, {}]}
+                    bounces={false}
+                    showsHorizontalScrollIndicator={false}
+                    renderItem={({ item }) => (
+                      <View style={{ width: 312 }}>
+                        {/* <DoctorCard
+                            rowData={item}
+                            navigation={props.navigation}
+                            displayButton={false}
+                            style={{
+                              marginVertical: 8,
+                              marginHorizontal: 10,
+
+                              shadowRadius: 3,
+                            }}
+                          /> */}
+
+                        <TouchableOpacity
+                          style={[styles.doctorView]}
+                        // onPress={() => props.navigation.navigate(AppRoutes.DoctorDetails, { doctorId: rowData.id })}
+                        >
+                          <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
+                            <View style={{ flexDirection: 'row' }}>
+                              {/* {(rowData.availableForPhysicalConsultation || rowData.availableForVirtualConsultation) &&
+                            props.displayButton &&
+                            rowData.availableIn ? ( */}
+                              <CapsuleView
+                                title='15 MINS'//{`${rowData.availableIn} MINS`}
+                                style={styles.availableView}
+                                isActive={Number(17) > 15 ? false : true}
+                              />
+                              {/* ) : null} */}
+                              <View style={styles.imageView}>
+                                {/* {rowData.image} */}
+                                {/* {rowData.photoUrl && ( */}
+                                <Image
+                                  style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: 'red' }}
+                                  source={require('@aph/mobile-patients/src/images/home/doctor.png')}
+                                />
+                                {/* )} */}
+
+                                {/* {rowData.isStarDoctor ? (
+              <Star style={{ height: 28, width: 28, position: 'absolute', top: 66, left: 30 }} />
+            ) : null} */}
+                              </View>
+                              <View style={{ flex: 1, marginRight: 16 }}>
+                                <Text style={styles.doctorNameStyles}>
+                                  Dr. Simran Rai
+                              {/* Dr. {rowData.firstName} {rowData.lastName} */}
+                                </Text>
+                                <Text style={styles.doctorSpecializationStyles}>
+                                  GENERAL PHYSICIAN   |   7 YRS
+                              {/* {rowData.specialization!.toUpperCase()} | {rowData.experience} YRS */}
+                                </Text>
+                                <View style={styles.separatorStyle} />
+                                <Text style={styles.consultTextStyles}>Online Consultation</Text>
+                                <View style={styles.separatorStyle} />
+                                <View style={{ flexDirection: 'row', marginBottom: 16, flexWrap: 'wrap' }}>
+                                  {['FEVER', 'COUGH & COLD'].map((name) => (
+                                    <CapsuleView
+                                      title={name}
+                                      isActive={false}
+                                      style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
+                                      titleTextStyle={{ color: theme.colors.SKY_BLUE }}
+                                    />
+                                  ))}
+                                </View>
+                              </View>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  />
+                  :
+                  <View style={{
+                    marginLeft: 20,
+                    marginTop: 20
+                  }}>
+                    <Button
+                      title={string.home.consult_doctor}
+                      style={styles.buttonStyles}
+                      onPress={() => {
+                        props.navigation.navigate(AppRoutes.DoctorSearch);
+                      }}
+                    />
+                  </View>
+              }
+            </View>
+
           </View>
-          <View style={{ marginTop: 16 }}>
+          <View style={{ marginTop: consultations.length > 0 ? 116 : 16 }}>
             {renderThingsToDo()}
             {renderArticles()}
           </View>

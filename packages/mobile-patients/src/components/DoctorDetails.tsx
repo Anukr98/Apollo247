@@ -153,7 +153,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [scrollY, setscrollY] = useState(new Animated.Value(0));
-  const [availableSlots, setavailableSlots] = useState<getDoctorAvailableSlots | undefined>();
+  const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
 
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
@@ -205,13 +205,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     console.log('error', availabilityData.error);
   } else {
     console.log(availabilityData.data, 'availabilityData');
-    // if (availabilityData &&
-    //   availabilityData.data && availabilityData.data.getDoctorAvailableSlots &&
-    //   availabilityData.data.getDoctorAvailableSlots.availableSlots !== undefined &&
-    //   availableSlots !== availabilityData.data.getDoctorAvailableSlots!.availableSlots) {
+    if (availabilityData &&
+      availabilityData.data && availabilityData.data.getDoctorAvailableSlots &&
+      availabilityData.data.getDoctorAvailableSlots.availableSlots !== undefined &&
+      availableSlots !== availabilityData.data.getDoctorAvailableSlots.availableSlots) {
 
-    //   setavailableSlots(availabilityData.data.getDoctorAvailableSlots!.availableSlots)
-    // }
+      setavailableSlots(availabilityData.data.getDoctorAvailableSlots.availableSlots)
+    }
   }
 
   const formatTime = (time: string) => Moment(time, 'HH:mm:ss.SSSz').format('hh:mm a');
@@ -370,7 +370,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const renderDoctorTeam = () => {
     // const startDoctor = string.home.startDoctor;
-    if (doctorDetails)
+    console.log(doctorDetails!.starDoctorTeam, 'doctorDetails.starDoctorTeam')
+    if (doctorDetails && doctorDetails.starDoctorTeam && doctorDetails.starDoctorTeam.length > 0)
       return (
         <View style={styles.cardView}>
           <View style={styles.labelView}>
@@ -558,7 +559,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         {showSpinner ? null : (
           <StickyBottomComponent defaultBG>
             <Button
-              title={'BOOK CONSULTATION'}
+              title={'BOOK APPOINTMENTS'}
               onPress={() => setdispalyoverlay(true)}
               style={{ marginHorizontal: 60, flex: 1 }}
             />

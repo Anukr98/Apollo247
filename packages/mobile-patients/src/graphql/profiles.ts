@@ -262,3 +262,28 @@ export const GET_AVAILABLE_SLOTS = gql`
     }
   }
 `;
+
+export const GET_PATIENT_APPOINTMENTS = gql`
+query getPatinetAppointments($patientAppointmentsInput: PatientAppointmentsInput!){
+  getPatinetAppointments(patientAppointmentsInput: $patientAppointmentsInput){
+    patinetAppointments{
+      appointmentType
+      id
+      patientId
+      appointmentDateTime
+      status
+      hospitalId
+      doctorId
+      doctorInfo{
+        id
+        firstName
+        specialty{
+          name
+        }
+        experience
+        doctorType
+      }
+    }
+  }
+}
+`;

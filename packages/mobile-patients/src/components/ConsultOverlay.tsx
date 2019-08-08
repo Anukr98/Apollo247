@@ -95,7 +95,7 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   patientId: string;
   doctor: getDoctorProfileById_getDoctorProfileById_profile | null;
   clinics: getDoctorProfileById_getDoctorProfileById_clinics[] | null;
-  availableSlots: getDoctorAvailableSlots | undefined
+  availableSlots: string[] | null
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const tabs = [{ title: 'Consult Online' }, { title: 'Visit Clinic' }];
@@ -189,7 +189,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 
       const destination = props.clinics
-        ? `${props.clinics[0].addressLine1}, ${props.clinics[0].addressLine2}, ${props.clinics[0].city}`
+        ? `${props.clinics[0].name} ${props.clinics[0].addressLine2} ${props.clinics[0].city}`
         : '';
       const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
       Axios.get(distanceUrl)
@@ -565,7 +565,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             <Mutation<bookAppointment> mutation={BOOK_APPOINTMENT}>
               {(mutate, { loading, data, error }) => (
                 <Button
-                  title={`PAY Rs. ${tabs[0].title === 'Consult Online' ? props.doctor!.onlineConsultationFees : props.doctor!.physicalConsultationFees}`}
+                  title={`PAY Rs. ${tabs[0].title === selectedTab ? props.doctor!.onlineConsultationFees : props.doctor!.physicalConsultationFees}`}
                   disabled={(tabs[0].title === selectedTab && onlineCTA[0] === selectedCTA) ? false : selectedTimeSlot === '' ? true : false}
                   onPress={() => {
                     setshowSpinner(true);
@@ -573,16 +573,17 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                     // const formatDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
                     const formatDate = Object.keys(dateSelected).length > 0 ? Object.keys(dateSelected)[0] : moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD')
                     console.log(formatDate, 'formatDate')
+                    var today = new Date();
+                    var time = ("0" + today.getHours()).slice(-2) + ":" + ("0" + (today.getMinutes() + 1)).slice(-2)
+                    const timeSlot = tabs[0].title === selectedTab ? time : selectedTimeSlot
                     const appointmentInput: BookAppointmentInput = {
                       patientId: props.patientId,
-                      doctorId: props.doctor ? props.doctor.id : '',
-                      appointmentDateTime: `${formatDate}T${selectedTimeSlot}:00Z'`,
-                      // appointmentTime: '14:30:00Z',
-                      appointmentType:
-                        selectedTab === tabs[0].title
-                          ? APPOINTMENT_TYPE.ONLINE
-                          : APPOINTMENT_TYPE.PHYSICAL,
-                      hospitalId: '1',
+                      doctorId: 'af78b2d6-808a-4988-ae22-ba78f7639966', //props.doctor ? props.doctor.id : '',
+                      appointmentDateTime: `${formatDate}T${timeSlot}:00.000Z`,
+                      appointmentType: selectedTab === tabs[0].title
+                        ? APPOINTMENT_TYPE.ONLINE
+                        : APPOINTMENT_TYPE.PHYSICAL,
+                      hospitalId: props.clinics ? `${props.clinics[0].id}` : '1',
                     };
                     console.log(appointmentInput, 'appointmentInput');
                     mutate({

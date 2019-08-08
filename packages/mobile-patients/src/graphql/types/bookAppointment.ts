@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { BookAppointmentInput, APPOINTMENT_TYPE, STATUS } from "./globalTypes";
+import { BookAppointmentInput, STATUS, APPOINTMENT_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: bookAppointment
@@ -11,12 +11,11 @@ import { BookAppointmentInput, APPOINTMENT_TYPE, STATUS } from "./globalTypes";
 export interface bookAppointment_bookAppointment_appointment {
   __typename: "AppointmentBooking";
   id: string;
-  patientId: string;
   doctorId: string;
   appointmentDateTime: any;
-  appointmentType: APPOINTMENT_TYPE;
-  hospitalId: string | null;
   status: STATUS;
+  appointmentType: APPOINTMENT_TYPE;
+  patientId: string;
 }
 
 export interface bookAppointment_bookAppointment {
@@ -29,5 +28,5 @@ export interface bookAppointment {
 }
 
 export interface bookAppointmentVariables {
-  appointmentInput: BookAppointmentInput;
+  bookAppointment: BookAppointmentInput;
 }
