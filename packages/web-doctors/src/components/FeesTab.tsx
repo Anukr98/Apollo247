@@ -232,9 +232,9 @@ interface FeesProps {
   onNext: () => void;
   onBack: () => void;
 }
-export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
+export const FeesTab: React.FC<FeesProps> = (props) => {
   const classes = useStyles();
-  const data = values;
+  const data = props.values;
 
   return (
     <div className={classes.ProfileContainer}>
@@ -252,13 +252,13 @@ export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
               <Typography className={classes.bold}>Rs. {data.physicalConsultationFees}</Typography>
               <Typography variant="subtitle1">What packages do you offer your patients?</Typography>
               <Typography className={classes.bold}>
-                {data.packages ? data.packages![0]!.name : ''}
+                {data.packages && data.packages.length > 0 ? data.packages![0]!.name : ''}
               </Typography>
             </Paper>
           </div>
         </Grid>
       </Grid>
-      {data.bankAccount && (
+      {data.bankAccount && data.bankAccount.length > 0 && (
         <Grid container alignItems="flex-start" spacing={0}>
           <Grid item lg={2} sm={6} xs={12}>
             <Typography variant="h2">Payment Method</Typography>
@@ -318,7 +318,7 @@ export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
             variant="contained"
             color="primary"
             classes={{ root: classes.backButton }}
-            onClick={() => onBack()}
+            onClick={() => props.onBack()}
           >
             BACK
           </AphButton>
@@ -326,7 +326,7 @@ export const FeesTab: React.FC<FeesProps> = ({ values, onNext, onBack }) => {
             variant="contained"
             color="primary"
             classes={{ root: classes.saveButton }}
-            onClick={() => onNext()}
+            onClick={() => props.onNext()}
           >
             SAVE AND PROCEED
           </AphButton>
