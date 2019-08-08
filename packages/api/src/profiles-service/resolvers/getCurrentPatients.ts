@@ -137,12 +137,11 @@ const getCurrentPatients: Resolver<
 };
 
 export const getCurrentPatientsResolvers = {
-  PatientDetails: {
+  Patient: {
     async __resolveReference(object: Patient) {
       const connection = getConnection();
       const patientsRepo = connection.getRepository(Patient);
       return await patientsRepo.find({ where: { id: object.id } });
-      //return Doctor.findOne({ doctorId: object.doctorId });
     },
   },
   Query: {
