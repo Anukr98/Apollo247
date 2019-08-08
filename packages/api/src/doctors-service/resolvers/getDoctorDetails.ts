@@ -105,8 +105,9 @@ export const getDoctorDetailsTypeDefs = gql`
 
   type DoctorSpecialties {
     createdDate: String
-    name: String!
+    id: ID!
     image: String
+    name: String!
   }
 
   type Facility {
