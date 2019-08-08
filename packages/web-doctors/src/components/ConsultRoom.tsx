@@ -171,6 +171,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
+  const doctorId = 'Ravi';
+  const patientId = 'Sai';
   const channel = 'Channel5';
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
@@ -199,10 +201,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   });
 
   useEffect(() => {
+    console.log(1111111111, props.startConsult, isVideoCall);
     if (props.startConsult !== isVideoCall) {
       setIsVideoCall(props.startConsult);
       setMessageText(videoCallMsg);
       autoSend();
+      console.log(2222222222222);
     }
   }, [props.startConsult, isVideoCall]);
 
@@ -220,7 +224,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const send = () => {
     const text = {
-      id: 'Ravi',
+      id: doctorId,
       message: messageText,
     };
     pubnub.publish(
@@ -237,8 +241,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
   const autoSend = () => {
     const text = {
-      id: 'Ravi',
-      message: videoCallMsg,
+      id: doctorId,
+      message: isVideoCall ? videoCallMsg : audioCallMsg,
     };
     pubnub.publish(
       {
@@ -258,7 +262,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     if (
-      rowData.id === 'Ravi' &&
+      rowData.id === doctorId &&
       rowData.message !== videoCallMsg &&
       rowData.message !== audioCallMsg
     ) {
@@ -274,7 +278,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       );
     }
     if (
-      rowData.id === 'Sai' &&
+      rowData.id === patientId &&
       rowData.message !== videoCallMsg &&
       rowData.message !== audioCallMsg
     ) {
@@ -293,7 +297,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </div>
       );
     }
-    if (rowData.id !== 'Sai' && rowData.id !== 'Ravi') {
+    if (rowData.id !== patientId && rowData.id !== doctorId) {
       return '';
     }
   };
