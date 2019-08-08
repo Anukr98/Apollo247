@@ -426,3 +426,79 @@ export const Start: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/start.png')}
   />
 );
+
+export const DoctorCall: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/doctorcall.png')} />
+);
+
+export const ChatIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_chat_circle.png')} />
+);
+
+export const FullScreenIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_expand_circle.png')} />
+);
+
+export const AddIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_add.png')} />
+);
+
+export const VideoOffIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_video_off.png')} />
+);
+
+export const AttachmentIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_attachment.png')} />
+);
+
+export const MuteIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_mute_circle.png')} />
+);
+
+export const EndCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_endcall_big.png')} />
+);
+
+export const PickCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_callpick.png')} />
+);
+
+export const ClosePopup: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/round_clear_24_px.png')} />
+);
+
+export const VideoOnIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/CallVideoOn.png')} />
+);
+
+export const SpeakerOn: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/speakerOn.png')} />
+);
+
+export const SpeakerOff: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/speakerOff.png')} />
+);
+
+export const UnMuteIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/unMute.png')} />
+);
+
+export const FrontCameraIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/frontCamera.png')} />
+);
+
+export const BackCameraIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/backCamera.png')} />
+);
+
+export const RoundCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/roundCallIcon.png')} />
+);
+
+export const RoundVideoIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/roundCallIcon.png')} />
+);
+
+export const ChatWithNotification: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ChatWithNotification.png')} />
+);
