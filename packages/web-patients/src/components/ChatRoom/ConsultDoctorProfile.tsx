@@ -246,7 +246,7 @@ export const ConsultDoctorProfile: React.FC = (props) => {
             General Physician <span className={classes.lineDivider}>|</span> 7 Yrs
             <div className={classes.moreToggle}>More</div>
           </div>
-          <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 512px'}>
+          <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 514px'}>
             <div className={classes.doctorInfoGroup}>
               <div className={classes.infoRow}>
                 <div className={classes.iconType}>
