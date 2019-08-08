@@ -21,6 +21,11 @@ export enum APPOINTMENT_TYPE {
   PHYSICAL = 'PHYSICAL',
 }
 
+export enum REQUEST_ROLES {
+  DOCTOR = 'DOCTOR',
+  PATIENT = 'PATIENT',
+}
+
 @Entity()
 export class Appointment extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')

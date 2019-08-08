@@ -4,8 +4,14 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import openTok, { TokenOptions } from 'opentok';
 import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { REQUEST_ROLES } from 'consults-service/entities';
 
 export const createAppointmentSessionTypeDefs = gql`
+  enum REQUEST_ROLES {
+    DOCTOR
+    PATIENT
+  }
+
   type AppointmentSession {
     sessionId: String!
     appointmentToken: String!
@@ -13,7 +19,7 @@ export const createAppointmentSessionTypeDefs = gql`
 
   input CreateAppointmentSessionInput {
     appointmentId: ID!
-    requestRole: String!
+    requestRole: REQUEST_ROLES!
   }
 
   input UpdateAppointmentSessionInput {
@@ -65,10 +71,10 @@ const createAppointmentSession: Resolver<
     token = '';
 
   function getSessionToken() {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       opentok.createSession({}, (error, session) => {
         if (error) {
-          console.log('Error creating session:', error);
+          reject(error);
         }
         if (session) {
           sessionId = session.sessionId;
