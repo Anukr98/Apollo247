@@ -49,7 +49,7 @@ import {
   DoctorBankAccounts,
   Packages,
 } from 'doctors-service/entities';
-import { Appointment } from 'consults-service/entities/appointment';
+import { Appointment } from 'consults-service/entities/';
 import { GatewayHeaders } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 

@@ -36,7 +36,7 @@ import {
 import {
   createAppointmentSessionTypeDefs,
   createAppointmentSessionResolvers,
-} from 'consults-service/resolvers/createAppointmentSession';
+} from 'consults-service/resolvers/appointmentSession';
 import { GatewayHeaders } from 'api-gateway';
 
 (async () => {

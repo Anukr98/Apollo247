@@ -3,6 +3,7 @@ import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import openTok, { TokenOptions } from 'opentok';
 import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
 export const createAppointmentSessionTypeDefs = gql`
   type AppointmentSession {
@@ -15,9 +16,17 @@ export const createAppointmentSessionTypeDefs = gql`
     requestRole: String!
   }
 
+  input UpdateAppointmentSessionInput {
+    appointmentId: ID!
+    requestRole: String!
+  }
+
   extend type Mutation {
     createAppointmentSession(
       createAppointmentSessionInput: CreateAppointmentSessionInput
+    ): AppointmentSession!
+    updateAppointmentSession(
+      updateAppointmentSessionInput: UpdateAppointmentSessionInput
     ): AppointmentSession!
   }
 `;
@@ -32,8 +41,17 @@ type CreateAppointmentSessionInput = {
   requestRole: String;
 };
 
+type UpdateAppointmentSessionInput = {
+  appointmentId: string;
+  requestRole: String;
+};
+
 type createAppointmentSessionInputArgs = {
   createAppointmentSessionInput: CreateAppointmentSessionInput;
+};
+
+type updateAppointmentSessionInputArgs = {
+  updateAppointmentSessionInput: UpdateAppointmentSessionInput;
 };
 
 const createAppointmentSession: Resolver<
@@ -54,29 +72,51 @@ const createAppointmentSession: Resolver<
         }
         if (session) {
           sessionId = session.sessionId;
-          console.log('Session ID: ' + sessionId);
-          const tokenOptions: TokenOptions = { role: 'publisher', data: 'username=bob' };
+          const tokenOptions: TokenOptions = { role: 'publisher', data: '' };
           token = opentok.generateToken(sessionId, tokenOptions);
-          console.log(token);
         }
         resolve(token);
       });
     });
   }
   await getSessionToken();
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
   const appointmentSessionAttrs = {
-    appointmentId: createAppointmentSessionInput.appointmentId,
     sessionId,
     doctorToken: token,
+    appointment: apptDetails,
   };
   const repo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
-  const resp = await repo.saveAppointmentSession(appointmentSessionAttrs);
-  console.log(resp);
+  await repo.saveAppointmentSession(appointmentSessionAttrs);
+  return { sessionId: sessionId, appointmentToken: token };
+};
+
+const updateAppointmentSession: Resolver<
+  null,
+  updateAppointmentSessionInputArgs,
+  ConsultServiceContext,
+  AppointmentSession
+> = async (parent, { updateAppointmentSessionInput }, { consultsDb }) => {
+  const opentok = new openTok('46393582', 'f27789a7bad5d0ec7e5fd2c36ffba08a4830a91d');
+  let token = '',
+    sessionId = '';
+  const apptSessionRepo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
+  const apptSession = await apptSessionRepo.getAppointmentSession(
+    updateAppointmentSessionInput.appointmentId
+  );
+  const tokenOptions: TokenOptions = { role: 'subscriber', data: '' };
+  if (apptSession) {
+    sessionId = apptSession.sessionId;
+    token = opentok.generateToken(sessionId, tokenOptions);
+    await apptSessionRepo.updateAppointmentSession(token, apptSession.id);
+  }
   return { sessionId: sessionId, appointmentToken: token };
 };
 
 export const createAppointmentSessionResolvers = {
   Mutation: {
     createAppointmentSession,
+    updateAppointmentSession,
   },
 };
