@@ -105,8 +105,9 @@ export const getDoctorDetailsTypeDefs = gql`
 
   type DoctorSpecialties {
     createdDate: String
-    name: String!
+    id: ID!
     image: String
+    name: String!
   }
 
   type Facility {
@@ -202,7 +203,7 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
 export const getDoctorDetailsResolvers = {
   DoctorDetails: {
     async __resolveReference(object: Doctor) {
-      const connection = getConnection('doctors-db');
+      const connection = getConnection();
       const doctorRepo = connection.getCustomRepository(DoctorRepository);
       return await doctorRepo.findById(object.id.toString());
     },
