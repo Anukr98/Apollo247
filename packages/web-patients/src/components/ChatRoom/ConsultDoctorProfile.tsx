@@ -137,9 +137,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     consultDoctorInfoGroup: {
-      [theme.breakpoints.down('xs')]: {
-        paddingBottom: 0,
-      },
+      borderBottom: 0,
+      paddingBottom: 0,
     },
     opacityMobile: {
       [theme.breakpoints.down('xs')]: {
@@ -171,8 +170,8 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
     },
     buttonGroup: {
-      paddingLeft: 20,
-      paddingRight: 20,
+      paddingRight: 15,
+      paddingTop: 30,
     },
     joinBtn: {
       backgroundColor: '#ff748e',
@@ -192,6 +191,43 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fc9916',
       fontWeight: 'bold',
     },
+    appointmentDetails: {
+      backgroundColor: '#f7f8f5',
+      borderRadius: 5,
+      padding: 10,
+      marginTop: 30,
+      marginRight: 15,
+    },
+    sectionHead: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#02475b',
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      paddingBottom: 5,
+      marginTop: -5,
+      marginBottom: 10,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    moreIcon: {
+      marginLeft: 'auto',
+      cursor: 'pointer',
+      '& img': {
+        verticalAlign: 'middle',
+      },
+    },
+    noBorder: {
+      border: 0,
+      paddingBottom: 0,
+    },
+    invoiceBtn: {
+      boxShadow: 'none',
+      padding: 0,
+      color: '#fc9916',
+      fontSize: 12,
+      fontWeight: 'bold',
+      clear: 'both',
+    },
   };
 });
 
@@ -210,19 +246,126 @@ export const ConsultDoctorProfile: React.FC = (props) => {
             General Physician <span className={classes.lineDivider}>|</span> 7 Yrs
             <div className={classes.moreToggle}>More</div>
           </div>
+          <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 512px'}>
+            <div className={classes.doctorInfoGroup}>
+              <div className={classes.infoRow}>
+                <div className={classes.iconType}>
+                  <img src={require('images/ic-edu.svg')} alt="" />
+                </div>
+                <div className={classes.details}>
+                  MS (Surgery)
+                  <br /> MBBS (Internal Medicine)
+                </div>
+              </div>
+              <div className={classes.infoRow}>
+                <div className={classes.iconType}>
+                  <img src={require('images/ic-awards.svg')} alt="" />
+                </div>
+                <div className={classes.details}>
+                  Dr. B.C.Roy Award (2009)
+                  <br /> William E. Ladd Medal (2013)
+                  <br /> R. D. Birla Award (2014)
+                </div>
+              </div>
+            </div>
+            <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
+              <div className={classes.infoRow}>
+                <div className={classes.iconType}>
+                  <img src={require('images/ic-location.svg')} alt="" />
+                </div>
+                <div className={classes.details}>Apollo Hospital, Jubilee Hills</div>
+              </div>
+              <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                <div className={classes.iconType}>
+                  <img src={require('images/ic-language.svg')} alt="" />
+                </div>
+                <div className={classes.details}>Hindi, English, Telugu</div>
+              </div>
+            </div>
+            <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
+              <div className={classes.consultGroup}>
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic-rupee.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>
+                    Online Consultation
+                    <br />
+                    Clinic Visit
+                    <div className={classes.doctorPriceIn}>Rs. 299</div>
+                  </div>
+                  <div className={classes.doctorPrice}>
+                    Rs. 299 <br />
+                    Rs. 499
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className={classes.appointmentDetails}>
+              <div className={classes.sectionHead}>
+                <span>Appointment Details</span>
+                <span className={classes.moreIcon}>
+                  <img src={require('images/ic_more.svg')} alt="" />
+                </span>
+              </div>
+              <div className={`${classes.doctorInfoGroup} ${classes.noBorder}`}>
+                <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic_calendar_show.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>Today, 6:30 pm</div>
+                </div>
+                <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic-language.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>40 min average waiting time</div>
+                </div>
+                <div className={`${classes.infoRow}`}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic-location.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>
+                    Apollo Hospital
+                    <br />
+                    Road No 72, Film Nagar
+                    <br />
+                    Jubilee Hills, Hyderabad
+                  </div>
+                </div>
+              </div>
+              <div className={classes.consultGroup}>
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic-rupee.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>
+                    Online Consultation
+                    <br />
+                    Clinic Visit
+                    <br />
+                    <div className={classes.doctorPriceIn}>Rs. 299</div>
+                    <AphButton className={classes.invoiceBtn}>Download Invoice</AphButton>
+                  </div>
+                  <div className={classes.doctorPrice}>
+                    Rs. 299 <br />
+                    Rs. 499
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className={classes.buttonGroup}>
+              <div className={classes.joinInSection}>
+                <span>Doctor Joining In</span>
+                <span className={classes.joinTime}>9 mins</span>
+              </div>
+              <div className={classes.joinInSection}>
+                <span>Time Remaining</span>
+                <span className={classes.joinTime}>14 mins</span>
+              </div>
+            </div>
+          </Scrollbars>
         </div>
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 512px'}>
-          <div className={classes.buttonGroup}>
-            <div className={classes.joinInSection}>
-              <span>Doctor Joining In</span>
-              <span className={classes.joinTime}>9 mins</span>
-            </div>
-            <div className={classes.joinInSection}>
-              <span>Time Remaining</span>
-              <span className={classes.joinTime}>14 mins</span>
-            </div>
-          </div>
-        </Scrollbars>
         <div className={classes.bottomActions}>
           <AphButton className={classes.joinBtn} fullWidth>
             Doctor has joined!
