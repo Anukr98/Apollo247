@@ -1,5 +1,5 @@
 import { EntityRepository, Repository, Between } from 'typeorm';
-import { Appointment } from 'consults-service/entities/appointment';
+import { Appointment, AppointmentSessions } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format } from 'date-fns';
@@ -7,6 +7,10 @@ import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
+  findById(appointmentId: string) {
+    return this.findOne({ where: { appointmentId } });
+  }
+
   findByDateDoctorId(doctorId: string, appointmentDate: Date) {
     return this.find({
       where: { doctorId, appointmentDate },
@@ -15,6 +19,14 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   saveAppointment(appointmentAttrs: Partial<Appointment>) {
     return this.create(appointmentAttrs)
+      .save()
+      .catch((createErrors) => {
+        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
+      });
+  }
+
+  saveAppointmentSession(appointmentSessionAttrs: Partial<AppointmentSessions>) {
+    return AppointmentSessions.create(appointmentSessionAttrs)
       .save()
       .catch((createErrors) => {
         throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
