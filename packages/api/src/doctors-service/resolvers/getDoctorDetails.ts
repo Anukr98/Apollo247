@@ -202,8 +202,8 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
 export const getDoctorDetailsResolvers = {
   DoctorDetails: {
     async __resolveReference(object: Doctor) {
-      const con = getConnection('doctors-db');
-      const doctorRepo = con.getCustomRepository(DoctorRepository);
+      const connection = getConnection('doctors-db');
+      const doctorRepo = connection.getCustomRepository(DoctorRepository);
       return await doctorRepo.findById(object.id.toString());
     },
   },

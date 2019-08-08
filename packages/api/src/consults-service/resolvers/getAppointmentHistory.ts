@@ -16,11 +16,16 @@ export const getAppointmentHistoryTypeDefs = gql`
     hospitalId: ID
     status: STATUS!
     bookingDate: DateTime
+    patientInfo: Patient @provides(fields: "id")
   }
 
   input AppointmentHistoryInput {
     patientId: ID!
     doctorId: ID!
+  }
+
+  extend type Patient @key(fields: "id") {
+    id: ID! @external
   }
 
   type AppointmentResult {
@@ -91,6 +96,12 @@ const getDoctorAppointments: Resolver<
 };
 
 export const getAppointmentHistoryResolvers = {
+  AppointmentHistory: {
+    patientInfo(appointments: AppointmentHistory) {
+      return { __typename: 'Patient', id: appointments.patientId };
+    },
+  },
+
   Query: {
     getAppointmentHistory,
     getDoctorAppointments,
