@@ -165,6 +165,16 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
         patientId
         appointmentDateTime
         bookingDate
+        patientInfo {
+          firstName
+          lastName
+          id
+          uhid
+          emailAddress
+          gender
+          dateOfBirth
+          relation
+        }
       }
     }
   }

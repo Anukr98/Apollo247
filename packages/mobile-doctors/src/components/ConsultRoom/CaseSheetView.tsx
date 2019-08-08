@@ -16,7 +16,8 @@ import {
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { ConsultRoomScreen } from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen';
 import {
   ScrollView,
   StyleSheet,
@@ -421,7 +422,11 @@ const renderPhotosUploadedPatient = () => {
   );
 };
 
-export interface CaseSheetViewProps {}
+export interface CaseSheetViewProps {
+  onStartConsult: () => void;
+  onStopConsult: () => void;
+  startConsult: boolean;
+}
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [value, setValue] = useState<string>('');
@@ -450,6 +455,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [switchValue, setSwitchValue] = useState(false);
   const [sliderValue, setSliderValue] = useState(2);
   const [stepValue, setStepValue] = useState(3);
+
+  useEffect(() => {
+    setShowButtons(props.startConsult);
+  }, []);
+
   const renderButtonsView = () => {
     return (
       <View style={{ backgroundColor: '#f0f4f5' }}>
@@ -458,7 +468,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <Button
               title="START CONSULT"
               buttonIcon={<Start />}
-              onPress={() => setShowButtons(true)}
+              onPress={() => {
+                setShowButtons(true);
+                props.onStartConsult();
+              }}
               style={styles.buttonStyle}
             />
           </View>
@@ -474,7 +487,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <Button
               title="END CONSULT"
               buttonIcon={<Notification />}
-              onPress={() => setShowButtons(false)}
+              onPress={() => {
+                setShowButtons(false);
+                props.onStopConsult();
+              }}
               style={styles.buttonendStyle}
             />
           </View>

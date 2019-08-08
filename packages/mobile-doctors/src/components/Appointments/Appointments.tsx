@@ -122,6 +122,9 @@ export interface AppointmentsProps extends NavigationScreenProps {
 export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const doctorName: string | null =
     props.navigation.state.params && props.navigation.state.params.Firstname;
+  const DoctorId: string | null =
+    props.navigation.state.params && props.navigation.state.params.DoctorId;
+  console.log('DoctorIdAPPPPP', DoctorId);
   const [date, setDate] = useState<Date>(new Date());
   const [calendarDate, setCalendarDate] = useState<Date | null>(new Date()); // to maintain a sync between week view change and calendar month
   const [isCalendarVisible, setCalendarVisible] = useState(false);
@@ -135,11 +138,12 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     {
       variables: {
         doctorId: 'ae394a65-7335-49d5-a559-0bd2be626a04',
-        startDate: '2019-09-12', //startDate,
-        endDate: '2019-09-13', //startDate,
+        startDate: '2019-08-08',
+        endDate: '2019-08-09',
       },
     }
   );
+
   const getAppointments = data && data.getDoctorAppointments;
   console.log('getAppointments', getAppointments && getAppointments.appointmentsHistory);
 
@@ -345,7 +349,10 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         getAppointments.appointmentsHistory.length == 0
           ? renderNoConsultsView()
           : !loading && (
-              <AppointmentsList appointmentsHistory={getAppointments!.appointmentsHistory!} />
+              <AppointmentsList
+                navigation={props.navigation}
+                appointmentsHistory={getAppointments!.appointmentsHistory!}
+              />
             )}
       </View>
     </SafeAreaView>

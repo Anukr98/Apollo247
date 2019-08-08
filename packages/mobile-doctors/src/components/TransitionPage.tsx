@@ -33,7 +33,10 @@ export interface TransitionPageProps extends NavigationScreenProps {}
 
 export const TransitionPage: React.FC<TransitionPageProps> = (props) => {
   const doctorName = props.navigation.state.params && props.navigation.state.params.doctorName;
+  const doctorId = props.navigation.state.params && props.navigation.state.params.DoctorId;
   console.log('doctorname', doctorName);
+  console.log('doctorId', doctorId);
+
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       <View style={{ backgroundColor: colors.WHITE, flex: 1 }}>
@@ -47,6 +50,7 @@ export const TransitionPage: React.FC<TransitionPageProps> = (props) => {
           onPress={() =>
             props.navigation.push(AppRoutes.TabBar, {
               Firstname: doctorName,
+              DoctorId: doctorId,
             })
           }
           title="GET STARTED"

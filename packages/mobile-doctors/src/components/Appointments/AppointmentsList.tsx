@@ -13,8 +13,15 @@ import {
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 import React from 'react';
 import { StyleSheet, View, Dimensions } from 'react-native';
-import { ScrollView } from 'react-navigation';
+import {
+  ScrollView,
+  NavigationScreenProp,
+  NavigationRoute,
+  NavigationParams,
+} from 'react-navigation';
 import moment from 'moment';
+import { NavigationScreenProps } from 'react-navigation';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   leftTimeLineContainer: {
@@ -30,8 +37,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface AppointmentsListProps {
+export interface AppointmentsListProps extends NavigationScreenProps {
   appointmentsHistory: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory[];
+  navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
 }
 
 export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
@@ -102,7 +110,12 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                 )}
                 <CalendarCard
                   onPress={(doctorId, patientId) => {
-                    console.log('', doctorId, patientId);
+                    //console.log('', doctorId, patientId);
+                    props.navigation.push(AppRoutes.ConsultRoomScreen, {
+                      DoctorId: doctorId,
+                      PatientId: patientId,
+                      PatientConsultTime: moment(i.appointmentDateTime).format('HH:mm'),
+                    });
                   }}
                   doctorname={i.status}
                   timing={moment(i.appointmentDateTime).format('HH:mm')}

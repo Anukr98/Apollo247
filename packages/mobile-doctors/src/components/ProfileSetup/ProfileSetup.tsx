@@ -250,6 +250,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         setProfileFlowDone(true).finally(() => {
           props.navigation.navigate(AppRoutes.TransitionPage, {
             doctorName: data.firstName,
+            DoctorId: data.id,
           });
         });
       }

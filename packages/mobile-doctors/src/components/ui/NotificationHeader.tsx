@@ -35,6 +35,12 @@ const styles = StyleSheet.create({
     marginLeft: 70,
     textAlign: 'center',
   },
+  timeStyles: {
+    ...theme.fonts.IBMPlexSansBold(8),
+    color: 'rgba(2, 71, 91, 0.6)',
+    textAlign: 'center',
+    marginLeft: 3,
+  },
 });
 
 export type HeaderRightIconProps = {
@@ -52,6 +58,7 @@ export interface HeaderProps {
   timerText?: string;
   leftIcons?: HeaderRightIconProps[];
   textStyles?: StyleProp<ViewStyle>;
+  timerremaintext?: string;
 }
 
 export const NotificationHeader: React.FC<HeaderProps> = (props) => {
@@ -85,7 +92,10 @@ export const NotificationHeader: React.FC<HeaderProps> = (props) => {
       )}
       <View style={{ flexDirection: 'column', marginTop: 0 }}>
         <Text style={[styles.doctorNameStyles, props.textStyles]}>{props.middleText}</Text>
-        <Text style={styles.timerTextStyle}>{props.timerText}</Text>
+        <View style={{ flexDirection: 'row' }}>
+          <Text style={styles.timerTextStyle}>{props.timerText}</Text>
+          <Text style={styles.timeStyles}>{props.timerremaintext}</Text>
+        </View>
       </View>
 
       {rightComponent ? (
