@@ -2,16 +2,7 @@ import React, { useState } from 'react';
 import { MonthList } from './MonthList';
 import { Days } from './Days';
 import { makeStyles } from '@material-ui/styles';
-import {
-  startOfToday,
-  addWeeks,
-  subWeeks,
-  getMonth,
-  startOfWeek,
-  startOfDay,
-  getYear,
-} from 'date-fns';
-import { SelectInputProps } from '@material-ui/core/Select/SelectInput';
+import { addWeeks, subWeeks, startOfWeek, startOfDay } from 'date-fns';
 
 const useStyles = makeStyles({
   float: {
@@ -95,6 +86,7 @@ const useStyles = makeStyles({
 });
 
 export interface CalendarStripProps {
+  date: Date;
   dayClickHandler?: (e: React.MouseEvent, date: Date) => void;
   monthChangeHandler?: (date: Date) => void;
   onNext?: (e: React.MouseEvent, newDate: Date, startOfWeek: Date) => void;
@@ -102,15 +94,15 @@ export interface CalendarStripProps {
 }
 
 export const CalendarStrip: React.FC<CalendarStripProps> = ({
+  date: selectedDate,
   onNext,
   onPrev,
   monthChangeHandler,
   dayClickHandler,
 }) => {
   const classes = useStyles();
-  const today = startOfToday();
-  const [date, setDate] = useState<Date>(today);
-  const [userSelection, setUserSelection] = useState<Date>(today);
+  const [date, setDate] = useState<Date>(selectedDate);
+  const [userSelection, setUserSelection] = useState<Date>(selectedDate);
 
   return (
     <div className={classes.calendarContainer}>

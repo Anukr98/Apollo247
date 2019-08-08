@@ -16,12 +16,14 @@ import {
   Typography,
 } from '@material-ui/core';
 import { format, getTime, setSeconds, setMilliseconds } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 export interface Appointment {
   startTime: number;
   endTime: number;
   isNew: boolean;
   type: string;
+  status: string;
   details: {
     patientName: string;
     checkups: string[];
@@ -343,9 +345,11 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
                               <IconButton aria-label="Video call">
                                 <img src={require('images/ic_video.svg')} alt="" />
                               </IconButton>
-                              <IconButton aria-label="Navigate next">
-                                <NavigateNextIcon />
-                              </IconButton>
+                              <Link to="/consultTabs">
+                                <IconButton aria-label="Navigate next">
+                                  <NavigateNextIcon />
+                                </IconButton>
+                              </Link>
                             </div>
                           </Grid>
                         </Grid>
