@@ -14,6 +14,7 @@ import {
 import React from 'react';
 import { StyleSheet, View, Dimensions } from 'react-native';
 import { ScrollView } from 'react-navigation';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   leftTimeLineContainer: {
@@ -100,10 +101,14 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   index == array.length - 1 ? false : true
                 )}
                 <CalendarCard
-                  onPress={(id) => {}}
+                  onPress={(doctorId, patientId) => {
+                    console.log('', doctorId, patientId);
+                  }}
                   doctorname={i.status}
-                  timing={i.appointmentDateTime}
+                  timing={moment(i.appointmentDateTime).format('HH:mm')}
                   symptoms={['FEVER', 'COUGH & COLD']}
+                  doctorId={i.doctorId}
+                  patientId={i.patientId}
                 />
               </View>
             </>

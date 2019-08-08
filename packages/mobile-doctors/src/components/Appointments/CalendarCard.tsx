@@ -56,12 +56,14 @@ export interface CalendarCardProps {
   containerStyle?: StyleProp<ViewStyle>;
   doctorname?: string;
   timing?: string;
-  onPress: (id: string) => void;
+  onPress: (doctorId: string, patientId: string) => void;
   image?: ImageSourcePropType;
   imageStyle?: StyleProp<ImageStyle>;
   wayOfContact?: 'audio' | 'video';
   type?: Appointments['timeslottype'];
   symptoms?: string[];
+  doctorId?: string;
+  patientId?: string;
 }
 
 export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
@@ -109,7 +111,11 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
           elevation: 5,
         };
   return (
-    <TouchableOpacity activeOpacity={1} style={{ flex: 1 }} onPress={() => props.onPress('')}>
+    <TouchableOpacity
+      activeOpacity={1}
+      style={{ flex: 1 }}
+      onPress={() => props.onPress(props.doctorId!, props.patientId!)}
+    >
       {renderSlotTiming(props.type, props.timing!)}
       <View style={[styles.containerStyle, containerStyle, props.containerStyle]}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
