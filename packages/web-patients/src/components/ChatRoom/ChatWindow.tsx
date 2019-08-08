@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import { AphInput } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import { Consult } from 'components/ChatRoom/Consult';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -14,21 +15,8 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingTop: 0,
       },
     },
-    booksLink: {
-      color: theme.palette.primary.main,
-      textDecoration: 'underline',
-    },
-    headerSticky: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      top: 0,
-    },
     chatContainer: {
-      paddingTop: 40,
-      maxHeight: 'calc(100vh - 330px)',
-      overflowY: 'auto',
-      overflowX: 'hidden',
+      paddingRight: 5,
     },
     petient: {
       color: '#0087ba',
@@ -41,52 +29,24 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 4px 0 #00000026',
       minWidth: 120,
     },
-    doctor: {
-      backgroundColor: '#f0f4f5',
-      padding: 12,
-      color: '#02475b',
-      fontWeight: theme.typography.fontWeightMedium,
+    meChat: {
+      padding: '5px 0',
+      textAlign: 'right',
+    },
+    chatBubble: {
+      backgroundColor: theme.palette.common.white,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.15)',
+      padding: '12px 16px',
+      color: '#01475b',
+      fontSize: 15,
+      fontWeight: 500,
+      textAlign: 'left',
       display: 'inline-block',
       borderRadius: 5,
-      boxShadow: '0 2px 4px 0 #00000026',
-      minWidth: 120,
-      marginRight: 30,
+      maxWidth: 244,
     },
     boldTxt: {
       fontWeight: 700,
-    },
-    sendMsgBtn: {
-      backgroundColor: '#F9F9F9',
-      color: '#000',
-      width: '30 %',
-      align: 'right',
-    },
-    inputWidth: {
-      width: '60 %',
-      align: 'left',
-    },
-    showIncomingBox: {
-      color: '#f00',
-    },
-    container: {
-      maxWidth: 1064,
-      margin: 'auto',
-      position: 'relative',
-      backgroundColor: '#f7f7f7',
-      paddingBottom: 95,
-    },
-    audioVideoContainer: {
-      maxWidth: 1064,
-      margin: 'auto',
-      position: 'relative',
-      backgroundColor: '#f7f7f7',
-      paddingBottom: 0,
-    },
-    docterChat: {
-      display: 'block',
-      width: '100%',
-      textAlign: 'right',
-      margin: '5px 5px 10px 5px',
     },
     patientChat: {
       display: 'block',
@@ -138,17 +98,41 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 40,
       bottom: 20,
     },
-    chatFooterSection: {
-      position: 'absolute',
-      padding: '40px 20px 20px 20px',
-      clear: 'both',
-      // bottom: 0,
-      backgroundColor: '#fff',
-      width: '100%',
+    chatSection: {
+      position: 'relative',
+      paddingBottom: 10,
     },
-    chatsendcircle: {
+    audioVideoContainer: {
+      position: 'relative',
+    },
+    chatWindowContainer: {
+      position: 'relative',
+    },
+    chatWindowFooter: {
+      borderTop: 'solid 0.5px #02475b',
+      paddingTop: 12,
+      marginTop: 15,
+      position: 'relative',
+      marginLeft: 20,
+      marginRight: 20,
+    },
+    chatSubmitBtn: {
       position: 'absolute',
+      bottom: 14,
       right: 0,
+      minWidth: 'auto',
+      padding: 0,
+    },
+    searchInput: {
+      '& input': {
+        paddingTop: 10,
+        paddingBottom: 14,
+        minHeight: 25,
+      },
+    },
+    customScroll: {
+      paddingLeft: 20,
+      paddingRight: 17,
     },
   };
 });
@@ -244,8 +228,8 @@ export const ChatWindow: React.FC = (props) => {
       leftComponent++;
       rightComponent = 0;
       return (
-        <div className={classes.docterChat}>
-          <div className={classes.doctor}>
+        <div className={classes.meChat}>
+          <div className={classes.chatBubble}>
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
             <span>{rowData.message}</span>
           </div>
@@ -283,17 +267,14 @@ export const ChatWindow: React.FC = (props) => {
   };
   const actionBtn = () => {
     setShowVideo(true);
-    // props.toggleTabs();
   };
   return (
     <div className={classes.consultRoom}>
-      <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
-        {/* {!showVideo && (
-          <div>
-            <button onClick={() => setIsVideoCall(false)}>Audio Call</button>
-            <button onClick={() => setIsVideoCall(true)}>Video Call</button>
-          </div>
-        )} */}
+      <div
+        className={`${classes.chatSection} ${
+          !showVideo ? classes.chatWindowContainer : classes.audioVideoContainer
+        }`}
+      >
         {showVideo && (
           <Consult
             toggelChatVideo={() => toggelChatVideo()}
@@ -303,7 +284,11 @@ export const ChatWindow: React.FC = (props) => {
         )}
         <div>
           {(!showVideo || showVideoChat) && (
-            <div className={classes.chatContainer}>{messagessHtml}</div>
+            <div className={classes.chatContainer}>
+              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 290px'}>
+                <div className={classes.customScroll}>{messagessHtml}</div>
+              </Scrollbars>
+            </div>
           )}
           {!showVideo && (
             <div>
@@ -325,11 +310,11 @@ export const ChatWindow: React.FC = (props) => {
             </div>
           )}
           {(!showVideo || showVideoChat) && (
-            <div className={classes.chatFooterSection}>
+            <div className={classes.chatWindowFooter}>
               <AphInput
-                className={classes.inputWidth}
+                className={classes.searchInput}
                 inputProps={{ type: 'text' }}
-                placeholder="Type here..."
+                placeholder="Search doctors or specialities"
                 value={messageText}
                 onKeyPress={(e) => {
                   if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
@@ -340,7 +325,7 @@ export const ChatWindow: React.FC = (props) => {
                   setMessageText(event.currentTarget.value);
                 }}
               />
-              <Button className={classes.chatsendcircle} onClick={() => send()}>
+              <Button className={classes.chatSubmitBtn} onClick={() => send()}>
                 <img src={require('images/ic_add_circle.svg')} alt="" />
               </Button>
             </div>
