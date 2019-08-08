@@ -12,9 +12,21 @@ import {
   GetDoctorAvailableSlots,
   GetDoctorAvailableSlotsVariables,
 } from 'graphql/types/GetDoctorAvailableSlots';
-import { GET_DOCTOR_AVAILABLE_SLOTS } from 'graphql/doctors';
+import { GET_DOCTOR_AVAILABLE_SLOTS, BOOK_APPOINTMENT } from 'graphql/doctors';
 import { getTime } from 'date-fns/esm';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { Mutation } from 'react-apollo';
+import { BookAppointment, BookAppointmentVariables } from 'graphql/types/BookAppointment';
+import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@material-ui/core/Button';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { Redirect } from 'react-router';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -116,6 +128,14 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '22%',
       textAlign: 'right',
     },
+    noSlotsAvailable: {
+      fontSize: 14,
+      color: '#0087ba',
+      fontWeight: 500,
+      lineHeight: 1.71,
+      paddingTop: 15,
+      paddingBottom: 5,
+    },
   };
 });
 
@@ -149,6 +169,11 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const [timeSelected, setTimeSelected] = useState<string>('');
   const [clinicSelected, setClinicSelected] = useState<string>('');
   const [clinicAddress, setClinicAddress] = useState<string>('');
+  const [mutationLoading, setMutationLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [mutationSuccess, setMutationSuccess] = React.useState(false);
+
+  const { currentPatient } = useAllCurrentPatients();
 
   const { doctorDetails } = props;
 
@@ -219,6 +244,10 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       ? false
       : true;
 
+  if (mutationSuccess) {
+    return <Redirect to={clientRoutes.welcome()} />;
+  }
+
   const clinics =
     doctorDetails &&
     doctorDetails.getDoctorProfileById &&
@@ -284,15 +313,73 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                 doctorName={doctorName}
                 timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
               />
-            ) : null}
+            ) : (
+              <div className={classes.noSlotsAvailable}>
+                Oops! No slots are available with Dr. {doctorName} :(
+              </div>
+            )}
           </div>
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
-        <AphButton fullWidth color="primary" disabled={disableSubmit} onClick={() => {}}>
-          PAY Rs. {physicalConsultationFees}
-        </AphButton>
+        <Mutation<BookAppointment, BookAppointmentVariables>
+          mutation={BOOK_APPOINTMENT}
+          variables={{
+            bookAppointment: {
+              patientId: currentPatient ? currentPatient.id : '',
+              doctorId: doctorId,
+              appointmentDateTime: `${apiDateFormat}T${timeSelected}:00.000Z`,
+              appointmentType: APPOINTMENT_TYPE.PHYSICAL,
+              hospitalId: '',
+            },
+          }}
+          onCompleted={() => {
+            setMutationLoading(false);
+            setIsDialogOpen(true);
+          }}
+          onError={(error) => {
+            alert(error);
+          }}
+        >
+          {(mutate) => (
+            <AphButton
+              fullWidth
+              color="primary"
+              disabled={disableSubmit}
+              onClick={(e) => {
+                setMutationLoading(true);
+                mutate();
+              }}
+            >
+              {mutationLoading ? (
+                <CircularProgress size={22} color="secondary" />
+              ) : (
+                `PAY Rs. ${physicalConsultationFees}`
+              )}
+            </AphButton>
+          )}
+        </Mutation>
       </div>
+      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+        <DialogTitle>Appointment Confirmation</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Your appointment has been successfully booked with Dr. {doctorName}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              setIsDialogOpen(false);
+              setMutationSuccess(true);
+            }}
+            autoFocus
+          >
+            Ok
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

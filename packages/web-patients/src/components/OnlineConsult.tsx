@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
@@ -12,9 +12,20 @@ import {
   GetDoctorAvailableSlots,
   GetDoctorAvailableSlotsVariables,
 } from 'graphql/types/GetDoctorAvailableSlots';
-import { GET_DOCTOR_AVAILABLE_SLOTS } from 'graphql/doctors';
+import { GET_DOCTOR_AVAILABLE_SLOTS, BOOK_APPOINTMENT } from 'graphql/doctors';
 import { getTime } from 'date-fns/esm';
 import { Mutation } from 'react-apollo';
+import { BookAppointment, BookAppointmentVariables } from 'graphql/types/BookAppointment';
+import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@material-ui/core/Button';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { Redirect } from 'react-router';
 
 const getTimestamp = (today: Date, slotTime: string) => {
   const hhmm = slotTime.split(':');
@@ -129,6 +140,11 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
   const [timeSelected, setTimeSelected] = useState<string>('');
   const [dateSelected, setDateSelected] = useState<string>('');
+  const [mutationLoading, setMutationLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [mutationSuccess, setMutationSuccess] = React.useState(false);
+
+  const { currentPatient } = useAllCurrentPatients();
 
   const currentTime = new Date().getTime();
 
@@ -206,6 +222,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       ? false
       : true;
 
+  if (mutationSuccess) {
+    return <Redirect to={clientRoutes.consultRoom()} />;
+  }
+
   // console.log(morningSlots, afternoonSlots, eveningSlots, lateNightSlots);
 
   return (
@@ -274,10 +294,64 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
-        <AphButton fullWidth color="primary" disabled={disableSubmit} onClick={() => {}}>
-          PAY Rs. {onlineConsultationFees}
-        </AphButton>
+        <Mutation<BookAppointment, BookAppointmentVariables>
+          mutation={BOOK_APPOINTMENT}
+          variables={{
+            bookAppointment: {
+              patientId: currentPatient ? currentPatient.id : '',
+              doctorId: doctorId,
+              appointmentDateTime: `${apiDateFormat}T${timeSelected}:00.000Z`,
+              appointmentType: APPOINTMENT_TYPE.ONLINE,
+              hospitalId: '',
+            },
+          }}
+          onCompleted={() => {
+            setMutationLoading(false);
+            setIsDialogOpen(true);
+          }}
+          onError={(error) => {
+            alert(error);
+          }}
+        >
+          {(mutate) => (
+            <AphButton
+              fullWidth
+              color="primary"
+              disabled={disableSubmit}
+              onClick={(e) => {
+                setMutationLoading(true);
+                mutate();
+              }}
+            >
+              {mutationLoading ? (
+                <CircularProgress size={22} color="secondary" />
+              ) : (
+                `PAY Rs. ${onlineConsultationFees}`
+              )}
+            </AphButton>
+          )}
+        </Mutation>
       </div>
+      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+        <DialogTitle>Appointment Confirmation</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Your appointment has been successfully booked with Dr. {doctorName}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              setIsDialogOpen(false);
+              setMutationSuccess(true);
+            }}
+            autoFocus
+          >
+            Ok
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
