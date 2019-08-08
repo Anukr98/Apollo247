@@ -76,8 +76,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
-  //startAppointmentAction(isStatrt: boolean): void;
-  //startAppointmentAction: () => void;
 }
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
