@@ -205,7 +205,13 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const afternoonTime = getTimestamp(new Date(apiDateFormat), '17:00');
   const eveningTime = getTimestamp(new Date(apiDateFormat), '21:00');
 
-  const doctorId = 'c91c5155-ce3a-488b-8865-654588fef776';
+  // const doctorId = 'c91c5155-ce3a-488b-8865-654588fef776';
+  const doctorId =
+    doctorDetails &&
+    doctorDetails.getDoctorProfileById &&
+    doctorDetails.getDoctorProfileById.profile
+      ? doctorDetails.getDoctorProfileById.profile.id
+      : '';
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorAvailableSlots,

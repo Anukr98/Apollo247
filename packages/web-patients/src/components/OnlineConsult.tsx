@@ -188,7 +188,13 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
 
-  const doctorId = '00e106b4-0018-44a6-9e26-dd4ed47c5718';
+  // const doctorId = '00e106b4-0018-44a6-9e26-dd4ed47c5718';
+  const doctorId =
+    doctorDetails &&
+    doctorDetails.getDoctorProfileById &&
+    doctorDetails.getDoctorProfileById.profile
+      ? doctorDetails.getDoctorProfileById.profile.id
+      : '';
 
   // console.log(
   //   'dateSelected......',
@@ -234,7 +240,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     }
   });
 
-  console.log('next available slots....', slotAvailableNext, autoSlot);
+  // console.log('next available slots....', slotAvailableNext, autoSlot);
 
   const disableSubmit =
     ((morningSlots.length > 0 ||
