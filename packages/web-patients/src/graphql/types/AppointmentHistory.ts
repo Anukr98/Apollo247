@@ -12,8 +12,7 @@ export interface AppointmentHistory_getAppointmentHistory_appointmentsHistory {
   __typename: "AppointmentHistory";
   patientId: string;
   doctorId: string;
-  appointmentDate: any;
-  appointmentTime: any;
+  appointmentDateTime: any;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId: string | null;
   status: STATUS;

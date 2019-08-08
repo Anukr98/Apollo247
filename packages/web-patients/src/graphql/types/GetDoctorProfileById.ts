@@ -37,12 +37,14 @@ export interface GetDoctorProfileById_getDoctorProfileById_profile {
 
 export interface GetDoctorProfileById_getDoctorProfileById_clinics {
   __typename: "Clinics";
+  id: string;
   name: string;
   image: string | null;
   addressLine1: string | null;
   addressLine2: string | null;
   addressLine3: string | null;
   city: string | null;
+  isClinic: boolean | null;
 }
 
 export interface GetDoctorProfileById_getDoctorProfileById_starDoctorTeam {

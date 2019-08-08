@@ -138,7 +138,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
         </div>
         <Grid className={classes.gridContainer} container spacing={2}>
           {clinics.map((clinicDetails) => {
-            return (
+            return clinicDetails.isClinic ? (
               <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('avagr_')}>
                 <div className={classes.root} key={_uniqueId('clinic_')}>
                   <div className={classes.clinicImg}>
@@ -180,7 +180,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
                   </div>
                 </div>
               </Grid>
-            );
+            ) : null;
           })}
         </Grid>
       </div>

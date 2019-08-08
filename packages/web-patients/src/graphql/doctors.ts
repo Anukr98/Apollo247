@@ -29,12 +29,14 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         address
       }
       clinics {
+        id
         name
         image
         addressLine1
         addressLine2
         addressLine3
         city
+        isClinic
       }
       starDoctorTeam {
         id
@@ -114,12 +116,34 @@ export const PATIENT_APPOINTMENT_HISTORY = gql`
       appointmentsHistory {
         patientId
         doctorId
-        appointmentDate
-        appointmentTime
+        appointmentDateTime
         appointmentType
         hospitalId
         status
         bookingDate
+      }
+    }
+  }
+`;
+
+export const GET_DOCTOR_AVAILABLE_SLOTS = gql`
+  query GetDoctorAvailableSlots($DoctorAvailabilityInput: DoctorAvailabilityInput) {
+    getDoctorAvailableSlots(DoctorAvailabilityInput: $DoctorAvailabilityInput) {
+      availableSlots
+    }
+  }
+`;
+
+export const BOOK_APPOINTMENT = gql`
+  mutation BookAppointment($bookAppointment: BookAppointmentInput!) {
+    bookAppointment(appointmentInput: $bookAppointment) {
+      appointment {
+        id
+        doctorId
+        appointmentDateTime
+        status
+        appointmentType
+        patientId
       }
     }
   }
