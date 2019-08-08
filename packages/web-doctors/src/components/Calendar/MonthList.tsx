@@ -120,12 +120,19 @@ const defaultMaterialTheme = createMuiTheme({
     htmlFontSize: 14,
     fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
     body1: {
-      fontSize: 14,
+      fontSize: 16,
+      color: '#02475b',
+      fontWeight: 700,
     },
     body2: {
       fontWeight: 600,
     },
-  },
+    caption: {
+      fontSize: 12,
+      color: '#80a3ad !important',
+      fontWeight: 600,
+    },
+  }, 
 });
 
 export const MonthList: React.FC<MonthListProps> = ({ date, onChange }) => {
