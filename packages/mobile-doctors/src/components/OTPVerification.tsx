@@ -303,7 +303,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const redirectToProfileSetup = () => {
     client
-      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS })
+      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
       .then((_data) => {
         const result = _data.data.getDoctorDetails;
         console.log('GET_DOCTOR_DETAILS', result);

@@ -101,6 +101,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
       .mutate<MakeTeamDoctorActive, MakeTeamDoctorActiveVariables>({
         mutation: MAKE_TEAM_DOCTOR_ACTIVE,
         variables: { associatedDoctor: id, starDoctor: profileData.id },
+        fetchPolicy: 'no-cache',
       })
       .then((_data) => {
         const result = _data.data.makeTeamDoctorActive;
@@ -120,6 +121,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
       .mutate<RemoveTeamDoctorFromStarTeam, RemoveTeamDoctorFromStarTeamVariables>({
         mutation: MAKE_TEAM_DOCTOR_ACTIVE,
         variables: { associatedDoctor: id, starDoctor: profileData.id },
+        fetchPolicy: 'no-cache',
       })
       .then((_data) => {
         const result = _data.data.removeTeamDoctorFromStarTeam;

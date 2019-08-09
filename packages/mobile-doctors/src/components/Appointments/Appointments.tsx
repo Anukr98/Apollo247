@@ -356,9 +356,12 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         </View>
         {loading ? (
           <Loader flex1 />
-        ) : getAppointments &&
-          getAppointments.appointmentsHistory &&
-          getAppointments.appointmentsHistory.length == 0 ? (
+        ) : (
+            (getAppointments &&
+              getAppointments.appointmentsHistory &&
+              getAppointments.appointmentsHistory) ||
+            []
+          ).length == 0 ? (
           renderNoConsultsView()
         ) : (
           <AppointmentsList

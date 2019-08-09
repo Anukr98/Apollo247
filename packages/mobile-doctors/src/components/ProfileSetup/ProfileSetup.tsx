@@ -189,26 +189,64 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const [isReloading, setReloading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
 
-  const { data, error, loading } = useQuery<GetDoctorDetails, GetDoctorDetails_getDoctorDetails>(
-    GET_DOCTOR_DETAILS
-  );
+  // useEffect(()=>{
+  //   props.navigation.addListener((''))
+  // })
+
+  useEffect(() => {
+    setLoading(true);
+    client
+      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
+      .then((_data) => {
+        const result = _data.data.getDoctorDetails;
+        console.log('getDoctorProfile', _data!);
+
+        setGetDoctorProfile(result);
+        setLoading(false);
+      })
+      .catch((e) => {
+        setLoading(false);
+        console.log('Error occured while adding Doctor', e);
+      });
+  }, []);
+
+  const fetchProfileData = (isReload: boolean) => {
+    isReload ? setReloading(true) : setLoading(true);
+    client
+      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS })
+      .then((_data) => {
+        console.log('getDoctorProfile', _data!);
+        const result = _data.data.getDoctorDetails;
+        setGetDoctorProfile(result);
+        isReload ? setReloading(false) : setLoading(false);
+      })
+      .catch((e) => {
+        isReload ? setReloading(false) : setLoading(false);
+        console.log('Error occured while adding Doctor', e);
+      });
+  };
+
+  // const { data, error, loading } = useQuery<GetDoctorDetails, GetDoctorDetails_getDoctorDetails>(
+  //   GET_DOCTOR_DETAILS
+  // );
   const [
     getDoctorProfile,
     setGetDoctorProfile,
-  ] = useState<GetDoctorDetails_getDoctorDetails | null>((data && data.getDoctorDetails) || null);
+  ] = useState<GetDoctorDetails_getDoctorDetails | null>(null);
   // const {
   //   data: { getDoctorProfile },
   //   error,
   //   loading,
   // } = doctorProfile;
-  if (!loading && error) {
-    console.log('getDoctorProfileerror', error);
-    Alert.alert('Error', 'Unable to get the data');
-  } else {
-    console.log('getDoctorProfile', getDoctorProfile!);
-  }
+  // if (!loading) {
+  //   console.log('getDoctorProfileerror');
+  //   Alert.alert('Error', 'Unable to get the data');
+  // } else {
+  //   console.log('getDoctorProfile', getDoctorProfile!);
+  // }
 
   const onReload = (func: () => Promise<void>) => {
     setReloading(true);
@@ -232,6 +270,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       leftIcons={[
         {
           icon: <ApploLogo />,
+          // onPress: () => props.navigation.push(AppRoutes.TabBar),
         },
       ]}
       rightIcons={[
