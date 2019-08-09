@@ -187,23 +187,6 @@ describe('Login (Firebase)', () => {
       .click();
   });
 
-  // it("Firebase (Captcha Disabled): Blurring a mobile input after submission doesn't cancel action (NO CAPTCHA)", () => {
-  //   cy.get('[data-cypress="SignIn"]')
-  //     .find('input[type="tel"]')
-  //     .type('9999999999');
-
-  //   cy.get('button[type="submit"]')
-  //     .click()
-  //     .blur()
-  //     .find('[class*="MuiCircularProgress"]')
-  //     .should('not.exist');
-
-  //   cy.get('[data-cypress="SignIn"]').should(
-  //     'contain',
-  //     'Type in the OTP sent to you, to authenticate'
-  //   );
-  // });
-
   it('Firebase (Captcha Disabled): Can do a real login', () => {
     cy.get('[data-cypress="Navigation"]').should('not.exist');
 
@@ -222,6 +205,7 @@ describe('Login (Firebase)', () => {
       .find('button[type="submit"]')
       .click()
       .find('[class*="MuiCircularProgress"]')
+      // .wait(5000)
       .should('not.exist');
 
     cy.get('[data-cypress="Navigation"]').should('exist');
