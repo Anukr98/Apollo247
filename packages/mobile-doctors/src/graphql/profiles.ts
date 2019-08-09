@@ -153,8 +153,8 @@ export const GET_DOCTOR_PROFILE = gql`
 `;
 
 export const GET_DOCTOR_APPOINTMENTS = gql`
-  query GetDoctorAppointments($doctorId: String, $startDate: Date, $endDate: Date) {
-    getDoctorAppointments(doctorId: $doctorId, startDate: $startDate, endDate: $endDate) {
+  query GetDoctorAppointments($startDate: Date, $endDate: Date) {
+    getDoctorAppointments(startDate: $startDate, endDate: $endDate) {
       appointmentsHistory {
         appointmentType
         doctorId
@@ -220,6 +220,15 @@ export const REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM = gql`
 export const MAKE_TEAM_DOCTOR_ACTIVE = gql`
   mutation MakeTeamDoctorActive($associatedDoctor: String!, $starDoctor: String!) {
     makeTeamDoctorActive(associatedDoctor: $associatedDoctor, starDoctor: $starDoctor)
+  }
+`;
+
+export const CREATEAPPOINTMENTSESSION = gql`
+  mutation CreateAppointmentSession($createAppointmentSessionInput: String!) {
+    createAppointmentSession(createAppointmentSessionInput: $createAppointmentSessionInput) {
+      sessionId
+      appointmentToken
+    }
   }
 `;
 

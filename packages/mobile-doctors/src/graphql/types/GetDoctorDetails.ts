@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, Salutation, ConsultMode, ConsultType, WeekDay, Gender, AccountType } from "./globalTypes";
+import { DoctorType, Salutation, ConsultMode, ConsultType, WeekDay, AccountType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorDetails
@@ -49,7 +49,6 @@ export interface GetDoctorDetails_getDoctorDetails_doctorHospital {
 
 export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor {
   __typename: "Profile";
-  gender: Gender | null;
   firstName: string | null;
   lastName: string | null;
   emailAddress: string | null;
