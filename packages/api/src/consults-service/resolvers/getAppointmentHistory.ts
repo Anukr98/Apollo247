@@ -5,6 +5,7 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const getAppointmentHistoryTypeDefs = gql`
   type AppointmentHistory {
@@ -81,15 +82,19 @@ const getAppointmentHistory: Resolver<
 
 const getDoctorAppointments: Resolver<
   null,
-  { doctorId: string; startDate: Date; endDate: Date },
+  { startDate: Date; endDate: Date },
   ConsultServiceContext,
   AppointmentResult
-> = async (parent, args, { consultsDb, doctorsDb }) => {
+> = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   let appointmentsHistory, newPatientsList;
   try {
     appointmentsHistory = await appointmentRepo.getDoctorAppointments(
-      args.doctorId,
+      doctordata.id,
       args.startDate,
       args.endDate
     );
@@ -99,7 +104,7 @@ const getDoctorAppointments: Resolver<
       .filter((value, index, self) => self.indexOf(value) === index);
 
     const patientConsult = await appointmentRepo.getDoctorPatientVisitCount(
-      args.doctorId,
+      doctordata.id,
       uniquePatientIds
     );
 
