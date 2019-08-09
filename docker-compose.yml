@@ -26,14 +26,13 @@ services:
 
   rabbitmq:
     image: rabbitmq:3.7.16-management-alpine
-    hostname: 'rabbitmq'
     ports:
-      - '15672:15672'
-      - '5672:5672'
+      - 15672:15672
+      - ${RABBITMQ_PORT}:5672
     environment:
-      RABBITMQ_DEFAULT_USER: 'rabbitmq'
-      RABBITMQ_DEFAULT_PASS: 'rabbitmq'
-      RABBITMQ_DEFAULT_VHOST: '/'
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+      - RABBITMQ_DEFAULT_VHOST=/
     volumes:
       - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
 
