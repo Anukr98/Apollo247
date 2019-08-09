@@ -52,6 +52,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'transparent',
       boxShadow: 'none',
       marginLeft: 'auto',
+      fontWeight: 'bold',
+      color: '#fc9916',
+      padding: 0,
       '&:hover': {
         backgroundColor: 'transparent',
       },
