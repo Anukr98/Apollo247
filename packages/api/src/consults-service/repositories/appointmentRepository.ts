@@ -1,5 +1,5 @@
 import { EntityRepository, Repository, Between } from 'typeorm';
-import { Appointment } from 'consults-service/entities/appointment';
+import { Appointment, AppointmentSessions } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format } from 'date-fns';
@@ -7,6 +7,10 @@ import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
+  findById(id: string) {
+    return this.findOne({ where: { id } });
+  }
+
   findByDateDoctorId(doctorId: string, appointmentDate: Date) {
     return this.find({
       where: { doctorId, appointmentDate },
@@ -15,6 +19,14 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   saveAppointment(appointmentAttrs: Partial<Appointment>) {
     return this.create(appointmentAttrs)
+      .save()
+      .catch((createErrors) => {
+        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
+      });
+  }
+
+  saveAppointmentSession(appointmentSessionAttrs: Partial<AppointmentSessions>) {
+    return AppointmentSessions.create(appointmentSessionAttrs)
       .save()
       .catch((createErrors) => {
         throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
@@ -30,6 +42,16 @@ export class AppointmentRepository extends Repository<Appointment> {
       where: { doctorId, appointmentDateTime: Between(startDate, endDate) },
       order: { appointmentDateTime: 'DESC' },
     });
+  }
+
+  async getDoctorPatientVisitCount(doctorId: string, patientId: string[]) {
+    const results = await this.createQueryBuilder('appointment')
+      .select('appointment.patientId')
+      .addSelect('COUNT(*) AS count')
+      .where('appointment.patientId IN (:...patientList)', { patientList: patientId })
+      .groupBy('appointment.patientId')
+      .getRawMany();
+    return results;
   }
 
   getPatientDateAppointments(appointmentDateTime: Date, patientId: string) {

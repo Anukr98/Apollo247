@@ -40,6 +40,7 @@ import {
   SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_possibleMatches,
   SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_specialties,
 } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialty';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -125,7 +126,7 @@ const pastSearches: pastSearches[] = [
   },
 ];
 
-export interface DoctorSearchProps extends NavigationScreenProps {}
+export interface DoctorSearchProps extends NavigationScreenProps { }
 
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [searchText, setSearchText] = useState<string>('');
@@ -140,6 +141,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   >([]);
   const [PastSearches, setPastSearches] = useState<(getPastSearches_getPastSearches | null)[]>([]);
   const [doctorsList, setdoctorsList] = useState<
+    (SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors | null)[] | null
+  >([]);
+  const [allDoctors, setallDoctors] = useState<
     (SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors | null)[] | null
   >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
@@ -164,6 +168,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       doctorsList !== data.SearchDoctorAndSpecialty.doctors
     ) {
       setdoctorsList(data.SearchDoctorAndSpecialty.doctors);
+      searchText === '' && setallDoctors(data.SearchDoctorAndSpecialty.doctors)
     }
     if (
       data &&
@@ -234,24 +239,24 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             inputStyle={[
               styles.searchValueStyle,
               searchText.length > 2 &&
-              doctorsList &&
-              doctorsList.length === 0 &&
-              searchSpecialities &&
-              searchSpecialities.length === 0
+                doctorsList &&
+                doctorsList.length === 0 &&
+                searchSpecialities &&
+                searchSpecialities.length === 0
                 ? {
-                    borderBottomColor: '#e50000',
-                  }
+                  borderBottomColor: '#e50000',
+                }
                 : {},
             ]}
             textInputprops={
               searchText.length > 2 &&
-              doctorsList &&
-              doctorsList.length === 0 &&
-              searchSpecialities &&
-              searchSpecialities.length === 0
+                doctorsList &&
+                doctorsList.length === 0 &&
+                searchSpecialities &&
+                searchSpecialities.length === 0
                 ? {
-                    selectionColor: '#e50000',
-                  }
+                  selectionColor: '#e50000',
+                }
                 : {}
             }
             autoCorrect={false}
@@ -283,26 +288,26 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             }}
           />
           {searchText.length > 2 &&
-          doctorsList &&
-          doctorsList.length === 0 &&
-          searchSpecialities &&
-          searchSpecialities.length === 0 ? (
-            <Text
-              style={{
-                ...theme.fonts.IBMPlexSansMedium(12),
-                color: '#890000',
-                paddingVertical: 8,
-              }}
-            >
-              Sorry, we couldn’t find what you are looking for :(
+            doctorsList &&
+            doctorsList.length === 0 &&
+            searchSpecialities &&
+            searchSpecialities.length === 0 ? (
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansMedium(12),
+                  color: '#890000',
+                  paddingVertical: 8,
+                }}
+              >
+                Sorry, we couldn’t find what you are looking for :(
             </Text>
-          ) : (
-            <View
-              style={{
-                paddingBottom: 19,
-              }}
-            />
-          )}
+            ) : (
+              <View
+                style={{
+                  paddingBottom: 19,
+                }}
+              />
+            )}
         </View>
       </View>
     );
@@ -481,10 +486,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const renderPossibleMatches = () => {
     return (
       <View>
-        {possibleMatches && doctorsList && (
+        {possibleMatches && allDoctors && (
           <View>
             <SectionHeaderComponent
-              sectionTitle={'Possible Doctors — ' + doctorsList.length}
+              sectionTitle={'Possible Doctors — ' + allDoctors.length}
               style={{ marginBottom: 0 }}
             />
 
@@ -494,7 +499,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 marginBottom: 8,
               }}
               bounces={false}
-              data={doctorsList}
+              data={allDoctors}
               onEndReachedThreshold={0.5}
               renderItem={({ item }) => renderSearchDoctorResultsRow(item)}
             />
@@ -534,7 +539,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {doctorsList && renderSearch()}
         {showSpinner ? null : (
-          <ScrollView style={{ flex: 1 }} bounces={false}>
+          <KeyboardAwareScrollView style={{ flex: 1 }} bounces={false}>
             {renderPastSearch()}
             {renderDoctorSearches()}
             {renderSpecialist()}
@@ -546,7 +551,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               searchSpecialities.length === 0 &&
               possibleMatches &&
               renderPossibleMatches()}
-          </ScrollView>
+          </KeyboardAwareScrollView>
         )}
       </SafeAreaView>
       {showSpinner && <Spinner />}
