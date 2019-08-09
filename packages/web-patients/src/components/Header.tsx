@@ -88,7 +88,6 @@ export const Header: React.FC = (props) => {
   const { signOut, isSigningIn, isSignedIn } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const signInProcessing = isSigningIn || isSignedIn;
 
   return (
     <header className={classes.header} data-cypress="Header">
