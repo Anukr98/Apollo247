@@ -1,7 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Typography, Divider } from '@material-ui/core';
 import React from 'react';
-import { useQuery } from 'react-apollo-hooks';
 import { GET_PATIENTS } from 'graphql/profiles';
 import { LocalHospital } from '@material-ui/icons';
 import { GetPatients } from 'graphql/types/GetPatients';

@@ -45,6 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: 10,
         margin: '5px 4px',
         textTransform: 'none',
+        padding: '9px 10px',
       },
     },
     noSlotsAvailable: {
@@ -193,7 +194,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                       key={_uniqueId('afternoon_')}
                     >
                       {formattedHour}:{timeStringArray[1]}
-                      pm
+                      &nbsp;pm
                     </AphButton>
                   );
                 })
@@ -225,7 +226,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                       key={_uniqueId('evening_')}
                     >
                       {formattedHour}:{timeStringArray[1]}
-                      pm
+                      &nbsp;pm
                     </AphButton>
                   );
                 })
@@ -257,7 +258,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                       key={_uniqueId('latenight_')}
                     >
                       {formattedHour}:{timeStringArray[1]}
-                      pm
+                      &nbsp;pm
                     </AphButton>
                   );
                 })
