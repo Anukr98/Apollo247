@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Theme } from '@material-ui/core';
+import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { CallPopover } from 'components/CallPopover';
@@ -67,11 +68,15 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
+type Params = { id: string };
 export const ConsultTabs: React.FC = (props) => {
   const classes = useStyles();
   const [tabValue, setTabValue] = useState<number>(0);
   const [showTabs, setshowTabs] = useState<boolean>(true);
   const [startConsult, setStartConsult] = useState<string>('');
+  const params = useParams<Params>();
+  const appointmentId = params.id;
+  console.log(appointmentId);
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
@@ -79,13 +84,11 @@ export const ConsultTabs: React.FC = (props) => {
     setStartConsult('');
     const cookieStr = `action=${flag ? 'videocall' : 'audiocall'}`;
     document.cookie = cookieStr + ';path=/;';
-    //setStartConsult('');
     setStartConsult(flag ? 'videocall' : 'audiocall');
   };
   const toggleTabs = () => {
     setshowTabs(!showTabs);
   };
-
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>

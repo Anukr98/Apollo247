@@ -146,6 +146,7 @@ interface CallPopoverProps {
 }
 let intervalId: any;
 let stoppedTimer: number;
+let cda: any;
 //let timerId: any;
 
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
@@ -153,48 +154,34 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
-  //const [callTimer, setCallTimer] = useState<number>(0);
-  //const [consultStarted, setConsultStarted] = useState<boolean>(false);
-  //const callMinutes = Math.floor(callTimer / 60);
-  //const callSeconds = callTimer - callMinutes * 60;
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
+
+  //logic for before start counsult timer start
+  const dt1 = new Date('2019-08-09T10:14'); //today time
+  const dt2 = new Date('2019-08-10T19:30'); // apointment time
+  const diff = dt2.getHours() - dt1.getHours();
+  const diff2 = dt2.getMinutes() - dt1.getMinutes();
+  const val = '0';
+  cda = diff
+    .toString()
+    .concat(':')
+    .concat(diff2.toString().length > 1 ? diff2.toString() : val.concat(diff2.toString()));
+  //logic for before start counsult timer end
+
   const startInterval = (timer: number) => {
-    //setConsultStarted(true);
     intervalId = setInterval(() => {
       timer = timer - 1;
       stoppedTimer = timer;
       setRemainingTime(timer);
-      // console.log('uptimer', timer);
       if (timer == 0) {
         setRemainingTime(0);
         clearInterval(intervalId);
       }
     }, 1000);
   };
-  // const startTimer = (timer: number) => {
-  //   timerId = setInterval(() => {
-  //     timer = timer + 1;
-  //     stoppedTimer = timer;
-  //     setCallTimer(timer);
-  //     console.log('uptimer', timer);
-
-  //     if (timer == 0) {
-  //       console.log('uptimer', timer);
-  //       setCallTimer(0);
-  //       clearInterval(timerId);
-  //     }
-  //   }, 1000);
-  // };
-
-  // const stopTimer = () => {
-  //   setCallTimer(0);
-  //   timerId && clearInterval(timerId);
-  // };
-
   const stopInterval = () => {
     const stopTimer = 900 - stoppedTimer;
-    console.log('intervalId', intervalId);
     setRemainingTime(stopTimer);
     intervalId && clearInterval(intervalId);
   };
@@ -206,6 +193,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   }
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popover' : undefined;
+
+  //logic for before start counsult timer
   return (
     <div className={classes.breadcrumbs}>
       <div>
@@ -217,12 +206,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </Link>
       </div>
       CONSULT ROOM &nbsp; | &nbsp;
-      <span className={classes.timeLeft}>
-        Time to Consult <b>00:25</b>
-      </span>
+      {startAppointment ? (
+        <span className={classes.timeLeft}>
+          Time Left <b>{`${minutes}:${seconds}`}</b>
+        </span>
+      ) : (
+        <span className={classes.timeLeft}>
+          Time to Consult <b>{cda}</b>
+        </span>
+      )}
       <div className={classes.consultButtonContainer}>
         <span>
-          <span style={{ color: 'red' }}>{`${minutes}:${seconds}`}</span>
           <Button
             className={classes.consultButton}
             onClick={() => {
