@@ -179,6 +179,8 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                   properties={{
                     subscribeToVideo: subscribeToVideo,
                     subscribeToAudio: subscribeToAudio,
+                    width: '100%',
+                    height: 'calc(100vh - 195px)',
                   }}
                 />
               </OTStreams>
