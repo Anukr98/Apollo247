@@ -1,60 +1,60 @@
 import url from 'url';
 import rhea, { EventContext, ConnectionOptions, Container } from 'rhea';
 
-(() => {
-  enum MqMessageTypes {
-    BOOK_APPOINTMENT = 'BOOK_APPOINTMENT',
-  }
+// (() => {
+//   enum MqMessageTypes {
+//     BOOK_APPOINTMENT = 'BOOK_APPOINTMENT',
+//   }
 
-  interface MqMessage<P> {
-    type: MqMessageTypes;
-    payload: P;
-  }
+//   interface MqMessage<P> {
+//     type: MqMessageTypes;
+//     payload: P;
+//   }
 
-  const container = rhea.create_container();
+//   const container = rhea.create_container();
 
-  const azureConnectionString = '';
+//   const azureConnectionString = '';
 
-  const AphMqClient = {
-    connect: function() {
-      const parsedAzureConn = parseConnectionString(azureConnectionString);
-      const connectionOptions: ConnectionOptions = USE_AZURE
-        ? {
-            transport: 'tls' as 'tls',
-            host: url.parse(parsedAzureConn.Endpoint).hostname,
-            hostname: url.parse(parsedAzureConn.Endpoint).hostname,
-            username: parsedAzureConn.SharedAccessKeyName,
-            password: parsedAzureConn.SharedAccessKey,
-            port: 5671,
-            reconnect_limit: 100,
-          }
-        : {
-            host: 'localhost',
-            username: 'rabbitmq',
-            password: 'rabbitmq',
-            port: 5672,
-            reconnect_limit: 100,
-          };
-    },
+//   const AphMqClient = {
+//     connect: function() {
+//       const parsedAzureConn = parseConnectionString(azureConnectionString);
+//       const connectionOptions: ConnectionOptions = USE_AZURE
+//         ? {
+//             transport: 'tls' as 'tls',
+//             host: url.parse(parsedAzureConn.Endpoint).hostname,
+//             hostname: url.parse(parsedAzureConn.Endpoint).hostname,
+//             username: parsedAzureConn.SharedAccessKeyName,
+//             password: parsedAzureConn.SharedAccessKey,
+//             port: 5671,
+//             reconnect_limit: 100,
+//           }
+//         : {
+//             host: 'localhost',
+//             username: 'rabbitmq',
+//             password: 'rabbitmq',
+//             port: 5672,
+//             reconnect_limit: 100,
+//           };
+//     },
 
-    send: function<P>(message: MqMessage<P>) {},
-  };
+//     send: function<P>(message: MqMessage<P>) {},
+//   };
 
-  AphMqClient.connect();
-  const bookAppointmentMessage = {
-    type: MqMessageTypes.BOOK_APPOINTMENT,
-    payload: {
-      id: '123',
-    },
-  };
-  AphMqClient.send(bookAppointmentMessage);
-  AphMqClient.onReceive((message: MqMessage<any>) => {
-    if (message.type === MqMessageTypes.BOOK_APPOINTMENT) {
-      await bookAppointmentMessage(messsage.id);
-      message.ack();
-    }
-  });
-})();
+//   AphMqClient.connect();
+//   const bookAppointmentMessage = {
+//     type: MqMessageTypes.BOOK_APPOINTMENT,
+//     payload: {
+//       id: '123',
+//     },
+//   };
+//   AphMqClient.send(bookAppointmentMessage);
+//   AphMqClient.onReceive((message: MqMessage<any>) => {
+//     if (message.type === MqMessageTypes.BOOK_APPOINTMENT) {
+//       await bookAppointmentMessage(messsage.id);
+//       message.ack();
+//     }
+//   });
+// })();
 
 // enum CarrotTypes {
 //   BOOK_APPOINTMENT = 'BOOK_APPOINTMENT',
