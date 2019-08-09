@@ -134,8 +134,7 @@ export const Header: React.FC = (props) => {
           <Popover
             open={isLoginPopupVisible}
             anchorEl={avatarRef.current}
-            onClose={() => (isSignedIn ? setIsLoginPopupVisible(false) : null)} //new update
-            // onClose={() => setIsLoginPopupVisible(false)} //original
+            onClose={() => (isSignedIn ? setIsLoginPopupVisible(false) : null)}
             anchorOrigin={{
               vertical: 'top',
               horizontal: 'right',

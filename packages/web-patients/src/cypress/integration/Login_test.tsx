@@ -205,7 +205,6 @@ describe('Login (Firebase)', () => {
       .find('button[type="submit"]')
       .click()
       .find('[class*="MuiCircularProgress"]')
-      // .wait(5000)
       .should('not.exist');
 
     cy.get('[data-cypress="Navigation"]').should('exist');
