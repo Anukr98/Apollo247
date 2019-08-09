@@ -5,19 +5,19 @@
 import { CreateAppointmentSessionInput } from "./globalTypes";
 
 // ====================================================
-// GraphQL mutation operation: createAppointmentSession
+// GraphQL mutation operation: CreateAppointmentSession
 // ====================================================
 
-export interface createAppointmentSession_createAppointmentSession {
+export interface CreateAppointmentSession_createAppointmentSession {
   __typename: "AppointmentSession";
   sessionId: string;
   appointmentToken: string;
 }
 
-export interface createAppointmentSession {
-  createAppointmentSession: createAppointmentSession_createAppointmentSession;
+export interface CreateAppointmentSession {
+  createAppointmentSession: CreateAppointmentSession_createAppointmentSession;
 }
 
-export interface createAppointmentSessionVariables {
+export interface CreateAppointmentSessionVariables {
   CreateAppointmentSessionInput?: CreateAppointmentSessionInput | null;
 }

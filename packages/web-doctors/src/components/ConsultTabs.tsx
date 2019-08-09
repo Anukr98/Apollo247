@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme } from '@material-ui/core';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
@@ -8,6 +8,13 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  CreateAppointmentSession,
+  CreateAppointmentSessionVariables,
+} from 'graphql/types/createAppointmentSession';
+import { CREATE_APPOINTMENT_SESSION } from 'graphql/profiles';
+import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -18,6 +25,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     caseSheet: {
+      minHeight: 'calc(100vh - 235px)',
+    },
+    chatContainer: {
       minHeight: 'calc(100vh - 235px)',
     },
     headerSticky: {
@@ -73,12 +83,50 @@ export const ConsultTabs: React.FC = (props) => {
   const classes = useStyles();
   const [tabValue, setTabValue] = useState<number>(0);
   const [startConsult, setStartConsult] = useState<string>('');
+  const [appointmentId, setAppointmentId] = useState<string>('');
+
   const params = useParams<Params>();
-  const appointmentId = params.id;
-  console.log(appointmentId);
+  const paramId = params.id;
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
+  const client = useApolloClient();
+  useEffect(() => {
+    if (appointmentId !== paramId) {
+      client
+        .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+          mutation: CREATE_APPOINTMENT_SESSION,
+          variables: {
+            CreateAppointmentSessionInput: {
+              appointmentId: '4ba75a55-4174-4485-90dd-3350899929e6',
+              requestRole: REQUEST_ROLES.DOCTOR,
+            },
+          },
+        })
+        .then((_data: any) => {
+          console.log('createsession', _data);
+        })
+        .catch((e: any) => {
+          console.log('Error occured while adding Doctor', e);
+        });
+    }
+  }, [paramId, appointmentId]);
+  // client
+  //   .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+  //     mutation: CREATE_APPOINTMENT_SESSION,
+  //     variables: {
+  //       CreateAppointmentSessionInput: {
+  //         appointmentId: '4ba75a55-4174-4485-90dd-3350899929e6',
+  //         requestRole: REQUEST_ROLES.DOCTOR,
+  //       },
+  //     },
+  //   })
+  //   .then((_data: any) => {
+  //     console.log('createsession', _data);
+  //   })
+  //   .catch((e: any) => {
+  //     console.log('Error occured while adding Doctor', e);
+  //   });
   const setStartConsultAction = (flag: boolean) => {
     setStartConsult('');
     const cookieStr = `action=${flag ? 'videocall' : 'audiocall'}`;
@@ -120,7 +168,9 @@ export const ConsultTabs: React.FC = (props) => {
           )}
           {tabValue === 1 && (
             <TabContainer>
-              <ConsultRoom startConsult={startConsult} />
+              <div className={classes.chatContainer}>
+                <ConsultRoom startConsult={startConsult} />
+              </div>
             </TabContainer>
           )}
         </div>

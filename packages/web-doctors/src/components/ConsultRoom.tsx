@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import { AphInput } from '@aph/web-ui-components';
 import { Consult } from 'components/Consult';
 import Pubnub from 'pubnub';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -21,31 +22,29 @@ const useStyles = makeStyles((theme: Theme) => {
     chatContainer: {
       paddingTop: 20,
       minHeight: 'calc(100vh - 330px)',
-      maxHeight: 'calc(100vh - 330px)',
-      overflowY: 'auto',
-      overflowX: 'hidden',
     },
     petient: {
       color: '#0087ba',
       textAlign: 'left',
       backgroundColor: '#fff',
-      padding: 12,
+      padding: '12px 16px',
       fontWeight: theme.typography.fontWeightMedium,
       display: 'inline-block',
-      borderRadius: 5,
+      borderRadius: 10,
       boxShadow: '0 2px 4px 0 #00000026',
-      minWidth: 120,
+      fontSize: 15,
     },
     doctor: {
       backgroundColor: '#f0f4f5',
-      padding: 12,
+      padding: '12px 16px',
       color: '#02475b',
       fontWeight: theme.typography.fontWeightMedium,
       display: 'inline-block',
-      borderRadius: 5,
+      borderRadius: 10,
       boxShadow: '0 2px 4px 0 #00000026',
-      minWidth: 120,
       marginRight: 30,
+      textAlign: 'left',
+      fontSize: 15,
     },
     boldTxt: {
       fontWeight: 700,
@@ -81,7 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'block',
       width: '100%',
       textAlign: 'right',
-      margin: '5px 5px 10px 5px',
+      margin: '5px 0 10px 0',
     },
     patientChat: {
       display: 'block',
@@ -208,10 +207,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
       (status, response) => {
         setMessageText('');
+
+        setTimeout(() => {
+          const scrollDiv = document.getElementById('scrollDiv');
+          scrollDiv!.scrollIntoView();
+        }, 200);
+
         // const scrollDiv = document.getElementById('scrollDiv');
-        // scrollDiv!.scrollIntoView(false);
-        const scrollDiv = document.getElementById('scrollDiv');
-        scrollDiv!.scrollTo(0, 100000);
+        // scrollDiv!.scrollTo(0, 100000);
       }
     );
   };
@@ -311,8 +314,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         )}
         <div>
           {(!showVideo || showVideoChat) && (
-            <div className={classes.chatContainer} id="scrollDiv">
-              {messagessHtml}
+            <div className={classes.chatContainer}>
+              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 360px)'}>
+                {messagessHtml}
+                <span id="scrollDiv"></span>
+              </Scrollbars>
             </div>
           )}
           {(!showVideo || showVideoChat) && (
