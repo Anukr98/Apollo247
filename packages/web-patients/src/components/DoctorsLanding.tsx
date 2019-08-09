@@ -15,7 +15,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { SearchObject } from 'components/DoctorsFilter';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { SEARCH_DOCTORS_AND_SPECIALITY } from 'graphql/doctors';
+import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -235,13 +235,15 @@ export const DoctorsLanding: React.FC = (props) => {
     }
   }, [specialitySelected]);
 
-  const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY, {
+  const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME, {
     variables: { searchText: filterOptions.searchKeyword },
   });
 
-  if (data && data.SearchDoctorAndSpecialty && !loading) {
-    matchingDoctorsFound = data.SearchDoctorAndSpecialty.doctors.length;
-    matchingSpecialitesFound = data.SearchDoctorAndSpecialty.specialties.length;
+  console.log('new data is.....', data);
+
+  if (data && data.SearchDoctorAndSpecialtyByName && !loading) {
+    matchingDoctorsFound = data.SearchDoctorAndSpecialtyByName.doctors.length;
+    matchingSpecialitesFound = data.SearchDoctorAndSpecialtyByName.specialties.length;
   }
 
   if (
@@ -311,7 +313,7 @@ export const DoctorsLanding: React.FC = (props) => {
                       {matchingDoctorsFound > 0 || matchingSpecialitesFound > 0 ? (
                         <>
                           {data &&
-                          data.SearchDoctorAndSpecialty &&
+                          data.SearchDoctorAndSpecialtyByName &&
                           filterOptions.searchKeyword.length > 0 &&
                           matchingDoctorsFound > 0 &&
                           showSearchAndPastSearch ? (
@@ -326,20 +328,23 @@ export const DoctorsLanding: React.FC = (props) => {
                               </div>
                               <div className={classes.searchList}>
                                 <Grid spacing={2} container>
-                                  {_map(data.SearchDoctorAndSpecialty.doctors, (doctorDetails) => {
-                                    return (
-                                      <Grid
-                                        item
-                                        xs={12}
-                                        sm={12}
-                                        md={12}
-                                        lg={6}
-                                        key={_uniqueId('doctor_')}
-                                      >
-                                        <DoctorCard doctorDetails={doctorDetails} />
-                                      </Grid>
-                                    );
-                                  })}
+                                  {_map(
+                                    data.SearchDoctorAndSpecialtyByName.doctors,
+                                    (doctorDetails) => {
+                                      return (
+                                        <Grid
+                                          item
+                                          xs={12}
+                                          sm={12}
+                                          md={12}
+                                          lg={6}
+                                          key={_uniqueId('doctor_')}
+                                        >
+                                          <DoctorCard doctorDetails={doctorDetails} />
+                                        </Grid>
+                                      );
+                                    }
+                                  )}
                                 </Grid>
                               </div>
                             </>
@@ -363,19 +368,20 @@ export const DoctorsLanding: React.FC = (props) => {
                           />
                         </>
                       ) : (
-                        <PossibleSpecialitiesAndDoctors
-                          keyword={filterOptions.searchKeyword}
-                          matched={(matchingSpecialities) =>
-                            setMatchingSpecialities(matchingSpecialities)
-                          }
-                          speciality={(specialitySelected) =>
-                            setSpecialitySelected(specialitySelected)
-                          }
-                          disableFilter={(disableFilters) => {
-                            setDisableFilters(disableFilters);
-                          }}
-                          subHeading=""
-                        />
+                        // <PossibleSpecialitiesAndDoctors
+                        //   keyword={filterOptions.searchKeyword}
+                        //   matched={(matchingSpecialities) =>
+                        //     setMatchingSpecialities(matchingSpecialities)
+                        //   }
+                        //   speciality={(specialitySelected) =>
+                        //     setSpecialitySelected(specialitySelected)
+                        //   }
+                        //   disableFilter={(disableFilters) => {
+                        //     setDisableFilters(disableFilters);
+                        //   }}
+                        //   subHeading=""
+                        // />
+                        <></>
                       )}
                     </>
                   )}

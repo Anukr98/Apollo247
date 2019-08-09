@@ -71,9 +71,25 @@ export interface DoctorAvailabilityInput {
   doctorId: string;
 }
 
+export interface FilterDoctorInput {
+  specialty: string;
+  city?: (string | null)[] | null;
+  experience?: (Range | null)[] | null;
+  availability?: (string | null)[] | null;
+  fees?: (Range | null)[] | null;
+  gender?: (Gender | null)[] | null;
+  language?: (string | null)[] | null;
+  location?: string | null;
+}
+
 export interface PatientAppointmentsInput {
   patientId: string;
   appointmentDate: any;
+}
+
+export interface Range {
+  minimum?: number | null;
+  maximum?: number | null;
 }
 
 export interface UpdatePatientInput {

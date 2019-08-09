@@ -91,6 +91,25 @@ export const SEARCH_DOCTORS_AND_SPECIALITY = gql`
   }
 `;
 
+export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
+  query GetDoctorsBySpecialtyAndFilters($filterInput: FilterDoctorInput) {
+    getDoctorsBySpecialtyAndFilters(filterInput: $filterInput) {
+      doctors {
+        id
+        firstName
+        lastName
+        specialty {
+          id
+          name
+        }
+        experience
+        photoUrl
+        qualification
+      }
+    }
+  }
+`;
+
 export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
   query SearchDoctorAndSpecialtyByName($searchText: String!) {
     SearchDoctorAndSpecialtyByName(searchText: $searchText) {
@@ -102,6 +121,9 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
           id
           name
         }
+        experience
+        photoUrl
+        qualification
       }
       specialties {
         name
