@@ -601,7 +601,8 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
 
   const doctorProfile = getDoctorDetailsData;
   const clinics = getDoctorDetailsData.doctorHospital || [];
-  const starDoctors = getDoctorDetailsData.starTeam || [];
+  const starDoctors =
+    getDoctorDetailsData!.starTeam!.filter((existingDoc) => existingDoc!.isActive === true) || [];
   const numStarDoctors = starDoctors.length;
 
   return (

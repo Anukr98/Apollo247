@@ -163,14 +163,20 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
             </div>
             <Grid className={classes.gridContainer} container spacing={2}>
               {previousAppointments.map((appointment) => {
+                const appointmentDate = new Date(appointment.appointmentDateTime)
+                  .getUTCDate()
+                  .toString();
+                const appointmentTime = new Date(appointment.appointmentDateTime)
+                  .getUTCDate()
+                  .toString();
                 return (
                   <Grid item sm={3} key={_uniqueId('avagr_')}>
                     <div className={classes.root} key={_uniqueId('aphistory_')}>
                       <div className={classes.appointType}>{appointment.appointmentType}</div>
                       <div className={classes.appointmentInfo}>
                         <div className={classes.timeGroup}>
-                          <div className={classes.appointDate}>{appointment.appointmentDate}</div>
-                          <div className={classes.appointTime}>{appointment.appointmentTime}</div>
+                          <div className={classes.appointDate}>{appointmentDate}</div>
+                          <div className={classes.appointTime}>{appointmentTime}</div>
                         </div>
                         <div className={classes.appointBooked}>
                           <ul>

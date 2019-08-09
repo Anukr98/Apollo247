@@ -29,6 +29,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     bannerInfo: {
+      position: 'relative',
+      zIndex: 1,
       [theme.breakpoints.up('lg')]: {
         width: '50%',
       },

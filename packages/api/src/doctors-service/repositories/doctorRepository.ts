@@ -47,4 +47,34 @@ export class DoctorRepository extends Repository<Doctor> {
       ],
     });
   }
+
+  searchByName(searchString: string) {
+    return this.createQueryBuilder('doctor')
+      .leftJoinAndSelect('doctor.specialty', 'specialty')
+      .leftJoinAndSelect('doctor.consultHours', 'consultHours')
+      .leftJoinAndSelect('doctor.doctorHospital', 'doctorHospital')
+      .leftJoinAndSelect('doctorHospital.facility', 'doctorHospital.facility')
+      .where('LOWER(doctor.firstName) LIKE :searchString', {
+        searchString: `${searchString}%`,
+      })
+      .orWhere('LOWER(doctor.lastName) LIKE :searchString', {
+        searchString: `${searchString}%`,
+      })
+      .orWhere("LOWER(doctor.firstName || ' ' || doctor.lastName) LIKE :searchString", {
+        searchString: `${searchString}%`,
+      })
+      .getMany();
+  }
+
+  searchBySpecialty(specialtyId: string) {
+    return this.createQueryBuilder('doctor')
+      .leftJoinAndSelect('doctor.specialty', 'specialty')
+      .leftJoinAndSelect('doctor.consultHours', 'consultHours')
+      .leftJoinAndSelect('doctor.doctorHospital', 'doctorHospital')
+      .leftJoinAndSelect('doctorHospital.facility', 'doctorHospital.facility')
+      .where('doctor.specialty = :specialtyId', {
+        specialtyId,
+      })
+      .getMany();
+  }
 }

@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE } from 'consults-service/entities/appointment';
+import { STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
