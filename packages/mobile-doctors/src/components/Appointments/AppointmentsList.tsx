@@ -40,6 +40,38 @@ export interface AppointmentsListProps extends NavigationScreenProps {
 }
 
 export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
+  const showDiff = (
+    one: any,
+    two: any,
+    doctorId: string,
+    patientId: string,
+    PatientInfo: object
+  ) => {
+    console.log('one', one);
+    console.log('two', two);
+    console.log('PatientInfo', PatientInfo);
+    const dt1 = new Date(one);
+    const dt2 = new Date(two);
+    const diff = dt2.getHours() - dt1.getHours();
+    const diff2 = dt2.getMinutes() - dt1.getMinutes();
+    console.log('diff', diff.toString().length);
+    console.log('diff2', diff2);
+    const val = '0';
+    const CDA = diff
+      .toString()
+      .concat(':')
+      .concat(diff2.toString().length == 1 ? val.concat(diff2.toString()) : diff2.toString());
+
+    //CDA /= 60;
+    //console.log('Math.abs(Math.round(diff))', Math.abs(Math.round(CDA)));
+    // return Math.abs(Math.round(diff));
+    props.navigation.push(AppRoutes.ConsultRoomScreen, {
+      DoctorId: doctorId,
+      PatientId: patientId,
+      PatientConsultTime: CDA.replace('-', ''),
+      PatientInfoAll: PatientInfo,
+    });
+  };
   const getStatusCircle = (status: Appointments['timeslottype']) =>
     status == 'past' ? (
       <PastAppointmentIcon />
@@ -138,13 +170,31 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                 )}
                 <CalendarCard
                   isNewPatient={true}
-                  onPress={(doctorId, patientId) => {
-                    //console.log('', doctorId, patientId);
-                    props.navigation.push(AppRoutes.ConsultRoomScreen, {
-                      DoctorId: doctorId,
-                      PatientId: patientId,
-                      PatientConsultTime: moment(i.appointmentDateTime).format('HH:mm'),
-                    });
+                  onPress={(doctorId, patientId, PatientInfo, appointmentTime) => {
+                    const todaytime = moment(new Date()).format('YYYY-MM-DDTHH:mm');
+                    const appointmentDateTime = moment(i.appointmentDateTime).format(
+                      'YYYY-MM-DDTHH:mm'
+                    );
+                    console.log('todaytime', todaytime);
+                    console.log('appointmentDateTime', appointmentDateTime);
+                    console.log(moment(i.appointmentDateTime).format('HH:mm'));
+                    {
+                      todaytime < appointmentDateTime
+                        ? showDiff(todaytime, appointmentDateTime, doctorId, patientId, PatientInfo)
+                        : props.navigation.push(AppRoutes.ConsultRoomScreen, {
+                            DoctorId: doctorId,
+                            PatientId: patientId,
+                            PatientConsultTime: null,
+                            PatientInfoAll: PatientInfo,
+                          });
+                    }
+
+                    // props.navigation.push(AppRoutes.ConsultRoomScreen, {
+                    //   DoctorId: doctorId,
+                    //   PatientId: patientId,
+                    //   PatientConsultTime: moment(i.appointmentDateTime).format('HH:mm'),
+                    //   PatientInfoAll: PatientInfo,
+                    // });
                   }}
                   doctorname={i.doctorId}
                   timing={formatTiming(i.appointmentDateTime)}
@@ -153,6 +203,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   patientId={i.patientId}
                   status={getStatus(i)}
                   wayOfContact={i.appointmentType == APPOINTMENT_TYPE.ONLINE ? 'video' : 'clinic'}
+                  PatientInfo={i.patientInfo!}
+                  consultTime={i.appointmentDateTime}
                 />
               </View>
             </>

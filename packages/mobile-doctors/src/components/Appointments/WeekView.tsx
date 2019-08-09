@@ -82,12 +82,12 @@ export const WeekView: React.FC<WeekViewProps> = (props) => {
   };
 
   const onSwipeRight = () => {
-    ((calendarStripRef.current && calendarStripRef.current) as CalendarStripRefType).getNextWeek();
+    ((calendarStripRef.current &&
+      calendarStripRef.current) as CalendarStripRefType).getPreviousWeek();
   };
 
   const onSwipeLeft = () => {
-    ((calendarStripRef.current &&
-      calendarStripRef.current) as CalendarStripRefType).getPreviousWeek();
+    ((calendarStripRef.current && calendarStripRef.current) as CalendarStripRefType).getNextWeek();
   };
 
   const config = {

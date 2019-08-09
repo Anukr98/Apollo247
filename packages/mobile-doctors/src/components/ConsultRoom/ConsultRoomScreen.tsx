@@ -50,7 +50,9 @@ import {
   EndCallIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import DocumentPicker from 'react-native-document-picker';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, NavigationRoute } from 'react-navigation';
+import { NavigationScreenProp } from 'react-navigation';
+import { NavigationParams } from 'react-navigation';
 
 const styles = StyleSheet.create({
   mainview: {
@@ -86,25 +88,37 @@ let intervalId: any;
 let stoppedTimer: number;
 let timerId: any;
 
+const videoCallMsg = '^^callme`video^^';
+const audioCallMsg = '^^callme`audio^^';
+const doctorId = 'Ravi';
+const patientId = 'Sai';
+const channel = 'Channel7';
+
 export interface ConsultRoomScreenProps
   extends NavigationScreenProps<{
     DoctorId: string;
     PatientId: string;
     PatientConsultTime: string;
-  }> {}
+    // PatientInfoAll: object;
+    //navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
+  }> {
+  navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
+}
 
 export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   console.log('Doctoid', props.navigation.getParam('DoctorId'));
   console.log('PatientId', props.navigation.getParam('PatientId'));
   console.log('PatientConsultTime', props.navigation.getParam('PatientConsultTime'));
+
   const PatientConsultTime = props.navigation.getParam('PatientConsultTime');
+
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const flatListRef = useRef<FlatList<any> | null>();
   const otSessionRef = React.createRef();
 
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState<string>('');
-  const [heightList, setHeightList] = useState<number>(height - 215);
+  const [heightList, setHeightList] = useState<number>(height - 185);
 
   const [apiKey, setapiKey] = useState<string>('');
   const [sessionId, setsessionId] = useState<string>('');
@@ -274,7 +288,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   useEffect(() => {
     pubnub.subscribe({
-      channels: ['channel4'],
+      channels: [channel],
       withPresence: true,
     });
 
@@ -289,8 +303,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         }
       },
       message: (message) => {
-        console.log('addListener', message.message.text);
-        if (message.message.text === '^^#callAccepted') {
+        console.log('addListener', message.message.message);
+        if (message.message.message === '^^#callAccepted') {
           startTimer(0);
           setCallAccepted(true);
         } else {
@@ -306,7 +320,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', keyboardDidHide);
 
     return function cleanup() {
-      pubnub.unsubscribe({ channels: ['channel4'] });
+      pubnub.unsubscribe({ channels: [channel] });
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
     };
@@ -317,7 +331,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     console.log('Keyboard Shown', keyboardHeight);
     console.log('Keyboard Shown', e.endCoordinates.height);
 
-    setHeightList(height - e.endCoordinates.height - 215);
+    setHeightList(height - e.endCoordinates.height - 185);
 
     setTimeout(() => {
       flatListRef.current!.scrollToEnd();
@@ -326,11 +340,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const keyboardDidHide = () => {
     console.log('Keyboard hide');
-    setHeightList(height - 215);
+    setHeightList(height - 185);
   };
 
   const getHistory = () => {
-    pubnub.history({ channel: 'channel4', reverse: true, count: 1000 }, (status, res) => {
+    pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
       const newmessage: object[] = [];
 
       res.messages.forEach((element, index) => {
@@ -362,7 +376,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
     pubnub.publish(
       {
-        channel: 'channel4',
+        channel: channel,
         message: text,
         storeInHistory: true,
         sendByPost: true,
@@ -424,6 +438,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 marginLeft: 38,
                 borderRadius: 10,
                 // width: 244,
+                shadowOffset: {
+                  height: 1,
+                  width: 0,
+                },
+                shadowColor: '#000000',
+                shadowRadius: 2,
+                shadowOpacity: 0.2,
+                elevation: 2,
               }}
             >
               <Text
@@ -464,6 +486,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               borderRadius: 10,
               marginVertical: 2,
               alignSelf: 'flex-end',
+              shadowOffset: {
+                height: 1,
+                width: 0,
+              },
+              shadowColor: '#000000',
+              shadowRadius: 2,
+              shadowOpacity: 0.2,
+              elevation: 2,
             }}
           >
             <Text
@@ -485,7 +515,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const renderChatView = () => {
     return (
-      <View style={{ width: width, height: heightList, marginTop: 0 }}>
+      <View
+        style={{
+          width: width,
+          height: returnToCall == false ? heightList : heightList + 20,
+          marginTop: 0,
+        }}
+      >
         <FlatList
           ref={flatListRef}
           contentContainerStyle={{
@@ -676,7 +712,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               <OTSubscriber
                 style={subscriberStyles}
                 eventHandlers={subscriberEventHandlers}
-                properties={{ mirror: false }}
+                properties={{
+                  mirror: false,
+                  subscribeToAudio: true,
+                  subscribeToVideo: true,
+                }}
               />
               <OTPublisher
                 style={publisherStyles}
@@ -684,7 +724,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   cameraPosition: cameraPosition,
                   mirror: false,
                   publishVideo: showVideo,
-                  publishAudio: mute,
+                  publishAudio: true,
                 }}
                 eventHandlers={publisherEventHandlers}
               />
@@ -987,9 +1027,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 {
                   message: {
                     isTyping: true,
-                    text: '^^#audiocall',
+                    message: audioCallMsg, //'^^#audiocall',
                   },
-                  channel: 'channel4',
+                  channel: channel,
                   storeInHistory: false,
                 },
                 (status, response) => {}
@@ -1036,9 +1076,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 {
                   message: {
                     isTyping: true,
-                    text: '^^#videocall',
+                    message: videoCallMsg, //'^^#videocall',
                   },
-                  channel: 'channel4',
+                  channel: channel,
                   storeInHistory: false,
                 },
                 (status, response) => {}
@@ -1132,7 +1172,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     return (
       <View style={{ ...theme.viewStyles.container }}>
         {renderChatView()}
-        <View style={{ width: width, height: 66, backgroundColor: 'white', top: 0 }}>
+        <View
+          style={{
+            width: width,
+            height: 66,
+            backgroundColor: 'white',
+            top: 0,
+          }}
+        >
           <View style={{ flexDirection: 'row', alignItems: 'center', width: width }}>
             <TextInput
               autoCorrect={false}
@@ -1144,6 +1191,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 width: width - 84,
                 ...theme.fonts.IBMPlexSansMedium(16),
               }}
+              placeholderTextColor="rgba(2, 71, 91, 0.3)"
               value={messageText}
               onChangeText={(value) => {
                 setMessageText(value);
@@ -1152,9 +1200,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     message: {
                       senderId: 'user123',
                       isTyping: true,
-                      text: 'callme',
+                      message: 'callme',
                     },
-                    channel: 'channel4',
+                    channel: channel,
                     storeInHistory: false,
                   },
                   (status, response) => {}
@@ -1199,6 +1247,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             }}
           />
         </View>
+
         {returnToCall && ReturnCallView()}
         {}
       </View>
@@ -1223,9 +1272,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         <View style={{ flex: 1 }}>
           {activeTabIndex == 0 ? (
             <CaseSheetView
+              // disableConsultButton={!!PatientConsultTime}
               onStartConsult={onStartConsult}
               onStopConsult={onStopConsult}
               startConsult={startConsult}
+              navigation={props.navigation}
             />
           ) : (
             <View
@@ -1248,9 +1299,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       {
         message: {
           isTyping: true,
-          text: '^^#startconsult',
+          message: '^^#startconsult',
         },
-        channel: 'channel4',
+        channel: channel,
         storeInHistory: false,
       },
       (status, response) => {
@@ -1268,9 +1319,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       {
         message: {
           isTyping: true,
-          text: '^^#stopconsult',
+          message: '^^#stopconsult',
         },
-        channel: 'channel4',
+        channel: channel,
         storeInHistory: false,
       },
       (status, response) => {
@@ -1299,7 +1350,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           },
         ]}
         middleText="CONSULT ROOM"
-        timerText={consultStarted ? `Time Left ${minutes} : ${seconds}` : 'Time to Consult '}
+        timerText={
+          consultStarted
+            ? `Time Left ${minutes} : ${seconds}`
+            : PatientConsultTime != null
+            ? 'Time to Consult '
+            : null
+        }
         timerremaintext={!consultStarted ? PatientConsultTime : null}
         textStyles={{ marginTop: 10 }}
         rightIcons={[

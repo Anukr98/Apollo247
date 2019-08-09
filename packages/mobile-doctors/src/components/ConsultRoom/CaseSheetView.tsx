@@ -29,6 +29,9 @@ import {
 } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { Slider } from 'react-native-elements';
+import { NavigationScreenProps, NavigationParams } from 'react-navigation';
+import { NavigationScreenProp } from 'react-navigation';
+import { NavigationRoute } from 'react-navigation';
 
 const styles = StyleSheet.create({
   casesheetView: {
@@ -372,16 +375,17 @@ const renderPatientImage = () => {
     </View>
   );
 };
-const profileRow = () => {
+const profileRow = (PatientInfoData: object) => {
   // if (!firstName) return null;
+  console.log('ranith', PatientInfoData);
   return (
     <View>
       <View style={{ flexDirection: 'row' }}>
-        <Text style={styles.nameText}>Seema Singh</Text>
+        <Text style={styles.nameText}>{PatientInfoData.firstName}</Text>
         <View style={styles.line}></View>
-        <Text style={styles.agetext}>56, F, Mumbai</Text>
+        <Text style={styles.agetext}>56, {PatientInfoData.gender}, Mumbai</Text>
       </View>
-      <Text style={styles.uhidText}>UHID: 012345</Text>
+      <Text style={styles.uhidText}>UHID: {PatientInfoData.uhid}</Text>
       <View style={styles.understatusline} />
       <View>
         {registerDetails('Appt ID:', '98765')}
@@ -400,8 +404,8 @@ const registerDetails = (ApptId: string, appIdDate: string) => {
     </View>
   );
 };
-const renderBasicProfileDetails = () => {
-  return <View style={{ backgroundColor: '#f7f7f7' }}>{profileRow()}</View>;
+const renderBasicProfileDetails = (PatientInfoData: object) => {
+  return <View style={{ backgroundColor: '#f7f7f7' }}>{profileRow(PatientInfoData)}</View>;
 };
 
 const renderPhotosUploadedPatient = () => {
@@ -422,13 +426,16 @@ const renderPhotosUploadedPatient = () => {
   );
 };
 
-export interface CaseSheetViewProps {
+export interface CaseSheetViewProps extends NavigationScreenProps {
   onStartConsult: () => void;
   onStopConsult: () => void;
   startConsult: boolean;
+  navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
+  const PatientInfoData = props.navigation.getParam('PatientInfoAll');
+  console.log('PatientInfoData', PatientInfoData.firstName);
   const [value, setValue] = useState<string>('');
   const [symptonsValue, setSymptonsValue] = useState<string>('Fever, Cough and Cold, Nausea');
   const [familyValues, setFamilyValues] = useState<string>(
@@ -467,6 +474,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <View style={styles.footerButtonsContainersave}>
             <Button
               title="START CONSULT"
+              disabled={props.startConsult}
               buttonIcon={<Start />}
               onPress={() => {
                 setShowButtons(true);
@@ -878,7 +886,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     <View style={styles.casesheetView}>
       <ScrollView bounces={false} contentContainerStyle={styles.contentContainer}>
         {renderPatientImage()}
-        {renderBasicProfileDetails()}
+        {renderBasicProfileDetails(PatientInfoData)}
         {renderSymptonsView()}
         {renderPatientHistoryLifestyle()}
         <PatientHealthVault />
