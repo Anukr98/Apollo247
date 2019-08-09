@@ -32,9 +32,14 @@ export const getAppointmentHistoryTypeDefs = gql`
     appointmentsHistory: [AppointmentHistory!]
   }
 
+  type DoctorAppointmentResult {
+    appointmentsHistory: [AppointmentHistory]
+    newPatientsList: [String]
+  }
+
   extend type Query {
     getAppointmentHistory(appointmentHistoryInput: AppointmentHistoryInput): AppointmentResult!
-    getDoctorAppointments(doctorId: String, startDate: Date, endDate: Date): AppointmentResult
+    getDoctorAppointments(doctorId: String, startDate: Date, endDate: Date): DoctorAppointmentResult
   }
 `;
 
@@ -81,18 +86,31 @@ const getDoctorAppointments: Resolver<
   AppointmentResult
 > = async (parent, args, { consultsDb, doctorsDb }) => {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  let appointmentsHistory;
+  let appointmentsHistory, newPatientsList;
   try {
     appointmentsHistory = await appointmentRepo.getDoctorAppointments(
       args.doctorId,
       args.startDate,
       args.endDate
     );
+
+    const uniquePatientIds = appointmentsHistory
+      .map((item) => item.patientId)
+      .filter((value, index, self) => self.indexOf(value) === index);
+
+    const patientConsult = await appointmentRepo.getDoctorPatientVisitCount(
+      args.doctorId,
+      uniquePatientIds
+    );
+
+    newPatientsList = patientConsult
+      .filter((item) => item.count == 1)
+      .map((item) => item.appointment_patientId);
   } catch (invalidGrant) {
     throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, { invalidGrant });
   }
 
-  return { appointmentsHistory };
+  return { appointmentsHistory, newPatientsList };
 };
 
 export const getAppointmentHistoryResolvers = {

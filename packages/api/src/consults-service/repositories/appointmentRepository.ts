@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Between } from 'typeorm';
+import { EntityRepository, Repository, Between, In } from 'typeorm';
 import { Appointment } from 'consults-service/entities/appointment';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -30,6 +30,16 @@ export class AppointmentRepository extends Repository<Appointment> {
       where: { doctorId, appointmentDateTime: Between(startDate, endDate) },
       order: { appointmentDateTime: 'DESC' },
     });
+  }
+
+  async getDoctorPatientVisitCount(doctorId: string, patientId: string[]) {
+    const results = await this.createQueryBuilder('appointment')
+      .select('appointment.patientId')
+      .addSelect('COUNT(*) AS count')
+      .where('appointment.patientId IN (:...patientList)', { patientList: patientId })
+      .groupBy('appointment.patientId')
+      .getRawMany();
+    return results;
   }
 
   getPatientDateAppointments(appointmentDateTime: Date, patientId: string) {
