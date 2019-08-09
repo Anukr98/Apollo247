@@ -5,7 +5,6 @@ import { Doctor } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import { isNull } from 'util';
 import { getConnection } from 'typeorm';
 
 export const getDoctorDetailsTypeDefs = gql`
