@@ -40,7 +40,7 @@ export const getAppointmentHistoryTypeDefs = gql`
 
   extend type Query {
     getAppointmentHistory(appointmentHistoryInput: AppointmentHistoryInput): AppointmentResult!
-    getDoctorAppointments(doctorId: String, startDate: Date, endDate: Date): DoctorAppointmentResult
+    getDoctorAppointments(startDate: Date, endDate: Date): DoctorAppointmentResult
     getAppointmentData(appointmentId: String): DoctorAppointmentResult
   }
 `;
