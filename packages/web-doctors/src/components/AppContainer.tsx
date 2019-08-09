@@ -25,7 +25,11 @@ const App: React.FC = () => {
   }, [signInError]);
   return isSignedIn ? (
     <div className={classes.app}>
-      <AuthRouted exact path={clientRoutes.welcome()} render={() => <Redirect to="/profile" />} />
+      <AuthRouted
+        exact
+        path={clientRoutes.welcome()}
+        render={() => <Redirect to={isSignedIn.firebaseToken == '' ? '/profile' : '/Calendar'} />}
+      />
       <AuthRouted exact path={clientRoutes.patients()} component={PatientsList} />
       <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
       <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
