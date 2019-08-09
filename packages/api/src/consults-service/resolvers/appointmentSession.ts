@@ -4,7 +4,6 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import openTok, { TokenOptions } from 'opentok';
 import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { REQUEST_ROLES } from 'consults-service/entities';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {

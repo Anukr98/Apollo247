@@ -24,8 +24,9 @@ export type Resolver<Parent, Args, Context, Result> = (
   context: Context
 ) => AsyncIterator<Result> | Promise<Result>;
 
-const isLocal = process.env.NODE_ENV == 'local';
-const isDev = process.env.NODE_ENV == 'development';
+//const isLocal = process.env.NODE_ENV == 'local';
+//const isDev = process.env.NODE_ENV == 'development';
+const isProduction = process.env.NODE_ENV == 'production';
 
 (async () => {
   const gateway = new ApolloGateway({
@@ -66,7 +67,7 @@ const isDev = process.env.NODE_ENV == 'development';
     context: async ({ req }) => {
       const isSchemaIntrospectionQuery = req.body.operationName == 'IntrospectionQuery';
 
-      if ((isLocal || isDev) && isSchemaIntrospectionQuery) {
+      if (!isProduction && isSchemaIntrospectionQuery) {
         const gatewayContext: GatewayContext = { firebaseUid: '', mobileNumber: '' };
         return gatewayContext;
       }
