@@ -14,7 +14,7 @@ export const isNameValid = (name: string) => {
   }
   return (
     /^[A-Za-z\/\s\.'-]+$/.test(name.trim()) &&
-    name.trim().length > 1 &&
+    name.trim().length > 0 &&
     name.charAt(0) != "'" &&
     name.charAt(name.length - 1) != "'" &&
     !inBetween
