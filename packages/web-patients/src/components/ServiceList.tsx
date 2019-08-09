@@ -33,11 +33,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('sm')]: {
         paddingBottom: 45,
       },
-      '& h5': {
-        [theme.breakpoints.up('sm')]: {
-          paddingRight: 40,
-        },
-      },
       '& p': {
         fontSize: 12,
         fontWeight: 'normal',
@@ -46,13 +41,12 @@ const useStyles = makeStyles((theme: Theme) => {
         color: 'rgba(0,0,0,0.5)',
         marginTop: 5,
         marginBottom: 5,
-        paddingRight: 40,
       },
     },
     serviceInfo: {
       paddingRight: 20,
       [theme.breakpoints.up('sm')]: {
-        paddingRight: 0,
+        paddingRight: 50,
       },
     },
     avatarBlock: {
