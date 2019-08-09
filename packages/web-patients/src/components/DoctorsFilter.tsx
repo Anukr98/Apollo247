@@ -256,7 +256,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
           filterOptions.searchKeyword = event.currentTarget.value;
           if (event.target.value.length === 0) {
             emptyFilters(true);
-          } else if (event.target.value.length > 2) {
+          } else if (event.target.value.length > 3) {
             handleFilterOptions(filterOptions);
           }
         }}
