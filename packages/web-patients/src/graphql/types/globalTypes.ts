@@ -11,6 +11,12 @@ export enum APPOINTMENT_TYPE {
   PHYSICAL = "PHYSICAL",
 }
 
+export enum DoctorType {
+  APOLLO = "APOLLO",
+  PAYROLL = "PAYROLL",
+  STAR_APOLLO = "STAR_APOLLO",
+}
+
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
@@ -63,6 +69,11 @@ export interface BookAppointmentInput {
 export interface DoctorAvailabilityInput {
   availableDate: any;
   doctorId: string;
+}
+
+export interface PatientAppointmentsInput {
+  patientId: string;
+  appointmentDate: any;
 }
 
 export interface UpdatePatientInput {

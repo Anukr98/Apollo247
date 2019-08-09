@@ -105,8 +105,9 @@ export const getDoctorDetailsTypeDefs = gql`
 
   type DoctorSpecialties {
     createdDate: String
-    name: String!
+    id: ID!
     image: String
+    name: String!
   }
 
   type Facility {
@@ -174,8 +175,7 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
     doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
 
     if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-
-    if (doctordata != null && isNull(doctordata.firebaseToken)) {
+    if (doctordata != null && doctordata.firebaseToken == '') {
       await doctorRepository.updateFirebaseId(doctordata.id, firebaseUid);
     }
   } catch (getProfileError) {
@@ -202,7 +202,7 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
 export const getDoctorDetailsResolvers = {
   DoctorDetails: {
     async __resolveReference(object: Doctor) {
-      const connection = getConnection('doctors-db');
+      const connection = getConnection();
       const doctorRepo = connection.getCustomRepository(DoctorRepository);
       return await doctorRepo.findById(object.id.toString());
     },

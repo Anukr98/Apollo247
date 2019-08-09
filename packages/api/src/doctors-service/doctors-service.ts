@@ -20,9 +20,17 @@ import {
   searchDoctorAndSpecialtyResolvers,
 } from 'doctors-service/resolvers/searchDoctorAndSpecialty';
 import {
+  searchDoctorAndSpecialtyByNameTypeDefs,
+  searchDoctorAndSpecialtyByNameResolvers,
+} from 'doctors-service/resolvers/searchDoctorAndSpecialtyByName';
+import {
   getSpecialtyDoctorsTypeDefs,
   getSpecialtyDoctorsResolvers,
 } from 'doctors-service/resolvers/getSpecialtyDoctorsWithFilters';
+import {
+  getDoctorsBySpecialtyAndFiltersTypeDefs,
+  getDoctorsBySpecialtyAndFiltersTypeDefsResolvers,
+} from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import {
   getDoctorDetailsTypeDefs,
   getDoctorDetailsResolvers,
@@ -34,7 +42,7 @@ import { starTeamTypeDefs, starTeamResolvers } from 'doctors-service/resolvers/s
 
 import gql from 'graphql-tag';
 import { GraphQLTime } from 'graphql-iso-date';
-import { createConnection, getConnection } from 'typeorm';
+import { createConnections, getConnection } from 'typeorm';
 import {
   Doctor,
   DoctorSpecialty,
@@ -45,31 +53,45 @@ import {
   DoctorBankAccounts,
   Packages,
 } from 'doctors-service/entities';
+import { Appointment } from 'consults-service/entities/';
 import { GatewayHeaders } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 
 (async () => {
-  await createConnection({
-    name: 'doctors-db',
-    entities: [
-      Doctor,
-      DoctorSpecialty,
-      StarTeam,
-      DoctorAndHospital,
-      Facility,
-      ConsultHours,
-      DoctorBankAccounts,
-      Packages,
-    ],
-    type: 'postgres',
-    host: process.env.DOCTORS_DB_HOST,
-    port: parseInt(process.env.DOCTORS_DB_PORT, 10),
-    username: process.env.DOCTORS_DB_USER,
-    password: process.env.DOCTORS_DB_PASSWORD,
-    database: `doctors_${process.env.NODE_ENV}`,
-    logging: true,
-    synchronize: true,
-  }).catch((error) => {
+  await createConnections([
+    {
+      entities: [
+        Doctor,
+        DoctorSpecialty,
+        StarTeam,
+        DoctorAndHospital,
+        Facility,
+        ConsultHours,
+        DoctorBankAccounts,
+        Packages,
+      ],
+      type: 'postgres',
+      host: process.env.DOCTORS_DB_HOST,
+      port: parseInt(process.env.DOCTORS_DB_PORT, 10),
+      username: process.env.DOCTORS_DB_USER,
+      password: process.env.DOCTORS_DB_PASSWORD,
+      database: `doctors_${process.env.NODE_ENV}`,
+      logging: true,
+      synchronize: true,
+    },
+    {
+      name: 'consults-db',
+      entities: [Appointment],
+      type: 'postgres',
+      host: process.env.CONSULTS_DB_HOST,
+      port: parseInt(process.env.CONSULTS_DB_PORT, 10),
+      username: process.env.CONSULTS_DB_USER,
+      password: process.env.CONSULTS_DB_PASSWORD,
+      database: `consults_${process.env.NODE_ENV}`,
+      logging: true,
+      synchronize: true,
+    },
+  ]).catch((error) => {
     throw new Error(error);
   });
 
@@ -78,7 +100,8 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       const headers = req.headers as GatewayHeaders;
       const firebaseUid = headers.firebaseuid;
       const mobileNumber = headers.mobilenumber;
-      const doctorsDb = getConnection('doctors-db');
+      const doctorsDb = getConnection();
+      const consultsDb = getConnection('consults-db');
 
       const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
       const doctordata = (await doctorRepository.getDoctorDetails(firebaseUid)) as Doctor;
@@ -88,6 +111,7 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
         firebaseUid,
         mobileNumber,
         doctorsDb,
+        consultsDb,
         currentUser,
       };
       return context;
@@ -110,6 +134,10 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
         resolvers: getSpecialtyDoctorsResolvers,
       },
       {
+        typeDefs: getDoctorsBySpecialtyAndFiltersTypeDefs,
+        resolvers: getDoctorsBySpecialtyAndFiltersTypeDefsResolvers,
+      },
+      {
         typeDefs: getSpecialtyTypeDefs,
         resolvers: getSpecialtyResolvers,
       },
@@ -120,6 +148,10 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       {
         typeDefs: searchDoctorAndSpecialtyTypeDefs,
         resolvers: searchDoctorAndSpecialtyResolvers,
+      },
+      {
+        typeDefs: searchDoctorAndSpecialtyByNameTypeDefs,
+        resolvers: searchDoctorAndSpecialtyByNameResolvers,
       },
       {
         typeDefs: starDoctorTypeDefs,

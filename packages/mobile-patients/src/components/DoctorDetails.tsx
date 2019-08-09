@@ -4,40 +4,41 @@ import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView'
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ShareWhite } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
 import {
-  Dimensions,
-  Image,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  Platform,
-  Animated,
-} from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { useQuery } from 'react-apollo-hooks';
-import {
-  GET_DOCTOR_PROFILE_BY_ID,
   GET_APPOINTMENT_HISTORY,
   GET_AVAILABLE_SLOTS,
+  GET_DOCTOR_DETAILS_BY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import Moment from 'moment';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import {
-  getDoctorProfileById,
-  getDoctorProfileByIdVariables,
-  getDoctorProfileById_getDoctorProfileById,
-} from '@aph/mobile-patients/src/graphql/types/getDoctorProfileById';
 import {
   getAppointmentHistory,
   getAppointmentHistory_getAppointmentHistory_appointmentsHistory,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentHistory';
 import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
+import {
+  getDoctorDetailsById,
+  getDoctorDetailsByIdVariables,
+  getDoctorDetailsById_getDoctorDetailsById,
+} from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Moment from 'moment';
+import React, { useState } from 'react';
+import { useQuery } from 'react-apollo-hooks';
+import {
+  Animated,
+  Dimensions,
+  Platform,
+  SafeAreaView,
+  Share,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
 
 const { height } = Dimensions.get('window');
 
@@ -55,6 +56,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(23),
     color: theme.colors.LIGHT_BLUE,
     paddingBottom: 7,
+    paddingTop: 20,
   },
   doctorSpecializationStyles: {
     paddingTop: 7,
@@ -62,6 +64,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(12),
     color: theme.colors.SKY_BLUE,
     letterSpacing: 0.3,
+    textTransform: 'uppercase',
   },
   educationTextStyles: {
     paddingTop: 4,
@@ -139,17 +142,16 @@ const Appointments: Appointments[] = [
 export interface DoctorDetailsProps extends NavigationScreenProps {}
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [dispalyoverlay, setdispalyoverlay] = useState<boolean>(false);
-  const [
-    doctorDetails,
-    setDoctorDetails,
-  ] = useState<getDoctorProfileById_getDoctorProfileById | null>();
+  const [doctorDetails, setDoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const [appointmentHistory, setAppointmentHistory] = useState<
     getAppointmentHistory_getAppointmentHistory_appointmentsHistory[] | null
   >([]);
   const [doctorId, setDoctorId] = useState<String>('');
   const { currentPatient } = useAllCurrentPatients();
-  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [scrollY, setscrollY] = useState(new Animated.Value(0));
+  const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
+
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
     outputRange: [0, -105, -105],
@@ -200,6 +202,35 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     console.log('error', availabilityData.error);
   } else {
     console.log(availabilityData.data, 'availabilityData');
+    if (
+      availabilityData &&
+      availabilityData.data &&
+      availabilityData.data.getDoctorAvailableSlots &&
+      availabilityData.data.getDoctorAvailableSlots.availableSlots !== undefined &&
+      availableSlots !== availabilityData.data.getDoctorAvailableSlots.availableSlots
+    ) {
+      setavailableSlots(availabilityData.data.getDoctorAvailableSlots.availableSlots);
+    }
+  }
+
+  console.log(props.navigation.state.params!.doctorId, 'doctorIddoctorIddoctorId');
+  const { data, error } = useQuery<getDoctorDetailsById, getDoctorDetailsByIdVariables>(
+    GET_DOCTOR_DETAILS_BY_ID,
+    {
+      // variables: { id: 'a6ef960c-fc1f-4a12-878a-12063788d625' },
+      variables: { id: props.navigation.state.params!.doctorId },
+    }
+  );
+  if (error) {
+    ``;
+    console.log('error', error);
+  } else {
+    console.log('getDoctorDetailsById', data);
+    if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
+      setDoctorDetails(data.getDoctorDetailsById);
+      setDoctorId(data.getDoctorDetailsById.id);
+      setshowSpinner(false);
+    }
   }
 
   const formatTime = (time: string) => Moment(time, 'HH:mm:ss.SSSz').format('hh:mm a');
@@ -208,35 +239,35 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     if (doctorDetails)
       return (
         <View style={styles.topView}>
-          {doctorDetails && doctorDetails.profile && (
+          {doctorDetails && doctorDetails && (
             <View style={styles.detailsViewStyle}>
               <Text style={styles.doctorNameStyles}>
-                {doctorDetails.profile.salutation}. {doctorDetails.profile.firstName}{' '}
-                {doctorDetails.profile.lastName}
+                {doctorDetails.salutation ? doctorDetails.salutation : 'Dr'}.{' '}
+                {doctorDetails.firstName} {doctorDetails.lastName}
               </Text>
               <View style={styles.separatorStyle} />
               <Text style={styles.doctorSpecializationStyles}>
-                {doctorDetails.profile.specialization!.toUpperCase()} |{' '}
-                {doctorDetails.profile.experience} YRS
+                {doctorDetails.specialty ? doctorDetails.specialty.name : ''} |{' '}
+                {doctorDetails.experience} YRS
               </Text>
-              <Text style={styles.educationTextStyles}>{doctorDetails.profile.education}</Text>
+              <Text style={styles.educationTextStyles}>{doctorDetails.qualification}</Text>
               <Text style={[styles.educationTextStyles, { paddingBottom: 12 }]}>
-                {doctorDetails.profile.awards}
+                {doctorDetails.awards
+                  ? doctorDetails.awards.replace(/(<([^>]+)>)/gi, '').trim()
+                  : ''}
               </Text>
 
               <View style={styles.separatorStyle} />
-              <Text style={[styles.doctorLocation, { paddingTop: 11 }]}>
-                {doctorDetails.profile.address}
-              </Text>
+              <Text style={[styles.doctorLocation, { paddingTop: 11 }]}>{doctorDetails.city}</Text>
               <Text style={[styles.doctorLocation, { paddingBottom: 11, paddingTop: 4 }]}>
-                {doctorDetails.profile.languages!.split(',').join(' | ')}
+                {doctorDetails.languages!.split(',').join(' | ')}
               </Text>
               <View style={styles.separatorStyle} />
               <View style={styles.onlineConsultView}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.onlineConsultLabel}>Online Consult</Text>
                   <Text style={styles.onlineConsultAmount}>
-                    Rs. {doctorDetails.profile.onlineConsultationFees}
+                    Rs. {doctorDetails.onlineConsultationFees}
                   </Text>
                   <CapsuleView title={'AVAILABLE IN 15 MINS'} />
                 </View>
@@ -244,7 +275,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <View style={{ flex: 1 }}>
                   <Text style={styles.onlineConsultLabel}>Clinic Visit</Text>
                   <Text style={styles.onlineConsultAmount}>
-                    Rs. {doctorDetails.profile.physicalConsultationFees}
+                    Rs. {doctorDetails.physicalConsultationFees}
                   </Text>
                   <CapsuleView title={'AVAILABLE IN 27 MINS'} isActive={false} />
                 </View>
@@ -257,14 +288,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const renderDoctorClinic = () => {
-    if (doctorDetails && doctorDetails.clinics && doctorDetails.clinics.length > 0) {
-      const clinic = doctorDetails.clinics[0];
+    if (doctorDetails && doctorDetails.doctorHospital && doctorDetails.doctorHospital.length > 0) {
+      const clinic = doctorDetails.doctorHospital[0].facility;
 
       return (
         <View style={styles.cardView}>
           <View style={styles.labelView}>
             <Text style={styles.labelStyle}>
-              {doctorDetails.profile.salutation}. {doctorDetails.profile.firstName}’s Clinic
+              {doctorDetails.salutation ? doctorDetails.salutation : 'Dr'}.{' '}
+              {doctorDetails.firstName}’s Clinic
             </Text>
           </View>
           <View
@@ -280,7 +312,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 borderRadius: 10,
               }}
             >
-              {clinic.image && (
+              {/* {clinic.image && (
                 <Image
                   source={{ uri: clinic.image }}
                   style={{
@@ -288,7 +320,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     width: '100%',
                   }}
                 />
-              )}
+              )} */}
 
               <View
                 style={{
@@ -302,9 +334,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     color: theme.colors.LIGHT_BLUE,
                   }}
                 >
-                  {clinic.addressLine1}
-                  {clinic.addressLine2
-                    ? `${clinic.addressLine1 ? ', ' : ''}${clinic.addressLine2}`
+                  {clinic.streetLine1}
+                  {clinic.streetLine2
+                    ? `${clinic.streetLine1 ? ', ' : ''}${clinic.streetLine2}`
                     : ''}
                 </Text>
                 <Text
@@ -315,7 +347,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 >
                   {clinic.city}
                 </Text>
-                {doctorDetails.consultationHours && (
+                {/* {doctorDetails.consultationHours && (
                   <>
                     <View style={[styles.separatorStyle, { marginVertical: 8 }]} />
 
@@ -346,7 +378,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       </View>
                     ))}
                   </>
-                )}
+                )} */}
               </View>
             </View>
           </View>
@@ -358,27 +390,29 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const renderDoctorTeam = () => {
     // const startDoctor = string.home.startDoctor;
-    if (doctorDetails)
+    console.log(doctorDetails!.starTeam, 'doctorDetails.starTeam');
+    if (doctorDetails && doctorDetails.starTeam && doctorDetails.starTeam)
       return (
         <View style={styles.cardView}>
           <View style={styles.labelView}>
             <Text style={styles.labelStyle}>
-              {doctorDetails.profile.salutation}. {doctorDetails.profile.firstName}’s Team
+              {doctorDetails.salutation ? doctorDetails.salutation : 'Dr'}.{' '}
+              {doctorDetails.firstName}’s Team
             </Text>
-            <Text style={styles.labelStyle}>{doctorDetails.starDoctorTeam!.length} Doctors</Text>
+            <Text style={styles.labelStyle}>{doctorDetails.starTeam!.length} Doctors</Text>
           </View>
           <ScrollView horizontal bounces={false} showsHorizontalScrollIndicator={false}>
             <FlatList
-              key={doctorDetails.starDoctorTeam!.length / 2}
+              key={doctorDetails.starTeam!.length / 2}
               contentContainerStyle={{ padding: 12 }}
               // horizontal={true}
-              data={doctorDetails.starDoctorTeam ? doctorDetails.starDoctorTeam : []}
+              data={doctorDetails.starTeam}
               bounces={false}
-              numColumns={doctorDetails.starDoctorTeam!.length / 2}
+              numColumns={doctorDetails.starTeam!.length / 2}
               renderItem={({ item }) => (
                 <View style={{ width: 320 }}>
                   <DoctorCard
-                    rowData={item}
+                    rowData={item ? item.associatedDoctor : null}
                     navigation={props.navigation}
                     displayButton={false}
                     style={{
@@ -410,7 +444,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             </Text>
           </View>
           <FlatList
-            // horizontal={true}
             contentContainerStyle={{
               marginVertical: 12,
             }}
@@ -442,9 +475,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     color: theme.colors.SEARCH_DOCTOR_NAME,
                   }}
                 >
-                  {Moment(item.appointmentDate).format('DD MMMM')}
+                  {Moment(item.appointmentDateTime).format('DD MMMM')}
                   {' , '}
-                  {formatTime(item.appointmentTime)}
+                  {formatTime(item.appointmentDateTime)}
                 </Text>
                 <View style={styles.separatorStyle} />
                 <View style={{ flexDirection: 'row' }}>
@@ -465,28 +498,27 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     }
   };
 
-  // console.log(props.navigation.state.params!.doctorId, 'doctorIddoctorIddoctorId');
-  const { data, error } = useQuery<getDoctorProfileById, getDoctorProfileByIdVariables>(
-    GET_DOCTOR_PROFILE_BY_ID,
-    {
-      // variables: { id: 'a6ef960c-fc1f-4a12-878a-12063788d625' },
-      variables: { id: props.navigation.state.params!.doctorId },
-    }
-  );
-  if (error) {
-    ``;
-    console.log('error', error);
-  } else {
-    console.log('data details', data);
-    if (data && data.getDoctorProfileById && doctorDetails !== data.getDoctorProfileById) {
-      setDoctorDetails(data.getDoctorProfileById);
-      setDoctorId(data.getDoctorProfileById.profile.id);
-      setshowSpinner(false);
-    }
-  }
-
   const handleScroll = () => {
     // console.log(e, 'jvjhvhm');
+  };
+  const onShare = async () => {
+    try {
+      const result = await Share.share({
+        message: 'React Native | A framework for building native apps using React',
+      });
+
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          // shared with activity type of result.activityType
+        } else {
+          // shared
+        }
+      } else if (result.action === Share.dismissedAction) {
+        // dismissed
+      }
+    } catch (error) {
+      // Alert(error.message);
+    }
   };
 
   console.log(dispalyoverlay, 'dispalyoverlay', doctorDetails);
@@ -497,21 +529,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           ...theme.viewStyles.container,
         }}
       >
-        {/* <Header
-          container={{
-            zIndex: 3,
-            position: 'absolute',
-            top: Platform.OS === 'ios' ? (height === 812 || height === 896 ? 40 : 20) : 0,
-            left: 0,
-            right: 0,
-            // height: 56,
-            backgroundColor: 'transparent',
-            borderBottomWidth: 0,
-          }}
-          leftIcon="backArrowWhite"
-          rightComponent={<ShareWhite />}
-          onPressLeftIcon={() => props.navigation.goBack()}
-        /> */}
         <Animated.ScrollView
           bounces={false}
           scrollEventThrottle={16}
@@ -542,7 +559,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         {showSpinner ? null : (
           <StickyBottomComponent defaultBG>
             <Button
-              title={'BOOK CONSULTATION'}
+              title={'BOOK APPOINTMENTS'}
               onPress={() => setdispalyoverlay(true)}
               style={{ marginHorizontal: 60, flex: 1 }}
             />
@@ -554,9 +571,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <ConsultOverlay
           setdispalyoverlay={() => setdispalyoverlay(false)}
           navigation={props.navigation}
-          doctor={doctorDetails.profile ? doctorDetails.profile : null}
+          doctor={doctorDetails ? doctorDetails : null}
           patientId={currentPatient ? currentPatient.id : ''}
-          clinics={doctorDetails.clinics ? doctorDetails.clinics : []}
+          clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
+          availableSlots={availableSlots}
         />
       )}
       {showSpinner && <Spinner />}
@@ -584,9 +602,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             justifyContent: 'center',
           }}
         >
-          {doctorDetails && doctorDetails.profile && doctorDetails.profile.photoUrl && (
+          {doctorDetails && doctorDetails && doctorDetails.photoUrl && (
             <Animated.Image
-              source={{ uri: doctorDetails.profile.photoUrl }}
+              source={{ uri: doctorDetails.photoUrl }}
               style={{ top: 10, height: 180, width: '100%', opacity: imgOp }}
             />
           )}
@@ -604,7 +622,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           borderBottomWidth: 0,
         }}
         leftIcon="backArrowWhite"
-        rightComponent={<ShareWhite />}
+        rightComponent={
+          <TouchableOpacity onPress={onShare}>
+            <ShareWhite />
+          </TouchableOpacity>
+        }
         onPressLeftIcon={() => props.navigation.goBack()}
       />
     </View>

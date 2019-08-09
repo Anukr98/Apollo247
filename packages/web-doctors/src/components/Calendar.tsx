@@ -2,9 +2,20 @@ import React, { useState } from 'react';
 import { Theme, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import { CalendarStrip } from 'components/Calendar/CalendarStrip';
-import { Appointments, Appointment } from 'components/Appointments';
-import { addMinutes, startOfDay, getTime } from 'date-fns';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import { Week as WeekView } from 'components/Calendar/Views/Week';
+import { Month as MonthView } from 'components/Calendar/Views/Month';
+import { GET_DOCTOR_APPOINTMENTS } from 'graphql/appointments';
+import { Appointment } from 'components/Appointments';
+import { getTime, startOfToday, addDays, startOfMonth, endOfMonth } from 'date-fns/esm';
+import { addMinutes, format, startOfDay } from 'date-fns';
+import {
+  GetDoctorAppointments,
+  GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
+} from 'graphql/types/GetDoctorAppointments';
+import { ApolloConsumer } from 'react-apollo';
+import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -23,6 +34,7 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
+      position: 'relative',
     },
 
     labelRoot: {
@@ -61,113 +73,173 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
-    calendarContainer: {
-      backgroundColor: '#f7f7f7',
-      padding: '15px',
-      fontSize: 18,
-      color: 'rgba(101, 143, 155, 0.6)',
+    toggleBtn: {
+      backgroundColor: '#f0f4f5',
+      position: 'absolute',
+      top: 55,
+      right: 16,
+      borderRadius: 17,
+      '& button': {
+        padding: '6px 40px',
+        height: 36,
+        borderRadius: 17,
+        color: '#02475b',
+        textTransform: 'capitalize',
+      },
+    },
+    customeSelect: {
+      backgroundColor: '#00b38e !important',
+      color: '#fff !important',
+      '&:first-child': {
+        borderRadius: '17px !important',
+      },
+    },
+    nopionter: {
+      pointerEvents: 'none',
     },
   };
 });
 
-export const Calendar: React.FC = () => {
-  const dummyData: Appointment[] = [
-    {
-      startTime: Date.now(),
-      endTime: getTime(addMinutes(Date.now(), 1)),
-      details: {
-        patientName: 'Prateek Sharma',
-        checkups: ['Fever', 'Cough & Cold', 'Nausea', 'Sore Eyes'],
-        avatar:
-          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-      },
-      isNew: true,
-      type: 'walkin',
-    },
-    {
-      startTime: getTime(addMinutes(Date.now(), 3)),
-      endTime: getTime(addMinutes(Date.now(), 5)),
-      details: {
-        patientName: 'George',
-        checkups: ['Fever', 'Cough & Cold', 'Nausea'],
-        avatar:
-          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-      },
-      isNew: false,
-      type: 'walkin',
-    },
-    {
-      startTime: getTime(addMinutes(Date.now(), 5)),
-      endTime: getTime(addMinutes(Date.now(), 10)),
-      details: {
-        patientName: 'George',
-        checkups: ['Fever', 'Cough & Cold', 'Nausea'],
-        avatar:
-          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-      },
-      isNew: false,
-      type: 'walkin',
-    },
-    {
-      startTime: getTime(addMinutes(Date.now(), 10)),
-      endTime: getTime(addMinutes(Date.now(), 30)),
-      details: {
-        patientName: 'George',
-        checkups: ['Fever', 'Cough & Cold', 'Nausea'],
-        avatar:
-          'https://images.unsplash.com/photo-1556909128-2293de4be38e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-      },
-      isNew: false,
-      type: 'walkin',
-    },
-  ];
-  const [appointments, setAppointments] = useState<Appointment[]>(dummyData);
+const dataAdapter = (data: GetDoctorAppointments | undefined) => {
+  if (!data || !data.getDoctorAppointments) {
+    return [] as Appointment[];
+  }
+  const appointments: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory[] =
+    data!.getDoctorAppointments!.appointmentsHistory || [];
 
-  const setData = (startOfWeekDate: Date) => {
-    if (
-      getTime(startOfWeekDate) === getTime(startOfDay(Date.now())) ||
-      getTime(startOfWeekDate) === getTime(startOfDay(new Date(2019, 11, 1, 0, 0)))
-    ) {
-      return setAppointments(dummyData);
+  const adaptedList: Appointment[] = appointments.map(
+    (appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory) => {
+      const { appointmentDateTime, appointmentType: type, status } = appointment;
+      const startTime = getTime(new Date(appointmentDateTime));
+      const endTime = getTime(addMinutes(startTime, 15));
+
+      return {
+        startTime,
+        endTime,
+        type,
+        status,
+        isNew: false,
+        details: {
+          patientName: '',
+          checkups: [],
+          avatar: '',
+        },
+      };
     }
+  );
 
-    setAppointments([]);
+  return adaptedList;
+};
+
+export interface CalendarProps {
+  doctorId: string;
+}
+
+const getRange = (date: Date) => {
+  return { start: startOfDay(date), end: addDays(startOfDay(date), 1) };
+};
+
+const getMonthRange = ({ start, end }: { start: string | Date; end: string | Date }) => {
+  start = startOfMonth(start as Date);
+  end = endOfMonth(end as Date);
+  return { start, end };
+};
+
+export const Calendar: React.FC<CalendarProps> = ({ doctorId }) => {
+  const today: Date = startOfToday();
+  const classes = useStyles();
+  const [selectedDate, setSelectedDate] = useState<Date>(today);
+  const [viewSelection, setViewSelection] = useState<string>('day');
+  const [range, setRange] = useState<{ start: string | Date; end: string | Date }>(
+    getRange(selectedDate)
+  );
+  const [data, setData] = useState<GetDoctorAppointments>({} as GetDoctorAppointments);
+
+  const setStartOfMonthDate = ({ start }: { start: string | Date; end: string | Date }) => {
+    setSelectedDate(startOfMonth(start as Date));
   };
 
-  const classes = useStyles();
-
   return (
-    <div className={classes.welcome}>
-      <div className={classes.headerSticky}>
-        <Header />
-      </div>
-      <div className={classes.container}>
-        <div className={classes.tabHeading}>
-          <Typography variant="h1">hello dr.rao :)</Typography>
-          <p>here’s your schedule for today</p>
-        </div>
-        <div style={{ background: 'black' }}>
-          <div></div>
-          <div className={classes.calendarContainer}>
-            <CalendarStrip
-              dayClickHandler={(e, date) => {
-                setData(startOfDay(date));
-              }}
-              monthChangeHandler={(e, selectedMonth, startOfWeekDate) => {
-                setData(startOfWeekDate);
-              }}
-              onNext={(e, date, startOfWeekDate) => {
-                setData(startOfWeekDate);
-              }}
-              onPrev={(e, date, startOfWeekDate) => {
-                setData(startOfWeekDate);
-              }}
-            />
-          </div>
+    <ApolloConsumer>
+      {(client) => {
+        client
+          .query({
+            query: GET_DOCTOR_DETAILS,
+          })
+          .then(({ data }) => {
+            console.log(data);
+            client
+              .query({
+                query: GET_DOCTOR_APPOINTMENTS,
+                variables: {
+                  doctorId: data.getDoctorDetails.id,
+                  startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
+                  endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
+                },
+              })
+              .then(({ data }) => setData(data));
+          });
 
-          <Appointments values={appointments} />
-        </div>
-      </div>
-    </div>
+        return (
+          <div className={classes.welcome}>
+            <div className={classes.headerSticky}>
+              <Header />
+            </div>
+            <div className={classes.container}>
+              <div className={classes.tabHeading}>
+                <Typography variant="h1">hello dr.rao :)</Typography>
+                <p>here’s your schedule for today</p>
+              </div>
+              <div>
+                <div>
+                  <ToggleButtonGroup exclusive value={viewSelection} className={classes.toggleBtn}>
+                    <ToggleButton
+                      className={classes.customeSelect}
+                      value="day"
+                      onClick={() => {
+                        setViewSelection('day');
+                        setRange(getRange(selectedDate));
+                      }}
+                    >
+                      Day
+                    </ToggleButton>
+                    <ToggleButton
+                      className={classes.nopionter}
+                      value="month"
+                      onClick={() => {
+                        setViewSelection('month');
+                        setRange({ start: selectedDate, end: endOfMonth(selectedDate) });
+                      }}
+                    >
+                      Month
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                </div>
+                {viewSelection === 'day' && (
+                  <WeekView
+                    data={dataAdapter(data)}
+                    date={selectedDate}
+                    onDaySelection={(date) => {
+                      setSelectedDate(date);
+                      setRange(getRange(date));
+                    }}
+                  />
+                )}
+                {viewSelection === 'month' && (
+                  <MonthView
+                    data={data}
+                    date={selectedDate}
+                    onMonthChange={(range) => {
+                      setStartOfMonthDate(range as { start: string; end: string });
+                      setRange(getMonthRange(range as { start: string; end: string }));
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      }}
+    </ApolloConsumer>
   );
 };

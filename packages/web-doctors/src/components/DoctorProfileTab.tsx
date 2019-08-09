@@ -532,36 +532,46 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           </Grid>
           <Grid item lg={8} sm={6} xs={12} className={classes.tabLeftcontent}>
             <Grid container alignItems="flex-start" spacing={0}>
-              <Grid item lg={6} sm={12} xs={12}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">Education</Typography>
-                  <Typography variant="h3">{doctor.qualification}</Typography>
-                </Paper>
-              </Grid>
-              <Grid item lg={6} sm={12} xs={12}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">Awards</Typography>
-                  <Typography variant="h3">{doctor.awards}</Typography>
-                </Paper>
-              </Grid>
-              <Grid item lg={6} sm={12} xs={12}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">Speciality</Typography>
-                  <Typography variant="h3">{doctor.specialty.name}</Typography>
-                </Paper>
-              </Grid>
-              <Grid item lg={6} sm={12} xs={12}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">Speaks</Typography>
-                  <Typography variant="h3">{doctor.languages}</Typography>
-                </Paper>
-              </Grid>
-              <Grid item lg={6} sm={12} xs={12}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">Services</Typography>
-                  <Typography variant="h3">{doctor.specialization}</Typography>
-                </Paper>
-              </Grid>
+              {doctor.qualification && doctor.qualification!.length > 0 && (
+                <Grid item lg={6} sm={12} xs={12}>
+                  <Paper className={classes.serviceItem}>
+                    <Typography variant="h5">Education</Typography>
+                    <Typography variant="h3">{doctor.qualification}</Typography>
+                  </Paper>
+                </Grid>
+              )}
+              {doctor.awards && doctor.awards!.length > 0 && (
+                <Grid item lg={6} sm={12} xs={12}>
+                  <Paper className={classes.serviceItem}>
+                    <Typography variant="h5">Awards</Typography>
+                    <Typography variant="h3">{doctor.awards}</Typography>
+                  </Paper>
+                </Grid>
+              )}
+              {doctor.specialty.name && doctor.specialty.name!.length > 0 && (
+                <Grid item lg={6} sm={12} xs={12}>
+                  <Paper className={classes.serviceItem}>
+                    <Typography variant="h5">Speciality</Typography>
+                    <Typography variant="h3">{doctor.specialty.name}</Typography>
+                  </Paper>
+                </Grid>
+              )}
+              {doctor.languages && doctor.languages!.length > 0 && (
+                <Grid item lg={6} sm={12} xs={12}>
+                  <Paper className={classes.serviceItem}>
+                    <Typography variant="h5">Speaks</Typography>
+                    <Typography variant="h3">{doctor.languages}</Typography>
+                  </Paper>
+                </Grid>
+              )}
+              {doctor.specialization && doctor!.specialization!.length > 0 && (
+                <Grid item lg={6} sm={12} xs={12}>
+                  <Paper className={classes.serviceItem}>
+                    <Typography variant="h5">Services</Typography>
+                    <Typography variant="h3">{doctor.specialization}</Typography>
+                  </Paper>
+                </Grid>
+              )}
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">In-person Consult Location</Typography>
@@ -574,12 +584,14 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   ))}
                 </Paper>
               </Grid>
-              <Grid item lg={6} sm={12} xs={12}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">MCI Number</Typography>
-                  <Typography variant="h3">{doctor.registrationNumber}</Typography>
-                </Paper>
-              </Grid>
+              {doctor.registrationNumber && doctor.registrationNumber!.length > 0 && (
+                <Grid item lg={6} sm={12} xs={12}>
+                  <Paper className={classes.serviceItem}>
+                    <Typography variant="h5">MCI Number</Typography>
+                    <Typography variant="h3">{doctor.registrationNumber}</Typography>
+                  </Paper>
+                </Grid>
+              )}
             </Grid>
           </Grid>
         </Grid>
