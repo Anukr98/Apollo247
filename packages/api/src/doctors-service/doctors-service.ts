@@ -28,6 +28,10 @@ import {
   getSpecialtyDoctorsResolvers,
 } from 'doctors-service/resolvers/getSpecialtyDoctorsWithFilters';
 import {
+  getDoctorsBySpecialtyAndFiltersTypeDefs,
+  getDoctorsBySpecialtyAndFiltersTypeDefsResolvers,
+} from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
+import {
   getDoctorDetailsTypeDefs,
   getDoctorDetailsResolvers,
 } from 'doctors-service/resolvers/getDoctorDetails';
@@ -128,6 +132,10 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       {
         typeDefs: getSpecialtyDoctorsTypeDefs,
         resolvers: getSpecialtyDoctorsResolvers,
+      },
+      {
+        typeDefs: getDoctorsBySpecialtyAndFiltersTypeDefs,
+        resolvers: getDoctorsBySpecialtyAndFiltersTypeDefsResolvers,
       },
       {
         typeDefs: getSpecialtyTypeDefs,
