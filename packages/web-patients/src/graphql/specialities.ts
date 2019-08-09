@@ -9,3 +9,13 @@ export const GET_SPECIALITIES = gql`
     }
   }
 `;
+
+export const GET_ALL_SPECIALITIES = gql`
+  query GetAllSpecialties {
+    getAllSpecialties {
+      id
+      name
+      image
+    }
+  }
+`;
