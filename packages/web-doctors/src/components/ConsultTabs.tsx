@@ -85,6 +85,7 @@ export const ConsultTabs: React.FC = (props) => {
     document.cookie = cookieStr + ';path=/;';
     setStartConsult(flag ? 'videocall' : 'audiocall');
   };
+
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>

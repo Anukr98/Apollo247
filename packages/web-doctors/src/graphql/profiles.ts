@@ -205,3 +205,11 @@ export const UPDATE_PATIENT = gql`
     }
   }
 `;
+export const CREATE_APPOINTMENT_SESSION = gql`
+  mutation CreateAppointmentSession($CreateAppointmentSessionInput: String!) {
+    createAppointmentSession(createAppointmentSessionInput: $CreateAppointmentSessionInput) {
+      sessionId
+      appointmentToken
+    }
+  }
+`;

@@ -46,6 +46,11 @@ export enum INVITEDSTATUS {
   REJECTED = "REJECTED",
 }
 
+export enum REQUEST_ROLES {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
@@ -78,6 +83,11 @@ export enum WeekDay {
   THURSDAY = "THURSDAY",
   TUESDAY = "TUESDAY",
   WEDNESDAY = "WEDNESDAY",
+}
+
+export interface CreateAppointmentSessionInput {
+  appointmentId: string;
+  requestRole: REQUEST_ROLES;
 }
 
 export interface UpdatePatientInput {

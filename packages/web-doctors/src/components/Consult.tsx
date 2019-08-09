@@ -114,6 +114,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   //const [publishVideo, setPublishVideo] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const [subscribeToAudio, setSubscribeToAudio] = React.useState(props.isVideoCall ? false : true);
+  console.log(mute, subscribeToVideo, subscribeToVideo, subscribeToAudio);
   return (
     <div className={classes.consult}>
       <div>
@@ -136,8 +137,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 properties={{
                   publishAudio: mute,
                   publishVideo: subscribeToVideo,
-                  subscribeToVideo: subscribeToVideo,
-                  subscribeToAudio: subscribeToAudio,
+                  // subscribeToVideo: subscribeToVideo,
+                  // subscribeToAudio: subscribeToAudio,
                 }}
               />
 
@@ -156,10 +157,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 > */}
                 <OTStreams>
                   <OTSubscriber
-                    properties={{
-                      subscribeToVideo: subscribeToVideo,
-                      subscribeToAudio: subscribeToAudio,
-                    }}
+                  // properties={{
+                  //   subscribeToVideo: subscribeToVideo,
+                  //   subscribeToAudio: subscribeToAudio,
+                  // }}
                   />
                 </OTStreams>
                 {/* </div> */}
