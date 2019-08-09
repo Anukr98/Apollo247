@@ -129,6 +129,24 @@ const useStyles = makeStyles((theme: Theme) => {
       borderBottom: '5px solid #00b38e',
       color: '#02475b',
     },
+    searchList: {
+      paddingBottom: 20,
+      [theme.breakpoints.down('xs')]: {
+        paddingBottom: 14,
+      },
+      '& >div': {
+        [theme.breakpoints.down('xs')]: {
+          marginLeft: -6,
+          marginRight: -6,
+          width: 'calc(100% + 12px)',
+        },
+        '& >div': {
+          [theme.breakpoints.down('xs')]: {
+            padding: '6px !important',
+          },
+        },
+      },
+    },
   };
 });
 
@@ -154,15 +172,17 @@ export const PossibleSpecialitiesAndDoctors: React.FC<SpecialitiesProps> = (prop
             {matchingDoctors > 0 && matchingDoctors < 10 ? `0${matchingDoctors}` : matchingDoctors}
           </span>
         </div>
-        <Grid spacing={2} container>
-          {_map(data.SearchDoctorAndSpecialty.doctors, (doctorDetails) => {
-            return (
-              <Grid item sm={6} key={_uniqueId('doctor_')}>
-                <DoctorCard doctorDetails={doctorDetails} />
-              </Grid>
-            );
-          })}
-        </Grid>
+        <div className={classes.searchList}>
+          <Grid spacing={2} container>
+            {_map(data.SearchDoctorAndSpecialty.doctors, (doctorDetails) => {
+              return (
+                <Grid item sm={6} key={_uniqueId('doctor_')}>
+                  <DoctorCard doctorDetails={doctorDetails} />
+                </Grid>
+              );
+            })}
+          </Grid>
+        </div>
         <Specialities
           keyword=""
           matched={matched}

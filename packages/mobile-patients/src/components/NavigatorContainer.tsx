@@ -17,6 +17,7 @@ import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
 import { Consult } from '@aph/mobile-patients/src/components/Consult';
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { DoctorDetails } from '@aph/mobile-patients/src/components/DoctorDetails';
+import { AppointmentDetails } from '@aph/mobile-patients/src/components/AppointmentDetails';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -35,6 +36,7 @@ export enum AppRoutes {
   Consult = 'Consult',
   FilterScene = 'FilterScene',
   DoctorDetails = 'DoctorDetails',
+  AppointmentDetails = 'AppointmentDetails',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -104,6 +106,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.DoctorDetails]: {
     screen: DoctorDetails,
+  },
+  [AppRoutes.AppointmentDetails]: {
+    screen: AppointmentDetails,
   },
 };
 
