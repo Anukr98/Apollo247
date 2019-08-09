@@ -132,6 +132,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const { signIn, callApiWithToken, authError, clearCurrentUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
+  const [androidSignedIn, setAndroidSignedIn] = useState(false);
+
   useEffect(() => {
     const { otpString } = props.navigation.state.params!;
     setOtp(otpString);
@@ -302,26 +304,39 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   const redirectToProfileSetup = () => {
-    client
-      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
-      .then((_data) => {
-        const result = _data.data.getDoctorDetails;
-        console.log('GET_DOCTOR_DETAILS', result);
-        setIsLoading(false);
-        if (result) {
-          props.navigation.replace(AppRoutes.ProfileSetup);
-        }
-      })
-      .catch((e) => {
-        setIsLoading(false);
-        props.navigation.goBack();
-        Alert.alert(
-          'Error',
-          'Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll.'
-        );
-        console.log('Error occured while adding Doctor', e);
-      });
+    setTimeout(() => {
+      client
+        .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
+        .then((_data) => {
+          console.log('LOGIN SUCCESSFULL');
+          const result = _data.data && _data.data.getDoctorDetails;
+          setIsLoading(false);
+          if (result) {
+            props.navigation.replace(AppRoutes.ProfileSetup);
+          }
+        })
+        .catch((e) => {
+          setIsLoading(false);
+          props.navigation.goBack();
+          Alert.alert(
+            'Error',
+            'Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll.'
+          );
+          console.log('Error occured while fetching Doctor profile', e);
+        });
+    }, 8000);
   };
+
+  useEffect(() => {
+    firebase.auth().onAuthStateChanged((updatedUser) => {
+      console.log(updatedUser);
+      if (updatedUser && updatedUser.phoneNumber == props.navigation.getParam('phoneNumber')) {
+        setAndroidSignedIn(true);
+      } else {
+        console.log('Notttt');
+      }
+    });
+  }, []);
 
   const onClickOk = async () => {
     const { phoneNumberVerificationCredential } = props.navigation.state.params!;
@@ -353,22 +368,35 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           }
         });
       })
-      .catch((error) => {
+      .catch(async (error) => {
         console.log('error', error);
         setIsLoading(false);
-        _storeTimerData(invalidOtpCount + 1);
-
-        if (invalidOtpCount + 1 === 3) {
-          setShowErrorMsg(true);
-          setIsValidOTP(false);
-          startInterval(timer);
-          setIntervalId(intervalId);
+        if (androidSignedIn) {
+          setLoggedIn(true);
+          _removeFromStore();
+          try {
+            const token = await updatedUser!.getIdToken();
+            await callApiWithToken!(token);
+          } catch (e) {
+            console.log('Exception', e);
+          }
+          // Call API here and check doctor exist in database
+          redirectToProfileSetup();
         } else {
-          setShowErrorMsg(true);
-          setIsValidOTP(true);
+          _storeTimerData(invalidOtpCount + 1);
+
+          if (invalidOtpCount + 1 === 3) {
+            setShowErrorMsg(true);
+            setIsValidOTP(false);
+            startInterval(timer);
+            setIntervalId(intervalId);
+          } else {
+            setShowErrorMsg(true);
+            setIsValidOTP(true);
+          }
+          setInvalidOtpCount(invalidOtpCount + 1);
+          setOtp('');
         }
-        setInvalidOtpCount(invalidOtpCount + 1);
-        setOtp('');
       });
   };
 

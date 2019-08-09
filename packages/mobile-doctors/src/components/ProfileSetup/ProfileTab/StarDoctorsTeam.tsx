@@ -158,6 +158,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
       {starDoctors!.length > 0 ? (
         <View style={styles.dropDownCardStyle}>
           {starDoctors!.map((_doctor, i) => {
+            if (!_doctor!.isActive) return null;
             const doctor = _doctor!.associatedDoctor!;
             const drName = `Dr. ${doctor.firstName} ${doctor.lastName}`;
             return (
