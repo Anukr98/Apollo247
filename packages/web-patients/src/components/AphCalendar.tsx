@@ -3,7 +3,6 @@ import { Theme, createMuiTheme } from '@material-ui/core';
 import React, { useState } from 'react';
 import { usePickerState, Calendar, MaterialUiPickersDate } from '@material-ui/pickers';
 import format from 'date-fns/format';
-import lightBlue from '@material-ui/core/colors/lightBlue';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
