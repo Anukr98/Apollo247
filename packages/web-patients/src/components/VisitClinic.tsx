@@ -168,7 +168,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const [dateSelected, setDateSelected] = useState<string>('');
   const [timeSelected, setTimeSelected] = useState<string>('');
   const [clinicSelected, setClinicSelected] = useState<string>('');
-  const [clinicAddress, setClinicAddress] = useState<string>('');
+  const [clinicAddress] = useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [mutationSuccess, setMutationSuccess] = React.useState(false);
