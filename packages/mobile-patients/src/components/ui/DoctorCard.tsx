@@ -1,5 +1,5 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
+import { getDoctorDetailsById_getDoctorDetailsById_specialty } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import React from 'react';
@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
   },
   imageView: {
     margin: 16,
+    width: 80,
   },
   doctorNameStyles: {
     paddingTop: 32,
@@ -70,92 +71,106 @@ const styles = StyleSheet.create({
 
 type rowData = {
   id?: string;
-  salutation?: string;
-  firstName?: string;
-  lastName?: string;
+  salutation?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  qualification?: string | null;
   mobileNumber?: string;
   experience?: string | null;
-  gender?: string;
-  speciality?: string;
   specialization?: string | null;
-  isStarDoctor?: Boolean;
-  education?: string;
-  services?: string | null;
   languages?: string | null;
   city?: string | null;
-  awards?: string;
+  awards?: string | null;
   photoUrl?: string | null;
-  profilePhotoUrl?: string | null;
+  specialty?: getDoctorDetailsById_getDoctorDetailsById_specialty;
   registrationNumber?: string;
-  isProfileComplete?: string;
-  availableForPhysicalConsultation?: Boolean;
-  availableForVirtualConsultation?: Boolean;
   onlineConsultationFees?: string;
   physicalConsultationFees?: string;
-  package?: string;
-  inviteStatus?: string;
-  address?: string | null;
-  availableIn?: string | null;
+  // id?: string;
+  // salutation?: Salutation | null;
+  // firstName?: string;
+  // lastName?: string;
+  // mobileNumber?: string;
+  // experience?: string | null;
+  // gender?: string;
+  // specialty?: getDoctorDetailsById_getDoctorDetailsById_specialty;
+  // specialization?: string | null;
+  // qualification?: string;
+  // languages?: string | null;
+  // city?: string | null;
+  // photoUrl?: string | null;
+  // availableForPhysicalConsultation?: Boolean;
+  // availableForVirtualConsultation?: Boolean;
+  // onlineConsultationFees?: string;
+  // physicalConsultationFees?: string;
 };
 
 export interface DoctorCardProps extends NavigationScreenProps {
-  rowData: rowData;
+  rowData: rowData | null;
   displayButton?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
-  return (
-    <TouchableOpacity
-      style={[styles.doctorView, props.style]}
-      onPress={() => props.navigation.navigate(AppRoutes.DoctorDetails, { doctorId: rowData.id })}
-    >
-      <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
-        <View style={{ flexDirection: 'row' }}>
-          {(rowData.availableForPhysicalConsultation || rowData.availableForVirtualConsultation) &&
-          props.displayButton &&
-          rowData.availableIn ? (
-            <CapsuleView
-              title={rowData.availableIn ? `AVAILABLE IN ${rowData.availableIn} MINS` : ''}
-              style={styles.availableView}
-              isActive={Number(rowData.availableIn) > 15 ? false : true}
-            />
-          ) : null}
-          <View style={styles.imageView}>
-            {/* {rowData.image} */}
-            {rowData.photoUrl && (
-              <Image
-                style={{ width: 80, height: 80, borderRadius: 40 }}
-                source={{ uri: rowData.photoUrl }}
+  console.log(rowData, 'rowData.id');
+  if (rowData)
+    return (
+      <TouchableOpacity
+        style={[styles.doctorView, props.style]}
+        onPress={() =>
+          props.navigation.navigate(AppRoutes.DoctorDetails, {
+            doctorId: rowData.id ? rowData.id : '',
+          })
+        }
+      >
+        <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
+          <View style={{ flexDirection: 'row' }}>
+            {/* {(rowData.availableForPhysicalConsultation || rowData.availableForVirtualConsultation) &&
+            props.displayButton &&
+            rowData.availableIn ? (
+              <CapsuleView
+                title={rowData.availableIn ? `AVAILABLE IN ${rowData.availableIn} MINS` : ''}
+                style={styles.availableView}
+                isActive={Number(rowData.availableIn) > 15 ? false : true}
               />
-            )}
+            ) : null} */}
+            <View style={styles.imageView}>
+              {/* {rowData.image} */}
+              {rowData.photoUrl && (
+                <Image
+                  style={{ width: 80, height: 80, borderRadius: 40 }}
+                  source={{ uri: rowData.photoUrl }}
+                />
+              )}
 
-            {/* {rowData.isStarDoctor ? (
+              {/* {rowData.isStarDoctor ? (
               <Star style={{ height: 28, width: 28, position: 'absolute', top: 66, left: 30 }} />
             ) : null} */}
-          </View>
-          <View>
-            <Text style={styles.doctorNameStyles}>
-              Dr. {rowData.firstName} {rowData.lastName}
-            </Text>
-            <Text style={styles.doctorSpecializationStyles}>
-              {rowData.specialization!.toUpperCase()} | {rowData.experience} YRS
-            </Text>
-            <Text style={styles.educationTextStyles}>{rowData.education}</Text>
-            <Text style={styles.doctorLocation}>{rowData.city}</Text>
-          </View>
-        </View>
-        {props.displayButton && (
-          <View style={{ overflow: 'hidden' }}>
-            <View style={styles.buttonView}>
-              <Text style={styles.buttonText}>{string.common.consult_now}</Text>
+            </View>
+            <View style={{ flex: 1, paddingRight: 16 }}>
+              <Text style={styles.doctorNameStyles}>
+                Dr. {rowData.firstName} {rowData.lastName}
+              </Text>
+              <Text style={styles.doctorSpecializationStyles}>
+                2YRS
+                {rowData.specialty ? rowData.specialty.name : ''} | {rowData.experience} YRS
+              </Text>
+              <Text style={styles.educationTextStyles}>{rowData.qualification}</Text>
+              <Text style={styles.doctorLocation}>{rowData.city}</Text>
             </View>
           </View>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+          {props.displayButton && (
+            <View style={{ overflow: 'hidden' }}>
+              <View style={styles.buttonView}>
+                <Text style={styles.buttonText}>{string.common.consult_now}</Text>
+              </View>
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  return null;
 };
 
 DoctorCard.defaultProps = {
