@@ -25,10 +25,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     caseSheet: {
-      minHeight: 'calc(100vh - 235px)',
+      minHeight: 'calc(100vh - 360px)',
     },
     chatContainer: {
-      minHeight: 'calc(100vh - 235px)',
+      minHeight: 'calc(100vh - 360px)',
     },
     headerSticky: {
       position: 'fixed',
