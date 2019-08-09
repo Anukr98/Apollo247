@@ -275,7 +275,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
           disableFilters ? classes.filterSectionDisabled : ''
         }`}
       >
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 325px'}>
+        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 275px'}>
           <div className={classes.customScroll}>
             <div className={classes.filterBox}>
               <div className={classes.filterType}>City</div>
