@@ -104,7 +104,7 @@ type updatePateint = {
   relation: Relation | null;
 };
 
-export interface MultiSignupProps extends NavigationScreenProps {}
+export interface MultiSignupProps extends NavigationScreenProps { }
 
 export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [relationIndex, setRelationIndex] = useState<number>(0);

@@ -13,8 +13,7 @@ export interface getAppointmentHistory_getAppointmentHistory_appointmentsHistory
   id: string;
   patientId: string;
   doctorId: string;
-  appointmentDate: any;
-  appointmentTime: any;
+  appointmentDateTime: any;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId: string | null;
   status: STATUS;

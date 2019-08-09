@@ -48,8 +48,7 @@ export interface AppointmentHistoryInput {
 export interface BookAppointmentInput {
   patientId: string;
   doctorId: string;
-  appointmentDate: any;
-  appointmentTime: any;
+  appointmentDateTime: any;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId?: string | null;
 }
