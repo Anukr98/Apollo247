@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     bottomPopover: {
       overflow: 'initial',
-      backgroundColor: 'none',
+      backgroundColor: 'transparent',
       boxShadow: 'none',
       [theme.breakpoints.down('xs')]: {
         left: '0px !important',
@@ -146,6 +146,11 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    circlularProgress: {
+      display: 'flex',
+      padding: 20,
+      justifyContent: 'center',
+    },
   };
 });
 
@@ -201,7 +206,11 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   }, [data]);
 
   if (loading) {
-    return <CircularProgress />;
+    return (
+      <div className={classes.circlularProgress}>
+        <CircularProgress />
+      </div>
+    );
   }
   if (error) {
     return <div>Error....</div>;
@@ -293,9 +302,9 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
           <Popover
             open={isPopoverOpen}
-            anchorReference="anchorPosition"
-            anchorPosition={{ top: 200, left: 400 }}
-            className={classes.bottomPopover}
+            onClose={(e, reason) => {
+              console.log('hello', e, reason);
+            }}
             anchorOrigin={{
               vertical: 'bottom',
               horizontal: 'right',
@@ -303,9 +312,6 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
             transformOrigin={{
               vertical: 'bottom',
               horizontal: 'right',
-            }}
-            onClose={(e, reason) => {
-              console.log('hello', e, reason);
             }}
             classes={{ paper: classes.bottomPopover }}
           >

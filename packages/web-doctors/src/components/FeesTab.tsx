@@ -198,9 +198,10 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
     },
     bold: {
-      fontWeight: theme.typography.fontWeightBold,
+      fontWeight: theme.typography.fontWeightMedium,
       color: '#02475b',
       marginLeft: 20,
+      fontSize: 16,
     },
     accountDetails: {
       fontWeight: theme.typography.fontWeightMedium,
@@ -252,7 +253,9 @@ export const FeesTab: React.FC<FeesProps> = (props) => {
               <Typography className={classes.bold}>Rs. {data.physicalConsultationFees}</Typography>
               <Typography variant="subtitle1">What packages do you offer your patients?</Typography>
               <Typography className={classes.bold}>
-                {data.packages && data.packages.length > 0 ? data.packages![0]!.name : ''}
+                {data.packages && data.packages![0]!.name && data.packages![0]!.name.length > 0
+                  ? data.packages![0]!.name
+                  : 'N/A'}
               </Typography>
             </Paper>
           </div>

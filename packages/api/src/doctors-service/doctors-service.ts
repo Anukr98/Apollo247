@@ -28,6 +28,10 @@ import {
   getSpecialtyDoctorsResolvers,
 } from 'doctors-service/resolvers/getSpecialtyDoctorsWithFilters';
 import {
+  getDoctorsBySpecialtyAndFiltersTypeDefs,
+  getDoctorsBySpecialtyAndFiltersTypeDefsResolvers,
+} from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
+import {
   getDoctorDetailsTypeDefs,
   getDoctorDetailsResolvers,
 } from 'doctors-service/resolvers/getDoctorDetails';
@@ -49,7 +53,7 @@ import {
   DoctorBankAccounts,
   Packages,
 } from 'doctors-service/entities';
-import { Appointment } from 'consults-service/entities/appointment';
+import { Appointment } from 'consults-service/entities/';
 import { GatewayHeaders } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 
@@ -128,6 +132,10 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       {
         typeDefs: getSpecialtyDoctorsTypeDefs,
         resolvers: getSpecialtyDoctorsResolvers,
+      },
+      {
+        typeDefs: getDoctorsBySpecialtyAndFiltersTypeDefs,
+        resolvers: getDoctorsBySpecialtyAndFiltersTypeDefsResolvers,
       },
       {
         typeDefs: getSpecialtyTypeDefs,

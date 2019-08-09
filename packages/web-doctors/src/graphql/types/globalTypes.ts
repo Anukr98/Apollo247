@@ -6,6 +6,11 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum APPOINTMENT_TYPE {
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+}
+
 export enum AccountType {
   CURRENT = "CURRENT",
   SAVINGS = "SAVINGS",
@@ -41,6 +46,11 @@ export enum INVITEDSTATUS {
   REJECTED = "REJECTED",
 }
 
+export enum REQUEST_ROLES {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
@@ -51,6 +61,12 @@ export enum Relation {
   OTHER = "OTHER",
   SISTER = "SISTER",
   WIFE = "WIFE",
+}
+
+export enum STATUS {
+  CANCELLED = "CANCELLED",
+  CONFIRMED = "CONFIRMED",
+  IN_PROGRESS = "IN_PROGRESS",
 }
 
 export enum Salutation {
@@ -67,6 +83,11 @@ export enum WeekDay {
   THURSDAY = "THURSDAY",
   TUESDAY = "TUESDAY",
   WEDNESDAY = "WEDNESDAY",
+}
+
+export interface CreateAppointmentSessionInput {
+  appointmentId: string;
+  requestRole: REQUEST_ROLES;
 }
 
 export interface UpdatePatientInput {

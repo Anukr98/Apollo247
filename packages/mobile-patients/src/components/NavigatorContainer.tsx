@@ -1,22 +1,30 @@
-import { createStackNavigator, createAppContainer, StackNavigatorConfig } from 'react-navigation';
-
-import { Login } from '@aph/mobile-patients/src/components/Login';
-import { Onboarding } from '@aph/mobile-patients/src/components/Onboarding';
-import { TabBar } from '@aph/mobile-patients/src/components/TabBar';
-import { DoctorSearch } from '@aph/mobile-patients/src/components/DoctorSearch';
-import { SignUp } from '@aph/mobile-patients/src/components/SignUp';
-import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
-import { OTPVerification } from '@aph/mobile-patients/src/components/OTPVerification';
-import { NavigationRouteConfig } from 'react-navigation';
-import { ConsultRoom } from '@aph/mobile-patients/src/components/ConsultRoom';
-import { DoctorSearchListing } from '@aph/mobile-patients/src/components/DoctorSearchListing';
-import { HealthRecords } from '@aph/mobile-patients/src/components/HealthRecords';
-import { Medicine } from '@aph/mobile-patients/src/components/Medicine';
-import { MyAccount } from '@aph/mobile-patients/src/components/MyAccount';
-import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
+import { ApplyCouponScene } from '@aph/mobile-patients/src/components/ApplyCouponScene';
+import { AppointmentDetails } from '@aph/mobile-patients/src/components/AppointmentDetails';
 import { Consult } from '@aph/mobile-patients/src/components/Consult';
-import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
+import { ConsultRoom } from '@aph/mobile-patients/src/components/ConsultRoom';
 import { DoctorDetails } from '@aph/mobile-patients/src/components/DoctorDetails';
+import { DoctorSearch } from '@aph/mobile-patients/src/components/DoctorSearch';
+import { DoctorSearchListing } from '@aph/mobile-patients/src/components/DoctorSearchListing';
+import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
+import { HealthRecords } from '@aph/mobile-patients/src/components/HealthRecords';
+import { Login } from '@aph/mobile-patients/src/components/Login';
+import { Medicine } from '@aph/mobile-patients/src/components/Medicine';
+import { MedicineDetailsScene } from '@aph/mobile-patients/src/components/MedicineDetailsScene';
+import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
+import { MyAccount } from '@aph/mobile-patients/src/components/MyAccount';
+import { Onboarding } from '@aph/mobile-patients/src/components/Onboarding';
+import { OTPVerification } from '@aph/mobile-patients/src/components/OTPVerification';
+import { SearchMedicineScene } from '@aph/mobile-patients/src/components/SearchMedicineScene';
+import { SignUp } from '@aph/mobile-patients/src/components/SignUp';
+import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
+import { StorePickupScene } from '@aph/mobile-patients/src/components/StorePickupScene';
+import { TabBar } from '@aph/mobile-patients/src/components/TabBar';
+import {
+  createAppContainer,
+  createStackNavigator,
+  NavigationRouteConfig,
+  StackNavigatorConfig,
+} from 'react-navigation';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -35,6 +43,11 @@ export enum AppRoutes {
   Consult = 'Consult',
   FilterScene = 'FilterScene',
   DoctorDetails = 'DoctorDetails',
+  AppointmentDetails = 'AppointmentDetails',
+  SearchMedicineScene = 'SearchMedicineScene',
+  MedicineDetailsScene = 'MedicineDetailsScene',
+  ApplyCouponScene = 'ApplyCouponScene',
+  StorPickupScene = 'StorPickupScene',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -62,7 +75,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
       header: null,
     },
   },
-
   [AppRoutes.SignUp]: {
     screen: SignUp,
     navigationOptions: {
@@ -104,6 +116,21 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.DoctorDetails]: {
     screen: DoctorDetails,
+  },
+  [AppRoutes.AppointmentDetails]: {
+    screen: AppointmentDetails,
+  },
+  [AppRoutes.SearchMedicineScene]: {
+    screen: SearchMedicineScene,
+  },
+  [AppRoutes.MedicineDetailsScene]: {
+    screen: MedicineDetailsScene,
+  },
+  [AppRoutes.ApplyCouponScene]: {
+    screen: ApplyCouponScene,
+  },
+  [AppRoutes.StorPickupScene]: {
+    screen: StorePickupScene,
   },
 };
 

@@ -25,9 +25,9 @@ const useStyles = makeStyles((theme: Theme) => {
     loginFormWrap: {
       padding: '30px 0 50px 0',
       '& p': {
-        fontSize: 17,
+        fontSize: 16,
         fontWeight: 500,
-        lineHeight: 1.41,
+        lineHeight: 1.38,
         color: theme.palette.secondary.main,
         marginTop: 10,
         marginBottom: 10,
