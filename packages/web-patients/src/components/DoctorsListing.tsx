@@ -146,6 +146,11 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    circlularProgress: {
+      display: 'flex',
+      padding: 20,
+      justifyContent: 'center',
+    },
   };
 });
 
@@ -201,7 +206,11 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   }, [data]);
 
   if (loading) {
-    return <CircularProgress />;
+    return (
+      <div className={classes.circlularProgress}>
+        <CircularProgress />
+      </div>
+    );
   }
   if (error) {
     return <div>Error....</div>;

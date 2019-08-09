@@ -94,7 +94,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchSection: {
       width: 'calc(100% - 328px)',
-      paddingLeft: 20,
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         paddingLeft: 0,
@@ -286,7 +285,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 onBookConsult={() => setIsPopoverOpen(true)}
               />
               <div className={classes.searchSection}>
-                <Scrollbars autoHide={true} autoHeightMax={'calc(100vh - 245px'}>
+                <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                   <div className={classes.customScroll}>
                     <DoctorClinics doctorDetails={doctorDetails} />
                     {isStarDoctor && <StarDoctorTeam doctorDetails={doctorDetails} />}
