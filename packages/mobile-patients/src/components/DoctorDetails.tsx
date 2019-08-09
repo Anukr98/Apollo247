@@ -3,7 +3,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ShareWhite } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ShareGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
@@ -391,7 +391,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const renderDoctorTeam = () => {
     // const startDoctor = string.home.startDoctor;
     console.log(doctorDetails!.starTeam, 'doctorDetails.starTeam');
-    if (doctorDetails && doctorDetails.starTeam && doctorDetails.starTeam)
+    if (doctorDetails && doctorDetails.starTeam && doctorDetails.starTeam.length > 0)
       return (
         <View style={styles.cardView}>
           <View style={styles.labelView}>
@@ -621,10 +621,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           backgroundColor: 'transparent',
           borderBottomWidth: 0,
         }}
-        leftIcon="backArrowWhite"
+        leftIcon="backArrow"
         rightComponent={
           <TouchableOpacity onPress={onShare}>
-            <ShareWhite />
+            <ShareGreen />
           </TouchableOpacity>
         }
         onPressLeftIcon={() => props.navigation.goBack()}

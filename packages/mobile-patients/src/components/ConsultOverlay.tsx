@@ -203,7 +203,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
       const destination =
         props.clinics && props.clinics.length > 0
-          ? `${props.clinics[0].facility.latitude},${props.clinics[0].facility.longitude}`
+          ? `${props.clinics[0].facility.streetLine1},${props.clinics[0].facility.city}` // `${props.clinics[0].facility.latitude},${props.clinics[0].facility.longitude}`
           : '';
       const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
       Axios.get(distanceUrl)
@@ -224,7 +224,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   }, [props.clinics]);
 
   const descriptionText = `${
-    props.doctor ? `${props.doctor.salutation}. ${props.doctor.firstName}` : 'Doctor'
+    props.doctor
+      ? `${props.doctor.salutation ? props.doctor.salutation : 'Dr'}. ${props.doctor.firstName}`
+      : 'Doctor'
   } is available in ${
     12
     // props.doctor!.availableIn

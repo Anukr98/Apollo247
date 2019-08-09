@@ -426,3 +426,23 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
     }
   }
 `;
+
+export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
+  query getDoctorsBySpecialtyAndFilters($filterInput: FilterDoctorInput) {
+    getDoctorsBySpecialtyAndFilters(filterInput: $filterInput) {
+      doctors {
+        id
+        firstName
+        lastName
+        specialty {
+          name
+          image
+        }
+        city
+        onlineConsultationFees
+        experience
+        languages
+      }
+    }
+  }
+`;
