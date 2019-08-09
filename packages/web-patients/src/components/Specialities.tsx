@@ -118,14 +118,16 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
       keyword !== '' && Object.keys(data) ? filterValues(data) : data.getAllSpecialties;
     return (
       <>
-        <div className={classes.sectionHeader}>
-          <span>{subHeading}</span>
-          <span className={classes.count}>
-            {filterSpecialites.length > 0 && filterSpecialites.length < 10
-              ? `0${filterSpecialites.length}`
-              : filterSpecialites.length}
-          </span>
-        </div>
+        {subHeading !== '' ? (
+          <div className={classes.sectionHeader}>
+            <span>{subHeading}</span>
+            <span className={classes.count}>
+              {filterSpecialites.length > 0 && filterSpecialites.length < 10
+                ? `0${filterSpecialites.length}`
+                : filterSpecialites.length}
+            </span>
+          </div>
+        ) : null}
         <div className={classes.root}>
           <div className={classes.searchList}>
             <Grid container spacing={2}>

@@ -127,13 +127,24 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
       }
       specialties {
         name
+        id
       }
       possibleMatches {
         doctors {
+          id
           firstName
+          lastName
+          specialty {
+            id
+            name
+          }
+          experience
+          photoUrl
+          qualification
         }
         specialties {
           name
+          id
         }
       }
       otherDoctors {

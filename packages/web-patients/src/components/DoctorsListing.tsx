@@ -7,7 +7,7 @@ import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
 import _filter from 'lodash/filter';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { DOCTORS_BY_SPECIALITY } from 'graphql/doctors';
+import { GET_DOCTORS_BY_SPECIALITY_AND_FILTERS } from 'graphql/doctors';
 import { SearchObject } from 'components/DoctorsFilter';
 
 import Popover from '@material-ui/core/Popover';
@@ -152,12 +152,13 @@ const useStyles = makeStyles((theme: Theme) => {
 interface DoctorsListingProps {
   filter: SearchObject;
   specialityName: string;
+  specialityId: string;
 }
 
 export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const classes = useStyles();
 
-  const { filter, specialityName } = props;
+  const { filter, specialityName, specialityId } = props;
   const [selectedFilterOption, setSelectedFilterOption] = useState<string>('all');
   const consultOptions = { all: 'All Consults', online: 'Online Consult', clinic: 'Clinic Visit' };
 
@@ -168,7 +169,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const mascotRef = useRef(null);
 
   const apiVairables = {
-    specialty: specialityName,
+    specialty: specialityId,
     city: filter.cityName,
     experience: filter.experience,
     availability: filter.availability,
@@ -176,7 +177,9 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     language: filter.language,
   };
 
-  const { data, loading, error } = useQueryWithSkip(DOCTORS_BY_SPECIALITY, {
+  // console.log(specialityId);
+
+  const { data, loading, error } = useQueryWithSkip(GET_DOCTORS_BY_SPECIALITY_AND_FILTERS, {
     variables: { filterInput: apiVairables },
   });
 
@@ -203,6 +206,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   if (loading) {
     return <CircularProgress />;
   }
+
   if (error) {
     return <div>Error....</div>;
   }
@@ -224,7 +228,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
         <Grid item xs={8} sm={6} md={6} key={_uniqueId('consultGrid_')}>
           <div className={classes.noDataCard}>
             <h2>Uh oh! :(</h2>
-            {data && data.getSpecialtyDoctorsWithFilters.doctors.length > 0
+            {data && data.getDoctorsBySpecialtyAndFilters.doctors.length > 0
               ? noConsultFoundError
               : noDoctorFoundError}
           </div>
@@ -233,11 +237,11 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     );
   };
 
-  if (data && data.getSpecialtyDoctorsWithFilters.doctors.length > 0) {
+  if (data && !loading) {
     doctorsList =
       selectedFilterOption === 'all'
-        ? data.getSpecialtyDoctorsWithFilters.doctors
-        : _filter(data.getSpecialtyDoctorsWithFilters.doctors, (doctors) => {
+        ? data.getDoctorsBySpecialtyAndFilters.doctors
+        : _filter(data.getDoctorsBySpecialtyAndFilters.doctors, (doctors) => {
             if (selectedFilterOption === 'online' && doctors.availableForVirtualConsultation) {
               return true;
             } else if (

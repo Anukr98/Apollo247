@@ -120,9 +120,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             className={classes.doctorAvatar}
           />
           <div className={classes.doctorInfo}>
-            <div className={`${classes.availability} ${classes.availableNow}`}>
+            {/* <div className={`${classes.availability} ${classes.availableNow}`}>
               Available in 15 mins
-            </div>
+            </div> */}
+            <div className={`${classes.availability}`}>Available in 1 HOUR</div>
             <div className={classes.doctorName}>
               {`${doctorDetails.firstName} ${doctorDetails.lastName}`}
             </div>
@@ -138,7 +139,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         </div>
         <div className={classes.bottomAction}>
           <AphButton fullWidth color="primary" className={classes.button}>
-            Consult Now
+            BOOK APPOINTMENT
           </AphButton>
         </div>
       </div>

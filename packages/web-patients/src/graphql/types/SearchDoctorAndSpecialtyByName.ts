@@ -26,16 +26,30 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties {
   __typename: "DoctorSpecialty";
   name: string;
+  id: string;
+}
+
+export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_specialty {
+  __typename: "DoctorSpecialties";
+  id: string;
+  name: string;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors {
   __typename: "DoctorDetails";
+  id: string;
   firstName: string;
+  lastName: string;
+  specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_specialty;
+  experience: string | null;
+  photoUrl: string | null;
+  qualification: string | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_specialties {
   __typename: "DoctorSpecialty";
   name: string;
+  id: string;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches {
