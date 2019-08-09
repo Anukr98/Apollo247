@@ -71,7 +71,6 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       overflow: 'hidden',
-      backgroundColor: '#000',
       '& img': {
         maxHeight: 204,
         verticalAlign: 'middle',
@@ -299,7 +298,7 @@ export const ChatWindow: React.FC = (props) => {
         <div>
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatContainer}>
-              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 290px'}>
+              <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 290px' }}>
                 <div className={classes.customScroll}>{messagessHtml}</div>
               </Scrollbars>
             </div>
@@ -309,7 +308,7 @@ export const ChatWindow: React.FC = (props) => {
               {isCalled && (
                 <div className={classes.incomingCallContainer}>
                   <div className={classes.incomingCallWindow}>
-                    <img src={require('images/ic_patientchat.png')} />
+                    <img src={require('images/doctor_profile_image.png')} />
                     <div className={classes.callOverlay}>
                       <div className={classes.topText}>Ringing</div>
                       <div className={classes.callActions}>
