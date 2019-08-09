@@ -2,7 +2,6 @@ import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/Con
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { SelectableButton } from '../ui/SelectableButton';
 import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { format } from 'date-fns';
@@ -13,14 +12,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
-  consultTypeSelection: {
-    flexDirection: 'row',
-    marginHorizontal: 20,
-    marginTop: 12,
-    marginBottom: 20,
-  },
+  // consultTypeSelection: {
+  //   flexDirection: 'row',
+  //   marginHorizontal: 20,
+  //   marginTop: 12,
+  //   marginBottom: 20,
+  // },
   consultDescText: {
-    ...theme.fonts.IBMPlexSansMedium(14),
+    fontFamily: 'IBMPlexSans',
+    fontSize: 14,
     color: theme.colors.darkBlueColor(0.5),
     marginTop: 16,
     marginHorizontal: 20,
@@ -38,10 +38,10 @@ export interface AvailabilityProps {
 }
 
 export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
-  const [consultationType, setConsultationType] = useState({
-    physical: profileData.consultHours![0]!.consultMode,
-    online: profileData.consultHours![0]!.consultMode,
-  });
+  // const [consultationType, setConsultationType] = useState({
+  //   physical: profileData.consultHours![0]!.consultMode,
+  //   online: profileData.consultHours![0]!.consultMode,
+  // });
 
   const get12HrsFormat = (timeString: string /* 12:30 */) => {
     const hoursAndMinutes = timeString.split(':').map((i) => parseInt(i));
@@ -117,13 +117,15 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
         </View>
 
         <View style={{ marginLeft: 14 }}>
-          <Text style={styles.descriptionview}>
-            Call
-            <Text style={{ color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(18) }}>
+          <Text>
+            <Text style={styles.descriptionview}>Call</Text>
+            <Text
+              style={{ color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(16), lineHeight: 22 }}
+            >
               {' '}
               1800 - 3455 - 3455{' '}
             </Text>
-            to make any changes
+            <Text style={styles.descriptionview}>to make any changes</Text>
           </Text>
         </View>
       </View>

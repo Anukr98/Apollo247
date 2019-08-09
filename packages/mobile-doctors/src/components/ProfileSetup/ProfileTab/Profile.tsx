@@ -6,6 +6,7 @@ import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const styles = StyleSheet.create({
   container: {
@@ -72,9 +73,11 @@ const styles = StyleSheet.create({
 
 export interface ProfileProps {
   profileData: GetDoctorDetails_getDoctorDetails;
+  scrollViewRef: KeyboardAwareScrollView | null;
+  onReload: () => void;
 }
 
-export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
+export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, onReload }) => {
   console.log('p', profileData.doctorHospital[0].facility);
 
   const profileRow = (title: string, description: string) => {
@@ -131,7 +134,13 @@ export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
           {profileRow('Education', profileData!.qualification!)}
           {profileRow('Speciality', profileData!.specialty.name!)}
           {profileRow('Services', profileData!.specialization || '')}
-          {profileRow('Awards', profileData!.awards || '')}
+          {profileRow(
+            'Awards',
+            (profileData!.awards || '')
+              .replace(/<\/?[^>]+>/gi, '')
+              .replace('&amp;', '&')
+              .trim()
+          )}
           {profileRow('Speaks', (profileData!.languages || '').split(',').join(', '))}
           {profileRow('MCI Number', profileData!.registrationNumber)}
           {profileRow(
@@ -150,7 +159,11 @@ export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
         </View>
       </SquareCardWithTitle>
       {profileData!.doctorType == 'STAR_APOLLO' ? (
-        <StarDoctorsTeam profileData={profileData} />
+        <StarDoctorsTeam
+          profileData={profileData}
+          scrollViewRef={scrollViewRef}
+          onReload={onReload}
+        />
       ) : null}
       {/* <StarDoctorsTeam profileData={profileData} /> */}
     </View>
