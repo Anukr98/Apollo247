@@ -4,7 +4,8 @@ import { clearUserData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import React from 'react';
 import { Alert, View } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationActions } from 'react-navigation';
 
 export interface MyAccountProps extends NavigationScreenProps {}
 
@@ -21,9 +22,15 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           signOut();
           clearUserData()
             .then(() => {
-              props.navigation.replace(AppRoutes.Login);
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  actions: [NavigationActions.navigate({ routeName: AppRoutes.Login })],
+                })
+              );
             })
-            .catch((_) => {
+            .catch((e) => {
+              console.log(e);
               Alert.alert('Error', 'Something went wrong while signing you out.');
             });
         }}
