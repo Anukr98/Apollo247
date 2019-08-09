@@ -17,6 +17,8 @@ import { Route } from 'react-router-dom';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { getTime } from 'date-fns/esm';
+import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
+import _isEmpty from 'lodash/isEmpty';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -130,6 +132,8 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+type Patient = GetCurrentPatients_getCurrentPatients_patients;
+
 const getTimestamp = (today: Date, slotTime: string) => {
   const hhmm = slotTime.split(':');
   return getTime(
@@ -147,8 +151,7 @@ const getTimestamp = (today: Date, slotTime: string) => {
 
 export const ConsultRoom: React.FC = (props) => {
   const classes = useStyles();
-  const { currentPatient } = useAllCurrentPatients();
-  const [currentPatientName] = React.useState<number>(1);
+  const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const currentDate = new Date().toISOString().substring(0, 10);
 
   const { data, loading, error } = useQueryWithSkip<
@@ -203,22 +206,41 @@ export const ConsultRoom: React.FC = (props) => {
               appointments.length === 0 ? classes.noConsultations : ''
             }`}
           >
-            <Typography variant="h1">
-              <span>hi</span>
-              <AphSelect
-                value={currentPatientName}
-                classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
-              >
-                <MenuItem classes={{ selected: classes.menuSelected }} value={1}>
-                  surj!
-                </MenuItem>
-                <MenuItem classes={{ selected: classes.menuSelected }}>
-                  <AphButton color="primary" classes={{ root: classes.addMemberBtn }}>
-                    Add Member
-                  </AphButton>
-                </MenuItem>
-              </AphSelect>
-            </Typography>
+            {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
+              <Typography variant="h1">
+                <span>hello</span>
+                <AphSelect
+                  value={currentPatient.id}
+                  onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
+                  classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
+                >
+                  {allCurrentPatients.map((patient) => {
+                    const isSelected = patient.id === currentPatient.id;
+                    const name = isSelected
+                      ? (patient.firstName || '').toLocaleLowerCase()
+                      : (patient.firstName || '').toLocaleLowerCase();
+                    return (
+                      <MenuItem
+                        selected={isSelected}
+                        value={patient.id}
+                        classes={{ selected: classes.menuSelected }}
+                        key={patient.id}
+                      >
+                        {name}
+                      </MenuItem>
+                    );
+                  })}
+                  <MenuItem classes={{ selected: classes.menuSelected }}>
+                    <AphButton color="primary" classes={{ root: classes.addMemberBtn }}>
+                      Add Member
+                    </AphButton>
+                  </MenuItem>
+                </AphSelect>
+              </Typography>
+            ) : (
+              <Typography variant="h1">hello there!</Typography>
+            )}
+
             {filterAppointments.length === 0 ? (
               <>
                 <p>You have no consultations today :) Hope you are doing well?</p>
