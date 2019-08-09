@@ -7,6 +7,7 @@ import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl, protocol } from '@aph/universal/dist/aphRoutes';
+import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 
 export interface GatewayContext {
   firebaseUid: string;
@@ -23,10 +24,6 @@ export type Resolver<Parent, Args, Context, Result> = (
   args: Args,
   context: Context
 ) => AsyncIterator<Result> | Promise<Result>;
-
-//const isLocal = process.env.NODE_ENV == 'local';
-//const isDev = process.env.NODE_ENV == 'development';
-const isProduction = process.env.NODE_ENV == 'production';
 
 (async () => {
   const gateway = new ApolloGateway({
@@ -65,9 +62,10 @@ const isProduction = process.env.NODE_ENV == 'production';
     schema,
     executor,
     context: async ({ req }) => {
+      const isNotProduction = process.env.NODE_ENV !== 'production';
       const isSchemaIntrospectionQuery = req.body.operationName == 'IntrospectionQuery';
 
-      if (!isProduction && isSchemaIntrospectionQuery) {
+      if (isNotProduction && isSchemaIntrospectionQuery) {
         const gatewayContext: GatewayContext = { firebaseUid: '', mobileNumber: '' };
         return gatewayContext;
       }
@@ -98,5 +96,26 @@ const isProduction = process.env.NODE_ENV == 'production';
 
   server.listen(process.env.API_GATEWAY_PORT).then(({ url }) => {
     console.log(`🚀 api gateway ready at ${url}`);
+  });
+
+  console.log('------------------------MESSAGE QUEUE TEST----------------------------');
+
+  AphMqClient.connect();
+
+  type TestMessage = AphMqMessage<AphMqMessageTypes.TEST, { time: Date }>;
+  const testMessage: TestMessage = {
+    type: AphMqMessageTypes.TEST,
+    payload: {
+      time: new Date(),
+    },
+  };
+
+  console.log('sending message', testMessage);
+  AphMqClient.send(testMessage);
+
+  AphMqClient.onReceive<TestMessage>(AphMqMessageTypes.TEST, (receivedMessage) => {
+    console.log('received message!', receivedMessage.message);
+    console.log('accepting message');
+    receivedMessage.accept();
   });
 })();
