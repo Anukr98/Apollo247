@@ -24,6 +24,9 @@ import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 import { PhoneNumberVerificationCredential } from './AuthProvider';
 import { OTPTextView } from './ui/OTPTextView';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GetDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
 
 const styles = StyleSheet.create({
   container: {
@@ -124,6 +127,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [otp, setOtp] = useState<string>('');
   const [isresent, setIsresent] = useState<boolean>(false);
   const [errorAuth, setErrorAuth] = useState<boolean>(true);
+  const client = useApolloClient();
 
   const { signIn, callApiWithToken, authError, clearCurrentUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -297,6 +301,28 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   };
 
+  const redirectToProfileSetup = () => {
+    client
+      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS })
+      .then((_data) => {
+        const result = _data.data.getDoctorDetails;
+        console.log('GET_DOCTOR_DETAILS', result);
+        setIsLoading(false);
+        if (result) {
+          props.navigation.replace(AppRoutes.ProfileSetup);
+        }
+      })
+      .catch((e) => {
+        setIsLoading(false);
+        props.navigation.goBack();
+        Alert.alert(
+          'Error',
+          'Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll.'
+        );
+        console.log('Error occured while adding Doctor', e);
+      });
+  };
+
   const onClickOk = async () => {
     const { phoneNumberVerificationCredential } = props.navigation.state.params!;
     Keyboard.dismiss();
@@ -320,9 +346,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               console.log('Exception', e);
             }
             await AsyncStorage.setItem('onAuthStateChanged', 'false');
-            setIsLoading(false);
-            //
-            props.navigation.replace(AppRoutes.ProfileSetup);
+            // Call API here and check doctor exist in database
+            redirectToProfileSetup();
           } else {
             console.log('no new user');
           }

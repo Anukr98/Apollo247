@@ -60,7 +60,6 @@ export const GET_DOCTOR_DETAILS = gql`
       }
       starTeam {
         associatedDoctor {
-          gender
           firstName
           lastName
           emailAddress
@@ -215,6 +214,20 @@ export const ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM = gql`
 export const REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM = gql`
   mutation RemoveDoctorFromStarDoctorProgram($starDoctorId: String!, $doctorId: String!) {
     removeDoctorFromStarDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
+  }
+`;
+
+export const MAKE_TEAM_DOCTOR_ACTIVE = gql`
+  mutation MakeTeamDoctorActive($associatedDoctor: String!, $starDoctor: String!) {
+    makeTeamDoctorActive(associatedDoctor: $associatedDoctor, starDoctor: $starDoctor)
+  }
+`;
+
+export const REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM = gql`
+  mutation RemoveTeamDoctorFromStarTeam($associatedDoctor: String!, $starDoctor: String!) {
+    removeTeamDoctorFromStarTeam(associatedDoctor: $associatedDoctor, starDoctor: $starDoctor) {
+      firstName
+    }
   }
 `;
 

@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { theme } from '../../theme/theme';
 import { colors } from '@aph/mobile-doctors/src/theme/colors';
+import { TagCard } from '@aph/mobile-doctors/src/components/ui/TagCard';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -32,7 +33,7 @@ const styles = StyleSheet.create({
   },
   doctorNameStyles: {
     flex: 1,
-    paddingTop: 12,
+    // paddingTop: 12,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(16),
     color: '#02475b',
@@ -50,6 +51,17 @@ const styles = StyleSheet.create({
     marginRight: 16,
     opacity: 0.05,
   },
+  newtagWrapperStyle: {
+    position: 'absolute',
+    top: 4,
+    left: 0,
+    zIndex: 1,
+    shadowColor: colors.CARD_SHADOW_COLOR,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 10,
+  },
 });
 
 export interface CalendarCardProps {
@@ -59,14 +71,34 @@ export interface CalendarCardProps {
   onPress: (doctorId: string, patientId: string) => void;
   image?: ImageSourcePropType;
   imageStyle?: StyleProp<ImageStyle>;
-  wayOfContact?: 'audio' | 'video';
-  type?: Appointments['timeslottype'];
-  symptoms?: string[];
+  wayOfContact: 'clinic' | 'video';
+  status: Appointments['timeslottype'];
+  symptoms: string[];
   doctorId?: string;
   patientId?: string;
+  isNewPatient: boolean;
 }
 
 export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
+  const renderNewTag = () => {
+    if (!props.isNewPatient) return null;
+    return (
+      <View style={styles.newtagWrapperStyle}>
+        <TagCard
+          label={'NEW'}
+          containerStyle={{
+            height: 'auto',
+            width: 'auto',
+            paddingHorizontal: 6,
+            paddingVertical: 3,
+          }}
+          labelStyle={{
+            ...theme.fonts.IBMPlexSansBold(8),
+          }}
+        />
+      </View>
+    );
+  };
   const renderSlotTiming = (timeSlotType: Appointments['timeslottype'], timing: string) => {
     const formatTiming = (timing: string, type: Appointments['timeslottype']) =>
       `${type == 'missed' ? 'MISSED: ' : type == 'up-next' ? 'UP NEXT: ' : ''}${timing}`;
@@ -94,14 +126,14 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
     );
   };
   const containerStyle =
-    props.type == 'past' || props.type == 'missed'
+    props.status == 'past' || props.status == 'missed'
       ? {
-          borderColor: props.type == 'missed' ? '#e50000' : 'rgba(2, 71, 91, 0.1)',
+          borderColor: props.status == 'missed' ? '#e50000' : 'rgba(2, 71, 91, 0.1)',
           borderWidth: 1,
           backgroundColor: '#f0f4f5',
         }
       : {
-          borderColor: props.type == 'up-next' ? '#ff748e' : '#0087ba',
+          borderColor: props.status == 'up-next' ? '#ff748e' : '#0087ba',
           borderWidth: 1,
           backgroundColor: '#ffffff',
           shadowColor: colors.CARD_SHADOW_COLOR,
@@ -116,8 +148,9 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
       style={{ flex: 1 }}
       onPress={() => props.onPress(props.doctorId!, props.patientId!)}
     >
-      {renderSlotTiming(props.type, props.timing!)}
+      {renderSlotTiming(props.status!, props.timing!)}
       <View style={[styles.containerStyle, containerStyle, props.containerStyle]}>
+        {renderNewTag()}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={styles.imageView}>
             <Image
@@ -125,22 +158,26 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
               style={{ height: 44, width: 44 }}
             />
           </View>
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, justifyContent: 'center' }}>
             <View style={styles.iconview}>
               <Text style={styles.doctorNameStyles} numberOfLines={1}>
                 {props.doctorname}
               </Text>
-              <View style={{ marginTop: 12, marginHorizontal: 15 }}>
+              <View style={{ marginTop: 0 /*12*/, marginHorizontal: 15 }}>
                 {props.wayOfContact == 'video' ? <Video /> : <Audio />}
               </View>
             </View>
-            <View style={styles.seperatorline}></View>
-            <View style={{ marginTop: 5.5, marginBottom: 12, flexDirection: 'row' }}>
-              {props.symptoms &&
-                props.symptoms.map((symptom) => (
-                  <CapsuleView diseaseName={symptom} containerStyle={{ marginRight: 6 }} />
-                ))}
-            </View>
+            {props.symptoms.length > 0 && (
+              <>
+                <View style={styles.seperatorline} />
+                <View style={{ marginTop: 5.5, marginBottom: 12, flexDirection: 'row' }}>
+                  {props.symptoms &&
+                    props.symptoms.map((symptom) => (
+                      <CapsuleView diseaseName={symptom} containerStyle={{ marginRight: 6 }} />
+                    ))}
+                </View>
+              </>
+            )}
           </View>
         </View>
       </View>

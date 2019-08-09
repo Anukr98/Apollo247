@@ -28,7 +28,7 @@ import {
   Platform,
 } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { WeekView } from './WeekView';
 import { colors } from '@aph/mobile-doctors/src/theme/colors';
 import { GET_DOCTOR_APPOINTMENTS } from '@aph/mobile-doctors/src/graphql/profiles';
@@ -39,9 +39,11 @@ import {
   GetDoctorAppointments,
   GetDoctorAppointmentsVariables,
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 
 const styles = StyleSheet.create({
   noAppointmentsText: {
+    marginTop: 25,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: 'rgba(2, 71, 91, 0.6)',
     textAlign: 'center',
@@ -79,7 +81,8 @@ const styles = StyleSheet.create({
   },
   noAppointmentsView: {
     flex: 1,
-    justifyContent: 'center',
+    marginTop: 40,
+    justifyContent: 'flex-start',
     alignItems: 'center',
   },
   weekViewContainer: {
@@ -132,14 +135,17 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
 
   const startDate = moment(date).format('YYYY-MM-DD');
-  const endDate = moment(date.setDate(date.getDate() + 1)).format('YYYY-MM-DD');
-  const { data, errorr, loading } = useQuery<GetDoctorAppointments, GetDoctorAppointmentsVariables>(
+  let nextDate = new Date(date);
+  nextDate.setDate(nextDate.getDate() + 1);
+  const endDate = moment(nextDate).format('YYYY-MM-DD');
+
+  const { data, error, loading } = useQuery<GetDoctorAppointments, GetDoctorAppointmentsVariables>(
     GET_DOCTOR_APPOINTMENTS,
     {
       variables: {
         doctorId: 'ae394a65-7335-49d5-a559-0bd2be626a04',
-        startDate: '2019-08-08',
-        endDate: '2019-08-09',
+        startDate: startDate,
+        endDate: endDate, //'2019-09-13',
       },
     }
   );
@@ -304,21 +310,26 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   };
 
   const renderNoConsultsView = () => {
+    const now = new Date();
+    const isTodaysDate = (date: Date) =>
+      now.getDate() == date.getDate() &&
+      now.getMonth() == date.getMonth() &&
+      now.getFullYear() == date.getFullYear();
+    const getCurrentDaytext = isTodaysDate(date) ? 'today' : 'for this day';
     return (
-      <View style={styles.noAppointmentsView}>
-        <Notification />
-        <Text style={styles.noAppointmentsText}>No consults scheduled today!</Text>
-      </View>
+      <ScrollView bounces={false}>
+        <View style={styles.noAppointmentsView}>
+          <NoCalenderData />
+          <Text
+            style={styles.noAppointmentsText}
+          >{`No consults scheduled ${getCurrentDaytext}!`}</Text>
+        </View>
+      </ScrollView>
     );
   };
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: colors.DEFAULT_BACKGROUND_COLOR,
-      }}
-    >
+    <SafeAreaView style={theme.viewStyles.container}>
       {renderMainHeader()}
       {renderDoctorGreeting()}
       <View>
@@ -328,8 +339,8 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       {isDropdownVisible ? renderDropdown() : null}
 
       {/* <View style={isDropdownVisible ? {} : { zIndex: -1 }}> */}
-      <View style={{ zIndex: -1, flex: 1 }}>
-        <View style={[styles.weekViewContainer, { zIndex: 1 }]}>
+      <View style={{ zIndex: -1, flex: 1, backgroundColor: '#f7f7f7' }}>
+        <View style={[styles.weekViewContainer, { zIndex: 0 }]}>
           <WeekView
             date={date}
             onTapDate={(date: Date) => {
@@ -343,17 +354,18 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             }}
           />
         </View>
-
-        {getAppointments &&
-        getAppointments.appointmentsHistory &&
-        getAppointments.appointmentsHistory.length == 0
-          ? renderNoConsultsView()
-          : !loading && (
-              <AppointmentsList
-                navigation={props.navigation}
-                appointmentsHistory={getAppointments!.appointmentsHistory!}
-              />
-            )}
+        {loading ? (
+          <Loader flex1 />
+        ) : getAppointments &&
+          getAppointments.appointmentsHistory &&
+          getAppointments.appointmentsHistory.length == 0 ? (
+          renderNoConsultsView()
+        ) : (
+          <AppointmentsList
+            navigation={props.navigation}
+            appointmentsHistory={(getAppointments && getAppointments.appointmentsHistory) || []}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
