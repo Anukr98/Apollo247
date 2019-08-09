@@ -126,7 +126,7 @@ const getAppointmentData: Resolver<
   AppointmentResult
 > = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointmentsHistory = await appointmentRepo.findById(args.appointmentId);
+  const appointmentsHistory = await appointmentRepo.findByAppointmentId(args.appointmentId);
   if (appointmentsHistory == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   return { appointmentsHistory };
 };

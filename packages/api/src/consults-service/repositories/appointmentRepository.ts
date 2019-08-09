@@ -8,6 +8,10 @@ import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
   findById(id: string) {
+    return this.findOne({ id });
+  }
+
+  findByAppointmentId(id: string) {
     return this.find({
       where: { id },
     });
