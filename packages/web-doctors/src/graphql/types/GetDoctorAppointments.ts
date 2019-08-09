@@ -18,8 +18,8 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments {
-  __typename: "DoctorAppointmentResult";
-  appointmentsHistory: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null)[] | null;
+  __typename: "AppointmentResult";
+  appointmentsHistory: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory[] | null;
 }
 
 export interface GetDoctorAppointments {
