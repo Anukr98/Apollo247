@@ -16,6 +16,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
+import { getTime } from 'date-fns/esm';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -129,6 +130,21 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+const getTimestamp = (today: Date, slotTime: string) => {
+  const hhmm = slotTime.split(':');
+  return getTime(
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      parseInt(hhmm[0], 10),
+      parseInt(hhmm[1], 10),
+      0,
+      0
+    )
+  );
+};
+
 export const ConsultRoom: React.FC = (props) => {
   const classes = useStyles();
   const { currentPatient } = useAllCurrentPatients();
@@ -158,11 +174,14 @@ export const ConsultRoom: React.FC = (props) => {
       ? data.getPatinetAppointments.patinetAppointments
       : [];
 
-  const currentTime = new Date().getTime();
-
   // filter appointments that are greater than current time.
   const filterAppointments = appointments.filter((appointmentDetails) => {
-    const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
+    const currentTime = new Date().getTime();
+    const aptArray = appointmentDetails.appointmentDateTime.split('T');
+    const appointmentTime = getTimestamp(
+      new Date(appointmentDetails.appointmentDateTime),
+      aptArray[1].substring(0, 5)
+    );
     if (
       appointmentTime > currentTime &&
       appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
@@ -220,7 +239,7 @@ export const ConsultRoom: React.FC = (props) => {
                 </div>
               </>
             ) : (
-              <p>You have {appointments.length} consultations today!</p>
+              <p>You have {filterAppointments.length} consultations today!</p>
             )}
           </div>
         </div>
@@ -235,5 +254,4 @@ export const ConsultRoom: React.FC = (props) => {
       </div>
     </div>
   );
-  // return <LinearProgress />;
 };

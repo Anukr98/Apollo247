@@ -11,6 +11,12 @@ export enum APPOINTMENT_TYPE {
   PHYSICAL = "PHYSICAL",
 }
 
+export enum DoctorType {
+  APOLLO = "APOLLO",
+  PAYROLL = "PAYROLL",
+  STAR_APOLLO = "STAR_APOLLO",
+}
+
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",

@@ -188,13 +188,14 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
 
-  // const doctorId = '00e106b4-0018-44a6-9e26-dd4ed47c5718';
-  const doctorId =
-    doctorDetails &&
-    doctorDetails.getDoctorProfileById &&
-    doctorDetails.getDoctorProfileById.profile
-      ? doctorDetails.getDoctorProfileById.profile.id
-      : '';
+  const doctorId = '00e106b4-0018-44a6-9e26-dd4ed47c5718';
+
+  // const doctorId =
+  //   doctorDetails &&
+  //   doctorDetails.getDoctorProfileById &&
+  //   doctorDetails.getDoctorProfileById.profile
+  //     ? doctorDetails.getDoctorProfileById.profile.id
+  //     : '';
 
   // console.log(
   //   'dateSelected......',
@@ -333,7 +334,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               doctorId: doctorId,
               appointmentDateTime: `${apiDateFormat}T${
                 timeSelected !== '' ? timeSelected : slotAvailableNext
-              }:00.000Z`,
+              }:00Z`,
               appointmentType: APPOINTMENT_TYPE.ONLINE,
               hospitalId: '',
             },

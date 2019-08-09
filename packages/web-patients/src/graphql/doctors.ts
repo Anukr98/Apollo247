@@ -165,6 +165,12 @@ export const GET_PATIENT_APPOINTMENTS = gql`
           id
           firstName
           lastName
+          doctorType
+          experience
+          isActive
+          photoUrl
+          qualification
+          specialization
         }
       }
     }
