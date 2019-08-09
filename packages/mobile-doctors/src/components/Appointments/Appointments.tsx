@@ -143,7 +143,6 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     GET_DOCTOR_APPOINTMENTS,
     {
       variables: {
-        doctorId: 'ae394a65-7335-49d5-a559-0bd2be626a04',
         startDate: startDate,
         endDate: endDate, //'2019-09-13',
       },

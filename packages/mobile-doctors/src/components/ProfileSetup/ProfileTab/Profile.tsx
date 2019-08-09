@@ -137,8 +137,8 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
           {profileRow(
             'Awards',
             (profileData!.awards || '')
-              .replace(/<\/?[^>]+>/gi, '')
               .replace('&amp;', '&')
+              .replace(/<\/?[^>]+>/gi, '')
               .trim()
           )}
           {profileRow('Speaks', (profileData!.languages || '').split(',').join(', '))}

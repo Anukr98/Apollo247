@@ -435,7 +435,7 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const PatientInfoData = props.navigation.getParam('PatientInfoAll');
-  console.log('PatientInfoData', PatientInfoData.firstName);
+  //console.log('PatientInfoData', PatientInfoData.firstName);
   const [value, setValue] = useState<string>('');
   const [symptonsValue, setSymptonsValue] = useState<string>('Fever, Cough and Cold, Nausea');
   const [familyValues, setFamilyValues] = useState<string>(

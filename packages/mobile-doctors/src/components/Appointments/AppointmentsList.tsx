@@ -45,7 +45,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     two: any,
     doctorId: string,
     patientId: string,
-    PatientInfo: object
+    PatientInfo: object,
+    appId: string
   ) => {
     console.log('one', one);
     console.log('two', two);
@@ -70,6 +71,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       PatientId: patientId,
       PatientConsultTime: CDA.replace('-', ''),
       PatientInfoAll: PatientInfo,
+      AppId: appId,
     });
   };
   const getStatusCircle = (status: Appointments['timeslottype']) =>
@@ -170,7 +172,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                 )}
                 <CalendarCard
                   isNewPatient={true}
-                  onPress={(doctorId, patientId, PatientInfo, appointmentTime) => {
+                  onPress={(doctorId, patientId, PatientInfo, appointmentTime, appId) => {
+                    console.log('appppp', appId);
                     const todaytime = moment(new Date()).format('YYYY-MM-DDTHH:mm');
                     const appointmentDateTime = moment(i.appointmentDateTime).format(
                       'YYYY-MM-DDTHH:mm'
@@ -180,12 +183,20 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                     console.log(moment(i.appointmentDateTime).format('HH:mm'));
                     {
                       todaytime < appointmentDateTime
-                        ? showDiff(todaytime, appointmentDateTime, doctorId, patientId, PatientInfo)
+                        ? showDiff(
+                            todaytime,
+                            appointmentDateTime,
+                            doctorId,
+                            patientId,
+                            PatientInfo,
+                            appId
+                          )
                         : props.navigation.push(AppRoutes.ConsultRoomScreen, {
                             DoctorId: doctorId,
                             PatientId: patientId,
                             PatientConsultTime: null,
                             PatientInfoAll: PatientInfo,
+                            AppId: appId,
                           });
                     }
 
@@ -205,6 +216,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   wayOfContact={i.appointmentType == APPOINTMENT_TYPE.ONLINE ? 'video' : 'clinic'}
                   PatientInfo={i.patientInfo!}
                   consultTime={i.appointmentDateTime}
+                  appId={i.id}
                 />
               </View>
             </>

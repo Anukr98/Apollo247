@@ -16,6 +16,7 @@ import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/Notifi
 import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState, useEffect, useRef } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   SafeAreaView,
@@ -54,6 +55,13 @@ import { NavigationScreenProps, NavigationRoute } from 'react-navigation';
 import { NavigationScreenProp } from 'react-navigation';
 import { NavigationParams } from 'react-navigation';
 
+import {
+  CreateAppointmentSession,
+  CreateAppointmentSessionVariables,
+} from '@aph/mobile-doctors/src/graphql/types/CreateAppointmentSession';
+
+import { CREATEAPPOINTMENTSESSION } from '@aph/mobile-doctors/src/graphql/profiles';
+import { REQUEST_ROLES } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 const styles = StyleSheet.create({
   mainview: {
     backgroundColor: '#ffffff',
@@ -99,13 +107,41 @@ export interface ConsultRoomScreenProps
     DoctorId: string;
     PatientId: string;
     PatientConsultTime: string;
-    // PatientInfoAll: object;
+    PatientInfoAll: object;
+    AppId: string;
     //navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   }> {
   navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
 }
 
 export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
+  const client = useApolloClient();
+  const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
+  const AppId = props.navigation.getParam('AppId');
+  console.log('hihihi', props.navigation.getParam('PatientInfoAll'));
+  const details = {
+    appointmentId: AppId, //'6b323478-3afc-4e67-95d9-97ddf51dba83',
+    requestRole: 'DOCTOR',
+  };
+
+  console.log('createsession', details);
+
+  client
+    .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+      mutation: CREATEAPPOINTMENTSESSION,
+      variables: {
+        createAppointmentSessionInput: {
+          appointmentId: '6b323478-3afc-4e67-95d9-97ddf51dba83',
+          requestRole: 'DOCTOR',
+        },
+      },
+    })
+    .then((_data: any) => {
+      console.log('createsession', _data);
+    })
+    .catch((e: any) => {
+      console.log('Error occured while adding Doctor', e);
+    });
   console.log('Doctoid', props.navigation.getParam('DoctorId'));
   console.log('PatientId', props.navigation.getParam('PatientId'));
   console.log('PatientConsultTime', props.navigation.getParam('PatientConsultTime'));
@@ -132,6 +168,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
   const [startConsult, setStartConsult] = useState<boolean>(false);
   const [returnToCall, setReturnToCall] = useState<boolean>(false);
+
+  useEffect(() => {
+    setTimeout(() => {
+      flatListRef.current && flatListRef.current!.scrollToEnd();
+    }, 1000);
+  }, []);
+
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
     backgroundColor: 'black',
@@ -586,11 +629,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           <OTSubscriber
             style={subscriberStyles}
             eventHandlers={subscriberEventHandlers}
-            properties={{
-              subscribeToAudio: true,
-              subscribeToVideo: false,
-              audioVolume: 10,
-            }}
+            // properties={{
+            //   subscribeToAudio: true,
+            //   subscribeToVideo: false,
+            //   // audioVolume: 10,
+            // }}
           />
           <OTPublisher
             style={publisherStyles}
@@ -712,11 +755,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               <OTSubscriber
                 style={subscriberStyles}
                 eventHandlers={subscriberEventHandlers}
-                properties={{
-                  mirror: false,
-                  subscribeToAudio: true,
-                  subscribeToVideo: true,
-                }}
+                // properties={{
+                //   mirror: false,
+                //   subscribeToAudio: true,
+                //   subscribeToVideo: true,
+                // }}
               />
               <OTPublisher
                 style={publisherStyles}
@@ -1166,9 +1209,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const ChatRoom = () => {
-    setTimeout(() => {
-      flatListRef.current && flatListRef.current!.scrollToEnd();
-    }, 1000);
+    // setTimeout(() => {
+    //   flatListRef.current && flatListRef.current!.scrollToEnd();
+    // }, 1000);
     return (
       <View style={{ ...theme.viewStyles.container }}>
         {renderChatView()}

@@ -68,7 +68,13 @@ export interface CalendarCardProps {
   containerStyle?: StyleProp<ViewStyle>;
   doctorname?: string;
   timing?: string;
-  onPress: (doctorId: string, patientId: string, PatientInfo: object, consultTime: string) => void;
+  onPress: (
+    doctorId: string,
+    patientId: string,
+    PatientInfo: object,
+    consultTime: string,
+    appId: string
+  ) => void;
   image?: ImageSourcePropType;
   imageStyle?: StyleProp<ImageStyle>;
   wayOfContact: 'clinic' | 'video';
@@ -79,6 +85,7 @@ export interface CalendarCardProps {
   isNewPatient: boolean;
   PatientInfo?: Object;
   consultTime?: string;
+  appId?: string;
 }
 
 export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
@@ -149,7 +156,13 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
       activeOpacity={1}
       style={{ flex: 1 }}
       onPress={() =>
-        props.onPress(props.doctorId!, props.patientId!, props.PatientInfo!, props.consultTime!)
+        props.onPress(
+          props.doctorId!,
+          props.patientId!,
+          props.PatientInfo!,
+          props.consultTime!,
+          props.appId!
+        )
       }
     >
       {renderSlotTiming(props.status!, props.timing!)}

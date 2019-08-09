@@ -315,7 +315,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       } else {
         setProfileFlowDone(true).finally(() => {
           props.navigation.navigate(AppRoutes.TransitionPage, {
-            doctorName: data.firstName,
+            doctorName: data.lastName,
             DoctorId: data.id,
           });
         });
