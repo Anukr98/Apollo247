@@ -102,6 +102,17 @@ const useStyles = makeStyles((theme: Theme) => {
     stopCallBtn: {
       marginLeft: 'auto',
     },
+    otPublisher: {
+      '& >div': {
+        '& >div': {
+          position: 'absolute',
+          top: 20,
+          right: 38,
+          zIndex: 9,
+          borderRadius: 10,
+        },
+      },
+    },
   };
 });
 interface ConsultProps {
@@ -129,15 +140,22 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
             sessionId="1_MX40NjM5MzU4Mn5-MTU2NTA3MTUwNDk4MX56bVd3ZW96MFNuS2Vua2dDMnZ5VTZNNlJ-UH4"
             token="T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9Y2UxMDhkODEzNTU3MmE4M2ExZTZkNmVlYjVkZDE0ODA3NGZhM2QyZTpzZXNzaW9uX2lkPTFfTVg0ME5qTTVNelU0TW41LU1UVTJOVEEzTVRVd05EazRNWDU2YlZkM1pXOTZNRk51UzJWdWEyZERNblo1VlRaTk5sSi1VSDQmY3JlYXRlX3RpbWU9MTU2NTA3MTYxMCZub25jZT0wLjExNjA5MzQ3Njk5NjI3MzM3JnJvbGU9cHVibGlzaGVyJmV4cGlyZV90aW1lPTE1Njc2NjM2MDcmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0="
           >
-            <OTPublisher
-              properties={{
-                publishAudio: mute,
-                publishVideo: subscribeToVideo,
-                subscribeToVideo: subscribeToVideo,
-                subscribeToAudio: subscribeToAudio,
-              }}
-            />
-
+            {props.showVideoChat || !subscribeToVideo ? (
+              ''
+            ) : (
+              <div className={classes.otPublisher}>
+                <OTPublisher
+                  properties={{
+                    publishAudio: mute,
+                    publishVideo: subscribeToVideo,
+                    subscribeToVideo: subscribeToVideo,
+                    subscribeToAudio: subscribeToAudio,
+                    width: 204,
+                    height: 154,
+                  }}
+                />
+              </div>
+            )}
             <div
               className={`${classes.videoContainer} ${
                 props.showVideoChat ? classes.smallVideoContainer : classes.largeVideoContainer
