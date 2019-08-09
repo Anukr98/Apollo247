@@ -59,6 +59,7 @@ export const GET_DOCTOR_DETAILS = gql`
         }
       }
       starTeam {
+        isActive
         associatedDoctor {
           firstName
           lastName

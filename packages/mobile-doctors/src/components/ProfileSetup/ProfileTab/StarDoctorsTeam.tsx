@@ -160,7 +160,6 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
           {starDoctors!.map((_doctor, i) => {
             const doctor = _doctor!.associatedDoctor!;
             const drName = `Dr. ${doctor.firstName} ${doctor.lastName}`;
-            // if(doctor.isActive) return null
             return (
               <TouchableOpacity
                 onPress={() =>
@@ -271,7 +270,11 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
       <View style={{ height: 16 }} />
       {renderStarDoctorCards()}
       {/* {isLoading && <ActivityIndicator style={{ marginBottom: 16 }} />} */}
-      {!isSelectDoctorVisible ? renderAddDoctor() : renderSelectDoctorField()}
+      {starDoctors!.filter((_doctor) => _doctor!.isActive).length == 0
+        ? null
+        : !isSelectDoctorVisible
+        ? renderAddDoctor()
+        : renderSelectDoctorField()}
     </SquareCardWithTitle>
   );
 };
