@@ -8,21 +8,10 @@ const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     signUpBar: {
       display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
       [theme.breakpoints.down('xs')]: {
         justifyContent: 'center',
-      },
-    },
-    mascotCircle: {
-      [theme.breakpoints.up('sm')]: {
-        marginLeft: 'auto',
-        cursor: 'pointer',
-        position: 'fixed',
-        bottom: 10,
-        right: 15,
-      },
-      '& img': {
-        maxWidth: 72,
-        maxHeight: 72,
       },
     },
     signUpPop: {
@@ -46,17 +35,6 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '0 20px 20px 20px',
       display: 'flex',
     },
-
-    bottomPopover: {
-      overflow: 'initial',
-      backgroundColor: 'none',
-      boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
-        maxWidth: '100%',
-        width: '100%',
-      },
-    },
     mascotIcon: {
       position: 'absolute',
       right: 12,
@@ -64,10 +42,6 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         maxWidth: 80,
       },
-    },
-    customScrollBar: {
-      height: '70vh',
-      overflow: 'auto',
     },
     signinGroup: {
       padding: 20,
