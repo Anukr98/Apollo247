@@ -167,6 +167,15 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
     firebase.analytics().setCurrentScreen('Onboarding');
   });
 
+  const onSlideChange = (index: number) => {
+    if (index === slides.length) {
+      props.navigation.replace(AppRoutes.Login);
+    } else {
+      index === slides.length - 1 ? setState(false) : setState(true);
+      appIntroSliderRef.current!.goToSlide(index);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.statusBarBg} />
@@ -177,6 +186,7 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
               ref={appIntroSliderRef}
               hidePagination
               slides={slides}
+              onSlideChange={onSlideChange}
               renderItem={(item: Slide) => (
                 <View style={styles.itemContainer}>
                   <Image source={item.image} style={styles.imageStyle} resizeMode="contain" />
@@ -188,15 +198,7 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
                   <TouchableOpacity
                     style={{ marginBottom: 25 }}
                     onPress={() => {
-                      if (item.index === slides.length) {
-                        AsyncStorage.setItem('onboarding', 'true');
-                        props.navigation.replace(AppRoutes.Login);
-                      } else {
-                        if (item.index === slides.length - 1) {
-                          setState(false);
-                        }
-                        appIntroSliderRef.current.goToSlide(item.index);
-                      }
+                      onSlideChange(item.index);
                     }}
                   >
                     {item.icon}
