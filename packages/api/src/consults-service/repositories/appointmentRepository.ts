@@ -44,6 +44,16 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  async getDoctorPatientVisitCount(doctorId: string, patientId: string[]) {
+    const results = await this.createQueryBuilder('appointment')
+      .select('appointment.patientId')
+      .addSelect('COUNT(*) AS count')
+      .where('appointment.patientId IN (:...patientList)', { patientList: patientId })
+      .groupBy('appointment.patientId')
+      .getRawMany();
+    return results;
+  }
+
   getPatientDateAppointments(appointmentDateTime: Date, patientId: string) {
     const inputDate = format(appointmentDateTime, 'yyyy-MM-dd');
     const startDate = new Date(inputDate + 'T00:00');
