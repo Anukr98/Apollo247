@@ -7,13 +7,15 @@ import Paper from '@material-ui/core/Paper';
 import MenuItem from '@material-ui/core/MenuItem';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { debounce } from 'lodash';
-import { GET_DOCTOR_FOR_STAR_DOCTOR_PROGRAM } from 'graphql/profiles';
+import Dropdown from '@material-ui/core';
+import { GET_DOCTOR_FOR_STAR_DOCTOR_PROGRAM, GET_DOCTOR_DETAILS } from 'graphql/profiles';
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
+
 import {
-  GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram,
-  GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile,
-} from 'graphql/types/GetDoctorsForStarDoctorProgram';
+  GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor,
+  GetDoctorDetails_getDoctorDetails_starTeam,
+} from 'graphql/types/GetDoctorDetails';
 
 interface DoctorsName {
   label: string;
@@ -49,10 +51,12 @@ function renderInputComponent(inputProps: any) {
 }
 
 function renderSuggestion(
-  suggestion: GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram,
+  suggestion: GetDoctorDetails_getDoctorDetails_starTeam,
   { query, isHighlighted }: Autosuggest.RenderSuggestionParams
 ) {
-  const label = `${suggestion.profile!.firstName} ${suggestion.profile!.lastName}`;
+  const label = `${suggestion.associatedDoctor!.firstName} ${
+    suggestion.associatedDoctor!.lastName
+  }`;
   const matches = match(label, query);
   const parts = parse(label, matches);
   return (
@@ -68,10 +72,8 @@ function renderSuggestion(
   );
 }
 
-function getSuggestionValue(
-  suggestion: GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram
-) {
-  return `${suggestion.profile!.firstName} ${suggestion.profile!.lastName}`;
+function getSuggestionValue(suggestion: GetDoctorDetails_getDoctorDetails_starTeam) {
+  return `${suggestion.associatedDoctor!.firstName} ${suggestion.associatedDoctor!.lastName}`;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -150,14 +152,11 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 export interface StarDoctorSearchProps {
-  addDoctorHandler: (
-    doctor: GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile
-  ) => void;
+  addDoctorHandler: (doctor: GetDoctorDetails_getDoctorDetails_starTeam) => void;
 }
 
 let debouncedSuggestionFetchRequested: (
-  client: ApolloClient<GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram>,
-  value: string
+  client: ApolloClient<GetDoctorDetails_getDoctorDetails_starTeam>
 ) => void;
 
 export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHandler }) => {
@@ -165,23 +164,27 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
   const [state, setState] = React.useState({
     single: '',
   });
-  const [doctor, setDoctor] = React.useState<
-    GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile
-  >({} as GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile);
+  const [doctor, setDoctor] = React.useState<GetDoctorDetails_getDoctorDetails_starTeam>(
+    {} as GetDoctorDetails_getDoctorDetails_starTeam
+  );
   const [stateSuggestions, setSuggestions] = React.useState<
-    GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram[]
+    GetDoctorDetails_getDoctorDetails_starTeam[]
   >([]);
 
   useEffect(() => {
     debouncedSuggestionFetchRequested = debounce(
-      (client, value) => {
+      (client) => {
         client
           .query({
-            query: GET_DOCTOR_FOR_STAR_DOCTOR_PROGRAM,
-            variables: { searchString: value },
+            query: GET_DOCTOR_DETAILS,
           })
           .then(({ data }) => {
-            setSuggestions(data.getDoctorsForStarDoctorProgram);
+            setSuggestions(
+              data.getDoctorDetails.starTeam!.filter(
+                (existingDoc: GetDoctorDetails_getDoctorDetails_starTeam) =>
+                  existingDoc!.isActive === false
+              ) || []
+            );
           });
       },
       500,
@@ -194,10 +197,10 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
     {
       suggestion,
     }: {
-      suggestion: GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram;
+      suggestion: GetDoctorDetails_getDoctorDetails_starTeam;
     }
   ) => {
-    setDoctor(suggestion.profile!);
+    setDoctor(suggestion);
   };
 
   const handleSuggestionsClearRequested = () => {
@@ -230,9 +233,7 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
           <Autosuggest
             {...autosuggestProps}
             onSuggestionsFetchRequested={({ value }) => {
-              if (value.length > 2) {
-                debouncedSuggestionFetchRequested(client, value);
-              }
+              debouncedSuggestionFetchRequested(client);
             }}
             inputProps={{
               classes,
@@ -249,19 +250,42 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
               suggestion: classes.suggestion,
             }}
             renderSuggestionsContainer={(options) => (
-              <Paper {...options.containerProps} square>
-                {options.children}
-              </Paper>
+              <div>
+                <Paper {...options.containerProps} square>
+                  {options.children}
+                </Paper>
+                <div
+                  className={classes.addBtn}
+                  onClick={(value) => {
+                    debouncedSuggestionFetchRequested(client);
+                  }}
+                >
+                  <img alt="" src={require('images/ic_dropdown.svg')} />
+                </div>
+              </div>
             )}
           />
-          {doctor.firstName && state.single === `${doctor.firstName} ${doctor.lastName}` && (
+
+          {doctor!.associatedDoctor! ? (
+            state.single ===
+              `${doctor!.associatedDoctor!.firstName} ${doctor!.associatedDoctor!.lastName}` && (
+              <div
+                className={classes.addBtn}
+                onClick={() => {
+                  addDoctorHandler(doctor);
+                }}
+              >
+                <img alt="" src={require('images/add_doctor.svg')} />
+              </div>
+            )
+          ) : (
             <div
               className={classes.addBtn}
               onClick={() => {
                 addDoctorHandler(doctor);
               }}
             >
-              <img alt="" src={require('images/add_doctor.svg')} />
+              {/*  <img alt="" src={require('images/ic_dropdown.svg')} /> */}
             </div>
           )}
         </div>

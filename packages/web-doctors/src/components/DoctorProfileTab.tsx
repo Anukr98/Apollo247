@@ -6,23 +6,22 @@ import Popover from '@material-ui/core/Popover';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
-import { GetDoctorProfile } from 'graphql/types/GetDoctorProfile';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
-  REMOVE_STAR_DOCTOR,
-  GET_DOCTOR_PROFILE,
-  ADD_DOCTOR_TO_STAR_PROGRAM,
+  REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
   GET_DOCTOR_DETAILS,
+  MAKE_TEAM_DOCTOR_ACTIVE,
 } from 'graphql/profiles';
 import { MoreVert } from '@material-ui/icons';
 import {
-  RemoveDoctorFromStarDoctorProgramVariables,
-  RemoveDoctorFromStarDoctorProgram,
-} from 'graphql/types/RemoveDoctorFromStarDoctorProgram';
+  RemoveTeamDoctorFromStarTeam,
+  RemoveTeamDoctorFromStarTeamVariables,
+} from 'graphql/types/RemoveTeamDoctorFromStarTeam';
+
 import {
-  AddDoctorToStarDoctorProgram,
-  AddDoctorToStarDoctorProgramVariables,
-} from 'graphql/types/AddDoctorToStarDoctorProgram';
+  MakeTeamDoctorActive,
+  MakeTeamDoctorActiveVariables,
+} from 'graphql/types/MakeTeamDoctorActive';
 import { Mutation } from 'react-apollo';
 import { StarDoctorSearch } from 'components/StarDoctorSearch';
 import {
@@ -297,6 +296,13 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
   const client = useApolloClient();
   const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
   const [currentDoctor, setCurrentDoctor] = React.useState('');
+  const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
+  const getDoctorDetailsData = data && data.getDoctorDetails ? data.getDoctorDetails : null;
+
+  if (loading) return <CircularProgress />;
+  if (error || !getDoctorDetailsData) return <div>error :(</div>;
+
+  const doctorProfile = getDoctorDetailsData;
   function handleClick(event: React.MouseEvent<HTMLButtonElement>, id: string) {
     setAnchorEl(event.currentTarget);
     setCurrentDoctor(id);
@@ -318,8 +324,8 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
             </Avatar>
           }
           action={
-            <Mutation<RemoveDoctorFromStarDoctorProgram, RemoveDoctorFromStarDoctorProgramVariables>
-              mutation={REMOVE_STAR_DOCTOR}
+            <Mutation<RemoveTeamDoctorFromStarTeam, RemoveTeamDoctorFromStarTeamVariables>
+              mutation={REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM}
             >
               {(mutate, { loading }) => (
                 <>
@@ -349,34 +355,34 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                   >
                     <Typography
                       className={classes.starDoctordelete}
-                      onClick={() => {
+                      onClick={(e) => {
                         mutate({
                           variables: {
-                            starDoctorId: '1234',
-                            doctorId: '1234',
+                            associatedDoctor: doctor!.associatedDoctor!.id,
+                            starDoctor: doctorProfile.id,
                           },
                         }).then(() => {
-                          const existingData = client.readQuery<GetDoctorProfile>({
-                            query: GET_DOCTOR_PROFILE,
+                          const existingData = client.readQuery<GetDoctorDetails>({
+                            query: GET_DOCTOR_DETAILS,
                           });
                           const existingStarDoctorTeam =
                             (existingData &&
-                              existingData.getDoctorProfile &&
-                              existingData.getDoctorProfile &&
-                              existingData.getDoctorProfile.starDoctorTeam) ||
+                              existingData.getDoctorDetails &&
+                              existingData.getDoctorDetails.starTeam) ||
                             [];
                           const newStarDoctorTeam = existingStarDoctorTeam.filter(
                             (existingDoc) =>
-                              existingDoc.firstName !== doctor!.associatedDoctor!.firstName
+                              existingDoc!.associatedDoctor!.firstName !==
+                              doctor!.associatedDoctor!.firstName
                           );
-                          const dataAfterMutation: GetDoctorProfile = {
+                          const dataAfterMutation: GetDoctorDetails = {
                             ...existingData,
-                            getDoctorProfile: {
-                              ...existingData!.getDoctorProfile!,
-                              starDoctorTeam: newStarDoctorTeam,
+                            getDoctorDetails: {
+                              ...existingData!.getDoctorDetails!,
+                              starTeam: newStarDoctorTeam,
                             },
                           };
-                          client.writeQuery({ query: GET_DOCTOR_PROFILE, data: dataAfterMutation });
+                          client.writeQuery({ query: GET_DOCTOR_DETAILS, data: dataAfterMutation });
                         });
                       }}
                     >
@@ -427,8 +433,8 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
 
   const classes = useStyles();
   return (
-    <Mutation<AddDoctorToStarDoctorProgram, AddDoctorToStarDoctorProgramVariables>
-      mutation={ADD_DOCTOR_TO_STAR_PROGRAM}
+    <Mutation<MakeTeamDoctorActive, MakeTeamDoctorActiveVariables>
+      mutation={MAKE_TEAM_DOCTOR_ACTIVE}
     >
       {(mutate, { loading }) => (
         <Grid container alignItems="flex-start" spacing={0}>
@@ -453,28 +459,27 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
                       setShowAddDoc(false);
                       mutate({
                         variables: {
-                          starDoctorId: starDoctor.id,
-                          doctorId: props.currentDocId,
+                          associatedDoctor: starDoctor!.associatedDoctor!.id,
+                          starDoctor: props.currentDocId,
                         },
                       }).then(() => {
-                        const existingData = client.readQuery<GetDoctorProfile>({
-                          query: GET_DOCTOR_PROFILE,
+                        const existingData = client.readQuery<GetDoctorDetails>({
+                          query: GET_DOCTOR_DETAILS,
                         });
                         const existingStarDoctorTeam =
                           (existingData &&
-                            existingData.getDoctorProfile &&
-                            existingData.getDoctorProfile &&
-                            existingData.getDoctorProfile.starDoctorTeam) ||
+                            existingData.getDoctorDetails &&
+                            existingData.getDoctorDetails.starTeam) ||
                           [];
                         const newStarDoctorTeam = existingStarDoctorTeam.concat(starDoctor);
-                        const dataAfterMutation: GetDoctorProfile = {
+                        const dataAfterMutation: GetDoctorDetails = {
                           ...existingData,
-                          getDoctorProfile: {
-                            ...existingData!.getDoctorProfile!,
-                            starDoctorTeam: newStarDoctorTeam,
+                          getDoctorDetails: {
+                            ...existingData!.getDoctorDetails!,
+                            starTeam: newStarDoctorTeam,
                           },
                         };
-                        client.writeQuery({ query: GET_DOCTOR_PROFILE, data: dataAfterMutation });
+                        client.writeQuery({ query: GET_DOCTOR_DETAILS, data: dataAfterMutation });
                       });
                     }}
                   />
@@ -603,8 +608,8 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
   const clinics = getDoctorDetailsData.doctorHospital || [];
   const starDoctors =
     getDoctorDetailsData!.starTeam!.filter((existingDoc) => existingDoc!.isActive === true) || [];
-  const numStarDoctors = starDoctors.length;
 
+  const numStarDoctors = starDoctors.length;
   return (
     <div className={classes.ProfileContainer}>
       <DoctorDetails doctor={doctorProfile} clinics={clinics} />
