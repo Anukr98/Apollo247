@@ -2,6 +2,15 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid, Avatar } from '@material-ui/core';
 import React from 'react';
 import Scrollbars from 'react-custom-scrollbars';
+import {
+  GetPatientAppointments,
+  GetPatientAppointments_getPatinetAppointments_patinetAppointments as appointmentDetails,
+} from 'graphql/types/GetPatientAppointments';
+import { APPOINTMENT_TYPE, DoctorType } from 'graphql/types/globalTypes';
+import _isNull from 'lodash/isNull';
+import { Link } from 'react-router-dom';
+import { getTime } from 'date-fns/esm';
+import { format } from 'date-fns';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -125,74 +134,129 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ConsultationsCard: React.FC = (props) => {
+interface ConsultationsCardProps {
+  appointments: GetPatientAppointments;
+}
+
+const getTimestamp = (today: Date, slotTime: string) => {
+  const hhmm = slotTime.split(':');
+  return getTime(
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      parseInt(hhmm[0], 10),
+      parseInt(hhmm[1], 10),
+      0,
+      0
+    )
+  );
+};
+
+export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const classes = useStyles();
+
+  let bookedAppointments: appointmentDetails[] = [];
+
+  if (
+    props.appointments.getPatinetAppointments.patinetAppointments &&
+    props.appointments.getPatinetAppointments.patinetAppointments.length > 0
+  ) {
+    bookedAppointments = props.appointments.getPatinetAppointments.patinetAppointments;
+  }
+
+  // filter appointments that are greater than current time.
+  const filterAppointments = bookedAppointments.filter((appointmentDetails) => {
+    const currentTime = new Date().getTime();
+    const aptArray = appointmentDetails.appointmentDateTime.split('T');
+    const appointmentTime = getTimestamp(
+      new Date(appointmentDetails.appointmentDateTime),
+      aptArray[1].substring(0, 5)
+    );
+    if (
+      appointmentTime > currentTime &&
+      appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+    ) {
+      return appointmentDetails;
+    }
+  });
 
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 214px)'}>
         <div className={classes.consultationSection}>
           <Grid container spacing={2}>
-            <Grid item sm={6}>
-              <div className={classes.consultCard}>
-                <div className={classes.startDoctor}>
-                  <Avatar
-                    alt=""
-                    src={require('images/ic_placeholder.png')}
-                    className={classes.doctorAvatar}
-                  />
-                  <span>
-                    <img src={require('images/ic_star.svg')} alt="" />
-                  </span>
-                </div>
-                <div className={classes.doctorInfo}>
-                  <div className={`${classes.availability} ${classes.availableNow}`}>
-                    Available in 15 mins
-                  </div>
-                  <div className={classes.doctorName}>Dr. Simran Rai</div>
-                  <div className={classes.doctorType}>
-                    General Physician
-                    <span className={classes.doctorExp}>7 YRS</span>
-                  </div>
-                  <div className={classes.consultaitonType}>Online Consultaiton</div>
-                  <div className={classes.appointBooked}>
-                    <ul>
-                      <li>Fever</li>
-                      <li>Cough &amp; Cold</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </Grid>
-            <Grid item sm={6}>
-              <div className={classes.consultCard}>
-                <div className={classes.startDoctor}>
-                  <Avatar
-                    alt=""
-                    src={require('images/ic_placeholder.png')}
-                    className={classes.doctorAvatar}
-                  />
-                  <span>
-                    <img src={require('images/ic_star.svg')} alt="" />
-                  </span>
-                </div>
-                <div className={classes.doctorInfo}>
-                  <div className={`${classes.availability}`}>6:30 PM</div>
-                  <div className={classes.doctorName}>Dr. Jayanth Reddy</div>
-                  <div className={classes.doctorType}>
-                    General Physician
-                    <span className={classes.doctorExp}>5 YRS</span>
-                  </div>
-                  <div className={classes.consultaitonType}>Apollo Hospital, Jubilee Hills</div>
-                  <div className={classes.appointBooked}>
-                    <ul>
-                      <li>Fever</li>
-                      <li>Cough &amp; Cold</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </Grid>
+            {filterAppointments.map((appointmentDetails, index) => {
+              const firstName =
+                appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.firstName
+                  ? appointmentDetails.doctorInfo.firstName
+                  : '';
+              const lastName =
+                appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.lastName
+                  ? appointmentDetails.doctorInfo.lastName
+                  : '';
+              const doctorImage =
+                appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.photoUrl
+                  ? appointmentDetails.doctorInfo.photoUrl
+                  : require('images/ic_placeholder.png');
+              const experience =
+                appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.experience
+                  ? appointmentDetails.doctorInfo.experience
+                  : '';
+              const specialization =
+                appointmentDetails.doctorInfo &&
+                appointmentDetails.doctorInfo.specialization &&
+                !_isNull(appointmentDetails.doctorInfo.specialization)
+                  ? appointmentDetails.doctorInfo.specialization
+                  : '';
+              const currentTime = new Date().getTime();
+              const aptArray = appointmentDetails.appointmentDateTime.split('T');
+              const appointmentTime = getTimestamp(
+                new Date(appointmentDetails.appointmentDateTime),
+                aptArray[1].substring(0, 5)
+              );
+              const difference = Math.round((appointmentTime - currentTime) / 60000);
+              return (
+                <Grid item sm={6} key={index}>
+                  <Link to="">
+                    <div className={classes.consultCard}>
+                      <div className={classes.startDoctor}>
+                        <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
+                        {appointmentDetails.doctorInfo &&
+                        appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO ? (
+                          <span>
+                            <img src={require('images/ic_star.svg')} alt="" />
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className={classes.doctorInfo}>
+                        <div
+                          className={`${classes.availability} ${
+                            difference <= 15 ? classes.availableNow : ''
+                          }`}
+                        >
+                          {difference <= 15
+                            ? `Available in ${difference} mins`
+                            : `${format(new Date(appointmentTime), 'h:m a')}`}
+                        </div>
+                        <div className={classes.doctorName}>{`${firstName} ${lastName}`}</div>
+                        <div className={classes.doctorType}>
+                          {specialization}
+                          <span className={classes.doctorExp}>{experience} YRS</span>
+                        </div>
+                        <div className={classes.consultaitonType}>Online Consultation</div>
+                        <div className={classes.appointBooked}>
+                          <ul>
+                            <li>Fever</li>
+                            <li>Cough &amp; Cold</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </Grid>
+              );
+            })}
           </Grid>
         </div>
       </Scrollbars>

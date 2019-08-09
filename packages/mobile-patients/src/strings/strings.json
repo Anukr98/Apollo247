@@ -184,5 +184,29 @@
         "options": ["Hindi", "English", "Telugu"]
       }
     ]
+  },
+  "medicine": {
+    "pastMedicineSearches": [
+      {
+        "id": "1",
+        "name": "Metformin"
+      },
+      {
+        "id": "2",
+        "name": "Sulfonylureas"
+      },
+      {
+        "id": "3",
+        "name": "Crocin"
+      },
+      {
+        "id": "4",
+        "name": "DPP-4 Inhibitors"
+      },
+      {
+        "id": "5",
+        "name": "Insulin"
+      }
+    ]
   }
 }
