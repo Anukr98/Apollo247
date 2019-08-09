@@ -132,7 +132,7 @@ const defaultMaterialTheme = createMuiTheme({
       color: '#80a3ad !important',
       fontWeight: 600,
     },
-  }, 
+  },
 });
 
 export const MonthList: React.FC<MonthListProps> = ({ date, onChange }) => {

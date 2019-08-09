@@ -1,19 +1,14 @@
-import React, { useEffect } from 'react';
-import Autosuggest from 'react-autosuggest';
-import match from 'autosuggest-highlight/match';
-import parse from 'autosuggest-highlight/parse';
-import TextField from '@material-ui/core/TextField';
-import Paper from '@material-ui/core/Paper';
+import React, { useEffect, useState } from 'react';
 import MenuItem from '@material-ui/core/MenuItem';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import { debounce } from 'lodash';
-import { GET_DOCTOR_FOR_STAR_DOCTOR_PROGRAM } from 'graphql/profiles';
-import { ApolloConsumer } from 'react-apollo';
-import ApolloClient from 'apollo-client';
+import { Select } from '@material-ui/core';
+import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
+
 import {
-  GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram,
-  GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile,
-} from 'graphql/types/GetDoctorsForStarDoctorProgram';
+  GetDoctorDetails,
+  GetDoctorDetails_getDoctorDetails_starTeam,
+} from 'graphql/types/GetDoctorDetails';
+import { ApolloConsumer } from 'react-apollo';
 
 interface DoctorsName {
   label: string;
@@ -26,52 +21,6 @@ interface DoctorsName {
 interface Search {
   text: string;
   highlight: boolean;
-}
-
-function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
-
-  return (
-    <TextField
-      fullWidth
-      InputProps={{
-        inputRef: (node) => {
-          ref(node);
-          inputRef(node);
-        },
-        classes: {
-          root: classes.customInput,
-        },
-      }}
-      {...other}
-    />
-  );
-}
-
-function renderSuggestion(
-  suggestion: GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram,
-  { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-) {
-  const label = `${suggestion.profile!.firstName} ${suggestion.profile!.lastName}`;
-  const matches = match(label, query);
-  const parts = parse(label, matches);
-  return (
-    <MenuItem selected={isHighlighted} component="div">
-      <div>
-        {parts.map((part: Search, index: number) => (
-          <span key={index.toString()} style={{ fontWeight: part.highlight ? 700 : 400 }}>
-            {part.text}
-          </span>
-        ))}
-      </div>
-    </MenuItem>
-  );
-}
-
-function getSuggestionValue(
-  suggestion: GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram
-) {
-  return `${suggestion.profile!.firstName} ${suggestion.profile!.lastName}`;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -150,122 +99,71 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 export interface StarDoctorSearchProps {
-  addDoctorHandler: (
-    doctor: GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile
-  ) => void;
+  addDoctorHandler: (doctor: GetDoctorDetails_getDoctorDetails_starTeam | null | undefined) => void;
 }
-
-let debouncedSuggestionFetchRequested: (
-  client: ApolloClient<GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram>,
-  value: string
-) => void;
 
 export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHandler }) => {
   const classes = useStyles();
-  const [state, setState] = React.useState({
-    single: '',
-  });
-  const [doctor, setDoctor] = React.useState<
-    GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile
-  >({} as GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram_profile);
-  const [stateSuggestions, setSuggestions] = React.useState<
-    GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram[]
-  >([]);
+  // const [doctor, setDoctor] = React.useState<
+  //   GetDoctorDetails_getDoctorDetails_starTeam | null | undefined
+  // >({
+  //   associatedDoctor: {},
+  // } as GetDoctorDetails_getDoctorDetails_starTeam);
 
-  useEffect(() => {
-    debouncedSuggestionFetchRequested = debounce(
-      (client, value) => {
-        client
-          .query({
-            query: GET_DOCTOR_FOR_STAR_DOCTOR_PROGRAM,
-            variables: { searchString: value },
-          })
-          .then(({ data }) => {
-            setSuggestions(data.getDoctorsForStarDoctorProgram);
-          });
-      },
-      500,
-      { leading: false, trailing: true }
-    );
-  }, []);
-
-  const onSuggestionSelected = (
-    event: React.FormEvent,
-    {
-      suggestion,
-    }: {
-      suggestion: GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram;
-    }
-  ) => {
-    setDoctor(suggestion.profile!);
-  };
-
-  const handleSuggestionsClearRequested = () => {
-    setSuggestions([]);
-  };
-
-  const handleChange = (name: keyof typeof state) => (
-    event: React.ChangeEvent<{}>,
-    { newValue }: Autosuggest.ChangeEvent
-  ) => {
-    setState({
-      ...state,
-      [name]: newValue,
-    });
-  };
-
-  const autosuggestProps = {
-    renderInputComponent,
-    suggestions: stateSuggestions,
-    onSuggestionsClearRequested: handleSuggestionsClearRequested,
-    getSuggestionValue,
-    renderSuggestion,
-    onSuggestionSelected,
-  };
+  const [data, setData] = useState<GetDoctorDetails>();
 
   return (
     <ApolloConsumer>
-      {(client) => (
-        <div className={`${classes.root} ${classes.posRelative}`}>
-          <Autosuggest
-            {...autosuggestProps}
-            onSuggestionsFetchRequested={({ value }) => {
-              if (value.length > 2) {
-                debouncedSuggestionFetchRequested(client, value);
-              }
-            }}
-            inputProps={{
-              classes,
-              id: 'react-autosuggest-simple',
-              label: '',
-              placeholder: '',
-              value: state.single,
-              onChange: handleChange('single'),
-            }}
-            theme={{
-              container: classes.container,
-              suggestionsContainerOpen: classes.suggestionsContainerOpen,
-              suggestionsList: classes.suggestionsList,
-              suggestion: classes.suggestion,
-            }}
-            renderSuggestionsContainer={(options) => (
-              <Paper {...options.containerProps} square>
-                {options.children}
-              </Paper>
-            )}
-          />
-          {doctor.firstName && state.single === `${doctor.firstName} ${doctor.lastName}` && (
-            <div
-              className={classes.addBtn}
-              onClick={() => {
+      {(client) => {
+        client.query({ query: GET_DOCTOR_DETAILS }).then(({ data: starDoctorData }) => {
+          setData(starDoctorData);
+        });
+        return (
+          <div className={`${classes.root} ${classes.posRelative}`}>
+            <Select
+              value={''}
+              displayEmpty
+              onChange={(e) => {
+                const doctor = data!.getDoctorDetails!.starTeam!.find(
+                  (item) => item!.associatedDoctor!.id === e.target.value
+                );
+
                 addDoctorHandler(doctor);
               }}
             >
-              <img alt="" src={require('images/add_doctor.svg')} />
-            </div>
-          )}
-        </div>
-      )}
+              <MenuItem disabled value="">
+                Select a doctor
+              </MenuItem>
+              {data &&
+                data.getDoctorDetails &&
+                data.getDoctorDetails.starTeam &&
+                data.getDoctorDetails.starTeam
+                  .filter(
+                    (existingDoc: GetDoctorDetails_getDoctorDetails_starTeam | null) =>
+                      existingDoc!.isActive === false
+                  )
+                  .map(
+                    (item: GetDoctorDetails_getDoctorDetails_starTeam | null) => (
+                      console.log(item),
+                      (
+                        <MenuItem
+                          key={item!.associatedDoctor!.id}
+                          value={item!.associatedDoctor!.id}
+                        >
+                          {`${
+                            item!.associatedDoctor!.salutation
+                              ? `${item!.associatedDoctor!.salutation} `
+                              : ''
+                          }
+                          ${item!.associatedDoctor!.firstName} ${item!.associatedDoctor!.lastName}`}
+                        </MenuItem>
+                      )
+                    )
+                  )}
+            </Select>
+          </div>
+        );
+      }}
     </ApolloConsumer>
   );
 };
