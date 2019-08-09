@@ -40,7 +40,7 @@ export const Mascot: React.FC<IconProps> = (props) => (
 );
 
 export const More: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/ic_more.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/ic_more.png')} />
 );
 
 export const DropdownGreen: React.FC<IconProps> = (props) => (
@@ -233,4 +233,8 @@ export const CalendarClose: React.FC<IconProps> = (props) => (
 
 export const CalendarShow: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_calendar_show.png')} />
+);
+
+export const ShareGreen: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_share_green.png')} />
 );
