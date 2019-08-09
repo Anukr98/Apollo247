@@ -89,6 +89,11 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
   const [otp, setOtp] = useState<number[]>([]);
   const placeRecaptchaAfterMe = useRef(null);
 
+  const [submitCount, setSubmitCount] = useState(0);
+  const [showTimer, setShowTimer] = useState(false);
+  const countDown = useRef(179);
+  const [timer, setTimer] = useState(179);
+
   const {
     sendOtp,
     isSendingOtp,
@@ -107,10 +112,49 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
     setOtpInputRefs(refs);
   }, []);
 
+  useEffect(() => {
+    if (submitCount > 0) {
+      if (submitCount === 3) {
+        setShowTimer(true);
+
+        const intervalId = setInterval(() => {
+          countDown.current--;
+          setTimer(countDown.current);
+
+          if (countDown.current === 0) {
+            clearInterval(intervalId);
+            setSubmitCount(0);
+            setShowTimer(false);
+            countDown.current = 179;
+          }
+        }, 1000);
+      }
+    }
+  }, [submitCount]);
+
   return (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
-      <Typography variant="h2">hi</Typography>
-      <p>{otpStatusText}</p>
+      <Typography variant="h2">
+        {(isSigningIn ||
+          isVerifyingOtp ||
+          (!verifyOtpError && submitCount === 3) ||
+          submitCount != 3) &&
+          'great'}
+        {!(isSigningIn || isVerifyingOtp) && verifyOtpError && submitCount === 3 && 'oops!'}
+      </Typography>
+      <p>
+        {(isSigningIn ||
+          isVerifyingOtp ||
+          (!verifyOtpError && submitCount === 3) ||
+          submitCount != 3) &&
+          otpStatusText}
+      </p>
+      <p>
+        {!(isSigningIn || isVerifyingOtp) &&
+          verifyOtpError &&
+          submitCount === 3 &&
+          'You entered an incorrect OTP 3 times'}
+      </p>
       <form>
         <Grid container spacing={1}>
           {_times(numOtpDigits, (index) => (
@@ -158,23 +202,45 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
             error={verifyOtpError}
             style={{ opacity: verifyOtpError ? 1.0 : 0 }}
           >
-            Incorrect OTP
+            <div>
+              {!(isSigningIn || isVerifyingOtp) &&
+                showTimer &&
+                'Try again after ' +
+                  Math.floor(timer / 60) +
+                  ':' +
+                  (timer % 60 <= 9 ? '0' + (timer % 60) : timer % 60)}
+            </div>
+            <div>
+              {!showTimer &&
+                submitCount === 2 &&
+                submitCount > 0 &&
+                ' Incorrect OTP, ' + (3 - submitCount) + ' attempt left'}
+              {!showTimer &&
+                submitCount === 1 &&
+                submitCount > 0 &&
+                ' Incorrect OTP, ' + (3 - submitCount) + ' attempts left'}
+            </div>
           </FormHelperText>
         )}
-        <Button
-          variant="text"
-          disabled={isSendingOtp}
-          className={classes.resendBtn}
-          onClick={(e) => {
-            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
-            setOtp([]);
-            setOtpStatusText(resentOTPMessage);
-            const firstInput = otpInputRefs[0].current;
-            if (firstInput) firstInput.focus();
-          }}
-        >
-          Resend OTP
-        </Button>
+        {showTimer ? (
+          ''
+        ) : (
+          <Button
+            variant="text"
+            disabled={isSendingOtp}
+            className={classes.resendBtn}
+            onClick={(e) => {
+              sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
+              setOtp([]);
+              setSubmitCount(0);
+              setOtpStatusText(resentOTPMessage);
+              const firstInput = otpInputRefs[0].current;
+              if (firstInput) firstInput.focus();
+            }}
+          >
+            Resend OTP
+          </Button>
+        )}
         <div className={classes.action}>
           <Fab
             type="submit"
@@ -183,9 +249,10 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
             onClick={(e) => {
               e.preventDefault();
               verifyOtp(otp.join(''));
+              setSubmitCount(submitCount + 1);
             }}
           >
-            {isSigningIn || isSendingOtp || isVerifyingOtp ? (
+            {isSigningIn || isSendingOtp || isVerifyingOtp || showTimer ? (
               <CircularProgress color="secondary" />
             ) : (
               <img src={require('images/ic_arrow_forward.svg')} />
