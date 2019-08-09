@@ -1,6 +1,6 @@
 import { Theme, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React from 'react';
+import React, { useState } from 'react';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 
@@ -9,7 +9,7 @@ const useStyles = makeStyles((theme: Theme) => {
     loginFormWrap: {
       padding: '30px 0 50px 0',
       '& p': {
-        fontSize: 16,
+        fontSize: 17,
         fontWeight: 500,
         lineHeight: 1.41,
         color: theme.palette.secondary.main,
@@ -77,11 +77,60 @@ const useStyles = makeStyles((theme: Theme) => {
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
 }
+let intervalId: any;
+let stoppedTimer: number;
+//let timerId: any;
+
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
+  const [remainingTime, setRemainingTime] = useState<number>(900);
+  //const [callTimer, setCallTimer] = useState<number>(0);
+  //const [consultStarted, setConsultStarted] = useState<boolean>(false);
+  //const callMinutes = Math.floor(callTimer / 60);
+  //const callSeconds = callTimer - callMinutes * 60;
+  const minutes = Math.floor(remainingTime / 60);
+  const seconds = remainingTime - minutes * 60;
+  const startInterval = (timer: number) => {
+    //setConsultStarted(true);
+    intervalId = setInterval(() => {
+      timer = timer - 1;
+      stoppedTimer = timer;
+      setRemainingTime(timer);
+      // console.log('uptimer', timer);
+      if (timer == 0) {
+        setRemainingTime(0);
+        clearInterval(intervalId);
+      }
+    }, 1000);
+  };
+  // const startTimer = (timer: number) => {
+  //   timerId = setInterval(() => {
+  //     timer = timer + 1;
+  //     stoppedTimer = timer;
+  //     setCallTimer(timer);
+  //     console.log('uptimer', timer);
 
+  //     if (timer == 0) {
+  //       console.log('uptimer', timer);
+  //       setCallTimer(0);
+  //       clearInterval(timerId);
+  //     }
+  //   }, 1000);
+  // };
+
+  // const stopTimer = () => {
+  //   setCallTimer(0);
+  //   timerId && clearInterval(timerId);
+  // };
+
+  const stopInterval = () => {
+    const stopTimer = 900 - stoppedTimer;
+    console.log('intervalId', intervalId);
+    setRemainingTime(stopTimer);
+    intervalId && clearInterval(intervalId);
+  };
   function handleClick(event: any) {
     setAnchorEl(event.currentTarget);
   }
@@ -92,9 +141,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const id = open ? 'simple-popover' : undefined;
   return (
     <span>
+      <span style={{ color: 'red' }}>{`${minutes}:${seconds}`}</span>
       <Button
         className={classes.consultButton}
         onClick={() => {
+          !startAppointment ? startInterval(900) : stopInterval();
           setStartAppointment(!startAppointment);
         }}
       >

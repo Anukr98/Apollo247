@@ -169,11 +169,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
+
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const doctorId = 'Ravi';
   const patientId = 'Sai';
-  const channel = 'Channel6';
+  const channel = 'Channel7';
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
     publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
@@ -258,9 +259,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
   const autoSend = () => {
+    console.log(props.startConsult);
     const text = {
       id: doctorId,
-      message: isVideoCall ? videoCallMsg : audioCallMsg,
+      message: props.startConsult === 'videocall' ? videoCallMsg : audioCallMsg,
+      isTyping: true,
     };
     pubnub.publish(
       {
