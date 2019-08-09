@@ -471,7 +471,13 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
                             existingData.getDoctorDetails &&
                             existingData.getDoctorDetails.starTeam) ||
                           [];
-                        const newStarDoctorTeam = existingStarDoctorTeam.concat(starDoctor);
+                        const newStarDoctorTeam = existingStarDoctorTeam.map((starDoc) => {
+                          if (starDoc!.associatedDoctor!.id === starDoctor!.associatedDoctor!.id) {
+                            starDoc!.isActive = true;
+                          }
+
+                          return starDoc;
+                        });
                         const dataAfterMutation: GetDoctorDetails = {
                           ...existingData,
                           getDoctorDetails: {
