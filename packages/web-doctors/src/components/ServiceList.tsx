@@ -10,7 +10,7 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     serviceList: {
       paddingTop: 80,
-      paddingBottom: 40,
+      paddingBottom: 0,
       paddingLeft: 20,
       paddingRight: 20,
     },

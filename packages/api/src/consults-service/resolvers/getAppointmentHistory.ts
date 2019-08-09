@@ -1,10 +1,11 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE } from 'consults-service/entities/appointment';
+import { STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const getAppointmentHistoryTypeDefs = gql`
   type AppointmentHistory {
@@ -32,9 +33,15 @@ export const getAppointmentHistoryTypeDefs = gql`
     appointmentsHistory: [AppointmentHistory!]
   }
 
+  type DoctorAppointmentResult {
+    appointmentsHistory: [AppointmentHistory]
+    newPatientsList: [String]
+  }
+
   extend type Query {
     getAppointmentHistory(appointmentHistoryInput: AppointmentHistoryInput): AppointmentResult!
-    getDoctorAppointments(doctorId: String, startDate: Date, endDate: Date): AppointmentResult
+    getDoctorAppointments(doctorId: String, startDate: Date, endDate: Date): DoctorAppointmentResult
+    getAppointmentData(appointmentId: String): DoctorAppointmentResult
   }
 `;
 
@@ -76,22 +83,51 @@ const getAppointmentHistory: Resolver<
 
 const getDoctorAppointments: Resolver<
   null,
-  { doctorId: string; startDate: Date; endDate: Date },
+  { startDate: Date; endDate: Date },
   ConsultServiceContext,
   AppointmentResult
-> = async (parent, args, { consultsDb, doctorsDb }) => {
+> = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  let appointmentsHistory;
+  let appointmentsHistory, newPatientsList;
   try {
     appointmentsHistory = await appointmentRepo.getDoctorAppointments(
-      args.doctorId,
+      doctordata.id,
       args.startDate,
       args.endDate
     );
+
+    const uniquePatientIds = appointmentsHistory
+      .map((item) => item.patientId)
+      .filter((value, index, self) => self.indexOf(value) === index);
+
+    const patientConsult = await appointmentRepo.getDoctorPatientVisitCount(
+      doctordata.id,
+      uniquePatientIds
+    );
+
+    newPatientsList = patientConsult
+      .filter((item) => item.count == 1)
+      .map((item) => item.appointment_patientId);
   } catch (invalidGrant) {
     throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, { invalidGrant });
   }
 
+  return { appointmentsHistory, newPatientsList };
+};
+
+const getAppointmentData: Resolver<
+  null,
+  { appointmentId: string },
+  ConsultServiceContext,
+  AppointmentResult
+> = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentsHistory = await appointmentRepo.findByAppointmentId(args.appointmentId);
+  if (appointmentsHistory == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   return { appointmentsHistory };
 };
 
@@ -105,5 +141,6 @@ export const getAppointmentHistoryResolvers = {
   Query: {
     getAppointmentHistory,
     getDoctorAppointments,
+    getAppointmentData,
   },
 };

@@ -16,24 +16,24 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { BOOK_APPOINTMENT } from '@aph/mobile-patients/src/graphql/profiles';
+import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import {
-  bookAppointment,
-  bookAppointmentVariables,
-} from '@aph/mobile-patients/src/graphql/types/bookAppointment';
+  getDoctorDetailsById_getDoctorDetailsById,
+  getDoctorDetailsById_getDoctorDetailsById_doctorHospital,
+} from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
-  getDoctorProfileById_getDoctorProfileById_clinics,
-  getDoctorProfileById_getDoctorProfileById_profile,
-} from '@aph/mobile-patients/src/graphql/types/getDoctorProfileById';
-import { APPOINTMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+  APPOINTMENT_TYPE,
+  BookAppointmentInput,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Axios from 'axios';
 import moment from 'moment';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Mutation } from 'react-apollo';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Calendar, DateObject } from 'react-native-calendars';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import Axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
 
@@ -76,19 +76,25 @@ const styles = StyleSheet.create({
   },
   horizontalSeparatorStyle: {
     borderRightWidth: 0.5,
-    borderRightColor: theme.colors.SEPARATOR_LINE,
+    borderRightColor: 'rgba(2, 71, 91, 0.3)',
     marginHorizontal: 16,
     marginBottom: 5,
   },
 });
+
+type TimeArray = {
+  label: string;
+  time: string[];
+}[];
 
 export interface ConsultOverlayProps extends NavigationScreenProps {
   // dispalyoverlay: boolean;
   setdispalyoverlay: (arg0: boolean) => void;
   // setdispalyoverlay: () => void;
   patientId: string;
-  doctor: getDoctorProfileById_getDoctorProfileById_profile | null;
-  clinics: getDoctorProfileById_getDoctorProfileById_clinics[] | null;
+  doctor: getDoctorDetailsById_getDoctorDetailsById | null;
+  clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
+  availableSlots: string[] | null;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const tabs = [{ title: 'Consult Online' }, { title: 'Visit Clinic' }];
@@ -116,16 +122,20 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       unselectedIcon: <NightUnselected />,
     },
   ];
-  const timeArray = {
-    Morning: ['7:00 am', '7:40 am', '8:20 am', '9:00 am', '9:40 am'],
-    Afternoon: ['10:00 am', '10:40 am', '11:20 am', '9:00 am', '11:40 am'],
-    Evening: ['1:00 pm', '1:30 pm', '3:00 pm', '3:40 pm'],
-    Night: ['5:00 pm', '5:30 pm', '6:00 pm', '7:00 pm'],
-  };
+  // const timeArray = {
+  //   Morning: ['7:00 am', '7:40 am', '8:20 am', '9:00 am', '9:40 am'],
+  //   Afternoon: ['10:00 am', '10:40 am', '11:20 am', '9:00 am', '11:40 am'],
+  //   Evening: ['1:00 pm', '1:30 pm', '3:00 pm', '3:40 pm'],
+  //   Night: ['5:00 pm', '5:30 pm', '6:00 pm', '7:00 pm'],
+  // };
+  const [timeArray, settimeArray] = useState<TimeArray>([]);
+
   const [selectedtiming, setselectedtiming] = useState<string>(timings[0].title);
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedCTA, setselectedCTA] = useState<string>(onlineCTA[0]);
+  const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
+
   // const [descriptionText, setdescriptionText] = useState<string>(onlineCTA[0]);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [distance, setdistance] = useState<string>('');
@@ -138,19 +148,71 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   });
 
   useEffect(() => {
+    let array: TimeArray = [
+      { label: 'Morning', time: [] },
+      { label: 'Afternoon', time: [] },
+      { label: 'Evening', time: [] },
+      { label: 'Night', time: [] },
+    ];
+    timeArray.length === 0 &&
+      props.availableSlots &&
+      Object.values(props.availableSlots).forEach((element) => {
+        if (
+          new Date('05-11-2019 ' + element) > new Date('05-11-2019 ' + '6:00') &&
+          new Date('05-11-2019 ' + element) < new Date('05-11-2019 ' + '12:00')
+        ) {
+          console.log(true, '1234567890');
+          array[0] = {
+            label: 'Morning',
+            time: [...array[0].time, element],
+          };
+        } else if (
+          new Date('05-11-2019 ' + element) > new Date('05-11-2019 ' + '12:00') &&
+          new Date('05-11-2019 ' + element) < new Date('05-11-2019 ' + '17:00')
+        ) {
+          array[1] = {
+            ...array[1],
+            time: [...array[1].time, element],
+          };
+        } else if (
+          new Date('05-11-2019 ' + element) > new Date('05-11-2019 ' + '17:00') &&
+          new Date('05-11-2019 ' + element) < new Date('05-11-2019 ' + '21:00')
+        ) {
+          array[2] = {
+            ...array[2],
+            time: [...array[2].time, element],
+          };
+        } else if (
+          new Date('05-11-2019 ' + element) > new Date('05-11-2019 ' + '21:00') &&
+          new Date('05-11-2019 ' + element) < new Date('06-11-2019 ' + '6:00')
+        ) {
+          array[3] = {
+            ...array[3],
+            time: [...array[3].time, element],
+          };
+        }
+      });
+    console.log(array, 'array');
+    if (array !== timeArray) settimeArray(array);
+  }, [props.availableSlots]);
+
+  useEffect(() => {
     navigator.geolocation.getCurrentPosition((position) => {
       const searchstring = position.coords.latitude + ',' + position.coords.longitude;
       const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 
-      const destination = props.clinics
-        ? `${props.clinics[0].addressLine1}, ${props.clinics[0].addressLine2}, ${props.clinics[0].city}`
-        : '';
+      const destination =
+        props.clinics && props.clinics.length > 0
+          ? `${props.clinics[0].facility.latitude},${props.clinics[0].facility.longitude}`
+          : '';
       const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
       Axios.get(distanceUrl)
         .then((obj) => {
           console.log(obj, 'distanceUrl');
           if (obj.data.rows.length > 0 && obj.data.rows[0].elements.length > 0) {
-            const value = obj.data.rows[0].elements[0].distance.value;
+            const value = obj.data.rows[0].elements[0].distance
+              ? obj.data.rows[0].elements[0].distance.value
+              : 0;
             console.log(`${(value / 1000).toFixed(1)} Kms`, 'distance');
             setdistance(`${(value / 1000).toFixed(1)} Kms`);
           }
@@ -164,10 +226,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const descriptionText = `${
     props.doctor ? `${props.doctor.salutation}. ${props.doctor.firstName}` : 'Doctor'
   } is available in ${
-    props.doctor!.availableIn
+    12
+    // props.doctor!.availableIn
   } mins!\nWould you like to consult now or schedule for later?`;
 
   const renderCalendar = () => {
+    console.log(dateSelected, 'dateSelecteddateSelected');
     return (
       <Calendar
         style={{
@@ -179,12 +243,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           backgroundColor: theme.colors.CARD_BG,
           calendarBackground: theme.colors.CARD_BG,
           textSectionTitleColor: '#80a3ad',
-          selectedDayBackgroundColor: '#00adf5',
+          selectedDayBackgroundColor: '#00b38e',
           selectedDayTextColor: '#ffffff',
           todayTextColor: theme.colors.LIGHT_BLUE,
           dayTextColor: theme.colors.APP_GREEN,
           textDisabledColor: '#d9e1e8',
-          dotColor: '#00adf5',
+          dotColor: '#00b38e',
           selectedDotColor: '#ffffff',
           arrowColor: theme.colors.LIGHT_BLUE,
           monthTextColor: theme.colors.LIGHT_BLUE,
@@ -205,14 +269,27 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         onDayPress={(day: DateObject) => {
           console.log(day, '234567890');
           setdateSelected({
-            [day.dateString]: { selected: true, selectedColor: theme.colors.APP_GREEN },
+            [day.dateString]: { selected: true, selectedColor: theme.colors.WHITE },
           });
         }}
       />
     );
   };
 
+  const timeTo12HrFormat = (time: string) => {
+    var time_array = time.split(':');
+    var ampm = 'am';
+    if (Number(time_array[0]) >= 12) {
+      ampm = 'pm';
+    }
+    if (Number(time_array[0]) > 12) {
+      time_array[0] = (Number(time_array[0]) - 12).toString();
+    }
+    return time_array[0].replace(/^0+/, '') + ':' + time_array[1] + ' ' + ampm;
+  };
+
   const renderTimings = () => {
+    console.log(timeArray, 'timeArray123456789');
     return (
       <View>
         <TabsComponent
@@ -223,27 +300,50 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             borderBottomColor: 'rgba(2, 71, 91, 0.3)',
           }}
           data={timings}
-          onChange={(selectedtiming: string) => setselectedtiming(selectedtiming)}
+          onChange={(selectedtiming: string) => {
+            setselectedtiming(selectedtiming);
+            setselectedTimeSlot('');
+          }}
           selectedTab={selectedtiming}
           showIcons={true}
         />
         {/* <FilterCard data={timeArray[selectedtiming]} /> */}
         <View style={styles.optionsView}>
-          {Object.entries(timeArray).map(([key, value]) => {
-            if (key === selectedtiming) {
-              return value.map((name: string, index: number) => (
-                <Button
-                  title={name}
-                  style={[
-                    styles.buttonStyle,
-                    index === 0 ? { backgroundColor: theme.colors.APP_GREEN } : null,
-                  ]}
-                  titleTextStyle={[
-                    styles.buttonTextStyle,
-                    index === 0 ? { color: theme.colors.WHITE } : null,
-                  ]}
-                />
-              ));
+          {timeArray.map((value) => {
+            console.log(value, selectedtiming, value.label === selectedtiming, 'selectedtiming');
+            if (value.label === selectedtiming) {
+              if (value.time.length > 0) {
+                return value.time.map((name: string, index: number) => (
+                  <Button
+                    title={timeTo12HrFormat(name)}
+                    style={[
+                      styles.buttonStyle,
+                      selectedTimeSlot === name
+                        ? { backgroundColor: theme.colors.APP_GREEN }
+                        : null,
+                    ]}
+                    titleTextStyle={[
+                      styles.buttonTextStyle,
+                      selectedTimeSlot === name ? { color: theme.colors.WHITE } : null,
+                    ]}
+                    onPress={() => setselectedTimeSlot(name)}
+                  />
+                ));
+              } else {
+                return (
+                  <Text
+                    style={{
+                      ...theme.fonts.IBMPlexSansMedium(14),
+                      color: theme.colors.SKY_BLUE,
+                      paddingTop: 16,
+                    }}
+                  >
+                    {`${props.doctor!.salutation}. ${
+                      props.doctor!.firstName
+                    } is not available in the ${selectedtiming.toLowerCase()} slot :(`}
+                  </Text>
+                );
+              }
             }
           })}
         </View>
@@ -258,7 +358,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           <TouchableOpacity onPress={() => {}}>
             <View style={styles.placeholderViewStyle}>
               <Text style={[styles.placeholderTextStyle]}>
-                {props.clinics && props.clinics.length > 0 ? props.clinics[0].name : ''}
+                {props.clinics && props.clinics.length > 0 ? props.clinics[0].facility.name : ''}
               </Text>
               <DropdownGreen size="sm" />
             </View>
@@ -275,7 +375,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               }}
             >
               {props.clinics && props.clinics.length > 0
-                ? `${props.clinics[0].addressLine1}, ${props.clinics[0].addressLine2}, ${props.clinics[0].city}`
+                ? `${props.clinics[0].facility.streetLine1}, ${props.clinics[0].facility.streetLine2}, ${props.clinics[0].facility.city}`
                 : ''}
             </Text>
           </View>
@@ -363,7 +463,11 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               borderRadius: 0,
             }}
             data={tabs}
-            onChange={(selectedTab: string) => setselectedTab(selectedTab)}
+            onChange={(selectedTab: string) => {
+              setselectedTab(selectedTab);
+              setselectedtiming(timings[0].title);
+              setselectedTimeSlot('');
+            }}
             selectedTab={selectedTab}
           />
           <ScrollView bounces={false}>
@@ -481,20 +585,40 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               marginTop: 10,
             }}
           >
-            <Mutation<bookAppointment, bookAppointmentVariables> mutation={BOOK_APPOINTMENT}>
+            <Mutation<bookAppointment> mutation={BOOK_APPOINTMENT}>
               {(mutate, { loading, data, error }) => (
                 <Button
-                  title="PAY Rs. 299"
+                  title={`PAY Rs. ${
+                    tabs[0].title === selectedTab
+                      ? props.doctor!.onlineConsultationFees
+                      : props.doctor!.physicalConsultationFees
+                  }`}
+                  disabled={
+                    tabs[0].title === selectedTab && onlineCTA[0] === selectedCTA
+                      ? false
+                      : selectedTimeSlot === ''
+                      ? true
+                      : false
+                  }
                   onPress={() => {
                     setshowSpinner(true);
                     // props.setdispalyoverlay(false);
-                    const formatDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-
-                    const appointmentInput = {
+                    // const formatDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
+                    const formatDate =
+                      Object.keys(dateSelected).length > 0
+                        ? Object.keys(dateSelected)[0]
+                        : moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
+                    console.log(formatDate, 'formatDate');
+                    var today = new Date();
+                    var time =
+                      ('0' + today.getHours()).slice(-2) +
+                      ':' +
+                      ('0' + (today.getMinutes() + 1)).slice(-2);
+                    const timeSlot = tabs[0].title === selectedTab ? time : selectedTimeSlot;
+                    const appointmentInput: BookAppointmentInput = {
                       patientId: props.patientId,
                       doctorId: props.doctor ? props.doctor.id : '',
-                      appointmentDate: formatDate,
-                      appointmentTime: '14:30:00Z',
+                      appointmentDateTime: `${formatDate}T${timeSlot}:00.000Z`,
                       appointmentType:
                         selectedTab === tabs[0].title
                           ? APPOINTMENT_TYPE.ONLINE
@@ -504,7 +628,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                     console.log(appointmentInput, 'appointmentInput');
                     mutate({
                       variables: {
-                        appointmentInput: appointmentInput,
+                        bookAppointment: appointmentInput,
                       },
                     });
                   }}

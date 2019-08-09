@@ -4,12 +4,11 @@ export const clientRoutes = {
   welcome: () => '/',
   patients: () => '/patients',
   DoctorsProfile: () => '/profile',
-  ConsultTabs: () => '/consultTabs',
-  consultRoom: () => '/consultRoom',
+  //ConsultTabs: () => '/consultTabs',
   testsAndMedicine: () => '#',
   healthRecords: () => '#',
   calendar: () => '/calendar',
-  consult: () => '/consult',
+  ConsultTabs: (appointmentId: string) => `/ConsultTabs/${appointmentId}`,
 };
 
 export const clientBaseUrl = () => webDoctorsBaseUrl();

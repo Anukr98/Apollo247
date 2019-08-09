@@ -47,6 +47,7 @@
     "@apollo/federation": "^0.6.4",
     "@apollo/gateway": "^0.6.12",
     "@types/node-fetch": "^2.3.7",
+    "@types/opentok": "^2.3.5",
     "apollo-env": "^0.5.1",
     "apollo-server": "^2.6.3",
     "apollo-server-core": "^2.6.7",
@@ -60,11 +61,14 @@
     "mysql2": "^1.6.5",
     "node-fetch": "^2.6.0",
     "nodemon": "^1.19.1",
+    "opentok": "^2.9.1",
     "pg": "^7.11.0",
     "pg-hstore": "^2.3.3",
     "reflect-metadata": "^0.1.13",
+    "rhea": "^1.0.8",
     "sequelize": "^5.8.10",
     "typeorm": "^0.2.18",
+    "url": "^0.11.0",
     "validator": "^11.1.0"
   }
 }

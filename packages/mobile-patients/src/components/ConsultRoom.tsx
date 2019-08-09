@@ -422,7 +422,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <View style={{ width: '100%', height: 456 }}>
             <View style={styles.viewName}>
               <View style={{ alignItems: 'flex-end', marginTop: 20 }}>
-                <ApolloLogo style={{ right: 20 }} />
+                <TouchableOpacity onPress={() => props.navigation.replace(AppRoutes.TabBar)}>
+                  <ApolloLogo style={{ right: 20 }} />
+                </TouchableOpacity>
               </View>
               <TouchableOpacity
                 onPress={() => setShowMenu(true)}
@@ -460,6 +462,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   onPress={() => {
                     if (i === 0) {
                       props.navigation.navigate(AppRoutes.DoctorSearch);
+                    } else if (i == 1) {
+                      props.navigation.navigate(AppRoutes.SearchMedicineScene);
                     }
                   }}
                 >

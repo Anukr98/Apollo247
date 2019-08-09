@@ -20,6 +20,7 @@ import { CartPoc } from 'components/CartPoc';
 import { CartLanding } from 'components/Cart/CartLanding';
 import { MedicineLanding } from 'components/Medicine/MedicineLanding';
 import { ConsultRoom } from 'components/ConsultRoom/ConsultRoom';
+import { ChatRoom } from 'components/ChatRoom/ChatRoom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -51,6 +52,7 @@ const App: React.FC = () => {
         <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
         <AuthRouted exact path={clientRoutes.searchMedicines()} component={MedicineLanding} />
         <AuthRouted exact path={clientRoutes.consultRoom()} component={ConsultRoom} />
+        <AuthRouted exact path={clientRoutes.chatRoom()} component={ChatRoom} />
       </Switch>
     </div>
   );

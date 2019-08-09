@@ -286,7 +286,7 @@ export const DoctorsLanding: React.FC = (props) => {
               }}
             />
             <div className={classes.searchSection}>
-              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 245px'}>
+              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>
                   {filterOptions.searchKeyword.length <= 0 &&
                   specialitySelected.length === 0 &&

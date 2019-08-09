@@ -14,6 +14,15 @@ declare namespace NodeJS {
     FIREBASE_PROJECT_ID: string;
     GOOGLE_APPLICATION_CREDENTIALS: string;
 
+    USE_AZURE_SERVICE_BUS: 'true' | 'false';
+    AZURE_SERVICE_BUS_CONNECTION_STRING: string;
+    AZURE_SERVICE_BUS_PORT: string;
+    RABBITMQ_HOST: string;
+    RABBITMQ_PORT: string;
+    RABBITMQ_USER: string;
+    RABBITMQ_PASSWORD: string;
+    MESSAGE_QUEUE_QUEUE_NAME: string;
+
     CONSULTS_SERVICE_HOST: string;
     CONSULTS_DB_HOST: string;
     CONSULTS_DB_PORT: string;
