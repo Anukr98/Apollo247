@@ -148,3 +148,31 @@ export const BOOK_APPOINTMENT = gql`
     }
   }
 `;
+
+export const GET_PATIENT_APPOINTMENTS = gql`
+  query GetPatientAppointments($patientAppointmentsInput: PatientAppointmentsInput) {
+    getPatinetAppointments(patientAppointmentsInput: $patientAppointmentsInput) {
+      patinetAppointments {
+        id
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        hospitalId
+        status
+        bookingDate
+        doctorInfo {
+          id
+          firstName
+          lastName
+          doctorType
+          experience
+          isActive
+          photoUrl
+          qualification
+          specialization
+        }
+      }
+    }
+  }
+`;

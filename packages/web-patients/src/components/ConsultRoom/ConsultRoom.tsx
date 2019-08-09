@@ -5,6 +5,20 @@ import { Header } from 'components/Header';
 import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { ThingsToDo } from 'components/ConsultRoom/ThingsToDo';
 import { ConsultationsCard } from 'components/ConsultRoom/ConsultationsCard';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { GET_PATIENT_APPOINTMENTS } from 'graphql/doctors';
+import {
+  GetPatientAppointments,
+  GetPatientAppointmentsVariables,
+} from 'graphql/types/GetPatientAppointments';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { Route } from 'react-router-dom';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
+import { getTime } from 'date-fns/esm';
+import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
+import _isEmpty from 'lodash/isEmpty';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -118,9 +132,65 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+type Patient = GetCurrentPatients_getCurrentPatients_patients;
+
+const getTimestamp = (today: Date, slotTime: string) => {
+  const hhmm = slotTime.split(':');
+  return getTime(
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      parseInt(hhmm[0], 10),
+      parseInt(hhmm[1], 10),
+      0,
+      0
+    )
+  );
+};
+
 export const ConsultRoom: React.FC = (props) => {
   const classes = useStyles();
-  const [currentPatientName] = React.useState<number>(1);
+  const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
+  const currentDate = new Date().toISOString().substring(0, 10);
+
+  const { data, loading, error } = useQueryWithSkip<
+    GetPatientAppointments,
+    GetPatientAppointmentsVariables
+  >(GET_PATIENT_APPOINTMENTS, {
+    variables: {
+      patientAppointmentsInput: {
+        patientId: (currentPatient && currentPatient.id) || '',
+        appointmentDate: currentDate,
+      },
+    },
+  });
+  if (loading) {
+    return <LinearProgress />;
+  }
+  if (error) {
+    return <div>Unable to load Consults...</div>;
+  }
+
+  const appointments =
+    data && data.getPatinetAppointments && data.getPatinetAppointments.patinetAppointments
+      ? data.getPatinetAppointments.patinetAppointments
+      : [];
+
+  // filter appointments that are greater than current time.
+  const filterAppointments = appointments.filter((appointmentDetails) => {
+    const currentTime = new Date().getTime();
+    const aptArray = appointmentDetails.appointmentDateTime.split('T');
+    const appointmentTime = getTimestamp(
+      new Date(appointmentDetails.appointmentDateTime),
+      aptArray[1].substring(0, 5)
+    );
+    if (
+      appointmentTime > currentTime &&
+      appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+    )
+      return appointmentDetails;
+  });
 
   return (
     <div className={classes.root}>
@@ -131,34 +201,73 @@ export const ConsultRoom: React.FC = (props) => {
       </div>
       <div className={classes.container}>
         <div className={classes.consultPage}>
-          <div className={`${classes.consultationsHeader} ${classes.noConsultations}`}>
-            <Typography variant="h1">
-              <span>hi</span>
-              <AphSelect
-                value={currentPatientName}
-                classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
-              >
-                <MenuItem classes={{ selected: classes.menuSelected }} value={1}>
-                  surj!
-                </MenuItem>
-                <MenuItem classes={{ selected: classes.menuSelected }}>
-                  <AphButton color="primary" classes={{ root: classes.addMemberBtn }}>
-                    Add Member
-                  </AphButton>
-                </MenuItem>
-              </AphSelect>
-            </Typography>
-            <p>You have no consultations today :) Hope you are doing well?</p>
-            <div className={classes.bottomActions}>
-              <AphButton fullWidth color="primary">
-                Consult Doctor
-              </AphButton>
-            </div>
+          <div
+            className={`${classes.consultationsHeader} ${
+              appointments.length === 0 ? classes.noConsultations : ''
+            }`}
+          >
+            {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
+              <Typography variant="h1">
+                <span>hello</span>
+                <AphSelect
+                  value={currentPatient.id}
+                  onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
+                  classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
+                >
+                  {allCurrentPatients.map((patient) => {
+                    const isSelected = patient.id === currentPatient.id;
+                    const name = isSelected
+                      ? (patient.firstName || '').toLocaleLowerCase()
+                      : (patient.firstName || '').toLocaleLowerCase();
+                    return (
+                      <MenuItem
+                        selected={isSelected}
+                        value={patient.id}
+                        classes={{ selected: classes.menuSelected }}
+                        key={patient.id}
+                      >
+                        {name}
+                      </MenuItem>
+                    );
+                  })}
+                  <MenuItem classes={{ selected: classes.menuSelected }}>
+                    <AphButton color="primary" classes={{ root: classes.addMemberBtn }}>
+                      Add Member
+                    </AphButton>
+                  </MenuItem>
+                </AphSelect>
+              </Typography>
+            ) : (
+              <Typography variant="h1">hello there!</Typography>
+            )}
+
+            {filterAppointments.length === 0 ? (
+              <>
+                <p>You have no consultations today :) Hope you are doing well?</p>
+                <div className={classes.bottomActions}>
+                  <Route
+                    render={({ history }) => (
+                      <AphButton
+                        fullWidth
+                        color="primary"
+                        onClick={() => {
+                          history.push(clientRoutes.doctorsLanding());
+                        }}
+                      >
+                        Consult Doctor
+                      </AphButton>
+                    )}
+                  />
+                </div>
+              </>
+            ) : (
+              <p>You have {filterAppointments.length} consultations today!</p>
+            )}
           </div>
         </div>
         <div className={classes.consultSection}>
           <div className={classes.leftSection}>
-            <ConsultationsCard />
+            {data ? <ConsultationsCard appointments={data} /> : null}
           </div>
           <div className={classes.rightSection}>
             <ThingsToDo />
