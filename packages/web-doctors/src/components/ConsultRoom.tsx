@@ -117,7 +117,6 @@ interface MessagesObjectProps {
   text: string;
 }
 interface ConsultRoomProps {
-  toggleTabs: () => void;
   startConsult: string;
 }
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {

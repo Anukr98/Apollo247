@@ -72,7 +72,6 @@ type Params = { id: string };
 export const ConsultTabs: React.FC = (props) => {
   const classes = useStyles();
   const [tabValue, setTabValue] = useState<number>(0);
-  const [showTabs, setshowTabs] = useState<boolean>(true);
   const [startConsult, setStartConsult] = useState<string>('');
   const params = useParams<Params>();
   const appointmentId = params.id;
@@ -86,21 +85,15 @@ export const ConsultTabs: React.FC = (props) => {
     document.cookie = cookieStr + ';path=/;';
     setStartConsult(flag ? 'videocall' : 'audiocall');
   };
-  const toggleTabs = () => {
-    setshowTabs(!showTabs);
-  };
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
         <Header />
       </div>
       <div className={classes.container}>
-        <CallPopover
-          setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-          // startAppointmentAction={(flag: boolean) => startAppointmentAction(flag)}
-        />
+        <CallPopover setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)} />
         <div>
-          <div className={showTabs ? '' : classes.DisplayNone}>
+          <div>
             <Tabs
               value={tabValue}
               variant="fullWidth"
@@ -126,7 +119,7 @@ export const ConsultTabs: React.FC = (props) => {
           )}
           {tabValue === 1 && (
             <TabContainer>
-              <ConsultRoom startConsult={startConsult} toggleTabs={() => toggleTabs()} />
+              <ConsultRoom startConsult={startConsult} />
             </TabContainer>
           )}
         </div>
