@@ -145,6 +145,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       color: '#00b38e',
       margin: theme.spacing(1, 1, 1, 0),
+      fontSize: 16,
+      textTransform: 'capitalize',
+      fontWeight: theme.typography.fontWeightMedium,
       '&:hover': {
         backgroundColor: '#fff',
       },

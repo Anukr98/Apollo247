@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         fontSize: 16,
         fontWeight: 500,
-        lineHeight: 1.41,
+        lineHeight: 1.38,
         color: theme.palette.secondary.main,
         marginTop: 10,
         marginBottom: 10,
