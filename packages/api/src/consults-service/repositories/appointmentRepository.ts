@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Between, In } from 'typeorm';
+import { EntityRepository, Repository, Between } from 'typeorm';
 import { Appointment } from 'consults-service/entities/appointment';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
