@@ -108,7 +108,6 @@ const getDoctorAppointments: Resolver<
       doctordata.id,
       uniquePatientIds
     );
-
     newPatientsList = patientConsult
       .filter((item) => item.count == 1)
       .map((item) => item.appointment_patientId);
