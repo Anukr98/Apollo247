@@ -84,6 +84,8 @@ export const ConsultTabs: React.FC = (props) => {
   const [tabValue, setTabValue] = useState<number>(0);
   const [startConsult, setStartConsult] = useState<string>('');
   const [appointmentId, setAppointmentId] = useState<string>('');
+  const [sessionId, setsessionId] = useState<string>('');
+  const [token, settoken] = useState<string>('');
 
   const params = useParams<Params>();
   const paramId = params.id;
@@ -93,11 +95,12 @@ export const ConsultTabs: React.FC = (props) => {
   const client = useApolloClient();
   useEffect(() => {
     if (appointmentId !== paramId) {
+      setAppointmentId(paramId);
       client
         .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
           mutation: CREATE_APPOINTMENT_SESSION,
           variables: {
-            CreateAppointmentSessionInput: {
+            createAppointmentSessionInput: {
               appointmentId: '4ba75a55-4174-4485-90dd-3350899929e6',
               requestRole: REQUEST_ROLES.DOCTOR,
             },
@@ -105,28 +108,20 @@ export const ConsultTabs: React.FC = (props) => {
         })
         .then((_data: any) => {
           console.log('createsession', _data);
+          //const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
+          setsessionId(_data.data.createAppointmentSession.sessionId);
+          settoken(_data.data.createAppointmentSession.appointmentToken);
         })
         .catch((e: any) => {
           console.log('Error occured while adding Doctor', e);
         });
     }
+    return () => {
+      const cookieStr = `action=`;
+      document.cookie = cookieStr + ';path=/;';
+    };
   }, [paramId, appointmentId]);
-  // client
-  //   .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
-  //     mutation: CREATE_APPOINTMENT_SESSION,
-  //     variables: {
-  //       CreateAppointmentSessionInput: {
-  //         appointmentId: '4ba75a55-4174-4485-90dd-3350899929e6',
-  //         requestRole: REQUEST_ROLES.DOCTOR,
-  //       },
-  //     },
-  //   })
-  //   .then((_data: any) => {
-  //     console.log('createsession', _data);
-  //   })
-  //   .catch((e: any) => {
-  //     console.log('Error occured while adding Doctor', e);
-  //   });
+
   const setStartConsultAction = (flag: boolean) => {
     setStartConsult('');
     const cookieStr = `action=${flag ? 'videocall' : 'audiocall'}`;
@@ -140,7 +135,10 @@ export const ConsultTabs: React.FC = (props) => {
         <Header />
       </div>
       <div className={classes.container}>
-        <CallPopover setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)} />
+        <CallPopover
+          setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+          appointmentId={appointmentId}
+        />
         <div>
           <div>
             <Tabs
@@ -169,7 +167,12 @@ export const ConsultTabs: React.FC = (props) => {
           {tabValue === 1 && (
             <TabContainer>
               <div className={classes.chatContainer}>
-                <ConsultRoom startConsult={startConsult} />
+                <ConsultRoom
+                  startConsult={startConsult}
+                  sessionId={sessionId}
+                  token={token}
+                  appointmentId={appointmentId}
+                />
               </div>
             </TabContainer>
           )}

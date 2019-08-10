@@ -15,10 +15,12 @@ import {
   StepContent,
   Typography,
 } from '@material-ui/core';
-import { format, getTime, setSeconds, setMilliseconds } from 'date-fns';
+import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { STATUS } from 'graphql/types/globalTypes';
 
 export interface Appointment {
+  id: string;
   startTime: number;
   endTime: number;
   isNew: boolean;
@@ -184,6 +186,7 @@ const useStyles = makeStyles((theme: Theme) =>
         boxShadow: 'none',
       },
     },
+    missing: {},
     hide: {
       display: 'none',
     },
@@ -202,30 +205,10 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-let timeOutId: number;
-const udpateActiveStep = (
-  appointments: Appointment[],
-  activeStep: number,
-  setActiveStep: React.Dispatch<number>
-) => {
-  if (appointments.length && checkIfComplete(appointments[activeStep].endTime)) {
-    activeStep += 1;
-    setActiveStep(activeStep);
-  }
-
-  if (activeStep < appointments.length) {
-    timeOutId = window.setTimeout(
-      () => udpateActiveStep(appointments, activeStep, setActiveStep),
-      1000
-    );
-  }
-};
-const checkIfComplete = (appointmentEndTime: number) =>
-  getTime(setSeconds(setMilliseconds(appointmentEndTime, 0), 0)) <=
-  getTime(setSeconds(setMilliseconds(Date.now(), 0), 0));
+const checkIfComplete = (status: string) => status === STATUS.COMPLETED;
 
 const getActiveStep = (appointments: Appointment[]) =>
-  appointments.findIndex((appointment) => checkIfComplete(appointment.endTime));
+  appointments.findIndex((appointment) => checkIfComplete(appointment.status));
 
 export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
   const classes = useStyles();
@@ -239,8 +222,6 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
 
     setAppointments(values);
     setActiveStep(activeStep);
-    clearTimeout(timeOutId);
-    udpateActiveStep(values, activeStep, setActiveStep);
   }, [values]);
 
   if (appointments && appointments.length) {
@@ -263,7 +244,13 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
               key={idx}
               active={true}
               className={
-                activeStep === idx ? 'upcoming' : activeStep - 1 >= idx ? classes.completed : ''
+                activeStep === idx
+                  ? 'upcoming'
+                  : activeStep - 1 >= idx
+                  ? classes.completed
+                  : appointment.status === STATUS.MISSED
+                  ? classes.missing
+                  : ''
               }
               classes={{
                 root: classes.step,
@@ -336,7 +323,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
                               </div>
                             </Grid>
                           </Grid>
-                          {appointment.details.checkups && appointment.details.checkups.length && (
+                          {!!appointment.details.checkups && !!appointment.details.checkups.length && (
                             <Grid lg={5} sm={5} xs={5} key={2} item className={classes.valign}>
                               <div className={classes.section1}>
                                 {(appointment.details.checkups.length > 3
@@ -366,7 +353,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
                               <IconButton aria-label="Video call">
                                 <img src={require('images/ic_video.svg')} alt="" />
                               </IconButton>
-                              <Link to="/consultTabs">
+                              <Link to={`/consultTabs/${appointment.id}`}>
                                 <IconButton aria-label="Navigate next">
                                   <NavigateNextIcon />
                                 </IconButton>
