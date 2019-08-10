@@ -124,7 +124,7 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
         endTime,
         type,
         status,
-        isNew: newPatientsList!.includes(patientId),
+        isNew: !!newPatientsList && newPatientsList.includes(patientId),
         details: {
           patientName: `${patientInfo!.firstName} ${patientInfo!.lastName}`,
           checkups: [],
