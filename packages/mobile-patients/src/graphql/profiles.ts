@@ -417,8 +417,10 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
           experience
           city
           photoUrl
+          qualification
           specialty {
             name
+            image
           }
         }
         isActive
@@ -432,16 +434,22 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
     getDoctorsBySpecialtyAndFilters(filterInput: $filterInput) {
       doctors {
         id
+        salutation
         firstName
         lastName
+        experience
+        city
+        photoUrl
+        qualification
         specialty {
           name
           image
         }
-        city
         onlineConsultationFees
-        experience
         languages
+        consultHours {
+          consultMode
+        }
       }
     }
   }

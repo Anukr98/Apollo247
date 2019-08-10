@@ -169,9 +169,14 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
               ) : (
                 <View style={styles.optionsView}>
                   {selectedOptions &&
+                    options &&
+                    options.length > 0 &&
                     options.map((name) => (
                       <Button
-                        title={name}
+                        title={name.replace(
+                          /\w+/g,
+                          (w) => w[0].toUpperCase() + w.slice(1).toLowerCase()
+                        )}
                         style={[
                           styles.buttonStyle,
                           selectedOptions.includes(name)
@@ -230,6 +235,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                 return obj;
               });
               setData(filterData);
+              props.onClickClose(filterData);
             }}
           >
             <Reload />

@@ -86,23 +86,6 @@ type rowData = {
   registrationNumber?: string;
   onlineConsultationFees?: string;
   physicalConsultationFees?: string;
-  // id?: string;
-  // salutation?: Salutation | null;
-  // firstName?: string;
-  // lastName?: string;
-  // mobileNumber?: string;
-  // experience?: string | null;
-  // gender?: string;
-  // specialty?: getDoctorDetailsById_getDoctorDetailsById_specialty;
-  // specialization?: string | null;
-  // qualification?: string;
-  // languages?: string | null;
-  // city?: string | null;
-  // photoUrl?: string | null;
-  // availableForPhysicalConsultation?: Boolean;
-  // availableForVirtualConsultation?: Boolean;
-  // onlineConsultationFees?: string;
-  // physicalConsultationFees?: string;
 };
 
 export interface DoctorCardProps extends NavigationScreenProps {
@@ -113,7 +96,6 @@ export interface DoctorCardProps extends NavigationScreenProps {
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
-  console.log(rowData, 'rowData.id');
   if (rowData)
     return (
       <TouchableOpacity
@@ -153,7 +135,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 Dr. {rowData.firstName} {rowData.lastName}
               </Text>
               <Text style={styles.doctorSpecializationStyles}>
-                2YRS
                 {rowData.specialty ? rowData.specialty.name : ''} | {rowData.experience} YRS
               </Text>
               <Text style={styles.educationTextStyles}>{rowData.qualification}</Text>

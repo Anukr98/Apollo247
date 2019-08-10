@@ -205,7 +205,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     // patientId: "ac24883c-4f7c-4e46-a9e4-155e4092263c",
     // appointmentDate: "2019-08-08"
     patientId: currentPatient ? currentPatient!.id : '',
-    appointmentDate: '2019-08-09', // moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD')
+    appointmentDate: moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'),
   };
   console.log(inputData, 'inputData');
   const { data, error } = useQuery<getPatinetAppointments>(GET_PATIENT_APPOINTMENTS, {

@@ -403,27 +403,33 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           </View>
           <ScrollView horizontal bounces={false} showsHorizontalScrollIndicator={false}>
             <FlatList
-              key={doctorDetails.starTeam!.length / 2}
+              keyExtractor={(item, index) => index.toString()}
+              // keyExtractor={(item, i) => item!.associatedDoctor!.id}
               contentContainerStyle={{ padding: 12 }}
               // horizontal={true}
               data={doctorDetails.starTeam}
               bounces={false}
-              numColumns={doctorDetails.starTeam!.length / 2}
-              renderItem={({ item }) => (
-                <View style={{ width: 320 }}>
-                  <DoctorCard
-                    rowData={item ? item.associatedDoctor : null}
-                    navigation={props.navigation}
-                    displayButton={false}
-                    style={{
-                      marginVertical: 8,
-                      marginHorizontal: 10,
+              numColumns={doctorDetails.starTeam ? doctorDetails.starTeam.length / 2 : 0}
+              renderItem={({ item }) => {
+                console.log(item, 'itemitemitemitem');
+                if (item && item.associatedDoctor && item.associatedDoctor.id)
+                  return (
+                    <View style={{ width: 320 }} key={item.associatedDoctor.id}>
+                      <DoctorCard
+                        rowData={item.associatedDoctor}
+                        navigation={props.navigation}
+                        displayButton={false}
+                        style={{
+                          marginVertical: 8,
+                          marginHorizontal: 10,
 
-                      shadowRadius: 3,
-                    }}
-                  />
-                </View>
-              )}
+                          shadowRadius: 3,
+                        }}
+                      />
+                    </View>
+                  );
+                return null;
+              }}
             />
           </ScrollView>
         </View>

@@ -6,12 +6,14 @@ import { Filter, LocationOff, LocationOn } from '@aph/mobile-patients/src/compon
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { SPECIALITY_DOCTOR_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
+import { DOCTOR_SPECIALITY_BY_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  getSpecialtyDoctorsWithFilters,
-  getSpecialtyDoctorsWithFiltersVariables,
-  getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors,
-} from '@aph/mobile-patients/src/graphql/types/getSpecialtyDoctorsWithFilters';
+  getDoctorsBySpecialtyAndFilters,
+  getDoctorsBySpecialtyAndFiltersVariables,
+  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
+  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_consultHours,
+} from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
+import { ConsultMode, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   default as string,
   default as strings,
@@ -22,6 +24,7 @@ import React, { useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   topView: {
@@ -50,13 +53,49 @@ const styles = StyleSheet.create({
 });
 
 export interface DoctorSearchListingProps extends NavigationScreenProps {}
-export type filterDataType = { label: string; options: string[]; selectedOptions?: string[] };
+export type filterDataType = {
+  label: string;
+  options: string[];
+  selectedOptions?: string[]; // | { minimum: number; maximum: number }[];
+};
 
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
-  const filterData = strings.doctor_search_listing.filter_data.map((obj: filterDataType) => {
-    obj.selectedOptions = [];
-    return obj;
-  });
+  const filterData: filterDataType = [
+    {
+      label: 'City',
+      options: ['Hyderabad', 'Chennai'],
+      selectedOptions: [],
+    },
+    {
+      label: 'Experience In Years',
+      options: ['0 - 5', '6 - 10', '11 - 15', '15+'],
+      selectedOptions: [],
+    },
+    {
+      label: 'Availability',
+      options: ['Now', 'Today', 'Tomorrow', 'Next 3 Days'],
+      selectedOptions: [],
+    },
+    {
+      label: 'Fees In Rupees',
+      options: ['100 - 500', '501 - 1000', '1000+'],
+      selectedOptions: [],
+    },
+    {
+      label: 'Gender',
+      options: [Gender.FEMALE, Gender.MALE, Gender.OTHER],
+      selectedOptions: [],
+    },
+    {
+      label: 'Language',
+      options: ['Hindi', 'English', 'Telugu'],
+      selectedOptions: [],
+    },
+  ];
+  // strings.doctor_search_listing.filter_data.map((obj: filterDataType) => {
+  //   obj.selectedOptions = [];
+  //   return obj;
+  // });
   const tabs = [
     { title: 'All Consults' },
     { title: 'Online Consults' },
@@ -67,20 +106,105 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [doctorsList, setDoctorsList] = useState<
-    (getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors | null)[]
+    (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[]
   >([]);
   const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
+  console.log('FilterData1111111', FilterData);
+  let experienceArray = [];
+  if (FilterData[1].selectedOptions && FilterData[1].selectedOptions.length > 0)
+    FilterData[1].selectedOptions.forEach((element) => {
+      const splitArray = element.split(' - ');
+      const object =
+        splitArray.length > 0
+          ? {
+              minimum: splitArray.length > 0 ? Number(splitArray[0].replace('+', '')) : '',
+              maximum: splitArray.length > 1 ? Number(element.split(' - ')[1]) : -1,
+            }
+          : null;
+      if (object) {
+        experienceArray.push(object);
+      }
+    });
+
+  let feesArray = [];
+  if (FilterData[3].selectedOptions && FilterData[3].selectedOptions.length > 0)
+    FilterData[3].selectedOptions.forEach((element) => {
+      const splitArray = element.split(' - ');
+      console.log(splitArray, 'splitArray');
+      const object =
+        splitArray.length > 0
+          ? {
+              minimum: splitArray.length > 0 ? Number(splitArray[0].replace('+', '')) : '',
+              maximum: splitArray.length > 1 ? Number(element.split(' - ')[1]) : -1,
+            }
+          : null;
+      if (object) {
+        feesArray.push(object);
+      }
+    });
+
+  let availabilityArray = [];
+  const today = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
+  console.log('moment', moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'));
+  if (FilterData[2].selectedOptions && FilterData[2].selectedOptions.length > 0)
+    FilterData[2].selectedOptions.forEach((element) => {
+      if (element === 'Now') {
+        availabilityArray.push(today);
+      }
+      if (element === 'Today') {
+        availabilityArray.push(today);
+      }
+      if (element === 'Tomorrow') {
+        availabilityArray.push(
+          moment(new Date(new Date().getTime() + 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
+            'YYYY-MM-DD'
+          )
+        );
+      }
+      if (element === 'Next 3 Days') {
+        availabilityArray.push(
+          moment(new Date(new Date().getTime() + 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
+            'YYYY-MM-DD'
+          )
+        );
+        availabilityArray.push(
+          moment(new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
+            'YYYY-MM-DD'
+          )
+        );
+        availabilityArray.push(
+          moment(new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
+            'YYYY-MM-DD'
+          )
+        );
+      }
+      new Date().getTime() + 24 * 60 * 60 * 1000;
+    });
+  console.log(
+    experienceArray,
+    'experienceArray',
+    availabilityArray,
+    'availabilityArray',
+    feesArray,
+    'feesArray'
+  );
   const FilterInput = {
-    specialty: props.navigation.state.params!.speciality,
+    specialty: props.navigation.state.params!.specialityId,
+    city: FilterData[0].selectedOptions,
+    experience: experienceArray,
+    availability: availabilityArray,
+    fees: feesArray,
+    gender: FilterData[4].selectedOptions,
+    language: FilterData[5].selectedOptions,
   };
 
   // FilterData.forEach((obj) => {
   //   if (obj.selectedOptions!.length > 0) {
   //     FilterInput[obj.label.toLowerCase().split(' ')[0]] = obj.selectedOptions;
   //   }
-  // }); Todo
+  // });
   console.log(
     props.navigation.state.params,
     'speciality',
@@ -89,9 +213,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     FilterInput
   );
   const { data, error } = useQuery<
-    getSpecialtyDoctorsWithFilters,
-    getSpecialtyDoctorsWithFiltersVariables
-  >(SPECIALITY_DOCTOR_FILTERS, {
+    getDoctorsBySpecialtyAndFilters,
+    getDoctorsBySpecialtyAndFiltersVariables
+  >(DOCTOR_SPECIALITY_BY_FILTERS, {
     variables: {
       filterInput: FilterInput,
     },
@@ -103,11 +227,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     console.log('data', data);
     if (
       data &&
-      data.getSpecialtyDoctorsWithFilters &&
-      data.getSpecialtyDoctorsWithFilters.doctors &&
-      doctorsList !== data.getSpecialtyDoctorsWithFilters.doctors
+      data.getDoctorsBySpecialtyAndFilters &&
+      data.getDoctorsBySpecialtyAndFilters.doctors &&
+      doctorsList !== data.getDoctorsBySpecialtyAndFilters.doctors
     ) {
-      setDoctorsList(data.getSpecialtyDoctorsWithFilters.doctors);
+      setDoctorsList(data.getDoctorsBySpecialtyAndFilters.doctors);
       setshowSpinner(false);
     }
   }
@@ -195,7 +319,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             <Text style={styles.headingText}>{string.common.okay}</Text>
             <Text style={styles.descriptionText}>
               {string.common.best_doctor_text}
-              {props.navigation.state.params!.speciality}
+              {props.navigation.state.params!.specialityName}
             </Text>
           </View>
         </View>
@@ -213,23 +337,37 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const renderSearchDoctorResultsRow = (
-    rowData: getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors | null
+    rowData: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null
   ) => {
     if (rowData) return <DoctorCard rowData={rowData} navigation={props.navigation} />;
     return null;
   };
+  const consultionType = (
+    consultHours:
+      | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_consultHours | null)[]
+      | null,
+    filter: ConsultMode
+  ) => {
+    let filterType = false;
+    consultHours &&
+      consultHours.forEach((element) => {
+        if (element && element.consultMode === filter) {
+          filterType = true;
+        }
+      });
+    return filterType;
+  };
 
-  const renderDoctorSearches = (filter?: string) => {
+  const renderDoctorSearches = (filter?: ConsultMode) => {
     console.log(doctorsList, 'doctorsList');
     const doctors = filter
       ? doctorsList.filter(
-          (obj: getSpecialtyDoctorsWithFilters_getSpecialtyDoctorsWithFilters_doctors | null) => {
-            if (filter === 'availableForPhysicalConsultation')
-              return obj && obj.availableForPhysicalConsultation === true;
-            return obj && obj.availableForVirtualConsultation === true;
+          (obj: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null) => {
+            return consultionType(obj!.consultHours, filter);
           }
         )
       : doctorsList;
+    console.log(doctors, 'doctors after filter');
     if (doctors.length === 0 && !showSpinner) {
       return (
         <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 64 }}>
@@ -242,12 +380,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             }}
             heading={'Uh oh! :('}
             description={
-              filter === 'availableForPhysicalConsultation'
+              filter === ConsultMode.PHYSICAL
                 ? `There is no ${
-                    props.navigation.state.params!.speciality
+                    props.navigation.state.params!.specialityName
                   } available for Physical Consult. Please you try Online Consultation.`
                 : `There is no ${
-                    props.navigation.state.params!.speciality
+                    props.navigation.state.params!.specialityName
                   } available to match your filters. Please try again with different filters.`
             }
             descriptionTextStyle={{ fontSize: 14 }}
@@ -284,9 +422,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {selectedTab === tabs[0].title && renderDoctorSearches()}
-          {selectedTab === tabs[1].title && renderDoctorSearches('availableForVirtualConsultation')}
-          {selectedTab === tabs[2].title &&
-            renderDoctorSearches('availableForPhysicalConsultation')}
+          {selectedTab === tabs[1].title && renderDoctorSearches(ConsultMode.ONLINE)}
+          {selectedTab === tabs[2].title && renderDoctorSearches(ConsultMode.PHYSICAL)}
         </ScrollView>
         {showLocationpopup && (
           <View

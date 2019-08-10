@@ -433,7 +433,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     if (rowData)
       return (
         <TouchableOpacity
-          onPress={() => onClickSearch(rowData.name!)}
+          onPress={() => onClickSearch(rowData)}
           style={{
             // flex: 1,
             width: '50%',
@@ -458,8 +458,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     else return null;
   };
 
-  const onClickSearch = (speciality: string) => {
-    props.navigation.navigate('DoctorSearchListing', { speciality });
+  const onClickSearch = (speciality: getAllSpecialties_getAllSpecialties) => {
+    props.navigation.navigate('DoctorSearchListing', {
+      specialityId: speciality.id,
+      specialityName: speciality.name,
+    });
   };
 
   const renderHelpView = () => {
