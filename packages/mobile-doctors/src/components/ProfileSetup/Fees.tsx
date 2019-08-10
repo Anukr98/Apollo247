@@ -39,8 +39,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   separator: {
+    flex: 1,
     height: 1,
-    width: 300,
+    // width: 300,
     marginRight: 0,
     marginLeft: 15,
     backgroundColor: '#658f9b',

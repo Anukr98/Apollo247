@@ -9,6 +9,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0, 0.2)',
     alignSelf: 'center',
     justifyContent: 'center',
+    zIndex: 1000,
+    elevation: 10,
   },
 });
 

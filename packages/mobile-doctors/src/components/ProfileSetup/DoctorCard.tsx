@@ -207,7 +207,10 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
       {isMenuHidden ? (
         <View style={styles.removebuttonview}>
           <Button
-            onPress={() => props.onRemove(props.doctorId)}
+            onPress={() => {
+              setisMenuHidden(false);
+              props.onRemove(props.doctorId);
+            }}
             title="Remove"
             titleTextStyle={styles.titleTextStyle}
             style={[styles.containerStyles]}

@@ -209,14 +209,14 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       })
       .catch((e) => {
         setLoading(false);
-        console.log('Error occured while adding Doctor', e);
+        console.log('Error occured while fetching Doctor', e);
       });
   }, []);
 
   const fetchProfileData = (isReload: boolean) => {
     isReload ? setReloading(true) : setLoading(true);
     client
-      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS })
+      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
       .then((_data) => {
         console.log('getDoctorProfile', _data!);
         const result = _data.data.getDoctorDetails;
@@ -225,7 +225,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       })
       .catch((e) => {
         isReload ? setReloading(false) : setLoading(false);
-        console.log('Error occured while adding Doctor', e);
+        console.log('Error occured while loading data', e);
       });
   };
 
@@ -251,7 +251,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const onReload = (func: () => Promise<void>) => {
     setReloading(true);
     client
-      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS })
+      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
       .then((_data) => {
         const result = _data.data.getDoctorDetails;
         setGetDoctorProfile(result);

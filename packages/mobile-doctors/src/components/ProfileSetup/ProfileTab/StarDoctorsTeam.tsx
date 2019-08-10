@@ -1,8 +1,14 @@
 import { DoctorCard } from '@aph/mobile-doctors/src/components/ProfileSetup/DoctorCard';
 import { Add, Down, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
-import { MAKE_TEAM_DOCTOR_ACTIVE } from '@aph/mobile-doctors/src/graphql/profiles';
-import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import {
+  MAKE_TEAM_DOCTOR_ACTIVE,
+  REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
+} from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  GetDoctorDetails_getDoctorDetails,
+  GetDoctorDetails_getDoctorDetails_starTeam,
+} from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import {
   MakeTeamDoctorActive,
   MakeTeamDoctorActiveVariables,
@@ -11,13 +17,13 @@ import {
   RemoveTeamDoctorFromStarTeam,
   RemoveTeamDoctorFromStarTeamVariables,
 } from '@aph/mobile-doctors/src/graphql/types/RemoveTeamDoctorFromStarTeam';
-import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Platform, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 
 const styles = StyleSheet.create({
   inputTextStyle: {
@@ -79,24 +85,29 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
   // const [starDoctors, setFilteredStarDoctors] = useState<
   //   (GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram['profile'] | null)[] | null
   // >([]);
-  // const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const client = useApolloClient();
   const [profileData, setProfileData] = useState(_profileData);
   const starDoctors = _profileData.starTeam!;
+  const starDoctorsActive = _profileData.starTeam!.filter((doctor) => doctor!.isActive);
+  console.log('starDoctorsActive', starDoctorsActive);
+  const starDoctorsInActive = _profileData.starTeam!.filter((doctor) => !doctor!.isActive);
+  console.log('starDoctorsInActive', starDoctorsInActive);
 
   const onSelectStarDoctor = (searchText: boolean) => {
     setDropdownOpen(!isDropdownOpen);
     scrollViewRef && scrollViewRef.scrollToEnd();
   };
 
-  const onPressDoctorSearchListItem = (text: string) => {
+  const onPressDoctorSearchListItem = (text: string, id: string) => {
     setDropdownOpen(false);
     setSelectedDoctor(text);
-    addDoctorToProgram(text);
+    addDoctorToProgram(id);
   };
 
   const addDoctorToProgram = (id: string) => {
+    setIsLoading(true);
     client
       .mutate<MakeTeamDoctorActive, MakeTeamDoctorActiveVariables>({
         mutation: MAKE_TEAM_DOCTOR_ACTIVE,
@@ -104,6 +115,8 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        setSelectedDoctor('Select Doctor');
+        setIsLoading(false);
         const result = _data.data.makeTeamDoctorActive;
         console.log('addDoctorToProgram', result);
         if (result) {
@@ -111,28 +124,39 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
         }
       })
       .catch((e) => {
-        console.log('Error occured while adding Doctor', e);
-        Alert.alert('Error', 'Error occured while adding Doctor');
+        setSelectedDoctor('Select Doctor');
+        setIsLoading(false);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while adding Doctor', errorMessage, error);
+        Alert.alert('Error', errorMessage);
       });
   };
 
   const removeDoctorFromProgram = (id: string) => {
+    console.log('removeDoctorFromProgram', id, profileData.id);
+
+    setIsLoading(true);
     client
       .mutate<RemoveTeamDoctorFromStarTeam, RemoveTeamDoctorFromStarTeamVariables>({
-        mutation: MAKE_TEAM_DOCTOR_ACTIVE,
+        mutation: REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
         variables: { associatedDoctor: id, starDoctor: profileData.id },
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        const result = _data.data.removeTeamDoctorFromStarTeam;
+        setIsLoading(false);
+        const result = _data!.data!.removeTeamDoctorFromStarTeam;
         console.log('removeDoctorFromProgram', result);
         if (result) {
           onReload();
         }
       })
       .catch((e) => {
-        console.log('Error occured while removing Doctor', e);
-        Alert.alert('Error', 'Error occured while removing Doctor');
+        setIsLoading(false);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while removing Doctor', errorMessage, error);
+        Alert.alert('Error', errorMessage);
       });
   };
 
@@ -155,68 +179,79 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
 
   const renderDropdownCard = () => (
     <View style={{ marginTop: 2 }}>
-      {starDoctors!.length > 0 ? (
-        <View style={styles.dropDownCardStyle}>
-          {starDoctors!.map((_doctor, i) => {
-            if (!_doctor!.isActive) return null;
-            const doctor = _doctor!.associatedDoctor!;
-            const drName = `Dr. ${doctor.firstName} ${doctor.lastName}`;
-            return (
-              <TouchableOpacity
-                onPress={() =>
-                  onPressDoctorSearchListItem(`Dr. ${doctor.firstName} ${doctor.lastName}`)
-                }
-                style={{ marginHorizontal: 16 }}
-                key={i}
-              >
-                {formatSuggestionsText(drName, '')}
-                {i < starDoctors!.length - 1 ? (
-                  <View
-                    style={{
-                      marginTop: 8,
-                      marginBottom: 7,
-                      height: 1,
-                      opacity: 0.1,
-                    }}
-                  ></View>
-                ) : null}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      ) : null}
+      <View style={styles.dropDownCardStyle}>
+        {starDoctorsInActive!.map((_doctor, i, array) => {
+          const doctor = _doctor!.associatedDoctor!;
+          const drName = `Dr. ${doctor.firstName} ${doctor.lastName}`;
+          return (
+            <TouchableOpacity
+              onPress={() =>
+                onPressDoctorSearchListItem(
+                  `Dr. ${doctor.firstName} ${doctor.lastName}`,
+                  _doctor!.associatedDoctor!.id
+                )
+              }
+              style={{ marginHorizontal: 16 }}
+              key={i}
+            >
+              {formatSuggestionsText(drName, '')}
+              {i < array!.length - 1 ? (
+                <View
+                  style={{
+                    marginTop: 8,
+                    marginBottom: 7,
+                    height: 1,
+                    opacity: 0.1,
+                  }}
+                />
+              ) : null}
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
   );
 
+  const getFormattedLocation = (d: GetDoctorDetails_getDoctorDetails_starTeam | null) => {
+    let location = '';
+    try {
+      return (location =
+        [
+          d!.associatedDoctor!.doctorHospital[0].facility.streetLine1,
+          d!.associatedDoctor!.doctorHospital[0].facility.streetLine2,
+          d!.associatedDoctor!.doctorHospital[0].facility.streetLine3,
+          d!.associatedDoctor!.doctorHospital[0].facility.city,
+          d!.associatedDoctor!.doctorHospital[0].facility.state,
+          d!.associatedDoctor!.doctorHospital[0].facility.country,
+        ]
+          .filter((data) => !data)
+          .join(',') || '');
+    } catch (e) {
+      console.log(e);
+    }
+    return location;
+  };
+
   const renderStarDoctorCards = () => {
-    return starDoctors.map((starDoctor, i) => (
-      <DoctorCard
-        onRemove={(id) => {
-          removeDoctorFromProgram(id);
-        }}
-        doctorId={starDoctor!.associatedDoctor!.id}
-        key={i}
-        image={starDoctor!.associatedDoctor!.photoUrl || ''}
-        doctorName={`${starDoctor!.associatedDoctor!.firstName || ''} ${starDoctor!
-          .associatedDoctor!.lastName || ''}`}
-        experience={starDoctor!.associatedDoctor!.experience || ''}
-        specialization={profileData.specialty.name.toLocaleUpperCase()} //{(starDoctor!.associatedDoctor!.qualification || '').toUpperCase()}
-        education={starDoctor!.associatedDoctor!.qualification!}
-        // location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
-        location={
-          [
-            starDoctor!.associatedDoctor!.doctorHospital[0].facility.streetLine1,
-            starDoctor!.associatedDoctor!.doctorHospital[0].facility.streetLine2,
-            starDoctor!.associatedDoctor!.doctorHospital[0].facility.streetLine3,
-            starDoctor!.associatedDoctor!.doctorHospital[0].facility.city,
-            starDoctor!.associatedDoctor!.doctorHospital[0].facility.state,
-            starDoctor!.associatedDoctor!.doctorHospital[0].facility.country,
-          ]
-            .filter(Boolean)
-            .join(', ') || ''
-        } //{starDoctor.location}
-      />
-    ));
+    return starDoctorsActive.map((starDoctor, i) => {
+      return (
+        <DoctorCard
+          onRemove={(id) => {
+            removeDoctorFromProgram(id);
+          }}
+          doctorId={starDoctor!.associatedDoctor!.id}
+          key={i}
+          image={starDoctor!.associatedDoctor!.photoUrl || ''}
+          doctorName={`${starDoctor!.associatedDoctor!.firstName || ''} ${starDoctor!
+            .associatedDoctor!.lastName || ''}`}
+          experience={starDoctor!.associatedDoctor!.experience || ''}
+          specialization={profileData.specialty.name.toLocaleUpperCase()} //{(starDoctor!.associatedDoctor!.qualification || '').toUpperCase()}
+          education={starDoctor!.associatedDoctor!.qualification!}
+          // location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
+          location={getFormattedLocation(starDoctor)}
+        />
+      );
+    });
   };
 
   const renderAddDoctor = () => {
@@ -275,18 +310,20 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
     );
   };
   return (
-    <SquareCardWithTitle
-      title={`Your Star Doctors Team (${starDoctors.length})`}
-      containerStyle={{ marginTop: 20 }}
-    >
-      <View style={{ height: 16 }} />
-      {renderStarDoctorCards()}
-      {/* {isLoading && <ActivityIndicator style={{ marginBottom: 16 }} />} */}
-      {starDoctors!.filter((_doctor) => _doctor!.isActive).length == 0
-        ? null
-        : !isSelectDoctorVisible
-        ? renderAddDoctor()
-        : renderSelectDoctorField()}
-    </SquareCardWithTitle>
+    <View>
+      {isLoading ? <Loader fullScreen /> : null}
+      <SquareCardWithTitle
+        title={`Your Star Doctors Team (${starDoctorsActive.length})`}
+        containerStyle={{ marginTop: 20 }}
+      >
+        <View style={{ height: 16 }} />
+        {renderStarDoctorCards()}
+        {starDoctorsInActive.length == 0
+          ? null
+          : !isSelectDoctorVisible
+          ? renderAddDoctor()
+          : renderSelectDoctorField()}
+      </SquareCardWithTitle>
+    </View>
   );
 };

@@ -93,6 +93,25 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
   const formatSpecialityAndExperience = (speciality: string, experience: string) =>
     `${(speciality || '').toUpperCase()}     |   ${experience}YRS`;
 
+  const getFormattedLocation = () => {
+    let location = '';
+    try {
+      location = [
+        profileData.doctorHospital[0].facility.streetLine1 || 'hel',
+        profileData.doctorHospital[0].facility.streetLine2 || 'hel',
+        profileData.doctorHospital[0].facility.streetLine3,
+        profileData.doctorHospital[0].facility.city,
+        profileData.doctorHospital[0].facility.state,
+        profileData.doctorHospital[0].facility.country,
+      ]
+        .filter((data) => !data)
+        .join(', ');
+    } catch (e) {
+      console.log(e);
+    }
+    return location;
+  };
+
   return (
     <View style={styles.container}>
       <SquareCardWithTitle title="Your Profile" containerStyle={{ marginTop: 6 }}>
@@ -143,19 +162,7 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
           )}
           {profileRow('Speaks', (profileData!.languages || '').split(',').join(', '))}
           {profileRow('MCI Number', profileData!.registrationNumber)}
-          {profileRow(
-            'In-person Consult Location',
-            [
-              profileData.doctorHospital[0].facility.streetLine1,
-              profileData.doctorHospital[0].facility.streetLine2,
-              profileData.doctorHospital[0].facility.streetLine3,
-              profileData.doctorHospital[0].facility.city,
-              profileData.doctorHospital[0].facility.state,
-              profileData.doctorHospital[0].facility.country,
-            ]
-              .filter(Boolean)
-              .join(', ')
-          )}
+          {profileRow('In-person Consult Location', getFormattedLocation())}
         </View>
       </SquareCardWithTitle>
       {profileData!.doctorType == 'STAR_APOLLO' ? (
