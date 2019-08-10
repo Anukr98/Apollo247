@@ -76,6 +76,7 @@ export const GET_DOCTOR_DETAILS = gql`
         IFSCcode
         accountType
         bankName
+        accountHolderName
       }
       specialty {
         name
@@ -109,6 +110,14 @@ export const GET_DOCTOR_DETAILS = gql`
           streetLine2
           streetLine3
           zip
+          doctorHospital {
+            facility {
+              streetLine1
+            }
+          }
+          specialty {
+            name
+          }
         }
       }
     }
