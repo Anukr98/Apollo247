@@ -20,6 +20,7 @@ import { Link } from 'react-router-dom';
 import { STATUS } from 'graphql/types/globalTypes';
 
 export interface Appointment {
+  id: string;
   startTime: number;
   endTime: number;
   isNew: boolean;
@@ -352,7 +353,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
                               <IconButton aria-label="Video call">
                                 <img src={require('images/ic_video.svg')} alt="" />
                               </IconButton>
-                              <Link to="/consultTabs">
+                              <Link to={`/consultTabs/${appointment.id}`}>
                                 <IconButton aria-label="Navigate next">
                                   <NavigateNextIcon />
                                 </IconButton>
