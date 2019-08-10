@@ -16,6 +16,19 @@ export const GET_PATIENTS = gql`
     }
   }
 `;
+export const MAKE_TEAM_DOCTOR_ACTIVE = gql`
+  mutation MakeTeamDoctorActive($associatedDoctor: String, $starDoctor: String) {
+    makeTeamDoctorActive(associatedDoctor: $associatedDoctor, starDoctor: $starDoctor)
+  }
+`;
+
+export const REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM = gql`
+  mutation RemoveTeamDoctorFromStarTeam($associatedDoctor: String, $starDoctor: String) {
+    removeTeamDoctorFromStarTeam(associatedDoctor: $associatedDoctor, starDoctor: $starDoctor) {
+      firstName
+    }
+  }
+`;
 export const GET_DOCTOR_DETAILS = gql`
   query GetDoctorDetails {
     getDoctorDetails {
@@ -202,6 +215,14 @@ export const UPDATE_PATIENT = gql`
         dateOfBirth
         emailAddress
       }
+    }
+  }
+`;
+export const CREATE_APPOINTMENT_SESSION = gql`
+  mutation CreateAppointmentSession($CreateAppointmentSessionInput: CreateAppointmentSessionInput) {
+    createAppointmentSession(createAppointmentSessionInput: $CreateAppointmentSessionInput) {
+      sessionId
+      appointmentToken
     }
   }
 `;

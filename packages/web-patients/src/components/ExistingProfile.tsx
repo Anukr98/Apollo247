@@ -114,6 +114,26 @@ const useStyles = makeStyles((theme: Theme) => {
     menuItemHide: {
       display: 'none',
     },
+    menuPopover: {
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.3)',
+      marginLeft: -30,
+      '& ul': {
+        padding: '10px 20px',
+        '& li': {
+          fontSize: 16,
+          fontWeight: 500,
+          color: '#01475b',
+          minHeight: 'auto',
+          paddingLeft: 0,
+          paddingRight: 0,
+          borderBottom: '1px solid rgba(1,71,91,0.2)',
+          textTransform: 'capitalize',
+          '&:last-child': {
+            borderBottom: 'none',
+          },
+        },
+      },
+    },
   });
 });
 
@@ -167,6 +187,13 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
             setSelectedRelation(updatedRelation);
             const updatedPatient = { ...patient, relation: updatedRelation };
             props.onUpdatePatient(updatedPatient);
+          }}
+          MenuProps={{
+            classes: { paper: classes.menuPopover },
+            anchorOrigin: {
+              vertical: 'center',
+              horizontal: 'right',
+            },
           }}
         >
           <MenuItem className={classes.menuItemHide} disabled>

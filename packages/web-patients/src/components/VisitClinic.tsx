@@ -136,6 +136,17 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 15,
       paddingBottom: 5,
     },
+    circlularProgress: {
+      display: 'flex',
+      padding: 20,
+      justifyContent: 'center',
+    },
+    noDataAvailable: {
+      padding: 20,
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#0087ba',
+    },
   };
 });
 
@@ -223,11 +234,15 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   });
 
   if (loading) {
-    return <CircularProgress />;
+    return (
+      <div className={classes.circlularProgress}>
+        <CircularProgress />
+      </div>
+    );
   }
 
   if (error) {
-    return <div>Unable to load Available slots.</div>;
+    return <div className={classes.noDataAvailable}>Unable to load Available slots.</div>;
   }
 
   const availableSlots = (data && data.getDoctorAvailableSlots.availableSlots) || [];
@@ -283,6 +298,16 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
               value={clinicSelected === '' ? defaultClinicId : clinicSelected}
               onChange={(e) => {
                 setClinicSelected(e.target.value as string);
+              }}
+              MenuProps={{
+                anchorOrigin: {
+                  vertical: 'top',
+                  horizontal: 'right',
+                },
+                transformOrigin: {
+                  vertical: 'top',
+                  horizontal: 'right',
+                },
               }}
             >
               {clinics.map((clinicDetails: any) => {

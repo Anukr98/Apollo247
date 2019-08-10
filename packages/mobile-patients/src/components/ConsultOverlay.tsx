@@ -16,25 +16,24 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { BOOK_APPOINTMENT } from '@aph/mobile-patients/src/graphql/profiles';
+import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import {
-  bookAppointment,
-  bookAppointmentVariables,
-} from '@aph/mobile-patients/src/graphql/types/bookAppointment';
+  getDoctorDetailsById_getDoctorDetailsById,
+  getDoctorDetailsById_getDoctorDetailsById_doctorHospital,
+} from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
-  getDoctorProfileById_getDoctorProfileById_clinics,
-  getDoctorProfileById_getDoctorProfileById_profile,
-} from '@aph/mobile-patients/src/graphql/types/getDoctorProfileById';
-import { APPOINTMENT_TYPE, BookAppointmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+  APPOINTMENT_TYPE,
+  BookAppointmentInput,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Axios from 'axios';
 import moment from 'moment';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Mutation } from 'react-apollo';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Calendar, DateObject } from 'react-native-calendars';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import Axios from 'axios';
-import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
 
 const { width, height } = Dimensions.get('window');
 
@@ -86,16 +85,16 @@ const styles = StyleSheet.create({
 type TimeArray = {
   label: string;
   time: string[];
-}[]
+}[];
 
 export interface ConsultOverlayProps extends NavigationScreenProps {
   // dispalyoverlay: boolean;
   setdispalyoverlay: (arg0: boolean) => void;
   // setdispalyoverlay: () => void;
   patientId: string;
-  doctor: getDoctorProfileById_getDoctorProfileById_profile | null;
-  clinics: getDoctorProfileById_getDoctorProfileById_clinics[] | null;
-  availableSlots: string[] | null
+  doctor: getDoctorDetailsById_getDoctorDetailsById | null;
+  clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
+  availableSlots: string[] | null;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const tabs = [{ title: 'Consult Online' }, { title: 'Visit Clinic' }];
@@ -141,7 +140,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [distance, setdistance] = useState<string>('');
 
-
   const [dateSelected, setdateSelected] = useState<object>({
     [today]: {
       selected: true,
@@ -150,53 +148,71 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   });
 
   useEffect(() => {
-    let array: TimeArray = [{ label: 'Morning', time: [] }, { label: 'Afternoon', time: [] }, { label: 'Evening', time: [] }, { label: 'Night', time: [] }]
-    timeArray.length === 0 && props.availableSlots && Object.values(props.availableSlots).forEach(element => {
-      if (new Date('05-11-2019 ' + element) > new Date('05-11-2019 ' + '6:00') && new Date('05-11-2019 ' + element) < new Date('05-11-2019 ' + '12:00')) {
-        console.log(true, '1234567890')
-        array[0] = {
-          label: 'Morning',
-          time: [...array[0].time, element]
+    let array: TimeArray = [
+      { label: 'Morning', time: [] },
+      { label: 'Afternoon', time: [] },
+      { label: 'Evening', time: [] },
+      { label: 'Night', time: [] },
+    ];
+    timeArray.length === 0 &&
+      props.availableSlots &&
+      Object.values(props.availableSlots).forEach((element) => {
+        if (
+          new Date('05-11-2019 ' + element) > new Date('05-11-2019 ' + '6:00') &&
+          new Date('05-11-2019 ' + element) < new Date('05-11-2019 ' + '12:00')
+        ) {
+          console.log(true, '1234567890');
+          array[0] = {
+            label: 'Morning',
+            time: [...array[0].time, element],
+          };
+        } else if (
+          new Date('05-11-2019 ' + element) > new Date('05-11-2019 ' + '12:00') &&
+          new Date('05-11-2019 ' + element) < new Date('05-11-2019 ' + '17:00')
+        ) {
+          array[1] = {
+            ...array[1],
+            time: [...array[1].time, element],
+          };
+        } else if (
+          new Date('05-11-2019 ' + element) > new Date('05-11-2019 ' + '17:00') &&
+          new Date('05-11-2019 ' + element) < new Date('05-11-2019 ' + '21:00')
+        ) {
+          array[2] = {
+            ...array[2],
+            time: [...array[2].time, element],
+          };
+        } else if (
+          new Date('05-11-2019 ' + element) > new Date('05-11-2019 ' + '21:00') &&
+          new Date('05-11-2019 ' + element) < new Date('06-11-2019 ' + '6:00')
+        ) {
+          array[3] = {
+            ...array[3],
+            time: [...array[3].time, element],
+          };
         }
-      }
-      else if (new Date('05-11-2019 ' + element) > new Date('05-11-2019 ' + '12:00') && new Date('05-11-2019 ' + element) < new Date('05-11-2019 ' + '17:00')) {
-        array[1] = {
-          ...array[1],
-          time: [...array[1].time, element]
-        }
-      }
-      else if (new Date('05-11-2019 ' + element) > new Date('05-11-2019 ' + '17:00') && new Date('05-11-2019 ' + element) < new Date('05-11-2019 ' + '21:00')) {
-        array[2] = {
-          ...array[2],
-          time: [...array[2].time, element]
-        }
-      }
-      else if (new Date('05-11-2019 ' + element) > new Date('05-11-2019 ' + '21:00') && new Date('05-11-2019 ' + element) < new Date('06-11-2019 ' + '6:00')) {
-        array[3] = {
-          ...array[3],
-          time: [...array[3].time, element]
-        }
-      }
-    });
-    console.log(array, 'array')
-    if (array !== timeArray)
-      settimeArray(array)
-  }, [props.availableSlots])
+      });
+    console.log(array, 'array');
+    if (array !== timeArray) settimeArray(array);
+  }, [props.availableSlots]);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((position) => {
       const searchstring = position.coords.latitude + ',' + position.coords.longitude;
       const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 
-      const destination = props.clinics
-        ? `${props.clinics[0].name} ${props.clinics[0].addressLine2} ${props.clinics[0].city}`
-        : '';
+      const destination =
+        props.clinics && props.clinics.length > 0
+          ? `${props.clinics[0].facility.latitude},${props.clinics[0].facility.longitude}`
+          : '';
       const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
       Axios.get(distanceUrl)
         .then((obj) => {
           console.log(obj, 'distanceUrl');
           if (obj.data.rows.length > 0 && obj.data.rows[0].elements.length > 0) {
-            const value = obj.data.rows[0].elements[0].distance ? obj.data.rows[0].elements[0].distance.value : 0;
+            const value = obj.data.rows[0].elements[0].distance
+              ? obj.data.rows[0].elements[0].distance.value
+              : 0;
             console.log(`${(value / 1000).toFixed(1)} Kms`, 'distance');
             setdistance(`${(value / 1000).toFixed(1)} Kms`);
           }
@@ -209,12 +225,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
   const descriptionText = `${
     props.doctor ? `${props.doctor.salutation}. ${props.doctor.firstName}` : 'Doctor'
-    } is available in ${
-    props.doctor!.availableIn
-    } mins!\nWould you like to consult now or schedule for later?`;
+  } is available in ${
+    12
+    // props.doctor!.availableIn
+  } mins!\nWould you like to consult now or schedule for later?`;
 
   const renderCalendar = () => {
-    console.log(dateSelected, 'dateSelecteddateSelected')
+    console.log(dateSelected, 'dateSelecteddateSelected');
     return (
       <Calendar
         style={{
@@ -260,7 +277,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   const timeTo12HrFormat = (time: string) => {
-    var time_array = time.split(":");
+    var time_array = time.split(':');
     var ampm = 'am';
     if (Number(time_array[0]) >= 12) {
       ampm = 'pm';
@@ -269,10 +286,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       time_array[0] = (Number(time_array[0]) - 12).toString();
     }
     return time_array[0].replace(/^0+/, '') + ':' + time_array[1] + ' ' + ampm;
-  }
+  };
 
   const renderTimings = () => {
-    console.log(timeArray, 'timeArray123456789')
+    console.log(timeArray, 'timeArray123456789');
     return (
       <View>
         <TabsComponent
@@ -284,8 +301,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           }}
           data={timings}
           onChange={(selectedtiming: string) => {
-            setselectedtiming(selectedtiming)
-            setselectedTimeSlot('')
+            setselectedtiming(selectedtiming);
+            setselectedTimeSlot('');
           }}
           selectedTab={selectedtiming}
           showIcons={true}
@@ -293,7 +310,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         {/* <FilterCard data={timeArray[selectedtiming]} /> */}
         <View style={styles.optionsView}>
           {timeArray.map((value) => {
-            console.log(value, selectedtiming, value.label === selectedtiming, 'selectedtiming')
+            console.log(value, selectedtiming, value.label === selectedtiming, 'selectedtiming');
             if (value.label === selectedtiming) {
               if (value.time.length > 0) {
                 return value.time.map((name: string, index: number) => (
@@ -301,7 +318,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                     title={timeTo12HrFormat(name)}
                     style={[
                       styles.buttonStyle,
-                      selectedTimeSlot === name ? { backgroundColor: theme.colors.APP_GREEN } : null,
+                      selectedTimeSlot === name
+                        ? { backgroundColor: theme.colors.APP_GREEN }
+                        : null,
                     ]}
                     titleTextStyle={[
                       styles.buttonTextStyle,
@@ -312,14 +331,18 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 ));
               } else {
                 return (
-                  <Text style={{
-                    ...theme.fonts.IBMPlexSansMedium(14),
-                    color: theme.colors.SKY_BLUE,
-                    paddingTop: 16
-                  }}>
-                    {`${props.doctor!.salutation}. ${props.doctor!.firstName} is not available in the ${selectedtiming.toLowerCase()} slot :(`}
+                  <Text
+                    style={{
+                      ...theme.fonts.IBMPlexSansMedium(14),
+                      color: theme.colors.SKY_BLUE,
+                      paddingTop: 16,
+                    }}
+                  >
+                    {`${props.doctor!.salutation}. ${
+                      props.doctor!.firstName
+                    } is not available in the ${selectedtiming.toLowerCase()} slot :(`}
                   </Text>
-                )
+                );
               }
             }
           })}
@@ -332,10 +355,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     return (
       <View style={{ marginTop: 10 }}>
         <View style={{ paddingTop: 5, paddingBottom: 10 }}>
-          <TouchableOpacity onPress={() => { }}>
+          <TouchableOpacity onPress={() => {}}>
             <View style={styles.placeholderViewStyle}>
               <Text style={[styles.placeholderTextStyle]}>
-                {props.clinics && props.clinics.length > 0 ? props.clinics[0].name : ''}
+                {props.clinics && props.clinics.length > 0 ? props.clinics[0].facility.name : ''}
               </Text>
               <DropdownGreen size="sm" />
             </View>
@@ -352,7 +375,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               }}
             >
               {props.clinics && props.clinics.length > 0
-                ? `${props.clinics[0].addressLine1}, ${props.clinics[0].addressLine2}, ${props.clinics[0].city}`
+                ? `${props.clinics[0].facility.streetLine1}, ${props.clinics[0].facility.streetLine2}, ${props.clinics[0].facility.city}`
                 : ''}
             </Text>
           </View>
@@ -441,9 +464,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             }}
             data={tabs}
             onChange={(selectedTab: string) => {
-              setselectedTab(selectedTab)
-              setselectedtiming(timings[0].title)
-              setselectedTimeSlot('')
+              setselectedTab(selectedTab);
+              setselectedtiming(timings[0].title);
+              setselectedTimeSlot('');
             }}
             selectedTab={selectedTab}
           />
@@ -529,29 +552,29 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 )}
               </View>
             ) : (
-                <View>
-                  <View
-                    style={{
-                      ...theme.viewStyles.cardContainer,
-                      paddingHorizontal: 0,
-                      marginTop: 20,
-                      marginBottom: 16,
-                    }}
-                  >
-                    {renderCalendar()}
-                  </View>
-                  <View
-                    style={{
-                      ...theme.viewStyles.cardContainer,
-                      paddingHorizontal: 16,
-                      marginBottom: 16,
-                    }}
-                  >
-                    {renderLocation()}
-                    {renderTimings()}
-                  </View>
+              <View>
+                <View
+                  style={{
+                    ...theme.viewStyles.cardContainer,
+                    paddingHorizontal: 0,
+                    marginTop: 20,
+                    marginBottom: 16,
+                  }}
+                >
+                  {renderCalendar()}
                 </View>
-              )}
+                <View
+                  style={{
+                    ...theme.viewStyles.cardContainer,
+                    paddingHorizontal: 16,
+                    marginBottom: 16,
+                  }}
+                >
+                  {renderLocation()}
+                  {renderTimings()}
+                </View>
+              </View>
+            )}
             <View style={{ height: 96 }} />
           </ScrollView>
           <StickyBottomComponent
@@ -565,25 +588,42 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             <Mutation<bookAppointment> mutation={BOOK_APPOINTMENT}>
               {(mutate, { loading, data, error }) => (
                 <Button
-                  title={`PAY Rs. ${tabs[0].title === selectedTab ? props.doctor!.onlineConsultationFees : props.doctor!.physicalConsultationFees}`}
-                  disabled={(tabs[0].title === selectedTab && onlineCTA[0] === selectedCTA) ? false : selectedTimeSlot === '' ? true : false}
+                  title={`PAY Rs. ${
+                    tabs[0].title === selectedTab
+                      ? props.doctor!.onlineConsultationFees
+                      : props.doctor!.physicalConsultationFees
+                  }`}
+                  disabled={
+                    tabs[0].title === selectedTab && onlineCTA[0] === selectedCTA
+                      ? false
+                      : selectedTimeSlot === ''
+                      ? true
+                      : false
+                  }
                   onPress={() => {
                     setshowSpinner(true);
                     // props.setdispalyoverlay(false);
                     // const formatDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-                    const formatDate = Object.keys(dateSelected).length > 0 ? Object.keys(dateSelected)[0] : moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD')
-                    console.log(formatDate, 'formatDate')
+                    const formatDate =
+                      Object.keys(dateSelected).length > 0
+                        ? Object.keys(dateSelected)[0]
+                        : moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
+                    console.log(formatDate, 'formatDate');
                     var today = new Date();
-                    var time = ("0" + today.getHours()).slice(-2) + ":" + ("0" + (today.getMinutes() + 1)).slice(-2)
-                    const timeSlot = tabs[0].title === selectedTab ? time : selectedTimeSlot
+                    var time =
+                      ('0' + today.getHours()).slice(-2) +
+                      ':' +
+                      ('0' + (today.getMinutes() + 1)).slice(-2);
+                    const timeSlot = tabs[0].title === selectedTab ? time : selectedTimeSlot;
                     const appointmentInput: BookAppointmentInput = {
                       patientId: props.patientId,
-                      doctorId: 'af78b2d6-808a-4988-ae22-ba78f7639966', //props.doctor ? props.doctor.id : '',
+                      doctorId: props.doctor ? props.doctor.id : '',
                       appointmentDateTime: `${formatDate}T${timeSlot}:00.000Z`,
-                      appointmentType: selectedTab === tabs[0].title
-                        ? APPOINTMENT_TYPE.ONLINE
-                        : APPOINTMENT_TYPE.PHYSICAL,
-                      hospitalId: props.clinics ? `${props.clinics[0].id}` : '1',
+                      appointmentType:
+                        selectedTab === tabs[0].title
+                          ? APPOINTMENT_TYPE.ONLINE
+                          : APPOINTMENT_TYPE.PHYSICAL,
+                      hospitalId: '1',
                     };
                     console.log(appointmentInput, 'appointmentInput');
                     mutate({

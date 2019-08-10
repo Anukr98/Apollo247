@@ -9,9 +9,7 @@ import { Welcome } from 'components/Welcome';
 import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
 import { DoctorsProfile } from 'components/DoctorsProfile';
-import { Consult } from 'components/Consult';
 import { Calendar } from 'components/Calendar';
-import { ConsultRoom } from 'components/ConsultRoom';
 import { ConsultTabs } from 'components/ConsultTabs';
 import { AuthProvider } from 'components/AuthProvider';
 import { useAuth } from 'hooks/authHooks';
@@ -25,13 +23,15 @@ const App: React.FC = () => {
   }, [signInError]);
   return isSignedIn ? (
     <div className={classes.app}>
-      <AuthRouted exact path={clientRoutes.welcome()} render={() => <Redirect to="/profile" />} />
+      <AuthRouted
+        exact
+        path={clientRoutes.welcome()}
+        render={() => <Redirect to={isSignedIn.firebaseToken == '' ? '/profile' : '/Calendar'} />}
+      />
       <AuthRouted exact path={clientRoutes.patients()} component={PatientsList} />
       <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
       <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
-      <AuthRouted exact path={clientRoutes.consultRoom()} component={ConsultRoom} />
-      <AuthRouted exact path={clientRoutes.ConsultTabs()} component={ConsultTabs} />
-      <AuthRouted exact path={clientRoutes.consult()} component={Consult} />
+      <AuthRouted exact path={clientRoutes.ConsultTabs(':id')} component={ConsultTabs} />
     </div>
   ) : (
     <div className={classes.app}>
