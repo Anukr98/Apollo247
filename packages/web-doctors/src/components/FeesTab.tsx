@@ -253,7 +253,10 @@ export const FeesTab: React.FC<FeesProps> = (props) => {
               <Typography className={classes.bold}>Rs. {data.physicalConsultationFees}</Typography>
               <Typography variant="subtitle1">What packages do you offer your patients?</Typography>
               <Typography className={classes.bold}>
-                {data.packages && data.packages![0]!.name && data.packages![0]!.name.length > 0
+                {data.packages &&
+                data.packages.length > 0 &&
+                data.packages![0]!.name &&
+                data.packages![0]!.name.length > 0
                   ? data.packages![0]!.name
                   : 'N/A'}
               </Typography>
@@ -291,7 +294,7 @@ export const FeesTab: React.FC<FeesProps> = (props) => {
                       <Grid item lg={12} sm={12} xs={12}>
                         <div className={classes.accountDetailsHeading}>Account Holder’s Name</div>
                         <Typography variant="h5" className={classes.accountDetails}>
-                          {data.lastName}
+                          {data.bankAccount[0]!.accountHolderName}
                         </Typography>
                       </Grid>
                       <Grid item lg={12} sm={12} xs={12}>

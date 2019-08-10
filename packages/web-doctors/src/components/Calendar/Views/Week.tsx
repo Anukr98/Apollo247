@@ -35,7 +35,7 @@ export const Week: React.FC<WeekProps> = ({ date, data, onDaySelection }) => {
       <div className={classes.calendarContainer}>
         <CalendarStrip
           date={date}
-          dayClickHandler={(e, date) => {
+          dayClickHandler={(date) => {
             onDaySelection(date);
           }}
           monthChangeHandler={(date) => {

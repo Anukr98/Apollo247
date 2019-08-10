@@ -19,5 +19,5 @@ export interface CreateAppointmentSession {
 }
 
 export interface CreateAppointmentSessionVariables {
-  CreateAppointmentSessionInput?: CreateAppointmentSessionInput | null;
+  createAppointmentSessionInput?: CreateAppointmentSessionInput | null;
 }

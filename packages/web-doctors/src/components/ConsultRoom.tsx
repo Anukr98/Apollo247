@@ -117,6 +117,9 @@ interface MessagesObjectProps {
 }
 interface ConsultRoomProps {
   startConsult: string;
+  sessionId: string;
+  token: string;
+  appointmentId: string;
 }
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const classes = useStyles();
@@ -128,12 +131,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
+  const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
+  const publishKey = 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3';
   const doctorId = 'Ravi';
   const patientId = 'Sai';
-  const channel = 'Channel7';
+  const channel = props.appointmentId;
   const config: Pubnub.PubnubConfig = {
-    subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
-    publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
+    subscribeKey: subscribeKey,
+    publishKey: publishKey,
     ssl: true,
   };
   let leftComponent = 0;
@@ -310,6 +315,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             stopAudioVideoCall={() => stopAudioVideoCall()}
             showVideoChat={showVideoChat}
             isVideoCall={isVideoCall}
+            sessionId={props.sessionId}
+            token={props.token}
           />
         )}
         <div>
