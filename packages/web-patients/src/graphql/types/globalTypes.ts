@@ -34,13 +34,6 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
-export enum INVITEDSTATUS {
-  ACCEPTED = "ACCEPTED",
-  NONE = "NONE",
-  NOTAPPLICABLE = "NOTAPPLICABLE",
-  REJECTED = "REJECTED",
-}
-
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
@@ -62,6 +55,12 @@ export enum STATUS {
   CANCELLED = "CANCELLED",
   CONFIRMED = "CONFIRMED",
   IN_PROGRESS = "IN_PROGRESS",
+}
+
+export enum Salutation {
+  DR = "DR",
+  MR = "MR",
+  MRS = "MRS",
 }
 
 export enum WeekDay {

@@ -2,8 +2,9 @@ import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
-import { GetDoctorProfileById as DoctorDetails } from 'graphql/types/GetDoctorProfileById';
+import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import Scrollbars from 'react-custom-scrollbars';
+import _forEach from 'lodash/forEach';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -164,8 +165,10 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface DoctorProfileProps {
-  doctorDetails: DoctorDetails | null;
+  doctorDetails: DoctorDetails;
   onBookConsult: () => void;
+  avaPhy: boolean;
+  avaOnline: boolean;
 }
 
 export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
@@ -173,28 +176,26 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
 
   const { doctorDetails, onBookConsult } = props;
 
-  if (
-    doctorDetails &&
-    doctorDetails.getDoctorProfileById &&
-    doctorDetails.getDoctorProfileById.profile
-  ) {
-    const firstName = doctorDetails.getDoctorProfileById.profile.firstName;
-    const lastName = doctorDetails.getDoctorProfileById.profile.lastName;
-    const speciality = doctorDetails.getDoctorProfileById.profile.speciality;
-    const experience = doctorDetails.getDoctorProfileById.profile.experience;
-    const education = doctorDetails.getDoctorProfileById.profile.education;
-    const awards = doctorDetails.getDoctorProfileById.profile.awards;
-    const languages = doctorDetails.getDoctorProfileById.profile.languages;
-    const locations = doctorDetails.getDoctorProfileById.profile.address;
-    const profileImage = doctorDetails.getDoctorProfileById.profile.photoUrl;
-    const avaForVirtualConsult =
-      doctorDetails.getDoctorProfileById.profile.availableForVirtualConsultation;
-    const avaForPhyConsult =
-      doctorDetails.getDoctorProfileById.profile.availableForPhysicalConsultation;
+  if (doctorDetails && doctorDetails.getDoctorDetailsById) {
+    let hospitalLocation = '';
 
-    const onlineConsultFees = doctorDetails.getDoctorProfileById.profile.onlineConsultationFees;
-    const physicalConsultationFees =
-      doctorDetails.getDoctorProfileById.profile.physicalConsultationFees;
+    const firstName = doctorDetails.getDoctorDetailsById.firstName;
+    const lastName = doctorDetails.getDoctorDetailsById.lastName;
+    const speciality = doctorDetails.getDoctorDetailsById.specialty.name;
+    const experience = doctorDetails.getDoctorDetailsById.experience;
+    const education = doctorDetails.getDoctorDetailsById.qualification;
+    const awards = doctorDetails.getDoctorDetailsById.awards;
+    const languages = doctorDetails.getDoctorDetailsById.languages;
+    const profileImage = doctorDetails.getDoctorDetailsById.photoUrl;
+
+    const onlineConsultFees = doctorDetails.getDoctorDetailsById.onlineConsultationFees;
+    const physicalConsultationFees = doctorDetails.getDoctorDetailsById.physicalConsultationFees;
+
+    _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
+      if (hospitalDetails.facility.facilityType === 'HOSPITAL') {
+        hospitalLocation = hospitalDetails.facility.name;
+      }
+    });
 
     return (
       <div className={classes.root}>
@@ -227,7 +228,9 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                   <div className={classes.iconType}>
                     <img src={require('images/ic-awards.svg')} alt="" />
                   </div>
-                  <div className={classes.details}>{awards}</div>
+                  <div className={classes.details}>
+                    {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
+                  </div>
                 </div>
               </div>
               <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
@@ -235,7 +238,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                   <div className={classes.iconType}>
                     <img src={require('images/ic-location.svg')} alt="" />
                   </div>
-                  <div className={classes.details}>{locations}</div>
+                  <div className={classes.details}>{hospitalLocation}</div>
                 </div>
                 <div className={`${classes.infoRow} ${classes.textCenter}`}>
                   <div className={classes.iconType}>
@@ -246,39 +249,34 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
               </div>
 
               <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
-                {avaForVirtualConsult ? (
-                  <div className={classes.consultGroup}>
-                    <div className={classes.infoRow}>
-                      <div className={classes.iconType}>
-                        <img src={require('images/ic-rupee.svg')} alt="" />
-                      </div>
-                      <div className={classes.details}>
-                        Online Consultation
-                        <div className={classes.doctorPriceIn}>Rs.{onlineConsultFees}</div>
-                        <div className={`${classes.availability} ${classes.availableNow}`}>
-                          Available in 15 mins
-                        </div>
-                      </div>
-                      <div className={classes.doctorPrice}>Rs.{onlineConsultFees}</div>
+                <div className={classes.consultGroup}>
+                  <div className={classes.infoRow}>
+                    <div className={classes.iconType}>
+                      <img src={require('images/ic-rupee.svg')} alt="" />
                     </div>
-                  </div>
-                ) : null}
-
-                {avaForPhyConsult ? (
-                  <div className={classes.consultGroup}>
-                    <div className={classes.infoRow}>
-                      <div className={`${classes.iconType} ${classes.noIcon}`}>
-                        <img src={require('images/ic-rupee.svg')} alt="" />
+                    <div className={classes.details}>
+                      Online Consultation
+                      <div className={classes.doctorPriceIn}>Rs.{onlineConsultFees}</div>
+                      <div className={`${classes.availability} ${classes.availableNow}`}>
+                        Available in 15 mins
                       </div>
-                      <div className={classes.details}>
-                        Clinic Visit
-                        <div className={classes.doctorPriceIn}>Rs.{physicalConsultationFees}</div>
-                        <div className={`${classes.availability}`}>Available in 27 mins</div>
-                      </div>
-                      <div className={classes.doctorPrice}>Rs.{physicalConsultationFees}</div>
                     </div>
+                    <div className={classes.doctorPrice}>Rs.{onlineConsultFees}</div>
                   </div>
-                ) : null}
+                </div>
+                <div className={classes.consultGroup}>
+                  <div className={classes.infoRow}>
+                    <div className={`${classes.iconType} ${classes.noIcon}`}>
+                      <img src={require('images/ic-rupee.svg')} alt="" />
+                    </div>
+                    <div className={classes.details}>
+                      Clinic Visit
+                      <div className={classes.doctorPriceIn}>Rs.{physicalConsultationFees}</div>
+                      <div className={`${classes.availability}`}>Available in 27 mins</div>
+                    </div>
+                    <div className={classes.doctorPrice}>Rs.{physicalConsultationFees}</div>
+                  </div>
+                </div>
               </div>
             </Scrollbars>
           </div>

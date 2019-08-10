@@ -1,68 +1,83 @@
 import gql from 'graphql-tag';
 
+/* get doctor details by doctor id */
 export const GET_DOCTOR_DETAILS_BY_ID = gql`
-  query GetDoctorProfileById($id: String!) {
-    getDoctorProfileById(id: $id) {
-      profile {
-        id
-        firstName
-        lastName
-        mobileNumber
-        experience
-        speciality
-        specialization
-        isStarDoctor
-        education
-        services
-        languages
-        city
-        awards
-        photoUrl
-        registrationNumber
-        isProfileComplete
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        onlineConsultationFees
-        physicalConsultationFees
-        package
-        inviteStatus
-        address
+  query GetDoctorDetailsById($id: String!) {
+    getDoctorDetailsById(id: $id) {
+      id
+      salutation
+      firstName
+      lastName
+      mobileNumber
+      experience
+      specialization
+      languages
+      city
+      awards
+      photoUrl
+      registrationNumber
+      onlineConsultationFees
+      physicalConsultationFees
+      qualification
+      starTeam {
+        associatedDoctor {
+          id
+          salutation
+          firstName
+          lastName
+          experience
+          city
+          photoUrl
+          specialty {
+            name
+            id
+          }
+          doctorHospital {
+            facility {
+              city
+              country
+              facilityType
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+            }
+          }
+        }
+        isActive
       }
-      clinics {
+      specialty {
         id
-        name
         image
-        addressLine1
-        addressLine2
-        addressLine3
-        city
-        isClinic
+        name
       }
-      starDoctorTeam {
-        id
-        salutation
-        firstName
-        lastName
-        experience
-        speciality
-        specialization
-        education
-        services
-        languages
-        city
-        awards
-        photoUrl
-        package
-        inviteStatus
-        address
+      zip
+      doctorType
+      doctorHospital {
+        facility {
+          city
+          country
+          facilityType
+          latitude
+          longitude
+          name
+          state
+          streetLine1
+          streetLine2
+          streetLine3
+        }
       }
-      consultationHours {
-        days
-        startTime
+      consultHours {
+        consultMode
+        consultType
         endTime
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        type
+        id
+        startTime
+        weekDay
+        isActive
       }
     }
   }

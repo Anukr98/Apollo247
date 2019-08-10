@@ -1,8 +1,16 @@
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
-import { GetDoctorProfileById as DoctorDetails } from 'graphql/types/GetDoctorProfileById';
+import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import {
+  GetDoctorDetailsById_getDoctorDetailsById_doctorHospital as Facility,
+  GetDoctorDetailsById_getDoctorDetailsById_consultHours as ConsultHours,
+} from 'graphql/types/GetDoctorDetailsById';
+
 import _uniqueId from 'lodash/uniqueId';
+import _forEach from 'lodash/forEach';
+import _map from 'lodash/map';
+import { getTime, format } from 'date-fns';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -98,6 +106,21 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+const getTimestamp = (today: Date, slotTime: string) => {
+  const hhmm = slotTime.split(':');
+  return getTime(
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      parseInt(hhmm[0], 10),
+      parseInt(hhmm[1], 10),
+      0,
+      0
+    )
+  );
+};
+
 interface DoctorClinicsProps {
   doctorDetails: DoctorDetails;
 }
@@ -106,25 +129,23 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
   const classes = useStyles();
   const { doctorDetails } = props;
 
-  if (
-    doctorDetails &&
-    doctorDetails.getDoctorProfileById &&
-    doctorDetails.getDoctorProfileById.clinics &&
-    doctorDetails.getDoctorProfileById.consultationHours &&
-    doctorDetails.getDoctorProfileById.profile
-  ) {
-    const clinics =
-      doctorDetails.getDoctorProfileById.clinics.length > 0
-        ? doctorDetails.getDoctorProfileById.clinics
-        : [];
+  if (doctorDetails && doctorDetails.getDoctorDetailsById) {
+    const clinics: Facility[] = [];
+
+    _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
+      if (hospitalDetails.facility.facilityType === 'CLINIC') {
+        clinics.push(hospitalDetails);
+      }
+    });
 
     const consultationHours =
-      doctorDetails.getDoctorProfileById.consultationHours.length > 0
-        ? doctorDetails.getDoctorProfileById.consultationHours
+      doctorDetails.getDoctorDetailsById.consultHours &&
+      doctorDetails.getDoctorDetailsById.consultHours.length > 0
+        ? doctorDetails.getDoctorDetailsById.consultHours
         : [];
 
-    const firstName = doctorDetails.getDoctorProfileById.profile.firstName;
-    const lastName = doctorDetails.getDoctorProfileById.profile.lastName;
+    const firstName = doctorDetails.getDoctorDetailsById.firstName;
+    const lastName = doctorDetails.getDoctorDetailsById.lastName;
 
     return (
       <div className={classes.sectionGroup}>
@@ -137,37 +158,34 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
           </span>
         </div>
         <Grid className={classes.gridContainer} container spacing={2}>
-          {clinics.map((clinicDetails) => {
-            return clinicDetails.isClinic ? (
+          {_map(clinics, (clinicDetails) => {
+            return (
               <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('avagr_')}>
                 <div className={classes.root} key={_uniqueId('clinic_')}>
                   <div className={classes.clinicImg}>
-                    <img
-                      src={
-                        (clinicDetails && clinicDetails.image) ||
-                        'https://via.placeholder.com/328x100'
-                      }
-                    />
+                    <img src="https://via.placeholder.com/328x100" />
                   </div>
                   <div className={classes.clinicInfo}>
                     <div className={classes.address}>
-                      {(clinicDetails && clinicDetails.addressLine1) || ''}&nbsp;
-                      {(clinicDetails && clinicDetails.addressLine2) || ''}&nbsp;
-                      {(clinicDetails && clinicDetails.addressLine3) || ''}
+                      {(clinicDetails && clinicDetails.facility.streetLine1) || ''}&nbsp;
+                      {(clinicDetails && clinicDetails.facility.streetLine2) || ''}&nbsp;
+                      {(clinicDetails && clinicDetails.facility.streetLine3) || ''}
                     </div>
                     <div className={classes.availableTimings}>
-                      {consultationHours.map((consultationDetails) => {
-                        const startTime =
-                          consultationDetails && consultationDetails.startTime
-                            ? consultationDetails.startTime.substring(0, 5)
-                            : null;
-                        const endTime =
-                          consultationDetails && consultationDetails.endTime
-                            ? consultationDetails.endTime.substring(0, 5)
-                            : null;
+                      {_map(consultationHours, (consultationDetails: ConsultHours) => {
+                        const startTime = format(
+                          getTimestamp(new Date(), consultationDetails.startTime),
+                          'hh:mm a'
+                        );
+                        const endTime = format(
+                          getTimestamp(new Date(), consultationDetails.endTime),
+                          'hh:mm a'
+                        );
                         return (
                           <div className={classes.timingsRow} key={_uniqueId('ava_')}>
-                            <span>{(consultationDetails && consultationDetails.days) || ''}</span>
+                            <span>
+                              {(consultationDetails && consultationDetails.weekDay) || ''}
+                            </span>
                             <span>
                               {startTime ? startTime : ''}
                               &nbsp;-&nbsp;
@@ -180,7 +198,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
                   </div>
                 </div>
               </Grid>
-            ) : null;
+            );
           })}
         </Grid>
       </div>

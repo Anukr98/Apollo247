@@ -2,9 +2,16 @@ import { Theme, Grid, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import _uniqueId from 'lodash/uniqueId';
-import { GetDoctorProfileById as DoctorDetails } from 'graphql/types/GetDoctorProfileById';
+import {
+  GetDoctorDetailsById as DoctorDetails,
+  GetDoctorDetailsById_getDoctorDetailsById_starTeam as StarTeam,
+  GetDoctorDetailsById_getDoctorDetailsById_doctorHospital as Facility,
+  GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor as StarDoctorProfile,
+} from 'graphql/types/GetDoctorDetailsById';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import _map from 'lodash/map';
+import _forEach from 'lodash/forEach';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -111,20 +118,31 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
   const classes = useStyles();
 
   const { doctorDetails } = props;
+  let hospitalLocation = '';
 
   if (
     doctorDetails &&
-    doctorDetails.getDoctorProfileById &&
-    doctorDetails.getDoctorProfileById.starDoctorTeam &&
-    doctorDetails.getDoctorProfileById.profile
+    doctorDetails.getDoctorDetailsById &&
+    doctorDetails.getDoctorDetailsById.starTeam
   ) {
-    const firstName = doctorDetails.getDoctorProfileById.profile.firstName;
-    const lastName = doctorDetails.getDoctorProfileById.profile.lastName;
+    const firstName = doctorDetails.getDoctorDetailsById.firstName;
+    const lastName = doctorDetails.getDoctorDetailsById.lastName;
 
     const team =
-      doctorDetails.getDoctorProfileById.starDoctorTeam.length > 0
-        ? doctorDetails.getDoctorProfileById.starDoctorTeam
+      doctorDetails.getDoctorDetailsById.starTeam.length > 0
+        ? doctorDetails.getDoctorDetailsById.starTeam
         : [];
+
+    console.log('88888888', doctorDetails);
+
+    // if (team.length > 0) {
+    //   _forEach(doctorDetails.getDoctorDetailsById.starTeam, (starDoctor: any) => {
+    //     console.log(starDoctor);
+    //     // if (hospitalDetails.facility.facilityType === 'HOSPITAL') {
+    //     //   hospitalLocation = hospitalDetails.facility.name;
+    //     // }
+    //   });
+    // }
 
     return (
       <div className={classes.sectionGroup}>
@@ -135,33 +153,73 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
           <span className={classes.count}>02</span>
         </div>
         <Grid container className={classes.gridContainer} spacing={2}>
-          {team.map((doctorDetails) => {
+          {_map(team, (doctorDetails: StarTeam) => {
             return (
               <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('startDoctor_')}>
                 <div className={classes.root}>
                   <Avatar
-                    alt={(doctorDetails && doctorDetails.firstName) || ''}
-                    src={(doctorDetails && doctorDetails.photoUrl) || ''}
+                    alt={
+                      doctorDetails &&
+                      doctorDetails.associatedDoctor &&
+                      doctorDetails.associatedDoctor.firstName
+                        ? doctorDetails.associatedDoctor.firstName
+                        : ''
+                    }
+                    src={
+                      doctorDetails &&
+                      doctorDetails.associatedDoctor &&
+                      doctorDetails.associatedDoctor.photoUrl
+                        ? doctorDetails.associatedDoctor.photoUrl
+                        : ''
+                    }
                     className={classes.bigAvatar}
                   />
                   <div className={classes.doctorInfo}>
-                    <Link to={clientRoutes.doctorDetails(doctorDetails.id)}>
+                    <Link
+                      to={clientRoutes.doctorDetails(
+                        doctorDetails &&
+                          doctorDetails.associatedDoctor &&
+                          doctorDetails.associatedDoctor.id
+                          ? doctorDetails.associatedDoctor.id
+                          : '/'
+                      )}
+                    >
                       <div className={classes.doctorName}>
-                        {(doctorDetails && doctorDetails.firstName) || ''}&nbsp;
-                        {(doctorDetails && doctorDetails.lastName) || ''}
+                        {doctorDetails &&
+                        doctorDetails.associatedDoctor &&
+                        doctorDetails.associatedDoctor.firstName
+                          ? doctorDetails.associatedDoctor.firstName
+                          : ''}
+                        &nbsp;
+                        {doctorDetails &&
+                        doctorDetails.associatedDoctor &&
+                        doctorDetails.associatedDoctor.lastName
+                          ? doctorDetails.associatedDoctor.lastName
+                          : ''}
                       </div>
                     </Link>
                     <div className={classes.speciality}>
-                      {(doctorDetails && doctorDetails.speciality) || ''}
+                      {doctorDetails &&
+                      doctorDetails.associatedDoctor &&
+                      doctorDetails.associatedDoctor.specialty &&
+                      doctorDetails.associatedDoctor.specialty.name
+                        ? doctorDetails.associatedDoctor.specialty.name
+                        : ''}
                       <span className={classes.doctorExp}>
-                        | {doctorDetails && doctorDetails.experience} Yrs
+                        |{' '}
+                        {doctorDetails &&
+                        doctorDetails.associatedDoctor &&
+                        doctorDetails.associatedDoctor.experience
+                          ? doctorDetails.associatedDoctor.experience
+                          : ''}
+                        Yrs
                       </span>
                     </div>
-                    <div className={classes.doctorMoreInfo}>
+                    {/* <div className={classes.doctorMoreInfo}>
                       {(doctorDetails && doctorDetails.address) || ''}
                       <br />
                       {(doctorDetails && doctorDetails.education) || ''}
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </Grid>

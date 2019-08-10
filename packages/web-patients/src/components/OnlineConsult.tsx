@@ -7,7 +7,7 @@ import { DayTimeSlots } from 'components/DayTimeSlots';
 import Scrollbars from 'react-custom-scrollbars';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 
-import { GetDoctorProfileById } from 'graphql/types/GetDoctorProfileById';
+// import { GetDoctorProfileById } from 'graphql/types/GetDoctorProfileById';
 import {
   GetDoctorAvailableSlots,
   GetDoctorAvailableSlotsVariables,
@@ -148,7 +148,7 @@ const getAutoSlot = () => {
 };
 
 interface OnlineConsultProps {
-  doctorDetails: GetDoctorProfileById;
+  doctorDetails: any;
 }
 
 export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {

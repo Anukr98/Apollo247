@@ -7,7 +7,7 @@ import { DayTimeSlots } from 'components/DayTimeSlots';
 import Scrollbars from 'react-custom-scrollbars';
 import _uniqueId from 'lodash/uniqueId';
 
-import { GetDoctorProfileById } from 'graphql/types/GetDoctorProfileById';
+// import { GetDoctorProfileById } from 'graphql/types/GetDoctorProfileById';
 import {
   GetDoctorAvailableSlots,
   GetDoctorAvailableSlotsVariables,
@@ -160,7 +160,7 @@ const getYyMmDd = (ddmmyyyy: string) => {
 };
 
 interface VisitClinicProps {
-  doctorDetails: GetDoctorProfileById;
+  doctorDetails: any;
 }
 
 export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
@@ -285,7 +285,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                 setClinicSelected(e.target.value as string);
               }}
             >
-              {clinics.map((clinicDetails) => {
+              {clinics.map((clinicDetails: any) => {
                 return clinicDetails.isClinic ? (
                   <MenuItem
                     classes={{ selected: classes.menuSelected }}
