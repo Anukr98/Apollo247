@@ -8,18 +8,28 @@ import { STATUS, APPOINTMENT_TYPE } from "./globalTypes";
 // GraphQL query operation: GetDoctorAppointments
 // ====================================================
 
+export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo {
+  __typename: "Patient";
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+}
+
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory {
   __typename: "AppointmentHistory";
   id: string;
   patientId: string;
   appointmentDateTime: any;
   status: STATUS;
+  bookingDate: any | null;
   appointmentType: APPOINTMENT_TYPE;
+  patientInfo: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments {
   __typename: "DoctorAppointmentResult";
   appointmentsHistory: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null)[] | null;
+  newPatientsList: (string | null)[] | null;
 }
 
 export interface GetDoctorAppointments {
@@ -27,7 +37,6 @@ export interface GetDoctorAppointments {
 }
 
 export interface GetDoctorAppointmentsVariables {
-  doctorId: string;
   startDate: any;
   endDate: any;
 }

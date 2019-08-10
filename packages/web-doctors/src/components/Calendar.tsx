@@ -15,7 +15,6 @@ import {
   GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
 } from 'graphql/types/GetDoctorAppointments';
 import { ApolloConsumer } from 'react-apollo';
-import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -104,12 +103,19 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
   if (!data || !data.getDoctorAppointments) {
     return [] as Appointment[];
   }
-  const appointments: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory[] =
+  const appointments: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null)[] =
     data!.getDoctorAppointments!.appointmentsHistory || [];
+  const newPatientsList: (string | null)[] | null = data!.getDoctorAppointments.newPatientsList;
 
   const adaptedList: Appointment[] = appointments.map(
-    (appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory) => {
-      const { appointmentDateTime, appointmentType: type, status } = appointment;
+    (appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null) => {
+      const {
+        appointmentDateTime,
+        appointmentType: type,
+        status,
+        patientId,
+        patientInfo,
+      } = appointment!;
       const startTime = getTime(new Date(appointmentDateTime));
       const endTime = getTime(addMinutes(startTime, 15));
 
@@ -118,9 +124,9 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
         endTime,
         type,
         status,
-        isNew: false,
+        isNew: newPatientsList!.includes(patientId),
         details: {
-          patientName: '',
+          patientName: `${patientInfo!.firstName} ${patientInfo!.lastName}`,
           checkups: [],
           avatar: '',
         },
@@ -164,21 +170,13 @@ export const Calendar: React.FC<CalendarProps> = ({ doctorId }) => {
       {(client) => {
         client
           .query({
-            query: GET_DOCTOR_DETAILS,
+            query: GET_DOCTOR_APPOINTMENTS,
+            variables: {
+              startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
+              endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
+            },
           })
-          .then(({ data }) => {
-            console.log(data);
-            client
-              .query({
-                query: GET_DOCTOR_APPOINTMENTS,
-                variables: {
-                  doctorId: data.getDoctorDetails.id,
-                  startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
-                  endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
-                },
-              })
-              .then(({ data }) => setData(data));
-          });
+          .then(({ data }) => setData(data));
 
         return (
           <div className={classes.welcome}>
