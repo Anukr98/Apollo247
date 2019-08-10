@@ -127,8 +127,8 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
         isNew: !!newPatientsList && newPatientsList.includes(patientId),
         details: {
           patientName: `${patientInfo!.firstName} ${patientInfo!.lastName}`,
-          checkups: [],
-          avatar: '',
+          checkups: ['Fever', 'Cold & Cough'],
+          avatar: require('images/ic_patientchat.png'),
         },
       };
     }
