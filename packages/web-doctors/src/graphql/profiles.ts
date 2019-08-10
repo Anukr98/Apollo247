@@ -218,11 +218,22 @@ export const UPDATE_PATIENT = gql`
     }
   }
 `;
+
 export const CREATE_APPOINTMENT_SESSION = gql`
-  mutation CreateAppointmentSession($CreateAppointmentSessionInput: CreateAppointmentSessionInput) {
-    createAppointmentSession(createAppointmentSessionInput: $CreateAppointmentSessionInput) {
+  mutation CreateAppointmentSession($createAppointmentSessionInput: CreateAppointmentSessionInput) {
+    createAppointmentSession(createAppointmentSessionInput: $createAppointmentSessionInput) {
       sessionId
       appointmentToken
+    }
+  }
+`;
+export const GET_APPOINTMENT_DATA = gql`
+  query GetAppointmentData($appointmentId: String!) {
+    getAppointmentData(appointmentId: $appointmentId) {
+      appointmentsHistory {
+        appointmentDateTime
+        id
+      }
     }
   }
 `;
