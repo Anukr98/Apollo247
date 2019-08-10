@@ -105,7 +105,6 @@ const getDoctorAppointments: Resolver<
     const uniquePatientIds = appointmentsHistory
       .map((item) => item.patientId)
       .filter((value, index, self) => self.indexOf(value) === index);
-
     const patientConsult = await appointmentRepo.getDoctorPatientVisitCount(
       doctordata.id,
       uniquePatientIds
