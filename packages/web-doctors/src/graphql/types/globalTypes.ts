@@ -65,8 +65,10 @@ export enum Relation {
 
 export enum STATUS {
   CANCELLED = "CANCELLED",
+  COMPLETED = "COMPLETED",
   CONFIRMED = "CONFIRMED",
   IN_PROGRESS = "IN_PROGRESS",
+  MISSED = "MISSED",
 }
 
 export enum Salutation {
