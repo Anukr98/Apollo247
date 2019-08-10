@@ -15,7 +15,6 @@ import {
   GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
 } from 'graphql/types/GetDoctorAppointments';
 import { ApolloConsumer } from 'react-apollo';
-import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
