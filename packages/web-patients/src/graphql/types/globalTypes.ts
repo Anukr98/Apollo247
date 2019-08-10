@@ -11,6 +11,17 @@ export enum APPOINTMENT_TYPE {
   PHYSICAL = "PHYSICAL",
 }
 
+export enum ConsultMode {
+  BOTH = "BOTH",
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+}
+
+export enum ConsultType {
+  FIXED = "FIXED",
+  PREFERRED = "PREFERRED",
+}
+
 export enum DoctorType {
   APOLLO = "APOLLO",
   PAYROLL = "PAYROLL",
@@ -51,6 +62,16 @@ export enum STATUS {
   CANCELLED = "CANCELLED",
   CONFIRMED = "CONFIRMED",
   IN_PROGRESS = "IN_PROGRESS",
+}
+
+export enum WeekDay {
+  FRIDAY = "FRIDAY",
+  MONDAY = "MONDAY",
+  SATURDAY = "SATURDAY",
+  SUNDAY = "SUNDAY",
+  THURSDAY = "THURSDAY",
+  TUESDAY = "TUESDAY",
+  WEDNESDAY = "WEDNESDAY",
 }
 
 export interface AppointmentHistoryInput {

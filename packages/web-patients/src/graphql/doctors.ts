@@ -105,6 +105,15 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
         experience
         photoUrl
         qualification
+        consultHours {
+          consultMode
+          consultType
+          id
+          isActive
+          startTime
+          weekDay
+          endTime
+        }
       }
     }
   }
