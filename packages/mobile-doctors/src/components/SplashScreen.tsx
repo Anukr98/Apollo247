@@ -38,9 +38,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             }
           } else {
             if (localData.isOnboardingDone) {
-              props.navigation.push(AppRoutes.Login);
+              props.navigation.replace(AppRoutes.Login);
             } else {
-              props.navigation.push(AppRoutes.LandingPage);
+              props.navigation.replace(AppRoutes.LandingPage);
             }
           }
           SplashScreenView.hide();
