@@ -31,6 +31,8 @@ export const getDoctorDetailsTypeDefs = gql`
     MR
     MRS
     DR
+    Dr
+    dr
   }
 
   enum WeekDay {
