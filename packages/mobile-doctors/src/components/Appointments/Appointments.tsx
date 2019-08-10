@@ -274,7 +274,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           {
             icon: <DotIcon />,
             onPress: () => {
-              setDropdownVisible(!isDropdownVisible);
+              null;
             },
           },
         ]}

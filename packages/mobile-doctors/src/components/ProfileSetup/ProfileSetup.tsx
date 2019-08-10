@@ -314,7 +314,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0, false);
       } else {
         setProfileFlowDone(true).finally(() => {
-          props.navigation.navigate(AppRoutes.TransitionPage, {
+          props.navigation.replace(AppRoutes.TransitionPage, {
             doctorName: data.lastName,
             DoctorId: data.id,
           });

@@ -20,13 +20,14 @@ import {
 import SmsListener from 'react-native-android-sms-listener';
 import firebase from 'react-native-firebase';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, NavigationActions } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 import { PhoneNumberVerificationCredential } from './AuthProvider';
 import { OTPTextView } from './ui/OTPTextView';
 import { useApolloClient } from 'react-apollo-hooks';
 import { GetDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
+import { StackActions } from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {
@@ -312,7 +313,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           const result = _data.data && _data.data.getDoctorDetails;
           setIsLoading(false);
           if (result) {
-            props.navigation.replace(AppRoutes.ProfileSetup);
+            // props.navigation.replace(AppRoutes.ProfileSetup);
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.ProfileSetup })],
+              })
+            );
           }
         })
         .catch((e) => {

@@ -48,7 +48,7 @@ export const TransitionPage: React.FC<TransitionPageProps> = (props) => {
         />
         <Button
           onPress={() =>
-            props.navigation.push(AppRoutes.TabBar, {
+            props.navigation.replace(AppRoutes.TabBar, {
               Firstname: doctorName,
               DoctorId: doctorId,
             })
