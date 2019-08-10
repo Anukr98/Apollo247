@@ -141,7 +141,8 @@ export const getCurrentPatientsResolvers = {
     async __resolveReference(object: Patient) {
       const connection = getConnection();
       const patientsRepo = connection.getRepository(Patient);
-      return await patientsRepo.find({ where: { id: object.id } });
+      const patientDetails = await patientsRepo.findOne({ where: { id: object.id } });
+      return patientDetails;
     },
   },
   Query: {
