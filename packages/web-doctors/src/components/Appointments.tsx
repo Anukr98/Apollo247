@@ -169,7 +169,7 @@ const useStyles = makeStyles((theme: Theme) =>
           boxShadow: '0 2px 4px 0 rgba(0,0,0,0.3)',
         },
         '& .AppointmentTimeupcoming': {
-           color: '#ff748e',
+          color: '#ff748e',
         },
       },
     },
@@ -188,12 +188,12 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'none',
     },
     noContent: {
-     minHeight: 360,
-     textAlign: 'center',
-     color: 'rgba(2, 71, 91, 0.6)',
-     fontSize: 16,
-     fontWeight: 600,
-     marginTop: -30,
+      minHeight: 360,
+      textAlign: 'center',
+      color: 'rgba(2, 71, 91, 0.6)',
+      fontSize: 16,
+      fontWeight: 600,
+      marginTop: -30,
       '& img': {
         width: 200,
         marginBottom: 35,
@@ -277,10 +277,13 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
                   },
                 }}
               >
-                <Typography variant="h5" className={classes.AppointmentTime}  
-                classes={{
-                      root: 'AppointmentTimeupcoming',
-                }}>
+                <Typography
+                  variant="h5"
+                  className={classes.AppointmentTime}
+                  classes={{
+                    root: 'AppointmentTimeupcoming',
+                  }}
+                >
                   <span>
                     {`${format(appointment.startTime, 'hh:mm')} - ${format(
                       appointment.endTime,

@@ -110,7 +110,13 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
 
   const adaptedList: Appointment[] = appointments.map(
     (appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null) => {
-      const { appointmentDateTime, appointmentType: type, status, patientId, patientInfo } = appointment!;
+      const {
+        appointmentDateTime,
+        appointmentType: type,
+        status,
+        patientId,
+        patientInfo,
+      } = appointment!;
       const startTime = getTime(new Date(appointmentDateTime));
       const endTime = getTime(addMinutes(startTime, 15));
 
