@@ -43,7 +43,6 @@ export interface GetDoctorAppointments {
 }
 
 export interface GetDoctorAppointmentsVariables {
-  doctorId?: string | null;
   startDate?: any | null;
   endDate?: any | null;
 }

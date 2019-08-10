@@ -47,6 +47,21 @@ export interface GetDoctorDetails_getDoctorDetails_doctorHospital {
   facility: GetDoctorDetails_getDoctorDetails_doctorHospital_facility;
 }
 
+export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_doctorHospital_facility {
+  __typename: "Facility";
+  state: string | null;
+  city: string | null;
+  country: string | null;
+  streetLine1: string | null;
+  streetLine3: string | null;
+  streetLine2: string | null;
+}
+
+export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_doctorHospital_facility;
+}
+
 export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor {
   __typename: "Profile";
   firstName: string | null;
@@ -58,10 +73,12 @@ export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor {
   mobileNumber: string;
   salutation: Salutation | null;
   qualification: string | null;
+  doctorHospital: GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_doctorHospital[];
 }
 
 export interface GetDoctorDetails_getDoctorDetails_starTeam {
   __typename: "StarTeam";
+  isActive: boolean | null;
   associatedDoctor: GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor | null;
 }
 

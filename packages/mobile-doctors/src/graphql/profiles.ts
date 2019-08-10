@@ -70,6 +70,16 @@ export const GET_DOCTOR_DETAILS = gql`
           mobileNumber
           salutation
           qualification
+          doctorHospital {
+            facility {
+              state
+              city
+              country
+              streetLine1
+              streetLine3
+              streetLine2
+            }
+          }
         }
       }
       bankAccount {
@@ -154,8 +164,8 @@ export const GET_DOCTOR_PROFILE = gql`
 `;
 
 export const GET_DOCTOR_APPOINTMENTS = gql`
-  query GetDoctorAppointments($doctorId: String, $startDate: Date, $endDate: Date) {
-    getDoctorAppointments(doctorId: $doctorId, startDate: $startDate, endDate: $endDate) {
+  query GetDoctorAppointments($startDate: Date, $endDate: Date) {
+    getDoctorAppointments(startDate: $startDate, endDate: $endDate) {
       appointmentsHistory {
         appointmentType
         doctorId

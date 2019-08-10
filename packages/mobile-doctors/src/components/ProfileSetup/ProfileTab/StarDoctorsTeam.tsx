@@ -203,7 +203,18 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
         specialization={profileData.specialty.name.toLocaleUpperCase()} //{(starDoctor!.associatedDoctor!.qualification || '').toUpperCase()}
         education={starDoctor!.associatedDoctor!.qualification!}
         // location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
-        location={starDoctor!.associatedDoctor!.location || ''} //{starDoctor.location}
+        location={
+          [
+            starDoctor!.associatedDoctor!.doctorHospital[0].facility.streetLine1,
+            starDoctor!.associatedDoctor!.doctorHospital[0].facility.streetLine2,
+            starDoctor!.associatedDoctor!.doctorHospital[0].facility.streetLine3,
+            starDoctor!.associatedDoctor!.doctorHospital[0].facility.city,
+            starDoctor!.associatedDoctor!.doctorHospital[0].facility.state,
+            starDoctor!.associatedDoctor!.doctorHospital[0].facility.country,
+          ]
+            .filter(Boolean)
+            .join(', ') || ''
+        } //{starDoctor.location}
       />
     ));
   };

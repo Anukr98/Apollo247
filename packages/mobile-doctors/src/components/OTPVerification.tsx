@@ -324,7 +324,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           );
           console.log('Error occured while fetching Doctor profile', e);
         });
-    }, 8000);
+    }, 10000);
   };
 
   useEffect(() => {

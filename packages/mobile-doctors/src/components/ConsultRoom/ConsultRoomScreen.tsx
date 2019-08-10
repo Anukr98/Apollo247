@@ -79,17 +79,6 @@ const styles = StyleSheet.create({
   },
 });
 
-const {
-  data: { getDoctorProfile },
-  error,
-  loading,
-} = doctorProfile;
-if (!loading && error) {
-  Alert.alert('Error', 'Unable to get the data');
-} else {
-  console.log('getDoctorProfile', getDoctorProfile);
-}
-
 let connectionCount = 0;
 let timer = 900;
 let intervalId: any;
