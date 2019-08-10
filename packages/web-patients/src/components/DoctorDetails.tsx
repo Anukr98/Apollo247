@@ -232,10 +232,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return <div>Error....</div>;
   }
 
-  let availableForPhysicalConsultation = false,
-    availableForVirtualConsultation = false;
-
-  // console.log(data);
+  const availableForPhysicalConsultation = true,
+    availableForVirtualConsultation = true;
 
   const doctorDetails = data && data.getDoctorDetailsById ? data : null;
 
@@ -252,26 +250,29 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         ? doctorDetails.getDoctorDetailsById.id
         : '';
 
-    if (
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.consultHours &&
-      doctorDetails.getDoctorDetailsById.consultHours.length > 0
-    ) {
-      doctorDetails.getDoctorDetailsById.consultHours.forEach((consultHour) => {
-        const currentDay = new Date().toLocaleString('en-IN', { weekday: 'long' }).toUpperCase();
-        const consultDay = consultHour && consultHour.weekDay ? consultHour.weekDay : '';
-        const consultMode =
-          consultHour && consultHour.consultMode ? consultHour.consultMode : ConsultMode.PHYSICAL;
-        if (currentDay === consultDay) {
-          availableForPhysicalConsultation = consultMode === ConsultMode.PHYSICAL ? true : false;
-          availableForVirtualConsultation = consultMode === ConsultMode.ONLINE ? true : false;
-          return;
-        }
-      });
-    }
+    // if (
+    //   doctorDetails &&
+    //   doctorDetails.getDoctorDetailsById &&
+    //   doctorDetails.getDoctorDetailsById.consultHours &&
+    //   doctorDetails.getDoctorDetailsById.consultHours.length > 0
+    // ) {
+    //   doctorDetails.getDoctorDetailsById.consultHours.forEach((consultHour) => {
+    //     const currentDay = new Date().toLocaleString('en-IN', { weekday: 'long' }).toUpperCase();
+    //     const consultDay = consultHour && consultHour.weekDay ? consultHour.weekDay : '';
+    //     const consultMode =
+    //       consultHour && consultHour.consultMode ? consultHour.consultMode : ConsultMode.PHYSICAL;
+    //     if (currentDay === consultDay) {
+    //       availableForPhysicalConsultation =
+    //         consultMode === ConsultMode.PHYSICAL || ConsultMode.BOTH ? true : false;
+    //       availableForVirtualConsultation =
+    //         consultMode === ConsultMode.ONLINE || ConsultMode.BOTH ? true : false;
+    //       return;
+    //     }
+    //   });
+    // }
+    // this needs to be reworked after availability api.
 
-    console.log(availableForPhysicalConsultation, availableForVirtualConsultation);
+    // console.log(availableForPhysicalConsultation, availableForVirtualConsultation);
 
     return (
       <div className={classes.welcome}>
@@ -322,7 +323,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 setTabValue(newValue);
               }}
             >
-              {/* {availableForVirtualConsultation && (
+              {availableForVirtualConsultation && (
                 <Tab
                   classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
                   label="Consult Online"
@@ -332,19 +333,19 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <Tab
                   classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
                   label="Visit Clinic"
-                /> */}
+                />
               )}
             </Tabs>
-            {/* {tabValue === 0 && availableForVirtualConsultation && (
-              // <TabContainer>
-              //   <OnlineConsult doctorDetails={doctorDetails} />
-              // </TabContainer>
+            {tabValue === 0 && availableForVirtualConsultation && (
+              <TabContainer>
+                <OnlineConsult doctorDetails={doctorDetails} />
+              </TabContainer>
             )}
             {tabValue === 1 && availableForPhysicalConsultation && (
-              // <TabContainer>
-              //   <VisitClinic doctorDetails={doctorDetails} />
-              // </TabContainer>
-            )} */}
+              <TabContainer>
+                <VisitClinic doctorDetails={doctorDetails} />
+              </TabContainer>
+            )}
           </Paper>
         </Modal>
       </div>

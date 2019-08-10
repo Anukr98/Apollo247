@@ -167,9 +167,17 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
                   </div>
                   <div className={classes.clinicInfo}>
                     <div className={classes.address}>
-                      {(clinicDetails && clinicDetails.facility.streetLine1) || ''}&nbsp;
-                      {(clinicDetails && clinicDetails.facility.streetLine2) || ''}&nbsp;
-                      {(clinicDetails && clinicDetails.facility.streetLine3) || ''}
+                      {clinicDetails && clinicDetails.facility.streetLine1
+                        ? clinicDetails.facility.streetLine1
+                        : ''}
+                      &nbsp;
+                      {clinicDetails && clinicDetails.facility.streetLine2
+                        ? clinicDetails.facility.streetLine2
+                        : ''}
+                      &nbsp;
+                      {clinicDetails && clinicDetails.facility.streetLine3
+                        ? clinicDetails.facility.streetLine3
+                        : ''}
                     </div>
                     <div className={classes.availableTimings}>
                       {_map(consultationHours, (consultationDetails: ConsultHours) => {
