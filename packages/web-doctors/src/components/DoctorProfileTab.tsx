@@ -386,7 +386,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                         });
                       }}
                     >
-                      Remove Doctor
+                      Remove
                     </Typography>
                   </Popover>
                 </>
