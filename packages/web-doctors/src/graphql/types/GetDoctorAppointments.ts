@@ -2,14 +2,14 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { STATUS, APPOINTMENT_TYPE } from "./globalTypes";
+import { STATUS, APPOINTMENT_TYPE } from './globalTypes';
 
 // ====================================================
 // GraphQL query operation: GetDoctorAppointments
 // ====================================================
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory {
-  __typename: "AppointmentHistory";
+  __typename: 'AppointmentHistory';
   id: string;
   patientId: string;
   appointmentDateTime: any;
@@ -18,8 +18,8 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments {
-  __typename: "DoctorAppointmentResult";
-  appointmentsHistory: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null)[] | null;
+  __typename: 'AppointmentResult';
+  appointmentsHistory: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory[] | null;
 }
 
 export interface GetDoctorAppointments {
