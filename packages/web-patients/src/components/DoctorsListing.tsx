@@ -168,28 +168,37 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   const mascotRef = useRef(null);
 
-  let expRangeMinimum = 0,
-    expRangeMaximum = 100,
-    feeRangeMinimum = 0,
-    feeRangeMaximum = 10000;
+  type Range = {
+    [index: number]: {
+      minimum: number;
+      maximum: number;
+    };
+  };
+
+  let expRange: Range = [],
+    feeRange: Range = [];
 
   if (filter.experience && filter.experience.length > 0) {
-    const arrayLength = filter.experience.length;
-    expRangeMinimum = parseInt(filter.experience[arrayLength - 1].split('_')[0], 10);
-    expRangeMaximum = parseInt(filter.experience[arrayLength - 1].split('_')[1], 10);
+    expRange = filter.experience.map((experience) => {
+      const expRangeMinimum = parseInt(experience.split('_')[0], 10);
+      const expRangeMaximum = parseInt(experience.split('_')[1], 10);
+      return { minimum: expRangeMinimum, maximum: expRangeMaximum };
+    });
   }
 
   if (filter.fees && filter.fees.length > 0) {
-    const arrayLength = filter.fees.length;
-    feeRangeMinimum = parseInt(filter.fees[arrayLength - 1].split('_')[0], 10);
-    feeRangeMaximum = parseInt(filter.fees[arrayLength - 1].split('_')[1], 10);
+    feeRange = filter.fees.map((fees) => {
+      const feeRangeMinimum = parseInt(fees.split('_')[0], 10);
+      const feeRangeMaximum = parseInt(fees.split('_')[1], 10);
+      return { minimum: feeRangeMinimum, maximum: feeRangeMaximum };
+    });
   }
 
   const apiVairables = {
     specialty: specialityId,
     city: filter.cityName,
-    experience: { minimum: expRangeMinimum, maximum: expRangeMaximum },
-    fees: { minimum: feeRangeMinimum, maximum: feeRangeMaximum },
+    experience: expRange,
+    fees: feeRange,
     availability: filter.availability,
     gender: filter.gender,
     language: filter.language,
