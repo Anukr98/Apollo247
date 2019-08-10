@@ -11,6 +11,8 @@ import {
   RoundCallIcon,
   RoundVideoIcon,
   PatientPlaceHolderImage,
+  Notification,
+  RoundChatIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
 import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
@@ -89,7 +91,7 @@ const videoCallMsg = '^^callme`video^^';
 const audioCallMsg = '^^callme`audio^^';
 const doctorId = 'Ravi';
 const patientId = 'Sai';
-const channel = 'Channel7';
+// const channel = 'Channel7';
 
 export interface ConsultRoomScreenProps
   extends NavigationScreenProps<{
@@ -98,6 +100,7 @@ export interface ConsultRoomScreenProps
     PatientConsultTime: string;
     PatientInfoAll: object;
     AppId: string;
+    Appintmentdatetime: string;
     //navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   }> {
   navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
@@ -107,33 +110,45 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const client = useApolloClient();
   const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
   const AppId = props.navigation.getParam('AppId');
-  console.log('hihihi', props.navigation.getParam('PatientInfoAll'));
-  const details = {
-    appointmentId: AppId, //'6b323478-3afc-4e67-95d9-97ddf51dba83',
-    requestRole: 'DOCTOR',
-  };
+  // console.log('hihihi', props.navigation.getParam('PatientInfoAll'));
+  // console.log('Appintmentdatetimeconsultpage', props.navigation.getParam('Appintmentdatetime'));
+  const channel = props.navigation.getParam('AppId');
+  // console.log('channel', channel);
+  // const details = {
+  //   appointmentId: AppId, //'6b323478-3afc-4e67-95d9-97ddf51dba83',
+  //   requestRole: 'DOCTOR',
+  // };
 
-  console.log('createsession', details);
+  // console.log('createsession', details);
+  // console.log('AppId', AppId);
 
-  client
-    .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
-      mutation: CREATEAPPOINTMENTSESSION,
-      variables: {
-        createAppointmentSessionInput: {
-          appointmentId: '6b323478-3afc-4e67-95d9-97ddf51dba83',
-          requestRole: 'DOCTOR',
+  useEffect(() => {
+    console.log('AppointmentId', AppId);
+    client
+      .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+        mutation: CREATEAPPOINTMENTSESSION,
+        variables: {
+          createAppointmentSessionInput: {
+            appointmentId: AppId,
+            requestRole: 'DOCTOR',
+          },
         },
-      },
-    })
-    .then((_data: any) => {
-      console.log('createsession', _data);
-    })
-    .catch((e: any) => {
-      console.log('Error occured while adding Doctor', e);
-    });
-  console.log('Doctoid', props.navigation.getParam('DoctorId'));
-  console.log('PatientId', props.navigation.getParam('PatientId'));
-  console.log('PatientConsultTime', props.navigation.getParam('PatientConsultTime'));
+      })
+      .then((_data: any) => {
+        console.log('createsession', _data);
+        console.log('sessionid', _data.data.createAppointmentSession.sessionId);
+        console.log('appointmentToken', _data.data.createAppointmentSession.appointmentToken);
+        setsessionId(_data.data.createAppointmentSession.sessionId);
+        settoken(_data.data.createAppointmentSession.appointmentToken);
+      })
+      .catch((e: any) => {
+        console.log('Error occured while adding Doctor', e);
+      });
+  }, []);
+
+  // console.log('Doctoid', props.navigation.getParam('DoctorId'));
+  // console.log('PatientId', props.navigation.getParam('PatientId'));
+  // console.log('PatientConsultTime', props.navigation.getParam('PatientConsultTime'));
 
   const PatientConsultTime = props.navigation.getParam('PatientConsultTime');
 
@@ -222,10 +237,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       timer = timer + 1;
       stoppedTimer = timer;
       setCallTimer(timer);
-      console.log('uptimer', timer);
+      // console.log('uptimer', timer);
 
       if (timer == 0) {
-        console.log('uptimer', timer);
+        // console.log('uptimer', timer);
         setCallTimer(0);
         clearInterval(timerId);
       }
@@ -243,15 +258,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     setRemainingTime(stopTimer);
     intervalId && clearInterval(intervalId);
   };
-
-  useEffect(() => {
-    setapiKey('46346642');
-    setsessionId('1_MX40NjM0NjY0Mn5-MTU2NDI5MDk1MjA2Nn5UV2E1Mmw3V0ovWTdhTVR6akltYWtlWVl-UH4');
-    settoken(
-      'T1==cGFydG5lcl9pZD00NjM0NjY0MiZzaWc9YzRhYTk1YmU1ODJiYzMzMmZlMGExM2IxNjZmOTJmMDVkYzQ5OGYxOTpzZXNzaW9uX2lkPTFfTVg0ME5qTTBOalkwTW41LU1UVTJOREk1TURrMU1qQTJObjVVVjJFMU1tdzNWMG92V1RkaFRWUjZha2x0WVd0bFdWbC1VSDQmY3JlYXRlX3RpbWU9MTU2NDI5MjAzNyZub25jZT0wLjE2NTYxNTI3NzMyOTg4NjQ2JnJvbGU9cHVibGlzaGVyJmV4cGlyZV90aW1lPTE1NjY4ODQwMzcmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
-    );
-    console.log('apiKey', apiKey);
-  }, [setapiKey, setsessionId, settoken, apiKey]);
 
   const publisherEventHandlers = {
     streamCreated: (event) => {
@@ -554,19 +560,38 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           marginTop: 0,
         }}
       >
-        <FlatList
-          ref={flatListRef}
-          contentContainerStyle={{
-            marginHorizontal: 20,
-            marginTop: 0,
-          }}
-          bounces={false}
-          data={messages}
-          onEndReachedThreshold={0.5}
-          renderItem={({ item, index }) => renderChatRow(item, index)}
-          keyExtractor={(_, index) => index.toString()}
-          numColumns={1}
-        />
+        {messages.length != 0 ? (
+          <FlatList
+            ref={flatListRef}
+            contentContainerStyle={{
+              marginHorizontal: 20,
+              marginTop: 0,
+            }}
+            bounces={false}
+            data={messages}
+            onEndReachedThreshold={0.5}
+            renderItem={({ item, index }) => renderChatRow(item, index)}
+            keyExtractor={(_, index) => index.toString()}
+            numColumns={1}
+          />
+        ) : (
+          <View style={{ flexDirection: 'row', margin: 20 }}>
+            <View style={{ marginTop: 4 }}>
+              <RoundChatIcon />
+            </View>
+            <Text
+              style={{
+                marginLeft: 14,
+                color: '#0087ba',
+                ...theme.fonts.IBMPlexSansMedium(12),
+                marginRight: 20,
+                lineHeight: 16,
+              }}
+            >
+              Your appointment with {PatientInfoAll.firstName} is scheduled to start at 11.50 AM
+            </Text>
+          </View>
+        )}
       </View>
     );
   };
@@ -608,31 +633,33 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         />
         <OTSession
           apiKey={'46393582'}
-          sessionId={'1_MX40NjM5MzU4Mn5-MTU2NTA3MTUwNDk4MX56bVd3ZW96MFNuS2Vua2dDMnZ5VTZNNlJ-UH4'}
+          // sessionId={sessionId}
+          // token={token}
+          sessionId={'2_MX40NjM5MzU4Mn5-MTU2NTQzNzkyNTgwMX40Qm0rbEtFb3VVQytGZHVQdmR0NHAveG1-fg'}
           token={
-            'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9Y2UxMDhkODEzNTU3MmE4M2ExZTZkNmVlYjVkZDE0ODA3NGZhM2QyZTpzZXNzaW9uX2lkPTFfTVg0ME5qTTVNelU0TW41LU1UVTJOVEEzTVRVd05EazRNWDU2YlZkM1pXOTZNRk51UzJWdWEyZERNblo1VlRaTk5sSi1VSDQmY3JlYXRlX3RpbWU9MTU2NTA3MTYxMCZub25jZT0wLjExNjA5MzQ3Njk5NjI3MzM3JnJvbGU9cHVibGlzaGVyJmV4cGlyZV90aW1lPTE1Njc2NjM2MDcmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
+            'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9YmM2MzFhZTEwYWNlODBhZmNhNjMwNDIwOGRkNmZhYzkyMGU3ZjcyMDpzZXNzaW9uX2lkPTJfTVg0ME5qTTVNelU0TW41LU1UVTJOVFF6TnpreU5UZ3dNWDQwUW0wcmJFdEZiM1ZWUXl0R1pIVlFkbVIwTkhBdmVHMS1mZyZjcmVhdGVfdGltZT0xNTY1NDM3OTczJm5vbmNlPTAuNDc1MTYzNTI2Njc3MTIwMzYmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2ODAyOTk3MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
           }
           eventHandlers={sessionEventHandlers}
           ref={otSessionRef}
         >
           <OTSubscriber
             style={subscriberStyles}
-            eventHandlers={subscriberEventHandlers}
-            // properties={{
-            //   subscribeToAudio: true,
-            //   subscribeToVideo: false,
-            //   // audioVolume: 10,
-            // }}
+            subscribeToSelf={true}
+            eventHandlers={publisherEventHandlers}
+            properties={{
+              subscribeToAudio: true,
+              subscribeToVideo: false,
+              audioVolume: 100,
+            }}
           />
           <OTPublisher
             style={publisherStyles}
             properties={{
-              cameraPosition: cameraPosition,
-              mirror: false,
               publishVideo: false,
-              publishAudio: mute,
+              publishAudio: true,
+              audioVolume: 100,
             }}
-            eventHandlers={publisherEventHandlers}
+            eventHandlers={subscriberEventHandlers}
           />
         </OTSession>
         <Text
@@ -646,7 +673,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             textAlign: 'center',
           }}
         >
-          Seema Singh
+          {PatientInfoAll.firstName}
         </Text>
         <Text
           style={{
@@ -732,31 +759,32 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <OTSession
               apiKey={'46393582'}
-              sessionId={
-                '1_MX40NjM5MzU4Mn5-MTU2NTA3MTUwNDk4MX56bVd3ZW96MFNuS2Vua2dDMnZ5VTZNNlJ-UH4'
-              }
+              sessionId={'2_MX40NjM5MzU4Mn5-MTU2NTQzNzkyNTgwMX40Qm0rbEtFb3VVQytGZHVQdmR0NHAveG1-fg'}
               token={
-                'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9Y2UxMDhkODEzNTU3MmE4M2ExZTZkNmVlYjVkZDE0ODA3NGZhM2QyZTpzZXNzaW9uX2lkPTFfTVg0ME5qTTVNelU0TW41LU1UVTJOVEEzTVRVd05EazRNWDU2YlZkM1pXOTZNRk51UzJWdWEyZERNblo1VlRaTk5sSi1VSDQmY3JlYXRlX3RpbWU9MTU2NTA3MTYxMCZub25jZT0wLjExNjA5MzQ3Njk5NjI3MzM3JnJvbGU9cHVibGlzaGVyJmV4cGlyZV90aW1lPTE1Njc2NjM2MDcmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
+                'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9YmM2MzFhZTEwYWNlODBhZmNhNjMwNDIwOGRkNmZhYzkyMGU3ZjcyMDpzZXNzaW9uX2lkPTJfTVg0ME5qTTVNelU0TW41LU1UVTJOVFF6TnpreU5UZ3dNWDQwUW0wcmJFdEZiM1ZWUXl0R1pIVlFkbVIwTkhBdmVHMS1mZyZjcmVhdGVfdGltZT0xNTY1NDM3OTczJm5vbmNlPTAuNDc1MTYzNTI2Njc3MTIwMzYmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2ODAyOTk3MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
               }
+              // sessionId={sessionId}
+              // token={token}
               eventHandlers={sessionEventHandlers}
               ref={otSessionRef}
             >
               <OTSubscriber
                 style={subscriberStyles}
+                subscribeToSelf={true}
                 eventHandlers={subscriberEventHandlers}
-                // properties={{
-                //   mirror: false,
-                //   subscribeToAudio: true,
-                //   subscribeToVideo: true,
-                // }}
+                properties={{
+                  subscribeToAudio: true,
+                  subscribeToVideo: true,
+                  //audioVolume: 100,
+                }}
               />
               <OTPublisher
                 style={publisherStyles}
                 properties={{
                   cameraPosition: cameraPosition,
-                  mirror: false,
                   publishVideo: showVideo,
                   publishAudio: true,
+                  //audioVolume: 100,
                 }}
                 eventHandlers={publisherEventHandlers}
               />

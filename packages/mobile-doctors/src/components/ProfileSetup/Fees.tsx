@@ -137,6 +137,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
             </Text>,
             Feedata!.physicalConsultationFees
           )}
+
           {BankDetails != null ? (
             <View>
               {feeprofileRow(
@@ -144,7 +145,9 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
                 [BankDetails!.name, '@Rs. '.concat(BankDetails!.fees)].join(', ') || ''
               )}
             </View>
-          ) : null}
+          ) : (
+            <View>{feeprofileRow('What package do you offer your patients?', ' N/A')}</View>
+          )}
         </View>
       )}
 

@@ -93,7 +93,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
   const starDoctorsActive = _profileData.starTeam!.filter((doctor) => doctor!.isActive);
   console.log('starDoctorsActive', starDoctorsActive);
   const starDoctorsInActive = _profileData.starTeam!.filter((doctor) => !doctor!.isActive);
-  console.log('starDoctorsInActive', starDoctorsInActive);
+  console.log('starDoctorsInActive2', starDoctorsInActive);
 
   const onSelectStarDoctor = (searchText: boolean) => {
     setDropdownOpen(!isDropdownOpen);
@@ -213,6 +213,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
   );
 
   const getFormattedLocation = (d: GetDoctorDetails_getDoctorDetails_starTeam | null) => {
+    console.log('d', d);
     let location = '';
     try {
       return (location =
@@ -224,11 +225,12 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
           d!.associatedDoctor!.doctorHospital[0].facility.state,
           d!.associatedDoctor!.doctorHospital[0].facility.country,
         ]
-          .filter((data) => !data)
+          .filter(Boolean) //.filter((data) => !data)
           .join(',') || '');
     } catch (e) {
-      console.log(e);
+      console.log('e', e);
     }
+    console.log('location', location);
     return location;
   };
 

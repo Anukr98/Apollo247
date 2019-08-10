@@ -383,9 +383,12 @@ const profileRow = (PatientInfoData: object) => {
       <View style={{ flexDirection: 'row' }}>
         <Text style={styles.nameText}>{PatientInfoData.firstName}</Text>
         <View style={styles.line}></View>
-        <Text style={styles.agetext}>56, {PatientInfoData.gender}, Mumbai</Text>
+        <Text style={styles.agetext}>{PatientInfoData.gender}</Text>
       </View>
-      <Text style={styles.uhidText}>UHID: {PatientInfoData.uhid}</Text>
+      {PatientInfoData.uhid != '' ? (
+        <Text style={styles.uhidText}>UHID :{PatientInfoData.uhid} </Text>
+      ) : null}
+
       <View style={styles.understatusline} />
       <View>
         {registerDetails('Appt ID:', '98765')}

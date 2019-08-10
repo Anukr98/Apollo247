@@ -502,3 +502,11 @@ export const RoundVideoIcon: React.FC<IconProps> = (props) => (
 export const ChatWithNotification: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('../../images/icons/ChatWithNotification.png')} />
 );
+
+export const RoundChatIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/round_info_24_px.png')}
+  />
+);

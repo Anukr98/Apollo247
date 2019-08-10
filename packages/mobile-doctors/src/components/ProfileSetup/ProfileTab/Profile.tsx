@@ -97,14 +97,15 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
     let location = '';
     try {
       location = [
-        profileData.doctorHospital[0].facility.streetLine1 || 'hel',
-        profileData.doctorHospital[0].facility.streetLine2 || 'hel',
+        profileData.doctorHospital[0].facility.streetLine1,
+        profileData.doctorHospital[0].facility.streetLine2,
         profileData.doctorHospital[0].facility.streetLine3,
         profileData.doctorHospital[0].facility.city,
         profileData.doctorHospital[0].facility.state,
         profileData.doctorHospital[0].facility.country,
       ]
-        .filter((data) => !data)
+        // .filter((data) => console.log('data', data))
+        .filter(Boolean)
         .join(', ');
     } catch (e) {
       console.log(e);

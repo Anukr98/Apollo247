@@ -46,7 +46,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     doctorId: string,
     patientId: string,
     PatientInfo: object,
-    appId: string
+    appId: string,
+    appointmentDateTime: string
   ) => {
     console.log('one', one);
     console.log('two', two);
@@ -72,6 +73,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       PatientConsultTime: CDA.replace('-', ''),
       PatientInfoAll: PatientInfo,
       AppId: appId,
+      Appintmentdatetime: appointmentDateTime,
     });
   };
   const getStatusCircle = (status: Appointments['timeslottype']) =>
@@ -189,7 +191,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                             doctorId,
                             patientId,
                             PatientInfo,
-                            appId
+                            appId,
+                            appointmentDateTime
                           )
                         : props.navigation.push(AppRoutes.ConsultRoomScreen, {
                             DoctorId: doctorId,
@@ -197,6 +200,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                             PatientConsultTime: null,
                             PatientInfoAll: PatientInfo,
                             AppId: appId,
+                            Appintmentdatetime: appointmentDateTime,
                           });
                     }
 
@@ -207,7 +211,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                     //   PatientInfoAll: PatientInfo,
                     // });
                   }}
-                  doctorname={i.doctorId}
+                  doctorname={i.patientInfo!.firstName}
                   timing={formatTiming(i.appointmentDateTime)}
                   symptoms={[]}
                   doctorId={i.doctorId}
@@ -217,6 +221,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   PatientInfo={i.patientInfo!}
                   consultTime={i.appointmentDateTime}
                   appId={i.id}
+                  appintmentdatetime={i.appointmentDateTime}
                 />
               </View>
             </>
