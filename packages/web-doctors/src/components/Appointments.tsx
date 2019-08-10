@@ -15,7 +15,7 @@ import {
   StepContent,
   Typography,
 } from '@material-ui/core';
-import { format, getTime, setSeconds, setMilliseconds } from 'date-fns';
+import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { STATUS } from 'graphql/types/globalTypes';
 
