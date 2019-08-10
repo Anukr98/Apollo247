@@ -168,10 +168,28 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   const mascotRef = useRef(null);
 
+  let expRangeMinimum = 0,
+    expRangeMaximum = 100,
+    feeRangeMinimum = 0,
+    feeRangeMaximum = 10000;
+
+  if (filter.experience && filter.experience.length > 0) {
+    const arrayLength = filter.experience.length;
+    expRangeMinimum = parseInt(filter.experience[arrayLength - 1].split('_')[0], 10);
+    expRangeMaximum = parseInt(filter.experience[arrayLength - 1].split('_')[1], 10);
+  }
+
+  if (filter.fees && filter.fees.length > 0) {
+    const arrayLength = filter.fees.length;
+    feeRangeMinimum = parseInt(filter.fees[arrayLength - 1].split('_')[0], 10);
+    feeRangeMaximum = parseInt(filter.fees[arrayLength - 1].split('_')[1], 10);
+  }
+
   const apiVairables = {
     specialty: specialityId,
     city: filter.cityName,
-    experience: filter.experience,
+    experience: { minimum: expRangeMinimum, maximum: expRangeMaximum },
+    fees: { minimum: feeRangeMinimum, maximum: feeRangeMaximum },
     availability: filter.availability,
     gender: filter.gender,
     language: filter.language,
