@@ -240,6 +240,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     setFees([]);
     setLanguage([]);
     setDateSelected('');
+    setShowCalendar(false);
     handleFilterOptions(filterOptions);
   };
 
@@ -350,21 +351,23 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
             <div className={classes.filterBox}>
               <div className={classes.filterType}>
                 Availability
-                <div
-                  className={classes.calendarIcon}
-                  onClick={(e) => {
-                    setDateSelected('');
-                    !disableFilters ? setShowCalendar(showCalendar ? false : true) : false;
-                  }}
-                >
-                  <img
-                    src={
-                      showCalendar
-                        ? require('images/ic_calendar_close.svg')
-                        : require('images/ic_calendar_show.svg')
-                    }
-                  />
-                </div>
+                {
+                  <div
+                    className={classes.calendarIcon}
+                    onClick={(e) => {
+                      setDateSelected('');
+                      !disableFilters ? setShowCalendar(showCalendar ? false : true) : false;
+                    }}
+                  >
+                    <img
+                      src={
+                        showCalendar
+                          ? require('images/ic_calendar_close.svg')
+                          : require('images/ic_calendar_show.svg')
+                      }
+                    />
+                  </div>
+                }
               </div>
               <div className={classes.boxContent}>
                 <div
