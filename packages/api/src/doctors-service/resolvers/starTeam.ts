@@ -32,8 +32,8 @@ const makeTeamDoctorActive: Resolver<
 
   if (isUndefined(doctorDetails)) throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES);
 
-  const isAuthorized = doctorDetails.starDoctor.id === currentUser.id;
-  if (!isAuthorized) throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES);
+  /*const isAuthorized =  doctorDetails.starDoctor.id === currentUser.id;
+  if (!isAuthorized) throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES); */
 
   if (doctorDetails.isActive) throw new AphError(AphErrorMessages.ALREADY_ACTIVE_IN_STARTEAM);
 
