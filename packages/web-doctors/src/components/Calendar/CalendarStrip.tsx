@@ -3,6 +3,7 @@ import { MonthList } from './MonthList';
 import { Days } from './Days';
 import { makeStyles } from '@material-ui/styles';
 import { addWeeks, subWeeks, startOfWeek, startOfDay } from 'date-fns';
+import { startOfToday } from 'date-fns/esm';
 
 const useStyles = makeStyles({
   float: {
@@ -62,6 +63,7 @@ const useStyles = makeStyles({
     display: 'flex',
   },
   calenderIcon: {
+    cursor: 'pointer',
     width: '7%',
     display: 'flex',
     borderRadius: '10px',
@@ -87,7 +89,7 @@ const useStyles = makeStyles({
 
 export interface CalendarStripProps {
   date: Date;
-  dayClickHandler?: (e: React.MouseEvent, date: Date) => void;
+  dayClickHandler?: (date: Date) => void;
   monthChangeHandler?: (date: Date) => void;
   onNext?: (e: React.MouseEvent, newDate: Date, startOfWeek: Date) => void;
   onPrev?: (e: React.MouseEvent, newDate: Date, startOfWeek: Date) => void;
@@ -106,7 +108,18 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
 
   return (
     <div className={classes.calendarContainer}>
-      <div className={classes.calenderIcon}>
+      <div
+        className={classes.calenderIcon}
+        onClick={() => {
+          const today = startOfToday();
+          setDate(today);
+          setUserSelection(today);
+
+          if (dayClickHandler) {
+            dayClickHandler(today);
+          }
+        }}
+      >
         <img src={require('images/ic_calendar.svg')} alt="" />
       </div>
       <div className={classes.weekView}>
@@ -114,11 +127,11 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
           className={classes.monthPopup}
           date={date}
           onChange={(newDate) => {
-            setDate(newDate as Date);
-            setUserSelection(newDate as Date);
+            setDate((newDate as unknown) as Date);
+            setUserSelection((newDate as unknown) as Date);
 
             if (monthChangeHandler) {
-              monthChangeHandler(newDate as Date);
+              monthChangeHandler((newDate as unknown) as Date);
             }
           }}
         />
@@ -145,7 +158,7 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
             setDate(date);
 
             if (dayClickHandler) {
-              dayClickHandler(e, date);
+              dayClickHandler(date);
             }
           }}
         />
