@@ -118,7 +118,7 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
   const classes = useStyles();
 
   const { doctorDetails } = props;
-  let hospitalLocation = '';
+  // let hospitalLocation = '';
 
   if (
     doctorDetails &&
@@ -133,7 +133,7 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
         ? doctorDetails.getDoctorDetailsById.starTeam
         : [];
 
-    console.log('88888888', doctorDetails);
+    // console.log('88888888', doctorDetails);
 
     // if (team.length > 0) {
     //   _forEach(doctorDetails.getDoctorDetailsById.starTeam, (starDoctor: any) => {
@@ -150,7 +150,9 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
           <span>
             Dr. {firstName}&nbsp;{lastName}'s Team
           </span>
-          <span className={classes.count}>02</span>
+          <span className={classes.count}>
+            {team.length > 0 ? team.length.toString().padStart(2, '0') : '0'}
+          </span>
         </div>
         <Grid container className={classes.gridContainer} spacing={2}>
           {_map(team, (doctorDetails: StarTeam) => {
@@ -165,25 +167,11 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
                         ? doctorDetails.associatedDoctor.firstName
                         : ''
                     }
-                    src={
-                      doctorDetails &&
-                      doctorDetails.associatedDoctor &&
-                      doctorDetails.associatedDoctor.photoUrl
-                        ? doctorDetails.associatedDoctor.photoUrl
-                        : ''
-                    }
+                    src=""
                     className={classes.bigAvatar}
                   />
                   <div className={classes.doctorInfo}>
-                    <Link
-                      to={clientRoutes.doctorDetails(
-                        doctorDetails &&
-                          doctorDetails.associatedDoctor &&
-                          doctorDetails.associatedDoctor.id
-                          ? doctorDetails.associatedDoctor.id
-                          : '/'
-                      )}
-                    >
+                    <Link to="/">
                       <div className={classes.doctorName}>
                         {doctorDetails &&
                         doctorDetails.associatedDoctor &&
@@ -199,7 +187,7 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
                       </div>
                     </Link>
                     <div className={classes.speciality}>
-                      {doctorDetails &&
+                      {/* {doctorDetails &&
                       doctorDetails.associatedDoctor &&
                       doctorDetails.associatedDoctor.specialty &&
                       doctorDetails.associatedDoctor.specialty.name
@@ -213,7 +201,7 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
                           ? doctorDetails.associatedDoctor.experience
                           : ''}
                         Yrs
-                      </span>
+                      </span> */}
                     </div>
                     {/* <div className={classes.doctorMoreInfo}>
                       {(doctorDetails && doctorDetails.address) || ''}

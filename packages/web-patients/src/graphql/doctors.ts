@@ -21,33 +21,11 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       qualification
       starTeam {
         associatedDoctor {
-          id
-          salutation
           firstName
           lastName
           experience
-          city
-          photoUrl
-          specialty {
-            name
-            id
-          }
-          doctorHospital {
-            facility {
-              city
-              country
-              facilityType
-              latitude
-              longitude
-              name
-              state
-              streetLine1
-              streetLine2
-              streetLine3
-            }
-          }
+          qualification
         }
-        isActive
       }
       specialty {
         id

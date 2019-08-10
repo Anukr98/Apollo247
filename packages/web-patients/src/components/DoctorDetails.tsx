@@ -235,7 +235,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   let availableForPhysicalConsultation = false,
     availableForVirtualConsultation = false;
 
-  console.log(data);
+  // console.log(data);
 
   const doctorDetails = data && data.getDoctorDetailsById ? data : null;
 
@@ -303,7 +303,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   <div className={classes.customScroll}>
                     <DoctorClinics doctorDetails={doctorDetails} />
                     {isStarDoctor && <StarDoctorTeam doctorDetails={doctorDetails} />}
-                    {/*<AppointmentHistory doctorId={doctorId} patientId={currentUserId} /> */}
+                    <AppointmentHistory doctorId={doctorId} patientId={currentUserId} />
                   </div>
                 </Scrollbars>
               </div>

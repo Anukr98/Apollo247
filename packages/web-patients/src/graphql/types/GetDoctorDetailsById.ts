@@ -8,48 +8,17 @@ import { Salutation, DoctorType, ConsultMode, ConsultType, WeekDay } from "./glo
 // GraphQL query operation: GetDoctorDetailsById
 // ====================================================
 
-export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_specialty {
-  __typename: "DoctorSpecialties";
-  name: string;
-  id: string;
-}
-
-export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital_facility {
-  __typename: "Facility";
-  city: string | null;
-  country: string | null;
-  facilityType: string;
-  latitude: string | null;
-  longitude: string | null;
-  name: string;
-  state: string | null;
-  streetLine1: string | null;
-  streetLine2: string | null;
-  streetLine3: string | null;
-}
-
-export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital {
-  __typename: "DoctorHospital";
-  facility: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital_facility;
-}
-
 export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor {
   __typename: "Profile";
-  id: string;
-  salutation: Salutation | null;
   firstName: string | null;
   lastName: string | null;
   experience: string | null;
-  city: string | null;
-  photoUrl: string | null;
-  specialty: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_specialty;
-  doctorHospital: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital[];
+  qualification: string | null;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam {
   __typename: "StarTeam";
   associatedDoctor: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor | null;
-  isActive: boolean | null;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_specialty {
