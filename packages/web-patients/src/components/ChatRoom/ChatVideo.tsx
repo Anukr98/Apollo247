@@ -21,11 +21,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     smallVideoContainer: {
       position: 'absolute',
-      right: 17,
-      top: 0,
+      right: 38,
+      top: 20,
       width: 204,
       height: 154,
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
+      zIndex: 10,
+      backgroundColor: 'rgba(0,0,0,0.2)',
     },
     videoChatWindow: {
       paddingRight: 17,
