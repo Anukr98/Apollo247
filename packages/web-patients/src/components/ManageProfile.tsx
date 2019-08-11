@@ -49,11 +49,13 @@ export const ManageProfile: React.FC = (props) => {
   const { isSigningIn } = useAuth();
   const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [isDataFilled, setIsDataFilled] = React.useState<boolean>(false);
 
   useEffect(() => {
     if (allCurrentPatients) {
       const isSomePatientMissingRelation = allCurrentPatients.some((p) => _isEmpty(p.relation));
       if (isSomePatientMissingRelation) {
+        setIsDataFilled(true);
         // The mascotRef position has maybe not been calculated properly (or something) yet?
         // So the popup appears, but in the wrong location. Use a setTimeout to avoid this.
         setTimeout(() => setIsPopoverOpen(true), 0);
@@ -82,7 +84,7 @@ export const ManageProfile: React.FC = (props) => {
           <Popover
             open={!isSigningIn && isPopoverOpen}
             anchorEl={mascotRef.current}
-            onClose={() => setIsPopoverOpen(false)}
+            onClose={() => setIsPopoverOpen(isDataFilled)}
             className={classes.bottomPopover}
             anchorOrigin={{
               vertical: 'bottom',

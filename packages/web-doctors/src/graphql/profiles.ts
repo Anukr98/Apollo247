@@ -76,6 +76,7 @@ export const GET_DOCTOR_DETAILS = gql`
         IFSCcode
         accountType
         bankName
+        accountHolderName
       }
       specialty {
         name
@@ -109,6 +110,14 @@ export const GET_DOCTOR_DETAILS = gql`
           streetLine2
           streetLine3
           zip
+          doctorHospital {
+            facility {
+              streetLine1
+            }
+          }
+          specialty {
+            name
+          }
         }
       }
     }
@@ -218,11 +227,22 @@ export const UPDATE_PATIENT = gql`
     }
   }
 `;
+
 export const CREATE_APPOINTMENT_SESSION = gql`
-  mutation CreateAppointmentSession($CreateAppointmentSessionInput: CreateAppointmentSessionInput) {
-    createAppointmentSession(createAppointmentSessionInput: $CreateAppointmentSessionInput) {
+  mutation CreateAppointmentSession($createAppointmentSessionInput: CreateAppointmentSessionInput) {
+    createAppointmentSession(createAppointmentSessionInput: $createAppointmentSessionInput) {
       sessionId
       appointmentToken
+    }
+  }
+`;
+export const GET_APPOINTMENT_DATA = gql`
+  query GetAppointmentData($appointmentId: String!) {
+    getAppointmentData(appointmentId: $appointmentId) {
+      appointmentsHistory {
+        appointmentDateTime
+        id
+      }
     }
   }
 `;

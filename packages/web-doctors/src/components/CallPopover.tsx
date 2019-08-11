@@ -5,6 +5,8 @@ import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import { Link } from 'react-router-dom';
 import Pubnub from 'pubnub';
+import { GET_APPOINTMENT_DATA } from 'graphql/profiles';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -179,11 +181,11 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
+  appointmentId: string;
 }
 let intervalId: any;
 let stoppedTimer: number;
 let cda: any;
-//let timerId: any;
 
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
@@ -192,6 +194,24 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
+  const client = useApolloClient();
+  useEffect(() => {
+    client
+      .query({
+        query: GET_APPOINTMENT_DATA,
+        variables: { appointmentId: '1c8aff41-f6ff-4e79-bcf3-b4f293741e93' },
+      })
+      .then(({ data }) => {
+        console.log(
+          data.getAppointmentData.appointmentsHistory[0].appointmentDateTime,
+          data.getAppointmentData.appointmentsHistory[0].id,
+          'dfgfdgdfgdfgdfg'
+        );
+      })
+      .catch((_) => {
+        console.log('Error', 'Something went wrong while fetching data');
+      });
+  }, [props.appointmentId]);
 
   //logic for before start counsult timer start
   const dt1 = new Date('2019-08-09T10:14'); //today time
@@ -277,7 +297,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     };
   });
   const onStartConsult = () => {
-    console.log(22222222);
     pubnub.publish(
       {
         message: {
@@ -351,11 +370,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <g fill="none" fill-rule="evenodd">
+                  <g fill="none" fillRule="evenodd">
                     <path d="M0 0h24v24H0z" />
                     <path
                       fill="#ffffff"
-                      fill-rule="nonzero"
+                      fillRule="nonzero"
                       d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"
                     />
                   </g>

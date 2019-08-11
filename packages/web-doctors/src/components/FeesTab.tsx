@@ -294,7 +294,7 @@ export const FeesTab: React.FC<FeesProps> = (props) => {
                       <Grid item lg={12} sm={12} xs={12}>
                         <div className={classes.accountDetailsHeading}>Account Holder’s Name</div>
                         <Typography variant="h5" className={classes.accountDetails}>
-                          {data.lastName}
+                          {data.bankAccount[0]!.accountHolderName}
                         </Typography>
                       </Grid>
                       <Grid item lg={12} sm={12} xs={12}>

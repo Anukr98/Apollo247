@@ -386,7 +386,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                         });
                       }}
                     >
-                      Remove Doctor
+                      Remove
                     </Typography>
                   </Popover>
                 </>
@@ -396,11 +396,15 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           title={
             <div>
               <h4>
-                Dr. {doctor!.associatedDoctor!.firstName} {doctor!.associatedDoctor!.lastName}
+                {doctor!.associatedDoctor!.salutation} {doctor!.associatedDoctor!.firstName}
+                {doctor!.associatedDoctor!.lastName}
               </h4>
               {doctor!.isActive === true && (
                 <h6>
-                  <span>GENERAL PHYSICIAN | {doctor!.associatedDoctor!.experience} YRS</span>
+                  <span>
+                    {doctor!.associatedDoctor!.specialty!.name} |
+                    {doctor!.associatedDoctor!.experience} YRS
+                  </span>
                 </h6>
               )}
             </div>
@@ -409,7 +413,8 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
             <div>
               {doctor!.isActive === true && (
                 <span className={classes.qualification}>
-                  MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+                  {doctor!.associatedDoctor!.qualification},
+                  {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1}
                 </span>
               )}
             </div>
