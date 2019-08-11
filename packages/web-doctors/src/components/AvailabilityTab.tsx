@@ -6,7 +6,9 @@ import Grid from '@material-ui/core/Grid';
 import { AphButton } from '@aph/web-ui-components';
 import { ConsultationHours } from 'components/ConsultationHours';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
+import { GetDoctorDetails_getDoctorDetails_consultHours } from 'graphql/types/GetDoctorDetails';
 
+import { ConsultMode } from 'graphql/types/globalTypes';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
@@ -278,21 +280,35 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
               </Typography>
               <AphButton
                 variant="contained"
-                classes={
-                  data.consultHours && data.consultHours![0]!.consultMode === 'PHYSICAL'
-                    ? { root: classes.btnActive }
-                    : { root: classes.btnInactive }
-                }
+                classes={{
+                  root:
+                    data.consultHours &&
+                    data.consultHours!.length > 0 &&
+                    data.consultHours!.some(
+                      (_item: GetDoctorDetails_getDoctorDetails_consultHours | null) =>
+                        _item!.consultMode === ConsultMode.PHYSICAL ||
+                        _item!.consultMode === ConsultMode.BOTH
+                    )
+                      ? classes.btnActive
+                      : classes.btnInactive,
+                }}
               >
                 Physical
               </AphButton>
               <AphButton
                 variant="contained"
-                classes={
-                  data.consultHours && data.consultHours![0]!.consultMode === 'ONLINE'
-                    ? { root: classes.btnActive }
-                    : { root: classes.btnInactive }
-                }
+                classes={{
+                  root:
+                    data.consultHours &&
+                    data.consultHours!.length > 0 &&
+                    data.consultHours!.some(
+                      (_item: GetDoctorDetails_getDoctorDetails_consultHours | null) =>
+                        _item!.consultMode === ConsultMode.ONLINE ||
+                        _item!.consultMode === ConsultMode.BOTH
+                    )
+                      ? classes.btnActive
+                      : classes.btnInactive,
+                }}
               >
                 Online
               </AphButton>

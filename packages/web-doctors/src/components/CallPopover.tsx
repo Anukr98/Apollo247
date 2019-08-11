@@ -5,8 +5,6 @@ import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import { Link } from 'react-router-dom';
 import Pubnub from 'pubnub';
-import { GET_APPOINTMENT_DATA } from 'graphql/profiles';
-import { useApolloClient } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -182,6 +180,7 @@ const useStyles = makeStyles((theme: Theme) => {
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
   appointmentId: string;
+  appointmentDateTime: string;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -194,28 +193,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
-  const client = useApolloClient();
-  useEffect(() => {
-    client
-      .query({
-        query: GET_APPOINTMENT_DATA,
-        variables: { appointmentId: '1c8aff41-f6ff-4e79-bcf3-b4f293741e93' },
-      })
-      .then(({ data }) => {
-        console.log(
-          data.getAppointmentData.appointmentsHistory[0].appointmentDateTime,
-          data.getAppointmentData.appointmentsHistory[0].id,
-          'dfgfdgdfgdfgdfg'
-        );
-      })
-      .catch((_) => {
-        console.log('Error', 'Something went wrong while fetching data');
-      });
-  }, [props.appointmentId]);
-
   //logic for before start counsult timer start
-  const dt1 = new Date('2019-08-09T10:14'); //today time
-  const dt2 = new Date('2019-08-10T19:30'); // apointment time
+  //console.log(new Date().toISOString().substring(0, 16), props.appointmentDateTime);
+  const dt1 = new Date(new Date().toISOString().substring(0, 16)); //today time
+  const dt2 = new Date(props.appointmentDateTime); // apointment time
   const diff = dt2.getHours() - dt1.getHours();
   const diff2 = dt2.getMinutes() - dt1.getMinutes();
   const val = '0';
@@ -242,27 +223,23 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     intervalId && clearInterval(intervalId);
   };
   function handleClick(event: any) {
-    setAnchorEl(event.currentTarget);
+    if (startAppointment) {
+      setAnchorEl(event.currentTarget);
+    }
   }
   function handleClose() {
     setAnchorEl(null);
   }
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popover' : undefined;
-  //const videoCallMsg = '^^callme`video^^';
-  //const audioCallMsg = '^^callme`audio^^';
   const startConsult = '^^#startconsult';
   const stopConsult = '^^#stopconsult';
-  // const doctorId = 'Ravi';
-  // const patientId = 'Sai';
   const channel = 'Channel7';
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
     publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
     ssl: true,
   };
-  // let leftComponent = 0;
-  // let rightComponent = 0;
   const pubnub = new Pubnub(config);
   useEffect(() => {
     pubnub.subscribe({

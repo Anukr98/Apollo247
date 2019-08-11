@@ -5,6 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import { DaySelector } from 'components/DaySelector';
 import { AphButton, AphInput } from '@aph/web-ui-components';
+
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -130,6 +131,14 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: 'transparent',
       },
+    },
+    cosultMode: {
+      color: '#658f9b',
+      fontSize: 14,
+      fontWeight: theme.typography.fontWeightMedium,
+    },
+    pointerNone: {
+      pointerEvents: 'none',
     },
     cancelBtn: {
       minWidth: 30,
@@ -278,9 +287,6 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightMedium,
       padding: theme.spacing(2, 0, 2, 0),
     },
-    pointerNone: {
-      pointerEvents: 'none',
-    },
   };
 });
 interface ConsultationHoursProps {
@@ -300,7 +306,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
             const item = _item!;
             return (
               <div key={index.toString()} className={classes.tabContent}>
-                <ExpansionPanel className={classes.serviceItem}>
+                <ExpansionPanel className={`${classes.serviceItem} ${classes.pointerNone}`}>
                   <ExpansionPanelSummary
                     expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
                   >
@@ -312,9 +318,11 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                     <div className={classes.columnDays}>
                       <Typography className={classes.heading}>
                         {item.weekDay} &nbsp; | &nbsp;
-                        {item.consultMode === 'PHYSICAL' && 'Physical'}
-                        {item.consultMode === 'BOTH' && 'Physical , Online'}
-                        {item.consultMode === 'ONLINE' && 'Online'}
+                        <span className={classes.cosultMode}>
+                          {item.consultMode === 'PHYSICAL' && 'Physical'}
+                          {item.consultMode === 'BOTH' && 'Physical , Online'}
+                          {item.consultMode === 'ONLINE' && 'Online'}
+                        </span>
                       </Typography>
                     </div>
                     {item.consultType && <div className={classes.columnType}>(FIXED)</div>}

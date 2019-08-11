@@ -6,6 +6,7 @@ import Popover from '@material-ui/core/Popover';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
+
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
@@ -400,13 +401,13 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           title={
             <div>
               <h4>
-                {doctor!.associatedDoctor!.salutation} {doctor!.associatedDoctor!.firstName}
+                {doctor!.associatedDoctor!.salutation} {doctor!.associatedDoctor!.firstName}{' '}
                 {doctor!.associatedDoctor!.lastName}
               </h4>
               {doctor!.isActive === true && (
                 <h6>
                   <span>
-                    {doctor!.associatedDoctor!.specialty!.name} |
+                    {doctor!.associatedDoctor!.specialty!.name.toUpperCase()} |{' '}
                     {doctor!.associatedDoctor!.experience} YRS
                   </span>
                 </h6>
