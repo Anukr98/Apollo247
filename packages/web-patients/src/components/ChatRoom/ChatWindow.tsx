@@ -5,6 +5,7 @@ import { AphInput } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import { ChatVideo } from 'components/ChatRoom/ChatVideo';
 import Scrollbars from 'react-custom-scrollbars';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -112,6 +113,7 @@ const useStyles = makeStyles((theme: Theme) => {
     searchInput: {
       '& input': {
         paddingTop: 10,
+        paddingRight: 25,
         paddingBottom: 14,
         minHeight: 25,
       },
@@ -149,61 +151,82 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
+
 interface MessagesObjectProps {
   id: string;
   message: string;
   username: string;
   text: string;
 }
-interface ConsultRoomProps {
-  // toggleTabs: () => void;
+interface ChatWindowProps {
+  sessionId: string;
+  token: string;
+  appointmentId: string;
+  doctorId: string;
 }
-export const ChatWindow: React.FC = (props) => {
+export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const classes = useStyles();
   const [isCalled, setIsCalled] = useState<boolean>(false);
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
-  const [isVideoCall] = useState<boolean>(false);
+  const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
 
+  const { allCurrentPatients } = useAllCurrentPatients();
+  const currentUserId = (allCurrentPatients && allCurrentPatients[0].id) || '';
+
+  const videoCallMsg = '^^callme`video^^';
+  const audioCallMsg = '^^callme`audio^^';
+  const stopcallMsg = '^^callme`stop^^';
+  const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
+  const publishKey = 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3';
+  const doctorId = props.doctorId;
+  const patientId = currentUserId;
+  const channel = props.appointmentId;
   const config: Pubnub.PubnubConfig = {
-    subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
-    publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
+    subscribeKey: subscribeKey,
+    publishKey: publishKey,
     ssl: true,
   };
   let leftComponent = 0;
   let rightComponent = 0;
   const pubnub = new Pubnub(config);
+
+  const startConsult = '^^#startconsult';
+  const stopConsult = '^^#stopconsult';
+
   useEffect(() => {
     pubnub.subscribe({
-      channels: ['Channel3'],
+      channels: [channel],
       withPresence: true,
     });
 
     getHistory();
+
     pubnub.addListener({
-      status: (statusEvent) => {
-        if (statusEvent.category === Pubnub.CATEGORIES.PNConnectedCategory) {
-          console.log(statusEvent.category);
-        } else if (statusEvent.operation === Pubnub.OPERATIONS.PNAccessManagerAudit) {
-          console.log(statusEvent.operation);
+      status: (statusEvent) => {},
+      message: (message) => {
+        console.log(message);
+        if (message.message.isTyping) {
+          if (message.message.message === startConsult) {
+            console.log(3);
+          } else if (message.message.message === stopConsult) {
+            console.log(4);
+          }
+        } else {
+          getHistory();
         }
       },
-      message: (message) => {
-        getHistory();
-      },
-      presence: (presenceEvent) => {
-        console.log('presenceEvent', presenceEvent);
-      },
     });
+
     return function cleanup() {
-      pubnub.unsubscribe({ channels: ['Channel3'] });
+      pubnub.unsubscribe({ channels: [channel] });
     };
   });
 
   const getHistory = () => {
-    pubnub.history({ channel: 'Channel3', reverse: true, count: 1000 }, (status, res) => {
+    pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
       const newmessage: MessagesObjectProps[] = [];
       res.messages.forEach((element, index) => {
         newmessage[index] = element.entry;
@@ -211,21 +234,52 @@ export const ChatWindow: React.FC = (props) => {
       if (messages.length !== newmessage.length) {
         setMessages(newmessage);
         const lastMessage = newmessage[newmessage.length - 1];
-        if (lastMessage && lastMessage.message === 'callme') {
+        if (
+          lastMessage &&
+          (lastMessage.message === videoCallMsg || lastMessage.message === audioCallMsg)
+        ) {
           setIsCalled(true);
+          setIsVideoCall(lastMessage.message === videoCallMsg ? true : false);
         }
+        setTimeout(() => {
+          const scrollDiv = document.getElementById('scrollDiv');
+          scrollDiv!.scrollIntoView();
+        }, 200);
       }
     });
   };
 
   const send = () => {
     const text = {
-      id: 'Ravi',
+      id: patientId,
       message: messageText,
     };
     pubnub.publish(
       {
-        channel: 'Channel3',
+        channel: channel,
+        message: text,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        setMessageText('');
+
+        setTimeout(() => {
+          const scrollDiv = document.getElementById('scrollDiv');
+          scrollDiv!.scrollIntoView();
+        }, 200);
+      }
+    );
+  };
+  const autoSend = () => {
+    const text = {
+      id: patientId,
+      message: stopcallMsg,
+      isTyping: true,
+    };
+    pubnub.publish(
+      {
+        channel: channel,
         message: text,
         storeInHistory: true,
         sendByPost: true,
@@ -234,10 +288,17 @@ export const ChatWindow: React.FC = (props) => {
         setMessageText('');
       }
     );
+    //setIsVideoCall(true);
+    //setIsCalled(true);
+    actionBtn();
   };
-
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
-    if (rowData.id === 'Ravi') {
+    if (
+      rowData.id === patientId &&
+      rowData.message !== videoCallMsg &&
+      rowData.message !== audioCallMsg &&
+      rowData.message !== stopcallMsg
+    ) {
       leftComponent++;
       rightComponent = 0;
       return (
@@ -249,7 +310,12 @@ export const ChatWindow: React.FC = (props) => {
         </div>
       );
     }
-    if (rowData.id === 'Sai') {
+    if (
+      rowData.id === doctorId &&
+      rowData.message !== videoCallMsg &&
+      rowData.message !== audioCallMsg &&
+      rowData.message !== stopcallMsg
+    ) {
       leftComponent = 0;
       rightComponent++;
       return (
@@ -265,7 +331,7 @@ export const ChatWindow: React.FC = (props) => {
         </div>
       );
     }
-    if (rowData.id !== 'Sai' && rowData.id !== 'Ravi') {
+    if (rowData.id !== patientId && rowData.id !== doctorId) {
       return '';
     }
   };
@@ -281,6 +347,13 @@ export const ChatWindow: React.FC = (props) => {
   const actionBtn = () => {
     setShowVideo(true);
   };
+  const stopAudioVideoCall = () => {
+    setShowVideo(false);
+    setShowVideoChat(false);
+    autoSend();
+    setIsVideoCall(false);
+    setIsCalled(false);
+  };
   return (
     <div className={classes.consultRoom}>
       <div
@@ -290,7 +363,10 @@ export const ChatWindow: React.FC = (props) => {
       >
         {showVideo && (
           <ChatVideo
+            stopAudioVideoCall={() => stopAudioVideoCall()}
             toggelChatVideo={() => toggelChatVideo()}
+            sessionId={props.sessionId}
+            token={props.token}
             showVideoChat={showVideoChat}
             isVideoCall={isVideoCall}
           />
@@ -299,7 +375,10 @@ export const ChatWindow: React.FC = (props) => {
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatContainer}>
               <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 290px' }}>
-                <div className={classes.customScroll}>{messagessHtml}</div>
+                <div className={classes.customScroll}>
+                  {messagessHtml}
+                  <span id="scrollDiv"></span>
+                </div>
               </Scrollbars>
             </div>
           )}
@@ -338,7 +417,7 @@ export const ChatWindow: React.FC = (props) => {
                   setMessageText(event.currentTarget.value);
                 }}
               />
-              <Button className={classes.chatSubmitBtn} onClick={() => send()}>
+              <Button className={classes.chatSubmitBtn}>
                 <img src={require('images/ic_add_circle.svg')} alt="" />
               </Button>
             </div>

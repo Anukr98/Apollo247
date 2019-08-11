@@ -8,6 +8,11 @@ import { PatientAppointmentsInput, APPOINTMENT_TYPE, STATUS, DoctorType } from "
 // GraphQL query operation: GetPatientAppointments
 // ====================================================
 
+export interface GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_specialty {
+  __typename: "DoctorSpecialties";
+  name: string;
+}
+
 export interface GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo {
   __typename: "DoctorDetails";
   id: string;
@@ -19,6 +24,7 @@ export interface GetPatientAppointments_getPatinetAppointments_patinetAppointmen
   photoUrl: string | null;
   qualification: string | null;
   specialization: string | null;
+  specialty: GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_specialty;
 }
 
 export interface GetPatientAppointments_getPatinetAppointments_patinetAppointments {

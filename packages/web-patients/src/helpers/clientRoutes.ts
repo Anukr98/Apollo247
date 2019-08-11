@@ -11,7 +11,7 @@ export const clientRoutes = {
   searchMedicines: () => '/search-medicines',
   cartLanding: () => '/cart',
   cartPoc: () => '/cart-poc',
-  chatRoom: () => '/chat-room',
+  chatRoom: (appointmentId: string, doctorId: string) => `/chat-room/${appointmentId}/${doctorId}`,
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

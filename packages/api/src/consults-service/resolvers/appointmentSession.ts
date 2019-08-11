@@ -89,6 +89,7 @@ const createAppointmentSession: Resolver<
     doctorId = '',
     appointmentDateTime = '';
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
   if (apptDetails) {
     patientId = apptDetails.patientId;
@@ -99,6 +100,7 @@ const createAppointmentSession: Resolver<
   const apptSessionDets = await apptSessionRepo.getAppointmentSession(
     createAppointmentSessionInput.appointmentId
   );
+
   if (apptSessionDets) {
     return {
       sessionId: apptSessionDets.sessionId,

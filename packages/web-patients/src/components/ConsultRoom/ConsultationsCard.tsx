@@ -6,11 +6,12 @@ import {
   GetPatientAppointments,
   GetPatientAppointments_getPatinetAppointments_patinetAppointments as appointmentDetails,
 } from 'graphql/types/GetPatientAppointments';
-import { APPOINTMENT_TYPE, DoctorType } from 'graphql/types/globalTypes';
+import { DoctorType, APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import _isNull from 'lodash/isNull';
 import { Link } from 'react-router-dom';
 import { getTime } from 'date-fns/esm';
 import { format } from 'date-fns';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -181,12 +182,15 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     }
   });
 
+  console.log(filterAppointments);
+
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 214px)'}>
         <div className={classes.consultationSection}>
           <Grid container spacing={2}>
             {filterAppointments.map((appointmentDetails, index) => {
+              const appointmentId = appointmentDetails.id;
               const firstName =
                 appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.firstName
                   ? appointmentDetails.doctorInfo.firstName
@@ -205,9 +209,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   : '';
               const specialization =
                 appointmentDetails.doctorInfo &&
-                appointmentDetails.doctorInfo.specialization &&
-                !_isNull(appointmentDetails.doctorInfo.specialization)
-                  ? appointmentDetails.doctorInfo.specialization
+                appointmentDetails.doctorInfo.specialty &&
+                !_isNull(appointmentDetails.doctorInfo.specialty.name)
+                  ? appointmentDetails.doctorInfo.specialty.name
                   : '';
               const currentTime = new Date().getTime();
               const aptArray = appointmentDetails.appointmentDateTime.split('T');
@@ -216,9 +220,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 aptArray[1].substring(0, 5)
               );
               const difference = Math.round((appointmentTime - currentTime) / 60000);
+              const doctorId =
+                appointmentDetails.doctorInfo && appointmentDetails.doctorId
+                  ? appointmentDetails.doctorId
+                  : '';
               return (
                 <Grid item sm={6} key={index}>
-                  <Link to="">
+                  <Link to={clientRoutes.chatRoom(appointmentId, doctorId)}>
                     <div className={classes.consultCard}>
                       <div className={classes.startDoctor}>
                         <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
@@ -237,7 +245,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         >
                           {difference <= 15
                             ? `Available in ${difference} mins`
-                            : `${format(new Date(appointmentTime), 'h:m a')}`}
+                            : `${format(new Date(appointmentTime), 'hh:mm a')}`}
                         </div>
                         <div className={classes.doctorName}>{`${firstName} ${lastName}`}</div>
                         <div className={classes.doctorType}>

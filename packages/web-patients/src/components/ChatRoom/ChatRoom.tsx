@@ -1,11 +1,20 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ChatWindow } from 'components/ChatRoom/ChatWindow';
 import { ConsultDoctorProfile } from 'components/ChatRoom/ConsultDoctorProfile';
+import { useParams } from 'hooks/routerHooks';
+import { useMutation } from 'react-apollo-hooks';
+import { useAuth } from 'hooks/authHooks';
+
+import { UPDATE_APPOINTMENT_SESSION } from 'graphql/consult';
+import {
+  UpdateAppointmentSession,
+  UpdateAppointmentSessionVariables,
+} from 'graphql/types/UpdateAppointmentSession';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -110,8 +119,43 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+type Params = { appointmentId: string; doctorId: string };
+
 export const ChatRoom: React.FC = (props) => {
   const classes = useStyles();
+  const params = useParams<Params>();
+  const appointmentId = params.appointmentId;
+  const doctorId = params.doctorId;
+  const { isSignedIn } = useAuth();
+
+  const [sessionId, setsessionId] = useState<string>('');
+  const [token, settoken] = useState<string>('');
+
+  const mutationResponse = useMutation<UpdateAppointmentSession, UpdateAppointmentSessionVariables>(
+    UPDATE_APPOINTMENT_SESSION,
+    {
+      variables: {
+        UpdateAppointmentSessionInput: { appointmentId: appointmentId, requestRole: 'PATIENT' },
+      },
+    }
+  );
+
+  useEffect(() => {
+    if (isSignedIn) {
+      mutationResponse().then((data) => {
+        const appointmentToken =
+          data && data.data && data.data.updateAppointmentSession
+            ? data.data.updateAppointmentSession.appointmentToken
+            : '';
+        const sessionId =
+          data && data.data && data.data.updateAppointmentSession.sessionId
+            ? data.data.updateAppointmentSession.sessionId
+            : '';
+        setsessionId(sessionId);
+        settoken(appointmentToken);
+      });
+    }
+  }, [isSignedIn]);
 
   return (
     <div className={classes.root}>
@@ -136,7 +180,12 @@ export const ChatRoom: React.FC = (props) => {
               <ConsultDoctorProfile />
             </div>
             <div className={classes.rightSection}>
-              <ChatWindow />
+              <ChatWindow
+                sessionId={sessionId}
+                token={token}
+                appointmentId={appointmentId}
+                doctorId={doctorId}
+              />
             </div>
           </div>
         </div>

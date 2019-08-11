@@ -262,7 +262,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       : true;
 
   if (mutationSuccess) {
-    return <Redirect to={clientRoutes.consultRoom()} />;
+    return <Redirect to={clientRoutes.consultRoom()} push={true} />;
   }
 
   // console.log(morningSlots, afternoonSlots, eveningSlots, lateNightSlots);

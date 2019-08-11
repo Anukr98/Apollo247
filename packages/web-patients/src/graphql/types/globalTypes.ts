@@ -61,8 +61,10 @@ export enum STATUS {
 
 export enum Salutation {
   DR = "DR",
+  Dr = "Dr",
   MR = "MR",
   MRS = "MRS",
+  dr = "dr",
 }
 
 export enum WeekDay {
@@ -112,6 +114,11 @@ export interface PatientAppointmentsInput {
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;
+}
+
+export interface UpdateAppointmentSessionInput {
+  appointmentId: string;
+  requestRole: string;
 }
 
 export interface UpdatePatientInput {
