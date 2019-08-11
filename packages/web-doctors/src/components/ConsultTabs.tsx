@@ -109,8 +109,12 @@ export const ConsultTabs: React.FC = (props) => {
         .then((_data: any) => {
           console.log('createsession', _data);
           //const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
-          setsessionId(_data.data.createAppointmentSession.sessionId);
-          settoken(_data.data.createAppointmentSession.appointmentToken);
+          //setsessionId(_data.data.createAppointmentSession.sessionId);
+          //settoken(_data.data.createAppointmentSession.appointmentToken);
+          setsessionId('1_MX40NjM5MzU4Mn5-MTU2NTA3MTUwNDk4MX56bVd3ZW96MFNuS2Vua2dDMnZ5VTZNNlJ-UH4');
+          settoken(
+            'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9Y2UxMDhkODEzNTU3MmE4M2ExZTZkNmVlYjVkZDE0ODA3NGZhM2QyZTpzZXNzaW9uX2lkPTFfTVg0ME5qTTVNelU0TW41LU1UVTJOVEEzTVRVd05EazRNWDU2YlZkM1pXOTZNRk51UzJWdWEyZERNblo1VlRaTk5sSi1VSDQmY3JlYXRlX3RpbWU9MTU2NTA3MTYxMCZub25jZT0wLjExNjA5MzQ3Njk5NjI3MzM3JnJvbGU9cHVibGlzaGVyJmV4cGlyZV90aW1lPTE1Njc2NjM2MDcmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
+          );
         })
         .catch((e: any) => {
           console.log('Error occured while adding Doctor', e);

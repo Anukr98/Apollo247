@@ -131,6 +131,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
+  const stopcallMsg = '^^callme`stop^^';
   const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
   const publishKey = 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3';
   const doctorId = 'Ravi';
@@ -177,9 +178,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }
   useEffect(() => {
     //if (props.startConsult !== isVideoCall) {
-    console.log(1111111);
     if (getCookieValue() !== '') {
-      console.log(22222222);
       setIsVideoCall(props.startConsult === 'videocall' ? true : false);
       setMessageText(videoCallMsg);
       autoSend();
@@ -195,6 +194,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       if (messages.length !== newmessage.length) {
         setMessages(newmessage);
       }
+      setTimeout(() => {
+        const scrollDiv = document.getElementById('scrollDiv');
+        scrollDiv!.scrollIntoView();
+      }, 200);
     });
   };
 
@@ -217,9 +220,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const scrollDiv = document.getElementById('scrollDiv');
           scrollDiv!.scrollIntoView();
         }, 200);
-
-        // const scrollDiv = document.getElementById('scrollDiv');
-        // scrollDiv!.scrollTo(0, 100000);
       }
     );
   };
@@ -250,7 +250,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (
       rowData.id === doctorId &&
       rowData.message !== videoCallMsg &&
-      rowData.message !== audioCallMsg
+      rowData.message !== audioCallMsg &&
+      rowData.message !== stopcallMsg
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -266,7 +267,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (
       rowData.id === patientId &&
       rowData.message !== videoCallMsg &&
-      rowData.message !== audioCallMsg
+      rowData.message !== audioCallMsg &&
+      rowData.message !== stopcallMsg
     ) {
       leftComponent = 0;
       rightComponent++;
