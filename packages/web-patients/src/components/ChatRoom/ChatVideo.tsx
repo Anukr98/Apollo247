@@ -125,16 +125,19 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 interface ConsultProps {
   toggelChatVideo: () => void;
+  stopAudioVideoCall: () => void;
   showVideoChat: boolean;
   isVideoCall: boolean;
+  sessionId: string;
+  token: string;
 }
 export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
-  //const [publishVideo, setPublishVideo] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
-  const [subscribeToAudio] = React.useState(props.isVideoCall ? false : true);
+  const [subscribeToAudio, setSubscribeToAudio] = React.useState(props.isVideoCall ? false : true);
+  console.log(mute, subscribeToVideo, subscribeToAudio, props.sessionId, props.token);
   return (
     <div className={classes.root}>
       <div
@@ -143,12 +146,18 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
         }`}
       >
         {isCall && (
-          <OTSession
-            apiKey="46393582"
-            sessionId="1_MX40NjM5MzU4Mn5-MTU2NTA3MTUwNDk4MX56bVd3ZW96MFNuS2Vua2dDMnZ5VTZNNlJ-UH4"
-            token="T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9Y2UxMDhkODEzNTU3MmE4M2ExZTZkNmVlYjVkZDE0ODA3NGZhM2QyZTpzZXNzaW9uX2lkPTFfTVg0ME5qTTVNelU0TW41LU1UVTJOVEEzTVRVd05EazRNWDU2YlZkM1pXOTZNRk51UzJWdWEyZERNblo1VlRaTk5sSi1VSDQmY3JlYXRlX3RpbWU9MTU2NTA3MTYxMCZub25jZT0wLjExNjA5MzQ3Njk5NjI3MzM3JnJvbGU9cHVibGlzaGVyJmV4cGlyZV90aW1lPTE1Njc2NjM2MDcmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0="
-          >
-            {props.showVideoChat || !subscribeToVideo ? (
+          <OTSession apiKey="46393582" sessionId={props.sessionId} token={props.token}>
+            <div className={classes.otPublisher}>
+              <OTPublisher
+                properties={{
+                  publishAudio: mute,
+                  publishVideo: subscribeToVideo,
+                  width: 204,
+                  height: 154,
+                }}
+              />
+            </div>
+            {/* {props.showVideoChat || !subscribeToVideo ? (
               ''
             ) : (
               <div className={classes.otPublisher}>
@@ -156,14 +165,12 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                   properties={{
                     publishAudio: mute,
                     publishVideo: subscribeToVideo,
-                    subscribeToVideo: subscribeToVideo,
-                    subscribeToAudio: subscribeToAudio,
                     width: 204,
                     height: 154,
                   }}
                 />
               </div>
-            )}
+            )} */}
             <div
               className={`${classes.videoContainer} ${
                 props.showVideoChat ? classes.smallVideoContainer : classes.largeVideoContainer
@@ -177,8 +184,6 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
               <OTStreams>
                 <OTSubscriber
                   properties={{
-                    subscribeToVideo: subscribeToVideo,
-                    subscribeToAudio: subscribeToAudio,
                     width: '100%',
                     height: 'calc(100vh - 195px)',
                   }}
@@ -195,7 +200,13 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                     <Button onClick={() => props.toggelChatVideo()}>
                       <img src={require('images/ic_expand_circle.svg')} />
                     </Button>
-                    <Button className={classes.stopCallBtn} onClick={() => setIscall(false)}>
+                    <Button
+                      className={classes.stopCallBtn}
+                      onClick={() => {
+                        setIscall(false);
+                        props.stopAudioVideoCall();
+                      }}
+                    >
                       <img src={require('images/ic_endcall_small.svg')} />
                     </Button>
                   </div>
@@ -238,6 +249,7 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                         <Button
                           onClick={() => {
                             props.toggelChatVideo();
+                            props.stopAudioVideoCall();
                             setIscall(false);
                           }}
                         >
