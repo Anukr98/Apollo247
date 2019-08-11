@@ -173,12 +173,12 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       new Date(appointmentDetails.appointmentDateTime),
       aptArray[1].substring(0, 5)
     );
-    if (
-      appointmentTime > currentTime &&
-      appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
-    ) {
-      return appointmentDetails;
-    }
+    // if (
+    //   appointmentTime > currentTime &&
+    //   appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+    // ) {
+    return appointmentDetails;
+    // }
   });
 
   return (
@@ -205,9 +205,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   : '';
               const specialization =
                 appointmentDetails.doctorInfo &&
-                appointmentDetails.doctorInfo.specialization &&
-                !_isNull(appointmentDetails.doctorInfo.specialization)
-                  ? appointmentDetails.doctorInfo.specialization
+                appointmentDetails.doctorInfo.specialty &&
+                !_isNull(appointmentDetails.doctorInfo.specialty.name)
+                  ? appointmentDetails.doctorInfo.specialty.name
                   : '';
               const currentTime = new Date().getTime();
               const aptArray = appointmentDetails.appointmentDateTime.split('T');

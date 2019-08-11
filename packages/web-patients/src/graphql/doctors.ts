@@ -239,6 +239,9 @@ export const GET_PATIENT_APPOINTMENTS = gql`
           photoUrl
           qualification
           specialization
+          specialty {
+            name
+          }
         }
       }
     }
