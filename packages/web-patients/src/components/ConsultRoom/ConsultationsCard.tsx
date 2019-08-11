@@ -174,12 +174,12 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       new Date(appointmentDetails.appointmentDateTime),
       aptArray[1].substring(0, 5)
     );
-    // if (
-    //   appointmentTime > currentTime &&
-    //   appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
-    // ) {
-    return appointmentDetails;
-    // }
+    if (
+      appointmentTime > currentTime &&
+      appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+    ) {
+      return appointmentDetails;
+    }
   });
 
   console.log(filterAppointments);
