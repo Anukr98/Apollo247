@@ -9,6 +9,8 @@ import {
 } from 'graphql/types/AppointmentHistory';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import _uniqueId from 'lodash/uniqueId';
+import { getTime } from 'date-fns/esm';
+import { format } from 'date-fns';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -129,6 +131,21 @@ interface AppointmentHistoryProps {
   patientId: string;
 }
 
+const getTimestamp = (today: Date, slotTime: string) => {
+  const hhmm = slotTime.split(':');
+  return getTime(
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      parseInt(hhmm[0], 10),
+      parseInt(hhmm[1], 10),
+      0,
+      0
+    )
+  );
+};
+
 export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => {
   const classes = useStyles();
 
@@ -163,12 +180,23 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
             </div>
             <Grid className={classes.gridContainer} container spacing={2}>
               {previousAppointments.map((appointment) => {
-                const appointmentDate = new Date(appointment.appointmentDateTime)
-                  .getUTCDate()
-                  .toString();
-                const appointmentTime = new Date(appointment.appointmentDateTime)
-                  .getUTCDate()
-                  .toString();
+                const aptArray = appointment.appointmentDateTime.split('T');
+                const appointmentDate = format(
+                  getTimestamp(
+                    new Date(appointment.appointmentDateTime),
+                    aptArray[1].substring(0, 5)
+                  ),
+                  'MMMM dd, yyyy'
+                );
+                const appointmentTime = format(
+                  new Date(
+                    getTimestamp(
+                      new Date(appointment.appointmentDateTime),
+                      aptArray[1].substring(0, 5)
+                    )
+                  ),
+                  'hh:mm a'
+                );
                 return (
                   <Grid item sm={3} key={_uniqueId('avagr_')}>
                     <div className={classes.root} key={_uniqueId('aphistory_')}>

@@ -7,52 +7,72 @@
 //==============================================================
 
 export enum APPOINTMENT_TYPE {
-  ONLINE = "ONLINE",
-  PHYSICAL = "PHYSICAL",
+  ONLINE = 'ONLINE',
+  PHYSICAL = 'PHYSICAL',
+}
+
+export enum ConsultMode {
+  BOTH = 'BOTH',
+  ONLINE = 'ONLINE',
+  PHYSICAL = 'PHYSICAL',
+}
+
+export enum ConsultType {
+  FIXED = 'FIXED',
+  PREFERRED = 'PREFERRED',
 }
 
 export enum DoctorType {
-  APOLLO = "APOLLO",
-  PAYROLL = "PAYROLL",
-  STAR_APOLLO = "STAR_APOLLO",
+  APOLLO = 'APOLLO',
+  PAYROLL = 'PAYROLL',
+  STAR_APOLLO = 'STAR_APOLLO',
 }
 
 export enum Gender {
-  FEMALE = "FEMALE",
-  MALE = "MALE",
-  OTHER = "OTHER",
-}
-
-export enum INVITEDSTATUS {
-  ACCEPTED = "ACCEPTED",
-  NONE = "NONE",
-  NOTAPPLICABLE = "NOTAPPLICABLE",
-  REJECTED = "REJECTED",
+  FEMALE = 'FEMALE',
+  MALE = 'MALE',
+  OTHER = 'OTHER',
 }
 
 export enum Relation {
-  BROTHER = "BROTHER",
-  COUSIN = "COUSIN",
-  FATHER = "FATHER",
-  HUSBAND = "HUSBAND",
-  ME = "ME",
-  MOTHER = "MOTHER",
-  OTHER = "OTHER",
-  SISTER = "SISTER",
-  WIFE = "WIFE",
+  BROTHER = 'BROTHER',
+  COUSIN = 'COUSIN',
+  FATHER = 'FATHER',
+  HUSBAND = 'HUSBAND',
+  ME = 'ME',
+  MOTHER = 'MOTHER',
+  OTHER = 'OTHER',
+  SISTER = 'SISTER',
+  WIFE = 'WIFE',
 }
 
 export enum SEARCH_TYPE {
-  DOCTOR = "DOCTOR",
-  SPECIALTY = "SPECIALTY",
+  DOCTOR = 'DOCTOR',
+  SPECIALTY = 'SPECIALTY',
 }
 
 export enum STATUS {
-  CANCELLED = "CANCELLED",
-  COMPLETED = "COMPLETED",
-  CONFIRMED = "CONFIRMED",
-  IN_PROGRESS = "IN_PROGRESS",
-  MISSED = "MISSED",
+  CANCELLED = 'CANCELLED',
+  COMPLETED = 'COMPLETED',
+  CONFIRMED = 'CONFIRMED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  MISSED = 'MISSED',
+}
+
+export enum Salutation {
+  DR = 'DR',
+  MR = 'MR',
+  MRS = 'MRS',
+}
+
+export enum WeekDay {
+  FRIDAY = 'FRIDAY',
+  MONDAY = 'MONDAY',
+  SATURDAY = 'SATURDAY',
+  SUNDAY = 'SUNDAY',
+  THURSDAY = 'THURSDAY',
+  TUESDAY = 'TUESDAY',
+  WEDNESDAY = 'WEDNESDAY',
 }
 
 export interface AppointmentHistoryInput {
@@ -73,9 +93,25 @@ export interface DoctorAvailabilityInput {
   doctorId: string;
 }
 
+export interface FilterDoctorInput {
+  specialty: string;
+  city?: (string | null)[] | null;
+  experience?: (Range | null)[] | null;
+  availability?: (string | null)[] | null;
+  fees?: (Range | null)[] | null;
+  gender?: (Gender | null)[] | null;
+  language?: (string | null)[] | null;
+  location?: string | null;
+}
+
 export interface PatientAppointmentsInput {
   patientId: string;
   appointmentDate: any;
+}
+
+export interface Range {
+  minimum?: number | null;
+  maximum?: number | null;
 }
 
 export interface UpdatePatientInput {

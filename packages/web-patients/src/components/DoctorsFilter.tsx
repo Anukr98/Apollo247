@@ -178,7 +178,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     manageFilter,
   } = props;
 
-  const filterCities = { hyderabad: 'Hyderabad', chennai: 'Chennai' };
+  const filterCities = { Hyderabad: 'Hyderabad', Chennai: 'Chennai' };
   const filterExperiences = { '0_5': '0-5', '6_10': '6-10', '11_15': '11-15', '15_99': '15+' };
   const filterAvailability = {
     now: 'Now',
@@ -256,7 +256,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
           filterOptions.searchKeyword = event.currentTarget.value;
           if (event.target.value.length === 0) {
             emptyFilters(true);
-          } else if (event.target.value.length > 3) {
+          } else if (event.target.value.length > 2) {
             handleFilterOptions(filterOptions);
           }
         }}
@@ -286,7 +286,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                       color="secondary"
                       size="small"
                       className={
-                        cityName.includes(_toLower(filterCityName))
+                        cityName.includes(filterCityName)
                           ? `${classes.button} ${classes.buttonActive}`
                           : `${classes.button}`
                       }
