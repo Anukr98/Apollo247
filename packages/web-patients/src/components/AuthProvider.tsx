@@ -178,7 +178,9 @@ export const AuthProvider: React.FC = (props) => {
       setVerifyOtpError(true);
     });
     if (!otpAuthResult || !otpAuthResult.user) setVerifyOtpError(true);
-    setIsVerifyingOtp(false);
+    setTimeout(() => {
+      setIsVerifyingOtp(false);
+    }, 700);
   };
 
   useEffect(() => {

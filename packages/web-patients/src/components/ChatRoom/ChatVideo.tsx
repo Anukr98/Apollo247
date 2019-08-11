@@ -31,9 +31,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 17,
     },
     videoPoster: {
-      '& img': {
-        maxWidth: '100%',
-      },
+      padding: 0,
     },
     videoButtonContainer: {
       position: 'absolute',
@@ -113,6 +111,16 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    smallPoster: {
+      '& img': {
+        maxHeight: 154,
+      },
+    },
+    largePoster: {
+      '& img': {
+        maxHeight: 'calc(100vh - 195px)',
+      },
+    },
   };
 });
 interface ConsultProps {
@@ -162,8 +170,8 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
               }`}
             >
               {!subscribeToVideo && !props.showVideoChat && (
-                <div className={classes.videoPoster}>
-                  <img src={require('images/patient_01.png')} />
+                <div className={`${classes.videoPoster} ${classes.largePoster}`}>
+                  <img src={require('images/doctor_profile_image.png')} />
                 </div>
               )}
               <OTStreams>
@@ -171,14 +179,16 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                   properties={{
                     subscribeToVideo: subscribeToVideo,
                     subscribeToAudio: subscribeToAudio,
+                    width: '100%',
+                    height: 'calc(100vh - 195px)',
                   }}
                 />
               </OTStreams>
               {props.showVideoChat && (
                 <div>
                   {!subscribeToVideo && (
-                    <div className={classes.videoPoster}>
-                      <img src={require('images/ic_patientchat.png')} />
+                    <div className={`${classes.videoPoster} ${classes.smallPoster}`}>
+                      <img src={require('images/doctor_profile_image.png')} />
                     </div>
                   )}
                   <div className={classes.callActions}>

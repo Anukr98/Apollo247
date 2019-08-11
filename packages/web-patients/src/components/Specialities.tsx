@@ -6,8 +6,8 @@ import _map from 'lodash/map';
 import _filter from 'lodash/filter';
 import _startsWith from 'lodash/startsWith';
 import _toLower from 'lodash/toLower';
-import { GET_SPECIALITIES } from 'graphql/specialities';
-import { GetSpecialties } from 'graphql/types/GetSpecialties';
+import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
+import { GetAllSpecialties } from 'graphql/types/GetAllSpecialties';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
@@ -94,7 +94,7 @@ export interface SpecialitiesProps {
 
 export const Specialities: React.FC<SpecialitiesProps> = (props) => {
   const classes = useStyles();
-  const { loading, error, data } = useQueryWithSkip<GetSpecialties>(GET_SPECIALITIES);
+  const { loading, error, data } = useQueryWithSkip<GetAllSpecialties>(GET_ALL_SPECIALITIES);
   const { keyword, matched, speciality, disableFilter, subHeading } = props;
 
   if (loading) {
@@ -105,27 +105,29 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
     return <div>Error! {error.message}</div>;
   }
 
-  const filterValues = (data: GetSpecialties) => {
-    const filteredValues = _filter(data.getSpecialties, (specialityDetails) =>
+  const filterValues = (data: GetAllSpecialties) => {
+    const filteredValues = _filter(data.getAllSpecialties, (specialityDetails) =>
       _startsWith(_toLower(specialityDetails.name || ''), _toLower(keyword))
     );
     matched(filteredValues.length);
     return filteredValues;
   };
 
-  if (data && data.getSpecialties) {
+  if (data && data.getAllSpecialties) {
     const filterSpecialites =
-      keyword !== '' && Object.keys(data) ? filterValues(data) : data.getSpecialties;
+      keyword !== '' && Object.keys(data) ? filterValues(data) : data.getAllSpecialties;
     return (
       <>
-        <div className={classes.sectionHeader}>
-          <span>{subHeading}</span>
-          <span className={classes.count}>
-            {filterSpecialites.length > 0 && filterSpecialites.length < 10
-              ? `0${filterSpecialites.length}`
-              : filterSpecialites.length}
-          </span>
-        </div>
+        {subHeading !== '' ? (
+          <div className={classes.sectionHeader}>
+            <span>{subHeading}</span>
+            <span className={classes.count}>
+              {filterSpecialites.length > 0 && filterSpecialites.length < 10
+                ? `0${filterSpecialites.length}`
+                : filterSpecialites.length}
+            </span>
+          </div>
+        ) : null}
         <div className={classes.root}>
           <div className={classes.searchList}>
             <Grid container spacing={2}>

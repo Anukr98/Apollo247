@@ -53,18 +53,19 @@ export const UPDATE_PATIENT = gql`
 `;
 
 export const BOOK_APPOINTMENT = gql`
-  mutation bookAppointment($bookAppointment: BookAppointmentInput!){
-  bookAppointment(appointmentInput:$bookAppointment){
-    appointment{
-      id
-      doctorId
-      appointmentDateTime
-      status
-      appointmentType
-      patientId
+  mutation bookAppointment($bookAppointment: BookAppointmentInput!) {
+    bookAppointment(appointmentInput: $bookAppointment) {
+      appointment {
+        id
+        doctorId
+        appointmentDateTime
+        status
+        appointmentType
+        patientId
+      }
     }
   }
-}`;
+`;
 
 export const GET_SPECIALTIES = gql`
   query getSpecialties {
@@ -264,26 +265,164 @@ export const GET_AVAILABLE_SLOTS = gql`
 `;
 
 export const GET_PATIENT_APPOINTMENTS = gql`
-query getPatinetAppointments($patientAppointmentsInput: PatientAppointmentsInput!){
-  getPatinetAppointments(patientAppointmentsInput: $patientAppointmentsInput){
-    patinetAppointments{
-      appointmentType
-      id
-      patientId
-      appointmentDateTime
-      status
-      hospitalId
-      doctorId
-      doctorInfo{
+  query getPatinetAppointments($patientAppointmentsInput: PatientAppointmentsInput!) {
+    getPatinetAppointments(patientAppointmentsInput: $patientAppointmentsInput) {
+      patinetAppointments {
+        appointmentType
         id
-        firstName
-        specialty{
-          name
+        patientId
+        appointmentDateTime
+        status
+        hospitalId
+        doctorId
+        doctorInfo {
+          id
+          salutation
+          firstName
+          lastName
+          experience
+          specialty {
+            name
+          }
+          specialization
+          qualification
+          city
+          photoUrl
+          doctorType
+          doctorHospital {
+            facility {
+              name
+              streetLine1
+              streetLine2
+              streetLine3
+              city
+            }
+          }
         }
-        experience
-        doctorType
       }
     }
   }
-}
+`;
+
+export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
+  query SearchDoctorAndSpecialtyByName($searchText: String!) {
+    SearchDoctorAndSpecialtyByName(searchText: $searchText) {
+      doctors {
+        id
+        salutation
+        firstName
+        lastName
+        experience
+        specialty {
+          name
+        }
+        specialization
+        qualification
+        city
+        photoUrl
+      }
+      specialties {
+        id
+        name
+        image
+      }
+      possibleMatches {
+        doctors {
+          id
+          salutation
+          firstName
+          lastName
+          experience
+          specialty {
+            name
+          }
+          specialization
+          qualification
+          city
+          photoUrl
+        }
+        specialties {
+          id
+          name
+          image
+        }
+      }
+      otherDoctors {
+        id
+        salutation
+        firstName
+        lastName
+        experience
+        specialty {
+          name
+        }
+        specialization
+        qualification
+        city
+        photoUrl
+      }
+    }
+  }
+`;
+
+export const GET_ALL_SPECIALTIES = gql`
+  query getAllSpecialties {
+    getAllSpecialties {
+      id
+      name
+      image
+    }
+  }
+`;
+
+export const GET_DOCTOR_DETAILS_BY_ID = gql`
+  query getDoctorDetailsById($id: String!) {
+    getDoctorDetailsById(id: $id) {
+      id
+      salutation
+      firstName
+      lastName
+      qualification
+      mobileNumber
+      experience
+      specialization
+      languages
+      city
+      awards
+      photoUrl
+      specialty {
+        name
+      }
+      registrationNumber
+      onlineConsultationFees
+      physicalConsultationFees
+      doctorHospital {
+        facility {
+          name
+          city
+          latitude
+          longitude
+          facilityType
+          streetLine1
+          streetLine2
+          streetLine3
+        }
+      }
+      starTeam {
+        associatedDoctor {
+          id
+          salutation
+          firstName
+          lastName
+          experience
+          city
+          photoUrl
+          specialty {
+            name
+          }
+        }
+        isActive
+      }
+    }
+  }
 `;

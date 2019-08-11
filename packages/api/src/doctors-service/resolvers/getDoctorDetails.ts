@@ -5,7 +5,6 @@ import { Doctor } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import { isNull } from 'util';
 import { getConnection } from 'typeorm';
 
 export const getDoctorDetailsTypeDefs = gql`
@@ -32,6 +31,8 @@ export const getDoctorDetailsTypeDefs = gql`
     MR
     MRS
     DR
+    Dr
+    dr
   }
 
   enum WeekDay {
@@ -173,10 +174,8 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
   try {
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
-
     if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-
-    if (doctordata != null && isNull(doctordata.firebaseToken)) {
+    if (doctordata != null && doctordata.firebaseToken == '') {
       await doctorRepository.updateFirebaseId(doctordata.id, firebaseUid);
     }
   } catch (getProfileError) {

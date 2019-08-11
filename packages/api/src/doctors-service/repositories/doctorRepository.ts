@@ -4,6 +4,7 @@ import {
   Range,
   FilterDoctorInput,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
+import { format } from 'date-fns';
 
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
@@ -48,6 +49,9 @@ export class DoctorRepository extends Repository<Doctor> {
         'packages',
         'doctorHospital.facility',
         'starTeam.associatedDoctor',
+        'starTeam.associatedDoctor.specialty',
+        'starTeam.associatedDoctor.doctorHospital',
+        'starTeam.associatedDoctor.doctorHospital.facility',
       ],
     });
   }
@@ -83,10 +87,13 @@ export class DoctorRepository extends Repository<Doctor> {
   }
 
   async filterDoctors(filterInput: FilterDoctorInput) {
-    const { specialty, city, experience, gender, fees, language } = filterInput;
+    const { specialty, city, experience, gender, fees, language, availability } = filterInput;
 
     const queryBuilder = this.createQueryBuilder('doctor')
       .leftJoinAndSelect('doctor.specialty', 'specialty')
+      .leftJoinAndSelect('doctor.consultHours', 'consultHours')
+      .leftJoinAndSelect('doctor.doctorHospital', 'doctorHospital')
+      .leftJoinAndSelect('doctorHospital.facility', 'doctorHospital.facility')
       .where('doctor.specialty = :specialty', { specialty });
 
     if (city && city.length > 0) {
@@ -146,6 +153,23 @@ export class DoctorRepository extends Repository<Doctor> {
       );
     }
 
-    return await queryBuilder.printSql().getMany();
+    let doctorsResult = await queryBuilder.getMany();
+
+    //filtering doctors by date
+    if (availability && availability.length > 0) {
+      const selectedDays: string[] = [];
+      availability.forEach((date: string) => {
+        const weekDay = format(new Date(date), 'EEEE').toUpperCase();
+        selectedDays.push(weekDay);
+      });
+      doctorsResult = doctorsResult.filter((doctor) => {
+        return (
+          doctor.consultHours.filter((daySchedule) => {
+            return selectedDays.includes(daySchedule.weekDay);
+          }).length > 0
+        );
+      });
+    }
+    return doctorsResult;
   }
 }

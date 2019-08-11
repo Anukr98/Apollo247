@@ -40,7 +40,7 @@ export const getAppointmentHistoryTypeDefs = gql`
 
   extend type Query {
     getAppointmentHistory(appointmentHistoryInput: AppointmentHistoryInput): AppointmentResult!
-    getDoctorAppointments(doctorId: String, startDate: Date, endDate: Date): DoctorAppointmentResult
+    getDoctorAppointments(startDate: Date, endDate: Date): DoctorAppointmentResult
     getAppointmentData(appointmentId: String): DoctorAppointmentResult
   }
 `;
@@ -100,15 +100,15 @@ const getDoctorAppointments: Resolver<
       args.endDate
     );
 
+    if (Object.keys(appointmentsHistory).length == 0)
+      return { appointmentsHistory, newPatientsList };
     const uniquePatientIds = appointmentsHistory
       .map((item) => item.patientId)
       .filter((value, index, self) => self.indexOf(value) === index);
-
     const patientConsult = await appointmentRepo.getDoctorPatientVisitCount(
       doctordata.id,
       uniquePatientIds
     );
-
     newPatientsList = patientConsult
       .filter((item) => item.count == 1)
       .map((item) => item.appointment_patientId);

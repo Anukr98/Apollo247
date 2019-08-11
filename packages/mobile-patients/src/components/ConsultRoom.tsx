@@ -145,7 +145,7 @@ const arrayTest: ArrayTest[] = [
   },
 ];
 
-export interface ConsultRoomProps extends NavigationScreenProps { }
+export interface ConsultRoomProps extends NavigationScreenProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const startDoctor = string.home.startDoctor;
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
@@ -220,7 +220,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 style={[
                   styles.textStyle,
                   profile.firstName &&
-                    userName === profile.firstName.split(' ')[0].toLocaleLowerCase()
+                  userName === profile.firstName.split(' ')[0].toLocaleLowerCase()
                     ? { color: theme.colors.APP_GREEN }
                     : null,
                 ]}
@@ -230,8 +230,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               >
                 {profile.firstName
                   ? profile.firstName
-                    .split(' ')[0]
-                    .replace(/\w+/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
+                      .split(' ')[0]
+                      .replace(/\w+/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
                   : ''}
               </Text>
             </View>
@@ -416,13 +416,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <Button
               title={string.home.consult_doctor}
               style={styles.buttonStyles}
-              onPress={() => { }}
+              onPress={() => {}}
             />
           </View>
           <View style={{ width: '100%', height: 456 }}>
             <View style={styles.viewName}>
               <View style={{ alignItems: 'flex-end', marginTop: 20 }}>
-                <ApolloLogo style={{ right: 20 }} />
+                <TouchableOpacity onPress={() => props.navigation.replace(AppRoutes.TabBar)}>
+                  <ApolloLogo style={{ right: 20 }} />
+                </TouchableOpacity>
               </View>
               <TouchableOpacity
                 onPress={() => setShowMenu(true)}
@@ -460,6 +462,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   onPress={() => {
                     if (i === 0) {
                       props.navigation.navigate(AppRoutes.DoctorSearch);
+                    } else if (i == 1) {
+                      props.navigation.navigate(AppRoutes.SearchMedicineScene);
                     }
                   }}
                 >

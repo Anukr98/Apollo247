@@ -30,6 +30,7 @@ export interface GetDoctorDetails_getDoctorDetails_bankAccount {
   IFSCcode: string;
   accountType: AccountType;
   bankName: string;
+  accountHolderName: string;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_specialty {
@@ -51,6 +52,21 @@ export interface GetDoctorDetails_getDoctorDetails_doctorHospital {
   facility: GetDoctorDetails_getDoctorDetails_doctorHospital_facility;
 }
 
+export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_doctorHospital_facility {
+  __typename: "Facility";
+  streetLine1: string | null;
+}
+
+export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_doctorHospital_facility;
+}
+
+export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_specialty {
+  __typename: "DoctorSpecialties";
+  name: string;
+}
+
 export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor {
   __typename: "Profile";
   country: string | null;
@@ -70,6 +86,8 @@ export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor {
   streetLine2: string | null;
   streetLine3: string | null;
   zip: string | null;
+  doctorHospital: GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_doctorHospital[];
+  specialty: GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_specialty;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_starTeam {

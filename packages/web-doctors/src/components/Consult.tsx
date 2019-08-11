@@ -106,6 +106,8 @@ interface ConsultProps {
   stopAudioVideoCall: () => void;
   showVideoChat: boolean;
   isVideoCall: boolean;
+  sessionId: string;
+  token: string;
 }
 export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
@@ -114,16 +116,30 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   //const [publishVideo, setPublishVideo] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const [subscribeToAudio, setSubscribeToAudio] = React.useState(props.isVideoCall ? false : true);
+  console.log(
+    mute,
+    subscribeToVideo,
+    subscribeToVideo,
+    subscribeToAudio,
+    props.sessionId,
+    props.token
+  );
   return (
     <div className={classes.consult}>
       <div>
         <div className={props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''}>
           {isCall && (
-            <OTSession
-              apiKey="46393582"
-              sessionId="1_MX40NjM5MzU4Mn5-MTU2NTA3MTUwNDk4MX56bVd3ZW96MFNuS2Vua2dDMnZ5VTZNNlJ-UH4"
-              token="T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9Y2UxMDhkODEzNTU3MmE4M2ExZTZkNmVlYjVkZDE0ODA3NGZhM2QyZTpzZXNzaW9uX2lkPTFfTVg0ME5qTTVNelU0TW41LU1UVTJOVEEzTVRVd05EazRNWDU2YlZkM1pXOTZNRk51UzJWdWEyZERNblo1VlRaTk5sSi1VSDQmY3JlYXRlX3RpbWU9MTU2NTA3MTYxMCZub25jZT0wLjExNjA5MzQ3Njk5NjI3MzM3JnJvbGU9cHVibGlzaGVyJmV4cGlyZV90aW1lPTE1Njc2NjM2MDcmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0="
-            >
+            <OTSession apiKey="46393582" sessionId={props.sessionId} token={props.token}>
+              {/* // <OTSession
+            //   apiKey="46393582"
+            //   sessionId="1_MX40NjM5MzU4Mn5-MTU2NTA3MTUwNDk4MX56bVd3ZW96MFNuS2Vua2dDMnZ5VTZNNlJ-UH4"
+            //   token="T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9Y2UxMDhkODEzNTU3MmE4M2ExZTZkNmVlYjVkZDE0ODA3NGZhM2QyZTpzZXNzaW9uX2lkPTFfTVg0ME5qTTVNelU0TW41LU1UVTJOVEEzTVRVd05EazRNWDU2YlZkM1pXOTZNRk51UzJWdWEyZERNblo1VlRaTk5sSi1VSDQmY3JlYXRlX3RpbWU9MTU2NTA3MTYxMCZub25jZT0wLjExNjA5MzQ3Njk5NjI3MzM3JnJvbGU9cHVibGlzaGVyJmV4cGlyZV90aW1lPTE1Njc2NjM2MDcmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0="
+            // > */}
+              {/* <OTSession
+              apiKey="46401302"
+              sessionId="2_MX40NjQwMTMwMn5-MTU2NTI2ODM4ODIyMn5VN0txdnNWTmJvWkd4NkVIaFJORktRTEl-UH4"
+              token="T1==cGFydG5lcl9pZD00NjQwMTMwMiZzaWc9ZmE5MWQzMTQzOWUyOTdjMDI2MTg1YjMxNWIwZDFjYzZmYjI3NDJiOTpzZXNzaW9uX2lkPTJfTVg0ME5qUXdNVE13TW41LU1UVTJOVEkyT0RNNE9ESXlNbjVWTjB0eGRuTldUbUp2V2tkNE5rVklhRkpPUmt0UlRFbC1VSDQmY3JlYXRlX3RpbWU9MTU2NTI2ODQ0OSZub25jZT0wLjA4NTc4MDM0Mzc2ODE3MTAxJnJvbGU9c3Vic2NyaWJlciZleHBpcmVfdGltZT0xNTY3ODYwNDQ5JmluaXRpYWxfbGF5b3V0X2NsYXNzX2xpc3Q9"
+            > */}
               <OTPublisher
                 className={
                   props.showVideoChat || !subscribeToVideo ? classes.hidePublisherVideo : ''
@@ -131,8 +147,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 properties={{
                   publishAudio: mute,
                   publishVideo: subscribeToVideo,
-                  subscribeToVideo: subscribeToVideo,
-                  subscribeToAudio: subscribeToAudio,
+                  // subscribeToVideo: subscribeToVideo,
+                  // subscribeToAudio: subscribeToAudio,
                 }}
               />
 
@@ -151,10 +167,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 > */}
                 <OTStreams>
                   <OTSubscriber
-                    properties={{
-                      subscribeToVideo: subscribeToVideo,
-                      subscribeToAudio: subscribeToAudio,
-                    }}
+                  // properties={{
+                  //   subscribeToVideo: subscribeToVideo,
+                  //   subscribeToAudio: subscribeToAudio,
+                  // }}
                   />
                 </OTStreams>
                 {/* </div> */}

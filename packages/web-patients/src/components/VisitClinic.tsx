@@ -6,8 +6,10 @@ import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
 import Scrollbars from 'react-custom-scrollbars';
 import _uniqueId from 'lodash/uniqueId';
-
-import { GetDoctorProfileById } from 'graphql/types/GetDoctorProfileById';
+import {
+  GetDoctorDetailsById as DoctorDetails,
+  GetDoctorDetailsById_getDoctorDetailsById_doctorHospital as Facility,
+} from 'graphql/types/GetDoctorDetailsById';
 import {
   GetDoctorAvailableSlots,
   GetDoctorAvailableSlotsVariables,
@@ -27,6 +29,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Redirect } from 'react-router';
+import _forEach from 'lodash/forEach';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -171,7 +174,7 @@ const getYyMmDd = (ddmmyyyy: string) => {
 };
 
 interface VisitClinicProps {
-  doctorDetails: GetDoctorProfileById;
+  doctorDetails: DoctorDetails;
 }
 
 export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
@@ -192,16 +195,16 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
 
   const doctorName =
     doctorDetails &&
-    doctorDetails.getDoctorProfileById &&
-    doctorDetails.getDoctorProfileById.profile
-      ? doctorDetails.getDoctorProfileById.profile.firstName
+    doctorDetails.getDoctorDetailsById &&
+    doctorDetails.getDoctorDetailsById.firstName
+      ? doctorDetails.getDoctorDetailsById.firstName
       : '';
 
   const physicalConsultationFees =
     doctorDetails &&
-    doctorDetails.getDoctorProfileById &&
-    doctorDetails.getDoctorProfileById.profile
-      ? doctorDetails.getDoctorProfileById.profile.physicalConsultationFees
+    doctorDetails.getDoctorDetailsById &&
+    doctorDetails.getDoctorDetailsById.physicalConsultationFees
+      ? doctorDetails.getDoctorDetailsById.physicalConsultationFees
       : '';
 
   const morningSlots: number[] = [],
@@ -216,12 +219,9 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const afternoonTime = getTimestamp(new Date(apiDateFormat), '17:00');
   const eveningTime = getTimestamp(new Date(apiDateFormat), '21:00');
 
-  // const doctorId = 'c91c5155-ce3a-488b-8865-654588fef776';
   const doctorId =
-    doctorDetails &&
-    doctorDetails.getDoctorProfileById &&
-    doctorDetails.getDoctorProfileById.profile
-      ? doctorDetails.getDoctorProfileById.profile.id
+    doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.id
+      ? doctorDetails.getDoctorDetailsById.id
       : '';
 
   const { data, loading, error } = useQueryWithSkip<
@@ -269,18 +269,31 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     return <Redirect to={clientRoutes.welcome()} />;
   }
 
-  const clinics =
-    doctorDetails &&
-    doctorDetails.getDoctorProfileById &&
-    doctorDetails.getDoctorProfileById.clinics &&
-    doctorDetails.getDoctorProfileById.clinics.length > 0
-      ? doctorDetails.getDoctorProfileById.clinics
-      : [];
+  // const clinics =
+  //   doctorDetails &&
+  //   doctorDetails.getDoctorDetailsById &&
+  //   doctorDetails.getDoctorProfileById.clinics &&
+  //   doctorDetails.getDoctorProfileById.clinics.length > 0
+  //     ? doctorDetails.getDoctorProfileById.clinics
+  //     : [];
 
-  const defaultClinicId = clinics.length > 0 ? clinics[0].id : '';
+  const clinics: Facility[] = [];
+  if (doctorDetails && doctorDetails.getDoctorDetailsById) {
+    _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
+      if (hospitalDetails.facility.facilityType === 'CLINIC') {
+        clinics.push(hospitalDetails);
+      }
+    });
+  }
+
+  const defaultClinicId =
+    clinics.length > 0 && clinics[0] && clinics[0].facility ? clinics[0].facility.city : '';
+
   const defaultClinicAddress =
-    clinics.length > 0
-      ? `${clinics[0].addressLine1},${clinics[0].addressLine2},${clinics[0].addressLine3}`
+    clinics.length > 0 && clinics[0] && clinics[0].facility
+      ? `${clinics[0].facility.streetLine1 ? clinics[0].facility.streetLine1 : ''} ${
+          clinics[0].facility.streetLine2 ? `${clinics[0].facility.streetLine2}` : ''
+        } ${clinics[0].facility.streetLine3 ? `${clinics[0].facility.streetLine3}` : ''}`
       : '';
 
   return (
@@ -310,16 +323,16 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                 },
               }}
             >
-              {clinics.map((clinicDetails) => {
-                return clinicDetails.isClinic ? (
+              {clinics.map((clinicDetails: Facility) => {
+                return (
                   <MenuItem
                     classes={{ selected: classes.menuSelected }}
                     key={_uniqueId('clinic_')}
-                    value={clinicDetails.id}
+                    value={(clinicDetails.facility.city && clinicDetails.facility.city) || ''}
                   >
-                    {clinicDetails.name}
+                    {clinicDetails.facility.name}
                   </MenuItem>
-                ) : null;
+                );
               })}
             </AphSelect>
             <div className={classes.selectedAddress}>
@@ -359,7 +372,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             bookAppointment: {
               patientId: currentPatient ? currentPatient.id : '',
               doctorId: doctorId,
-              appointmentDateTime: `${apiDateFormat}T${timeSelected}:00.000Z`,
+              appointmentDateTime: `${apiDateFormat}T${timeSelected.padStart(5, '0')}:00.000Z`,
               appointmentType: APPOINTMENT_TYPE.PHYSICAL,
               hospitalId: '',
             },

@@ -6,23 +6,22 @@ import Popover from '@material-ui/core/Popover';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
-import { GetDoctorProfile } from 'graphql/types/GetDoctorProfile';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
-  REMOVE_STAR_DOCTOR,
-  GET_DOCTOR_PROFILE,
-  ADD_DOCTOR_TO_STAR_PROGRAM,
+  REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
   GET_DOCTOR_DETAILS,
+  MAKE_TEAM_DOCTOR_ACTIVE,
 } from 'graphql/profiles';
 import { MoreVert } from '@material-ui/icons';
 import {
-  RemoveDoctorFromStarDoctorProgramVariables,
-  RemoveDoctorFromStarDoctorProgram,
-} from 'graphql/types/RemoveDoctorFromStarDoctorProgram';
+  RemoveTeamDoctorFromStarTeam,
+  RemoveTeamDoctorFromStarTeamVariables,
+} from 'graphql/types/RemoveTeamDoctorFromStarTeam';
+
 import {
-  AddDoctorToStarDoctorProgram,
-  AddDoctorToStarDoctorProgramVariables,
-} from 'graphql/types/AddDoctorToStarDoctorProgram';
+  MakeTeamDoctorActive,
+  MakeTeamDoctorActiveVariables,
+} from 'graphql/types/MakeTeamDoctorActive';
 import { Mutation } from 'react-apollo';
 import { StarDoctorSearch } from 'components/StarDoctorSearch';
 import {
@@ -127,7 +126,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.primary.contrastText,
       padding: 0,
       position: 'relative',
-      minHeight: 120,
+      minHeight: 154,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
       marginBottom: 15,
@@ -151,7 +150,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.primary.contrastText,
       padding: 16,
       position: 'relative',
-      minHeight: 120,
+      minHeight: 154,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
       marginBottom: 30,
@@ -263,6 +262,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       fontWeight: theme.typography.fontWeightMedium,
       color: '#658f9b',
+      maxHeight: 48,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      display: 'inline-block',
     },
     profileAvatar: {
       width: 80,
@@ -297,6 +300,13 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
   const client = useApolloClient();
   const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
   const [currentDoctor, setCurrentDoctor] = React.useState('');
+  const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
+  const getDoctorDetailsData = data && data.getDoctorDetails ? data.getDoctorDetails : null;
+
+  if (loading) return <CircularProgress />;
+  if (error || !getDoctorDetailsData) return <div>error :(</div>;
+
+  const doctorProfile = getDoctorDetailsData;
   function handleClick(event: React.MouseEvent<HTMLButtonElement>, id: string) {
     setAnchorEl(event.currentTarget);
     setCurrentDoctor(id);
@@ -318,8 +328,8 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
             </Avatar>
           }
           action={
-            <Mutation<RemoveDoctorFromStarDoctorProgram, RemoveDoctorFromStarDoctorProgramVariables>
-              mutation={REMOVE_STAR_DOCTOR}
+            <Mutation<RemoveTeamDoctorFromStarTeam, RemoveTeamDoctorFromStarTeamVariables>
+              mutation={REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM}
             >
               {(mutate, { loading }) => (
                 <>
@@ -349,38 +359,38 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                   >
                     <Typography
                       className={classes.starDoctordelete}
-                      onClick={() => {
+                      onClick={(e) => {
                         mutate({
                           variables: {
-                            starDoctorId: '1234',
-                            doctorId: '1234',
+                            associatedDoctor: doctor!.associatedDoctor!.id,
+                            starDoctor: doctorProfile.id,
                           },
                         }).then(() => {
-                          const existingData = client.readQuery<GetDoctorProfile>({
-                            query: GET_DOCTOR_PROFILE,
+                          const existingData = client.readQuery<GetDoctorDetails>({
+                            query: GET_DOCTOR_DETAILS,
                           });
                           const existingStarDoctorTeam =
                             (existingData &&
-                              existingData.getDoctorProfile &&
-                              existingData.getDoctorProfile &&
-                              existingData.getDoctorProfile.starDoctorTeam) ||
+                              existingData.getDoctorDetails &&
+                              existingData.getDoctorDetails.starTeam) ||
                             [];
                           const newStarDoctorTeam = existingStarDoctorTeam.filter(
                             (existingDoc) =>
-                              existingDoc.firstName !== doctor!.associatedDoctor!.firstName
+                              existingDoc!.associatedDoctor!.firstName !==
+                              doctor!.associatedDoctor!.firstName
                           );
-                          const dataAfterMutation: GetDoctorProfile = {
+                          const dataAfterMutation: GetDoctorDetails = {
                             ...existingData,
-                            getDoctorProfile: {
-                              ...existingData!.getDoctorProfile!,
-                              starDoctorTeam: newStarDoctorTeam,
+                            getDoctorDetails: {
+                              ...existingData!.getDoctorDetails!,
+                              starTeam: newStarDoctorTeam,
                             },
                           };
-                          client.writeQuery({ query: GET_DOCTOR_PROFILE, data: dataAfterMutation });
+                          client.writeQuery({ query: GET_DOCTOR_DETAILS, data: dataAfterMutation });
                         });
                       }}
                     >
-                      Remove Doctor
+                      Remove
                     </Typography>
                   </Popover>
                 </>
@@ -390,11 +400,15 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           title={
             <div>
               <h4>
-                Dr. {doctor!.associatedDoctor!.firstName} {doctor!.associatedDoctor!.lastName}
+                {doctor!.associatedDoctor!.salutation} {doctor!.associatedDoctor!.firstName}{' '}
+                {doctor!.associatedDoctor!.lastName}
               </h4>
               {doctor!.isActive === true && (
                 <h6>
-                  <span>GENERAL PHYSICIAN | {doctor!.associatedDoctor!.experience} YRS</span>
+                  <span>
+                    {doctor!.associatedDoctor!.specialty!.name.toUpperCase()} |{' '}
+                    {doctor!.associatedDoctor!.experience} YRS
+                  </span>
                 </h6>
               )}
             </div>
@@ -403,7 +417,8 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
             <div>
               {doctor!.isActive === true && (
                 <span className={classes.qualification}>
-                  MBBS, Internal Medicine Apollo Hospitals, Jubilee Hills
+                  {doctor!.associatedDoctor!.qualification},
+                  {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1}
                 </span>
               )}
             </div>
@@ -427,8 +442,8 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
 
   const classes = useStyles();
   return (
-    <Mutation<AddDoctorToStarDoctorProgram, AddDoctorToStarDoctorProgramVariables>
-      mutation={ADD_DOCTOR_TO_STAR_PROGRAM}
+    <Mutation<MakeTeamDoctorActive, MakeTeamDoctorActiveVariables>
+      mutation={MAKE_TEAM_DOCTOR_ACTIVE}
     >
       {(mutate, { loading }) => (
         <Grid container alignItems="flex-start" spacing={0}>
@@ -453,28 +468,33 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
                       setShowAddDoc(false);
                       mutate({
                         variables: {
-                          starDoctorId: starDoctor.id,
-                          doctorId: props.currentDocId,
+                          associatedDoctor: starDoctor!.associatedDoctor!.id,
+                          starDoctor: props.currentDocId,
                         },
                       }).then(() => {
-                        const existingData = client.readQuery<GetDoctorProfile>({
-                          query: GET_DOCTOR_PROFILE,
+                        const existingData = client.readQuery<GetDoctorDetails>({
+                          query: GET_DOCTOR_DETAILS,
                         });
                         const existingStarDoctorTeam =
                           (existingData &&
-                            existingData.getDoctorProfile &&
-                            existingData.getDoctorProfile &&
-                            existingData.getDoctorProfile.starDoctorTeam) ||
+                            existingData.getDoctorDetails &&
+                            existingData.getDoctorDetails.starTeam) ||
                           [];
-                        const newStarDoctorTeam = existingStarDoctorTeam.concat(starDoctor);
-                        const dataAfterMutation: GetDoctorProfile = {
+                        const newStarDoctorTeam = existingStarDoctorTeam.map((starDoc) => {
+                          if (starDoc!.associatedDoctor!.id === starDoctor!.associatedDoctor!.id) {
+                            starDoc!.isActive = true;
+                          }
+
+                          return starDoc;
+                        });
+                        const dataAfterMutation: GetDoctorDetails = {
                           ...existingData,
-                          getDoctorProfile: {
-                            ...existingData!.getDoctorProfile!,
-                            starDoctorTeam: newStarDoctorTeam,
+                          getDoctorDetails: {
+                            ...existingData!.getDoctorDetails!,
+                            starTeam: newStarDoctorTeam,
                           },
                         };
-                        client.writeQuery({ query: GET_DOCTOR_PROFILE, data: dataAfterMutation });
+                        client.writeQuery({ query: GET_DOCTOR_DETAILS, data: dataAfterMutation });
                       });
                     }}
                   />
@@ -532,36 +552,46 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           </Grid>
           <Grid item lg={8} sm={6} xs={12} className={classes.tabLeftcontent}>
             <Grid container alignItems="flex-start" spacing={0}>
-              <Grid item lg={6} sm={12} xs={12}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">Education</Typography>
-                  <Typography variant="h3">{doctor.qualification}</Typography>
-                </Paper>
-              </Grid>
-              <Grid item lg={6} sm={12} xs={12}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">Awards</Typography>
-                  <Typography variant="h3">{doctor.awards}</Typography>
-                </Paper>
-              </Grid>
-              <Grid item lg={6} sm={12} xs={12}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">Speciality</Typography>
-                  <Typography variant="h3">{doctor.specialty.name}</Typography>
-                </Paper>
-              </Grid>
-              <Grid item lg={6} sm={12} xs={12}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">Speaks</Typography>
-                  <Typography variant="h3">{doctor.languages}</Typography>
-                </Paper>
-              </Grid>
-              <Grid item lg={6} sm={12} xs={12}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">Services</Typography>
-                  <Typography variant="h3">{doctor.specialization}</Typography>
-                </Paper>
-              </Grid>
+              {doctor.qualification && doctor.qualification!.length > 0 && (
+                <Grid item lg={6} sm={12} xs={12}>
+                  <Paper className={classes.serviceItem}>
+                    <Typography variant="h5">Education</Typography>
+                    <Typography variant="h3">{doctor.qualification}</Typography>
+                  </Paper>
+                </Grid>
+              )}
+              {doctor.awards && doctor.awards!.length > 0 && (
+                <Grid item lg={6} sm={12} xs={12}>
+                  <Paper className={classes.serviceItem}>
+                    <Typography variant="h5">Awards</Typography>
+                    <Typography variant="h3">{doctor.awards}</Typography>
+                  </Paper>
+                </Grid>
+              )}
+              {doctor.specialty.name && doctor.specialty.name!.length > 0 && (
+                <Grid item lg={6} sm={12} xs={12}>
+                  <Paper className={classes.serviceItem}>
+                    <Typography variant="h5">Speciality</Typography>
+                    <Typography variant="h3">{doctor.specialty.name}</Typography>
+                  </Paper>
+                </Grid>
+              )}
+              {doctor.languages && doctor.languages!.length > 0 && (
+                <Grid item lg={6} sm={12} xs={12}>
+                  <Paper className={classes.serviceItem}>
+                    <Typography variant="h5">Speaks</Typography>
+                    <Typography variant="h3">{doctor.languages}</Typography>
+                  </Paper>
+                </Grid>
+              )}
+              {doctor.specialization && doctor!.specialization!.length > 0 && (
+                <Grid item lg={6} sm={12} xs={12}>
+                  <Paper className={classes.serviceItem}>
+                    <Typography variant="h5">Services</Typography>
+                    <Typography variant="h3">{doctor.specialization}</Typography>
+                  </Paper>
+                </Grid>
+              )}
               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">In-person Consult Location</Typography>
@@ -574,12 +604,14 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   ))}
                 </Paper>
               </Grid>
-              <Grid item lg={6} sm={12} xs={12}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">MCI Number</Typography>
-                  <Typography variant="h3">{doctor.registrationNumber}</Typography>
-                </Paper>
-              </Grid>
+              {doctor.registrationNumber && doctor.registrationNumber!.length > 0 && (
+                <Grid item lg={6} sm={12} xs={12}>
+                  <Paper className={classes.serviceItem}>
+                    <Typography variant="h5">MCI Number</Typography>
+                    <Typography variant="h3">{doctor.registrationNumber}</Typography>
+                  </Paper>
+                </Grid>
+              )}
             </Grid>
           </Grid>
         </Grid>
@@ -603,8 +635,8 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
   const clinics = getDoctorDetailsData.doctorHospital || [];
   const starDoctors =
     getDoctorDetailsData!.starTeam!.filter((existingDoc) => existingDoc!.isActive === true) || [];
-  const numStarDoctors = starDoctors.length;
 
+  const numStarDoctors = starDoctors.length;
   return (
     <div className={classes.ProfileContainer}>
       <DoctorDetails doctor={doctorProfile} clinics={clinics} />

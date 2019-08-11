@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import { AphInput } from '@aph/web-ui-components';
 import { Consult } from 'components/Consult';
 import Pubnub from 'pubnub';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -18,40 +19,33 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.primary.main,
       textDecoration: 'underline',
     },
-    headerSticky: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      top: 0,
-    },
     chatContainer: {
       paddingTop: 20,
       minHeight: 'calc(100vh - 330px)',
-      maxHeight: 'calc(100vh - 330px)',
-      overflowY: 'auto',
-      overflowX: 'hidden',
     },
     petient: {
       color: '#0087ba',
       textAlign: 'left',
       backgroundColor: '#fff',
-      padding: 12,
+      padding: '12px 16px',
       fontWeight: theme.typography.fontWeightMedium,
       display: 'inline-block',
-      borderRadius: 5,
+      borderRadius: 10,
       boxShadow: '0 2px 4px 0 #00000026',
-      minWidth: 120,
+      fontSize: 15,
     },
     doctor: {
       backgroundColor: '#f0f4f5',
-      padding: 12,
+      padding: '12px 16px',
       color: '#02475b',
       fontWeight: theme.typography.fontWeightMedium,
       display: 'inline-block',
-      borderRadius: 5,
+      borderRadius: 10,
       boxShadow: '0 2px 4px 0 #00000026',
-      minWidth: 120,
       marginRight: 30,
+      textAlign: 'left',
+      fontSize: 15,
+      maxWidth: '40%',
     },
     boldTxt: {
       fontWeight: 700,
@@ -65,7 +59,9 @@ const useStyles = makeStyles((theme: Theme) => {
     inputWidth: {
       width: '60 %',
       align: 'left',
+      paddingRight: 26,
     },
+
     showIncomingBox: {
       color: '#f00',
     },
@@ -87,7 +83,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'block',
       width: '100%',
       textAlign: 'right',
-      margin: '5px 5px 10px 5px',
+      margin: '5px 0 10px 0',
     },
     patientChat: {
       display: 'block',
@@ -102,42 +98,6 @@ const useStyles = makeStyles((theme: Theme) => {
         width: 40,
         borderRadius: '50%',
       },
-    },
-    incomingContainer: {
-      textAlign: 'right',
-      paddingRight: 20,
-      position: 'absolute',
-      right: 0,
-      top: 10,
-    },
-    incomingBtn: {
-      position: 'relative',
-      width: 170,
-      height: 168,
-      display: 'inline-block',
-      borderRadius: 10,
-      boxShadow: '0 5px 20px 0 rgba(0,0,0,0.6)',
-      overflow: 'hidden',
-      '& img': {
-        maxWidth: '100%',
-      },
-      '& div': {
-        position: 'absolute',
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0,0,0,0.2)',
-        top: 0,
-        textAlign: 'center',
-        paddingTop: 10,
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: 500,
-      },
-    },
-    endcall: {
-      position: 'absolute',
-      width: 40,
-      bottom: 20,
     },
     chatFooterSection: {
       position: 'absolute',
@@ -159,8 +119,12 @@ interface MessagesObjectProps {
   text: string;
 }
 interface ConsultRoomProps {
-  toggleTabs: () => void;
   startConsult: string;
+  sessionId: string;
+  token: string;
+  appointmentId: string;
+  doctorId: string;
+  patientId: string;
 }
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const classes = useStyles();
@@ -169,14 +133,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
+
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
-  const doctorId = 'Ravi';
-  const patientId = 'Sai';
-  const channel = 'Channel6';
+  const stopcallMsg = '^^callme`stop^^';
+  const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
+  const publishKey = 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3';
+  const doctorId = props.doctorId;
+  const patientId = props.patientId;
+  const channel = props.appointmentId;
   const config: Pubnub.PubnubConfig = {
-    subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
-    publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
+    subscribeKey: subscribeKey,
+    publishKey: publishKey,
     ssl: true,
   };
   let leftComponent = 0;
@@ -215,9 +183,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }
   useEffect(() => {
     //if (props.startConsult !== isVideoCall) {
-    console.log(1111111);
     if (getCookieValue() !== '') {
-      console.log(22222222);
       setIsVideoCall(props.startConsult === 'videocall' ? true : false);
       setMessageText(videoCallMsg);
       autoSend();
@@ -233,6 +199,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       if (messages.length !== newmessage.length) {
         setMessages(newmessage);
       }
+      setTimeout(() => {
+        const scrollDiv = document.getElementById('scrollDiv');
+        scrollDiv!.scrollIntoView();
+      }, 200);
     });
   };
 
@@ -250,17 +220,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
       (status, response) => {
         setMessageText('');
-        // const scrollDiv = document.getElementById('scrollDiv');
-        // scrollDiv!.scrollIntoView(false);
-        const scrollDiv = document.getElementById('scrollDiv');
-        scrollDiv!.scrollTo(0, 100000);
+
+        setTimeout(() => {
+          setMessageText('111');
+          setMessageText('');
+          const scrollDiv = document.getElementById('scrollDiv');
+          scrollDiv!.scrollIntoView();
+        }, 200);
       }
     );
   };
   const autoSend = () => {
     const text = {
       id: doctorId,
-      message: isVideoCall ? videoCallMsg : audioCallMsg,
+      message: props.startConsult === 'videocall' ? videoCallMsg : audioCallMsg,
+      isTyping: true,
     };
     pubnub.publish(
       {
@@ -282,7 +256,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (
       rowData.id === doctorId &&
       rowData.message !== videoCallMsg &&
-      rowData.message !== audioCallMsg
+      rowData.message !== audioCallMsg &&
+      rowData.message !== stopcallMsg
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -298,7 +273,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (
       rowData.id === patientId &&
       rowData.message !== videoCallMsg &&
-      rowData.message !== audioCallMsg
+      rowData.message !== audioCallMsg &&
+      rowData.message !== stopcallMsg
     ) {
       leftComponent = 0;
       rightComponent++;
@@ -347,12 +323,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             stopAudioVideoCall={() => stopAudioVideoCall()}
             showVideoChat={showVideoChat}
             isVideoCall={isVideoCall}
+            sessionId={props.sessionId}
+            token={props.token}
           />
         )}
         <div>
           {(!showVideo || showVideoChat) && (
-            <div className={classes.chatContainer} id="scrollDiv">
-              {messagessHtml}
+            <div className={classes.chatContainer}>
+              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 360px)'}>
+                {messagessHtml}
+                <span id="scrollDiv"></span>
+              </Scrollbars>
             </div>
           )}
           {(!showVideo || showVideoChat) && (
