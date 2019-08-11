@@ -94,7 +94,7 @@ const createAppointmentSession: Resolver<
         }
         if (session) {
           sessionId = session.sessionId;
-          const tokenOptions: TokenOptions = { role: 'publisher', data: '' };
+          const tokenOptions: TokenOptions = { role: 'moderator', data: '' };
           token = opentok.generateToken(sessionId, tokenOptions);
         }
         resolve(token);
