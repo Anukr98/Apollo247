@@ -119,12 +119,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type Params = { appointmentId: string };
+type Params = { appointmentId: string; doctorId: string };
 
 export const ChatRoom: React.FC = (props) => {
   const classes = useStyles();
   const params = useParams<Params>();
   const appointmentId = params.appointmentId;
+  const doctorId = params.doctorId;
   const { isSignedIn } = useAuth();
 
   const [sessionId, setsessionId] = useState<string>('');
@@ -179,7 +180,12 @@ export const ChatRoom: React.FC = (props) => {
               <ConsultDoctorProfile />
             </div>
             <div className={classes.rightSection}>
-              <ChatWindow sessionId={sessionId} token={token} appointmentId={appointmentId} />
+              <ChatWindow
+                sessionId={sessionId}
+                token={token}
+                appointmentId={appointmentId}
+                doctorId={doctorId}
+              />
             </div>
           </div>
         </div>

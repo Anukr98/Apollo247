@@ -52,7 +52,11 @@ const App: React.FC = () => {
         <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
         <AuthRouted exact path={clientRoutes.searchMedicines()} component={MedicineLanding} />
         <AuthRouted exact path={clientRoutes.consultRoom()} component={ConsultRoom} />
-        <AuthRouted exact path={clientRoutes.chatRoom(':appointmentId')} component={ChatRoom} />
+        <AuthRouted
+          exact
+          path={clientRoutes.chatRoom(':appointmentId', ':doctorId')}
+          component={ChatRoom}
+        />
       </Switch>
     </div>
   );

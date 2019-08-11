@@ -5,6 +5,7 @@ import { AphInput } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import { ChatVideo } from 'components/ChatRoom/ChatVideo';
 import Scrollbars from 'react-custom-scrollbars';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -158,10 +159,10 @@ interface MessagesObjectProps {
   text: string;
 }
 interface ChatWindowProps {
-  // toggleTabs: () => void;
   sessionId: string;
   token: string;
   appointmentId: string;
+  doctorId: string;
 }
 export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const classes = useStyles();
@@ -172,13 +173,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [messageText, setMessageText] = useState<string>('');
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
 
+  const { allCurrentPatients } = useAllCurrentPatients();
+  const currentUserId = (allCurrentPatients && allCurrentPatients[0].id) || '';
+
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const stopcallMsg = '^^callme`stop^^';
   const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
   const publishKey = 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3';
-  const doctorId = 'Ravi';
-  const patientId = 'Sai';
+  const doctorId = props.doctorId;
+  const patientId = currentUserId;
   const channel = props.appointmentId;
   const config: Pubnub.PubnubConfig = {
     subscribeKey: subscribeKey,

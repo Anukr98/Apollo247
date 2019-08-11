@@ -182,6 +182,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     // }
   });
 
+  console.log(filterAppointments);
+
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 214px)'}>
@@ -218,9 +220,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 aptArray[1].substring(0, 5)
               );
               const difference = Math.round((appointmentTime - currentTime) / 60000);
+              const doctorId =
+                appointmentDetails.doctorInfo && appointmentDetails.doctorId
+                  ? appointmentDetails.doctorId
+                  : '';
               return (
                 <Grid item sm={6} key={index}>
-                  <Link to={clientRoutes.chatRoom(appointmentId)}>
+                  <Link to={clientRoutes.chatRoom(appointmentId, doctorId)}>
                     <div className={classes.consultCard}>
                       <div className={classes.startDoctor}>
                         <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
