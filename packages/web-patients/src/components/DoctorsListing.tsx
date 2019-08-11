@@ -12,6 +12,7 @@ import { SearchObject } from 'components/DoctorsFilter';
 
 import Popover from '@material-ui/core/Popover';
 import { MascotWithMessage } from 'components/MascotWithMessage';
+import { format, addDays } from 'date-fns';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
@@ -160,6 +161,14 @@ interface DoctorsListingProps {
   specialityId: string;
 }
 
+const convertAvailabilityToDate = (availability: String[]) => {
+  return _map(availability, (ava) => {
+    if (ava === 'now' || ava === 'today') return format(new Date(), 'yyyy-MM-dd');
+    if (ava === 'tomorrow') return format(addDays(new Date(), 1), 'yyyy-MM-dd');
+    if (ava === 'next3') return format(addDays(new Date(), 3), 'yyyy-MM-dd');
+  });
+};
+
 export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const classes = useStyles();
 
@@ -199,12 +208,18 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     });
   }
 
+  console.log(
+    '........',
+    convertAvailabilityToDate(filter.availability || []),
+    filter.availability
+  );
+
   const apiVairables = {
     specialty: specialityId,
     city: filter.cityName,
     experience: expRange,
     fees: feeRange,
-    availability: filter.availability,
+    availability: convertAvailabilityToDate(filter.availability || []),
     gender: filter.gender,
     language: filter.language,
   };
@@ -273,7 +288,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     );
   };
 
-  if (data && !loading) {
+  if (data && !loading && data.getDoctorsBySpecialtyAndFilters.doctors) {
     doctorsList =
       selectedFilterOption === 'all'
         ? data.getDoctorsBySpecialtyAndFilters.doctors

@@ -323,13 +323,12 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                 },
               }}
             >
-              {clinics.map((clinicDetails: any) => {
-                console.log(clinicDetails);
+              {clinics.map((clinicDetails: Facility) => {
                 return (
                   <MenuItem
                     classes={{ selected: classes.menuSelected }}
                     key={_uniqueId('clinic_')}
-                    value={clinicDetails.facility.city}
+                    value={(clinicDetails.facility.city && clinicDetails.facility.city) || ''}
                   >
                     {clinicDetails.facility.name}
                   </MenuItem>
@@ -373,7 +372,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             bookAppointment: {
               patientId: currentPatient ? currentPatient.id : '',
               doctorId: doctorId,
-              appointmentDateTime: `${apiDateFormat}T${timeSelected}:00.000Z`,
+              appointmentDateTime: `${apiDateFormat}T${timeSelected.padStart(5, '0')}:00.000Z`,
               appointmentType: APPOINTMENT_TYPE.PHYSICAL,
               hospitalId: '',
             },

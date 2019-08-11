@@ -341,7 +341,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               patientId: currentPatient ? currentPatient.id : '',
               doctorId: doctorId,
               appointmentDateTime: `${apiDateFormat}T${
-                timeSelected !== '' ? timeSelected : slotAvailableNext
+                timeSelected !== ''
+                  ? timeSelected.padStart(5, '0')
+                  : slotAvailableNext.padStart(5, '0')
               }:00Z`,
               appointmentType: APPOINTMENT_TYPE.ONLINE,
               hospitalId: '',
