@@ -18,6 +18,7 @@ import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { ConsultRoomScreen } from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen';
+import moment from 'moment';
 import {
   ScrollView,
   StyleSheet,
@@ -375,7 +376,11 @@ const renderPatientImage = () => {
     </View>
   );
 };
-const profileRow = (PatientInfoData: object) => {
+const profileRow = (
+  PatientInfoData: object,
+  AppId: string,
+  Appintmentdatetimeconsultpage: string
+) => {
   // if (!firstName) return null;
   console.log('ranith', PatientInfoData);
   return (
@@ -391,8 +396,11 @@ const profileRow = (PatientInfoData: object) => {
 
       <View style={styles.understatusline} />
       <View>
-        {registerDetails('Appt ID:', '98765')}
-        {registerDetails('Appt Date:', '02/07/2019 | 11:50 AM')}
+        {registerDetails('Appt ID:', AppId)}
+        {registerDetails(
+          'Appt Date:',
+          moment(Appintmentdatetimeconsultpage).format('DD/MM/YYYY | HH:mm A')
+        )}
       </View>
     </View>
   );
@@ -407,8 +415,16 @@ const registerDetails = (ApptId: string, appIdDate: string) => {
     </View>
   );
 };
-const renderBasicProfileDetails = (PatientInfoData: object) => {
-  return <View style={{ backgroundColor: '#f7f7f7' }}>{profileRow(PatientInfoData)}</View>;
+const renderBasicProfileDetails = (
+  PatientInfoData: object,
+  AppId: String,
+  Appintmentdatetimeconsultpage: string
+) => {
+  return (
+    <View style={{ backgroundColor: '#f7f7f7' }}>
+      {profileRow(PatientInfoData, AppId, Appintmentdatetimeconsultpage)}
+    </View>
+  );
 };
 
 const renderPhotosUploadedPatient = () => {
@@ -438,7 +454,9 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const PatientInfoData = props.navigation.getParam('PatientInfoAll');
-  //console.log('PatientInfoData', PatientInfoData.firstName);
+  const Appintmentdatetimeconsultpage = props.navigation.getParam('Appintmentdatetime');
+  const AppId = props.navigation.getParam('AppId');
+  console.log('Appintmentdatetimeconsultpagecase', Appintmentdatetimeconsultpage);
   const [value, setValue] = useState<string>('');
   const [symptonsValue, setSymptonsValue] = useState<string>('Fever, Cough and Cold, Nausea');
   const [familyValues, setFamilyValues] = useState<string>(
@@ -889,7 +907,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     <View style={styles.casesheetView}>
       <ScrollView bounces={false} contentContainerStyle={styles.contentContainer}>
         {renderPatientImage()}
-        {renderBasicProfileDetails(PatientInfoData)}
+        {renderBasicProfileDetails(PatientInfoData, AppId, Appintmentdatetimeconsultpage)}
         {renderSymptonsView()}
         {renderPatientHistoryLifestyle()}
         <PatientHealthVault />

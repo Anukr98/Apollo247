@@ -33,6 +33,7 @@ import {
   StatusBar,
 } from 'react-native';
 import MaterialTabs from 'react-native-material-tabs';
+import ImagePicker from 'react-native-image-picker';
 
 const { height, width } = Dimensions.get('window');
 import Pubnub from 'pubnub';
@@ -65,6 +66,8 @@ import {
 import { CREATEAPPOINTMENTSESSION } from '@aph/mobile-doctors/src/graphql/profiles';
 import { REQUEST_ROLES } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import moment from 'moment';
+import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
+
 const styles = StyleSheet.create({
   mainview: {
     backgroundColor: '#ffffff',
@@ -108,11 +111,13 @@ export interface ConsultRoomScreenProps
 }
 
 export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
+  const [isDropdownVisible, setDropdownVisible] = useState(false);
   const client = useApolloClient();
   const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
   const AppId = props.navigation.getParam('AppId');
   const Appintmentdatetime: Date = props.navigation.getParam('Appintmentdatetime');
   // console.log('hihihi', props.navigation.getParam('PatientInfoAll'));
+  const Appintmentdatetimeconsultpage = props.navigation.getParam('Appintmentdatetime');
   // console.log('Appintmentdatetimeconsultpage', props.navigation.getParam('Appintmentdatetime'));
   const channel = props.navigation.getParam('AppId');
   // console.log('channel', channel);
@@ -176,6 +181,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [returnToCall, setReturnToCall] = useState<boolean>(false);
 
   useEffect(() => {
+    console.log('PatientConsultTime'), PatientConsultTime;
     setTimeout(() => {
       flatListRef.current && flatListRef.current!.scrollToEnd();
     }, 1000);
@@ -621,7 +627,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           }}
         >
           <Text style={{ color: 'white', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
-            Time Left {minutes} : {seconds}
+            Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
+            {seconds.toString().length < 2 ? '0' + seconds : seconds}
           </Text>
         </View>
         <View
@@ -635,21 +642,22 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             opacity: 0.6,
           }}
         />
+
         <OTSession
           apiKey={'46393582'}
-          // sessionId={sessionId}
-          // token={token}
-          sessionId={'2_MX40NjM5MzU4Mn5-MTU2NTQzNzkyNTgwMX40Qm0rbEtFb3VVQytGZHVQdmR0NHAveG1-fg'}
-          token={
-            'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9YmM2MzFhZTEwYWNlODBhZmNhNjMwNDIwOGRkNmZhYzkyMGU3ZjcyMDpzZXNzaW9uX2lkPTJfTVg0ME5qTTVNelU0TW41LU1UVTJOVFF6TnpreU5UZ3dNWDQwUW0wcmJFdEZiM1ZWUXl0R1pIVlFkbVIwTkhBdmVHMS1mZyZjcmVhdGVfdGltZT0xNTY1NDM3OTczJm5vbmNlPTAuNDc1MTYzNTI2Njc3MTIwMzYmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2ODAyOTk3MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
-          }
+          sessionId={sessionId}
+          token={token}
+          // sessionId={'2_MX40NjM5MzU4Mn5-MTU2NTQzNzkyNTgwMX40Qm0rbEtFb3VVQytGZHVQdmR0NHAveG1-fg'}
+          // token={
+          //   'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9YmM2MzFhZTEwYWNlODBhZmNhNjMwNDIwOGRkNmZhYzkyMGU3ZjcyMDpzZXNzaW9uX2lkPTJfTVg0ME5qTTVNelU0TW41LU1UVTJOVFF6TnpreU5UZ3dNWDQwUW0wcmJFdEZiM1ZWUXl0R1pIVlFkbVIwTkhBdmVHMS1mZyZjcmVhdGVfdGltZT0xNTY1NDM3OTczJm5vbmNlPTAuNDc1MTYzNTI2Njc3MTIwMzYmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2ODAyOTk3MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
+          // }
           eventHandlers={sessionEventHandlers}
           ref={otSessionRef}
         >
           <OTSubscriber
             style={subscriberStyles}
             subscribeToSelf={true}
-            eventHandlers={publisherEventHandlers}
+            eventHandlers={subscriberEventHandlers}
             properties={{
               subscribeToAudio: true,
               subscribeToVideo: false,
@@ -660,10 +668,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             style={publisherStyles}
             properties={{
               publishVideo: false,
-              publishAudio: true,
+              publishAudio: mute,
               audioVolume: 100,
             }}
-            eventHandlers={subscriberEventHandlers}
+            eventHandlers={publisherEventHandlers}
           />
         </OTSession>
         <Text
@@ -691,7 +699,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             letterSpacing: 0.46,
           }}
         >
-          {callAccepted ? `${callMinutes} : ${callSeconds}` : 'RINGING'}
+          {callAccepted
+            ? `${callMinutes.toString().length < 2 ? '0' + callMinutes : callMinutes} : ${
+                callSeconds.toString().length < 2 ? '0' + callSeconds : callSeconds
+              }`
+            : 'RINGING'}
         </Text>
         <View
           style={{
@@ -763,12 +775,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <OTSession
               apiKey={'46393582'}
-              sessionId={'2_MX40NjM5MzU4Mn5-MTU2NTQzNzkyNTgwMX40Qm0rbEtFb3VVQytGZHVQdmR0NHAveG1-fg'}
-              token={
-                'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9YmM2MzFhZTEwYWNlODBhZmNhNjMwNDIwOGRkNmZhYzkyMGU3ZjcyMDpzZXNzaW9uX2lkPTJfTVg0ME5qTTVNelU0TW41LU1UVTJOVFF6TnpreU5UZ3dNWDQwUW0wcmJFdEZiM1ZWUXl0R1pIVlFkbVIwTkhBdmVHMS1mZyZjcmVhdGVfdGltZT0xNTY1NDM3OTczJm5vbmNlPTAuNDc1MTYzNTI2Njc3MTIwMzYmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2ODAyOTk3MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
-              }
-              // sessionId={sessionId}
-              // token={token}
+              // sessionId={'2_MX40NjM5MzU4Mn5-MTU2NTQzNzkyNTgwMX40Qm0rbEtFb3VVQytGZHVQdmR0NHAveG1-fg'}
+              // token={
+              //   'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9YmM2MzFhZTEwYWNlODBhZmNhNjMwNDIwOGRkNmZhYzkyMGU3ZjcyMDpzZXNzaW9uX2lkPTJfTVg0ME5qTTVNelU0TW41LU1UVTJOVFF6TnpreU5UZ3dNWDQwUW0wcmJFdEZiM1ZWUXl0R1pIVlFkbVIwTkhBdmVHMS1mZyZjcmVhdGVfdGltZT0xNTY1NDM3OTczJm5vbmNlPTAuNDc1MTYzNTI2Njc3MTIwMzYmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2ODAyOTk3MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
+              // }
+              sessionId={sessionId}
+              token={token}
               eventHandlers={sessionEventHandlers}
               ref={otSessionRef}
             >
@@ -787,13 +799,26 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 properties={{
                   cameraPosition: cameraPosition,
                   publishVideo: showVideo,
-                  publishAudio: true,
+                  publishAudio: mute,
+
                   //audioVolume: 100,
                 }}
                 eventHandlers={publisherEventHandlers}
               />
             </OTSession>
-
+            <Text
+              style={{
+                position: 'absolute',
+                marginHorizontal: 20,
+                marginTop: 44,
+                width: width - 40,
+                color: 'white',
+                ...theme.fonts.IBMPlexSansSemiBold(20),
+                textAlign: 'center',
+              }}
+            >
+              {PatientInfoAll.firstName}
+            </Text>
             <View
               style={{
                 position: 'absolute',
@@ -809,7 +834,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               }}
             >
               <Text style={{ color: 'white', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
-                Time Left {minutes} : {seconds}
+                Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
+                {seconds.toString().length < 2 ? '0' + seconds : seconds}
               </Text>
             </View>
             <Text
@@ -825,7 +851,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 zIndex: 1000,
               }}
             >
-              {callAccepted ? `${callMinutes} : ${callSeconds}` : 'CALLING'}
+              {callAccepted
+                ? `${callMinutes.toString().length < 2 ? '0' + callMinutes : callMinutes} : ${
+                    callSeconds.toString().length < 2 ? '0' + callSeconds : callSeconds
+                  }`
+                : 'CALLING'}
             </Text>
             {PipView && renderOnCallPipButtons()}
             {!PipView && renderChatNotificationIcon()}
@@ -1229,6 +1259,38 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
+  const showAllFiles = () => {
+    try {
+      const results = DocumentPicker.pickMultiple({
+        type: [DocumentPicker.types.images],
+      });
+      console.log('results', results);
+      for (const res of results) {
+        console.log(
+          res.uri,
+          res.type, // mime type
+          res.name,
+          res.size
+        );
+      }
+    } catch (err) {
+      if (DocumentPicker.isCancel(err)) {
+        // User cancelled the picker, exit any dialogs or menus and move on
+      } else {
+        throw err;
+      }
+    }
+  };
+
+  const options = {
+    title: 'Select Avatar',
+    customButtons: [{ name: 'fb', title: 'Choose Photo from Facebook' }],
+    storageOptions: {
+      skipBackup: true,
+      path: 'images',
+    },
+  };
+
   const ChatRoom = () => {
     // setTimeout(() => {
     //   flatListRef.current && flatListRef.current!.scrollToEnd();
@@ -1236,6 +1298,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     return (
       <View style={{ ...theme.viewStyles.container }}>
         {renderChatView()}
+
         <View
           style={{
             width: width,
@@ -1284,10 +1347,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               //   }
               // }}
             />
+
             <TouchableOpacity
               onPress={async () => {
                 if (messageText.length == 0) {
-                  Alert.alert('Apollo', 'Please write something to send');
+                  //Alert.alert('Apollo', 'Please write something to send');
+                  setDropdownVisible(!isDropdownVisible);
                   return;
                 }
                 if (!startConsult) {
@@ -1298,7 +1363,80 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 send();
               }}
             >
-              <AddIcon style={{ width: 22, height: 22, marginTop: 18, marginLeft: 22 }} />
+              {isDropdownVisible == true ? (
+                <View
+                  style={{
+                    width: 200,
+                    bottom: -15,
+                    // top: 10,
+                    position: 'absolute',
+                    right: -15,
+                    //left: 0,
+                    shadowColor: '#808080',
+                    shadowOffset: { width: 0, height: 5 },
+                    shadowOpacity: 0.4,
+                    shadowRadius: 20,
+                    elevation: 16,
+                    zIndex: 2,
+                  }}
+                >
+                  <DropDown
+                    options={[
+                      {
+                        optionText: 'Camera',
+                        onPress: () => {
+                          ImagePicker.launchCamera(options, (response) => {
+                            // Same code as in above section!
+                            console.log(response, 'response');
+                          });
+                          setDropdownVisible(false);
+                        },
+                      },
+                      {
+                        optionText: 'Document',
+
+                        onPress: () => {
+                          try {
+                            const results = DocumentPicker.pickMultiple({
+                              type: [DocumentPicker.types.allFiles],
+                            });
+                            console.log('results', results);
+                            setDropdownVisible(false);
+                            // for (const res of results) {
+                            //   console.log(
+                            //     res.uri,
+                            //     res.type, // mime type
+                            //     res.name,
+                            //     res.size
+                            //   );
+                            // }
+                          } catch (err) {
+                            if (DocumentPicker.isCancel(err)) {
+                              // User cancelled the picker, exit any dialogs or menus and move on
+                            } else {
+                              throw err;
+                            }
+                          }
+                        },
+                      },
+                      {
+                        optionText: 'Gallery',
+                        onPress: () => {
+                          // Open Image Library:
+                          ImagePicker.launchImageLibrary(options, (response) => {
+                            // Same code as in above section!
+                            console.log(response, 'response');
+                          });
+                          setDropdownVisible(false);
+                        },
+                      },
+                    ]}
+                  />
+                </View>
+              ) : null}
+              <AddIcon
+                style={{ width: 22, height: 22, marginTop: 18, marginLeft: 22, zIndex: -1 }}
+              />
             </TouchableOpacity>
           </View>
           <View
@@ -1308,6 +1446,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               marginTop: 0,
               height: 2,
               backgroundColor: '#00b38e',
+              zIndex: -1,
             }}
           />
         </View>
@@ -1428,7 +1567,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           },
         ]}
         middleText="CONSULT ROOM"
-        timerText={consultStarted ? `Time Left ${minutes} : ${seconds}` : getTimerText()}
+        timerText={
+          consultStarted
+            ? `Time Left ${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
+                seconds.toString().length < 2 ? '0' + seconds : seconds
+              }`
+            : getTimerText()
+        }
         timerremaintext={!consultStarted ? PatientConsultTime : null}
         textStyles={{ marginTop: 10 }}
         rightIcons={[
