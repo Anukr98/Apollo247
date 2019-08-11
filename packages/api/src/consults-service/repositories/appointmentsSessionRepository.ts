@@ -6,7 +6,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 @EntityRepository(AppointmentSessions)
 export class AppointmentsSessionRepository extends Repository<AppointmentSessions> {
   saveAppointmentSession(appointmentSessionAttrs: Partial<AppointmentSessions>) {
-    console.log(appointmentSessionAttrs, 'appointmentSessionAttrs');
     return this.create(appointmentSessionAttrs)
       .save()
       .catch((createErrors) => {

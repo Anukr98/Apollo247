@@ -4,6 +4,7 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import openTok, { TokenOptions } from 'opentok';
 import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { format } from 'date-fns';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -14,6 +15,14 @@ export const createAppointmentSessionTypeDefs = gql`
   type AppointmentSession {
     sessionId: String!
     appointmentToken: String!
+  }
+
+  type CreateAppointmentSession {
+    sessionId: String!
+    appointmentToken: String!
+    doctorId: ID!
+    patientId: ID!
+    appointmentDateTime: String!
   }
 
   input CreateAppointmentSessionInput {
@@ -29,7 +38,7 @@ export const createAppointmentSessionTypeDefs = gql`
   extend type Mutation {
     createAppointmentSession(
       createAppointmentSessionInput: CreateAppointmentSessionInput
-    ): AppointmentSession!
+    ): CreateAppointmentSession!
     updateAppointmentSession(
       updateAppointmentSessionInput: UpdateAppointmentSessionInput
     ): AppointmentSession!
@@ -39,6 +48,14 @@ export const createAppointmentSessionTypeDefs = gql`
 type AppointmentSession = {
   sessionId: string;
   appointmentToken: string;
+};
+
+type CreateAppointmentSession = {
+  sessionId: string;
+  appointmentToken: string;
+  doctorId: string;
+  patientId: string;
+  appointmentDateTime: string;
 };
 
 type CreateAppointmentSessionInput = {
@@ -63,7 +80,7 @@ const createAppointmentSession: Resolver<
   null,
   createAppointmentSessionInputArgs,
   ConsultServiceContext,
-  AppointmentSession
+  CreateAppointmentSession
 > = async (parent, { createAppointmentSessionInput }, { consultsDb }) => {
   const opentok = new openTok('46393582', 'f27789a7bad5d0ec7e5fd2c36ffba08a4830a91d');
   let sessionId = '',
@@ -77,7 +94,7 @@ const createAppointmentSession: Resolver<
         }
         if (session) {
           sessionId = session.sessionId;
-          const tokenOptions: TokenOptions = { role: 'publisher', data: '' };
+          const tokenOptions: TokenOptions = { role: 'moderator', data: '' };
           token = opentok.generateToken(sessionId, tokenOptions);
         }
         resolve(token);
@@ -87,14 +104,28 @@ const createAppointmentSession: Resolver<
   await getSessionToken();
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
-  const appointmentSessionAttrs = {
-    sessionId,
-    doctorToken: token,
-    appointment: apptDetails,
+  let patientId = '',
+    doctorId = '',
+    appointmentDateTime = '';
+  if (apptDetails) {
+    const appointmentSessionAttrs = {
+      sessionId,
+      doctorToken: token,
+      appointment: apptDetails,
+    };
+    patientId = apptDetails.patientId;
+    doctorId = apptDetails.doctorId;
+    appointmentDateTime = format(apptDetails.appointmentDateTime, 'yyyy-MM-dd hh:mm');
+    const repo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
+    await repo.saveAppointmentSession(appointmentSessionAttrs);
+  }
+  return {
+    sessionId: sessionId,
+    appointmentToken: token,
+    patientId,
+    doctorId,
+    appointmentDateTime,
   };
-  const repo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
-  await repo.saveAppointmentSession(appointmentSessionAttrs);
-  return { sessionId: sessionId, appointmentToken: token };
 };
 
 const updateAppointmentSession: Resolver<
@@ -110,7 +141,7 @@ const updateAppointmentSession: Resolver<
   const apptSession = await apptSessionRepo.getAppointmentSession(
     updateAppointmentSessionInput.appointmentId
   );
-  const tokenOptions: TokenOptions = { role: 'subscriber', data: '' };
+  const tokenOptions: TokenOptions = { role: 'moderator', data: '' };
   if (apptSession) {
     sessionId = apptSession.sessionId;
     token = opentok.generateToken(sessionId, tokenOptions);

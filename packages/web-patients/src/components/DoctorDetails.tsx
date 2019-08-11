@@ -17,13 +17,15 @@ import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import {
-  GetDoctorProfileById,
-  GetDoctorProfileByIdVariables,
-} from 'graphql/types/GetDoctorProfileById';
+  GetDoctorDetailsById,
+  GetDoctorDetailsByIdVariables,
+} from 'graphql/types/GetDoctorDetailsById';
+import { DoctorType } from 'graphql/types/globalTypes';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
+import { ConsultMode } from 'graphql/types/globalTypes';
 
 type Params = { id: string };
 
@@ -217,8 +219,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const currentUserId = (allCurrentPatients && allCurrentPatients[0].id) || '';
 
   const { data, loading, error } = useQueryWithSkip<
-    GetDoctorProfileById,
-    GetDoctorProfileByIdVariables
+    GetDoctorDetailsById,
+    GetDoctorDetailsByIdVariables
   >(GET_DOCTOR_DETAILS_BY_ID, {
     variables: { id: doctorId },
   });
@@ -230,36 +232,47 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return <div>Error....</div>;
   }
 
-  const doctorDetails = data && data.getDoctorProfileById ? data : null;
+  const availableForPhysicalConsultation = true,
+    availableForVirtualConsultation = true;
+
+  const doctorDetails = data && data.getDoctorDetailsById ? data : null;
 
   if (doctorDetails) {
     const isStarDoctor =
       doctorDetails &&
-      doctorDetails.getDoctorProfileById &&
-      doctorDetails.getDoctorProfileById.profile
-        ? doctorDetails.getDoctorProfileById.profile.isStarDoctor
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
+        ? true
         : false;
 
     const doctorId =
-      doctorDetails &&
-      doctorDetails.getDoctorProfileById &&
-      doctorDetails.getDoctorProfileById.profile
-        ? doctorDetails.getDoctorProfileById.profile.id
+      doctorDetails && doctorDetails.getDoctorDetailsById
+        ? doctorDetails.getDoctorDetailsById.id
         : '';
 
-    const availableForPhysicalConsultation =
-      doctorDetails &&
-      doctorDetails.getDoctorProfileById &&
-      doctorDetails.getDoctorProfileById.profile
-        ? doctorDetails.getDoctorProfileById.profile.availableForPhysicalConsultation
-        : false;
+    // if (
+    //   doctorDetails &&
+    //   doctorDetails.getDoctorDetailsById &&
+    //   doctorDetails.getDoctorDetailsById.consultHours &&
+    //   doctorDetails.getDoctorDetailsById.consultHours.length > 0
+    // ) {
+    //   doctorDetails.getDoctorDetailsById.consultHours.forEach((consultHour) => {
+    //     const currentDay = new Date().toLocaleString('en-IN', { weekday: 'long' }).toUpperCase();
+    //     const consultDay = consultHour && consultHour.weekDay ? consultHour.weekDay : '';
+    //     const consultMode =
+    //       consultHour && consultHour.consultMode ? consultHour.consultMode : ConsultMode.PHYSICAL;
+    //     if (currentDay === consultDay) {
+    //       availableForPhysicalConsultation =
+    //         consultMode === ConsultMode.PHYSICAL || ConsultMode.BOTH ? true : false;
+    //       availableForVirtualConsultation =
+    //         consultMode === ConsultMode.ONLINE || ConsultMode.BOTH ? true : false;
+    //       return;
+    //     }
+    //   });
+    // }
+    // this needs to be reworked after availability api.
 
-    const availableForVirtualConsultation =
-      doctorDetails &&
-      doctorDetails.getDoctorProfileById &&
-      doctorDetails.getDoctorProfileById.profile
-        ? doctorDetails.getDoctorProfileById.profile.onlineConsultationFees
-        : false;
+    // console.log(availableForPhysicalConsultation, availableForVirtualConsultation);
 
     return (
       <div className={classes.welcome}>
@@ -283,6 +296,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <DoctorProfile
                 doctorDetails={doctorDetails}
                 onBookConsult={() => setIsPopoverOpen(true)}
+                avaPhy={availableForPhysicalConsultation}
+                avaOnline={availableForVirtualConsultation}
               />
               <div className={classes.searchSection}>
                 <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>

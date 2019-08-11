@@ -6,7 +6,7 @@ export const isEmailValid = isEmail;
 export const isMobileNumberValid = (number: string) => isMobilePhone(number, 'en-IN');
 
 export const isNameValid = (name: string) => {
-  return /^[a-zA-Z ']*$/.test(name.trim()) && name.trim().length > 1;
+  return /^[a-zA-Z ']*$/.test(name.trim()) && name.trim().length > 0;
 };
 
 export const aphClientDateFormat = /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/;
