@@ -16,7 +16,7 @@ const useStyles = makeStyles({
     boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
   },
   daysList: {
-    width: '70%',
+    width: '75%',
     display: 'inline-block',
     verticalAlign: 'middle',
     '& li': {
@@ -44,7 +44,7 @@ const useStyles = makeStyles({
     width: '15%',
   },
   prevBtn: {
-    width: '7%',
+    width: '8%',
     display: 'inline-block',
     fontWeight: 600,
     fontSize: 25,
@@ -52,7 +52,7 @@ const useStyles = makeStyles({
     cursor: 'pointer',
   },
   nextBtn: {
-    width: '7%',
+    width: '4%',
     display: 'inline-block',
     fontWeight: 600,
     fontSize: 25,
