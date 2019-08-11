@@ -374,7 +374,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     setHeightList(height - e.endCoordinates.height - 185);
 
     setTimeout(() => {
-      flatListRef.current!.scrollToEnd();
+      flatListRef.current && flatListRef.current.scrollToEnd();
     }, 200);
   };
 

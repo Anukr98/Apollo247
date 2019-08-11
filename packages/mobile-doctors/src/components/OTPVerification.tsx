@@ -1,10 +1,13 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { OkText, OkTextDisabled } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { OtpCard } from '@aph/mobile-doctors/src/components/ui/OtpCard';
-import { setLoggedIn } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
+import { GetDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import { setDoctorDetails, setLoggedIn } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
   Alert,
@@ -20,14 +23,10 @@ import {
 import SmsListener from 'react-native-android-sms-listener';
 import firebase from 'react-native-firebase';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
-import { NavigationScreenProps, NavigationActions } from 'react-navigation';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 import { PhoneNumberVerificationCredential } from './AuthProvider';
 import { OTPTextView } from './ui/OTPTextView';
-import { useApolloClient } from 'react-apollo-hooks';
-import { GetDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
-import { StackActions } from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {
@@ -308,9 +307,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     setTimeout(() => {
       client
         .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
-        .then((_data) => {
+        .then(async (_data) => {
           console.log('LOGIN SUCCESSFULL');
           const result = _data.data && _data.data.getDoctorDetails;
+          try {
+            await setDoctorDetails(result);
+          } catch (e) {
+            console.log('Unable to set DoctorDetails');
+          }
           setIsLoading(false);
           if (result) {
             // props.navigation.replace(AppRoutes.ProfileSetup);

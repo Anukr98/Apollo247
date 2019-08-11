@@ -17,7 +17,7 @@ import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Alert,
   SafeAreaView,
@@ -40,6 +40,7 @@ import {
   GetDoctorAppointmentsVariables,
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
+import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
 
 const styles = StyleSheet.create({
   noAppointmentsText: {
@@ -123,10 +124,21 @@ export interface AppointmentsProps extends NavigationScreenProps {
 }
 
 export const Appointments: React.FC<AppointmentsProps> = (props) => {
-  const doctorName: string | null =
-    props.navigation.state.params && props.navigation.state.params.Firstname;
-  const DoctorId: string | null =
-    props.navigation.state.params && props.navigation.state.params.DoctorId;
+  const [doctorName, setDoctorName] = useState<string>(
+    (props.navigation.state.params && props.navigation.state.params.Firstname) || ''
+  );
+  const [DoctorId, setDoctorId] = useState<string>(
+    (props.navigation.state.params && props.navigation.state.params.DoctorId) || ''
+  );
+  useEffect(() => {
+    getLocalData()
+      .then((data) => {
+        setDoctorName((data.doctorDetails! || {}).lastName);
+        setDoctorId((data.doctorDetails! || {}).id);
+      })
+      .catch(() => {});
+  });
+
   console.log('DoctorIdAPPPPP', DoctorId);
   const [date, setDate] = useState<Date>(new Date());
   const [calendarDate, setCalendarDate] = useState<Date | null>(new Date()); // to maintain a sync between week view change and calendar month
