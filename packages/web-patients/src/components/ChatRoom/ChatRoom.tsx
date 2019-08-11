@@ -1,11 +1,20 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ChatWindow } from 'components/ChatRoom/ChatWindow';
 import { ConsultDoctorProfile } from 'components/ChatRoom/ConsultDoctorProfile';
+import { useParams } from 'hooks/routerHooks';
+import { useMutation } from 'react-apollo-hooks';
+import { useAuth } from 'hooks/authHooks';
+
+import { UPDATE_APPOINTMENT_SESSION } from 'graphql/consult';
+import {
+  UpdateAppointmentSession,
+  UpdateAppointmentSessionVariables,
+} from 'graphql/types/UpdateAppointmentSession';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -110,15 +119,43 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+type Params = { appointmentId: string };
+
 export const ChatRoom: React.FC = (props) => {
   const classes = useStyles();
-  const [sessionId, setsessionId] = useState<string>(
-    '1_MX40NjM5MzU4Mn5-MTU2NTA3MTUwNDk4MX56bVd3ZW96MFNuS2Vua2dDMnZ5VTZNNlJ-UH4'
+  const params = useParams<Params>();
+  const appointmentId = params.appointmentId;
+  const { isSignedIn } = useAuth();
+
+  const [sessionId, setsessionId] = useState<string>('');
+  const [token, settoken] = useState<string>('');
+
+  const mutationResponse = useMutation<UpdateAppointmentSession, UpdateAppointmentSessionVariables>(
+    UPDATE_APPOINTMENT_SESSION,
+    {
+      variables: {
+        UpdateAppointmentSessionInput: { appointmentId: appointmentId, requestRole: 'PATIENT' },
+      },
+    }
   );
-  const [token, settoken] = useState<string>(
-    'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9Y2UxMDhkODEzNTU3MmE4M2ExZTZkNmVlYjVkZDE0ODA3NGZhM2QyZTpzZXNzaW9uX2lkPTFfTVg0ME5qTTVNelU0TW41LU1UVTJOVEEzTVRVd05EazRNWDU2YlZkM1pXOTZNRk51UzJWdWEyZERNblo1VlRaTk5sSi1VSDQmY3JlYXRlX3RpbWU9MTU2NTA3MTYxMCZub25jZT0wLjExNjA5MzQ3Njk5NjI3MzM3JnJvbGU9cHVibGlzaGVyJmV4cGlyZV90aW1lPTE1Njc2NjM2MDcmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
-  );
-  const appointmentId = '1c8aff41-f6ff-4e79-bcf3-b4f293741e93';
+
+  useEffect(() => {
+    if (isSignedIn) {
+      mutationResponse().then((data) => {
+        const appointmentToken =
+          data && data.data && data.data.updateAppointmentSession
+            ? data.data.updateAppointmentSession.appointmentToken
+            : '';
+        const sessionId =
+          data && data.data && data.data.updateAppointmentSession.sessionId
+            ? data.data.updateAppointmentSession.sessionId
+            : '';
+        setsessionId(sessionId);
+        settoken(appointmentToken);
+      });
+    }
+  }, [isSignedIn]);
+
   return (
     <div className={classes.root}>
       <div className={classes.headerSticky}>

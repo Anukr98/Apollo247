@@ -6,7 +6,7 @@ import {
   GetPatientAppointments,
   GetPatientAppointments_getPatinetAppointments_patinetAppointments as appointmentDetails,
 } from 'graphql/types/GetPatientAppointments';
-import { DoctorType } from 'graphql/types/globalTypes';
+import { DoctorType, APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import _isNull from 'lodash/isNull';
 import { Link } from 'react-router-dom';
 import { getTime } from 'date-fns/esm';
@@ -239,7 +239,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         >
                           {difference <= 15
                             ? `Available in ${difference} mins`
-                            : `${format(new Date(appointmentTime), 'h:m a')}`}
+                            : `${format(new Date(appointmentTime), 'hh:mm a')}`}
                         </div>
                         <div className={classes.doctorName}>{`${firstName} ${lastName}`}</div>
                         <div className={classes.doctorType}>
