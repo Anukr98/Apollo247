@@ -1,6 +1,5 @@
 import { useContext, useEffect } from 'react';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
-import { useQuery } from 'react-apollo-hooks';
 import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
 import { GET_CURRENT_PATIENTS } from 'graphql/profiles';
 import { Relation } from 'graphql/types/globalTypes';

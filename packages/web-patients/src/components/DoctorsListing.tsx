@@ -7,11 +7,12 @@ import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
 import _filter from 'lodash/filter';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { DOCTORS_BY_SPECIALITY } from 'graphql/doctors';
+import { GET_DOCTORS_BY_SPECIALITY_AND_FILTERS } from 'graphql/doctors';
 import { SearchObject } from 'components/DoctorsFilter';
 
 import Popover from '@material-ui/core/Popover';
 import { MascotWithMessage } from 'components/MascotWithMessage';
+import { format, addDays } from 'date-fns';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
@@ -157,12 +158,21 @@ const useStyles = makeStyles((theme: Theme) => {
 interface DoctorsListingProps {
   filter: SearchObject;
   specialityName: string;
+  specialityId: string;
 }
+
+const convertAvailabilityToDate = (availability: String[]) => {
+  return _map(availability, (ava) => {
+    if (ava === 'now' || ava === 'today') return format(new Date(), 'yyyy-MM-dd');
+    if (ava === 'tomorrow') return format(addDays(new Date(), 1), 'yyyy-MM-dd');
+    if (ava === 'next3') return format(addDays(new Date(), 3), 'yyyy-MM-dd');
+  });
+};
 
 export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const classes = useStyles();
 
-  const { filter, specialityName } = props;
+  const { filter, specialityName, specialityId } = props;
   const [selectedFilterOption, setSelectedFilterOption] = useState<string>('all');
   const consultOptions = { all: 'All Consults', online: 'Online Consult', clinic: 'Clinic Visit' };
 
@@ -172,16 +182,51 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   const mascotRef = useRef(null);
 
+  type Range = {
+    [index: number]: {
+      minimum: number;
+      maximum: number;
+    };
+  };
+
+  let expRange: Range = [],
+    feeRange: Range = [];
+
+  if (filter.experience && filter.experience.length > 0) {
+    expRange = filter.experience.map((experience) => {
+      const expRangeMinimum = parseInt(experience.split('_')[0], 10);
+      const expRangeMaximum = parseInt(experience.split('_')[1], 10);
+      return { minimum: expRangeMinimum, maximum: expRangeMaximum };
+    });
+  }
+
+  if (filter.fees && filter.fees.length > 0) {
+    feeRange = filter.fees.map((fees) => {
+      const feeRangeMinimum = parseInt(fees.split('_')[0], 10);
+      const feeRangeMaximum = parseInt(fees.split('_')[1], 10);
+      return { minimum: feeRangeMinimum, maximum: feeRangeMaximum };
+    });
+  }
+
+  // console.log(
+  //   '........',
+  //   convertAvailabilityToDate(filter.availability || []),
+  //   filter.availability
+  // );
+
   const apiVairables = {
-    specialty: specialityName,
+    specialty: specialityId,
     city: filter.cityName,
-    experience: filter.experience,
-    availability: filter.availability,
+    experience: expRange,
+    fees: feeRange,
+    availability: convertAvailabilityToDate(filter.availability || []),
     gender: filter.gender,
     language: filter.language,
   };
 
-  const { data, loading, error } = useQueryWithSkip(DOCTORS_BY_SPECIALITY, {
+  // console.log(specialityId);
+
+  const { data, loading, error } = useQueryWithSkip(GET_DOCTORS_BY_SPECIALITY_AND_FILTERS, {
     variables: { filterInput: apiVairables },
   });
 
@@ -212,6 +257,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       </div>
     );
   }
+
   if (error) {
     return <div>Error....</div>;
   }
@@ -233,7 +279,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
         <Grid item xs={8} sm={6} md={6} key={_uniqueId('consultGrid_')}>
           <div className={classes.noDataCard}>
             <h2>Uh oh! :(</h2>
-            {data && data.getSpecialtyDoctorsWithFilters.doctors.length > 0
+            {data && data.getDoctorsBySpecialtyAndFilters.doctors.length > 0
               ? noConsultFoundError
               : noDoctorFoundError}
           </div>
@@ -242,11 +288,11 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     );
   };
 
-  if (data && data.getSpecialtyDoctorsWithFilters.doctors.length > 0) {
+  if (data && !loading && data.getDoctorsBySpecialtyAndFilters.doctors) {
     doctorsList =
       selectedFilterOption === 'all'
-        ? data.getSpecialtyDoctorsWithFilters.doctors
-        : _filter(data.getSpecialtyDoctorsWithFilters.doctors, (doctors) => {
+        ? data.getDoctorsBySpecialtyAndFilters.doctors
+        : _filter(data.getDoctorsBySpecialtyAndFilters.doctors, (doctors) => {
             if (selectedFilterOption === 'online' && doctors.availableForVirtualConsultation) {
               return true;
             } else if (
@@ -303,7 +349,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           <Popover
             open={isPopoverOpen}
             onClose={(e, reason) => {
-              console.log('hello', e, reason);
+              // console.log('hello', e, reason);
             }}
             anchorOrigin={{
               vertical: 'bottom',

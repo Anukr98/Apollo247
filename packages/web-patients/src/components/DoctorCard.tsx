@@ -2,7 +2,7 @@ import React from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Avatar } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
-import { SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors as DoctorDetails } from 'graphql/types/SearchDoctorAndSpecialty';
+import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorDetails } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 
@@ -104,6 +104,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const { doctorDetails } = props;
 
+  // console.log('doctorDetails.....', doctorDetails);
+
   return (
     <Link to={clientRoutes.doctorDetails(doctorDetails.id)}>
       <div className={classes.root}>
@@ -118,25 +120,26 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             className={classes.doctorAvatar}
           />
           <div className={classes.doctorInfo}>
-            <div className={`${classes.availability} ${classes.availableNow}`}>
+            {/* <div className={`${classes.availability} ${classes.availableNow}`}>
               Available in 15 mins
-            </div>
+            </div> */}
+            <div className={`${classes.availability}`}>Available in 1 HOUR</div>
             <div className={classes.doctorName}>
               {`${doctorDetails.firstName} ${doctorDetails.lastName}`}
             </div>
             <div className={classes.doctorType}>
-              {doctorDetails.speciality}
+              {doctorDetails.specialty.name}
               <span className={classes.doctorExp}>{doctorDetails.experience} YRS</span>
             </div>
             <div className={classes.doctorDetails}>
-              <p>{doctorDetails.education}</p>
+              <p>{doctorDetails.qualification}</p>
               <p>Apollo Hospitals, Jubilee Hills</p>
             </div>
           </div>
         </div>
         <div className={classes.bottomAction}>
           <AphButton fullWidth color="primary" className={classes.button}>
-            Consult Now
+            BOOK APPOINTMENT
           </AphButton>
         </div>
       </div>
