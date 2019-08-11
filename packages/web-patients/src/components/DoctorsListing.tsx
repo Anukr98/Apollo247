@@ -208,11 +208,11 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     });
   }
 
-  console.log(
-    '........',
-    convertAvailabilityToDate(filter.availability || []),
-    filter.availability
-  );
+  // console.log(
+  //   '........',
+  //   convertAvailabilityToDate(filter.availability || []),
+  //   filter.availability
+  // );
 
   const apiVairables = {
     specialty: specialityId,
@@ -349,7 +349,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           <Popover
             open={isPopoverOpen}
             onClose={(e, reason) => {
-              console.log('hello', e, reason);
+              // console.log('hello', e, reason);
             }}
             anchorOrigin={{
               vertical: 'bottom',
