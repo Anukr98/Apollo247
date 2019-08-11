@@ -194,7 +194,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
   //logic for before start counsult timer start
-  console.log(new Date().toISOString().substring(0, 16), props.appointmentDateTime);
+  //console.log(new Date().toISOString().substring(0, 16), props.appointmentDateTime);
   const dt1 = new Date(new Date().toISOString().substring(0, 16)); //today time
   const dt2 = new Date(props.appointmentDateTime); // apointment time
   const diff = dt2.getHours() - dt1.getHours();
