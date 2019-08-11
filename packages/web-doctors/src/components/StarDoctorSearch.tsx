@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import MenuItem from '@material-ui/core/MenuItem';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import { Select } from '@material-ui/core';
+import { AphSelect } from '@aph/web-ui-components';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 
 import {
@@ -96,6 +96,31 @@ const useStyles = makeStyles((theme: Theme) =>
       right: 0,
       top: 10,
     },
+    menuPopover: {
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      marginLeft: -2,
+      marginTop: 45,
+      borderRadius: 10,
+      '& ul': {
+        padding: '10px 20px',
+        '& li': {
+          fontSize: 18,
+          fontWeight: 500,
+          color: '#02475b',
+          minHeight: 'auto',
+          paddingLeft: 0,
+          paddingRight: 0,
+          borderBottom: '1px solid rgba(1,71,91,0.2)',
+          textTransform: 'capitalize',
+          '&:last-child': {
+            borderBottom: 'none',
+          },
+          '&:hover': {
+            color: '#00b38e',
+          },
+        },
+      },
+    },
   })
 );
 export interface StarDoctorSearchProps {
@@ -120,20 +145,23 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
         });
         return (
           <div className={`${classes.root} ${classes.posRelative}`}>
-            <Select
+            <AphSelect
               value={''}
               displayEmpty
+              MenuProps={{
+                classes: { paper: classes.menuPopover },
+                anchorOrigin: {
+                  vertical: 'bottom',
+                  horizontal: 'left',
+                },
+              }}
               onChange={(e) => {
                 const doctor = data!.getDoctorDetails!.starTeam!.find(
                   (item) => item!.associatedDoctor!.id === e.target.value
                 );
-
                 addDoctorHandler(doctor);
               }}
             >
-              <MenuItem disabled value="">
-                Select a doctor
-              </MenuItem>
               {data &&
                 data.getDoctorDetails &&
                 data.getDoctorDetails.starTeam &&
@@ -160,7 +188,7 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
                       )
                     )
                   )}
-            </Select>
+            </AphSelect>
           </div>
         );
       }}
