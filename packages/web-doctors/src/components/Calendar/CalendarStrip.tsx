@@ -22,6 +22,7 @@ const useStyles = makeStyles({
     '& li': {
       width: '14%',
       padding: '10px 0 10px 0',
+      cursor: 'pointer',
       '&.highlight': {
         backgroundColor: '#00b38e',
         color: '#fff',
