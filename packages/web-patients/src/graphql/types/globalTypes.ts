@@ -116,6 +116,11 @@ export interface Range {
   maximum?: number | null;
 }
 
+export interface UpdateAppointmentSessionInput {
+  appointmentId: string;
+  requestRole: string;
+}
+
 export interface UpdatePatientInput {
   id: string;
   firstName?: string | null;

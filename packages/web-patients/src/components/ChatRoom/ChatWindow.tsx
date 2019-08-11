@@ -187,6 +187,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   let leftComponent = 0;
   let rightComponent = 0;
   const pubnub = new Pubnub(config);
+
+  const startConsult = '^^#startconsult';
+  const stopConsult = '^^#stopconsult';
+
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
@@ -194,10 +198,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     });
 
     getHistory();
+
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
-        getHistory();
+        console.log(message);
+        if (message.message.isTyping) {
+          if (message.message.message === startConsult) {
+            console.log(3);
+          } else if (message.message.message === stopConsult) {
+            console.log(4);
+          }
+        } else {
+          getHistory();
+        }
       },
     });
 
