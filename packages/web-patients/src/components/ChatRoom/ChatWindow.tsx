@@ -149,6 +149,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
+
 interface MessagesObjectProps {
   id: string;
   message: string;
@@ -159,6 +160,7 @@ interface ChatWindowProps {
   // toggleTabs: () => void;
   sessionId: string;
   token: string;
+  appointmentId: string;
 }
 export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const classes = useStyles();
@@ -176,8 +178,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const publishKey = 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3';
   const doctorId = 'Ravi';
   const patientId = 'Sai';
-  //const channel = props.appointmentId;
-  const channel = 'channel12345678';
+  const channel = props.appointmentId;
   const config: Pubnub.PubnubConfig = {
     subscribeKey: subscribeKey,
     publishKey: publishKey,
@@ -252,7 +253,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     );
   };
   const autoSend = () => {
-    console.log('djdsfgghds');
     const text = {
       id: patientId,
       message: stopcallMsg,
@@ -323,7 +323,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         })
       : '';
   const toggelChatVideo = () => {
-    //alert('dfdhskfj');
     setShowVideoChat(!showVideoChat);
   };
   const actionBtn = () => {

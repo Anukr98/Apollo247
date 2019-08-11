@@ -131,6 +131,9 @@ interface ConsultProps {
   sessionId: string;
   token: string;
 }
+
+const openTokApiKey = '46393582';
+
 export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
   const [isCall, setIscall] = React.useState(true);
@@ -146,7 +149,7 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
         }`}
       >
         {isCall && (
-          <OTSession apiKey="46393582" sessionId={props.sessionId} token={props.token}>
+          <OTSession apiKey={openTokApiKey} sessionId={props.sessionId} token={props.token}>
             <div className={classes.otPublisher}>
               <OTPublisher
                 properties={{
