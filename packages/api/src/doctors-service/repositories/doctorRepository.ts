@@ -86,6 +86,19 @@ export class DoctorRepository extends Repository<Doctor> {
       .getMany();
   }
 
+  findOtherDoctorsOfSpecialty(specialtyId: string, doctorId: string) {
+    return this.createQueryBuilder('doctor')
+      .leftJoinAndSelect('doctor.specialty', 'specialty')
+      .leftJoinAndSelect('doctor.consultHours', 'consultHours')
+      .leftJoinAndSelect('doctor.doctorHospital', 'doctorHospital')
+      .leftJoinAndSelect('doctorHospital.facility', 'doctorHospital.facility')
+      .where('doctor.specialty = :specialtyId', {
+        specialtyId,
+      })
+      .andWhere('doctor.id NOT IN (:doctorId)', { doctorId })
+      .getMany();
+  }
+
   async filterDoctors(filterInput: FilterDoctorInput) {
     const { specialty, city, experience, gender, fees, language, availability } = filterInput;
 

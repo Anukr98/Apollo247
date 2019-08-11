@@ -59,7 +59,10 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 
     //fetch other doctors only if there is one matched doctor
     if (matchedDoctors.length === 1) {
-      otherDoctors = await doctorRepository.searchBySpecialty(matchedDoctors[0].specialty.id);
+      otherDoctors = await doctorRepository.findOtherDoctorsOfSpecialty(
+        matchedDoctors[0].specialty.id,
+        matchedDoctors[0].id
+      );
     }
 
     //fetch possible doctors only if there are not matched doctors and specialties
