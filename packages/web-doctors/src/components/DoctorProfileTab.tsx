@@ -400,13 +400,13 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           title={
             <div>
               <h4>
-                {doctor!.associatedDoctor!.salutation} {doctor!.associatedDoctor!.firstName}
+                {doctor!.associatedDoctor!.salutation} {doctor!.associatedDoctor!.firstName}{' '}
                 {doctor!.associatedDoctor!.lastName}
               </h4>
               {doctor!.isActive === true && (
                 <h6>
                   <span>
-                    {doctor!.associatedDoctor!.specialty!.name} |
+                    {doctor!.associatedDoctor!.specialty!.name.toUpperCase()} |{' '}
                     {doctor!.associatedDoctor!.experience} YRS
                   </span>
                 </h6>

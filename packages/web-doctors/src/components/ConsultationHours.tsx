@@ -131,6 +131,14 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
+    cosultMode: {
+      color: '#658f9b',
+      fontSize: 14,
+      fontWeight: theme.typography.fontWeightMedium,
+    },
+    pointerNone: {
+      pointerEvents: 'none',
+    },
     cancelBtn: {
       minWidth: 30,
       margin: theme.spacing(1),
@@ -278,9 +286,6 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightMedium,
       padding: theme.spacing(2, 0, 2, 0),
     },
-    pointerNone: {
-      pointerEvents: 'none',
-    },
   };
 });
 interface ConsultationHoursProps {
@@ -312,9 +317,11 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                     <div className={classes.columnDays}>
                       <Typography className={classes.heading}>
                         {item.weekDay} &nbsp; | &nbsp;
-                        {item.consultMode === 'PHYSICAL' && 'Physical'}
-                        {item.consultMode === 'BOTH' && 'Physical , Online'}
-                        {item.consultMode === 'ONLINE' && 'Online'}
+                        <span className={classes.cosultMode}>
+                          {item.consultMode === 'PHYSICAL' && 'Physical'}
+                          {item.consultMode === 'BOTH' && 'Physical , Online'}
+                          {item.consultMode === 'ONLINE' && 'Online'}
+                        </span>
                       </Typography>
                     </div>
                     {item.consultType && <div className={classes.columnType}>(FIXED)</div>}
