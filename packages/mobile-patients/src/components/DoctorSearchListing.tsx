@@ -377,6 +377,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               shadowRadius: 0,
               shadowOffset: { width: 0, height: 0 },
               shadowColor: 'white',
+              elevation: 0,
             }}
             heading={'Uh oh! :('}
             description={

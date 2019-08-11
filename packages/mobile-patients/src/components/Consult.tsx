@@ -427,9 +427,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           </View> */}
           <View style={{ width: '100%' }}>
             <View style={styles.viewName}>
-              <View style={{ alignItems: 'flex-end', marginTop: 20 }}>
+              <View style={{ alignItems: 'flex-end', marginTop: 20, height: 57 }}>
                 <TouchableOpacity onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}>
-                  <ApolloLogo style={{ right: 20 }} />
+                  <ApolloLogo style={{}} />
                 </TouchableOpacity>
               </View>
               <TouchableOpacity
@@ -437,7 +437,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 activeOpacity={1}
                 style={{
                   flexDirection: 'row',
-                  // marginTop: 18,
+                  marginTop: 8,
                   alignItems: 'center',
                 }}
               >
@@ -450,7 +450,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         alignItems: 'center',
                       }}
                     >
-                      <Text style={styles.nameTextStyle}>{userName}!</Text>
+                      <Text style={styles.nameTextStyle}>mamath vattimalla!</Text>
+
+                      {/* <Text style={styles.nameTextStyle}>{userName}!</Text> */}
                       <DropdownGreen style={{ marginTop: 8 }} />
                     </View>
                     <View style={styles.seperatorStyle} />

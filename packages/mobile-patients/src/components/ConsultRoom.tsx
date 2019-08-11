@@ -421,7 +421,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </View>
           <View style={{ width: '100%', height: 456 }}>
             <View style={styles.viewName}>
-              <View style={{ alignItems: 'flex-end', marginTop: 20 }}>
+              <View style={{ alignItems: 'flex-end', marginTop: 20, height: 57 }}>
                 <TouchableOpacity onPress={() => props.navigation.replace(AppRoutes.TabBar)}>
                   <ApolloLogo style={{ right: 20 }} />
                 </TouchableOpacity>
@@ -431,7 +431,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 activeOpacity={1}
                 style={{
                   flexDirection: 'row',
-                  marginTop: 18,
+                  marginTop: 8,
                   alignItems: 'center',
                 }}
               >

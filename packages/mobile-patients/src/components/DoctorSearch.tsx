@@ -23,6 +23,8 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors,
 } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialtyByName';
 import React, { useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
@@ -134,6 +136,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [possibleMatches, setpossibleMatches] = useState<
     SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches
   >();
+  const [otherDoctors, setotherDoctors] = useState<
+    (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors | null)[] | null
+  >();
 
   const newData = useQuery<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>(
     SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
@@ -171,6 +176,14 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         'newData.data.SearchDoctorAndSpecialtyByName.specialties'
       );
       setsearchSpecialities(newData.data.SearchDoctorAndSpecialtyByName.specialties);
+    }
+    if (
+      newData.data &&
+      newData.data.SearchDoctorAndSpecialtyByName &&
+      newData.data.SearchDoctorAndSpecialtyByName.otherDoctors &&
+      otherDoctors !== newData.data.SearchDoctorAndSpecialtyByName.otherDoctors
+    ) {
+      setotherDoctors(newData.data.SearchDoctorAndSpecialtyByName.otherDoctors);
     }
   }
 
@@ -482,7 +495,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             sectionTitle={'Matching Doctors — ' + doctorsList.length}
             style={{ marginBottom: 0 }}
           />
-
           <FlatList
             contentContainerStyle={{
               marginTop: 20,
@@ -506,7 +518,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const renderPossibleDoctorResultsRow = (
-    rowData: SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors | null
+    rowData: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors | null
   ) => {
     if (rowData) return <DoctorCard rowData={rowData} navigation={props.navigation} />;
     return null;
@@ -515,29 +527,28 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const renderPossibleMatches = () => {
     return (
       <View>
-        {possibleMatches && allDoctors && (
+        {possibleMatches && possibleMatches.doctors && possibleMatches.doctors.length > 0 && (
           <View>
             <SectionHeaderComponent
-              sectionTitle={'Possible Doctors — ' + allDoctors.length}
+              sectionTitle={'Possible Doctors — ' + possibleMatches.doctors.length}
               style={{ marginBottom: 0 }}
             />
-
             <FlatList
               contentContainerStyle={{
                 marginTop: 16,
                 marginBottom: 8,
               }}
               bounces={false}
-              data={allDoctors}
+              data={possibleMatches.doctors}
               onEndReachedThreshold={0.5}
               renderItem={({ item }) => renderPossibleDoctorResultsRow(item)}
             />
           </View>
         )}
-        {possibleMatches && Specialities && (
+        {possibleMatches && possibleMatches.specialties && possibleMatches.specialties.length > 0 && (
           <View>
             <SectionHeaderComponent
-              sectionTitle={` Possible Specialities — ${Specialities.length}`}
+              sectionTitle={` Possible Specialities — ${possibleMatches.specialties.length}`}
               style={{
                 marginBottom: 0,
                 marginTop: 4,
@@ -549,10 +560,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 marginHorizontal: 12,
               }}
               bounces={false}
-              data={Specialities}
+              data={possibleMatches.specialties}
               onEndReachedThreshold={0.5}
               renderItem={({ item, index }) =>
-                renderSpecialistRow(item, index, Specialities!.length)
+                renderSpecialistRow(item, index, possibleMatches.specialties!.length)
               }
               keyExtractor={(_, index) => index.toString()}
               numColumns={2}
@@ -563,6 +574,28 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     );
   };
 
+  const renderOtherSUggestedDoctors = () => {
+    if (otherDoctors)
+      return (
+        <View>
+          <SectionHeaderComponent
+            sectionTitle={'Other Suggested Doctors'}
+            style={{ marginBottom: 0, marginTop: 4 }}
+          />
+          <FlatList
+            contentContainerStyle={{
+              marginTop: 16,
+              marginBottom: 8,
+            }}
+            bounces={false}
+            data={otherDoctors}
+            onEndReachedThreshold={0.5}
+            renderItem={({ item }) => renderPossibleDoctorResultsRow(item)}
+          />
+        </View>
+      );
+    return null;
+  };
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
@@ -580,6 +613,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               searchSpecialities.length === 0 &&
               possibleMatches &&
               renderPossibleMatches()}
+            {doctorsList &&
+              doctorsList.length === 1 &&
+              otherDoctors &&
+              renderOtherSUggestedDoctors()}
           </KeyboardAwareScrollView>
         )}
       </SafeAreaView>
