@@ -6,11 +6,12 @@ import {
   GetPatientAppointments,
   GetPatientAppointments_getPatinetAppointments_patinetAppointments as appointmentDetails,
 } from 'graphql/types/GetPatientAppointments';
-import { APPOINTMENT_TYPE, DoctorType } from 'graphql/types/globalTypes';
+import { DoctorType } from 'graphql/types/globalTypes';
 import _isNull from 'lodash/isNull';
 import { Link } from 'react-router-dom';
 import { getTime } from 'date-fns/esm';
 import { format } from 'date-fns';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -187,6 +188,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         <div className={classes.consultationSection}>
           <Grid container spacing={2}>
             {filterAppointments.map((appointmentDetails, index) => {
+              const appointmentId = appointmentDetails.id;
               const firstName =
                 appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.firstName
                   ? appointmentDetails.doctorInfo.firstName
@@ -218,7 +220,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
               const difference = Math.round((appointmentTime - currentTime) / 60000);
               return (
                 <Grid item sm={6} key={index}>
-                  <Link to="">
+                  <Link to={clientRoutes.chatRoom(appointmentId)}>
                     <div className={classes.consultCard}>
                       <div className={classes.startDoctor}>
                         <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
