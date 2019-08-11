@@ -112,6 +112,7 @@ const useStyles = makeStyles((theme: Theme) => {
     searchInput: {
       '& input': {
         paddingTop: 10,
+        paddingRight: 25,
         paddingBottom: 14,
         minHeight: 25,
       },
