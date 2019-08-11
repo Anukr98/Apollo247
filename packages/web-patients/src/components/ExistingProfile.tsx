@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Theme, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress, FormHelperText } from '@material-ui/core';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
@@ -11,7 +11,6 @@ import { UPDATE_PATIENT } from 'graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _capitalize from 'lodash/capitalize';
 import _sortBy from 'lodash/sortBy';
-import FormHelperText from '@material-ui/core/FormHelperText';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -40,6 +39,13 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         color: theme.palette.secondary.dark,
       },
+    },
+    errorText: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#890000',
+      marginTop: 10,
+      lineHeight: 2,
     },
     actions: {
       padding: 20,
@@ -233,16 +239,10 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const classes = useStyles();
   const [patients, setPatients] = useState(props.patients);
   const [loading, setLoading] = useState(false);
-  const onePrimaryUser = patients.filter((x) => x.relation === Relation.ME).length === 1;
-  const multiplePrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length > 1;
-  const noPrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length < 1;
-  const disabled = patients.some(isPatientInvalid) || !onePrimaryUser;
-  let primaryUserErrorMessage;
-  if (multiplePrimaryUsers)
-    primaryUserErrorMessage = 'Relation can be set as Me for only 1 profile';
-  else if (noPrimaryUsers)
-    primaryUserErrorMessage = 'There should be 1 profile with relation set as Me';
-
+  const disabled = patients.some(isPatientInvalid);
+  const [Message, setMessage] = useState<string>('');
+  const validMessage = '';
+  let isOK = false;
   return (
     <div className={classes.signUpPop} data-cypress="ExistingProfile">
       <div className={classes.mascotIcon}>
@@ -258,14 +258,13 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
           {patients.length === 0 ? null : (
             <p>
               We have found {patients.length} {patients.length > 1 ? 'accounts ' : 'account '}
-              registered with this mobile number. Please tell us who is who? :
+              registered with this mobile number. Please tell us who is who? :)
             </p>
           )}
-          {primaryUserErrorMessage && (
-            <FormHelperText component="div" error={true}>
-              {primaryUserErrorMessage}
-            </FormHelperText>
-          )}
+          <FormHelperText component="div" className={classes.errorText}>
+            {Message}
+          </FormHelperText>
+
           <div className={classes.formGroup}>
             {patients &&
               patients.map((p, i) => (
@@ -290,21 +289,37 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
             <AphButton
               type="submit"
               onClick={() => {
-                const updatePatientPromises = patients.map((patient) => {
-                  return mutate({
-                    variables: {
-                      patientInput: {
-                        id: patient.id,
-                        relation: patient.relation,
-                      },
-                    },
-                  });
+                let count = 0;
+                patients.map((patient, i) => {
+                  patients[i].relation === 'ME' ? (count = count + 1) : '';
                 });
-                setLoading(true);
-                Promise.all(updatePatientPromises)
-                  .then(() => props.onComplete())
-                  .catch(() => window.alert('Something went wrong :('))
-                  .finally(() => setLoading(false));
+                if (count > 1) {
+                  setMessage('Relation can be set as Me for only 1 profile');
+                  isOK = true;
+                } else if (count === 0) {
+                  setMessage('There should be 1 profile with relation set as Me');
+                  isOK = true;
+                } else {
+                  setMessage(validMessage);
+                  isOK = false;
+                }
+                if (isOK == false) {
+                  const updatePatientPromises = patients.map((patient) => {
+                    return mutate({
+                      variables: {
+                        patientInput: {
+                          id: patient.id,
+                          relation: patient.relation,
+                        },
+                      },
+                    });
+                  });
+                  setLoading(true);
+                  Promise.all(updatePatientPromises)
+                    .then(() => props.onComplete())
+                    .catch(() => window.alert('Something went wrong :('))
+                    .finally(() => setLoading(false));
+                }
               }}
               disabled={disabled}
               fullWidth
