@@ -9,9 +9,12 @@ import { CreateAppointmentSessionInput } from "./globalTypes";
 // ====================================================
 
 export interface CreateAppointmentSession_createAppointmentSession {
-  __typename: "AppointmentSession";
+  __typename: "CreateAppointmentSession";
   sessionId: string;
   appointmentToken: string;
+  patientId: string;
+  doctorId: string;
+  appointmentDateTime: string;
 }
 
 export interface CreateAppointmentSession {

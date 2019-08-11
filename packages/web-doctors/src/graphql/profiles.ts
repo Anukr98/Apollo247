@@ -233,6 +233,9 @@ export const CREATE_APPOINTMENT_SESSION = gql`
     createAppointmentSession(createAppointmentSessionInput: $createAppointmentSessionInput) {
       sessionId
       appointmentToken
+      patientId
+      doctorId
+      appointmentDateTime
     }
   }
 `;
