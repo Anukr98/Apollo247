@@ -84,8 +84,30 @@ const createAppointmentSession: Resolver<
 > = async (parent, { createAppointmentSessionInput }, { consultsDb }) => {
   const opentok = new openTok('46393582', 'f27789a7bad5d0ec7e5fd2c36ffba08a4830a91d');
   let sessionId = '',
-    token = '';
-
+    token = '',
+    patientId = '',
+    doctorId = '',
+    appointmentDateTime = '';
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
+  if (apptDetails) {
+    patientId = apptDetails.patientId;
+    doctorId = apptDetails.doctorId;
+    appointmentDateTime = format(apptDetails.appointmentDateTime, 'yyyy-MM-dd hh:mm');
+  }
+  const apptSessionRepo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
+  const apptSessionDets = await apptSessionRepo.getAppointmentSession(
+    createAppointmentSessionInput.appointmentId
+  );
+  if (apptSessionDets) {
+    return {
+      sessionId: apptSessionDets.sessionId,
+      appointmentToken: apptSessionDets.doctorToken,
+      patientId,
+      doctorId,
+      appointmentDateTime,
+    };
+  }
   function getSessionToken() {
     return new Promise((resolve, reject) => {
       opentok.createSession({}, (error, session) => {
@@ -102,23 +124,13 @@ const createAppointmentSession: Resolver<
     });
   }
   await getSessionToken();
-  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
-  let patientId = '',
-    doctorId = '',
-    appointmentDateTime = '';
-  if (apptDetails) {
-    const appointmentSessionAttrs = {
-      sessionId,
-      doctorToken: token,
-      appointment: apptDetails,
-    };
-    patientId = apptDetails.patientId;
-    doctorId = apptDetails.doctorId;
-    appointmentDateTime = format(apptDetails.appointmentDateTime, 'yyyy-MM-dd hh:mm');
-    const repo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
-    await repo.saveAppointmentSession(appointmentSessionAttrs);
-  }
+  const appointmentSessionAttrs = {
+    sessionId,
+    doctorToken: token,
+    appointment: apptDetails,
+  };
+  const repo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
+  await repo.saveAppointmentSession(appointmentSessionAttrs);
   return {
     sessionId: sessionId,
     appointmentToken: token,
@@ -141,7 +153,7 @@ const updateAppointmentSession: Resolver<
   const apptSession = await apptSessionRepo.getAppointmentSession(
     updateAppointmentSessionInput.appointmentId
   );
-  const tokenOptions: TokenOptions = { role: 'moderator', data: '' };
+  const tokenOptions: TokenOptions = { role: 'subscriber', data: '' };
   if (apptSession) {
     sessionId = apptSession.sessionId;
     token = opentok.generateToken(sessionId, tokenOptions);
