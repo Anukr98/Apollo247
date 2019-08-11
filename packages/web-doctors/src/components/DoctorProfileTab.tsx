@@ -6,6 +6,7 @@ import Popover from '@material-ui/core/Popover';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
+
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,

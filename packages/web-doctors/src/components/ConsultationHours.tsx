@@ -5,6 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import { DaySelector } from 'components/DaySelector';
 import { AphButton, AphInput } from '@aph/web-ui-components';
+
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -305,7 +306,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
             const item = _item!;
             return (
               <div key={index.toString()} className={classes.tabContent}>
-                <ExpansionPanel className={classes.serviceItem}>
+                <ExpansionPanel className={`${classes.serviceItem}${classes.pointerNone}`}>
                   <ExpansionPanelSummary
                     expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
                   >
