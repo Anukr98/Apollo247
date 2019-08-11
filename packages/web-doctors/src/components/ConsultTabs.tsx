@@ -86,7 +86,10 @@ export const ConsultTabs: React.FC = (props) => {
   const [appointmentId, setAppointmentId] = useState<string>('');
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
-
+  const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
+  const [doctorId, setdoctorId] = useState<string>('');
+  const [patientId, setpatientId] = useState<string>('');
+  const [loaded, setLoaded] = useState<boolean>(false);
   const params = useParams<Params>();
   const paramId = params.id;
   const TabContainer: React.FC = (props) => {
@@ -94,27 +97,33 @@ export const ConsultTabs: React.FC = (props) => {
   };
   const client = useApolloClient();
   useEffect(() => {
-    if (appointmentId !== paramId) {
+    if (appointmentId !== paramId && paramId !== '') {
       setAppointmentId(paramId);
       client
         .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
           mutation: CREATE_APPOINTMENT_SESSION,
           variables: {
             createAppointmentSessionInput: {
-              appointmentId: '4ba75a55-4174-4485-90dd-3350899929e6',
+              appointmentId: paramId,
               requestRole: REQUEST_ROLES.DOCTOR,
             },
           },
         })
         .then((_data: any) => {
           console.log('createsession', _data);
+          setLoaded(true);
           //const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
-          //setsessionId(_data.data.createAppointmentSession.sessionId);
-          //settoken(_data.data.createAppointmentSession.appointmentToken);
-          setsessionId('1_MX40NjM5MzU4Mn5-MTU2NTA3MTUwNDk4MX56bVd3ZW96MFNuS2Vua2dDMnZ5VTZNNlJ-UH4');
-          settoken(
-            'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9Y2UxMDhkODEzNTU3MmE4M2ExZTZkNmVlYjVkZDE0ODA3NGZhM2QyZTpzZXNzaW9uX2lkPTFfTVg0ME5qTTVNelU0TW41LU1UVTJOVEEzTVRVd05EazRNWDU2YlZkM1pXOTZNRk51UzJWdWEyZERNblo1VlRaTk5sSi1VSDQmY3JlYXRlX3RpbWU9MTU2NTA3MTYxMCZub25jZT0wLjExNjA5MzQ3Njk5NjI3MzM3JnJvbGU9cHVibGlzaGVyJmV4cGlyZV90aW1lPTE1Njc2NjM2MDcmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
+          setsessionId(_data.data.createAppointmentSession.sessionId);
+          settoken(_data.data.createAppointmentSession.appointmentToken);
+          setappointmentDateTime(
+            _data.data.createAppointmentSession.appointmentDateTime.replace(' ', 'T')
           );
+          setdoctorId(_data.data.createAppointmentSession.doctorId);
+          setpatientId(_data.data.createAppointmentSession.patientId);
+          // setsessionId('1_MX40NjM5MzU4Mn5-MTU2NTA3MTUwNDk4MX56bVd3ZW96MFNuS2Vua2dDMnZ5VTZNNlJ-UH4');
+          // settoken(
+          //   'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9Y2UxMDhkODEzNTU3MmE4M2ExZTZkNmVlYjVkZDE0ODA3NGZhM2QyZTpzZXNzaW9uX2lkPTFfTVg0ME5qTTVNelU0TW41LU1UVTJOVEEzTVRVd05EazRNWDU2YlZkM1pXOTZNRk51UzJWdWEyZERNblo1VlRaTk5sSi1VSDQmY3JlYXRlX3RpbWU9MTU2NTA3MTYxMCZub25jZT0wLjExNjA5MzQ3Njk5NjI3MzM3JnJvbGU9cHVibGlzaGVyJmV4cGlyZV90aW1lPTE1Njc2NjM2MDcmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
+          // );
         })
         .catch((e: any) => {
           console.log('Error occured while adding Doctor', e);
@@ -138,50 +147,55 @@ export const ConsultTabs: React.FC = (props) => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      <div className={classes.container}>
-        <CallPopover
-          setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-          appointmentId={appointmentId}
-        />
-        <div>
+      {loaded && (
+        <div className={classes.container}>
+          <CallPopover
+            setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+            appointmentId={appointmentId}
+            appointmentDateTime={appointmentDateTime}
+          />
           <div>
-            <Tabs
-              value={tabValue}
-              variant="fullWidth"
-              classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
-              onChange={(e, newValue) => {
-                setTabValue(newValue);
-              }}
-            >
-              <Tab
-                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                label="Case Sheet"
-              />
-              <Tab
-                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                label="Chat"
-              />
-            </Tabs>
-          </div>
-          {tabValue === 0 && (
-            <TabContainer>
-              <div className={classes.caseSheet}>Case sheet</div>
-            </TabContainer>
-          )}
-          {tabValue === 1 && (
-            <TabContainer>
-              <div className={classes.chatContainer}>
-                <ConsultRoom
-                  startConsult={startConsult}
-                  sessionId={sessionId}
-                  token={token}
-                  appointmentId={appointmentId}
+            <div>
+              <Tabs
+                value={tabValue}
+                variant="fullWidth"
+                classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+                onChange={(e, newValue) => {
+                  setTabValue(newValue);
+                }}
+              >
+                <Tab
+                  classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                  label="Case Sheet"
                 />
-              </div>
-            </TabContainer>
-          )}
+                <Tab
+                  classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                  label="Chat"
+                />
+              </Tabs>
+            </div>
+            {tabValue === 0 && (
+              <TabContainer>
+                <div className={classes.caseSheet}>Case sheet</div>
+              </TabContainer>
+            )}
+            {tabValue === 1 && (
+              <TabContainer>
+                <div className={classes.chatContainer}>
+                  <ConsultRoom
+                    startConsult={startConsult}
+                    sessionId={sessionId}
+                    token={token}
+                    appointmentId={appointmentId}
+                    doctorId={doctorId}
+                    patientId={patientId}
+                  />
+                </div>
+              </TabContainer>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
