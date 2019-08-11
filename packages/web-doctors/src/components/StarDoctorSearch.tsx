@@ -104,7 +104,8 @@ const useStyles = makeStyles((theme: Theme) =>
       '& ul': {
         padding: '10px 20px',
         '& li': {
-          fontSize: 18,
+          fontSize: 16,
+          width: 242,
           fontWeight: 500,
           color: '#02475b',
           minHeight: 'auto',
@@ -163,8 +164,12 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
               }}
             >
               {data &&
-                data.getDoctorDetails &&
-                data.getDoctorDetails.starTeam &&
+              data.getDoctorDetails &&
+              data.getDoctorDetails.starTeam &&
+              data.getDoctorDetails.starTeam.filter(
+                (existingDoc: GetDoctorDetails_getDoctorDetails_starTeam | null) =>
+                  existingDoc!.isActive === false
+              ).length > 0 ? (
                 data.getDoctorDetails.starTeam
                   .filter(
                     (existingDoc: GetDoctorDetails_getDoctorDetails_starTeam | null) =>
@@ -187,7 +192,10 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
                         </MenuItem>
                       )
                     )
-                  )}
+                  )
+              ) : (
+                <MenuItem disabled={true}>No Data Available</MenuItem>
+              )}
             </AphSelect>
           </div>
         );
