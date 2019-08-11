@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme, CircularProgress } from '@material-ui/core';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
@@ -168,6 +168,14 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   const [selectedRelation, setSelectedRelation] = React.useState<Relation | ''>(
     patient.relation || ''
   );
+
+  useEffect(() => {
+    //By default selectedRelation 1 st profile should be ME when there is an empty input
+    if (number === 1 && selectedRelation === '') {
+      setSelectedRelation(Relation.ME);
+    }
+  }, [number, selectedRelation]);
+
   return (
     <div className={classes.profileBox} data-cypress="PatientProfile">
       <div className={classes.boxHeader}>
@@ -246,12 +254,13 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
             welcome
             <br /> to apollo 24/7
           </Typography>
-          {patients.length > 1 ? (
+
+          {patients.length === 0 ? null : (
             <p>
-              We have found {patients.length} accounts registered with this mobile number. Please
-              tell us who is who? :)
+              We have found {patients.length} {patients.length > 1 ? 'accounts ' : 'account '}
+              registered with this mobile number. Please tell us who is who? :
             </p>
-          ) : null}
+          )}
           {primaryUserErrorMessage && (
             <FormHelperText component="div" error={true}>
               {primaryUserErrorMessage}
