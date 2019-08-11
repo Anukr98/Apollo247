@@ -366,6 +366,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           <AppointmentsList
             navigation={props.navigation}
             appointmentsHistory={(getAppointments && getAppointments.appointmentsHistory) || []}
+            newPatientsList={(getAppointments && getAppointments.newPatientsList) || []}
           />
         )}
       </View>

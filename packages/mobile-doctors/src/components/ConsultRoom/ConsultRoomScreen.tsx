@@ -64,6 +64,7 @@ import {
 
 import { CREATEAPPOINTMENTSESSION } from '@aph/mobile-doctors/src/graphql/profiles';
 import { REQUEST_ROLES } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import moment from 'moment';
 const styles = StyleSheet.create({
   mainview: {
     backgroundColor: '#ffffff',
@@ -110,6 +111,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const client = useApolloClient();
   const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
   const AppId = props.navigation.getParam('AppId');
+  const Appintmentdatetime: Date = props.navigation.getParam('Appintmentdatetime');
   // console.log('hihihi', props.navigation.getParam('PatientInfoAll'));
   // console.log('Appintmentdatetimeconsultpage', props.navigation.getParam('Appintmentdatetime'));
   const channel = props.navigation.getParam('AppId');
@@ -588,7 +590,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 lineHeight: 16,
               }}
             >
-              Your appointment with {PatientInfoAll.firstName} is scheduled to start at 11.50 AM
+              {`Your appointment with ${PatientInfoAll.firstName} is scheduled to start at ${moment(
+                Appintmentdatetime
+              ).format('hh.mm A')}`}
             </Text>
           </View>
         )}
@@ -1395,6 +1399,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
 
+  const [timeToConsultTimer, setTimeToConsultTimer] = useState();
+  const getTimerText = () => {
+    // In - Progress this function
+    if (moment(Appintmentdatetime).isAfter(15, 'minutes')) return '';
+    return Appintmentdatetime.getDate() == new Date().getDate() &&
+      moment(Appintmentdatetime).isBefore(15, 'minutes')
+      ? 'Timer should start here'
+      : 'Appointemt is more than 15 mins later';
+  };
+
   const showHeaderView = () => {
     return (
       <NotificationHeader
@@ -1410,13 +1424,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           },
         ]}
         middleText="CONSULT ROOM"
-        timerText={
-          consultStarted
-            ? `Time Left ${minutes} : ${seconds}`
-            : PatientConsultTime != null
-            ? 'Time to Consult '
-            : null
-        }
+        timerText={consultStarted ? `Time Left ${minutes} : ${seconds}` : getTimerText()}
         timerremaintext={!consultStarted ? PatientConsultTime : null}
         textStyles={{ marginTop: 10 }}
         rightIcons={[

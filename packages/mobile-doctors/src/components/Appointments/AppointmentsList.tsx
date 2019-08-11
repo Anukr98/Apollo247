@@ -35,47 +35,16 @@ const styles = StyleSheet.create({
 });
 
 export interface AppointmentsListProps extends NavigationScreenProps {
-  appointmentsHistory: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory[];
+  appointmentsHistory: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory)[];
+  newPatientsList: (string | null)[];
   navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
 }
 
 export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
-  const showDiff = (
-    one: any,
-    two: any,
-    doctorId: string,
-    patientId: string,
-    PatientInfo: object,
-    appId: string,
-    appointmentDateTime: string
-  ) => {
-    console.log('one', one);
-    console.log('two', two);
-    console.log('PatientInfo', PatientInfo);
-    const dt1 = new Date(one);
-    const dt2 = new Date(two);
-    const diff = dt2.getHours() - dt1.getHours();
-    const diff2 = dt2.getMinutes() - dt1.getMinutes();
-    console.log('diff', diff.toString().length);
-    console.log('diff2', diff2);
-    const val = '0';
-    const CDA = diff
-      .toString()
-      .concat(':')
-      .concat(diff2.toString().length == 1 ? val.concat(diff2.toString()) : diff2.toString());
-
-    //CDA /= 60;
-    //console.log('Math.abs(Math.round(diff))', Math.abs(Math.round(CDA)));
-    // return Math.abs(Math.round(diff));
-    props.navigation.push(AppRoutes.ConsultRoomScreen, {
-      DoctorId: doctorId,
-      PatientId: patientId,
-      PatientConsultTime: CDA.replace('-', ''),
-      PatientInfoAll: PatientInfo,
-      AppId: appId,
-      Appintmentdatetime: appointmentDateTime,
-    });
+  const isNewPatient = (id: string) => {
+    return props.newPatientsList.indexOf(id) > -1;
   };
+
   const getStatusCircle = (status: Appointments['timeslottype']) =>
     status == 'past' ? (
       <PastAppointmentIcon />
@@ -173,45 +142,19 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   index == array.length - 1 ? false : true
                 )}
                 <CalendarCard
-                  isNewPatient={true}
+                  isNewPatient={isNewPatient(i.patientInfo!.id)}
                   onPress={(doctorId, patientId, PatientInfo, appointmentTime, appId) => {
                     console.log('appppp', appId);
-                    const todaytime = moment(new Date()).format('YYYY-MM-DDTHH:mm');
-                    const appointmentDateTime = moment(i.appointmentDateTime).format(
-                      'YYYY-MM-DDTHH:mm'
-                    );
-                    console.log('todaytime', todaytime);
-                    console.log('appointmentDateTime', appointmentDateTime);
-                    console.log(moment(i.appointmentDateTime).format('HH:mm'));
-                    {
-                      todaytime < appointmentDateTime
-                        ? showDiff(
-                            todaytime,
-                            appointmentDateTime,
-                            doctorId,
-                            patientId,
-                            PatientInfo,
-                            appId,
-                            appointmentDateTime
-                          )
-                        : props.navigation.push(AppRoutes.ConsultRoomScreen, {
-                            DoctorId: doctorId,
-                            PatientId: patientId,
-                            PatientConsultTime: null,
-                            PatientInfoAll: PatientInfo,
-                            AppId: appId,
-                            Appintmentdatetime: appointmentDateTime,
-                          });
-                    }
-
-                    // props.navigation.push(AppRoutes.ConsultRoomScreen, {
-                    //   DoctorId: doctorId,
-                    //   PatientId: patientId,
-                    //   PatientConsultTime: moment(i.appointmentDateTime).format('HH:mm'),
-                    //   PatientInfoAll: PatientInfo,
-                    // });
+                    props.navigation.push(AppRoutes.ConsultRoomScreen, {
+                      DoctorId: doctorId,
+                      PatientId: patientId,
+                      PatientConsultTime: null,
+                      PatientInfoAll: PatientInfo,
+                      AppId: appId,
+                      Appintmentdatetime: getDateFormat(i.appointmentDateTime),
+                    });
                   }}
-                  doctorname={i.patientInfo!.firstName}
+                  doctorname={i.patientInfo!.firstName || ''}
                   timing={formatTiming(i.appointmentDateTime)}
                   symptoms={[]}
                   doctorId={i.doctorId}
