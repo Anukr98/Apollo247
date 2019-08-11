@@ -198,6 +198,7 @@ const useStyles = makeStyles((theme: Theme) => {
     heading: {
       fontSize: 14,
       color: theme.palette.secondary.dark,
+      textTransform: 'capitalize',
     },
     primaryHeading: {
       fontSize: theme.typography.pxToRem(20),
@@ -317,7 +318,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                     </div>
                     <div className={classes.columnDays}>
                       <Typography className={classes.heading}>
-                        {item.weekDay} &nbsp; | &nbsp;
+                        {item.weekDay.toLowerCase()} &nbsp; | &nbsp;
                         <span className={classes.cosultMode}>
                           {item.consultMode === 'PHYSICAL' && 'Physical'}
                           {item.consultMode === 'BOTH' && 'Physical , Online'}
