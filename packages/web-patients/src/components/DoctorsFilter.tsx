@@ -240,6 +240,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     setFees([]);
     setLanguage([]);
     setDateSelected('');
+    setShowCalendar(false);
     handleFilterOptions(filterOptions);
   };
 
