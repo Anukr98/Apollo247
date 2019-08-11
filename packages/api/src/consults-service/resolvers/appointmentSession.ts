@@ -91,7 +91,6 @@ const createAppointmentSession: Resolver<
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
-  console.log(apptDetails, 'appt details');
   if (apptDetails) {
     patientId = apptDetails.patientId;
     doctorId = apptDetails.doctorId;
