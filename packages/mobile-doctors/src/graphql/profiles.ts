@@ -166,6 +166,7 @@ export const GET_DOCTOR_PROFILE = gql`
 export const GET_DOCTOR_APPOINTMENTS = gql`
   query GetDoctorAppointments($startDate: Date, $endDate: Date) {
     getDoctorAppointments(startDate: $startDate, endDate: $endDate) {
+      newPatientsList
       appointmentsHistory {
         appointmentType
         doctorId

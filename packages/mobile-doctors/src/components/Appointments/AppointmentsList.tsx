@@ -90,7 +90,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     const time = dateTime[1].substring(0, 4).split(':');
     return new Date(
       parseInt(date[0]),
-      parseInt(date[1]),
+      parseInt(date[1]) - 1,
       parseInt(date[2]),
       parseInt(time[0]),
       parseInt(time[1])

@@ -1401,12 +1401,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const [timeToConsultTimer, setTimeToConsultTimer] = useState();
   const getTimerText = () => {
-    // In - Progress this function
-    if (moment(Appintmentdatetime).isAfter(15, 'minutes')) return '';
-    return Appintmentdatetime.getDate() == new Date().getDate() &&
-      moment(Appintmentdatetime).isBefore(15, 'minutes')
-      ? 'Timer should start here'
-      : 'Appointemt is more than 15 mins later';
+    const now = new Date();
+    const diff = moment.duration(moment(Appintmentdatetime).diff(now));
+    const diffInHours = diff.asHours();
+    console.log(now, Appintmentdatetime, diffInHours);
+    console.log(diff.days(), diff.hours(), diff.minutes());
+    if (diffInHours > 0 && diffInHours < 12)
+      return `Time to consult ${moment(new Date(0, 0, 0, diff.hours(), diff.minutes())).format(
+        'hh: mm'
+      )}`;
+    return '';
   };
 
   const showHeaderView = () => {
