@@ -306,7 +306,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
             const item = _item!;
             return (
               <div key={index.toString()} className={classes.tabContent}>
-                <ExpansionPanel className={classes.serviceItem}>
+                <ExpansionPanel className={`${classes.serviceItem}${classes.pointerNone}`}>
                   <ExpansionPanelSummary
                     expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
                   >
