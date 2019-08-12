@@ -5,6 +5,7 @@ import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import { Link } from 'react-router-dom';
 import Pubnub from 'pubnub';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -307,6 +308,19 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     );
   };
+
+  const getTimerText = () => {
+    const now = new Date();
+    const diff = moment.duration(
+      moment(props.appointmentDateTime).diff(moment(moment(now).format('YYYY-MM-DD hh:ss')))
+    );
+    const diffInHours = diff.asHours();
+    if (diffInHours > 0 && diffInHours < 12)
+      return `Time to consult ${moment(new Date(0, 0, 0, diff.hours(), diff.minutes())).format(
+        'hh: mm'
+      )}`;
+    return '';
+  };
   return (
     <div className={classes.breadcrumbs}>
       <div>
@@ -318,15 +332,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </Link>
       </div>
       CONSULT ROOM &nbsp; | &nbsp;
-      {startAppointment ? (
-        <span className={classes.timeLeft}>
-          Time Left <b>{`${minutes}:${seconds}`}</b>
-        </span>
-      ) : (
-        <span className={classes.timeLeft}>
-          Time to Consult <b>{cda}</b>
-        </span>
-      )}
+      <span className={classes.timeLeft}>
+        {startAppointment
+          ? `Time Left ${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
+              seconds.toString().length < 2 ? '0' + seconds : seconds
+            }`
+          : getTimerText()}
+      </span>
       <div className={classes.consultButtonContainer}>
         <span>
           {startAppointment ? (
