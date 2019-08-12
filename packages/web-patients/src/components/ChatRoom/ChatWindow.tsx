@@ -6,6 +6,7 @@ import Pubnub from 'pubnub';
 import { ChatVideo } from 'components/ChatRoom/ChatVideo';
 import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { ConsultRoom } from 'components/ConsultRoom/ConsultRoom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -349,8 +350,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
   const stopAudioVideoCall = () => {
     setShowVideo(false);
-    setShowVideoChat(false);
     autoSend();
+    setIsVideoCall(false);
+    setIsCalled(false);
+  };
+  const stopConsultCall = () => {
+    autoSend();
+    setShowVideo(false);
+    setShowVideoChat(false);
     setIsVideoCall(false);
     setIsCalled(false);
   };
@@ -365,6 +372,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           <ChatVideo
             stopAudioVideoCall={() => stopAudioVideoCall()}
             toggelChatVideo={() => toggelChatVideo()}
+            stopConsultCall={() => stopConsultCall()}
             sessionId={props.sessionId}
             token={props.token}
             showVideoChat={showVideoChat}

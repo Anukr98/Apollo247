@@ -94,7 +94,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     nopionter: {
-       pointerEvents: 'none',
+      pointerEvents: 'none',
     },
   };
 });
@@ -187,7 +187,7 @@ export const Calendar: React.FC<CalendarProps> = ({ doctorId }) => {
             </div>
             <div className={classes.container}>
               <div className={classes.tabHeading}>
-                <Typography variant="h1">hello dr.rao :)</Typography>
+                <Typography variant="h1">hello dr. rao :)</Typography>
                 <p>here’s your schedule for today</p>
               </div>
               <div>

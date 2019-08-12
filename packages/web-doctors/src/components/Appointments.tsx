@@ -71,14 +71,14 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 12,
     },
     section2: {
-      margin: theme.spacing(0, 2),
+      margin: '0 10px',
       color: '#02475b',
       [theme.breakpoints.between('sm', 'md')]: {
         margin: '0 2px',
       },
       '& button': {
         color: '#02475b',
-        marginRight: 40,
+        marginRight: 15,
         [theme.breakpoints.between('sm', 'md')]: {
           marginRight: 5,
           padding: '10px 5px',
@@ -90,10 +90,23 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 700,
       fontSize: 14,
     },
+    newAppointment: {
+      backgroundColor: '#ff748e',
+      color: '#fff',
+      padding: '4px 8px',
+      fontWeight: 700,
+      fontSize: 10,
+      textTransform: 'uppercase',
+      borderRadius: '0 10px 10px 0',
+      position: 'absolute',
+      left: 0,
+      top: 8,
+    },
     mainHeading: {
       color: '#02475b',
       fontWeight: 700,
       fontSize: 20,
+      lineHeight: '25px',
       [theme.breakpoints.between('sm', 'md')]: {
         fontSize: 18,
       },
@@ -294,7 +307,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
                     <CardContent>
                       <Grid item xs={12}>
                         <Grid item container spacing={2}>
-                          <Grid item lg={4} sm={5} xs={4} key={1} container>
+                          <Grid item lg={5} sm={5} xs={4} key={1} container>
                             <Grid sm={3} xs={2} key={5} item>
                               <Avatar
                                 alt={appointment.details.patientName}
@@ -308,7 +321,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
                                   <Typography
                                     gutterBottom
                                     variant="caption"
-                                    className={classes.subHeading}
+                                    className={classes.newAppointment}
                                   >
                                     New
                                   </Typography>
@@ -348,7 +361,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
                               </div>
                             </Grid>
                           )}
-                          <Grid lg={3} sm={2} xs={3} key={3} className={classes.valign} item>
+                          <Grid lg={2} sm={2} xs={3} key={3} className={classes.valign} item>
                             <div className={classes.section2}>
                               <IconButton aria-label="Video call">
                                 <img src={require('images/ic_video.svg')} alt="" />

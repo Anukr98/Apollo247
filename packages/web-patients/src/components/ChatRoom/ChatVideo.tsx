@@ -128,6 +128,7 @@ const useStyles = makeStyles((theme: Theme) => {
 interface ConsultProps {
   toggelChatVideo: () => void;
   stopAudioVideoCall: () => void;
+  stopConsultCall: () => void;
   showVideoChat: boolean;
   isVideoCall: boolean;
   sessionId: string;
@@ -142,7 +143,6 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const [mute, setMute] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const [subscribeToAudio, setSubscribeToAudio] = React.useState(props.isVideoCall ? false : true);
-  console.log(mute, subscribeToVideo, subscribeToAudio, props.sessionId, props.token);
   return (
     <div className={classes.root}>
       <div
@@ -151,7 +151,17 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
         }`}
       >
         {isCall && (
-          <OTSession apiKey={openTokApiKey} sessionId={props.sessionId} token={props.token}>
+          <OTSession
+            apiKey={openTokApiKey}
+            sessionId={props.sessionId}
+            token={props.token}
+            eventHandlers={{
+              connectionDestroyed: (event: any) => {
+                props.stopConsultCall();
+                setIscall(false);
+              },
+            }}
+          >
             <div className={classes.otPublisher}>
               <OTPublisher
                 properties={{
