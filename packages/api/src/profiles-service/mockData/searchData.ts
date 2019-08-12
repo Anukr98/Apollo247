@@ -8,25 +8,25 @@ export enum SEARCH_TYPE {
 export const searchData: SearchData[] = [
   {
     searchType: SEARCH_TYPE.DOCTOR,
-    typeId: 'a6ef960c-fc1f-4a12-878a-12063788d625',
-    name: 'Dr. Nancy Williams',
-    image: 'https://dev.popcornapps.com/apolloImages/doctor.png',
+    typeId: '046285b4-5839-4128-a9e4-6183e8592a1f',
+    name: 'Dr. Anuradha Panda',
+    image: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_3.png',
   },
   {
     searchType: SEARCH_TYPE.DOCTOR,
-    typeId: '17d15451-ee28-4f5c-9550-8f794f3938c4',
+    typeId: '9f75e0ef-af0e-4c2e-90e9-68dc40f46c48',
     name: 'Dr. Simran Rai',
-    image: 'https://dev.popcornapps.com/apolloImages/doctor.png',
+    image: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_5.png',
   },
   {
     searchType: SEARCH_TYPE.SPECIALTY,
-    typeId: 'c4c0f83e-7b8b-4033-8ab7-ab49b07d5771',
+    typeId: '029eae45-4185-448b-96c1-7b4e4572bb6f',
     name: 'General Physician',
     image: 'https://dev.popcornapps.com/apolloImages/specialty.png',
   },
   {
     searchType: SEARCH_TYPE.SPECIALTY,
-    typeId: 'd2c598b4-7fd5-4684-b3a1-6e480f8dbf6d',
+    typeId: '8c601eae-9bf8-4181-9287-aa9534d8d993',
     name: 'Cardiology',
     image: 'https://dev.popcornapps.com/apolloImages/specialty.png',
   },
