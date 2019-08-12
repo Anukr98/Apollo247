@@ -88,6 +88,15 @@ const useStyles = makeStyles((theme: Theme) => {
         color: theme.palette.common.white,
       },
     },
+    buttonDisable: {
+      backgroundColor: '#fed984',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2) !important',
+    },
+    disableConsultNow: {
+      color: '#fff',
+      backgroundColor: '#00b38e',
+      opacity: 0.5,
+    },
     bottomActions: {
       padding: '30px 15px 15px 15px',
       '& button': {
@@ -174,6 +183,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   // const [mutationSuccess, setMutationSuccess] = React.useState(false);
   const [consultNow, setConsultNow] = React.useState(true);
+  const [scheduleLater, setScheduleLater] = React.useState(false);
 
   const { currentPatient } = useAllCurrentPatients();
 
@@ -182,6 +192,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   let slotAvailableNext = '';
 
   const { doctorDetails } = props;
+
+  // console.log('-------', autoSlot);
 
   const doctorName =
     doctorDetails &&
@@ -204,13 +216,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.id
       ? doctorDetails.getDoctorDetailsById.id
       : '';
-
-  // console.log(
-  //   'dateSelected......',
-  //   dateSelected,
-  //   dateSelected !== '' ? getYyMmDd(dateSelected) : ''
-  // );
-  // console.log(dateSelected, timeSelected);
 
   const apiDateFormat =
     dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
@@ -241,11 +246,13 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   }
 
   const availableSlots = (data && data.getDoctorAvailableSlots.availableSlots) || [];
+
   availableSlots.map((slot) => {
     const slotTime = getTimestamp(new Date(apiDateFormat), slot);
-    if (slot === autoSlot) slotAvailableNext = autoSlot;
-    // console.log(slot, autoSlot);
     if (slotTime > currentTime) {
+      if (slot === autoSlot) {
+        slotAvailableNext = autoSlot;
+      }
       if (slotTime < morningTime) morningSlots.push(slotTime);
       else if (slotTime >= morningTime && slotTime < afternoonTime) afternoonSlots.push(slotTime);
       else if (slotTime >= afternoonTime && slotTime < eveningTime) eveningSlots.push(slotTime);
@@ -253,50 +260,54 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     }
   });
 
-  // console.log('next available slots....', slotAvailableNext, autoSlot);
-
   let disableSubmit =
-    ((morningSlots.length > 0 ||
-      afternoonSlots.length > 0 ||
-      eveningSlots.length > 0 ||
-      lateNightSlots.length > 0) &&
-      timeSelected !== '') ||
-    (consultNow && (slotAvailableNext !== '' || timeSelected !== ''))
-      ? false
-      : true;
+    (morningSlots.length === 0 &&
+      afternoonSlots.length === 0 &&
+      eveningSlots.length === 0 &&
+      lateNightSlots.length === 0) ||
+    (scheduleLater && timeSelected === '');
 
-  // if (mutationSuccess) {
-  //   return <Redirect to={clientRoutes.consultRoom()} push={true} />;
-  // }
-
-  // console.log(morningSlots, afternoonSlots, eveningSlots, lateNightSlots);
+  // console.log(consultNow, slotAvailableNext);
 
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'50vh'}>
         <div className={classes.customScrollBar}>
           <div className={classes.consultGroup}>
-            <p>
-              Dr. {doctorName} is available in 15mins!
-              <br /> Would you like to consult now or schedule for later?
-            </p>
+            {consultNow && slotAvailableNext !== '' ? (
+              <p>
+                Dr. {doctorName} is available in 15mins!
+                <br /> Would you like to consult now or schedule for later?
+              </p>
+            ) : null}
             <div className={classes.actions}>
               <AphButton
                 onClick={(e) => {
                   setShowCalendar(false);
+                  setConsultNow(true);
+                  setScheduleLater(false);
                 }}
                 color="secondary"
-                className={`${classes.button} ${!showCalendar ? classes.buttonActive : ''}`}
+                className={`${classes.button} ${
+                  consultNow && slotAvailableNext !== ''
+                    ? classes.buttonActive
+                    : classes.disableConsultNow
+                }`}
+                disabled={!(consultNow && slotAvailableNext !== '')}
               >
                 Consult Now
               </AphButton>
               <AphButton
                 onClick={(e) => {
                   setShowCalendar(!showCalendar);
-                  setConsultNow(false);
+                  setScheduleLater(true);
                 }}
                 color="secondary"
-                className={`${classes.button} ${showCalendar ? classes.buttonActive : ''}`}
+                className={`${classes.button} ${
+                  showCalendar || scheduleLater || !(consultNow && slotAvailableNext !== '')
+                    ? classes.buttonActive
+                    : ''
+                }`}
               >
                 Schedule For Later
               </AphButton>
@@ -304,7 +315,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           </div>
           <div
             className={`${classes.consultGroup} ${classes.scheduleCalendar} ${
-              showCalendar ? classes.showCalendar : ''
+              showCalendar || scheduleLater || !(consultNow && slotAvailableNext !== '')
+                ? classes.showCalendar
+                : ''
             }`}
           >
             <AphCalendar
@@ -318,7 +331,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           lateNightSlots.length > 0 ? (
             <div
               className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
-                showCalendar ? classes.showTimeSlot : ''
+                showCalendar || scheduleLater || !(consultNow && slotAvailableNext !== '')
+                  ? classes.showTimeSlot
+                  : ''
               }`}
             >
               <DayTimeSlots
@@ -371,6 +386,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 setMutationLoading(true);
                 mutate();
               }}
+              className={disableSubmit ? classes.buttonDisable : ''}
             >
               {mutationLoading ? (
                 <CircularProgress size={22} color="secondary" />

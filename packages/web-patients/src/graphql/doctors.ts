@@ -25,6 +25,26 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
           lastName
           experience
           qualification
+          id
+          photoUrl
+          specialty {
+            id
+            name
+            image
+          }
+          doctorHospital {
+            facility {
+              name
+              facilityType
+              streetLine1
+              streetLine2
+              streetLine3
+              city
+              country
+              latitude
+              longitude
+            }
+          }
         }
       }
       specialty {
