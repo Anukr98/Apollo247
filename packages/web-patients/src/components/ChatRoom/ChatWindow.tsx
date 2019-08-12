@@ -254,6 +254,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       id: patientId,
       message: messageText,
     };
+    setMessageText('');
     pubnub.publish(
       {
         channel: channel,
@@ -262,12 +263,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         sendByPost: true,
       },
       (status, response) => {
-        setMessageText('');
+        setMessageText(' ');
 
         setTimeout(() => {
+          setMessageText('');
           const scrollDiv = document.getElementById('scrollDiv');
           scrollDiv!.scrollIntoView();
-        }, 200);
+        }, 100);
       }
     );
   };
