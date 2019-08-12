@@ -8,12 +8,41 @@ import { Salutation, DoctorType, ConsultMode, ConsultType, WeekDay } from "./glo
 // GraphQL query operation: GetDoctorDetailsById
 // ====================================================
 
+export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_specialty {
+  __typename: "DoctorSpecialties";
+  id: string;
+  name: string;
+  image: string | null;
+}
+
+export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital_facility {
+  __typename: "Facility";
+  name: string;
+  facilityType: string;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  city: string | null;
+  country: string | null;
+  latitude: string | null;
+  longitude: string | null;
+}
+
+export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital_facility;
+}
+
 export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor {
   __typename: "Profile";
   firstName: string | null;
   lastName: string | null;
   experience: string | null;
   qualification: string | null;
+  id: string;
+  photoUrl: string | null;
+  specialty: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_specialty;
+  doctorHospital: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital[];
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam {
