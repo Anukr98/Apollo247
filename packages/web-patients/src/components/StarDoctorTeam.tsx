@@ -164,7 +164,7 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
               doctorDetails.associatedDoctor.doctorHospital.length > 0
             ) {
               _forEach(doctorDetails.associatedDoctor.doctorHospital, (hospitalDetails) => {
-                console.log(hospitalDetails);
+                // console.log(hospitalDetails);
                 if (hospitalDetails.facility.facilityType === 'HOSPITAL') {
                   starDoctorLocation = hospitalDetails.facility.name;
                 }

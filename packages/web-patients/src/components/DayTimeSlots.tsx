@@ -107,7 +107,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
   const noSlotsMessage = (slotName: string) => {
     return (
       <div className={classes.noSlotsAvailable}>
-        Oops! No {slotName} slots are available with Dr. {doctorName} :(
+        Oops! No {slotName} slots available with Dr. {doctorName} :(
       </div>
     );
   };
