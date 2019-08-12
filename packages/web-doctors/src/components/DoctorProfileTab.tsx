@@ -558,15 +558,11 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <Grid item lg={4} sm={6} xs={12}>
             <Paper className={classes.serviceItem}>
               <div className={classes.avatarBlock}>
-                {doctor.photoUrl ? (
-                  <img alt="" src={`${doctor.photoUrl}`} className={classes.bigAvatar} />
-                ) : (
-                  <img
-                    alt=""
-                    src={require('images/doctor-profile.jpg')}
-                    className={classes.bigAvatar}
-                  />
-                )}
+                <img
+                  alt=""
+                  src={require('images/doctor-profile.jpg')}
+                  className={classes.bigAvatar}
+                />
                 <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
               </div>
               <Typography variant="h4">
