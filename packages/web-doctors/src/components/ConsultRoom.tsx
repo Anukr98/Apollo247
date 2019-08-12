@@ -211,6 +211,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       id: doctorId,
       message: messageText,
     };
+    setMessageText('');
     pubnub.publish(
       {
         channel: channel,
@@ -219,14 +220,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         sendByPost: true,
       },
       (status, response) => {
-        setMessageText('');
-
+        setMessageText(' ');
         setTimeout(() => {
-          setMessageText('111');
           setMessageText('');
           const scrollDiv = document.getElementById('scrollDiv');
           scrollDiv!.scrollIntoView();
-        }, 200);
+        }, 100);
       }
     );
   };
