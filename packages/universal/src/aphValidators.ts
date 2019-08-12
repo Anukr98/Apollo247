@@ -6,20 +6,8 @@ export const isEmailValid = isEmail;
 export const isMobileNumberValid = (number: string) => isMobilePhone(number, 'en-IN');
 
 export const isNameValid = (name: string) => {
-  let passesApostropheConditions = true;
-  if (name[0] === "'") {
-    passesApostropheConditions = false;
-  }
-  if (name[name.length - 1] === "'") {
-    passesApostropheConditions = false;
-  }
-  for (let i = 0; i < name.length; i++) {
-    if (name[i] === "'") {
-      if (name[i + 1] === "'") {
-        passesApostropheConditions = false;
-      }
-    }
-  }
+  const passesApostropheConditions =
+    !name.startsWith("'") && !name.endsWith("'") && !name.includes("''");
 
   return /^[a-zA-Z ']*$/.test(name.trim()) && name.trim().length > 1 && passesApostropheConditions;
 };
