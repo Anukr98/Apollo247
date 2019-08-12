@@ -155,7 +155,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.primary.contrastText,
       padding: 16,
       position: 'relative',
-      minHeight: 154,
+      minHeight: 115,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
       marginBottom: 30,
@@ -334,7 +334,11 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           className={classes.cardHeader}
           avatar={
             <Avatar className={classes.profileAvatar}>
-              <img src={require('images/doctor-profile.jpg')} />
+              {doctor!.associatedDoctor!.photoUrl ? (
+                <img src={`${doctor!.associatedDoctor!.photoUrl}`} />
+              ) : (
+                <img src={require('images/doctor-profile.jpg')} />
+              )}
             </Avatar>
           }
           action={
@@ -410,12 +414,13 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           title={
             <div>
               <h4
-                title={`${doctor!.associatedDoctor!.salutation} ${
+                title={`${doctor!.associatedDoctor!.salutation &&
+                  doctor!.associatedDoctor!.salutation + '.'} ${
                   doctor!.associatedDoctor!.firstName
                 } ${doctor!.associatedDoctor!.lastName}`}
               >
-                {doctor!.associatedDoctor!.salutation} {doctor!.associatedDoctor!.firstName}{' '}
-                {doctor!.associatedDoctor!.lastName}
+                {doctor!.associatedDoctor!.salutation && doctor!.associatedDoctor!.salutation + '.'}{' '}
+                {doctor!.associatedDoctor!.firstName} {doctor!.associatedDoctor!.lastName}
               </h4>
               {doctor!.isActive === true && (
                 <h6>
@@ -553,11 +558,15 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <Grid item lg={4} sm={6} xs={12}>
             <Paper className={classes.serviceItem}>
               <div className={classes.avatarBlock}>
-                <img
-                  alt=""
-                  src={require('images/doctor-profile.jpg')}
-                  className={classes.bigAvatar}
-                />
+                {doctor.photoUrl ? (
+                  <img alt="" src={`${doctor.photoUrl}`} className={classes.bigAvatar} />
+                ) : (
+                  <img
+                    alt=""
+                    src={require('images/doctor-profile.jpg')}
+                    className={classes.bigAvatar}
+                  />
+                )}
                 <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
               </div>
               <Typography variant="h4">
@@ -583,7 +592,12 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <Grid item lg={6} sm={12} xs={12}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">Awards</Typography>
-                    <Typography variant="h3">{doctor.awards}</Typography>
+                    <Typography variant="h3">
+                      {doctor.awards
+                        .replace('&amp;', '&')
+                        .replace(/<\/?[^>]+>/gi, '')
+                        .trim()}
+                    </Typography>
                   </Paper>
                 </Grid>
               )}
