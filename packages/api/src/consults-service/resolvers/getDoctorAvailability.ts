@@ -65,6 +65,8 @@ const getDoctorAvailableSlots: Resolver<
       });
   }
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
+  const doctorSlot = await appts.getDoctorNextAvailSlot(DoctorAvailabilityInput.doctorId);
+  console.log(doctorSlot, 'doctor slot');
   const apptSlots = await appts.findByDateDoctorId(
     DoctorAvailabilityInput.doctorId,
     DoctorAvailabilityInput.availableDate

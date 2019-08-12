@@ -53,6 +53,7 @@
     "apollo-server-core": "^2.6.7",
     "class-validator": "^0.9.1",
     "date-fns": "^2.0.0-beta.2",
+    "date-fns-timezone": "^0.1.4",
     "firebase-admin": "^8.2.0",
     "graphql": "^14.4.2",
     "graphql-iso-date": "^3.6.1",
@@ -67,6 +68,7 @@
     "reflect-metadata": "^0.1.13",
     "rhea": "^1.0.8",
     "sequelize": "^5.8.10",
+    "timezone-support": "^2.0.2",
     "typeorm": "^0.2.18",
     "url": "^0.11.0",
     "validator": "^11.1.0"
