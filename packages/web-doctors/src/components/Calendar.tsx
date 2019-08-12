@@ -8,13 +8,15 @@ import { Week as WeekView } from 'components/Calendar/Views/Week';
 import { Month as MonthView } from 'components/Calendar/Views/Month';
 import { GET_DOCTOR_APPOINTMENTS } from 'graphql/appointments';
 import { Appointment } from 'components/Appointments';
-import { getTime, startOfToday, addDays, startOfMonth, endOfMonth } from 'date-fns/esm';
+import { getTime, startOfToday, addDays, startOfMonth, endOfMonth, isToday } from 'date-fns/esm';
 import { addMinutes, format, startOfDay } from 'date-fns';
 import {
   GetDoctorAppointments,
   GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
 } from 'graphql/types/GetDoctorAppointments';
-import { ApolloConsumer } from 'react-apollo';
+import { useQuery } from 'react-apollo-hooks';
+import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -139,10 +141,6 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
   return adaptedList;
 };
 
-export interface CalendarProps {
-  doctorId: string;
-}
-
 const getRange = (date: Date) => {
   return { start: startOfDay(date), end: addDays(startOfDay(date), 1) };
 };
@@ -153,93 +151,95 @@ const getMonthRange = ({ start, end }: { start: string | Date; end: string | Dat
   return { start, end };
 };
 
-export const Calendar: React.FC<CalendarProps> = ({ doctorId }) => {
+export const Calendar: React.FC = () => {
   const today: Date = startOfToday();
   const classes = useStyles();
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [viewSelection, setViewSelection] = useState<string>('day');
   const [range, setRange] = useState<{ start: string | Date; end: string | Date }>(
-    getRange(selectedDate)
+    viewSelection === 'day'
+      ? getRange(selectedDate)
+      : { start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) }
   );
-  const [data, setData] = useState<GetDoctorAppointments>({} as GetDoctorAppointments);
+
+  const {
+    currentPatient,
+  }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
+
+  console.log(viewSelection, range, startOfMonth(selectedDate));
 
   const setStartOfMonthDate = ({ start }: { start: string | Date; end: string | Date }) => {
     setSelectedDate(startOfMonth(start as Date));
   };
 
-  return (
-    <ApolloConsumer>
-      {(client) => {
-        client
-          .query({
-            query: GET_DOCTOR_APPOINTMENTS,
-            variables: {
-              startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
-              endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
-            },
-          })
-          .then(({ data }) => setData(data));
+  const { data, loading } = useQuery(GET_DOCTOR_APPOINTMENTS, {
+    variables: {
+      startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
+      endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
+    },
+  });
 
-        return (
-          <div className={classes.welcome}>
-            <div className={classes.headerSticky}>
-              <Header />
-            </div>
-            <div className={classes.container}>
-              <div className={classes.tabHeading}>
-                <Typography variant="h1">hello dr. rao :)</Typography>
-                <p>here’s your schedule for today</p>
-              </div>
-              <div>
-                <div>
-                  <ToggleButtonGroup exclusive value={viewSelection} className={classes.toggleBtn}>
-                    <ToggleButton
-                      className={classes.customeSelect}
-                      value="day"
-                      onClick={() => {
-                        setViewSelection('day');
-                        setRange(getRange(selectedDate));
-                      }}
-                    >
-                      Day
-                    </ToggleButton>
-                    <ToggleButton
-                      className={classes.nopionter}
-                      value="month"
-                      onClick={() => {
-                        setViewSelection('month');
-                        setRange({ start: selectedDate, end: endOfMonth(selectedDate) });
-                      }}
-                    >
-                      Month
-                    </ToggleButton>
-                  </ToggleButtonGroup>
-                </div>
-                {viewSelection === 'day' && (
-                  <WeekView
-                    data={dataAdapter(data)}
-                    date={selectedDate}
-                    onDaySelection={(date) => {
-                      setSelectedDate(date);
-                      setRange(getRange(date));
-                    }}
-                  />
-                )}
-                {viewSelection === 'month' && (
-                  <MonthView
-                    data={data}
-                    date={selectedDate}
-                    onMonthChange={(range) => {
-                      setStartOfMonthDate(range as { start: string; end: string });
-                      setRange(getMonthRange(range as { start: string; end: string }));
-                    }}
-                  />
-                )}
-              </div>
-            </div>
+  return (
+    <div className={classes.welcome}>
+      <div className={classes.headerSticky}>
+        <Header />
+      </div>
+      <div className={classes.container}>
+        <div className={classes.tabHeading}>
+          <Typography variant="h1">hello dr. {currentPatient!.lastName} :)</Typography>
+          <p>
+            here’s your schedule for {isToday(selectedDate) ? 'today, ' : ''}{' '}
+            {format(selectedDate, isToday(selectedDate) ? 'dd MMM yyyy' : 'MMM, dd')}
+          </p>
+        </div>
+        <div>
+          <div>
+            <ToggleButtonGroup exclusive value={viewSelection} className={classes.toggleBtn}>
+              <ToggleButton
+                className={classes.customeSelect}
+                value="day"
+                onClick={() => {
+                  setViewSelection('day');
+                  setRange(getRange(selectedDate));
+                }}
+              >
+                Day
+              </ToggleButton>
+              <ToggleButton
+                className={classes.nopionter}
+                value="month"
+                onClick={() => {
+                  setViewSelection('month');
+                  setRange({ start: selectedDate, end: endOfMonth(selectedDate) });
+                }}
+              >
+                Month
+              </ToggleButton>
+            </ToggleButtonGroup>
           </div>
-        );
-      }}
-    </ApolloConsumer>
+          {viewSelection === 'day' && (
+            <WeekView
+              data={dataAdapter(data)}
+              date={selectedDate}
+              onDaySelection={(date) => {
+                setSelectedDate(date);
+                setRange(getRange(date));
+              }}
+              loading={loading}
+            />
+          )}
+          {viewSelection === 'month' && (
+            <MonthView
+              data={data}
+              date={selectedDate}
+              onMonthChange={(range) => {
+                setStartOfMonthDate(range as { start: string; end: string });
+                setRange(getMonthRange(range as { start: string; end: string }));
+              }}
+            />
+          )}
+        </div>
+      </div>
+    </div>
   );
 };

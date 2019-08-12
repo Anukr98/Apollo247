@@ -19,14 +19,20 @@ export interface WeekProps {
   date: Date;
   data: Appointment[];
   onDaySelection: (date: Date) => void;
+  loading: boolean;
 }
 
-export const Week: React.FC<WeekProps> = ({ date, data, onDaySelection }) => {
+export const Week: React.FC<WeekProps> = ({ date, data, onDaySelection, loading: loadingData }) => {
   const [appointments, setAppointments] = useState<Appointment[]>(data);
+  const [loading, isLoading] = useState<boolean>(loadingData);
 
   useEffect(() => {
     setAppointments(data);
   }, [data]);
+
+  useEffect(() => {
+    isLoading(loadingData);
+  }, [loadingData]);
 
   const classes = useStyles();
 
@@ -44,7 +50,7 @@ export const Week: React.FC<WeekProps> = ({ date, data, onDaySelection }) => {
         />
       </div>
 
-      <Appointments values={appointments} />
+      <Appointments values={appointments} loading={loading} selectedDate={date} />
     </div>
   );
 };

@@ -5,6 +5,7 @@ import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import { Link } from 'react-router-dom';
 import Pubnub from 'pubnub';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -194,11 +195,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
   //logic for before start counsult timer start
-  //console.log(new Date().toISOString().substring(0, 16), props.appointmentDateTime);
   const dt1 = new Date(new Date().toISOString().substring(0, 16)); //today time
   const dt2 = new Date(props.appointmentDateTime); // apointment time
   const diff = dt2.getHours() - dt1.getHours();
   const diff2 = dt2.getMinutes() - dt1.getMinutes();
+  const isPastAppointment =
+    moment(new Date()).format('YYYY-MM-DD hh:ss') <= props.appointmentDateTime ? true : false;
   const val = '0';
   cda = diff
     .toString()
@@ -284,14 +286,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         storeInHistory: false,
       },
       (status, response) => {
-        console.log(response, status);
         setStartAppointment(!startAppointment);
         startInterval(900);
       }
     );
   };
   const onStopConsult = () => {
-    console.log('onStopConsult');
     pubnub.publish(
       {
         message: {
@@ -307,6 +307,19 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     );
   };
+
+  const getTimerText = () => {
+    const now = new Date();
+    const diff = moment.duration(
+      moment(props.appointmentDateTime).diff(moment(moment(now).format('YYYY-MM-DD hh:ss')))
+    );
+    const diffInHours = diff.asHours();
+    if (diffInHours > 0 && diffInHours < 12)
+      return `Time to consult ${moment(new Date(0, 0, 0, diff.hours(), diff.minutes())).format(
+        'hh: mm'
+      )}`;
+    return '';
+  };
   return (
     <div className={classes.breadcrumbs}>
       <div>
@@ -317,16 +330,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
         </Link>
       </div>
-      CONSULT ROOM &nbsp; | &nbsp;
-      {startAppointment ? (
-        <span className={classes.timeLeft}>
-          Time Left <b>{`${minutes}:${seconds}`}</b>
-        </span>
-      ) : (
-        <span className={classes.timeLeft}>
-          Time to Consult <b>{cda}</b>
-        </span>
-      )}
+      CONSULT ROOM &nbsp; {isPastAppointment && '|'} &nbsp;
+      <span className={classes.timeLeft}>
+        {startAppointment
+          ? `Time Left ${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
+              seconds.toString().length < 2 ? '0' + seconds : seconds
+            }`
+          : getTimerText()}
+      </span>
       <div className={classes.consultButtonContainer}>
         <span>
           {startAppointment ? (
@@ -360,18 +371,20 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </Button>
             </span>
           ) : (
-            <Button
-              className={classes.consultButton}
-              onClick={() => {
-                !startAppointment ? startInterval(900) : stopInterval();
-                setStartAppointment(!startAppointment);
-              }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                <path fill="#fff" d="M8 5v14l11-7z" />
-              </svg>
-              {startAppointment ? 'End Consult' : 'Start Consult'}
-            </Button>
+            isPastAppointment && (
+              <Button
+                className={classes.consultButton}
+                onClick={() => {
+                  !startAppointment ? startInterval(900) : stopInterval();
+                  setStartAppointment(!startAppointment);
+                }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                  <path fill="#fff" d="M8 5v14l11-7z" />
+                </svg>
+                {startAppointment ? 'End Consult' : 'Start Consult'}
+              </Button>
+            )
           )}
           <Button
             className={classes.consultIcon}
