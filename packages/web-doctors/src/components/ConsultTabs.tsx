@@ -76,12 +76,15 @@ const useStyles = makeStyles((theme: Theme) => {
     typography: {
       padding: theme.spacing(2),
     },
+    pointerNone: {
+      pointerEvents: 'none',
+    },
   };
 });
 type Params = { id: string };
 export const ConsultTabs: React.FC = (props) => {
   const classes = useStyles();
-  const [tabValue, setTabValue] = useState<number>(0);
+  const [tabValue, setTabValue] = useState<number>(1);
   const [startConsult, setStartConsult] = useState<string>('');
   const [appointmentId, setAppointmentId] = useState<string>('');
   const [sessionId, setsessionId] = useState<string>('');
@@ -110,14 +113,10 @@ export const ConsultTabs: React.FC = (props) => {
           },
         })
         .then((_data: any) => {
-          console.log('createsession', _data);
           setLoaded(true);
-          //const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
           setsessionId(_data.data.createAppointmentSession.sessionId);
           settoken(_data.data.createAppointmentSession.appointmentToken);
-          setappointmentDateTime(
-            _data.data.createAppointmentSession.appointmentDateTime.replace(' ', 'T')
-          );
+          setappointmentDateTime(_data.data.createAppointmentSession.appointmentDateTime);
           setdoctorId(_data.data.createAppointmentSession.doctorId);
           setpatientId(_data.data.createAppointmentSession.patientId);
           // setsessionId('1_MX40NjM5MzU4Mn5-MTU2NTA3MTUwNDk4MX56bVd3ZW96MFNuS2Vua2dDMnZ5VTZNNlJ-UH4');
@@ -159,7 +158,10 @@ export const ConsultTabs: React.FC = (props) => {
               <Tabs
                 value={tabValue}
                 variant="fullWidth"
-                classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+                classes={{
+                  root: classes.tabsRoot,
+                  indicator: classes.tabsIndicator,
+                }}
                 onChange={(e, newValue) => {
                   setTabValue(newValue);
                 }}
@@ -167,6 +169,7 @@ export const ConsultTabs: React.FC = (props) => {
                 <Tab
                   classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
                   label="Case Sheet"
+                  className={classes.pointerNone}
                 />
                 <Tab
                   classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
