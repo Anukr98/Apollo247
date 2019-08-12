@@ -175,8 +175,6 @@ export const Calendar: React.FC<CalendarProps> = ({ doctorId }) => {
     },
   });
 
-  console.log(data, loading, error);
-
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
