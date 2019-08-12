@@ -172,7 +172,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const [timeSelected, setTimeSelected] = useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [mutationSuccess, setMutationSuccess] = React.useState(false);
+  // const [mutationSuccess, setMutationSuccess] = React.useState(false);
   const [consultNow, setConsultNow] = React.useState(true);
 
   const { currentPatient } = useAllCurrentPatients();
@@ -181,7 +181,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const autoSlot = getAutoSlot();
   let slotAvailableNext = '';
 
-  const { doctorDetails, onBookConsult } = props;
+  const { doctorDetails } = props;
 
   const doctorName =
     doctorDetails &&

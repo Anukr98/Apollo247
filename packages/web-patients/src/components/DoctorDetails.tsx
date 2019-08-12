@@ -25,7 +25,6 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
-import { ConsultMode } from 'graphql/types/globalTypes';
 
 type Params = { id: string };
 
