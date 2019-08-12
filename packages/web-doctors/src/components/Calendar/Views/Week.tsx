@@ -50,7 +50,7 @@ export const Week: React.FC<WeekProps> = ({ date, data, onDaySelection, loading:
         />
       </div>
 
-      <Appointments values={appointments} loading={loading} />
+      <Appointments values={appointments} loading={loading} selectedDate={date} />
     </div>
   );
 };

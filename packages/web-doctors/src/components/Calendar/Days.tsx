@@ -33,8 +33,9 @@ export interface DaysProps {
 }
 
 export const Days: React.FC<DaysProps> = ({ date, userSelection, handler, className }) => {
+  const weekStartsOn = 0;
   const today: Date = date;
-  const weekStart: Date = startOfWeek(today, { weekStartsOn: 0 });
+  const weekStart: Date = startOfWeek(today, { weekStartsOn });
   const weekEnd: Date = endOfWeek(today);
   const [range, setRange] = useState<Date[]>(eachDayOfInterval({ start: weekStart, end: weekEnd }));
   const [currentSelection, setCurrentSelection] = useState<number>();
@@ -43,7 +44,7 @@ export const Days: React.FC<DaysProps> = ({ date, userSelection, handler, classN
 
   useEffect(() => {
     const range: Date[] = eachDayOfInterval({
-      start: startOfWeek(date, { weekStartsOn: 0 }),
+      start: startOfWeek(date, { weekStartsOn }),
       end: endOfWeek(date),
     });
 
