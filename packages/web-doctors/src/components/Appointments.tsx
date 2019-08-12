@@ -217,6 +217,11 @@ const useStyles = makeStyles((theme: Theme) =>
         marginBottom: 35,
       },
     },
+    loderContent: {
+      textAlign: 'center',
+      minHeight: 330,
+      paddingTop: 100,
+    },
   })
 );
 
@@ -247,7 +252,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values, loading: loa
   if (loading) {
     return (
       <div className={classes.calendarContent}>
-        <div className={classes.noContent}>
+        <div className={classes.loderContent}>
           <CircularProgress />
         </div>
       </div>
