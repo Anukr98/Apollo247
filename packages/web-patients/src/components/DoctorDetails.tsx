@@ -295,7 +295,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             <div className={classes.doctorProfileSection}>
               <DoctorProfile
                 doctorDetails={doctorDetails}
-                onBookConsult={() => setIsPopoverOpen(true)}
+                onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
                 avaPhy={availableForPhysicalConsultation}
                 avaOnline={availableForVirtualConsultation}
               />
@@ -311,7 +311,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             </div>
           </div>
         </div>
-        <Modal open={isPopoverOpen} onClose={() => setIsPopoverOpen(false)}>
+        <Modal
+          open={isPopoverOpen}
+          onClose={() => setIsPopoverOpen(false)}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
           <Paper className={classes.modalBox}>
             <div className={classes.modalBoxClose} onClick={() => setIsPopoverOpen(false)}>
               <img src={require('images/ic_cross_popup.svg')} alt="" />
@@ -338,7 +343,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             </Tabs>
             {tabValue === 0 && availableForVirtualConsultation && (
               <TabContainer>
-                <OnlineConsult doctorDetails={doctorDetails} />
+                <OnlineConsult
+                  doctorDetails={doctorDetails}
+                  onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
+                />
               </TabContainer>
             )}
             {tabValue === 1 && availableForPhysicalConsultation && (

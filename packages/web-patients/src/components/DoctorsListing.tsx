@@ -6,6 +6,7 @@ import { AphButton } from '@aph/web-ui-components';
 import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
 import _filter from 'lodash/filter';
+import _toLower from 'lodash/toLower';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { GET_DOCTORS_BY_SPECIALITY_AND_FILTERS } from 'graphql/doctors';
 import { SearchObject } from 'components/DoctorsFilter';
@@ -174,7 +175,11 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   const { filter, specialityName, specialityId } = props;
   const [selectedFilterOption, setSelectedFilterOption] = useState<string>('all');
-  const consultOptions = { all: 'All Consults', online: 'Online Consult', clinic: 'Clinic Visit' };
+  const consultOptions = {
+    all: 'All Consults',
+    ONLINE: 'Online Consult',
+    PHYSICAL: 'Clinic Visit',
+  };
 
   const [show20SecPopup, setShow20SecPopup] = useState<boolean>(false);
   const [show40SecPopup, setShow40SecPopup] = useState<boolean>(false);
@@ -288,16 +293,26 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     );
   };
 
-  if (data && !loading && data.getDoctorsBySpecialtyAndFilters.doctors) {
+  if (
+    data &&
+    data.getDoctorsBySpecialtyAndFilters &&
+    data.getDoctorsBySpecialtyAndFilters.doctors &&
+    !loading
+  ) {
     doctorsList =
       selectedFilterOption === 'all'
         ? data.getDoctorsBySpecialtyAndFilters.doctors
         : _filter(data.getDoctorsBySpecialtyAndFilters.doctors, (doctors) => {
-            if (selectedFilterOption === 'online' && doctors.availableForVirtualConsultation) {
-              return true;
-            } else if (
-              selectedFilterOption === 'clinic' &&
-              doctors.availableForPhysicalConsultation
+            const consultMode =
+              doctors.consultHours &&
+              doctors.consultHours.length > 0 &&
+              doctors.consultHours[0] &&
+              doctors.consultHours[0].consultMode
+                ? doctors.consultHours[0].consultMode
+                : '';
+            if (
+              _toLower(consultMode) === _toLower(selectedFilterOption) ||
+              _toLower(consultMode) === 'BOTH'
             ) {
               return true;
             }

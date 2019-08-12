@@ -19,6 +19,7 @@ import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { getTime } from 'date-fns/esm';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -153,6 +154,7 @@ export const ConsultRoom: React.FC = (props) => {
   const classes = useStyles();
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const currentDate = new Date().toISOString().substring(0, 10);
+  const { isSignedIn } = useAuth();
 
   const { data, loading, error } = useQueryWithSkip<
     GetPatientAppointments,
@@ -192,7 +194,7 @@ export const ConsultRoom: React.FC = (props) => {
       return appointmentDetails;
   });
 
-  return (
+  return isSignedIn ? (
     <div className={classes.root}>
       <div className={classes.headerSticky}>
         <div className={classes.container}>
@@ -275,5 +277,7 @@ export const ConsultRoom: React.FC = (props) => {
         </div>
       </div>
     </div>
+  ) : (
+    <LinearProgress />
   );
 };

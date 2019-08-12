@@ -268,12 +268,12 @@ export const DoctorsLanding: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.breadcrumbs}>
-            <Link to={clientRoutes.welcome()}>
+            <a onClick={() => (window.location.href = clientRoutes.welcome())}>
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
-            </Link>
+            </a>
             Doctors / Specialities
           </div>
           <div className={classes.doctorListingSection}>

@@ -24,7 +24,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Redirect } from 'react-router';
+// import { Redirect } from 'react-router';
 
 const getTimestamp = (today: Date, slotTime: string) => {
   const hhmm = slotTime.split(':');
@@ -133,6 +133,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#0087ba',
     },
+    confirmationColor: {
+      color: '#fcb716',
+    },
   };
 });
 
@@ -159,6 +162,7 @@ const getAutoSlot = () => {
 
 interface OnlineConsultProps {
   doctorDetails: DoctorDetails;
+  onBookConsult: (popover: boolean) => void;
 }
 
 export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
@@ -177,7 +181,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const autoSlot = getAutoSlot();
   let slotAvailableNext = '';
 
-  const { doctorDetails } = props;
+  const { doctorDetails, onBookConsult } = props;
 
   const doctorName =
     doctorDetails &&
@@ -251,7 +255,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
 
   // console.log('next available slots....', slotAvailableNext, autoSlot);
 
-  const disableSubmit =
+  let disableSubmit =
     ((morningSlots.length > 0 ||
       afternoonSlots.length > 0 ||
       eveningSlots.length > 0 ||
@@ -261,9 +265,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       ? false
       : true;
 
-  if (mutationSuccess) {
-    return <Redirect to={clientRoutes.consultRoom()} push={true} />;
-  }
+  // if (mutationSuccess) {
+  //   return <Redirect to={clientRoutes.consultRoom()} push={true} />;
+  // }
 
   // console.log(morningSlots, afternoonSlots, eveningSlots, lateNightSlots);
 
@@ -328,7 +332,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             </div>
           ) : (
             <div className={classes.noSlotsAvailable}>
-              Oops! No slots are available with Dr. {doctorName} :(
+              Oops! No slots available with Dr. {doctorName} :(
             </div>
           )}
         </div>
@@ -350,6 +354,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             },
           }}
           onCompleted={() => {
+            disableSubmit = false;
             setMutationLoading(false);
             setIsDialogOpen(true);
           }}
@@ -376,8 +381,13 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           )}
         </Mutation>
       </div>
-      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-        <DialogTitle>Appointment Confirmation</DialogTitle>
+      <Dialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogTitle className={classes.confirmationColor}>Appointment Confirmation</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Your appointment has been successfully booked with Dr. {doctorName}
@@ -388,7 +398,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             color="primary"
             onClick={() => {
               setIsDialogOpen(false);
-              setMutationSuccess(true);
+              window.location.href = clientRoutes.consultRoom();
             }}
             autoFocus
           >

@@ -28,7 +28,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Redirect } from 'react-router';
+// import { Redirect } from 'react-router';
 import _forEach from 'lodash/forEach';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -150,6 +150,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#0087ba',
     },
+    confirmationColor: {
+      color: '#fcb716',
+    },
   };
 });
 
@@ -185,7 +188,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const [clinicAddress] = useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [mutationSuccess, setMutationSuccess] = React.useState(false);
+  // const [mutationSuccess, setMutationSuccess] = React.useState(false);
 
   const { currentPatient } = useAllCurrentPatients();
 
@@ -265,9 +268,9 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       ? false
       : true;
 
-  if (mutationSuccess) {
-    return <Redirect to={clientRoutes.welcome()} />;
-  }
+  // if (mutationSuccess) {
+  //   return <Redirect to={clientRoutes.welcome()} />;
+  // }
 
   // const clinics =
   //   doctorDetails &&
@@ -359,7 +362,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
               />
             ) : (
               <div className={classes.noSlotsAvailable}>
-                Oops! No slots are available with Dr. {doctorName} :(
+                Oops! No slots available with Dr. {doctorName} :(
               </div>
             )}
           </div>
@@ -404,8 +407,13 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           )}
         </Mutation>
       </div>
-      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-        <DialogTitle>Appointment Confirmation</DialogTitle>
+      <Dialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogTitle className={classes.confirmationColor}>Appointment Confirmation</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Your appointment has been successfully booked with Dr. {doctorName}
@@ -416,7 +424,8 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             color="primary"
             onClick={() => {
               setIsDialogOpen(false);
-              setMutationSuccess(true);
+              // setMutationSuccess(true);
+              window.location.href = clientRoutes.welcome();
             }}
             autoFocus
           >

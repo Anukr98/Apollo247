@@ -166,7 +166,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface DoctorProfileProps {
   doctorDetails: DoctorDetails;
-  onBookConsult: () => void;
+  onBookConsult: (popover: boolean) => void;
   avaPhy: boolean;
   avaOnline: boolean;
 }
@@ -283,7 +283,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
           <div className={classes.bottomActions}>
             <AphButton
               onClick={(e) => {
-                onBookConsult();
+                onBookConsult(true);
               }}
               fullWidth
               color="primary"

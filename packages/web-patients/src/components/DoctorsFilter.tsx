@@ -13,6 +13,7 @@ import _upperFirst from 'lodash/upperFirst';
 import _without from 'lodash/without';
 import { AphCalendar } from 'components/AphCalendar';
 import Scrollbars from 'react-custom-scrollbars';
+import { usePrevious } from 'hooks/reactCustomHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -154,15 +155,6 @@ export interface DoctorsFilterProps {
   showNormal: (showNormal: boolean) => void;
   emptySpeciality: (specialitySelected: string) => void;
   manageFilter: (disableFilters: boolean) => void;
-}
-
-// previous hook that accepts anything
-function usePrevious(value: any) {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
 }
 
 export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
