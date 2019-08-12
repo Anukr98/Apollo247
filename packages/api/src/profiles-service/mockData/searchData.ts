@@ -27,7 +27,7 @@ export const searchData: SearchData[] = [
   {
     searchType: SEARCH_TYPE.DOCTOR,
     typeId: '1a1f2b6b-53d9-4ba8-82dc-f1f1592701ad',
-    name: 'Dr. Kiran Pralhad Sudhare',
+    name: 'Dr. Kiran Pralhad',
     image: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_2.png',
   },
   {
