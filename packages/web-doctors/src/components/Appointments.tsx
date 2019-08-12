@@ -312,10 +312,10 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                   }}
                 >
                   <span>
-                    {`${format(appointment.startTime, 'hh:mm')} - ${format(
-                      appointment.endTime,
-                      'hh:mm aa'
-                    )}`}
+                    {`${activeStep === idx ? 'UP NEXT: ' : ''}${format(
+                      appointment.startTime,
+                      'hh:mm'
+                    )} - ${format(appointment.endTime, 'hh:mm aa')}`}
                   </span>
                 </Typography>
               </StepLabel>
