@@ -464,7 +464,7 @@ export const PickCallIcon: React.FC<IconProps> = (props) => (
 );
 
 export const ClosePopup: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('../../images/icons/round_clear_24_px.png')} />
+  <IconBase {...props} source={require('../../images/icons/round_clear_24_px.png')} />
 );
 
 export const VideoOnIcon: React.FC<IconProps> = (props) => (

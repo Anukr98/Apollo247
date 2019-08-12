@@ -31,9 +31,10 @@ import {
   FlatList,
   Keyboard,
   StatusBar,
+  Platform,
 } from 'react-native';
 import MaterialTabs from 'react-native-material-tabs';
-import ImagePicker from 'react-native-image-picker';
+//import ImagePicker from 'react-native-image-picker';
 
 const { height, width } = Dimensions.get('window');
 import Pubnub from 'pubnub';
@@ -81,7 +82,8 @@ const styles = StyleSheet.create({
     shadowColor: '#000000',
     shadowRadius: 2,
     shadowOpacity: 0.2,
-    elevation: 2,
+    elevation: 10,
+    backgroundColor: 'red',
   },
 });
 
@@ -584,7 +586,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           />
         ) : (
           <View style={{ flexDirection: 'row', margin: 20 }}>
-            <View style={{ marginTop: 4 }}>
+            <View style={{ marginTop: 3 }}>
               <RoundChatIcon />
             </View>
             <Text
@@ -613,24 +615,42 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     return (
       <View style={audioCallStyles}>
         <PatientPlaceHolderImage style={{ width: width, height: height }} />
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: width,
-            height: 24,
-            backgroundColor: 'black',
-            opacity: 0.6,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Text style={{ color: 'white', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
-            Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
-            {seconds.toString().length < 2 ? '0' + seconds : seconds}
-          </Text>
-        </View>
+        {!PipView && (
+          <>
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: width,
+                height: 24,
+                backgroundColor: 'black',
+                opacity: 0.6,
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000,
+              }}
+            >
+              <Text style={{ color: 'white', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
+                Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
+                {seconds.toString().length < 2 ? '0' + seconds : seconds}
+              </Text>
+            </View>
+            <Text
+              style={{
+                position: 'absolute',
+                marginHorizontal: 20,
+                marginTop: 44,
+                width: width - 40,
+                color: 'white',
+                ...theme.fonts.IBMPlexSansSemiBold(20),
+                textAlign: 'center',
+              }}
+            >
+              {PatientInfoAll.firstName}
+            </Text>
+          </>
+        )}
         <View
           style={{
             position: 'absolute',
@@ -819,25 +839,42 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             >
               {PatientInfoAll.firstName}
             </Text>
-            <View
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: width,
-                height: 24,
-                backgroundColor: 'black',
-                opacity: 0.6,
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 1000,
-              }}
-            >
-              <Text style={{ color: 'white', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
-                Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
-                {seconds.toString().length < 2 ? '0' + seconds : seconds}
-              </Text>
-            </View>
+            {!PipView && (
+              <>
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: width,
+                    height: 24,
+                    backgroundColor: 'black',
+                    opacity: 0.6,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000,
+                  }}
+                >
+                  <Text style={{ color: 'white', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
+                    Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
+                    {seconds.toString().length < 2 ? '0' + seconds : seconds}
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    position: 'absolute',
+                    marginHorizontal: 20,
+                    marginTop: 44,
+                    width: width - 40,
+                    color: 'white',
+                    ...theme.fonts.IBMPlexSansSemiBold(20),
+                    textAlign: 'center',
+                  }}
+                >
+                  {PatientInfoAll.firstName}
+                </Text>
+              </>
+            )}
             <Text
               style={{
                 position: 'absolute',
@@ -1092,11 +1129,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             backgroundColor: 'white',
           }}
         >
-          <TouchableOpacity onPress={() => setShowPopUp(false)}>
+          <TouchableOpacity onPress={() => setShowPopUp(false)} style={{ height: 40 }}>
             <ClosePopup
               style={{ width: 24, height: 24, top: 16, position: 'absolute', right: 16 }}
             />
           </TouchableOpacity>
+
           <Text
             style={{
               marginHorizontal: 20,
@@ -1259,29 +1297,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
-  const showAllFiles = () => {
-    try {
-      const results = DocumentPicker.pickMultiple({
-        type: [DocumentPicker.types.images],
-      });
-      console.log('results', results);
-      for (const res of results) {
-        console.log(
-          res.uri,
-          res.type, // mime type
-          res.name,
-          res.size
-        );
-      }
-    } catch (err) {
-      if (DocumentPicker.isCancel(err)) {
-        // User cancelled the picker, exit any dialogs or menus and move on
-      } else {
-        throw err;
-      }
-    }
-  };
-
   const options = {
     title: 'Select Avatar',
     customButtons: [{ name: 'fb', title: 'Choose Photo from Facebook' }],
@@ -1385,10 +1400,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                       {
                         optionText: 'Camera',
                         onPress: () => {
-                          ImagePicker.launchCamera(options, (response) => {
-                            // Same code as in above section!
-                            console.log(response, 'response');
-                          });
+                          // ImagePicker.launchCamera(options, (response) => {
+                          //   // Same code as in above section!
+                          //   console.log(response, 'response');
+                          // });
                           setDropdownVisible(false);
                         },
                       },
@@ -1423,10 +1438,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                         optionText: 'Gallery',
                         onPress: () => {
                           // Open Image Library:
-                          ImagePicker.launchImageLibrary(options, (response) => {
-                            // Same code as in above section!
-                            console.log(response, 'response');
-                          });
+                          // ImagePicker.launchImageLibrary(options, (response) => {
+                          //   // Same code as in above section!
+                          //   console.log(response, 'response');
+                          // });
                           setDropdownVisible(false);
                         },
                       },
@@ -1470,6 +1485,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             activeTextColor="#02475b"
             inactiveTextColor={'#02475b'}
             activeTextStyle={{ ...theme.fonts.IBMPlexSansBold(14), color: '#02475b' }}
+            uppercase={false}
           ></MaterialTabs>
         </View>
         <View style={{ flex: 1 }}>
@@ -1608,6 +1624,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       {showPopUp && CallPopUp()}
       {isAudioCall && AudioCall()}
       {isCall && VideoCall()}
+
+      {/* <View style={{ zIndex: 2 }}>
+        {showPopUp && CallPopUp()}
+        {isAudioCall && AudioCall()}
+        {isCall && VideoCall()}
+      </View> */}
     </SafeAreaView>
   );
 };

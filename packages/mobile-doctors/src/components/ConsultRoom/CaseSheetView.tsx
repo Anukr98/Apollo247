@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(2, 71, 91, 0.6)',
     marginLeft: 15,
-    marginTop: 4,
+    marginTop: 10,
   },
   uhidText: {
     ...theme.fonts.IBMPlexSansMedium(14),
@@ -391,16 +391,13 @@ const profileRow = (
         <Text style={styles.agetext}>{PatientInfoData.gender}</Text>
       </View>
       {PatientInfoData.uhid != '' ? (
-        <Text style={styles.uhidText}>UHID :{PatientInfoData.uhid} </Text>
+        <Text style={styles.uhidText}>UHID : {PatientInfoData.uhid} </Text>
       ) : null}
 
       <View style={styles.understatusline} />
       <View>
-        {registerDetails('Appt ID:', AppId)}
-        {registerDetails(
-          'Appt Date:',
-          moment(Appintmentdatetimeconsultpage).format('DD/MM/YYYY | HH:mm A')
-        )}
+        {registerDetails('Appt ID: ', AppId)}
+        {registerDetailsAppDate('Appt Date: ', Appintmentdatetimeconsultpage)}
       </View>
     </View>
   );
@@ -415,6 +412,29 @@ const registerDetails = (ApptId: string, appIdDate: string) => {
     </View>
   );
 };
+const registerDetailsAppDate = (ApptId: string, appIdDate: string) => {
+  if (!appIdDate) return null;
+  return (
+    <View style={{ flexDirection: 'row', marginLeft: 20 }}>
+      <Text style={styles.appid}>{ApptId}</Text>
+      <View style={{ flexDirection: 'row' }}>
+        <Text style={styles.appdate}>{moment(appIdDate).format('DD/MM/YYYY')}</Text>
+        <View
+          style={{
+            height: 14,
+            borderWidth: 1,
+            borderColor: 'rgba(2, 71, 91, 0.6)',
+            marginTop: 4,
+            marginLeft: 5,
+            marginRight: 5,
+          }}
+        ></View>
+        <Text style={styles.appdate}>{moment(appIdDate).format('HH:mm A')}</Text>
+      </View>
+    </View>
+  );
+};
+// moment(Appintmentdatetimeconsultpage).format('DD/MM/YYYY | HH:mm A');
 const renderBasicProfileDetails = (
   PatientInfoData: object,
   AppId: String,
@@ -632,7 +652,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading="OtherInstructions"
+          heading="Other Instructions"
           collapse={otherInstructions}
           onPress={() => setOtherInstructions(!otherInstructions)}
         >
@@ -698,7 +718,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const renderDiagonisticPrescription = () => {
     return (
       <CollapseCard
-        heading="DiagonisticPrescription"
+        heading="Diagonistic Prescription"
         collapse={diagonisticPrescription}
         onPress={() => setdiagonisticPrescription(!diagonisticPrescription)}
       >

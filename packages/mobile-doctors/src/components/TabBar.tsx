@@ -15,6 +15,7 @@ import {
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigation';
+import { colors } from 'react-native-elements';
 
 const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
   APPOINTMENTS: <ConsultationRoom />,
@@ -50,6 +51,11 @@ export const TabBar = createBottomTabNavigator(routeConfigMap, {
     inactiveTintColor: theme.colors.TAB_BAR_INACTIVE_TEXT_COLOR,
     style: {
       borderTopColor: 'transparent',
+      shadowColor: '#808080',
+      shadowOffset: { width: 0, height: 5 },
+      shadowOpacity: 0.5,
+      shadowRadius: 10,
+      elevation: 20,
     },
     labelStyle: {
       ...theme.fonts.IBMPlexSansSemiBold(7),

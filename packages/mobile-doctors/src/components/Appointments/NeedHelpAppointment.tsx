@@ -4,6 +4,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+
 const styles = StyleSheet.create({
   mainview: {
     marginTop: 16,
@@ -11,7 +12,7 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   descriptionview: {
-    ...theme.fonts.IBMPlexSansSemiBold(16),
+    ...theme.fonts.IBMPlexSansMedium(16),
     color: '#0087ba',
     lineHeight: 24,
     marginRight: 16,

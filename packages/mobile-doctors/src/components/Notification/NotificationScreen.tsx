@@ -12,11 +12,11 @@ import { NavigationScreenProps } from 'react-navigation';
 const notifications = [
   {
     id: 'Today, 10.05 AM',
-    messagename: 'Dr. Neha has assigned 1 of her casesto you',
+    messagename: 'Dr. Neha has assigned 1 of her cases to you',
   },
   {
     id: 'Yesterday, 09.30 PM',
-    messagename: 'You have been added to Dr. Vinay’sstar doctor’s team',
+    messagename: 'You have been added to Dr. Vinay’s star doctor’s team',
   },
   {
     id: 'Yesterday, 04.10 PM',
@@ -24,7 +24,7 @@ const notifications = [
   },
   {
     id: 'Wednesday, 16th July, 09.30 AM',
-    messagename: 'Dr. Neha has assigned 1 of her casesto you',
+    messagename: 'Dr. Neha has assigned 1 of her cases to you',
   },
   {
     id: 'Yesterday, 04.10 PM',
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   textView: { ...theme.fonts.IBMPlexSansLight(10), color: 'rgba(1, 71, 91, 0.6)' },
-  messageText: { ...theme.fonts.IBMPlexSansSemiBold(15), color: '#01475b' },
+  messageText: { ...theme.fonts.IBMPlexSansSemiBold(15), color: '#01475b', marginRight: 20 },
   commonview: { justifyContent: 'center', marginLeft: 5, flex: 1 },
   underline: {
     height: 1,
@@ -104,7 +104,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="NEED HELP?"
+        headerText="NOTIFICATIONS"
       />
     );
   };

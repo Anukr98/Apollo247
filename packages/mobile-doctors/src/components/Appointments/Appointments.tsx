@@ -41,6 +41,7 @@ import {
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   noAppointmentsText: {
@@ -133,10 +134,12 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   useEffect(() => {
     getLocalData()
       .then((data) => {
+        console.log('data', data);
         setDoctorName((data.doctorDetails! || {}).lastName);
         setDoctorId((data.doctorDetails! || {}).id);
       })
       .catch(() => {});
+    console.log('DoctirNAME', doctorName);
   });
 
   console.log('DoctorIdAPPPPP', DoctorId);
@@ -146,10 +149,15 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
 
+  const todayDate = moment(new Date()).format('DD');
+  const compareDate = moment(calendarDate).format('DD');
+
   const startDate = moment(date).format('YYYY-MM-DD');
+
   let nextDate = new Date(date);
   nextDate.setDate(nextDate.getDate() + 1);
   const endDate = moment(nextDate).format('YYYY-MM-DD');
+  console.log('startDate', startDate, endDate);
 
   const { data, error, loading } = useQuery<GetDoctorAppointments, GetDoctorAppointmentsVariables>(
     GET_DOCTOR_APPOINTMENTS,
@@ -163,7 +171,17 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
 
   const getAppointments = data && data.getDoctorAppointments;
   console.log('getAppointments', getAppointments && getAppointments.appointmentsHistory);
+  console.log('date', todayDate);
+  console.log('calender', compareDate);
 
+  const monthdisplay =
+    moment(date)
+      .format('MMMM')
+      .substring(0, 3) || '';
+  const dateday = moment(date).format('DD');
+  console.log('dateday', dateday);
+  console.log('monthdisplay', monthdisplay);
+  const finalmondate = monthdisplay.concat(', ').concat(dateday);
   // const {
   //   data: { getDoctorProfile },
   //   error,
@@ -220,7 +238,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             textSectionTitleColor: '#80a3ad',
             selectedDayBackgroundColor: '#00b38e',
             selectedDayTextColor: '#ffffff',
-            todayTextColor: '#00b38e',
+            todayTextColor: '#000000',
             dayTextColor: '#00b38e',
             textDisabledColor: '#d9e1e8',
             dotColor: '#00adf5',
@@ -250,11 +268,11 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => Alert.alert('click'),
+            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
           },
           {
             icon: <Notification />,
-            onPress: () => Alert.alert('click'),
+            onPress: () => props.navigation.push(AppRoutes.NotificationScreen),
           },
         ]}
       />
@@ -265,7 +283,9 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     return (
       <ProfileTabHeader
         title={`hello dr. ${(doctorName || '').toLowerCase()} :)`}
-        description="here’s your schedule for today"
+        description={`here’s your schedule for ${
+          todayDate < compareDate || todayDate > compareDate ? finalmondate : 'today'
+        }`}
         activeTabIndex={0}
       />
     );

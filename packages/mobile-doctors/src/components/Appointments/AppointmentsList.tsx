@@ -19,6 +19,7 @@ import {
   NavigationScreenProps,
   ScrollView,
 } from 'react-navigation';
+import { colors } from '@aph/mobile-doctors/src/theme/colors';
 
 const styles = StyleSheet.create({
   leftTimeLineContainer: {
@@ -123,7 +124,11 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
 
   return (
     <ScrollView bounces={false}>
-      <View style={{ flex: 1 }}>
+      <View
+        style={{
+          flex: 1,
+        }}
+      >
         {props.appointmentsHistory.map((i, index, array) => {
           return (
             <>
