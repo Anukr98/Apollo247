@@ -273,6 +273,8 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       lineClamp: 2,
+      paddingRight: '20px',
+      width: '90%',
       boxOrient: 'vertical',
     },
     profileAvatar: {
