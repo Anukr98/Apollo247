@@ -6,7 +6,6 @@ import Pubnub from 'pubnub';
 import { ChatVideo } from 'components/ChatRoom/ChatVideo';
 import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { ConsultRoom } from 'components/ConsultRoom/ConsultRoom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

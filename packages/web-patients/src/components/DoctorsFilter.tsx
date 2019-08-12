@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
@@ -13,6 +13,7 @@ import _upperFirst from 'lodash/upperFirst';
 import _without from 'lodash/without';
 import { AphCalendar } from 'components/AphCalendar';
 import Scrollbars from 'react-custom-scrollbars';
+import { usePrevious } from 'hooks/reactCustomHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -154,15 +155,6 @@ export interface DoctorsFilterProps {
   showNormal: (showNormal: boolean) => void;
   emptySpeciality: (specialitySelected: string) => void;
   manageFilter: (disableFilters: boolean) => void;
-}
-
-// previous hook that accepts anything
-function usePrevious(value: any) {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
 }
 
 export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {

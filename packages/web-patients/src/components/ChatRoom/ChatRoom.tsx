@@ -2,7 +2,6 @@ import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ChatWindow } from 'components/ChatRoom/ChatWindow';
 import { ConsultDoctorProfile } from 'components/ChatRoom/ConsultDoctorProfile';
@@ -167,12 +166,12 @@ export const ChatRoom: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.breadcrumbs}>
-            <Link to={clientRoutes.welcome()}>
+            <a onClick={() => (window.location.href = clientRoutes.consultRoom())}>
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
-            </Link>
+            </a>
             Consultation - Case #362079
           </div>
           <div className={classes.doctorListingSection}>
