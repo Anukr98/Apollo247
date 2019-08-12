@@ -114,6 +114,7 @@ export interface ConsultRoomScreenProps
 
 export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [isDropdownVisible, setDropdownVisible] = useState(false);
+  const [hideView, setHideView] = useState(false);
   const client = useApolloClient();
   const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
   const AppId = props.navigation.getParam('AppId');
@@ -1475,7 +1476,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const renderTabPage = () => {
     return (
       <>
-        <View style={styles.shadowview}>
+        <View style={[styles.shadowview]}>
           <MaterialTabs
             items={['Case Sheet', 'Chat']}
             selectedIndex={activeTabIndex}
@@ -1600,6 +1601,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               </View>
             ),
             onPress: () => {
+              setHideView(!hideView);
               setActiveTabIndex(1);
               setShowPopUp(true);
             },
@@ -1616,6 +1618,29 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       />
     );
   };
+  const renderDropdown = () => {
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          width: '100%',
+          alignItems: 'flex-end',
+          overflow: 'hidden',
+          ...Platform.select({
+            ios: {
+              zIndex: 1,
+            },
+            android: {
+              elevation: 12,
+              zIndex: 2,
+            },
+          }),
+        }}
+      >
+        {showPopUp && CallPopUp()}
+      </View>
+    );
+  };
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <StatusBar hidden={hideStatusBar} />
@@ -1624,12 +1649,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       {showPopUp && CallPopUp()}
       {isAudioCall && AudioCall()}
       {isCall && VideoCall()}
-
-      {/* <View style={{ zIndex: 2 }}>
-        {showPopUp && CallPopUp()}
-        {isAudioCall && AudioCall()}
-        {isCall && VideoCall()}
-      </View> */}
     </SafeAreaView>
   );
 };
