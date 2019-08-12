@@ -21,14 +21,11 @@ require('./commands');
 let currentTestTitle = 'test';
 
 Cypress.on('window:before:load', (win) => {
-  // Cypress will not intercept `fetch` calls (only xhrs)
-  // Nullify `window.fetch` to trick it into using a polyfill (which will fallback to xhrs)
-  // And use `Cypress` instead of `cy` so that this persists across all tests
-  // More info: https://github.com/cypress-io/cypress/issues/95
-  // win.fetch = null as any;
+  // Note: the value of window.__TEST__ will always be the text found in the test description;
+  // i.e. `it('test description')`
   win.__TEST__ = currentTestTitle;
 });
 
-Cypress.on('test:before:run', (test, test2) => {
+Cypress.on('test:before:run', (test) => {
   currentTestTitle = test.title;
 });
