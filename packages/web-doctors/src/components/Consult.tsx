@@ -129,7 +129,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       <div>
         <div className={props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''}>
           {isCall && (
-            <OTSession apiKey="46393582" sessionId={props.sessionId} token={props.token}>
+            <OTSession
+              apiKey="46393582"
+              sessionId={props.sessionId}
+              token={props.token}
+              eventHandlers={{
+                connectionDestroyed: (event: any) => {
+                  props.toggelChatVideo();
+                  props.stopAudioVideoCall();
+                  setIscall(false);
+                },
+              }}
+            >
               {/* // <OTSession
             //   apiKey="46393582"
             //   sessionId="1_MX40NjM5MzU4Mn5-MTU2NTA3MTUwNDk4MX56bVd3ZW96MFNuS2Vua2dDMnZ5VTZNNlJ-UH4"

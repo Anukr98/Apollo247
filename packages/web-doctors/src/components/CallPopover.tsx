@@ -234,7 +234,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const id = open ? 'simple-popover' : undefined;
   const startConsult = '^^#startconsult';
   const stopConsult = '^^#stopconsult';
-  const channel = 'Channel7';
+  const channel = props.appointmentId;
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
     publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
