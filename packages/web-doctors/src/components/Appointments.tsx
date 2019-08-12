@@ -15,7 +15,7 @@ import {
   StepContent,
   Typography,
 } from '@material-ui/core';
-import { format } from 'date-fns';
+import { format, isToday } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { STATUS } from 'graphql/types/globalTypes';
 import { CircularProgress } from '@material-ui/core';
@@ -37,6 +37,7 @@ export interface Appointment {
 export interface AppointmentsProps {
   values: Appointment[];
   loading: boolean;
+  selectedDate: Date;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -230,7 +231,11 @@ const checkIfComplete = (status: string) => status === STATUS.COMPLETED;
 const getActiveStep = (appointments: Appointment[]) =>
   appointments.findIndex((appointment) => checkIfComplete(appointment.status));
 
-export const Appointments: React.FC<AppointmentsProps> = ({ values, loading: loadingData }) => {
+export const Appointments: React.FC<AppointmentsProps> = ({
+  values,
+  loading: loadingData,
+  selectedDate,
+}) => {
   const classes = useStyles();
   const [appointments, setAppointments] = useState<Appointment[]>(values);
   const stepsCompleted = getActiveStep(appointments);
@@ -414,7 +419,8 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values, loading: loa
         <div>
           <img src={require('images/no_data.svg')} alt="" />
         </div>
-        No consults scheduled today!
+        No consults scheduled{' '}
+        {isToday(selectedDate) ? 'today' : `for ${format(selectedDate, 'MMM, dd')}`}!
       </div>
     </div>
   );
