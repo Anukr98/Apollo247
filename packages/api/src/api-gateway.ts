@@ -7,7 +7,7 @@ import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl, protocol } from '@aph/universal/dist/aphRoutes';
-import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
+//import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 
 export interface GatewayContext {
   firebaseUid: string;
@@ -98,7 +98,7 @@ export type Resolver<Parent, Args, Context, Result> = (
     console.log(`🚀 api gateway ready at ${url}`);
   });
 
-  console.log('------------------------MESSAGE QUEUE TEST----------------------------');
+  /*console.log('------------------------MESSAGE QUEUE TEST----------------------------');
 
   AphMqClient.connect();
 
@@ -117,5 +117,5 @@ export type Resolver<Parent, Args, Context, Result> = (
     console.log('received message!', receivedMessage.message);
     console.log('accepting message');
     receivedMessage.accept();
-  });
+  });*/
 })();
