@@ -155,7 +155,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.primary.contrastText,
       padding: 16,
       position: 'relative',
-      minHeight: 154,
+      minHeight: 115,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
       marginBottom: 30,
@@ -410,12 +410,13 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           title={
             <div>
               <h4
-                title={`${doctor!.associatedDoctor!.salutation} ${
+                title={`${doctor!.associatedDoctor!.salutation &&
+                  doctor!.associatedDoctor!.salutation + '.'} ${
                   doctor!.associatedDoctor!.firstName
                 } ${doctor!.associatedDoctor!.lastName}`}
               >
-                {doctor!.associatedDoctor!.salutation} {doctor!.associatedDoctor!.firstName}{' '}
-                {doctor!.associatedDoctor!.lastName}
+                {doctor!.associatedDoctor!.salutation && doctor!.associatedDoctor!.salutation + '.'}{' '}
+                {doctor!.associatedDoctor!.firstName} {doctor!.associatedDoctor!.lastName}
               </h4>
               {doctor!.isActive === true && (
                 <h6>
