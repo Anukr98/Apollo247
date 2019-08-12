@@ -8,7 +8,6 @@ import {
   GetDoctorDetailsById_getDoctorDetailsById_doctorHospital as Facility,
   GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor as StarDoctorProfile,
 } from 'graphql/types/GetDoctorDetailsById';
-import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import _map from 'lodash/map';
 import _forEach from 'lodash/forEach';
@@ -156,6 +155,38 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
         </div>
         <Grid container className={classes.gridContainer} spacing={2}>
           {_map(team, (doctorDetails: StarTeam) => {
+            // console.log('doctor details.........', doctorDetails);
+            let starDoctorLocation = '';
+            if (
+              doctorDetails &&
+              doctorDetails.associatedDoctor &&
+              doctorDetails.associatedDoctor.doctorHospital &&
+              doctorDetails.associatedDoctor.doctorHospital.length > 0
+            ) {
+              _forEach(doctorDetails.associatedDoctor.doctorHospital, (hospitalDetails) => {
+                // console.log(hospitalDetails);
+                if (hospitalDetails.facility.facilityType === 'HOSPITAL') {
+                  starDoctorLocation = hospitalDetails.facility.name;
+                }
+              });
+            }
+            const associateDoctorId =
+              doctorDetails && doctorDetails.associatedDoctor && doctorDetails.associatedDoctor.id
+                ? doctorDetails.associatedDoctor.id
+                : '';
+            const associateDoctorImage =
+              doctorDetails &&
+              doctorDetails.associatedDoctor &&
+              doctorDetails.associatedDoctor.photoUrl
+                ? doctorDetails.associatedDoctor.photoUrl
+                : '';
+            const qualification =
+              doctorDetails &&
+              doctorDetails.associatedDoctor &&
+              doctorDetails.associatedDoctor.qualification
+                ? doctorDetails.associatedDoctor.qualification
+                : '';
+
             return (
               <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('startDoctor_')}>
                 <div className={classes.root}>
@@ -167,11 +198,11 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
                         ? doctorDetails.associatedDoctor.firstName
                         : ''
                     }
-                    src=""
+                    src={associateDoctorImage}
                     className={classes.bigAvatar}
                   />
                   <div className={classes.doctorInfo}>
-                    <Link to="/">
+                    <a href={clientRoutes.doctorDetails(associateDoctorId)}>
                       <div className={classes.doctorName}>
                         {doctorDetails &&
                         doctorDetails.associatedDoctor &&
@@ -185,9 +216,9 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
                           ? doctorDetails.associatedDoctor.lastName
                           : ''}
                       </div>
-                    </Link>
+                    </a>
                     <div className={classes.speciality}>
-                      {/* {doctorDetails &&
+                      {doctorDetails &&
                       doctorDetails.associatedDoctor &&
                       doctorDetails.associatedDoctor.specialty &&
                       doctorDetails.associatedDoctor.specialty.name
@@ -201,13 +232,13 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
                           ? doctorDetails.associatedDoctor.experience
                           : ''}
                         Yrs
-                      </span> */}
+                      </span>
                     </div>
-                    {/* <div className={classes.doctorMoreInfo}>
-                      {(doctorDetails && doctorDetails.address) || ''}
+                    <div className={classes.doctorMoreInfo}>
+                      {starDoctorLocation}
                       <br />
-                      {(doctorDetails && doctorDetails.education) || ''}
-                    </div> */}
+                      {qualification}
+                    </div>
                   </div>
                 </div>
               </Grid>

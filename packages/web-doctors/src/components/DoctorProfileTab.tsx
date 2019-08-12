@@ -127,7 +127,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.primary.contrastText,
       padding: 0,
       position: 'relative',
-      minHeight: 154,
+      minHeight: 115,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
       marginBottom: 15,
@@ -139,6 +139,10 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
         padding: 0,
         fontWeight: theme.typography.fontWeightMedium,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        width: '72%',
       },
       '& h6': {
         margin: 0,
@@ -151,7 +155,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.primary.contrastText,
       padding: 16,
       position: 'relative',
-      minHeight: 154,
+      minHeight: 115,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
       marginBottom: 30,
@@ -263,10 +267,15 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       fontWeight: theme.typography.fontWeightMedium,
       color: '#658f9b',
-      maxHeight: 48,
+      display: '-webkit-box',
+      maxWidth: 400,
+      height: 36,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-      display: 'inline-block',
+      lineClamp: 2,
+      paddingRight: '20px',
+      width: '90%',
+      boxOrient: 'vertical',
     },
     profileAvatar: {
       width: 80,
@@ -325,7 +334,11 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           className={classes.cardHeader}
           avatar={
             <Avatar className={classes.profileAvatar}>
-              <img src={require('images/doctor-profile.jpg')} />
+              {doctor!.associatedDoctor!.photoUrl ? (
+                <img src={`${doctor!.associatedDoctor!.photoUrl}`} />
+              ) : (
+                <img src={require('images/doctor-profile.jpg')} />
+              )}
             </Avatar>
           }
           action={
@@ -400,9 +413,14 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           }
           title={
             <div>
-              <h4>
-                {doctor!.associatedDoctor!.salutation} {doctor!.associatedDoctor!.firstName}{' '}
-                {doctor!.associatedDoctor!.lastName}
+              <h4
+                title={`${doctor!.associatedDoctor!.salutation &&
+                  doctor!.associatedDoctor!.salutation + '.'} ${
+                  doctor!.associatedDoctor!.firstName
+                } ${doctor!.associatedDoctor!.lastName}`}
+              >
+                {doctor!.associatedDoctor!.salutation && doctor!.associatedDoctor!.salutation + '.'}{' '}
+                {doctor!.associatedDoctor!.firstName} {doctor!.associatedDoctor!.lastName}
               </h4>
               {doctor!.isActive === true && (
                 <h6>
@@ -417,7 +435,12 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           subheader={
             <div>
               {doctor!.isActive === true && (
-                <span className={classes.qualification}>
+                <span
+                  className={classes.qualification}
+                  title={`${doctor!.associatedDoctor!.qualification}, ${
+                    doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1
+                  }`}
+                >
                   {doctor!.associatedDoctor!.qualification},
                   {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1}
                 </span>
@@ -565,7 +588,12 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <Grid item lg={6} sm={12} xs={12}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">Awards</Typography>
-                    <Typography variant="h3">{doctor.awards}</Typography>
+                    <Typography variant="h3">
+                      {doctor.awards
+                        .replace('&amp;', '&')
+                        .replace(/<\/?[^>]+>/gi, '')
+                        .trim()}
+                    </Typography>
                   </Paper>
                 </Grid>
               )}

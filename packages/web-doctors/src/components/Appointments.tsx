@@ -15,7 +15,7 @@ import {
   StepContent,
   Typography,
 } from '@material-ui/core';
-import { format } from 'date-fns';
+import { format, isToday } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { STATUS } from 'graphql/types/globalTypes';
 import { CircularProgress } from '@material-ui/core';
@@ -37,6 +37,7 @@ export interface Appointment {
 export interface AppointmentsProps {
   values: Appointment[];
   loading: boolean;
+  selectedDate: Date;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -59,7 +60,7 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'rgba(0,135,186,0.1)',
       minWidth: 60,
       padding: 10,
-      borderRadius: 5,
+      borderRadius: 10,
       color: '#0087ba',
       fontSize: 12,
       fontWeight: 700,
@@ -106,7 +107,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     mainHeading: {
       color: '#02475b',
-      fontWeight: 700,
+      fontWeight: 500,
       fontSize: 20,
       lineHeight: '25px',
       [theme.breakpoints.between('sm', 'md')]: {
@@ -210,7 +211,7 @@ const useStyles = makeStyles((theme: Theme) =>
       textAlign: 'center',
       color: 'rgba(2, 71, 91, 0.6)',
       fontSize: 16,
-      fontWeight: 600,
+      fontWeight: 500,
       marginTop: -30,
       '& img': {
         width: 200,
@@ -230,7 +231,11 @@ const checkIfComplete = (status: string) => status === STATUS.COMPLETED;
 const getActiveStep = (appointments: Appointment[]) =>
   appointments.findIndex((appointment) => checkIfComplete(appointment.status));
 
-export const Appointments: React.FC<AppointmentsProps> = ({ values, loading: loadingData }) => {
+export const Appointments: React.FC<AppointmentsProps> = ({
+  values,
+  loading: loadingData,
+  selectedDate,
+}) => {
   const classes = useStyles();
   const [appointments, setAppointments] = useState<Appointment[]>(values);
   const stepsCompleted = getActiveStep(appointments);
@@ -307,10 +312,10 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values, loading: loa
                   }}
                 >
                   <span>
-                    {`${format(appointment.startTime, 'hh:mm')} - ${format(
-                      appointment.endTime,
-                      'hh:mm aa'
-                    )}`}
+                    {`${activeStep === idx ? 'UP NEXT: ' : ''}${format(
+                      appointment.startTime,
+                      'hh:mm'
+                    )} - ${format(appointment.endTime, 'hh:mm aa')}`}
                   </span>
                 </Typography>
               </StepLabel>
@@ -414,7 +419,8 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values, loading: loa
         <div>
           <img src={require('images/no_data.svg')} alt="" />
         </div>
-        No consults scheduled today!
+        No consults scheduled{' '}
+        {isToday(selectedDate) ? 'today' : `for ${format(selectedDate, 'MMM, dd')}`}!
       </div>
     </div>
   );

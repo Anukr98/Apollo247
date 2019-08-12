@@ -8,13 +8,15 @@ import { Week as WeekView } from 'components/Calendar/Views/Week';
 import { Month as MonthView } from 'components/Calendar/Views/Month';
 import { GET_DOCTOR_APPOINTMENTS } from 'graphql/appointments';
 import { Appointment } from 'components/Appointments';
-import { getTime, startOfToday, addDays, startOfMonth, endOfMonth } from 'date-fns/esm';
+import { getTime, startOfToday, addDays, startOfMonth, endOfMonth, isToday } from 'date-fns/esm';
 import { addMinutes, format, startOfDay } from 'date-fns';
 import {
   GetDoctorAppointments,
   GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
 } from 'graphql/types/GetDoctorAppointments';
 import { useQuery } from 'react-apollo-hooks';
+import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -58,6 +60,8 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingTop: 12,
         paddingBottom: 12,
         fontSize: 28,
+        fontWeight: 600,
+        lineHeight: 1.36,
         [theme.breakpoints.down('xs')]: {
           fontSize: 20,
         },
@@ -75,7 +79,7 @@ const useStyles = makeStyles((theme: Theme) => {
     toggleBtn: {
       backgroundColor: '#f0f4f5',
       position: 'absolute',
-      top: 55,
+      top: 75,
       right: 16,
       borderRadius: 17,
       '& button': {
@@ -83,6 +87,8 @@ const useStyles = makeStyles((theme: Theme) => {
         height: 36,
         borderRadius: 17,
         color: '#02475b',
+        fontSize: 14,
+        fontWeight: 600,
         textTransform: 'capitalize',
       },
     },
@@ -139,10 +145,6 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
   return adaptedList;
 };
 
-export interface CalendarProps {
-  doctorId: string;
-}
-
 const getRange = (date: Date) => {
   return { start: startOfDay(date), end: addDays(startOfDay(date), 1) };
 };
@@ -153,22 +155,28 @@ const getMonthRange = ({ start, end }: { start: string | Date; end: string | Dat
   return { start, end };
 };
 
-export const Calendar: React.FC<CalendarProps> = ({ doctorId }) => {
+export const Calendar: React.FC = () => {
   const today: Date = startOfToday();
   const classes = useStyles();
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [viewSelection, setViewSelection] = useState<string>('day');
   const [range, setRange] = useState<{ start: string | Date; end: string | Date }>(
-    getRange(selectedDate)
+    viewSelection === 'day'
+      ? getRange(selectedDate)
+      : { start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) }
   );
-  // const [data, setData] = useState<GetDoctorAppointments>({} as GetDoctorAppointments);
-  // const [loading, isLoading] = useState<boolean>(true);
+
+  const {
+    currentPatient,
+  }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
+
+  console.log(viewSelection, range, startOfMonth(selectedDate));
 
   const setStartOfMonthDate = ({ start }: { start: string | Date; end: string | Date }) => {
     setSelectedDate(startOfMonth(start as Date));
   };
 
-  const { data, loading, error } = useQuery(GET_DOCTOR_APPOINTMENTS, {
+  const { data, loading } = useQuery(GET_DOCTOR_APPOINTMENTS, {
     variables: {
       startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
       endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
@@ -182,8 +190,11 @@ export const Calendar: React.FC<CalendarProps> = ({ doctorId }) => {
       </div>
       <div className={classes.container}>
         <div className={classes.tabHeading}>
-          <Typography variant="h1">hello dr. rao :)</Typography>
-          <p>here’s your schedule for today</p>
+          <Typography variant="h1">hello dr. {currentPatient!.lastName} :)</Typography>
+          <p>
+            here’s your schedule for {isToday(selectedDate) ? 'today, ' : ''}{' '}
+            {format(selectedDate, isToday(selectedDate) ? 'dd MMM yyyy' : 'MMM, dd')}
+          </p>
         </div>
         <div>
           <div>
