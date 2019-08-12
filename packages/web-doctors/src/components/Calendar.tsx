@@ -61,6 +61,7 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: 12,
         fontSize: 28,
         fontWeight: 600,
+        lineHeight: 1.36,
         [theme.breakpoints.down('xs')]: {
           fontSize: 20,
         },
@@ -78,7 +79,7 @@ const useStyles = makeStyles((theme: Theme) => {
     toggleBtn: {
       backgroundColor: '#f0f4f5',
       position: 'absolute',
-      top: 55,
+      top: 75,
       right: 16,
       borderRadius: 17,
       '& button': {
@@ -86,6 +87,8 @@ const useStyles = makeStyles((theme: Theme) => {
         height: 36,
         borderRadius: 17,
         color: '#02475b',
+        fontSize: 14,
+        fontWeight: 600,
         textTransform: 'capitalize',
       },
     },

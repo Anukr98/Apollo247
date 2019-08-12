@@ -10,6 +10,10 @@ const useStyles = makeStyles({
     margin: 0,
     padding: 0,
     width: '100%',
+    '& li': {
+      fontSize: 14,
+      fontWeight: 500,
+    },
   },
   days: {
     display: 'inline-block',
@@ -17,6 +21,7 @@ const useStyles = makeStyles({
   },
   day: {
     display: 'block',
+    
   },
   date: {
     display: 'block',

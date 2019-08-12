@@ -44,7 +44,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 4px 0 #00000026',
       marginRight: 30,
       textAlign: 'left',
-      fontSize: 15,
+      fontSize: 16,
       maxWidth: '40%',
     },
     boldTxt: {
@@ -105,6 +105,8 @@ const useStyles = makeStyles((theme: Theme) => {
       clear: 'both',
       backgroundColor: '#fff',
       width: '100%',
+      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
+
     },
     chatsendcircle: {
       position: 'absolute',

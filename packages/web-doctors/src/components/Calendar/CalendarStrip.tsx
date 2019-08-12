@@ -21,12 +21,13 @@ const useStyles = makeStyles({
     verticalAlign: 'middle',
     '& li': {
       width: '14%',
-      padding: '10px 0 10px 0',
+      padding: '15px 0 10px 0',
       cursor: 'pointer',
       '&.highlight': {
         backgroundColor: '#00b38e',
         color: '#fff',
         boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.5)',
+        fontWeight: 600,
       },
     },
   },
@@ -37,7 +38,7 @@ const useStyles = makeStyles({
     margin: 'auto',
     padding: '0 15px',
     textAlign: 'center',
-    boxShadow: '-4px 2px 10px 0 rgba(0, 0, 0, 0.1)',
+    boxShadow: '-10px 2px 10px 0 rgba(0, 0, 0, 0.1)',
   },
   monthPopup: {
     fontSize: 21,

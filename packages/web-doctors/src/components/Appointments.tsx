@@ -60,7 +60,7 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'rgba(0,135,186,0.1)',
       minWidth: 60,
       padding: 10,
-      borderRadius: 5,
+      borderRadius: 10,
       color: '#0087ba',
       fontSize: 12,
       fontWeight: 700,
@@ -107,7 +107,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     mainHeading: {
       color: '#02475b',
-      fontWeight: 700,
+      fontWeight: 500,
       fontSize: 20,
       lineHeight: '25px',
       [theme.breakpoints.between('sm', 'md')]: {
@@ -211,7 +211,7 @@ const useStyles = makeStyles((theme: Theme) =>
       textAlign: 'center',
       color: 'rgba(2, 71, 91, 0.6)',
       fontSize: 16,
-      fontWeight: 600,
+      fontWeight: 500,
       marginTop: -30,
       '& img': {
         width: 200,
