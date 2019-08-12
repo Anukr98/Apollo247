@@ -19,6 +19,18 @@ export const searchData: SearchData[] = [
     image: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_5.png',
   },
   {
+    searchType: SEARCH_TYPE.DOCTOR,
+    typeId: '44783bf5-8084-42e2-adf0-2bcfabe1fef5',
+    name: 'Dr. Sudhir Kumar',
+    image: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_6.png',
+  },
+  {
+    searchType: SEARCH_TYPE.DOCTOR,
+    typeId: '1a1f2b6b-53d9-4ba8-82dc-f1f1592701ad',
+    name: 'Dr. Kiran Pralhad Sudhare',
+    image: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_2.png',
+  },
+  {
     searchType: SEARCH_TYPE.SPECIALTY,
     typeId: '029eae45-4185-448b-96c1-7b4e4572bb6f',
     name: 'General Physician',
