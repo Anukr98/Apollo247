@@ -18,6 +18,7 @@ import {
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { STATUS } from 'graphql/types/globalTypes';
+import { CircularProgress } from '@material-ui/core';
 
 export interface Appointment {
   id: string;
@@ -35,6 +36,7 @@ export interface Appointment {
 
 export interface AppointmentsProps {
   values: Appointment[];
+  loading: boolean;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -215,6 +217,11 @@ const useStyles = makeStyles((theme: Theme) =>
         marginBottom: 35,
       },
     },
+    loderContent: {
+      textAlign: 'center',
+      minHeight: 330,
+      paddingTop: 100,
+    },
   })
 );
 
@@ -223,11 +230,12 @@ const checkIfComplete = (status: string) => status === STATUS.COMPLETED;
 const getActiveStep = (appointments: Appointment[]) =>
   appointments.findIndex((appointment) => checkIfComplete(appointment.status));
 
-export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
+export const Appointments: React.FC<AppointmentsProps> = ({ values, loading: loadingData }) => {
   const classes = useStyles();
   const [appointments, setAppointments] = useState<Appointment[]>(values);
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
+  const [loading, isLoading] = useState<boolean>(loadingData);
 
   useEffect(() => {
     let activeStep = getActiveStep(values);
@@ -236,6 +244,20 @@ export const Appointments: React.FC<AppointmentsProps> = ({ values }) => {
     setAppointments(values);
     setActiveStep(activeStep);
   }, [values]);
+
+  useEffect(() => {
+    isLoading(loadingData);
+  }, [loadingData]);
+
+  if (loading) {
+    return (
+      <div className={classes.calendarContent}>
+        <div className={classes.loderContent}>
+          <CircularProgress />
+        </div>
+      </div>
+    );
+  }
 
   if (appointments && appointments.length) {
     return (

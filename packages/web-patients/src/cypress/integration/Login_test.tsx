@@ -15,6 +15,22 @@ describe('Login', () => {
     cy.get('[data-cypress="SignIn"]').contains('+91');
   });
 
+  it("Firebase (Captcha Disabled): Blurring a mobile input after submission doesn't cancel action", () => {
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[type="tel"]')
+      .type('9999999999');
+
+    cy.get('button[type="submit"]')
+      .click()
+      .blur()
+      .find('[class*="MuiCircularProgress"]')
+      .should('exist');
+
+    cy.get('[data-cypress="SignIn"]')
+      .contains('Type in the OTP sent to you, to authenticate')
+      .should('exist');
+  });
+
   it('There should be validation upon entering anything non-numerical', () => {
     cy.get('[data-cypress="SignIn"]')
       .find('input[name*="mobileNumber"]')
@@ -171,7 +187,7 @@ describe('Login (Firebase)', () => {
       .click();
   });
 
-  it('Firebase: Can do a real login', () => {
+  it('Firebase (Captcha Disabled): Can do a real login', () => {
     cy.get('[data-cypress="Navigation"]').should('not.exist');
 
     cy.get('[data-cypress="SignIn"]')
@@ -194,7 +210,7 @@ describe('Login (Firebase)', () => {
     cy.get('[data-cypress="Navigation"]').should('exist');
   });
 
-  it('Firebase: Resend OTP', () => {
+  it('Firebase (Captcha Disabled): Resend OTP', () => {
     cy.get('[data-cypress="SignIn"]')
       .find('input[type="tel"]')
       .type('9999999999')
