@@ -312,7 +312,7 @@ describe('UpdatePatient (multiple, without uhids)', () => {
   it('Should allow single quotation marks to be added to first and last names', () => {
     const janeTheApostropheLover = {
       ...janeNoRelation,
-      firstName: "Jane 'The Apostrophe Lover'",
+      firstName: "Jane'Apostrophe",
       lastName: "John'son",
       relation: Relation.ME,
     };
@@ -342,6 +342,121 @@ describe('UpdatePatient (multiple, without uhids)', () => {
     cy.get('[data-cypress="HeroBanner"]')
       .contains(janeTheApostropheLover.firstName!.toLowerCase())
       .should('exist');
+  });
+
+  it('Should forbid names with consecutive quotation marks', () => {
+    const janeTheApostropheLover = {
+      ...janeNoRelation,
+      firstName: "Jane''Apostrophe",
+      lastName: "John''son",
+      relation: Relation.ME,
+    };
+
+    cy.mockAphGraphqlOps({
+      operations: {
+        UpdatePatient: {
+          updatePatient: {
+            __typename: 'UpdatePatientResult',
+            patient: janeTheApostropheLover,
+          },
+        },
+      },
+    });
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find(`input[value="${janeNoRelation.firstName!}"]`)
+      .clear()
+      .type(janeTheApostropheLover.firstName!);
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+  });
+
+  it('Should forbid names beginning with quotation marks', () => {
+    const janeTheApostropheLover = {
+      ...janeNoRelation,
+      firstName: "'ApostropheJane",
+      lastName: 'Johnson',
+      relation: Relation.ME,
+    };
+
+    cy.mockAphGraphqlOps({
+      operations: {
+        UpdatePatient: {
+          updatePatient: {
+            __typename: 'UpdatePatientResult',
+            patient: janeTheApostropheLover,
+          },
+        },
+      },
+    });
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find(`input[value="${janeNoRelation.firstName!}"]`)
+      .clear()
+      .type(janeTheApostropheLover.firstName!);
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+  });
+
+  it('Should forbid names ending with quotation marks', () => {
+    const janeTheApostropheLover = {
+      ...janeNoRelation,
+      firstName: "Jane'",
+      lastName: 'Johnson',
+      relation: Relation.ME,
+    };
+
+    cy.mockAphGraphqlOps({
+      operations: {
+        UpdatePatient: {
+          updatePatient: {
+            __typename: 'UpdatePatientResult',
+            patient: janeTheApostropheLover,
+          },
+        },
+      },
+    });
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find(`input[value="${janeNoRelation.firstName!}"]`)
+      .clear()
+      .type(janeTheApostropheLover.firstName!);
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+  });
+  it('Should require letters in addition to quotation marks on first/last names', () => {
+    const janeTheApostropheLover = {
+      ...janeNoRelation,
+      firstName: "''",
+      lastName: 'Johnson',
+      relation: Relation.ME,
+    };
+
+    cy.mockAphGraphqlOps({
+      operations: {
+        UpdatePatient: {
+          updatePatient: {
+            __typename: 'UpdatePatientResult',
+            patient: janeTheApostropheLover,
+          },
+        },
+      },
+    });
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find(`input[value="${janeNoRelation.firstName!}"]`)
+      .clear()
+      .type(janeTheApostropheLover.firstName!);
+
+    cy.get('[data-cypress="NewProfile"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
   });
 });
 
