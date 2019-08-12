@@ -58,6 +58,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'none',
       width: '50%',
       opacity: 1,
+      lineHeight: 'normal',
       [theme.breakpoints.down('xs')]: {
         width: '50%',
       },
