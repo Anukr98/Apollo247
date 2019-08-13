@@ -3,6 +3,20 @@ import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
+import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import _forEach from 'lodash/forEach';
+import {
+  AppointmentHistory as TypeAppointmentHistory,
+  AppointmentHistory_getAppointmentHistory_appointmentsHistory as AppointmentHistory,
+  AppointmentHistoryVariables,
+} from 'graphql/types/AppointmentHistory';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { PATIENT_APPOINTMENT_HISTORY } from 'graphql/doctors';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import _findIndex from 'lodash/findIndex';
+import { getTime } from 'date-fns/esm';
+import { format } from 'date-fns';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -231,19 +245,144 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ConsultDoctorProfile: React.FC = (props) => {
+interface ConsultDoctorProfileProps {
+  doctorDetails: DoctorDetails;
+  appointmentId: string;
+}
+
+const getTimestamp = (today: Date, slotTime: string) => {
+  const hhmm = slotTime.split(':');
+  return getTime(
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      parseInt(hhmm[0], 10),
+      parseInt(hhmm[1], 10),
+      0,
+      0
+    )
+  );
+};
+
+export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props) => {
   const classes = useStyles();
+
+  const { doctorDetails, appointmentId } = props;
+  const { allCurrentPatients } = useAllCurrentPatients();
+
+  const doctorId =
+    doctorDetails && doctorDetails.getDoctorDetailsById
+      ? doctorDetails.getDoctorDetailsById.id
+      : '';
+
+  const patientId = (allCurrentPatients && allCurrentPatients[0].id) || '';
+
+  const { data, loading, error } = useQueryWithSkip<
+    TypeAppointmentHistory,
+    AppointmentHistoryVariables
+  >(PATIENT_APPOINTMENT_HISTORY, {
+    variables: { appointmentHistoryInput: { patientId: patientId, doctorId: doctorId } },
+  });
+
+  if (loading) {
+    return <LinearProgress />;
+  }
+  if (error) {
+    return <></>;
+  }
+
+  const appointmentDetails: AppointmentHistory[] = [];
+  let hospitalLocation = '';
+
+  if (data && data.getAppointmentHistory && data.getAppointmentHistory.appointmentsHistory) {
+    const previousAppointments = data.getAppointmentHistory.appointmentsHistory;
+    const findAppointment = _findIndex(previousAppointments, { id: appointmentId });
+    if (findAppointment > 0) {
+      appointmentDetails.push(previousAppointments[findAppointment]);
+    }
+  }
+
+  const firstName =
+    doctorDetails && doctorDetails.getDoctorDetailsById
+      ? doctorDetails.getDoctorDetailsById.firstName
+      : '';
+  const lastName =
+    doctorDetails && doctorDetails.getDoctorDetailsById
+      ? doctorDetails.getDoctorDetailsById.lastName
+      : '';
+  const speciality =
+    doctorDetails && doctorDetails.getDoctorDetailsById
+      ? doctorDetails.getDoctorDetailsById.specialty.name
+      : '';
+  const experience =
+    doctorDetails && doctorDetails.getDoctorDetailsById
+      ? doctorDetails.getDoctorDetailsById.experience
+      : '';
+  const education =
+    doctorDetails && doctorDetails.getDoctorDetailsById
+      ? doctorDetails.getDoctorDetailsById.qualification
+      : '';
+  const awards =
+    doctorDetails && doctorDetails.getDoctorDetailsById
+      ? doctorDetails.getDoctorDetailsById.awards
+      : '';
+  const languages =
+    doctorDetails && doctorDetails.getDoctorDetailsById
+      ? doctorDetails.getDoctorDetailsById.languages
+      : '';
+  const profileImage =
+    doctorDetails && doctorDetails.getDoctorDetailsById
+      ? doctorDetails.getDoctorDetailsById.photoUrl
+      : '';
+  const onlineConsultFees =
+    doctorDetails && doctorDetails.getDoctorDetailsById
+      ? doctorDetails.getDoctorDetailsById.onlineConsultationFees
+      : '';
+  const physicalConsultationFees =
+    doctorDetails && doctorDetails.getDoctorDetailsById
+      ? doctorDetails.getDoctorDetailsById.physicalConsultationFees
+      : '';
+  const appointmentTime =
+    appointmentDetails && appointmentDetails.length > 0 && appointmentDetails[0].appointmentDateTime
+      ? format(
+          new Date(
+            getTimestamp(
+              new Date(appointmentDetails[0].appointmentDateTime || ''),
+              appointmentDetails[0].appointmentDateTime.split('T')[1].substring(0, 5)
+            )
+          ),
+          'hh:mm a'
+        )
+      : '';
+
+  // console.log('---------------', appointmentDetails, data);
+
+  if (
+    doctorDetails &&
+    doctorDetails.getDoctorDetailsById &&
+    doctorDetails.getDoctorDetailsById.doctorHospital
+  ) {
+    _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
+      if (hospitalDetails.facility.facilityType === 'HOSPITAL') {
+        hospitalLocation = hospitalDetails.facility.name;
+      }
+    });
+  }
 
   return (
     <div className={classes.root}>
       <div className={classes.doctorProfile}>
         <div className={classes.doctorImage}>
-          <img src={'https://via.placeholder.com/328x138'} alt="" />
+          <img
+            src={profileImage !== null ? profileImage : 'https://via.placeholder.com/328x138'}
+            alt={firstName}
+          />
         </div>
         <div className={classes.doctorInfo}>
-          <div className={classes.doctorName}>Dr. Simran Rai</div>
+          <div className={classes.doctorName}>{`${firstName} ${lastName}`}</div>
           <div className={classes.specialits}>
-            General Physician <span className={classes.lineDivider}>|</span> 7 Yrs
+            {speciality} <span className={classes.lineDivider}>|</span> {experience} Yrs
             <div className={classes.moreToggle}>More</div>
           </div>
           <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 514px'}>
@@ -252,19 +391,14 @@ export const ConsultDoctorProfile: React.FC = (props) => {
                 <div className={classes.iconType}>
                   <img src={require('images/ic-edu.svg')} alt="" />
                 </div>
-                <div className={classes.details}>
-                  MS (Surgery)
-                  <br /> MBBS (Internal Medicine)
-                </div>
+                <div className={classes.details}>{education}</div>
               </div>
               <div className={classes.infoRow}>
                 <div className={classes.iconType}>
                   <img src={require('images/ic-awards.svg')} alt="" />
                 </div>
                 <div className={classes.details}>
-                  Dr. B.C.Roy Award (2009)
-                  <br /> William E. Ladd Medal (2013)
-                  <br /> R. D. Birla Award (2014)
+                  {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
                 </div>
               </div>
             </div>
@@ -273,13 +407,13 @@ export const ConsultDoctorProfile: React.FC = (props) => {
                 <div className={classes.iconType}>
                   <img src={require('images/ic-location.svg')} alt="" />
                 </div>
-                <div className={classes.details}>Apollo Hospital, Jubilee Hills</div>
+                <div className={classes.details}>{hospitalLocation}</div>
               </div>
               <div className={`${classes.infoRow} ${classes.textCenter}`}>
                 <div className={classes.iconType}>
                   <img src={require('images/ic-language.svg')} alt="" />
                 </div>
-                <div className={classes.details}>Hindi, English, Telugu</div>
+                <div className={classes.details}>{languages}</div>
               </div>
             </div>
             <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
@@ -292,86 +426,88 @@ export const ConsultDoctorProfile: React.FC = (props) => {
                     Online Consultation
                     <br />
                     Clinic Visit
-                    <div className={classes.doctorPriceIn}>Rs. 299</div>
+                    {/* <div className={classes.doctorPriceIn}>Rs. 299</div> */}
                   </div>
                   <div className={classes.doctorPrice}>
-                    Rs. 299 <br />
-                    Rs. 499
+                    Rs. {onlineConsultFees} <br />
+                    Rs. {physicalConsultationFees}
                   </div>
                 </div>
               </div>
             </div>
-            <div className={classes.appointmentDetails}>
-              <div className={classes.sectionHead}>
-                <span>Appointment Details</span>
-                <span className={classes.moreIcon}>
-                  <img src={require('images/ic_more.svg')} alt="" />
-                </span>
+            {appointmentDetails ? (
+              <div className={classes.appointmentDetails}>
+                <div className={classes.sectionHead}>
+                  <span>Appointment Details</span>
+                  <span className={classes.moreIcon}>
+                    <img src={require('images/ic_more.svg')} alt="" />
+                  </span>
+                </div>
+                <div className={`${classes.doctorInfoGroup} ${classes.noBorder}`}>
+                  <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                    <div className={classes.iconType}>
+                      <img src={require('images/ic_calendar_show.svg')} alt="" />
+                    </div>
+                    <div className={classes.details}>Today, {appointmentTime}</div>
+                  </div>
+                  <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                    <div className={classes.iconType}>
+                      <img src={require('images/ic-language.svg')} alt="" />
+                    </div>
+                    <div className={classes.details}>40 min average waiting time</div>
+                  </div>
+                  <div className={`${classes.infoRow}`}>
+                    <div className={classes.iconType}>
+                      <img src={require('images/ic-location.svg')} alt="" />
+                    </div>
+                    <div className={classes.details}>
+                      Apollo Hospital
+                      <br />
+                      Road No 72, Film Nagar
+                      <br />
+                      Jubilee Hills, Hyderabad
+                    </div>
+                  </div>
+                </div>
+                <div className={classes.consultGroup}>
+                  <div className={classes.infoRow}>
+                    <div className={classes.iconType}>
+                      <img src={require('images/ic-rupee.svg')} alt="" />
+                    </div>
+                    <div className={classes.details}>
+                      Online Consultation
+                      <br />
+                      Clinic Visit
+                      <br />
+                      {/* <div className={classes.doctorPriceIn}>Rs. 299</div> */}
+                      <AphButton className={classes.invoiceBtn}>Download Invoice</AphButton>
+                    </div>
+                    <div className={classes.doctorPrice}>
+                      Rs. {onlineConsultFees} <br />
+                      Rs. {physicalConsultationFees}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className={`${classes.doctorInfoGroup} ${classes.noBorder}`}>
-                <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                  <div className={classes.iconType}>
-                    <img src={require('images/ic_calendar_show.svg')} alt="" />
-                  </div>
-                  <div className={classes.details}>Today, 6:30 pm</div>
-                </div>
-                <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                  <div className={classes.iconType}>
-                    <img src={require('images/ic-language.svg')} alt="" />
-                  </div>
-                  <div className={classes.details}>40 min average waiting time</div>
-                </div>
-                <div className={`${classes.infoRow}`}>
-                  <div className={classes.iconType}>
-                    <img src={require('images/ic-location.svg')} alt="" />
-                  </div>
-                  <div className={classes.details}>
-                    Apollo Hospital
-                    <br />
-                    Road No 72, Film Nagar
-                    <br />
-                    Jubilee Hills, Hyderabad
-                  </div>
-                </div>
-              </div>
-              <div className={classes.consultGroup}>
-                <div className={classes.infoRow}>
-                  <div className={classes.iconType}>
-                    <img src={require('images/ic-rupee.svg')} alt="" />
-                  </div>
-                  <div className={classes.details}>
-                    Online Consultation
-                    <br />
-                    Clinic Visit
-                    <br />
-                    <div className={classes.doctorPriceIn}>Rs. 299</div>
-                    <AphButton className={classes.invoiceBtn}>Download Invoice</AphButton>
-                  </div>
-                  <div className={classes.doctorPrice}>
-                    Rs. 299 <br />
-                    Rs. 499
-                  </div>
-                </div>
-              </div>
+            ) : null}
+          </Scrollbars>
+          <div className={classes.buttonGroup}>
+            <div className={classes.joinInSection}>
+              <span>Doctor Joining In</span>
+              <span className={classes.joinTime}>9 mins</span>
             </div>
-            <div className={classes.buttonGroup}>
-              <div className={classes.joinInSection}>
-                <span>Doctor Joining In</span>
-                <span className={classes.joinTime}>9 mins</span>
-              </div>
-              <div className={classes.joinInSection}>
+            {/* <div className={classes.joinInSection}>
                 <span>Time Remaining</span>
                 <span className={classes.joinTime}>14 mins</span>
-              </div>
-            </div>
-          </Scrollbars>
+              </div> */}
+          </div>
         </div>
-        <div className={classes.bottomActions}>
+        {/* <div className={classes.bottomActions}>
           <AphButton className={classes.joinBtn} fullWidth>
             Doctor has joined!
           </AphButton>
           <AphButton fullWidth>Reschedule</AphButton>
-        </div>
+        </div> */}
       </div>
     </div>
   );

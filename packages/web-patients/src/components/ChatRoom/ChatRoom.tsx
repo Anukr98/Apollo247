@@ -8,12 +8,18 @@ import { ConsultDoctorProfile } from 'components/ChatRoom/ConsultDoctorProfile';
 import { useParams } from 'hooks/routerHooks';
 import { useMutation } from 'react-apollo-hooks';
 import { useAuth } from 'hooks/authHooks';
-
 import { UPDATE_APPOINTMENT_SESSION } from 'graphql/consult';
 import {
   UpdateAppointmentSession,
   UpdateAppointmentSessionVariables,
 } from 'graphql/types/UpdateAppointmentSession';
+import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
+import {
+  GetDoctorDetailsById,
+  GetDoctorDetailsByIdVariables,
+} from 'graphql/types/GetDoctorDetailsById';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -141,22 +147,42 @@ export const ChatRoom: React.FC = (props) => {
 
   useEffect(() => {
     if (isSignedIn) {
-      mutationResponse().then((data) => {
-        const appointmentToken =
-          data && data.data && data.data.updateAppointmentSession
-            ? data.data.updateAppointmentSession.appointmentToken
-            : '';
-        const sessionId =
-          data && data.data && data.data.updateAppointmentSession.sessionId
-            ? data.data.updateAppointmentSession.sessionId
-            : '';
-        setsessionId(sessionId);
-        settoken(appointmentToken);
-      });
+      mutationResponse()
+        .then((data) => {
+          const appointmentToken =
+            data && data.data && data.data.updateAppointmentSession
+              ? data.data.updateAppointmentSession.appointmentToken
+              : '';
+          const sessionId =
+            data && data.data && data.data.updateAppointmentSession.sessionId
+              ? data.data.updateAppointmentSession.sessionId
+              : '';
+          setsessionId(sessionId);
+          settoken(appointmentToken);
+        })
+        .catch(() => {
+          window.alert('An error occurred while loading :(');
+        });
     }
-  }, [isSignedIn]);
+  }, [isSignedIn, mutationResponse]);
 
-  return (
+  const { data, loading, error } = useQueryWithSkip<
+    GetDoctorDetailsById,
+    GetDoctorDetailsByIdVariables
+  >(GET_DOCTOR_DETAILS_BY_ID, {
+    variables: { id: doctorId },
+  });
+
+  if (loading) {
+    return <LinearProgress />;
+  }
+  if (error) {
+    return <div>Error....</div>;
+  }
+
+  return !isSignedIn ? (
+    <LinearProgress />
+  ) : (
     <div className={classes.root}>
       <div className={classes.headerSticky}>
         <div className={classes.container}>
@@ -176,7 +202,7 @@ export const ChatRoom: React.FC = (props) => {
           </div>
           <div className={classes.doctorListingSection}>
             <div className={classes.leftSection}>
-              <ConsultDoctorProfile />
+              {data && <ConsultDoctorProfile doctorDetails={data} appointmentId={appointmentId} />}
             </div>
             <div className={classes.rightSection}>
               <ChatWindow
