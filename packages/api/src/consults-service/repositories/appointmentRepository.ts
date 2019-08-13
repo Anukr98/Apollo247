@@ -121,7 +121,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getAddAlignedSlot(apptDate: Date, mins: number) {
-    const nextSlot = addMinutes(apptDate, 15);
+    const nextSlot = addMinutes(apptDate, mins);
     return `${nextSlot
       .getHours()
       .toString()
