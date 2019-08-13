@@ -1,4 +1,5 @@
 import { AppointmentsList } from '@aph/mobile-doctors/src/components/Appointments/AppointmentsList';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
@@ -7,41 +8,28 @@ import {
   CalendarTodayIcon,
   DotIcon,
   Down,
+  NoCalenderData,
   Notification,
   RoundIcon,
   Up,
-  NoCalenderData,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
-import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
-import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import moment from 'moment';
-import React, { useState, useEffect } from 'react';
-import {
-  Alert,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Platform,
-} from 'react-native';
-import { CalendarList } from 'react-native-calendars';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { WeekView } from './WeekView';
-import { colors } from '@aph/mobile-doctors/src/theme/colors';
 import { GET_DOCTOR_APPOINTMENTS } from '@aph/mobile-doctors/src/graphql/profiles';
-
-import { useQuery } from 'react-apollo-hooks';
-
 import {
   GetDoctorAppointments,
   GetDoctorAppointmentsVariables,
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
-import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
+import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useQuery } from 'react-apollo-hooks';
+import { Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { CalendarList } from 'react-native-calendars';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { WeekView } from './WeekView';
 
 const styles = StyleSheet.create({
   noAppointmentsText: {
@@ -154,7 +142,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
 
   const startDate = moment(date).format('YYYY-MM-DD');
 
-  let nextDate = new Date(date);
+  const nextDate = new Date(date);
   nextDate.setDate(nextDate.getDate() + 1);
   const endDate = moment(nextDate).format('YYYY-MM-DD');
   console.log('startDate', startDate, endDate);
@@ -182,6 +170,25 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   console.log('dateday', dateday);
   console.log('monthdisplay', monthdisplay);
   const finalmondate = monthdisplay.concat(', ').concat(dateday);
+  const todayDateStyle = moment(calendarDate).format('YYYY-MM-DD');
+  console.log('todayDateStyle', todayDateStyle);
+  const mark = {
+    [todayDateStyle]: {
+      customStyles: {
+        container: {
+          backgroundColor: '#00b38e',
+        },
+        text: {
+          color: 'white',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+      },
+    },
+  };
+
   // const {
   //   data: { getDoctorProfile },
   //   error,
@@ -232,6 +239,8 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           showWeekNumbers={false}
           onPressArrowLeft={(substractMonth) => substractMonth()}
           onPressArrowRight={(addMonth) => addMonth()}
+          markingType={'custom'}
+          markedDates={mark}
           theme={{
             backgroundColor: '#ffffff',
             calendarBackground: '#ffffff',

@@ -1392,7 +1392,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     shadowOffset: { width: 0, height: 5 },
                     shadowOpacity: 0.4,
                     shadowRadius: 20,
-                    elevation: 16,
+                    elevation: 0,
                     zIndex: 2,
                   }}
                 >
@@ -1418,14 +1418,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                             });
                             console.log('results', results);
                             setDropdownVisible(false);
-                            // for (const res of results) {
-                            //   console.log(
-                            //     res.uri,
-                            //     res.type, // mime type
-                            //     res.name,
-                            //     res.size
-                            //   );
-                            // }
                           } catch (err) {
                             if (DocumentPicker.isCancel(err)) {
                               // User cancelled the picker, exit any dialogs or menus and move on
@@ -1476,7 +1468,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const renderTabPage = () => {
     return (
       <>
-        <View style={[styles.shadowview]}>
+        <View style={[styles.shadowview, showPopUp ? { elevation: 0 } : {}]}>
           <MaterialTabs
             items={['Case Sheet', 'Chat']}
             selectedIndex={activeTabIndex}
@@ -1618,29 +1610,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       />
     );
   };
-  const renderDropdown = () => {
-    return (
-      <View
-        style={{
-          position: 'absolute',
-          width: '100%',
-          alignItems: 'flex-end',
-          overflow: 'hidden',
-          ...Platform.select({
-            ios: {
-              zIndex: 1,
-            },
-            android: {
-              elevation: 12,
-              zIndex: 2,
-            },
-          }),
-        }}
-      >
-        {showPopUp && CallPopUp()}
-      </View>
-    );
-  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <StatusBar hidden={hideStatusBar} />
