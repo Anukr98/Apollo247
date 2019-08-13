@@ -182,7 +182,6 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
       setSelectedRelation(Relation.ME);
     }
   }, [number, selectedRelation]);
-  console.log('dob', patient.dateOfBirth);
 
   return (
     <div className={classes.profileBox} data-cypress="PatientProfile">
