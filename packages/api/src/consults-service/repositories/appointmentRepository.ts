@@ -2,7 +2,7 @@ import { EntityRepository, Repository, Between } from 'typeorm';
 import { Appointment, AppointmentSessions } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format } from 'date-fns';
+import { format, addMinutes, differenceInMinutes } from 'date-fns';
 import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 
 @EntityRepository(Appointment)
@@ -72,5 +72,78 @@ export class AppointmentRepository extends Repository<Appointment> {
       [ConsultMode.ONLINE]: new Date(),
       [ConsultMode.PHYSICAL]: new Date(),
     };
+  }
+
+  getDoctorNextAvailSlot(doctorId: string) {
+    const curDate = new Date();
+    const curEndDate = new Date(format(new Date(), 'yyyy-MM-dd').toString() + 'T23:59');
+    return this.find({
+      where: { doctorId, appointmentDateTime: Between(curDate, curEndDate) },
+      order: { appointmentDateTime: 'ASC' },
+    }).then((appts) => {
+      if (appts && appts.length > 0) {
+        //if there is only one appointment, then add 15 mins to that appt time and return the slot
+        if (appts.length === 1) {
+          if (Math.abs(differenceInMinutes(curDate, appts[0].appointmentDateTime)) >= 15) {
+            if (curDate < appts[0].appointmentDateTime) {
+              return this.getAlignedSlot(curDate);
+            } else {
+              return this.getAddAlignedSlot(appts[0].appointmentDateTime, 15);
+            }
+          } else {
+            return this.getAddAlignedSlot(appts[0].appointmentDateTime, 30);
+          }
+        } else {
+          //if there are more than 1 appointment, now check the difference between appointments
+          // if the difference is more than or eq to 30 then add 15 mins to start appt and return slot
+          let firstAppt: Date = appts[0].appointmentDateTime;
+          let flag: number = 0;
+          appts.map((appt) => {
+            if (appt.appointmentDateTime != firstAppt) {
+              if (differenceInMinutes(firstAppt, appt.appointmentDateTime) >= 30) {
+                flag = 1;
+                return this.getAddAlignedSlot(firstAppt, 15);
+              }
+              firstAppt = appt.appointmentDateTime;
+            }
+          });
+          //if there is no gap between any appointments
+          //then add 15 mins to last appointment and return
+          if (flag === 0) {
+            return this.getAddAlignedSlot(appts[appts.length - 1].appointmentDateTime, 15);
+          }
+        }
+      } else {
+        //if there are no appointments, then return next nearest time
+        return this.getAlignedSlot(curDate);
+      }
+    });
+  }
+
+  getAddAlignedSlot(apptDate: Date, mins: number) {
+    const nextSlot = addMinutes(apptDate, mins);
+    return `${nextSlot
+      .getHours()
+      .toString()
+      .padStart(2, '0')}:${nextSlot
+      .getMinutes()
+      .toString()
+      .padStart(2, '0')}`;
+  }
+
+  getAlignedSlot(curDate: Date) {
+    let nextHour = curDate.getHours();
+    const nextMin = this.getNextMins(curDate.getMinutes());
+    if (nextMin === 0) {
+      nextHour++;
+    }
+    return `${nextHour.toString().padStart(2, '0')}:${nextMin.toString().padStart(2, '0')}`;
+  }
+
+  getNextMins(min: number) {
+    if (min > 0 && min <= 15) return 15;
+    else if (min > 15 && min <= 30) return 30;
+    else if (min > 30 && min <= 45) return 45;
+    else return 0;
   }
 }

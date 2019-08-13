@@ -37,6 +37,10 @@ import {
   createAppointmentSessionTypeDefs,
   createAppointmentSessionResolvers,
 } from 'consults-service/resolvers/appointmentSession';
+import {
+  getNextAvailableSlotTypeDefs,
+  getNextAvailableSlotResolvers,
+} from 'consults-service/resolvers/getDoctorNextSlot';
 import { GatewayHeaders } from 'api-gateway';
 
 (async () => {
@@ -124,6 +128,10 @@ import { GatewayHeaders } from 'api-gateway';
       {
         typeDefs: createAppointmentSessionTypeDefs,
         resolvers: createAppointmentSessionResolvers,
+      },
+      {
+        typeDefs: getNextAvailableSlotTypeDefs,
+        resolvers: getNextAvailableSlotResolvers,
       },
     ]),
   });
