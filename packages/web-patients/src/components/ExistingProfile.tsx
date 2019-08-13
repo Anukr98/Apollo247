@@ -152,22 +152,35 @@ interface PatientProfileProps {
   onUpdatePatient: (patient: Patient) => void;
 }
 const PatientProfile: React.FC<PatientProfileProps> = (props) => {
-  const relationOrderMap = {
-    [Relation.ME]: 0,
-    [Relation.MOTHER]: 1,
-    [Relation.FATHER]: 2,
-    [Relation.SISTER]: 3,
-    [Relation.BROTHER]: 4,
-    [Relation.COUSIN]: 5,
-    [Relation.WIFE]: 6,
-    [Relation.HUSBAND]: 7,
-    [Relation.OTHER]: 8,
-  };
+  // const relationOrderMap = {
+  //   [Relation.ME]: 0,
+  //   [Relation.MOTHER]: 1,
+  //   [Relation.FATHER]: 2,
+  //   [Relation.SISTER]: 3,
+  //   [Relation.BROTHER]: 4,
+  //   [Relation.COUSIN]: 5,
+  //   [Relation.WIFE]: 6,
+  //   [Relation.HUSBAND]: 7,
+  //   [Relation.OTHER]: 8,
+  // };
 
-  const allRelations = Object.values(Relation);
-  const orderedRelations = _sortBy(allRelations, (rel: Relation) =>
-    relationOrderMap[rel] != null ? relationOrderMap[rel] : 99
-  );
+  // const allRelations = Object.values(Relation);
+  // const orderedRelations = _sortBy(allRelations, (rel: Relation) =>
+  //   relationOrderMap[rel] != null ? relationOrderMap[rel] : 99
+  // );
+
+  // const orderedGenders = [Gender.MALE, Gender.FEMALE, Gender.OTHER];
+
+  const orderedRelations = [
+    Relation.ME,
+    Relation.MOTHER,
+    Relation.FATHER,
+    Relation.SISTER,
+    Relation.BROTHER,
+    Relation.COUSIN,
+    Relation.WIFE,
+    Relation.HUSBAND,
+  ];
 
   const classes = useStyles();
   const { patient, number } = props;
