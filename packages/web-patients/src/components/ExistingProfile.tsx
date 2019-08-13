@@ -158,9 +158,9 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
     [Relation.FATHER]: 2,
     [Relation.SISTER]: 3,
     [Relation.BROTHER]: 4,
-    [Relation.WIFE]: 5,
-    [Relation.HUSBAND]: 6,
-    [Relation.COUSIN]: 7,
+    [Relation.COUSIN]: 5,
+    [Relation.WIFE]: 6,
+    [Relation.HUSBAND]: 7,
     [Relation.OTHER]: 8,
   };
 
