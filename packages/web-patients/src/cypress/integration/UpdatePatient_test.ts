@@ -7,154 +7,154 @@ import {
 } from 'cypress/fixtures/patientsFixtures';
 import { Relation, Gender } from 'graphql/types/globalTypes';
 
-describe('UpdatePatient (multiple, with uhids)', () => {
-  const patients = [janeNoRelation, johnBrother, jimmyCousin].map((pat) => ({
-    ...pat,
-    uhid: 'uhid-1234',
-  }));
+// describe('UpdatePatient (multiple, with uhids)', () => {
+//   const patients = [janeNoRelation, johnBrother, jimmyCousin].map((pat) => ({
+//     ...pat,
+//     uhid: 'uhid-1234',
+//   }));
 
-  beforeEach(() => {
-    cy.signIn(patients);
-    cy.visitAph(clientRoutes.welcome()).wait(500);
-  });
+//   beforeEach(() => {
+//     cy.signIn(patients);
+//     cy.visitAph(clientRoutes.welcome()).wait(500);
+//   });
 
-  it('Shows ExistingProfile automatically', () => {
-    cy.get('[data-cypress="ExistingProfile"]').should('exist');
-  });
+//   it('Shows ExistingProfile automatically', () => {
+//     cy.get('[data-cypress="ExistingProfile"]').should('exist');
+//   });
 
-  it('upon clicking submit, show an error if there is no Relation.Me, and disable submit', () => {
-    cy.get('[data-cypress="ExistingProfile"]')
-      .contains('Please tell us who is who')
-      .should('exist');
+//   it('upon clicking submit, show an error if there is no Relation.Me, and disable submit', () => {
+//     cy.get('[data-cypress="ExistingProfile"]')
+//       .contains('Please tell us who is who')
+//       .should('exist');
 
-    cy.get('div[class*="selectMenuRoot"]')
-      .contains('Me')
-      .should('not.exist');
+//     cy.get('div[class*="selectMenuRoot"]')
+//       .contains('Me')
+//       .should('not.exist');
 
-    cy.get('div[class*="selectMenuRoot"]')
-      .contains('Brother')
-      .should('exist');
+//     cy.get('div[class*="selectMenuRoot"]')
+//       .contains('Brother')
+//       .should('exist');
 
-    cy.get('button[type="submit"]').should('be.disabled');
+//     cy.get('button[type="submit"]').should('be.disabled');
 
-    cy.get('[data-cypress="ExistingProfile"]')
-      .contains('There should be 1 profile with relation set as Me')
-      .should('exist');
-  });
+//     cy.get('[data-cypress="ExistingProfile"]')
+//       .contains('There should be 1 profile with relation set as Me')
+//       .should('exist');
+//   });
 
-  it('Upon clicking submit, show an error if there is more than 1 Me, and disable submit', () => {
-    cy.get('[data-cypress="ExistingProfile"]')
-      .contains('Please tell us who is who')
-      .should('exist');
+//   it('Upon clicking submit, show an error if there is more than 1 Me, and disable submit', () => {
+//     cy.get('[data-cypress="ExistingProfile"]')
+//       .contains('Please tell us who is who')
+//       .should('exist');
 
-    cy.get('div[class*="makeStyles-formGroup"]')
-      .find('div[data-cypress="PatientProfile"]')
-      .children()
-      .eq(1)
-      .find('div[class*="selectInputRoot"]')
-      .click();
+//     cy.get('div[class*="makeStyles-formGroup"]')
+//       .find('div[data-cypress="PatientProfile"]')
+//       .children()
+//       .eq(1)
+//       .find('div[class*="selectInputRoot"]')
+//       .click();
 
-    cy.get('li[data-value*="ME"]').click();
+//     cy.get('li[data-value*="ME"]').click();
 
-    cy.get('div[class*="makeStyles-formGroup"]')
-      .find('div[data-cypress="PatientProfile"]')
-      .children()
-      .eq(3)
-      .find('div[class*="selectInputRoot"]')
-      .click();
+//     cy.get('div[class*="makeStyles-formGroup"]')
+//       .find('div[data-cypress="PatientProfile"]')
+//       .children()
+//       .eq(3)
+//       .find('div[class*="selectInputRoot"]')
+//       .click();
 
-    cy.get('li[data-value*="ME"]').click();
+//     cy.get('li[data-value*="ME"]').click();
 
-    cy.get('button[type="submit"]').should('be.disabled');
+//     cy.get('button[type="submit"]').should('be.disabled');
 
-    cy.get('[data-cypress="ExistingProfile"]')
-      .contains('Relation can be set as Me for only 1 profile')
-      .should('exist');
-  });
+//     cy.get('[data-cypress="ExistingProfile"]')
+//       .contains('Relation can be set as Me for only 1 profile')
+//       .should('exist');
+//   });
 
-  it('If one user has a relation of "Me", and others have complete profiles, let the user submit', () => {
-    cy.get('[data-cypress="ExistingProfile"]')
-      .contains('Please tell us who is who')
-      .should('exist');
+//   it('If one user has a relation of "Me", and others have complete profiles, let the user submit', () => {
+//     cy.get('[data-cypress="ExistingProfile"]')
+//       .contains('Please tell us who is who')
+//       .should('exist');
 
-    cy.get('div[class*="makeStyles-formGroup"]')
-      .find('div[data-cypress="PatientProfile"]')
-      .children()
-      .eq(1)
-      .find('div[class*="selectInputRoot"]')
-      .click();
+//     cy.get('div[class*="makeStyles-formGroup"]')
+//       .find('div[data-cypress="PatientProfile"]')
+//       .children()
+//       .eq(1)
+//       .find('div[class*="selectInputRoot"]')
+//       .click();
 
-    cy.get('li[data-value*="ME"]').click();
+//     cy.get('li[data-value*="ME"]').click();
 
-    cy.get('button[type="submit"]').should('be.enabled');
-  });
+//     cy.get('button[type="submit"]').should('be.enabled');
+//   });
 
-  it('Welcomes you by prompting for complete family data', () => {
-    cy.get('[data-cypress="ExistingProfile"]')
-      .contains('Please tell us who is who')
-      .should('exist');
-  });
+//   it('Welcomes you by prompting for complete family data', () => {
+//     cy.get('[data-cypress="ExistingProfile"]')
+//       .contains('Please tell us who is who')
+//       .should('exist');
+//   });
 
-  it('Relations dropdown goes in order Me (Default), Mother, Father, Sister, Brother, Wife, Husband, Others', () => {
-    cy.get('[data-cypress="ExistingProfile"]')
-      .find('div[class*="MuiInputBase-inputSelect"]')
-      .first()
-      .click();
+//   it('Relations dropdown goes in order Me (Default), Mother, Father, Sister, Brother, Wife, Husband, Others', () => {
+//     cy.get('[data-cypress="ExistingProfile"]')
+//       .find('div[class*="MuiInputBase-inputSelect"]')
+//       .first()
+//       .click();
 
-    cy.get('ul[role*="listbox"]')
-      .find('li')
-      .eq(1)
-      .should('have.attr', 'data-value', 'ME');
+//     cy.get('ul[role*="listbox"]')
+//       .find('li')
+//       .eq(1)
+//       .should('have.attr', 'data-value', 'ME');
 
-    cy.get('ul[role*="listbox"]')
-      .find('li')
-      .eq(2)
-      .should('have.attr', 'data-value', 'MOTHER');
+//     cy.get('ul[role*="listbox"]')
+//       .find('li')
+//       .eq(2)
+//       .should('have.attr', 'data-value', 'MOTHER');
 
-    cy.get('ul[role*="listbox"]')
-      .find('li')
-      .eq(3)
-      .should('have.attr', 'data-value', 'FATHER');
+//     cy.get('ul[role*="listbox"]')
+//       .find('li')
+//       .eq(3)
+//       .should('have.attr', 'data-value', 'FATHER');
 
-    cy.get('ul[role*="listbox"]')
-      .find('li')
-      .eq(4)
-      .should('have.attr', 'data-value', 'SISTER');
+//     cy.get('ul[role*="listbox"]')
+//       .find('li')
+//       .eq(4)
+//       .should('have.attr', 'data-value', 'SISTER');
 
-    cy.get('ul[role*="listbox"]')
-      .find('li')
-      .eq(5)
-      .should('have.attr', 'data-value', 'BROTHER');
+//     cy.get('ul[role*="listbox"]')
+//       .find('li')
+//       .eq(5)
+//       .should('have.attr', 'data-value', 'BROTHER');
 
-    cy.get('ul[role*="listbox"]')
-      .find('li')
-      .eq(6)
-      .should('have.attr', 'data-value', 'WIFE');
+//     cy.get('ul[role*="listbox"]')
+//       .find('li')
+//       .eq(6)
+//       .should('have.attr', 'data-value', 'WIFE');
 
-    cy.get('ul[role*="listbox"]')
-      .find('li')
-      .eq(7)
-      .should('have.attr', 'data-value', 'HUSBAND');
+//     cy.get('ul[role*="listbox"]')
+//       .find('li')
+//       .eq(7)
+//       .should('have.attr', 'data-value', 'HUSBAND');
 
-    cy.get('ul[role*="listbox"]')
-      .find('li')
-      .eq(8)
-      .should('have.attr', 'data-value', 'COUSIN');
+//     cy.get('ul[role*="listbox"]')
+//       .find('li')
+//       .eq(8)
+//       .should('have.attr', 'data-value', 'COUSIN');
 
-    cy.get('ul[role*="listbox"]')
-      .find('li')
-      .eq(9)
-      .should('have.attr', 'data-value', 'OTHER');
-  });
+//     cy.get('ul[role*="listbox"]')
+//       .find('li')
+//       .eq(9)
+//       .should('have.attr', 'data-value', 'OTHER');
+//   });
 
-  it('Does not show name in HeroBanner until Relation.ME is established', () => {
-    cy.get('[data-cypress="HeroBanner"]')
-      .contains('hello there')
-      .should('exist')
-      .contains(janeNoRelation.firstName!)
-      .should('not.exist');
-  });
-});
+//   it('Does not show name in HeroBanner until Relation.ME is established', () => {
+//     cy.get('[data-cypress="HeroBanner"]')
+//       .contains('hello there')
+//       .should('exist')
+//       .contains(janeNoRelation.firstName!)
+//       .should('not.exist');
+//   });
+// });
 
 describe('UpdatePatient (multiple, without uhids)', () => {
   const patients = [janeNoRelation, julieNoRelation];
@@ -310,9 +310,9 @@ describe('UpdatePatient (multiple, without uhids)', () => {
   });
 
   it('Should allow single quotation marks to be added within first and last names', () => {
-    const valid_names = ["Sumeet'h", "D'Souza", "D'Souza", "D'S'ouza"];
+    const validNames = ["Sumeet'h", "D'Souza", "D'Souza", "D'S'ouza"];
 
-    valid_names.forEach((name) => {
+    validNames.forEach((name) => {
       cy.get('[data-cypress="NewProfile"]')
         .find('input[name*="firstName"]')
         .clear()
@@ -325,7 +325,7 @@ describe('UpdatePatient (multiple, without uhids)', () => {
   });
 
   it('Should forbid quotation marks to be added consecutively, or at the beginning or end of a name', () => {
-    const invalid_names = [
+    const invalidNames = [
       "'",
       "''",
       "'Sumeeth",
@@ -337,7 +337,7 @@ describe('UpdatePatient (multiple, without uhids)', () => {
       "K''umar",
     ];
 
-    invalid_names.forEach((name) => {
+    invalidNames.forEach((name) => {
       cy.get('[data-cypress="NewProfile"]')
         .find('input[name*="firstName"]')
         .clear()
