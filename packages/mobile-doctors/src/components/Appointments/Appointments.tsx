@@ -137,11 +137,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
 
-  const todayDate = moment(new Date()).format('DD');
-  const compareDate = moment(calendarDate).format('DD');
-
   const startDate = moment(date).format('YYYY-MM-DD');
-
   const nextDate = new Date(date);
   nextDate.setDate(nextDate.getDate() + 1);
   const endDate = moment(nextDate).format('YYYY-MM-DD');
@@ -158,18 +154,6 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   );
 
   const getAppointments = data && data.getDoctorAppointments;
-  console.log('getAppointments', getAppointments && getAppointments.appointmentsHistory);
-  console.log('date', todayDate);
-  console.log('calender', compareDate);
-
-  const monthdisplay =
-    moment(date)
-      .format('MMMM')
-      .substring(0, 3) || '';
-  const dateday = moment(date).format('DD');
-  console.log('dateday', dateday);
-  console.log('monthdisplay', monthdisplay);
-  const finalmondate = monthdisplay.concat(', ').concat(dateday);
   const todayDateStyle = moment(calendarDate).format('YYYY-MM-DD');
   console.log('todayDateStyle', todayDateStyle);
   const mark = {
@@ -188,16 +172,6 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       },
     },
   };
-
-  // const {
-  //   data: { getDoctorProfile },
-  //   error,
-  // } = doctorProfile;
-  // if (error) {
-  //   Alert.alert('Error', 'Unable to get the data');
-  // } else {
-  //   //console.log('Calender', getDoctorProfile!.appointments);
-  // }
 
   const renderMonthSelection = () => {
     return (
@@ -293,7 +267,9 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       <ProfileTabHeader
         title={`hello dr. ${(doctorName || '').toLowerCase()} :)`}
         description={`here’s your schedule for ${
-          todayDate < compareDate || todayDate > compareDate ? finalmondate : 'today'
+          moment(date).format('DD/MM/YYYY') == moment(new Date()).format('DD/MM/YYYY')
+            ? 'today'
+            : moment(date).format('MMM, DD')
         }`}
         activeTabIndex={0}
       />
