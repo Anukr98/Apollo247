@@ -3,8 +3,8 @@ import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
-export const getAvailableNextSlotTypeDefs = gql`
-  input DoctorAvailabeNextSlotInput {
+export const getNextAvailableSlotTypeDefs = gql`
+  input DoctorNextAvailableSlotInput {
     availableDate: Date!
     doctorIds: [ID!]!
   }
@@ -20,7 +20,7 @@ export const getAvailableNextSlotTypeDefs = gql`
 
   extend type Query {
     getDoctorNextAvailableSlot(
-      DoctorAvailabeNextSlotInput: DoctorAvailabeNextSlotInput
+      DoctorNextAvailableSlotInput: DoctorNextAvailableSlotInput
     ): SlotAvailabilityResult!
   }
 `;
@@ -39,14 +39,16 @@ type DoctorAvailabeNextSlotInput = {
   doctorIds: string[];
 };
 
-type DoctorAvailabeNextSlotInputArgs = { DoctorAvailabeNextSlotInput: DoctorAvailabeNextSlotInput };
+type DoctorAvailabeNextSlotInputArgs = {
+  DoctorNextAvailableSlotInput: DoctorAvailabeNextSlotInput;
+};
 
 const getDoctorNextAvailableSlot: Resolver<
   null,
   DoctorAvailabeNextSlotInputArgs,
   ConsultServiceContext,
   SlotAvailabilityResult
-> = async (parent, { DoctorAvailabeNextSlotInput }, { doctorsDb, consultsDb }) => {
+> = async (parent, { DoctorNextAvailableSlotInput }, { doctorsDb, consultsDb }) => {
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const doctorAvailalbeSlots: SlotAvailability[] = [];
   function slots(doctorId: string) {
@@ -62,14 +64,14 @@ const getDoctorNextAvailableSlot: Resolver<
     });
   }
   const promises: object[] = [];
-  DoctorAvailabeNextSlotInput.doctorIds.map(async (doctorId) => {
+  DoctorNextAvailableSlotInput.doctorIds.map(async (doctorId) => {
     promises.push(slots(doctorId));
   });
   await Promise.all(promises);
   return { doctorAvailalbeSlots };
 };
 
-export const getAvailableNextSlotResolvers = {
+export const getNextAvailableSlotResolvers = {
   Query: {
     getDoctorNextAvailableSlot,
   },

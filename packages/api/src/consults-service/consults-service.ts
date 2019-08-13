@@ -38,8 +38,8 @@ import {
   createAppointmentSessionResolvers,
 } from 'consults-service/resolvers/appointmentSession';
 import {
-  getAvailableNextSlotTypeDefs,
-  getAvailableNextSlotResolvers,
+  getNextAvailableSlotTypeDefs,
+  getNextAvailableSlotResolvers,
 } from 'consults-service/resolvers/getDoctorNextSlot';
 import { GatewayHeaders } from 'api-gateway';
 
@@ -130,8 +130,8 @@ import { GatewayHeaders } from 'api-gateway';
         resolvers: createAppointmentSessionResolvers,
       },
       {
-        typeDefs: getAvailableNextSlotTypeDefs,
-        resolvers: getAvailableNextSlotResolvers,
+        typeDefs: getNextAvailableSlotTypeDefs,
+        resolvers: getNextAvailableSlotResolvers,
       },
     ]),
   });
