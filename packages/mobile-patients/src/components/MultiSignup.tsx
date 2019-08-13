@@ -254,24 +254,20 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
       value: Relation.SISTER,
     },
     {
+      name: 'Brother',
+      value: Relation.BROTHER,
+    },
+    {
+      name: 'Cousin',
+      value: Relation.COUSIN,
+    },
+    {
       name: 'Wife',
       value: Relation.WIFE,
     },
     {
       name: 'Husband',
       value: Relation.HUSBAND,
-    },
-    // {
-    //   name: 'Son',
-    //   value: Relation.SON,
-    // },
-    // {
-    //   name: 'Daughter',
-    //   value: Relation.DAUGHTER,
-    // },
-    {
-      name: 'Other',
-      value: Relation.OTHER,
     },
   ];
 
@@ -377,7 +373,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
-                  props.navigation.replace(AppRoutes.TabBar))
+                  props.navigation.replace(AppRoutes.ConsultRoom))
                 : null}
               {error
                 ? (setVerifyingPhoneNumber(false),

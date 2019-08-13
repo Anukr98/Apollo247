@@ -25,6 +25,7 @@ import {
   NavigationRouteConfig,
   StackNavigatorConfig,
 } from 'react-navigation';
+import { ChatRoom } from '@aph/mobile-patients/src/components/ChatRoom';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -48,6 +49,7 @@ export enum AppRoutes {
   MedicineDetailsScene = 'MedicineDetailsScene',
   ApplyCouponScene = 'ApplyCouponScene',
   StorPickupScene = 'StorPickupScene',
+  ChatRoom = 'ChatRoom',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -131,6 +133,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.StorPickupScene]: {
     screen: StorePickupScene,
+  },
+  [AppRoutes.ChatRoom]: {
+    screen: ChatRoom,
   },
 };
 

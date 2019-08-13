@@ -41,13 +41,13 @@ export const viewStyles = {
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.5,
     shadowRadius: 8,
-    elevation: 8,
+    elevation: 16,
     backgroundColor: colors.CARD_BG,
   },
   shadowStyle: {
     shadowColor: colors.SHADOW_GRAY,
     shadowOffset: { width: 0, height: 5 },
     shadowRadius: 10,
-    elevation: 8,
+    elevation: 16,
   },
 };

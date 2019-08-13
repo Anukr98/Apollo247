@@ -329,7 +329,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                     AsyncStorage.setItem('userLoggedIn', 'true'),
                     AsyncStorage.setItem('signUp', 'false'),
                     AsyncStorage.setItem('gotIt', 'false'),
-                    props.navigation.replace(AppRoutes.TabBar))
+                    props.navigation.replace(AppRoutes.ConsultRoom))
                   : null}
                 {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
                 {error

@@ -454,3 +454,23 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
     }
   }
 `;
+
+export const UPDATE_APPOINTMENT_SESSION = gql`
+  mutation updateAppointmentSession($UpdateAppointmentSessionInput: UpdateAppointmentSessionInput) {
+    updateAppointmentSession(updateAppointmentSessionInput: $UpdateAppointmentSessionInput) {
+      sessionId
+      appointmentToken
+    }
+  }
+`;
+
+// export const NEXT_AVAILABLE_SLOT = gql`
+//   query GetDoctorNextAvailableSlot($DoctorNextAvailableSlotInput: DoctorNextAvailableSlotInput!) {
+//     getDoctorNextAvailableSlot(DoctorNextAvailableSlotInput: $DoctorNextAvailableSlotInput) {
+//       doctorAvailalbeSlots {
+//         availableSlot
+//         doctorId
+//       }
+//     }
+//   }
+// `;

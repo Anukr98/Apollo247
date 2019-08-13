@@ -235,7 +235,6 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                 return obj;
               });
               setData(filterData);
-              props.onClickClose(filterData);
             }}
           >
             <Reload />

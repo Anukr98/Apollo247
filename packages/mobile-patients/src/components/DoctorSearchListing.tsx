@@ -20,25 +20,37 @@ import {
 } from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  PermissionsAndroid,
+  Platform,
+  Animated,
+} from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import moment from 'moment';
 
 const styles = StyleSheet.create({
   topView: {
-    height: 155,
-    ...theme.viewStyles.cardViewStyle,
+    height: 56,
+    // ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
     shadowOffset: { width: 0, height: 0 },
     shadowRadius: 2,
     position: 'absolute',
-    top: 0,
+    top: 24,
     left: 0,
     right: 0,
-    zIndex: 2,
-    elevation: 2,
+    zIndex: 3,
+    elevation: 3,
+    backgroundColor: theme.colors.WHITE,
+    borderBottomWidth: 0,
   },
   headingText: {
     paddingBottom: 8,
@@ -60,6 +72,9 @@ export type filterDataType = {
 };
 
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
+  const specialityName = props.navigation.state.params
+    ? props.navigation.state.params!.specialityName
+    : '';
   const filterData: filterDataType = [
     {
       label: 'City',
@@ -83,7 +98,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     },
     {
       label: 'Gender',
-      options: [Gender.FEMALE, Gender.MALE, Gender.OTHER],
+      options: [Gender.MALE, Gender.FEMALE],
       selectedOptions: [],
     },
     {
@@ -110,6 +125,29 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   >([]);
   const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [scrollY] = useState(new Animated.Value(0));
+
+  const requestLocationPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('You can use the location');
+        // alert('You can use the location');
+      } else {
+        console.log('location permission denied');
+        // alert('Location permission denied');
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    console.log('didmout');
+    Platform.OS === 'android' && requestLocationPermission();
+  }, []);
 
   console.log('FilterData1111111', FilterData);
   let experienceArray = [];
@@ -191,7 +229,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     'feesArray'
   );
   const FilterInput = {
-    specialty: props.navigation.state.params!.specialityId,
+    specialty: props.navigation.state.params ? props.navigation.state.params!.specialityId : '',
     city: FilterData[0].selectedOptions,
     experience: experienceArray,
     availability: availabilityArray,
@@ -235,6 +273,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setshowSpinner(false);
     }
   }
+
+  const handleScroll = () => {
+    // console.log(e, 'jvjhvhm');
+  };
 
   const fetchCurrentLocation = () => {
     // setshowLocationpopup(true);
@@ -301,36 +343,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const renderTopView = () => {
     return (
-      <View
-        style={{
-          ...theme.viewStyles.cardViewStyle,
-          backgroundColor: theme.colors.CARD_BG,
-          borderRadius: 0,
-        }}
-      >
-        <View style={styles.topView}>
-          <Header
-            leftIcon="backArrow"
-            container={{ borderBottomWidth: 0 }}
-            rightComponent={<RightHeader />}
-            onPressLeftIcon={() => props.navigation.goBack()}
-          />
-          <View style={{ paddingHorizontal: 20 }}>
-            <Text style={styles.headingText}>{string.common.okay}</Text>
-            <Text style={styles.descriptionText}>
-              {string.common.best_doctor_text}
-              {props.navigation.state.params!.specialityName}
-            </Text>
-          </View>
-        </View>
-        <TabsComponent
-          style={{
-            marginTop: 155,
-            backgroundColor: theme.colors.CARD_BG,
-          }}
-          data={tabs}
-          onChange={(selectedTab: string) => setselectedTab(selectedTab)}
-          selectedTab={selectedTab}
+      <View style={styles.topView}>
+        <Header
+          leftIcon="backArrow"
+          container={{ borderBottomWidth: 0 }}
+          rightComponent={<RightHeader />}
+          onPressLeftIcon={() => props.navigation.goBack()}
         />
       </View>
     );
@@ -382,12 +400,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             heading={'Uh oh! :('}
             description={
               filter === ConsultMode.PHYSICAL
-                ? `There is no ${
-                    props.navigation.state.params!.specialityName
-                  } available for Physical Consult. Please you try Online Consultation.`
-                : `There is no ${
-                    props.navigation.state.params!.specialityName
-                  } available to match your filters. Please try again with different filters.`
+                ? `There is no ${specialityName} available for Physical Consult. Please you try Online Consultation.`
+                : `There is no ${specialityName} available to match your filters. Please try again with different filters.`
             }
             descriptionTextStyle={{ fontSize: 14 }}
             headingTextStyle={{ fontSize: 14 }}
@@ -412,6 +426,51 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       </View>
     );
   };
+
+  const headMov = scrollY.interpolate({
+    inputRange: [0, 180, 181],
+    outputRange: [0, -105, -105],
+  });
+  const headColor = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: ['white', 'white'],
+  });
+  const imgOp = scrollY.interpolate({
+    inputRange: [0, 90, 91],
+    outputRange: [1, 0, 0],
+  });
+
+  const renderAnimatedView = () => {
+    return (
+      <Animated.View
+        style={{
+          position: 'absolute',
+          height: 100,
+          width: '100%',
+          top: 80,
+          backgroundColor: headColor,
+          justifyContent: 'flex-end',
+          flexDirection: 'column',
+          transform: [{ translateY: headMov }],
+          zIndex: 2,
+          elevation: 2,
+        }}
+      >
+        {/* <Animated.Text>
+          <Text>Hey, Hi</Text>
+        </Animated.Text> */}
+        {/* <Text>hello</Text> */}
+
+        <Animated.View style={{ paddingHorizontal: 20, opacity: imgOp }}>
+          <Text style={styles.headingText}>{string.common.okay}</Text>
+          <Text style={styles.descriptionText}>
+            {string.common.best_doctor_text}
+            {specialityName}
+          </Text>
+        </Animated.View>
+      </Animated.View>
+    );
+  };
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView
@@ -419,13 +478,36 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           ...theme.viewStyles.container,
         }}
       >
-        {renderTopView()}
-
-        <ScrollView style={{ flex: 1 }} bounces={false}>
+        <Animated.ScrollView
+          style={{ flex: 1 }}
+          bounces={false}
+          scrollEventThrottle={16}
+          contentContainerStyle={{
+            paddingTop: 154,
+          }}
+          onScroll={Animated.event(
+            [
+              {
+                nativeEvent: { contentOffset: { y: scrollY } },
+              },
+            ],
+            { listener: handleScroll }
+          )}
+        >
+          <TabsComponent
+            style={{
+              // marginTop: 180,
+              backgroundColor: theme.colors.CARD_BG,
+            }}
+            data={tabs}
+            onChange={(selectedTab: string) => setselectedTab(selectedTab)}
+            selectedTab={selectedTab}
+          />
+          {/* <ScrollView style={{ flex: 1 }} bounces={false}> */}
           {selectedTab === tabs[0].title && renderDoctorSearches()}
           {selectedTab === tabs[1].title && renderDoctorSearches(ConsultMode.ONLINE)}
           {selectedTab === tabs[2].title && renderDoctorSearches(ConsultMode.PHYSICAL)}
-        </ScrollView>
+        </Animated.ScrollView>
         {showLocationpopup && (
           <View
             style={{
@@ -486,6 +568,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         />
       )}
       {showSpinner && <Spinner />}
+      {renderAnimatedView()}
+      {renderTopView()}
     </View>
   );
 };

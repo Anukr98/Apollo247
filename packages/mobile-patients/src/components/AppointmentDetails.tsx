@@ -14,6 +14,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { More, LocationOn, Location } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -170,7 +171,11 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             <Button
               title={'FILL CASE SHEET'}
               style={{ flex: 1, marginHorizontal: 40 }}
-              onPress={() => {}}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.ChatRoom, {
+                  data: data,
+                });
+              }}
             />
           </StickyBottomComponent>
         </SafeAreaView>

@@ -11,6 +11,10 @@ import {
   MorningUnselected,
   Night,
   NightUnselected,
+  ArrowLeft,
+  DropdownBlueDown,
+  ArrowRight,
+  DropdownBlueUp,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -28,12 +32,23 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Axios from 'axios';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Mutation } from 'react-apollo';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Calendar, DateObject } from 'react-native-calendars';
+import {
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+  Platform,
+} from 'react-native';
+import { Calendar, DateObject, CalendarBaseProps } from 'react-native-calendars';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
+import { WeekView } from '@aph/mobile-patients/src/components/WeekView';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { DoctorDetails } from '@aph/mobile-patients/src/components/DoctorDetails';
 
 const { width, height } = Dimensions.get('window');
 
@@ -82,11 +97,31 @@ const styles = StyleSheet.create({
   },
 });
 
+interface CalendarRefType extends Calendar {
+  onPressArrowLeft: () => void;
+  onPressArrowRight: () => void;
+  addMonth: (arg0: Number) => void;
+}
+
 type TimeArray = {
   label: string;
   time: string[];
 }[];
 
+const monthsArray = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'June',
+  'July',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 export interface ConsultOverlayProps extends NavigationScreenProps {
   // dispalyoverlay: boolean;
   setdispalyoverlay: (arg0: boolean) => void;
@@ -129,6 +164,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   //   Night: ['5:00 pm', '5:30 pm', '6:00 pm', '7:00 pm'],
   // };
   const [timeArray, settimeArray] = useState<TimeArray>([]);
+  const [allTimeSlots, setallTimeSlots] = useState<string[] | null>([]);
 
   const [selectedtiming, setselectedtiming] = useState<string>(timings[0].title);
 
@@ -146,6 +182,11 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       selectedColor: theme.colors.APP_GREEN,
     },
   });
+  const calendarRef = useRef<Calendar | null>(null);
+  const [month, setmonth] = useState<string>(monthsArray[new Date().getMonth()]);
+  const [calendarDate, setCalendarDate] = useState<Date | null>(new Date()); // to maintain a sync between week view change and calendar month
+  const [isMonthView, setMonthView] = useState(true);
+  // const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
 
   useEffect(() => {
     let array: TimeArray = [
@@ -154,6 +195,11 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       { label: 'Evening', time: [] },
       { label: 'Night', time: [] },
     ];
+    console.log(props.availableSlots, 'props.availableSlots');
+
+    if (allTimeSlots !== props.availableSlots) {
+      setallTimeSlots(props.availableSlots);
+    }
     timeArray.length === 0 &&
       props.availableSlots &&
       Object.values(props.availableSlots).forEach((element) => {
@@ -224,57 +270,159 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   }, [props.clinics]);
 
   const descriptionText = `${
-    props.doctor
-      ? `${props.doctor.salutation ? props.doctor.salutation : 'Dr'}. ${props.doctor.firstName}`
-      : 'Doctor'
+    props.doctor ? `Dr. ${props.doctor.firstName}` : 'Doctor'
   } is available in ${
-    12
+    15
     // props.doctor!.availableIn
   } mins!\nWould you like to consult now or schedule for later?`;
 
   const renderCalendar = () => {
-    console.log(dateSelected, 'dateSelecteddateSelected');
+    console.log(
+      dateSelected,
+      'dateSelecteddateSelected',
+      calendarRef.current,
+      'calendarRef.current'
+    );
     return (
-      <Calendar
+      <View
         style={{
           ...theme.viewStyles.cardContainer,
           backgroundColor: theme.colors.CARD_BG,
-          // marginHorizontal: 0
         }}
-        theme={{
-          backgroundColor: theme.colors.CARD_BG,
-          calendarBackground: theme.colors.CARD_BG,
-          textSectionTitleColor: '#80a3ad',
-          selectedDayBackgroundColor: '#00b38e',
-          selectedDayTextColor: '#ffffff',
-          todayTextColor: theme.colors.LIGHT_BLUE,
-          dayTextColor: theme.colors.APP_GREEN,
-          textDisabledColor: '#d9e1e8',
-          dotColor: '#00b38e',
-          selectedDotColor: '#ffffff',
-          arrowColor: theme.colors.LIGHT_BLUE,
-          monthTextColor: theme.colors.LIGHT_BLUE,
-          indicatorColor: 'blue',
-          textDayFontFamily: 'IBMPlexSans-SemiBold',
-          textMonthFontFamily: 'IBMPlexSans-SemiBold',
-          textDayHeaderFontFamily: 'IBMPlexSans-SemiBold',
-          // textDayFontWeight: '300',
-          textMonthFontWeight: 'normal',
-          textDayHeaderFontWeight: '300',
-          textDayFontSize: 14,
-          textMonthFontSize: 14,
-          textDayHeaderFontSize: 14,
-        }}
-        hideExtraDays={true}
-        firstDay={1}
-        markedDates={{ dateSelected }}
-        onDayPress={(day: DateObject) => {
-          console.log(day, '234567890');
-          setdateSelected({
-            [day.dateString]: { selected: true, selectedColor: theme.colors.WHITE },
-          });
-        }}
-      />
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            height: 50,
+            marginHorizontal: 16,
+            borderBottomWidth: 0.5,
+            borderBottomColor: 'rgba(2, 71, 91, 0.3)',
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => {
+              // console.log(calendarRef, calendarRef.current, 'ref', calendarRef.current!.addMonth);
+              ((calendarRef.current && calendarRef.current) as CalendarRefType).addMonth(-1);
+              // if (calendarRef.current) {
+              //   calendarRef.current.addMonth(-1);
+              // }
+            }}
+          >
+            <ArrowLeft />
+          </TouchableOpacity>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansMedium(14),
+                color: theme.colors.LIGHT_BLUE,
+              }}
+            >
+              {month}
+            </Text>
+            {isMonthView ? (
+              <TouchableOpacity
+                onPress={() => {
+                  setMonthView(false);
+                }}
+              >
+                <DropdownBlueUp />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={() => {
+                  setMonthView(true);
+                }}
+              >
+                <DropdownBlueDown />
+              </TouchableOpacity>
+            )}
+          </View>
+          <TouchableOpacity
+            onPress={() => {
+              // console.log(calendarRef, calendarRef.current, 'ref', calendarRef.current.updateMonth);
+              ((calendarRef.current && calendarRef.current) as CalendarRefType).addMonth(1);
+              // if (calendarRef.current) {
+              //   calendarRef.current.addMonth(1);
+              // }
+            }}
+          >
+            <ArrowRight />
+          </TouchableOpacity>
+        </View>
+
+        {isMonthView ? (
+          <Calendar
+            ref={(ref) => {
+              calendarRef.current = ref;
+            }}
+            style={{
+              // ...theme.viewStyles.cardContainer,
+              backgroundColor: theme.colors.CARD_BG,
+              // marginHorizontal: 0
+            }}
+            theme={{
+              'stylesheet.calendar.header': { header: { height: 0 } },
+              backgroundColor: theme.colors.CARD_BG,
+              calendarBackground: theme.colors.CARD_BG,
+              textSectionTitleColor: '#80a3ad',
+              selectedDayBackgroundColor: '#00b38e',
+              selectedDayTextColor: '#ffffff',
+              todayTextColor: theme.colors.LIGHT_BLUE,
+              dayTextColor: theme.colors.APP_GREEN,
+              textDisabledColor: '#d9e1e8',
+              dotColor: '#00b38e',
+              selectedDotColor: '#ffffff',
+              arrowColor: theme.colors.LIGHT_BLUE,
+              monthTextColor: theme.colors.LIGHT_BLUE,
+              indicatorColor: 'blue',
+              textDayFontFamily: 'IBMPlexSans-SemiBold',
+              textMonthFontFamily: 'IBMPlexSans-Medium',
+              textDayHeaderFontFamily: 'IBMPlexSans-SemiBold',
+              // textDayFontWeight: '300',
+              // textMonthFontWeight: 'normal',
+              // textDayHeaderFontWeight: '300',
+              textDayFontSize: 14,
+              textMonthFontSize: 14,
+              textDayHeaderFontSize: 12,
+            }}
+            hideExtraDays={true}
+            firstDay={1}
+            hideArrows={true}
+            markedDates={{ dateSelected }}
+            onDayPress={(day: DateObject) => {
+              console.log(day, '234567890');
+              setdateSelected({
+                [day.dateString]: { selected: true, selectedColor: theme.colors.WHITE },
+              });
+              setCalendarDate(day);
+            }}
+            onMonthChange={(m) => {
+              console.log('month changed', m);
+              setmonth(monthsArray[m.month]);
+            }}
+          />
+        ) : (
+          <WeekView
+            date={calendarDate}
+            onTapDate={(date: Date) => {
+              // setDate(date);
+              setCalendarDate(date);
+              setmonth(monthsArray[moment(date).get('month')]);
+            }}
+            onWeekChanged={(date) => {
+              setCalendarDate(moment(date).toDate());
+              setmonth(monthsArray[moment(date).get('month')]);
+            }}
+          />
+        )}
+      </View>
     );
   };
 
@@ -311,43 +459,45 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         />
         {/* <FilterCard data={timeArray[selectedtiming]} /> */}
         <View style={styles.optionsView}>
-          {timeArray.map((value) => {
-            console.log(value, selectedtiming, value.label === selectedtiming, 'selectedtiming');
-            if (value.label === selectedtiming) {
-              if (value.time.length > 0) {
-                return value.time.map((name: string, index: number) => (
-                  <Button
-                    title={timeTo12HrFormat(name)}
-                    style={[
-                      styles.buttonStyle,
-                      selectedTimeSlot === name
-                        ? { backgroundColor: theme.colors.APP_GREEN }
-                        : null,
-                    ]}
-                    titleTextStyle={[
-                      styles.buttonTextStyle,
-                      selectedTimeSlot === name ? { color: theme.colors.WHITE } : null,
-                    ]}
-                    onPress={() => setselectedTimeSlot(name)}
-                  />
-                ));
-              } else {
-                return (
-                  <Text
-                    style={{
-                      ...theme.fonts.IBMPlexSansMedium(14),
-                      color: theme.colors.SKY_BLUE,
-                      paddingTop: 16,
-                    }}
-                  >
-                    {`${props.doctor!.salutation}. ${
-                      props.doctor!.firstName
-                    } is not available in the ${selectedtiming.toLowerCase()} slot :(`}
-                  </Text>
-                );
+          {timeArray &&
+            timeArray.length > 0 &&
+            timeArray.map((value) => {
+              console.log(value, selectedtiming, value.label === selectedtiming, 'selectedtiming');
+              if (value.label === selectedtiming) {
+                if (value.time.length > 0) {
+                  return value.time.map((name: string, index: number) => (
+                    <Button
+                      title={timeTo12HrFormat(name)}
+                      style={[
+                        styles.buttonStyle,
+                        selectedTimeSlot === name
+                          ? { backgroundColor: theme.colors.APP_GREEN }
+                          : null,
+                      ]}
+                      titleTextStyle={[
+                        styles.buttonTextStyle,
+                        selectedTimeSlot === name ? { color: theme.colors.WHITE } : null,
+                      ]}
+                      onPress={() => setselectedTimeSlot(name)}
+                    />
+                  ));
+                } else {
+                  return (
+                    <Text
+                      style={{
+                        ...theme.fonts.IBMPlexSansMedium(14),
+                        color: theme.colors.SKY_BLUE,
+                        paddingTop: 16,
+                      }}
+                    >
+                      {`Dr. ${
+                        props.doctor!.firstName
+                      } is not available in the ${selectedtiming.toLowerCase()} slot :(`}
+                    </Text>
+                  );
+                }
               }
-            }
-          })}
+            })}
         </View>
       </View>
     );
@@ -400,6 +550,109 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     );
   };
 
+  const renderBottomButton = () => {
+    const firstTimeSlot = allTimeSlots && allTimeSlots.length > 0 ? allTimeSlots[0] : null;
+    let timeDiff;
+    if (firstTimeSlot) {
+      const time = firstTimeSlot.split(':');
+      var today = new Date();
+      var date2 =
+        time.length > 1
+          ? new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              Number(time[0]),
+              Number(time[1])
+            )
+          : ''; // 5:00 PM
+      if (date2 && today) {
+        timeDiff = Math.round((date2 - today) / 60000);
+      }
+    }
+    console.log(timeDiff, 'timeDiff', firstTimeSlot, 'firstTimeSlot');
+    return (
+      <StickyBottomComponent
+        defaultBG
+        style={{
+          paddingHorizontal: 16,
+          height: 66,
+          marginTop: 10,
+        }}
+      >
+        <Mutation<bookAppointment> mutation={BOOK_APPOINTMENT}>
+          {(mutate, { loading, data, error }) => (
+            <Button
+              title={`PAY Rs. ${
+                tabs[0].title === selectedTab
+                  ? props.doctor!.onlineConsultationFees
+                  : props.doctor!.physicalConsultationFees
+              }`}
+              disabled={
+                tabs[0].title === selectedTab && onlineCTA[0] === selectedCTA && timeDiff <= 15
+                  ? false
+                  : selectedTimeSlot === ''
+                  ? true
+                  : false
+              }
+              onPress={() => {
+                setshowSpinner(true);
+                // props.setdispalyoverlay(false);
+                // const formatDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
+                const formatDate =
+                  Object.keys(dateSelected).length > 0
+                    ? Object.keys(dateSelected)[0]
+                    : moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
+                console.log(formatDate, 'formatDate');
+                var today = new Date();
+                var time =
+                  ('0' + today.getHours()).slice(-2) +
+                  ':' +
+                  ('0' + (today.getMinutes() + 1)).slice(-2);
+                const timeSlot =
+                  tabs[0].title === selectedTab && onlineCTA[0] === selectedCTA && timeDiff <= 15
+                    ? firstTimeSlot
+                    : selectedTimeSlot;
+                console.log(timeSlot, 'timeSlottimeSlot');
+                const appointmentInput: BookAppointmentInput = {
+                  patientId: props.patientId,
+                  doctorId: props.doctor ? props.doctor.id : '',
+                  appointmentDateTime: `${formatDate}T${timeSlot}:00.000Z`,
+                  appointmentType:
+                    selectedTab === tabs[0].title
+                      ? APPOINTMENT_TYPE.ONLINE
+                      : APPOINTMENT_TYPE.PHYSICAL,
+                  hospitalId: '1',
+                };
+                console.log(appointmentInput, 'appointmentInput');
+                mutate({
+                  variables: {
+                    bookAppointment: appointmentInput,
+                  },
+                });
+              }}
+            >
+              {data
+                ? (console.log('bookAppointment data', data),
+                  props.setdispalyoverlay(false),
+                  setshowSpinner(false),
+                  Alert.alert(
+                    'Appointment Confirmation',
+                    `Your appointment has been successfully booked with Dr. ${
+                      props.doctor ? props.doctor.firstName : ''
+                    }`,
+                    [{ text: 'OK', onPress: () => props.navigation.replace(AppRoutes.TabBar) }]
+                  ))
+                : null}
+              {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
+              {error ? console.log('bookAppointment error', error, setshowSpinner(false)) : null}
+            </Button>
+          )}
+        </Mutation>
+      </StickyBottomComponent>
+    );
+  };
+
   return (
     <View
       style={{
@@ -423,7 +676,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         <TouchableOpacity
           onPress={() => props.setdispalyoverlay(false)}
           style={{
-            marginTop: 38,
+            marginTop: Platform.OS === 'ios' ? 38 : 14,
             backgroundColor: 'white',
             height: 28,
             width: 28,
@@ -579,75 +832,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             )}
             <View style={{ height: 96 }} />
           </ScrollView>
-          <StickyBottomComponent
-            defaultBG
-            style={{
-              paddingHorizontal: 16,
-              height: 66,
-              marginTop: 10,
-            }}
-          >
-            <Mutation<bookAppointment> mutation={BOOK_APPOINTMENT}>
-              {(mutate, { loading, data, error }) => (
-                <Button
-                  title={`PAY Rs. ${
-                    tabs[0].title === selectedTab
-                      ? props.doctor!.onlineConsultationFees
-                      : props.doctor!.physicalConsultationFees
-                  }`}
-                  disabled={
-                    tabs[0].title === selectedTab && onlineCTA[0] === selectedCTA
-                      ? false
-                      : selectedTimeSlot === ''
-                      ? true
-                      : false
-                  }
-                  onPress={() => {
-                    setshowSpinner(true);
-                    // props.setdispalyoverlay(false);
-                    // const formatDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-                    const formatDate =
-                      Object.keys(dateSelected).length > 0
-                        ? Object.keys(dateSelected)[0]
-                        : moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-                    console.log(formatDate, 'formatDate');
-                    var today = new Date();
-                    var time =
-                      ('0' + today.getHours()).slice(-2) +
-                      ':' +
-                      ('0' + (today.getMinutes() + 1)).slice(-2);
-                    const timeSlot = tabs[0].title === selectedTab ? time : selectedTimeSlot;
-                    const appointmentInput: BookAppointmentInput = {
-                      patientId: props.patientId,
-                      doctorId: props.doctor ? props.doctor.id : '',
-                      appointmentDateTime: `${formatDate}T${timeSlot}:00.000Z`,
-                      appointmentType:
-                        selectedTab === tabs[0].title
-                          ? APPOINTMENT_TYPE.ONLINE
-                          : APPOINTMENT_TYPE.PHYSICAL,
-                      hospitalId: '1',
-                    };
-                    console.log(appointmentInput, 'appointmentInput');
-                    mutate({
-                      variables: {
-                        bookAppointment: appointmentInput,
-                      },
-                    });
-                  }}
-                >
-                  {data
-                    ? (console.log('bookAppointment data', data),
-                      props.setdispalyoverlay(false),
-                      setshowSpinner(false))
-                    : null}
-                  {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
-                  {error
-                    ? console.log('bookAppointment error', error, setshowSpinner(false))
-                    : null}
-                </Button>
-              )}
-            </Mutation>
-          </StickyBottomComponent>
+          {renderBottomButton()}
         </View>
       </View>
       {showSpinner && <Spinner />}

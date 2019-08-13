@@ -36,6 +36,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -56,7 +57,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(23),
     color: theme.colors.LIGHT_BLUE,
     paddingBottom: 7,
-    paddingTop: 20,
+    paddingTop: 0,
   },
   doctorSpecializationStyles: {
     paddingTop: 7,
@@ -148,7 +149,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   >([]);
   const [doctorId, setDoctorId] = useState<String>('');
   const { currentPatient } = useAllCurrentPatients();
-  const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [scrollY, setscrollY] = useState(new Animated.Value(0));
   const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
 
@@ -206,6 +207,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       availabilityData &&
       availabilityData.data &&
       availabilityData.data.getDoctorAvailableSlots &&
+      availabilityData.data.getDoctorAvailableSlots.availableSlots &&
       availabilityData.data.getDoctorAvailableSlots.availableSlots !== undefined &&
       availableSlots !== availabilityData.data.getDoctorAvailableSlots.availableSlots
     ) {
@@ -242,8 +244,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           {doctorDetails && doctorDetails && (
             <View style={styles.detailsViewStyle}>
               <Text style={styles.doctorNameStyles}>
-                {doctorDetails.salutation ? doctorDetails.salutation : 'Dr'}.{' '}
-                {doctorDetails.firstName} {doctorDetails.lastName}
+                Dr. {doctorDetails.firstName} {doctorDetails.lastName}
               </Text>
               <View style={styles.separatorStyle} />
               <Text style={styles.doctorSpecializationStyles}>
@@ -312,15 +313,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 borderRadius: 10,
               }}
             >
-              {/* {clinic.image && (
-                <Image
-                  source={{ uri: clinic.image }}
-                  style={{
-                    height: 136,
-                    width: '100%',
-                  }}
-                />
-              )} */}
+              {/* {clinic.image && ( */}
+              <Image
+                source={{ uri: 'https://via.placeholder.com/328x136' }}
+                style={{
+                  height: 136,
+                  width: '100%',
+                }}
+              />
+              {/* )} */}
 
               <View
                 style={{
@@ -507,10 +508,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const handleScroll = () => {
     // console.log(e, 'jvjhvhm');
   };
+
   const onShare = async () => {
     try {
       const result = await Share.share({
-        message: 'React Native | A framework for building native apps using React',
+        message: doctorDetails ? `${doctorDetails.firstName} ${doctorDetails.lastName}` : '',
       });
 
       if (result.action === Share.sharedAction) {
@@ -548,9 +550,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               },
             ],
             { listener: handleScroll }
-            // {
-            //   useNativeDriver: true,
-            // }
           )}
         >
           {/* <ScrollView style={{ flex: 1 }} bounces={false}> */}
@@ -611,7 +610,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           {doctorDetails && doctorDetails && doctorDetails.photoUrl && (
             <Animated.Image
               source={{ uri: doctorDetails.photoUrl }}
-              style={{ top: 10, height: 180, width: '100%', opacity: imgOp }}
+              style={{ top: 10, height: 140, width: 140, opacity: imgOp }}
             />
           )}
         </View>
