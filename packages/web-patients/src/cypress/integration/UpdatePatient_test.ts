@@ -310,24 +310,6 @@ describe('UpdatePatient (multiple, without uhids)', () => {
   });
 
   it('Should allow single quotation marks to be added within first and last names', () => {
-    const janeTheApostropheLover = {
-      ...janeNoRelation,
-      firstName: "Jane'Apostrophe",
-      lastName: "John'son",
-      relation: Relation.ME,
-    };
-
-    cy.mockAphGraphqlOps({
-      operations: {
-        UpdatePatient: {
-          updatePatient: {
-            __typename: 'UpdatePatientResult',
-            patient: janeTheApostropheLover,
-          },
-        },
-      },
-    });
-
     const valid_names = ["Sumeet'h", "D'Souza", "D'Souza", "D'S'ouza"];
 
     valid_names.forEach((name) => {
@@ -343,24 +325,6 @@ describe('UpdatePatient (multiple, without uhids)', () => {
   });
 
   it('Should forbid quotation marks to be added consecutively, or at the beginning or end of a name', () => {
-    const janeTheApostropheLover = {
-      ...janeNoRelation,
-      firstName: "Jane'Apostrophe",
-      lastName: "John'son",
-      relation: Relation.ME,
-    };
-
-    cy.mockAphGraphqlOps({
-      operations: {
-        UpdatePatient: {
-          updatePatient: {
-            __typename: 'UpdatePatientResult',
-            patient: janeTheApostropheLover,
-          },
-        },
-      },
-    });
-
     const invalid_names = [
       "'",
       "''",
