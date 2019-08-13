@@ -73,37 +73,25 @@ export class AppointmentRepository extends Repository<Appointment> {
       [ConsultMode.PHYSICAL]: new Date(),
     };
   }
-  getDoctorSlots(doctorIds: string[]) {}
+
   getDoctorNextAvailSlot(doctorId: string) {
     const curDate = new Date();
-    console.log(curDate, 'curDate');
     const curEndDate = new Date(format(new Date(), 'yyyy-MM-dd').toString() + 'T23:59');
-    //console.log(curEndDate, 'curEndDate');
     return this.find({
       where: { doctorId, appointmentDateTime: Between(curDate, curEndDate) },
       order: { appointmentDateTime: 'ASC' },
     }).then((appts) => {
-      console.log(appts);
       if (appts && appts.length > 0) {
         //if there is only one appointment, then add 15 mins to that appt time and return the slot
         if (appts.length === 1) {
           if (Math.abs(differenceInMinutes(curDate, appts[0].appointmentDateTime)) >= 15) {
             if (curDate < appts[0].appointmentDateTime) {
-              let nextHour = curDate.getHours();
-              const nextMin = this.getNextMins(curDate.getMinutes());
-              if (nextMin === 0) {
-                nextHour++;
-              }
-              return `${nextHour}:${nextMin}`;
+              return this.getAlignedSlot(curDate);
             } else {
-              const nextSlot = addMinutes(appts[0].appointmentDateTime, 15);
-              console.log(nextSlot, 'nextslot');
-              return `${nextSlot.getHours()}:${nextSlot.getMinutes()}`;
+              return this.getAddAlignedSlot(appts[0].appointmentDateTime, 15);
             }
           } else {
-            const nextSlot = addMinutes(appts[0].appointmentDateTime, 30);
-            console.log(nextSlot, 'nextslot');
-            return `${nextSlot.getHours()}:${nextSlot.getMinutes()}`;
+            return this.getAddAlignedSlot(appts[0].appointmentDateTime, 30);
           }
         } else {
           //if there are more than 1 appointment, now check the difference between appointments
@@ -113,10 +101,8 @@ export class AppointmentRepository extends Repository<Appointment> {
           appts.map((appt) => {
             if (appt.appointmentDateTime != firstAppt) {
               if (differenceInMinutes(firstAppt, appt.appointmentDateTime) >= 30) {
-                const nextSlot = addMinutes(firstAppt, 15);
-                console.log(nextSlot, 'nextslot');
                 flag = 1;
-                return `${nextSlot.getHours()}:${nextSlot.getMinutes()}`;
+                return this.getAddAlignedSlot(firstAppt, 15);
               }
               firstAppt = appt.appointmentDateTime;
             }
@@ -124,27 +110,40 @@ export class AppointmentRepository extends Repository<Appointment> {
           //if there is no gap between any appointments
           //then add 15 mins to last appointment and return
           if (flag === 0) {
-            const nextSlot = addMinutes(appts[appts.length - 1].appointmentDateTime, 15);
-            console.log(nextSlot, 'nextslot');
-            return `${nextSlot.getHours()}:${nextSlot.getMinutes()}`;
+            return this.getAddAlignedSlot(appts[appts.length - 1].appointmentDateTime, 15);
           }
         }
       } else {
         //if there are no appointments, then return next nearest time
-        let nextHour = curDate.getHours();
-        const nextMin = this.getNextMins(curDate.getMinutes());
-        if (nextMin === 0) {
-          nextHour++;
-        }
-        return `${nextHour}:${nextMin}`;
+        return this.getAlignedSlot(curDate);
       }
     });
+  }
+
+  getAddAlignedSlot(apptDate: Date, mins: number) {
+    const nextSlot = addMinutes(apptDate, 15);
+    return `${nextSlot
+      .getHours()
+      .toString()
+      .padStart(2, '0')}:${nextSlot
+      .getMinutes()
+      .toString()
+      .padStart(2, '0')}`;
+  }
+
+  getAlignedSlot(curDate: Date) {
+    let nextHour = curDate.getHours();
+    const nextMin = this.getNextMins(curDate.getMinutes());
+    if (nextMin === 0) {
+      nextHour++;
+    }
+    return `${nextHour.toString().padStart(2, '0')}:${nextMin.toString().padStart(2, '0')}`;
   }
 
   getNextMins(min: number) {
     if (min > 0 && min <= 15) return 15;
     else if (min > 15 && min <= 30) return 30;
     else if (min > 30 && min <= 45) return 45;
-    else if (min > 45) return 0;
+    else return 0;
   }
 }

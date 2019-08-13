@@ -49,27 +49,23 @@ const getDoctorNextAvailableSlot: Resolver<
 > = async (parent, { DoctorAvailabeNextSlotInput }, { doctorsDb, consultsDb }) => {
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const doctorAvailalbeSlots: SlotAvailability[] = [];
-
   function slots(id: string) {
-    return new Promise<string>(async (resolve) => {
+    return new Promise<SlotAvailability>(async (resolve) => {
       let availableSlot: string = '';
       const slot = await appts.getDoctorNextAvailSlot(id);
       if (slot) {
         availableSlot = slot;
       }
-      console.log(availableSlot, 'doctor slot');
       const doctorSlot: SlotAvailability = { doctorId: id, availableSlot };
       doctorAvailalbeSlots.push(doctorSlot);
-      resolve(availableSlot);
+      resolve(doctorSlot);
     });
   }
-  /*const promises: string[] = [];
+  const promises: object[] = [];
   DoctorAvailabeNextSlotInput.doctorId.map(async (id) => {
     promises.push(slots(id));
   });
-  Promise.all(promises);*/
-  await slots(DoctorAvailabeNextSlotInput.doctorId[0]);
-  console.log(doctorAvailalbeSlots, 'doctorAvailalbeSlots');
+  await Promise.all(promises);
   return { doctorAvailalbeSlots };
 };
 
