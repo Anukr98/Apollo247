@@ -29,6 +29,8 @@ import {
 } from 'react-navigation';
 import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';
 import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
+import { SelectPrescription } from '@aph/mobile-patients/src/components/SelectPrescription';
+import { UploadPrescription } from '@aph/mobile-patients/src/components/UploadPrescription';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -56,6 +58,8 @@ export enum AppRoutes {
   ChatRoom = 'ChatRoom',
   YourOrdersScene = 'YourOrdersScene',
   OrderDetailsScene = 'OrderDetailsScene',
+  SelectPrescription = 'SelectPrescription',
+  UploadPrescription = 'UploadPrescription',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -151,6 +155,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.OrderDetailsScene]: {
     screen: OrderDetailsScene,
+  },
+  [AppRoutes.SelectPrescription]: {
+    screen: SelectPrescription,
+  },
+  [AppRoutes.UploadPrescription]: {
+    screen: UploadPrescription,
   },
 };
 
