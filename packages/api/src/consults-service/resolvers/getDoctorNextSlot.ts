@@ -6,7 +6,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 export const getAvailableNextSlotTypeDefs = gql`
   input DoctorAvailabeNextSlotInput {
     availableDate: Date!
-    doctorId: [ID!]!
+    doctorIds: [ID!]!
   }
 
   type SlotAvailabilityResult {
@@ -36,7 +36,7 @@ type SlotAvailabilityResult = {
 
 type DoctorAvailabeNextSlotInput = {
   availableDate: Date;
-  doctorId: string[];
+  doctorIds: string[];
 };
 
 type DoctorAvailabeNextSlotInputArgs = { DoctorAvailabeNextSlotInput: DoctorAvailabeNextSlotInput };
@@ -49,21 +49,21 @@ const getDoctorNextAvailableSlot: Resolver<
 > = async (parent, { DoctorAvailabeNextSlotInput }, { doctorsDb, consultsDb }) => {
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const doctorAvailalbeSlots: SlotAvailability[] = [];
-  function slots(id: string) {
+  function slots(doctorId: string) {
     return new Promise<SlotAvailability>(async (resolve) => {
       let availableSlot: string = '';
-      const slot = await appts.getDoctorNextAvailSlot(id);
+      const slot = await appts.getDoctorNextAvailSlot(doctorId);
       if (slot) {
         availableSlot = slot;
       }
-      const doctorSlot: SlotAvailability = { doctorId: id, availableSlot };
+      const doctorSlot: SlotAvailability = { doctorId, availableSlot };
       doctorAvailalbeSlots.push(doctorSlot);
       resolve(doctorSlot);
     });
   }
   const promises: object[] = [];
-  DoctorAvailabeNextSlotInput.doctorId.map(async (id) => {
-    promises.push(slots(id));
+  DoctorAvailabeNextSlotInput.doctorIds.map(async (doctorId) => {
+    promises.push(slots(doctorId));
   });
   await Promise.all(promises);
   return { doctorAvailalbeSlots };
