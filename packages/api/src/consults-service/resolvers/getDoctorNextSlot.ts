@@ -34,18 +34,18 @@ type SlotAvailabilityResult = {
   doctorAvailalbeSlots: SlotAvailability[];
 };
 
-type DoctorAvailabeNextSlotInput = {
+type DoctorNextAvailabeSlotInput = {
   availableDate: Date;
   doctorIds: string[];
 };
 
-type DoctorAvailabeNextSlotInputArgs = {
-  DoctorNextAvailableSlotInput: DoctorAvailabeNextSlotInput;
+type DoctorNextAvailabeSlotInputArgs = {
+  DoctorNextAvailableSlotInput: DoctorNextAvailabeSlotInput;
 };
 
 const getDoctorNextAvailableSlot: Resolver<
   null,
-  DoctorAvailabeNextSlotInputArgs,
+  DoctorNextAvailabeSlotInputArgs,
   ConsultServiceContext,
   SlotAvailabilityResult
 > = async (parent, { DoctorNextAvailableSlotInput }, { doctorsDb, consultsDb }) => {

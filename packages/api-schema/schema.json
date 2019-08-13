@@ -452,11 +452,11 @@
             "description": null,
             "args": [
               {
-                "name": "DoctorAvailabeNextSlotInput",
+                "name": "DoctorNextAvailableSlotInput",
                 "description": null,
                 "type": {
                   "kind": "INPUT_OBJECT",
-                  "name": "DoctorAvailabeNextSlotInput",
+                  "name": "DoctorNextAvailableSlotInput",
                   "ofType": null
                 },
                 "defaultValue": null
@@ -4611,7 +4611,7 @@
       },
       {
         "kind": "INPUT_OBJECT",
-        "name": "DoctorAvailabeNextSlotInput",
+        "name": "DoctorNextAvailableSlotInput",
         "description": null,
         "fields": null,
         "inputFields": [
@@ -4630,7 +4630,7 @@
             "defaultValue": null
           },
           {
-            "name": "doctorId",
+            "name": "doctorIds",
             "description": null,
             "type": {
               "kind": "NON_NULL",
