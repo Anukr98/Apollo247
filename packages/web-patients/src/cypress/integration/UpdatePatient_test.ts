@@ -4,14 +4,17 @@ import {
   johnBrother,
   jimmyCousin,
   julieNoRelation,
+  jeromeFather,
+  jennyMother,
 } from 'cypress/fixtures/patientsFixtures';
 import { Relation, Gender } from 'graphql/types/globalTypes';
 
 describe('UpdatePatient (multiple, with uhids)', () => {
-  const patients = [janeNoRelation, johnBrother, jimmyCousin].map((pat) => ({
-    ...pat,
-    uhid: 'uhid-1234',
-  }));
+  // const patients = [janeNoRelation, johnBrother, jimmyCousin].map((pat) => ({
+  //   ...pat,
+  //   uhid: 'uhid-1234',
+  // }));
+  const patients = [jeromeFather, jennyMother];
 
   beforeEach(() => {
     cy.signIn(patients);
@@ -22,7 +25,7 @@ describe('UpdatePatient (multiple, with uhids)', () => {
     cy.get('[data-cypress="ExistingProfile"]').should('exist');
   });
 
-  it('upon clicking submit, show an error if there is no Relation.Me, and disable submit', () => {
+  it.only('upon clicking submit, show an error if there is no Relation.Me, and disable submit', () => {
     cy.get('[data-cypress="ExistingProfile"]')
       .contains('Please tell us who is who')
       .should('exist');
