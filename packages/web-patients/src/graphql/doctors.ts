@@ -202,6 +202,7 @@ export const PATIENT_APPOINTMENT_HISTORY = gql`
   query AppointmentHistory($appointmentHistoryInput: AppointmentHistoryInput) {
     getAppointmentHistory(appointmentHistoryInput: $appointmentHistoryInput) {
       appointmentsHistory {
+        id
         patientId
         doctorId
         appointmentDateTime

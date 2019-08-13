@@ -10,6 +10,7 @@ import { AppointmentHistoryInput, APPOINTMENT_TYPE, STATUS } from "./globalTypes
 
 export interface AppointmentHistory_getAppointmentHistory_appointmentsHistory {
   __typename: "AppointmentHistory";
+  id: string;
   patientId: string;
   doctorId: string;
   appointmentDateTime: any;
