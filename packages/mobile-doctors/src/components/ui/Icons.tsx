@@ -496,7 +496,7 @@ export const RoundCallIcon: React.FC<IconProps> = (props) => (
 );
 
 export const RoundVideoIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('../../images/icons/roundCallIcon.png')} />
+  <IconBase size="lg" {...props} source={require('../../images/icons/round_videocam_24_px.png')} />
 );
 
 export const ChatWithNotification: React.FC<IconProps> = (props) => (

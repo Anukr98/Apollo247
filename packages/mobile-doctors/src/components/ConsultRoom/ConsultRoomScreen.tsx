@@ -13,6 +13,7 @@ import {
   PatientPlaceHolderImage,
   Notification,
   RoundChatIcon,
+  ChatWithNotification,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
 import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
@@ -115,6 +116,7 @@ export interface ConsultRoomScreenProps
 export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [hideView, setHideView] = useState(false);
+  const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
   const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
   const AppId = props.navigation.getParam('AppId');
@@ -308,6 +310,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       setHideStatusBar(false);
       stopTimer();
       setCallAccepted(false);
+      setReturnToCall(false);
       console.log('session stream connectionDestroyed!', event);
     },
     sessionConnected: (event) => {
@@ -404,6 +407,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       if (messages.length !== newmessage.length) {
         console.log('set saved');
         setMessages(newmessage);
+        if (!isCall || !isAudioCall) {
+          setChatReceived(true);
+          console.log('true chat icon');
+        }
       }
     });
   };
@@ -744,9 +751,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 width: 1,
               });
               setReturnToCall(true);
+              setChatReceived(false);
             }}
           >
-            <ChatIcon style={{ height: 48, width: 48 }} />
+            {chatReceived ? (
+              <ChatWithNotification style={{ height: 48, width: 48 }} />
+            ) : (
+              <ChatIcon style={{ height: 68, width: 68 }} />
+            )}
           </TouchableOpacity>
         </View>
         <View
@@ -780,6 +792,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               setIsAudioCall(false);
               setHideStatusBar(false);
               stopTimer();
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: '^^#endCall',
+                  },
+                  channel: channel,
+                  storeInHistory: false,
+                },
+                (status, response) => {}
+              );
             }}
           >
             <EndCallIcon style={{ width: 60, height: 60 }} />
@@ -949,6 +972,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         <TouchableOpacity
           onPress={() => {
             setIsCall(false);
+            pubnub.publish(
+              {
+                message: {
+                  isTyping: true,
+                  message: '^^#endCall',
+                },
+                channel: channel,
+                storeInHistory: false,
+              },
+              (status, response) => {}
+            );
           }}
         >
           <EndCallIcon style={{ width: 40, height: 40, marginLeft: 43 }} />
@@ -995,9 +1029,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             });
 
             setPipView(true);
+            setChatReceived(false);
           }}
         >
-          <ChatIcon style={{ height: 48, width: 48 }} />
+          {chatReceived ? (
+            <ChatWithNotification style={{ height: 48, width: 48 }} />
+          ) : (
+            <ChatIcon style={{ height: 68, width: 68 }} />
+          )}
         </TouchableOpacity>
       </View>
     );
@@ -1086,6 +1125,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               setIsCall(false);
               stopTimer();
               setHideStatusBar(false);
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: '^^#endCall',
+                  },
+                  channel: channel,
+                  storeInHistory: false,
+                },
+                (status, response) => {}
+              );
             }}
           >
             <EndCallIcon style={{ height: 60, width: 60 }} />
@@ -1139,7 +1189,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           <Text
             style={{
               marginHorizontal: 20,
-              marginTop: 61,
+              marginTop: 21,
               color: '#02475b',
               ...theme.fonts.IBMPlexSansSemiBold(20),
             }}
@@ -1308,9 +1358,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const ChatRoom = () => {
-    // setTimeout(() => {
-    //   flatListRef.current && flatListRef.current!.scrollToEnd();
-    // }, 1000);
+    setTimeout(() => {
+      flatListRef.current && flatListRef.current!.scrollToEnd();
+    }, 1000);
     return (
       <View style={{ ...theme.viewStyles.container }}>
         {renderChatView()}
@@ -1363,22 +1413,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               //   }
               // }}
             />
-
-            <TouchableOpacity
-              onPress={async () => {
-                if (messageText.length == 0) {
-                  //Alert.alert('Apollo', 'Please write something to send');
-                  setDropdownVisible(!isDropdownVisible);
-                  return;
-                }
-                if (!startConsult) {
-                  console.log('consult not started');
-                  Alert.alert('Apollo', 'Please start the consultation');
-                  return;
-                }
-                send();
-              }}
-            >
+            <View>
               {isDropdownVisible == true ? (
                 <View
                   style={{
@@ -1392,7 +1427,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     shadowOffset: { width: 0, height: 5 },
                     shadowOpacity: 0.4,
                     shadowRadius: 20,
-                    elevation: 0,
+                    elevation: 16,
                     zIndex: 2,
                   }}
                 >
@@ -1401,11 +1436,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                       {
                         optionText: 'Camera',
                         onPress: () => {
-                          // ImagePicker.launchCamera(options, (response) => {
-                          //   // Same code as in above section!
-                          //   console.log(response, 'response');
-                          // });
-                          setDropdownVisible(false);
+                          setDropdownVisible(isDropdownVisible);
+                          console.log('Camera', 'Camera');
                         },
                       },
                       {
@@ -1430,18 +1462,30 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                       {
                         optionText: 'Gallery',
                         onPress: () => {
-                          // Open Image Library:
-                          // ImagePicker.launchImageLibrary(options, (response) => {
-                          //   // Same code as in above section!
-                          //   console.log(response, 'response');
-                          // });
                           setDropdownVisible(false);
+                          console.log('Gallery', 'Gallery');
                         },
                       },
                     ]}
                   />
                 </View>
               ) : null}
+            </View>
+            <TouchableOpacity
+              onPress={async () => {
+                if (messageText.length == 0) {
+                  //Alert.alert('Apollo', 'Please write something to send');
+                  setDropdownVisible(!isDropdownVisible);
+                  return;
+                }
+                if (!startConsult) {
+                  console.log('consult not started');
+                  Alert.alert('Apollo', 'Please start the consultation');
+                  return;
+                }
+                send();
+              }}
+            >
               <AddIcon
                 style={{ width: 22, height: 22, marginTop: 18, marginLeft: 22, zIndex: -1 }}
               />
