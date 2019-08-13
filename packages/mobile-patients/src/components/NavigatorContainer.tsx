@@ -29,10 +29,10 @@ import {
 } from 'react-navigation';
 import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';
 import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
-import { SelectPrescription } from '@aph/mobile-patients/src/components/Medicines/SelectPrescription';
-import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicines/UploadPrescription';
 import { YourCart } from '@aph/mobile-patients/src/components/Medicines/YourCart';
 import { AddAddress } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { SelectPrescription } from '@aph/mobile-patients/src/components/SelectPrescription';
+import { UploadPrescription } from '@aph/mobile-patients/src/components/UploadPrescription';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -60,10 +60,10 @@ export enum AppRoutes {
   ChatRoom = 'ChatRoom',
   YourOrdersScene = 'YourOrdersScene',
   OrderDetailsScene = 'OrderDetailsScene',
-  SelectPrescription = 'SelectPrescription',
-  UploadPrescription = 'UploadPrescription',
   YourCart = 'YourCart',
   AddAddress = 'AddAddress',
+  SelectPrescription = 'SelectPrescription',
+  UploadPrescription = 'UploadPrescription',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
