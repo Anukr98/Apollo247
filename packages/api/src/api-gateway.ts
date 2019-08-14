@@ -58,7 +58,14 @@ export type Resolver<Parent, Args, Context, Result> = (
   });
 
   const server = new ApolloServer({
-    cors: { origin: [webDoctorsBaseUrl(), webPatientsBaseUrl()] },
+    cors: {
+      origin: [
+        webDoctorsBaseUrl(),
+        webPatientsBaseUrl(),
+        'http://localhost:3001',
+        'http://localhost:3000',
+      ],
+    },
     schema,
     executor,
     context: async ({ req }) => {
