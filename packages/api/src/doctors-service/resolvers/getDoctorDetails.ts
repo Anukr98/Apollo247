@@ -130,7 +130,7 @@ export const getDoctorDetailsTypeDefs = gql`
     fees: String!
   }
 
-  type Profile {
+  type Profile @key(fields: "id") {
     city: String
     country: String
     doctorType: DoctorType!
@@ -207,6 +207,14 @@ export const getDoctorDetailsResolvers = {
       return await doctorRepo.findById(object.id.toString());
     },
   },
+  Profile: {
+    async __resolveReference(object: Doctor) {
+      const connection = getConnection();
+      const doctorRepo = connection.getCustomRepository(DoctorRepository);
+      return await doctorRepo.getDoctorProfileData(object.id.toString());
+    },
+  },
+
   Query: {
     getDoctorDetails,
     getDoctorDetailsById,
