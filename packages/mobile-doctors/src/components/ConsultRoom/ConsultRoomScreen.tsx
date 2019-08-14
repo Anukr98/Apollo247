@@ -408,8 +408,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         console.log('set saved');
         setMessages(newmessage);
         if (!isCall || !isAudioCall) {
+          console.log('chat icon', chatReceived);
           setChatReceived(true);
-          console.log('true chat icon');
         }
       }
     });
@@ -750,14 +750,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 height: 1,
                 width: 1,
               });
-              setReturnToCall(true);
+
               setChatReceived(false);
+              setReturnToCall(true);
             }}
           >
             {chatReceived ? (
-              <ChatWithNotification style={{ height: 48, width: 48 }} />
+              <ChatWithNotification style={{ height: 88, width: 88, left: -20, top: -20 }} />
             ) : (
-              <ChatIcon style={{ height: 68, width: 68 }} />
+              <ChatIcon style={{ height: 48, width: 48 }} />
             )}
           </TouchableOpacity>
         </View>
@@ -792,6 +793,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               setIsAudioCall(false);
               setHideStatusBar(false);
               stopTimer();
+              setChatReceived(false);
               pubnub.publish(
                 {
                   message: {
@@ -972,6 +974,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         <TouchableOpacity
           onPress={() => {
             setIsCall(false);
+            setChatReceived(false);
             pubnub.publish(
               {
                 message: {
@@ -1033,9 +1036,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           }}
         >
           {chatReceived ? (
-            <ChatWithNotification style={{ height: 48, width: 48 }} />
+            <ChatWithNotification style={{ height: 88, width: 80, left: -20, top: -20 }} />
           ) : (
-            <ChatIcon style={{ height: 68, width: 68 }} />
+            <ChatIcon style={{ height: 48, width: 48 }} />
           )}
         </TouchableOpacity>
       </View>
@@ -1125,6 +1128,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               setIsCall(false);
               stopTimer();
               setHideStatusBar(false);
+              setChatReceived(false);
               pubnub.publish(
                 {
                   message: {
@@ -1206,6 +1210,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               setIsAudioCall(true);
               setShowPopUp(false);
               setHideStatusBar(true);
+              setChatReceived(false);
               pubnub.publish(
                 {
                   message: {
@@ -1255,6 +1260,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               setIsCall(true);
               setShowPopUp(false);
               setHideStatusBar(true);
+              setChatReceived(false);
               pubnub.publish(
                 {
                   message: {

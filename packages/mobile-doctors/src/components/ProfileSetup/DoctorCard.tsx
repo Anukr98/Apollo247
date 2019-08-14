@@ -62,6 +62,7 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: '#658f9b',
+    marginRight: 16,
   },
 
   educationTextStyles: {

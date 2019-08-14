@@ -150,6 +150,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         startDate: startDate,
         endDate: endDate, //'2019-09-13',
       },
+      fetchPolicy: 'no-cache',
     }
   );
 

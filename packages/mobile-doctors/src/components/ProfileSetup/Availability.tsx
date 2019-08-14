@@ -5,7 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { format } from 'date-fns';
-import { Notification } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Notification, RoundChatIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   container: {
@@ -54,7 +54,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
   return (
     <View style={styles.container}>
       {profileData!.delegateNumber ? (
-        <SquareCardWithTitle title="Consultation Type" containerStyle={{ marginTop: 16 }}>
+        <SquareCardWithTitle title="Consultation Type" containerStyle={{ marginTop: 0 }}>
           <Text style={styles.consultDescText}>
             What type of consults will you be available for?
           </Text>
@@ -113,7 +113,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
       </SquareCardWithTitle>
       <View style={{ margin: 20, flexDirection: 'row', marginBottom: -10 }}>
         <View style={{ marginTop: 4 }}>
-          <Notification />
+          <RoundChatIcon />
         </View>
 
         <View style={{ marginLeft: 14 }}>

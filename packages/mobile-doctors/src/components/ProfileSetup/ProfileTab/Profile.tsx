@@ -78,7 +78,7 @@ export interface ProfileProps {
 }
 
 export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, onReload }) => {
-  console.log('p', profileData.doctorHospital[0].facility);
+  console.log('p', profileData);
 
   const profileRow = (title: string, description: string) => {
     if (!description) return null;
@@ -115,7 +115,7 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
 
   return (
     <View style={styles.container}>
-      <SquareCardWithTitle title="Your Profile" containerStyle={{ marginTop: 6 }}>
+      <SquareCardWithTitle title="Your Profile" containerStyle={{ marginTop: 0 }}>
         <View style={styles.cardView}>
           <View style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}>
             {profileData!.photoUrl ? (

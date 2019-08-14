@@ -114,11 +114,11 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
 
   const formatTiming = (appointmentDateTime: string) => {
     const aptmtDate = getDateFormat(appointmentDateTime);
-    const slotStartTime = moment(aptmtDate).format('hh:mm') || '';
+    const slotStartTime = moment(aptmtDate).format('h:mm') || '';
     const slotEndTime =
       moment(aptmtDate)
         .add(15, 'minutes')
-        .format('hh:mm A') || '';
+        .format('h:mm A') || '';
     return `${slotStartTime} - ${slotEndTime}`;
   };
 

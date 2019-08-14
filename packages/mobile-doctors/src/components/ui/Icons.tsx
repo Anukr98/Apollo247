@@ -510,3 +510,11 @@ export const RoundChatIcon: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/round_info_24_px.png')}
   />
 );
+
+export const RightIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/ic_arrow_right.png')}
+  />
+);

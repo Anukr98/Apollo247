@@ -2,9 +2,11 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, TextStyle, View, ViewStyle, Platform } from 'react-native';
 import { Text } from 'react-native-elements';
+
 const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.WHITE,
+    marginBottom: 20,
   },
   titleStyle: {
     ...theme.fonts.IBMPlexSansSemiBold(28),
@@ -22,9 +24,17 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   tabContainerShadow: {
-    ...theme.viewStyles.whiteRoundedCornerCard,
+    //...theme.viewStyles.whiteRoundedCornerCard,
+    backgroundColor: '#ffffff',
     borderRadius: 0,
-    marginBottom: 10,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowRadius: 10,
+    shadowOpacity: 0.2,
+    elevation: 5,
   },
   tabContainer: {
     flexDirection: 'row',
@@ -34,11 +44,26 @@ const styles = StyleSheet.create({
   tabViewStyle: {
     flex: 1,
     alignItems: 'center',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowRadius: 10,
+    shadowOpacity: 0.2,
+    elevation: 5,
   },
   tabViewActiveStyle: {
     width: '100%',
     backgroundColor: '#0087ba',
     height: 3,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowRadius: 10,
+    shadowOpacity: 0.2,
+    elevation: 5,
   },
   tabTitleStyle: {
     paddingTop: 21,
@@ -108,23 +133,38 @@ export const ProfileTabHeader: React.FC<ProfileTabHeaderProps> = (props) => {
         )}
       </View>
       {Platform.select({ android: <View style={styles.statusBarline}></View> })}
-      <View style={styles.tabContainerShadow}>
-        <View style={styles.tabContainer}>
-          {tabs &&
-            tabs.map((tab, i) => {
-              const tabTextStyle =
-                activeTabIndex == i
-                  ? styles.tabTitleActiveStyle
-                  : activeTabIndex < i
-                  ? styles.tabTitlePendingStyle
-                  : styles.tabTitleDoneStyle;
-              return (
-                <View key={i} style={[styles.tabViewStyle]}>
-                  <Text style={[styles.tabTitleStyle, tabTextStyle]}>{tab}</Text>
-                  <View style={activeTabIndex >= i ? styles.tabViewActiveStyle : {}} />
-                </View>
-              );
-            })}
+
+      <View
+        style={{
+          backgroundColor: '#ffffff',
+          shadowColor: '#000000',
+          shadowOffset: {
+            width: 0,
+            height: 5,
+          },
+          shadowRadius: 5,
+          shadowOpacity: 0.06,
+          elevation: 10,
+        }}
+      >
+        <View style={styles.tabContainerShadow}>
+          <View style={styles.tabContainer}>
+            {tabs &&
+              tabs.map((tab, i) => {
+                const tabTextStyle =
+                  activeTabIndex == i
+                    ? styles.tabTitleActiveStyle
+                    : activeTabIndex < i
+                    ? styles.tabTitlePendingStyle
+                    : styles.tabTitleDoneStyle;
+                return (
+                  <View key={i} style={[styles.tabViewStyle]}>
+                    <Text style={[styles.tabTitleStyle, tabTextStyle]}>{tab}</Text>
+                    <View style={activeTabIndex >= i ? styles.tabViewActiveStyle : {}} />
+                  </View>
+                );
+              })}
+          </View>
         </View>
       </View>
     </View>

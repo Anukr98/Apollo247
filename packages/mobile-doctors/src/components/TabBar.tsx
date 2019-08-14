@@ -15,7 +15,7 @@ import {
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigation';
-import { colors } from 'react-native-elements';
+import { BasicAccount } from '@aph/mobile-doctors/src/components/Account/BasicAccount';
 
 const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
   APPOINTMENTS: <ConsultationRoom />,
@@ -35,7 +35,7 @@ const routeConfigMap: Partial<Record<string, NavigationRouteConfig>> = {
   APPOINTMENTS: Appointments,
   PATIENTS: Patients,
   INBOX: Inbox,
-  'MY ACCOUNT': MyAccount,
+  'MY ACCOUNT': BasicAccount,
 };
 
 export const TabBar = createBottomTabNavigator(routeConfigMap, {
