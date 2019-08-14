@@ -13,7 +13,7 @@ const tangerine_yellow = '#fc9916';
 const shadowGray = '#808080';
 
 const TabBar = {
-  TAB_BAR_ACTIVE_TINT_COLOR: 'rgba(103,145,157,0.8)',
+  TAB_BAR_ACTIVE_TINT_COLOR: app_light_blue,
   TAB_BAR_INACTIVE_TINT_COLOR: 'rgba(2,71,91,0.6)',
 };
 
@@ -43,7 +43,7 @@ const Common = {
   SHADOW_GRAY: shadowGray,
   LIGHT_BLUE: app_light_blue,
   SKY_BLUE: sky_blue,
-  SEPARATOR_LINE: 'rgba(2, 71, 91, 0.2)',
+  SEPARATOR_LINE: 'rgba(2, 71, 91, 0.5)',
   CLEAR: clear,
 };
 

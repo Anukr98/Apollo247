@@ -464,13 +464,13 @@ export const UPDATE_APPOINTMENT_SESSION = gql`
   }
 `;
 
-// export const NEXT_AVAILABLE_SLOT = gql`
-//   query GetDoctorNextAvailableSlot($DoctorNextAvailableSlotInput: DoctorNextAvailableSlotInput!) {
-//     getDoctorNextAvailableSlot(DoctorNextAvailableSlotInput: $DoctorNextAvailableSlotInput) {
-//       doctorAvailalbeSlots {
-//         availableSlot
-//         doctorId
-//       }
-//     }
-//   }
-// `;
+export const NEXT_AVAILABLE_SLOT = gql`
+  query GetDoctorNextAvailableSlot($DoctorNextAvailableSlotInput: DoctorNextAvailableSlotInput!) {
+    getDoctorNextAvailableSlot(DoctorNextAvailableSlotInput: $DoctorNextAvailableSlotInput) {
+      doctorAvailalbeSlots {
+        availableSlot
+        doctorId
+      }
+    }
+  }
+`;
