@@ -206,7 +206,7 @@ export const ConsultRoom: React.FC = (props) => {
         <div className={classes.consultPage}>
           <div
             className={`${classes.consultationsHeader} ${
-              appointments.length === 0 ? classes.noConsultations : ''
+              filterAppointments.length === 0 ? classes.noConsultations : ''
             }`}
           >
             {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
