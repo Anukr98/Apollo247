@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
