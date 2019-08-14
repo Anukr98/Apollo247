@@ -90,6 +90,7 @@ type rowData = {
 
 export interface DoctorCardProps extends NavigationScreenProps {
   rowData: rowData | null;
+  onPress?: (doctorId: string) => void;
   displayButton?: boolean;
   style?: StyleProp<ViewStyle>;
 }
@@ -100,11 +101,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     return (
       <TouchableOpacity
         style={[styles.doctorView, props.style]}
-        onPress={() =>
-          props.navigation.navigate(AppRoutes.DoctorDetails, {
-            doctorId: rowData.id ? rowData.id : '',
-          })
-        }
+        onPress={() => {
+          props.onPress
+            ? props.onPress(rowData.id!)
+            : props.navigation.navigate(AppRoutes.DoctorDetails, {
+                doctorId: rowData.id ? rowData.id : '',
+              });
+        }}
       >
         <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
           <View style={{ flexDirection: 'row' }}>

@@ -40,6 +40,7 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { AppRoutes } from './NavigatorContainer';
 
 const { height } = Dimensions.get('window');
 
@@ -147,7 +148,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [appointmentHistory, setAppointmentHistory] = useState<
     getAppointmentHistory_getAppointmentHistory_appointmentsHistory[] | null
   >([]);
-  const [doctorId, setDoctorId] = useState<String>('');
+  const [doctorId, setDoctorId] = useState<String>(props.navigation.state.params!.doctorId);
   const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [scrollY, setscrollY] = useState(new Animated.Value(0));
@@ -220,7 +221,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     GET_DOCTOR_DETAILS_BY_ID,
     {
       // variables: { id: 'a6ef960c-fc1f-4a12-878a-12063788d625' },
-      variables: { id: props.navigation.state.params!.doctorId },
+      variables: { id: doctorId },
     }
   );
   if (error) {
@@ -400,7 +401,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               {doctorDetails.salutation ? doctorDetails.salutation : 'Dr'}.{' '}
               {doctorDetails.firstName}’s Team
             </Text>
-            <Text style={styles.labelStyle}>{doctorDetails.starTeam!.length} Doctors</Text>
+            <Text style={styles.labelStyle}>
+              {doctorDetails.starTeam!.length}
+              {doctorDetails.starTeam!.length == 1 ? 'Doctor' : 'Doctors'}
+            </Text>
           </View>
           <ScrollView horizontal bounces={false} showsHorizontalScrollIndicator={false}>
             <FlatList
@@ -417,6 +421,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   return (
                     <View style={{ width: 320 }} key={item.associatedDoctor.id}>
                       <DoctorCard
+                        onPress={(doctorId) => {
+                          props.navigation.navigate(AppRoutes.AssociateDoctorDetails, {
+                            doctorId: doctorId,
+                          });
+                        }}
                         rowData={item.associatedDoctor}
                         navigation={props.navigation}
                         displayButton={false}
