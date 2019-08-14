@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& h6': {
         color: '#658f9b',
-        padding: '5px 5px 5px 0',
+        padding: '5px 5px 0 0',
         letterSpacing: '0.3px',
         marginLeft: 20,
         fontWeight: theme.typography.fontWeightMedium,
@@ -202,6 +202,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       marginLeft: 20,
       fontSize: 16,
+      marginBottom: 10,
     },
     accountDetails: {
       fontWeight: theme.typography.fontWeightMedium,
