@@ -17,6 +17,10 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  checkAppointmentIfExisit(doctorId: string, appointmentDateTime: Date) {
+    return this.count({ where: { doctorId, appointmentDateTime } });
+  }
+
   findByDateDoctorId(doctorId: string, appointmentDate: Date) {
     return this.find({
       where: { doctorId, appointmentDate },

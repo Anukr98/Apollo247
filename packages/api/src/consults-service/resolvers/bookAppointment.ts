@@ -3,6 +3,8 @@ import { Resolver } from 'api-gateway';
 import { Appointment, STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -79,7 +81,18 @@ const bookAppointment: Resolver<
     ...appointmentInput,
     status: STATUS.IN_PROGRESS,
   };
+  if (appointmentInput.appointmentDateTime <= new Date()) {
+    throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
+  }
+
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
+  const apptCount = await appts.checkAppointmentIfExisit(
+    appointmentInput.doctorId,
+    appointmentInput.appointmentDateTime
+  );
+  if (apptCount > 0) {
+    throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
+  }
   const appointment = await appts.saveAppointment(appointmentAttrs);
   return { appointment };
 };
