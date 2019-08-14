@@ -17,8 +17,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 2,
-    elevation: 2,
+    zIndex: 5,
+    elevation: 5,
   },
   cardContainer: {
     padding: 20,
@@ -80,6 +80,7 @@ type dataType = {
 export interface FilterSceneProps {
   onClickClose: (arg0: filterDataType[]) => void;
   data: filterDataType[];
+  setData: (arg0: filterDataType[]) => void;
 }
 export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   const [data, setData] = useState<filterDataType[]>(props.data);
@@ -235,6 +236,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                 return obj;
               });
               setData(filterData);
+              props.setData([]);
             }}
           >
             <Reload />

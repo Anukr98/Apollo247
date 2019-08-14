@@ -14,27 +14,23 @@ import {
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_consultHours,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { ConsultMode, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  default as string,
-  default as strings,
-} from '@aph/mobile-patients/src/strings/strings.json';
+import { default as string } from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import axios from 'axios';
-import React, { useState, useEffect } from 'react';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import {
+  Animated,
+  PermissionsAndroid,
+  Platform,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  PermissionsAndroid,
-  Platform,
-  Animated,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import moment from 'moment';
 
 const styles = StyleSheet.create({
   topView: {
@@ -445,7 +441,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       <Animated.View
         style={{
           position: 'absolute',
-          height: 100,
+          height: 156,
           width: '100%',
           top: 80,
           backgroundColor: headColor,
@@ -461,13 +457,23 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         </Animated.Text> */}
         {/* <Text>hello</Text> */}
 
-        <Animated.View style={{ paddingHorizontal: 20, opacity: imgOp }}>
+        <Animated.View style={{ paddingHorizontal: 20, top: 0, opacity: imgOp }}>
           <Text style={styles.headingText}>{string.common.okay}</Text>
           <Text style={styles.descriptionText}>
             {string.common.best_doctor_text}
             {specialityName}
           </Text>
         </Animated.View>
+
+        <TabsComponent
+          style={{
+            // marginTop: 180,
+            backgroundColor: theme.colors.CARD_BG,
+          }}
+          data={tabs}
+          onChange={(selectedTab: string) => setselectedTab(selectedTab)}
+          selectedTab={selectedTab}
+        />
       </Animated.View>
     );
   };
@@ -483,7 +489,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           bounces={false}
           scrollEventThrottle={16}
           contentContainerStyle={{
-            paddingTop: 154,
+            paddingTop: 208,
           }}
           onScroll={Animated.event(
             [
@@ -494,15 +500,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             { listener: handleScroll }
           )}
         >
-          <TabsComponent
-            style={{
-              // marginTop: 180,
-              backgroundColor: theme.colors.CARD_BG,
-            }}
-            data={tabs}
-            onChange={(selectedTab: string) => setselectedTab(selectedTab)}
-            selectedTab={selectedTab}
-          />
           {/* <ScrollView style={{ flex: 1 }} bounces={false}> */}
           {selectedTab === tabs[0].title && renderDoctorSearches()}
           {selectedTab === tabs[1].title && renderDoctorSearches(ConsultMode.ONLINE)}

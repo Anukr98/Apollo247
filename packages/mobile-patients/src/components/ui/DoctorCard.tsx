@@ -2,7 +2,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { getDoctorDetailsById_getDoctorDetailsById_specialty } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Image,
   StyleProp,
@@ -14,6 +14,10 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../../theme/theme';
+import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
+import { useQuery } from 'react-apollo-hooks';
+import { NEXT_AVAILABLE_SLOT } from '@aph/mobile-patients/src/graphql/profiles';
+import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -53,6 +57,7 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansSemiBold(12),
     color: theme.colors.SKY_BLUE,
+    textTransform: 'uppercase',
   },
   doctorLocation: {
     marginBottom: 16,
@@ -96,6 +101,54 @@ export interface DoctorCardProps extends NavigationScreenProps {
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
+  const [availableInMin, setavailableInMin] = useState<Number>(0);
+
+  const todayDate = new Date().toISOString().slice(0, 10);
+  const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
+    // fetchPolicy: 'no-cache',
+    variables: {
+      DoctorNextAvailableSlotInput: {
+        doctorIds: props.rowData ? [props.rowData.id] : [],
+        availableDate: todayDate,
+      },
+    },
+  });
+
+  if (availability.error) {
+    console.log('error', availability.error);
+  } else {
+    console.log(availability.data, 'availabilityData', 'availableSlots');
+    if (
+      availability &&
+      availability.data &&
+      availability.data.getDoctorNextAvailableSlot &&
+      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
+      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot &&
+      availableInMin === 0
+    ) {
+      const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
+        .availableSlot;
+      console.log(nextSlot, 'nextSlot');
+      let timeDiff: Number = 0;
+      const time = nextSlot.split(':');
+      let today: Date = new Date();
+      let date2: Date = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        Number(time[0]),
+        Number(time[1])
+      );
+      if (date2 && today) {
+        timeDiff = Math.round((date2 - today) / 60000);
+      }
+      console.log(timeDiff, 'timeDiff');
+      setavailableInMin(timeDiff);
+    }
+  }
+
   const rowData = props.rowData;
   if (rowData)
     return (
@@ -111,15 +164,19 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       >
         <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
           <View style={{ flexDirection: 'row' }}>
-            {/* {(rowData.availableForPhysicalConsultation || rowData.availableForVirtualConsultation) &&
-            props.displayButton &&
-            rowData.availableIn ? (
+            {props.displayButton && availableInMin ? (
               <CapsuleView
-                title={rowData.availableIn ? `AVAILABLE IN ${rowData.availableIn} MINS` : ''}
+                title={`AVAILABLE IN ${
+                  availableInMin >= 60
+                    ? `${Number(availableInMin / 60)} ${
+                        Number(availableInMin / 60) > 1 ? 'Hours' : 'Hour'
+                      }`
+                    : `${availableInMin} MINS`
+                }`}
                 style={styles.availableView}
-                isActive={Number(rowData.availableIn) > 15 ? false : true}
+                isActive={Number(availableInMin) >= 60 ? false : true}
               />
-            ) : null} */}
+            ) : null}
             <View style={styles.imageView}>
               {/* {rowData.image} */}
               {rowData.photoUrl && (

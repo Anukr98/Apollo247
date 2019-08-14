@@ -425,6 +425,14 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         }
         isActive
       }
+      consultHours {
+        consultMode
+        endTime
+        startTime
+        weekDay
+        isActive
+        id
+      }
     }
   }
 `;

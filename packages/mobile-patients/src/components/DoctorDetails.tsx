@@ -8,14 +8,12 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
   GET_APPOINTMENT_HISTORY,
-  GET_AVAILABLE_SLOTS,
   GET_DOCTOR_DETAILS_BY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAppointmentHistory,
   getAppointmentHistory_getAppointmentHistory_appointmentsHistory,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentHistory';
-import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
 import {
   getDoctorDetailsById,
   getDoctorDetailsByIdVariables,
@@ -29,6 +27,7 @@ import { useQuery } from 'react-apollo-hooks';
 import {
   Animated,
   Dimensions,
+  Image,
   Platform,
   SafeAreaView,
   Share,
@@ -36,7 +35,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Image,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -152,7 +150,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [scrollY, setscrollY] = useState(new Animated.Value(0));
-  const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
 
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
@@ -185,34 +182,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       appointmentHistory !== appointmentData.data.getAppointmentHistory.appointmentsHistory
     ) {
       setAppointmentHistory(appointmentData.data.getAppointmentHistory.appointmentsHistory);
-    }
-  }
-  const today = new Date();
-  const dd = String(today.getDate()).padStart(2, '0');
-  const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-  const date = `${today.getFullYear()}-${mm}-${dd}`;
-  console.log(date, 'dateeeeeeee', doctorId, 'doctorId');
-  const availabilityData = useQuery<getDoctorAvailableSlots>(GET_AVAILABLE_SLOTS, {
-    variables: {
-      DoctorAvailabilityInput: {
-        availableDate: date,
-        doctorId: doctorId ? doctorId : '',
-      },
-    },
-  });
-  if (availabilityData.error) {
-    console.log('error', availabilityData.error);
-  } else {
-    console.log(availabilityData.data, 'availabilityData');
-    if (
-      availabilityData &&
-      availabilityData.data &&
-      availabilityData.data.getDoctorAvailableSlots &&
-      availabilityData.data.getDoctorAvailableSlots.availableSlots &&
-      availabilityData.data.getDoctorAvailableSlots.availableSlots !== undefined &&
-      availableSlots !== availabilityData.data.getDoctorAvailableSlots.availableSlots
-    ) {
-      setavailableSlots(availabilityData.data.getDoctorAvailableSlots.availableSlots);
     }
   }
 
@@ -349,38 +318,40 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 >
                   {clinic.city}
                 </Text>
-                {/* {doctorDetails.consultationHours && (
+                {doctorDetails.consultHours && (
                   <>
                     <View style={[styles.separatorStyle, { marginVertical: 8 }]} />
 
-                    {doctorDetails.consultationHours.map((time) => (
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          justifyContent: 'space-between',
-                        }}
-                      >
-                        <Text
+                    {doctorDetails.consultHours.map((time) =>
+                      time ? (
+                        <View
                           style={{
-                            ...theme.fonts.IBMPlexSansSemiBold(12),
-                            color: theme.colors.SKY_BLUE,
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
                           }}
                         >
-                          {time.days.toUpperCase()}
-                        </Text>
+                          <Text
+                            style={{
+                              ...theme.fonts.IBMPlexSansSemiBold(12),
+                              color: theme.colors.SKY_BLUE,
+                            }}
+                          >
+                            {time.weekDay.toUpperCase()}
+                          </Text>
 
-                        <Text
-                          style={{
-                            ...theme.fonts.IBMPlexSansSemiBold(12),
-                            color: theme.colors.SKY_BLUE,
-                          }}
-                        >
-                          {formatTime(time.startTime)} - {formatTime(time.endTime)}
-                        </Text>
-                      </View>
-                    ))}
+                          <Text
+                            style={{
+                              ...theme.fonts.IBMPlexSansSemiBold(12),
+                              color: theme.colors.SKY_BLUE,
+                            }}
+                          >
+                            {formatTime(time.startTime)} - {formatTime(time.endTime)}
+                          </Text>
+                        </View>
+                      ) : null
+                    )}
                   </>
-                )} */}
+                )}
               </View>
             </View>
           </View>
@@ -575,7 +546,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         {showSpinner ? null : (
           <StickyBottomComponent defaultBG>
             <Button
-              title={'BOOK APPOINTMENTS'}
+              title={'BOOK APPOINTMENT'}
               onPress={() => setdispalyoverlay(true)}
               style={{ marginHorizontal: 60, flex: 1 }}
             />
@@ -590,7 +561,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           doctor={doctorDetails ? doctorDetails : null}
           patientId={currentPatient ? currentPatient.id : ''}
           clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
-          availableSlots={availableSlots}
+          doctorId={props.navigation.state.params!.doctorId}
+          // availableSlots={availableSlots}
         />
       )}
       {showSpinner && <Spinner />}
