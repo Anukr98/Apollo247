@@ -12,6 +12,7 @@ import {
   Notification,
   RoundIcon,
   Up,
+  ApploLogo,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
@@ -249,6 +250,11 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const renderMainHeader = () => {
     return (
       <Header
+        leftIcons={[
+          {
+            icon: <ApploLogo />,
+          },
+        ]}
         rightIcons={[
           {
             icon: <RoundIcon />,
@@ -265,15 +271,37 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
 
   const renderDoctorGreeting = () => {
     return (
-      <ProfileTabHeader
-        title={`hello dr. ${(doctorName || '').toLowerCase()} :)`}
-        description={`here’s your schedule for ${
+      // <ProfileTabHeader
+      //   title={`hello dr. ${(doctorName || '').toLowerCase()} :)`}
+      //   description={`here’s your schedule for ${
+      //     moment(date).format('DD/MM/YYYY') == moment(new Date()).format('DD/MM/YYYY')
+      //       ? 'today'
+      //       : moment(date).format('MMM, DD')
+      //   }`}
+      //   activeTabIndex={0}/>
+      <View style={{ backgroundColor: '#ffffff' }}>
+        <Text
+          style={{
+            ...theme.fonts.IBMPlexSansSemiBold(28),
+            color: '#02475b',
+            marginLeft: 20,
+            marginBottom: 2,
+          }}
+        >{`hello dr. ${(doctorName || '').toLowerCase()} :)`}</Text>
+        <Text
+          style={{
+            ...theme.fonts.IBMPlexSansMedium(16),
+            color: '#0087ba',
+            marginLeft: 20,
+            marginBottom: 14,
+            lineHeight: 24,
+          }}
+        >{`here’s your schedule for ${
           moment(date).format('DD/MM/YYYY') == moment(new Date()).format('DD/MM/YYYY')
             ? 'today'
             : moment(date).format('MMM, DD')
-        }`}
-        activeTabIndex={0}
-      />
+        }`}</Text>
+      </View>
     );
   };
 
@@ -348,7 +376,8 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       {renderMainHeader()}
-      {renderDoctorGreeting()}
+      <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
+
       <View>
         {renderHeader()}
         <View style={{ flex: 1 }}>{isCalendarVisible ? renderCalenderView() : null}</View>

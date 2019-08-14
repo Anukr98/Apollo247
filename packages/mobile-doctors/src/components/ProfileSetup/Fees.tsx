@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     color: 'rgba(2, 71, 91, 0.5)',
     marginBottom: 16,
     letterSpacing: 0.35,
-    marginTop: 2,
+    marginTop: 4,
   },
   feeeducationname: {
     color: '#02475b',
@@ -132,7 +132,9 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
     if (!description) return null;
     return (
       <View style={styles.commonView}>
-        <Text style={styles.feeeducationname}>*********{title.toString().slice(-4)}</Text>
+        <Text style={styles.feeeducationname}>
+          A/C Number: *********{title.toString().slice(-4)}
+        </Text>
         <Text style={styles.feeeducationtextname}>{description}</Text>
       </View>
     );

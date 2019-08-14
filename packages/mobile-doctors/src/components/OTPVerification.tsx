@@ -341,7 +341,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   useEffect(() => {
     firebase.auth().onAuthStateChanged((updatedUser) => {
-      console.log(updatedUser);
+      console.log(updatedUser, 'updatedUser');
       if (updatedUser && updatedUser.phoneNumber == props.navigation.getParam('phoneNumber')) {
         setAndroidSignedIn(true);
       } else {
