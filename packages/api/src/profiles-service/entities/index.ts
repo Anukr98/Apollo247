@@ -20,6 +20,12 @@ export enum Relation {
   OTHER = 'OTHER',
 }
 
+export enum SEARCH_TYPE {
+  DOCTOR = 'DOCTOR',
+  SPECIALTY = 'SPECIALTY',
+}
+
+//patient Starts
 @Entity()
 export class Patient extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -58,3 +64,24 @@ export class Patient extends BaseEntity {
   //@IsDate()
   dateOfBirth: Date;
 }
+//patient Ends
+
+//searchHistory Starts
+@Entity()
+export class SearchHistory extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  type: SEARCH_TYPE;
+
+  @Column('uuid')
+  typeId: string;
+
+  @Column('uuid')
+  patientId: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+}
+//searchHistory Ends

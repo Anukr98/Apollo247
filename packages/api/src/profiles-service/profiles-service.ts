@@ -4,8 +4,7 @@ import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
 import { createConnection, getConnection } from 'typeorm';
-import { Patient } from 'profiles-service/entity/patient';
-import { Appointments } from 'profiles-service/entity/appointment';
+import { Patient } from 'profiles-service/entities';
 import {
   getCurrentPatientsTypeDefs,
   getCurrentPatientsResolvers,
@@ -28,7 +27,7 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
 (async () => {
   await createConnection({
     //name: 'profiles-db',
-    entities: [Patient, Appointments],
+    entities: [Patient],
     type: 'postgres',
     host: process.env.PROFILES_DB_HOST,
     port: parseInt(process.env.PROFILES_DB_PORT, 10),

@@ -1,5 +1,5 @@
 import { GatewayContext } from 'api-gateway';
-import { Patient } from 'profiles-service/entity/patient';
+import { Patient } from 'profiles-service/entities';
 import { Connection } from 'typeorm';
 
 export interface ProfilesServiceContext extends GatewayContext {
