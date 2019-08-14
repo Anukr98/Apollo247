@@ -346,8 +346,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               />
             </div>
           ) : (
-            <div className={classes.noSlotsAvailable}>
-              Oops! No slots available with Dr. {doctorName} :(
+            <div className={classes.consultGroup}>
+              <div className={classes.noSlotsAvailable}>
+                Oops! No slots available with Dr. {doctorName} :(
+              </div>
             </div>
           )}
         </div>
