@@ -45,11 +45,12 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: '100%',
+      overflow: 'hidden',
     },
     consultGroup: {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: theme.palette.text.primary,
-      padding: 15,
+      padding: 16,
       marginTop: 10,
       marginBottom: 10,
       display: 'inline-block',
@@ -64,8 +65,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     actions: {
-      paddingTop: 10,
-      paddingBottom: 10,
+      paddingTop: 5,
+      paddingBottom: 4,
       marginLeft: -7,
       marginRight: -8,
     },
@@ -92,13 +93,10 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fed984',
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2) !important',
     },
-    disableConsultNow: {
-      color: '#fff',
-      backgroundColor: '#00b38e',
-      opacity: 0.5,
-    },
     bottomActions: {
-      padding: '30px 15px 15px 15px',
+      padding: '10px 15px 15px 15px',
+      boxShadow: '0 -5px 20px 0 #f7f8f5',
+      position: 'relative',
       '& button': {
         borderRadius: 10,
         textTransform: 'none',
@@ -114,7 +112,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     customScrollBar: {
       paddingTop: 10,
-      paddingBottom: 10,
+      paddingBottom: 30,
     },
     timeSlots: {
       paddingTop: 0,
@@ -126,10 +124,10 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'none',
     },
     showCalendar: {
-      display: 'block',
+      display: 'inline-block',
     },
     showTimeSlot: {
-      display: 'block',
+      display: 'inline-block',
     },
     circlularProgress: {
       display: 'flex',
@@ -144,6 +142,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     confirmationColor: {
       color: '#fcb716',
+    },
+    disabledButton: {
+      color: '#00b38e !important',
+      opacity: 0.5,
     },
   };
 });
@@ -267,8 +269,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       lateNightSlots.length === 0) ||
     (scheduleLater && timeSelected === '');
 
-  // console.log(consultNow, slotAvailableNext);
-
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'50vh'}>
@@ -289,10 +289,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 }}
                 color="secondary"
                 className={`${classes.button} ${
-                  consultNow && slotAvailableNext !== ''
+                  consultNow && slotAvailableNext !== '' && !scheduleLater
                     ? classes.buttonActive
-                    : classes.disableConsultNow
-                }`}
+                    : ''
+                } ${consultNow && slotAvailableNext === '' ? classes.disabledButton : ''}`}
                 disabled={!(consultNow && slotAvailableNext !== '')}
               >
                 Consult Now
@@ -346,8 +346,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               />
             </div>
           ) : (
-            <div className={classes.noSlotsAvailable}>
-              Oops! No slots available with Dr. {doctorName} :(
+            <div className={classes.consultGroup}>
+              <div className={classes.noSlotsAvailable}>
+                Oops! No slots available with Dr. {doctorName} :(
+              </div>
             </div>
           )}
         </div>
