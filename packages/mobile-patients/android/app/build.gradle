@@ -138,6 +138,8 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-document-picker')
+    implementation project(':opentok-react-native')
     implementation project(':react-native-splash-screen')
     implementation project(':react-native-firebase')
     implementation project(':react-native-vector-icons')
