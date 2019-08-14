@@ -46,7 +46,7 @@ import {
 import { Calendar, DateObject, CalendarBaseProps } from 'react-native-calendars';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { WeekView } from '@aph/mobile-patients/src/components/WeekView';
+import { WeekView, WeekViewProps } from '@aph/mobile-patients/src/components/WeekView';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { DoctorDetails } from '@aph/mobile-patients/src/components/DoctorDetails';
 
@@ -183,10 +183,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     },
   });
   const calendarRef = useRef<Calendar | null>(null);
-  const [month, setmonth] = useState<string>(monthsArray[new Date().getMonth()]);
-  const [calendarDate, setCalendarDate] = useState<Date | null>(new Date()); // to maintain a sync between week view change and calendar month
+  const weekViewRef = useRef<{ getPreviousWeek: () => void; getNextWeek: () => void } | null>(null);
+  const [date, setDate] = useState<Date>(new Date());
   const [isMonthView, setMonthView] = useState(true);
-  // const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
 
   useEffect(() => {
     let array: TimeArray = [
@@ -303,11 +302,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         >
           <TouchableOpacity
             onPress={() => {
-              // console.log(calendarRef, calendarRef.current, 'ref', calendarRef.current!.addMonth);
-              ((calendarRef.current && calendarRef.current) as CalendarRefType).addMonth(-1);
-              // if (calendarRef.current) {
-              //   calendarRef.current.addMonth(-1);
-              // }
+              isMonthView
+                ? ((calendarRef.current && calendarRef.current) as CalendarRefType).addMonth(-1)
+                : weekViewRef.current && weekViewRef.current.getPreviousWeek();
             }}
           >
             <ArrowLeft />
@@ -324,7 +321,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 color: theme.colors.LIGHT_BLUE,
               }}
             >
-              {month}
+              {moment(date).format('MMM YYYY')}
             </Text>
             {isMonthView ? (
               <TouchableOpacity
@@ -346,11 +343,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           </View>
           <TouchableOpacity
             onPress={() => {
-              // console.log(calendarRef, calendarRef.current, 'ref', calendarRef.current.updateMonth);
-              ((calendarRef.current && calendarRef.current) as CalendarRefType).addMonth(1);
-              // if (calendarRef.current) {
-              //   calendarRef.current.addMonth(1);
-              // }
+              isMonthView
+                ? ((calendarRef.current && calendarRef.current) as CalendarRefType).addMonth(1)
+                : weekViewRef.current && weekViewRef.current.getNextWeek();
             }}
           >
             <ArrowRight />
@@ -359,6 +354,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
         {isMonthView ? (
           <Calendar
+            current={date}
             ref={(ref) => {
               calendarRef.current = ref;
             }}
@@ -395,30 +391,29 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             hideExtraDays={true}
             firstDay={1}
             hideArrows={true}
-            markedDates={{ dateSelected }}
+            markedDates={dateSelected}
             onDayPress={(day: DateObject) => {
-              console.log(day, '234567890');
               setdateSelected({
-                [day.dateString]: { selected: true, selectedColor: theme.colors.WHITE },
+                [day.dateString]: { selected: true, selectedColor: theme.colors.APP_GREEN },
               });
-              setCalendarDate(day);
+              setDate(new Date(day.timestamp));
             }}
             onMonthChange={(m) => {
               console.log('month changed', m);
-              setmonth(monthsArray[m.month]);
+              setDate(new Date(m.dateString));
             }}
           />
         ) : (
           <WeekView
-            date={calendarDate}
+            ref={(ref) => {
+              weekViewRef.current = ref;
+            }}
+            date={date}
             onTapDate={(date: Date) => {
-              // setDate(date);
-              setCalendarDate(date);
-              setmonth(monthsArray[moment(date).get('month')]);
+              setDate(moment(date).toDate());
             }}
             onWeekChanged={(date) => {
-              setCalendarDate(moment(date).toDate());
-              setmonth(monthsArray[moment(date).get('month')]);
+              setDate(moment(date).toDate());
             }}
           />
         )}
@@ -461,12 +456,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         <View style={styles.optionsView}>
           {timeArray &&
             timeArray.length > 0 &&
-            timeArray.map((value) => {
+            timeArray.map((value, index) => {
               console.log(value, selectedtiming, value.label === selectedtiming, 'selectedtiming');
               if (value.label === selectedtiming) {
                 if (value.time.length > 0) {
                   return value.time.map((name: string, index: number) => (
                     <Button
+                      key={index}
                       title={timeTo12HrFormat(name)}
                       style={[
                         styles.buttonStyle,
@@ -484,6 +480,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 } else {
                   return (
                     <Text
+                      key={index}
                       style={{
                         ...theme.fonts.IBMPlexSansMedium(14),
                         color: theme.colors.SKY_BLUE,

@@ -470,6 +470,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             <View style={styles.cardContainerStyle}>
               {consultations.length > 0 ? (
                 <FlatList
+                  keyExtractor={(_, index) => index.toString()}
                   contentContainerStyle={{ padding: 12 }}
                   horizontal={true}
                   data={consultations}

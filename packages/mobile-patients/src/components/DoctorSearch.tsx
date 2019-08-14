@@ -38,7 +38,7 @@ import {
   View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { theme } from '../theme/theme';
 import { Button } from './ui/Button';
 import { DoctorCard } from './ui/DoctorCard';
@@ -496,6 +496,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             style={{ marginBottom: 0 }}
           />
           <FlatList
+            keyExtractor={(_, index) => index.toString()}
             contentContainerStyle={{
               marginTop: 20,
               marginBottom: 8,
@@ -534,6 +535,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               style={{ marginBottom: 0 }}
             />
             <FlatList
+              keyExtractor={(_, index) => index.toString()}
               contentContainerStyle={{
                 marginTop: 16,
                 marginBottom: 8,
@@ -583,6 +585,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             style={{ marginBottom: 0, marginTop: 4 }}
           />
           <FlatList
+            keyExtractor={(_, index) => index.toString()}
             contentContainerStyle={{
               marginTop: 16,
               marginBottom: 8,
@@ -601,7 +604,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {doctorsList && renderSearch()}
         {showSpinner ? null : (
-          <KeyboardAwareScrollView style={{ flex: 1 }} bounces={false}>
+          <ScrollView style={{ flex: 1 }} bounces={false} keyboardDismissMode="on-drag">
             {renderPastSearch()}
             {renderDoctorSearches()}
             {renderSpecialist()}
@@ -617,7 +620,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               doctorsList.length === 1 &&
               otherDoctors &&
               renderOtherSUggestedDoctors()}
-          </KeyboardAwareScrollView>
+          </ScrollView>
         )}
       </SafeAreaView>
       {showSpinner && <Spinner />}

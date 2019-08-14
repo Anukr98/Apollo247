@@ -1,6 +1,13 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useRef } from 'react';
+import React, {
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+  ForwardRefExoticComponent,
+  PropsWithoutRef,
+  RefAttributes,
+} from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CalendarStrip from 'react-native-calendar-strip';
 import GestureRecognizer from 'react-native-swipe-gestures';
@@ -51,8 +58,21 @@ export interface WeekViewProps {
   onWeekChanged: (date: Date) => void;
 }
 
-export const WeekView: React.FC<WeekViewProps> = (props) => {
+export const WeekView: ForwardRefExoticComponent<
+  PropsWithoutRef<WeekViewProps> &
+    RefAttributes<{ getPreviousWeek: () => void; getNextWeek: () => void }>
+> = forwardRef((props, ref) => {
   const calendarStripRef = useRef<CalendarStrip | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    // To expose this functions to parent through ref
+    getPreviousWeek() {
+      onSwipeRight();
+    },
+    getNextWeek() {
+      onSwipeLeft();
+    },
+  }));
 
   const renderDayComponent = (item: Date) => {
     const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -135,4 +155,4 @@ export const WeekView: React.FC<WeekViewProps> = (props) => {
       />
     </GestureRecognizer>
   );
-};
+});

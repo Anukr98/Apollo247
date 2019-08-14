@@ -404,7 +404,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           </View>
           <ScrollView horizontal bounces={false} showsHorizontalScrollIndicator={false}>
             <FlatList
-              keyExtractor={(item, index) => index.toString()}
+              keyExtractor={(_, index) => index.toString()}
               // keyExtractor={(item, i) => item!.associatedDoctor!.id}
               contentContainerStyle={{ padding: 12 }}
               // horizontal={true}
@@ -451,6 +451,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             </Text>
           </View>
           <FlatList
+            keyExtractor={(_, index) => index.toString()}
             contentContainerStyle={{
               marginVertical: 12,
             }}
@@ -488,8 +489,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 </Text>
                 <View style={styles.separatorStyle} />
                 <View style={{ flexDirection: 'row' }}>
-                  {Appointments[0].symptoms.map((name) => (
+                  {Appointments[0].symptoms.map((name, index) => (
                     <CapsuleView
+                      key={index}
                       title={name}
                       isActive={false}
                       style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
