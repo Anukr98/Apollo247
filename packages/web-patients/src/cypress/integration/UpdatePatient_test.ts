@@ -244,6 +244,46 @@ describe('UpdatePatient (multiple, without uhids)', () => {
     cy.contains('Invalid date of birth').should('not.exist');
   });
 
+  it('Should allow single quotation marks to be added within first and last names', () => {
+    const validNames = ["Sumeet'h", "D'Souza", "D'Souza", "D'S'ouza"];
+
+    validNames.forEach((name) => {
+      cy.get('[data-cypress="NewProfile"]')
+        .find('input[name*="firstName"]')
+        .clear()
+        .type(name);
+
+      cy.get('[data-cypress="NewProfile"]')
+        .find('button[type="submit"]')
+        .should('not.be.disabled');
+    });
+  });
+
+  it('Should forbid quotation marks to be added consecutively, or at the beginning or end of a name', () => {
+    const invalidNames = [
+      "'",
+      "''",
+      "'Sumeeth",
+      "Sumeeth'",
+      "D''souza",
+      "Sumeeth '",
+      "Sumeeth ''",
+      "Kumar'",
+      "K''umar",
+    ];
+
+    invalidNames.forEach((name) => {
+      cy.get('[data-cypress="NewProfile"]')
+        .find('input[name*="firstName"]')
+        .clear()
+        .type(name);
+
+      cy.get('[data-cypress="NewProfile"]')
+        .find('button[type="submit"]')
+        .should('be.disabled');
+    });
+  });
+
   it('Should update the patient', () => {
     const janeTheMan = {
       ...janeNoRelation,
