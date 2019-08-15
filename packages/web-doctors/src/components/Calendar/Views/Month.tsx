@@ -51,7 +51,7 @@ const useStyles = makeStyles(() => {
       padding: 0,
       textAlign: 'center',
       boxShadow: '0px 2px 10px 0 rgba(0, 0, 0, 0.2)',
-      height: 600,
+      height: 700,
       overflow: 'hidden',
       '& .rbc-toolbar': {
         backgroundColor: '#f7f7f7',
@@ -81,6 +81,65 @@ const useStyles = makeStyles(() => {
       },
       '& .rbc-current': {
         fontWeight: 700,
+      },
+      '& .rbc-event': {
+          fontSize: 6,
+          lineHeight: '8px',
+          backgroundColor: 'rgba(0,135,186,0.1)',
+          marginBottom: 1,
+          borderRadius: 2,
+          fontWeight: 500,
+          borderLeft: '2px solid #0087ba',
+          color: '#02475b',
+      },
+      '& .rbc-show-more': {
+        fontSize: 6,
+        lineHeight: '8px',
+        color: '#0087ba',
+        textAlign: 'left',
+        paddingLeft: 8,
+      },
+      '& .rbc-today': {
+        backgroundColor: '#fff',
+        position: 'relative',
+      },
+      '& .rbc-now a': {
+        backgroundColor: '#00b38e',
+        fontSize: 14,
+        fontWeight: 500,
+        color: '#fff',
+        marginTop: 6,
+        display: 'inline-block',
+        height: 30,
+        paddingTop: 5,
+        paddingRight: 0,
+        textAlign: 'center',
+        width: 30,
+        borderRadius: 15,
+      },
+      '& .rbc-off-range-bg': {
+        backgroundColor: '#f7f7f7',
+      },
+      '& .rbc-day-bg': {
+        border: '1px solid #efefef',
+      },
+      '& .rbc-month-row': {
+        borderTop: 'transparent',
+      },
+      '& .calenderHeader': {
+        color: '#02475b',
+        fontWeight: 600,
+        fontSize: 18,
+        lineHeight: '24px',
+        padding: 24,
+      },
+      '& .calenderHeader img': {
+        position: 'relative',
+        top: 4,
+      },
+      '& .monthname': {
+        paddingRight: 70,
+        paddingLeft: 70,
       },
     },
   };
@@ -121,6 +180,16 @@ export interface MonthProps {
   onMonthChange: (range: Date[] | { start: string | Date; end: string | Date }) => void;
 }
 
+const Toolbar: React.FC = (toolbar) => {
+  return (
+    <div className="calenderHeader">
+      <img src={require('images/ic_leftarrow.svg')} alt="" />
+      <span className="monthname">July </span>
+      <img src={require('images/ic_rightarrow.svg')} alt="" />
+    </div>
+  );
+}
+
 export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange }) => {
   const classes = useStyles();
   const [events, setEvents] = useState<MonthEvent[]>(eventsAdapter(data));
@@ -142,6 +211,7 @@ export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange }) => {
         localizer={localizer}
         views={{ month: true }}
         onRangeChange={(range) => onMonthChange(range)}
+        components={{toolbar: Toolbar  }}
       />
       </div>
       <div className={classes.moreIcon}>
