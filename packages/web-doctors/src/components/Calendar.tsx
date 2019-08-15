@@ -119,7 +119,7 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
   const newPatientsList: (string | null)[] | null = data!.getDoctorAppointments.newPatientsList;
 
   const adaptedList: Appointment[] = appointments.map(
-    (appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null) => {
+    (appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null, idx) => {
       const {
         id,
         appointmentDateTime,
@@ -205,13 +205,12 @@ export const Calendar: React.FC = () => {
           <div>
             <ToggleButtonGroup exclusive value={viewSelection} className={classes.toggleBtn}>
               <ToggleButton
-                 className={`${viewSelection === 'day' ? classes.customeSelect : ''}`}
+                className={`${viewSelection === 'day' ? classes.customeSelect : ''}`}
                 value="day"
                 onClick={() => {
                   setViewSelection('day');
                   setRange(getRange(selectedDate));
                 }}
-                
               >
                 Day
               </ToggleButton>

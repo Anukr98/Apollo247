@@ -226,10 +226,16 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const checkIfComplete = (status: string) => status === STATUS.COMPLETED;
+const checkIfComplete = (status: string) => status === STATUS.COMPLETED || status === STATUS.MISSED;
 
 const getActiveStep = (appointments: Appointment[]) =>
-  appointments.findIndex((appointment) => checkIfComplete(appointment.status));
+  appointments.reduce((acc, appointment) => {
+    if (checkIfComplete(appointment.status)) {
+      return ++acc;
+    }
+
+    return acc;
+  }, 0);
 
 export const Appointments: React.FC<AppointmentsProps> = ({
   values,
@@ -295,12 +301,12 @@ export const Appointments: React.FC<AppointmentsProps> = ({
               key={idx}
               active={true}
               className={
-                activeStep === idx
-                  ? 'upcoming'
+                appointment.status === STATUS.MISSED
+                  ? classes.missing
                   : activeStep - 1 >= idx
                   ? classes.completed
-                  : appointment.status === STATUS.MISSED
-                  ? classes.missing
+                  : activeStep === idx
+                  ? 'upcoming'
                   : ''
               }
               classes={{

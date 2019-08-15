@@ -83,14 +83,14 @@ const useStyles = makeStyles(() => {
         fontWeight: 700,
       },
       '& .rbc-event': {
-          fontSize: 6,
-          lineHeight: '8px',
-          backgroundColor: 'rgba(0,135,186,0.1)',
-          marginBottom: 1,
-          borderRadius: 2,
-          fontWeight: 500,
-          borderLeft: '2px solid #0087ba',
-          color: '#02475b',
+        fontSize: 6,
+        lineHeight: '8px',
+        backgroundColor: 'rgba(0,135,186,0.1)',
+        marginBottom: 1,
+        borderRadius: 2,
+        fontWeight: 500,
+        borderLeft: '2px solid #0087ba',
+        color: '#02475b',
       },
       '& .rbc-show-more': {
         fontSize: 6,
@@ -188,7 +188,7 @@ const Toolbar: React.FC = (toolbar) => {
       <img src={require('images/ic_rightarrow.svg')} alt="" />
     </div>
   );
-}
+};
 
 export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange }) => {
   const classes = useStyles();
@@ -200,19 +200,18 @@ export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange }) => {
 
   return (
     <div className={classes.calendarContainer}>
-      <div
-        className={classes.calenderIcon} >
+      <div className={classes.calenderIcon}>
         <img src={require('images/ic_calendar.svg')} alt="" />
       </div>
       <div className={classes.monthView}>
-      <Calendar
-        defaultDate={date}
-        events={events}
-        localizer={localizer}
-        views={{ month: true }}
-        onRangeChange={(range) => onMonthChange(range)}
-        components={{toolbar: Toolbar  }}
-      />
+        <Calendar
+          defaultDate={date}
+          events={events}
+          localizer={localizer}
+          views={{ month: true }}
+          onRangeChange={(range) => onMonthChange(range)}
+          components={{ toolbar: Toolbar }}
+        />
       </div>
       <div className={classes.moreIcon}>
         <img src={require('images/ic_more.svg')} alt="" />
