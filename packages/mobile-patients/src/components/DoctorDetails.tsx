@@ -9,6 +9,7 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import {
   GET_APPOINTMENT_HISTORY,
   GET_DOCTOR_DETAILS_BY_ID,
+  NEXT_AVAILABLE_SLOT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAppointmentHistory,
@@ -39,6 +40,7 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from './NavigatorContainer';
+import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 
 const { height } = Dimensions.get('window');
 
@@ -149,7 +151,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [doctorId, setDoctorId] = useState<String>(props.navigation.state.params!.doctorId);
   const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const [scrollY, setscrollY] = useState(new Animated.Value(0));
+  const [scrollY] = useState(new Animated.Value(0));
+  const [availableInMin, setavailableInMin] = useState<Number>(0);
 
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
@@ -186,13 +189,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   }
 
   console.log(props.navigation.state.params!.doctorId, 'doctorIddoctorIddoctorId');
-  const { data, error } = useQuery<getDoctorDetailsById, getDoctorDetailsByIdVariables>(
-    GET_DOCTOR_DETAILS_BY_ID,
-    {
-      // variables: { id: 'a6ef960c-fc1f-4a12-878a-12063788d625' },
-      variables: { id: doctorId },
-    }
-  );
+  const { data, error } = useQuery<getDoctorDetailsById>(GET_DOCTOR_DETAILS_BY_ID, {
+    // variables: { id: 'a6ef960c-fc1f-4a12-878a-12063788d625' },
+    variables: { id: doctorId },
+  });
   if (error) {
     ``;
     console.log('error', error);
@@ -202,6 +202,54 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       setDoctorDetails(data.getDoctorDetailsById);
       setDoctorId(data.getDoctorDetailsById.id);
       setshowSpinner(false);
+    }
+  }
+
+  const todayDate = new Date().toISOString().slice(0, 10);
+  const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
+    // fetchPolicy: 'no-cache',
+    variables: {
+      DoctorNextAvailableSlotInput: {
+        doctorIds: doctorDetails ? [doctorDetails.id] : [],
+        availableDate: todayDate,
+      },
+    },
+  });
+  if (availability.error) {
+    console.log('error', availability.error);
+  } else {
+    console.log(availability.data, 'availabilityData', 'availableSlots');
+    if (
+      availability &&
+      availability.data &&
+      availability.data.getDoctorNextAvailableSlot &&
+      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
+      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot &&
+      availableInMin === 0
+    ) {
+      const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
+        .availableSlot;
+      const IOSFormat = `${todayDate}T${nextSlot}:48.000Z`;
+      console.log(IOSFormat, new Date(IOSFormat));
+      const formatedTime = Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
+      console.log(formatedTime, 'formatedTime');
+      let timeDiff: Number = 0;
+      const time = formatedTime.split(':');
+      let today: Date = new Date();
+      let date2: Date = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        Number(time[0]),
+        Number(time[1])
+      );
+      if (date2 && today) {
+        timeDiff = Math.round((date2 - today) / 60000);
+      }
+      console.log(timeDiff, 'timeDiff');
+      setavailableInMin(timeDiff);
     }
   }
 
@@ -240,7 +288,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   <Text style={styles.onlineConsultAmount}>
                     Rs. {doctorDetails.onlineConsultationFees}
                   </Text>
-                  <CapsuleView title={'AVAILABLE IN 15 MINS'} />
+                  <CapsuleView
+                    title={`AVAILABLE IN ${availableInMin} MIN${availableInMin > 1 ? 'S' : ''}`}
+                    isActive={availableInMin <= 15}
+                  />
                 </View>
                 <View style={styles.horizontalSeparatorStyle} />
                 <View style={{ flex: 1 }}>
@@ -248,7 +299,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   <Text style={styles.onlineConsultAmount}>
                     Rs. {doctorDetails.physicalConsultationFees}
                   </Text>
-                  <CapsuleView title={'AVAILABLE IN 27 MINS'} isActive={false} />
+                  <CapsuleView
+                    title={`AVAILABLE IN ${availableInMin} MIN${availableInMin > 1 ? 'S' : ''}`}
+                    isActive={availableInMin <= 15}
+                  />
                 </View>
               </View>
             </View>

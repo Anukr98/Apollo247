@@ -26,6 +26,7 @@ import moment from 'moment';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { NEXT_AVAILABLE_SLOT } from '@aph/mobile-patients/src/graphql/profiles';
 import { useQuery } from 'react-apollo-hooks';
+import Moment from 'moment';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -127,7 +128,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const calendarRef = useRef<Calendar | null>(null);
   const weekViewRef = useRef<{ getPreviousWeek: () => void; getNextWeek: () => void } | null>(null);
   const [isMonthView, setMonthView] = useState(true);
-  const [date, setDate] = useState<Date>(props.date);
   const [availableInMin, setavailableInMin] = useState<Number>(0);
 
   //   const [availableSlot, setavailableSlot] = useState<string>('');
@@ -138,17 +138,13 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     },
   });
 
-  const todayDate = new Date();
-  const dd = String(todayDate.getDate()).padStart(2, '0');
-  const mm = String(todayDate.getMonth() + 1).padStart(2, '0'); //January is 0!
-  const today_date = `${todayDate.getFullYear()}-${mm}-${dd}`;
-
+  const todayDate = new Date().toISOString().slice(0, 10);
   const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
     // fetchPolicy: 'no-cache',
     variables: {
       DoctorNextAvailableSlotInput: {
         doctorIds: props.doctor ? [props.doctor.id] : [],
-        availableDate: today_date,
+        availableDate: todayDate,
       },
     },
   });
@@ -169,9 +165,12 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     ) {
       const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
         .availableSlot;
-      console.log(nextSlot, 'nextSlot');
+      const IOSFormat = `${todayDate}T${nextSlot}:48.000Z`;
+      console.log(IOSFormat, new Date(IOSFormat));
+      const formatedTime = Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
+      console.log(formatedTime, 'formatedTime');
       let timeDiff: Number = 0;
-      const time = nextSlot.split(':');
+      const time = formatedTime.split(':');
       let today: Date = new Date();
       let date2: Date = new Date(
         today.getFullYear(),
@@ -314,7 +313,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
                 color: theme.colors.LIGHT_BLUE,
               }}
             >
-              {moment(date).format('MMM YYYY')}
+              {moment(props.date).format('MMM YYYY')}
             </Text>
             {isMonthView ? (
               <TouchableOpacity
@@ -347,7 +346,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
 
         {isMonthView ? (
           <Calendar
-            current={date}
+            current={props.date}
             ref={(ref) => {
               calendarRef.current = ref;
             }}
@@ -390,7 +389,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               setdateSelected({
                 [day.dateString]: { selected: true, selectedColor: theme.colors.APP_GREEN },
               });
-              setDate(new Date(day.timestamp));
+              props.setDate(new Date(day.timestamp));
             }}
             onMonthChange={(m) => {
               console.log('month changed', m);
@@ -403,7 +402,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             ref={(ref) => {
               weekViewRef.current = ref;
             }}
-            date={date}
+            date={props.date}
             onTapDate={(date: Date) => {
               props.setDate(moment(date).toDate());
             }}
@@ -459,8 +458,8 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               selectedCTA === onlineCTA[0] ? styles.selectedButtonText : null,
             ]}
             onPress={() => {
-              props.setisConsultOnline(selectedCTA === onlineCTA[0] ? true : false);
               setselectedCTA(onlineCTA[0]);
+              props.setisConsultOnline(true);
             }}
           />
           <View style={{ width: 16 }} />
@@ -484,8 +483,8 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               selectedCTA === onlineCTA[1] ? styles.selectedButtonText : null,
             ]}
             onPress={() => {
-              props.setisConsultOnline(selectedCTA === onlineCTA[0] ? true : false);
               setselectedCTA(onlineCTA[1]);
+              props.setisConsultOnline(false);
             }}
           />
         </View>

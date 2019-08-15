@@ -224,12 +224,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     if (array !== timeArray) settimeArray(array);
   };
 
-  const todayDate = new Date();
-  const dd = String(todayDate.getDate()).padStart(2, '0');
-  const mm = String(todayDate.getMonth() + 1).padStart(2, '0'); //January is 0!
-  const today_date = `${todayDate.getFullYear()}-${mm}-${dd}`;
-  console.log(today_date, 'dateeeeeeee', props.doctorId, 'doctorId');
-
+  console.log(date, date.toISOString().split('T')[0], 'dateeeeeeee', props.doctorId, 'doctorId');
   const availabilityData = useQuery<getDoctorAvailableSlots>(GET_AVAILABLE_SLOTS, {
     fetchPolicy: 'no-cache',
     variables: {
@@ -429,6 +424,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               onChange={(selectedTab: string) => {
                 setselectedTab(selectedTab);
                 setselectedTimeSlot('');
+                setisConsultOnline(true);
                 setisConsultOnline(selectedTab === tabs[0].title ? true : false);
               }}
               selectedTab={selectedTab}
@@ -469,7 +465,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         <BottomPopUp
           title={'Appointment Confirmation'}
           description={`Your appointment has been successfully booked with Dr. ${
-            props.doctor ? props.doctor.firstName : ''
+            props.doctor && props.doctor!.firstName ? props.doctor!.firstName : ''
           }`}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>

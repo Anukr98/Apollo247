@@ -97,8 +97,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     top: 172,
-    zIndex: 2,
-    elevation: 2,
+    zIndex: 3,
+    elevation: 3,
   },
   doctorView: {
     // flex: 1,

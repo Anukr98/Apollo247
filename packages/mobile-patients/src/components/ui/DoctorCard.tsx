@@ -18,6 +18,7 @@ import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/typ
 import { useQuery } from 'react-apollo-hooks';
 import { NEXT_AVAILABLE_SLOT } from '@aph/mobile-patients/src/graphql/profiles';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
+import Moment from 'moment';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -130,9 +131,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     ) {
       const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
         .availableSlot;
-      console.log(nextSlot, 'nextSlot');
+      const IOSFormat = `${todayDate}T${nextSlot}:48.000Z`;
+      console.log(IOSFormat, new Date(IOSFormat));
+      const formatedTime = Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
+      console.log(formatedTime, todayDate, 'formatedTime', nextSlot, 'nextSlot');
       let timeDiff: Number = 0;
-      const time = nextSlot.split(':');
+      const time = formatedTime.split(':');
       let today: Date = new Date();
       let date2: Date = new Date(
         today.getFullYear(),
@@ -168,8 +172,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <CapsuleView
                 title={`AVAILABLE IN ${
                   availableInMin >= 60
-                    ? `${Number(availableInMin / 60)} ${
-                        Number(availableInMin / 60) > 1 ? 'Hours' : 'Hour'
+                    ? `${parseInt(availableInMin / 60)} ${
+                        parseInt(availableInMin / 60) > 1 ? 'HOURS' : 'HOUR'
                       }`
                     : `${availableInMin} MINS`
                 }`}
@@ -204,7 +208,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           {props.displayButton && (
             <View style={{ overflow: 'hidden' }}>
               <View style={styles.buttonView}>
-                <Text style={styles.buttonText}>{string.common.consult_now}</Text>
+                <Text style={styles.buttonText}>
+                  {availableInMin > 60 ? string.common.book_apointment : string.common.consult_now}
+                </Text>
               </View>
             </View>
           )}

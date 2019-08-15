@@ -124,7 +124,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   const calendarRef = useRef<Calendar | null>(null);
   const weekViewRef = useRef<{ getPreviousWeek: () => void; getNextWeek: () => void } | null>(null);
   const [isMonthView, setMonthView] = useState(true);
-  const [date, setDate] = useState<Date>(props.date);
+  // const [date, setDate] = useState<Date>(props.date);
   const [dateSelected, setdateSelected] = useState<object>({
     [today]: {
       selected: true,
@@ -227,7 +227,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
                         }}
                       >
                         {`Dr. ${
-                          props.doctor!.firstName
+                          props.doctor ? props.doctor!.firstName : ''
                         } is not available in the ${selectedtiming.toLowerCase()} slot :(`}
                       </Text>
                     );
@@ -330,7 +330,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
                 color: theme.colors.LIGHT_BLUE,
               }}
             >
-              {moment(date).format('MMM YYYY')}
+              {moment(props.date).format('MMM YYYY')}
             </Text>
             {isMonthView ? (
               <TouchableOpacity
@@ -363,7 +363,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
 
         {isMonthView ? (
           <Calendar
-            current={date}
+            current={props.date}
             ref={(ref) => {
               calendarRef.current = ref;
             }}
@@ -406,7 +406,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
               setdateSelected({
                 [day.dateString]: { selected: true, selectedColor: theme.colors.APP_GREEN },
               });
-              setDate(new Date(day.timestamp));
+              props.setDate(new Date(day.timestamp));
             }}
             onMonthChange={(m) => {
               console.log('month changed', m);
@@ -419,7 +419,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
             ref={(ref) => {
               weekViewRef.current = ref;
             }}
-            date={date}
+            date={props.date}
             onTapDate={(date: Date) => {
               props.setDate(moment(date).toDate());
             }}
