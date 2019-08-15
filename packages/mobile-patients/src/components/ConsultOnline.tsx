@@ -454,6 +454,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             titleTextStyle={[
               {
                 color: theme.colors.APP_GREEN,
+                ...theme.fonts.IBMPlexSansMedium(16),
               },
               selectedCTA === onlineCTA[0] ? styles.selectedButtonText : null,
             ]}
@@ -478,6 +479,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             titleTextStyle={[
               {
                 color: theme.colors.APP_GREEN,
+                ...theme.fonts.IBMPlexSansMedium(16),
               },
               selectedCTA === onlineCTA[1] ? styles.selectedButtonText : null,
             ]}

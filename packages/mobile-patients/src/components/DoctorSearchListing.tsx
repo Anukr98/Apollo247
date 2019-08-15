@@ -561,6 +561,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             setDisplayFilter(false);
             setFilterData(data);
           }}
+          setData={() => {
+            setFilterData(data);
+          }}
           data={FilterData}
         />
       )}

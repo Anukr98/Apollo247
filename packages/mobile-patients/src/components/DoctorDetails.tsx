@@ -452,7 +452,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   title={
                     item.appointmentType === 'ONLINE'
                       ? item.appointmentType + ' CONSULT'
-                      : item.appointmentType + ' VISIT'
+                      : 'CLINIC VISIT'
                   }
                 />
                 <Text

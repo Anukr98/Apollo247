@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   horizontalSeparatorStyle: {
     borderRightWidth: 0.5,
     borderRightColor: 'rgba(2, 71, 91, 0.3)',
-    marginHorizontal: 16,
+    marginHorizontal: 5,
     marginBottom: 5,
   },
 });
@@ -263,12 +263,16 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
               }}
             >
               {props.clinics && props.clinics.length > 0
-                ? `${props.clinics[0].facility.streetLine1}, ${props.clinics[0].facility.streetLine2}, ${props.clinics[0].facility.city}`
+                ? `${props.clinics[0].facility.streetLine1}, ${
+                    props.clinics[0].facility.streetLine2
+                      ? `${props.clinics[0].facility.streetLine2}, `
+                      : ''
+                  }${props.clinics[0].facility.city}`
                 : ''}
             </Text>
           </View>
           <View style={styles.horizontalSeparatorStyle} />
-          <View style={{ width: 48, alignItems: 'flex-end' }}>
+          <View style={{ width: 70, alignItems: 'flex-end' }}>
             <Location />
             <Text
               style={{

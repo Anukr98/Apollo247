@@ -1,6 +1,7 @@
 import { ConsultOnline } from '@aph/mobile-patients/src/components/ConsultOnline';
 import { ConsultPhysical } from '@aph/mobile-patients/src/components/ConsultPhysical';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   Afternoon,
@@ -32,7 +33,7 @@ import moment from 'moment';
 import React, { useState } from 'react';
 import { Mutation } from 'react-apollo';
 import { useQuery } from 'react-apollo-hooks';
-import { Alert, Dimensions, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 
@@ -80,6 +81,17 @@ const styles = StyleSheet.create({
     borderRightColor: 'rgba(2, 71, 91, 0.3)',
     marginHorizontal: 16,
     marginBottom: 5,
+  },
+  gotItStyles: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+  },
+  gotItTextStyles: {
+    paddingTop: 16,
+    ...theme.fonts.IBMPlexSansBold(13),
+    lineHeight: 24,
+    color: '#fc9916',
   },
 });
 
@@ -156,6 +168,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [nextAvailableSlot, setNextAvailableSlot] = useState<string>('');
   const [isConsultOnline, setisConsultOnline] = useState<boolean>(true);
   const [availableInMin, setavailableInMin] = useState<Number>(0);
+  const [showSuccessPopUp, setshowSuccessPopUp] = useState<boolean>(false);
 
   const [dateSelected, setdateSelected] = useState<object>({
     [today]: {
@@ -335,15 +348,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             >
               {data
                 ? (console.log('bookAppointment data', data),
-                  props.setdispalyoverlay(false),
+                  // props.setdispalyoverlay(false),
                   setshowSpinner(false),
-                  Alert.alert(
-                    'Appointment Confirmation',
-                    `Your appointment has been successfully booked with Dr. ${
-                      props.doctor ? props.doctor.firstName : ''
-                    }`,
-                    [{ text: 'OK', onPress: () => props.navigation.replace(AppRoutes.TabBar) }]
-                  ))
+                  setshowSuccessPopUp(true))
                 : null}
               {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
               {error ? console.log('bookAppointment error', error, setshowSpinner(false)) : null}
@@ -364,99 +371,120 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         bottom: 0,
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, .8)',
-        paddingHorizontal: showSpinner ? 0 : 20,
         zIndex: 5,
       }}
     >
-      <View
-        style={{
-          // backgroundColor: 'white',
-          alignItems: 'flex-end',
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => props.setdispalyoverlay(false)}
-          style={{
-            marginTop: Platform.OS === 'ios' ? 38 : 14,
-            backgroundColor: 'white',
-            height: 28,
-            width: 28,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 14,
-            marginRight: showSpinner ? 20 : 0,
-          }}
-        >
-          <CrossPopup />
-        </TouchableOpacity>
-      </View>
-      <View
-        style={{
-          alignItems: 'center',
-        }}
-      >
+      <View style={{ paddingHorizontal: showSpinner ? 0 : 20 }}>
         <View
-          // isVisible={props.dispalyoverlay}
-          // windowBackgroundColor="rgba(0, 0, 0, .41)"
-          // overlayBackgroundColor={theme.colors.DEFAULT_BACKGROUND_COLOR}
-
-          // onBackdropPress={() => props.setdispalyoverlay(false)}
           style={{
-            backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-            marginTop: 16,
-            width: width - 40,
-            height: 'auto',
-            maxHeight: height - 98,
-            padding: 0,
-            // margin: 0,
-            borderRadius: 10,
-            overflow: 'hidden',
+            // backgroundColor: 'white',
+            alignItems: 'flex-end',
           }}
         >
-          <TabsComponent
+          <TouchableOpacity
+            onPress={() => props.setdispalyoverlay(false)}
             style={{
-              ...theme.viewStyles.cardViewStyle,
-              borderRadius: 0,
+              marginTop: Platform.OS === 'ios' ? 38 : 14,
+              backgroundColor: 'white',
+              height: 28,
+              width: 28,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 14,
+              marginRight: showSpinner ? 20 : 0,
             }}
-            data={tabs}
-            onChange={(selectedTab: string) => {
-              setselectedTab(selectedTab);
-              setselectedTimeSlot('');
-              setisConsultOnline(selectedTab === tabs[0].title ? true : false);
+          >
+            <CrossPopup />
+          </TouchableOpacity>
+        </View>
+        <View
+          style={{
+            alignItems: 'center',
+          }}
+        >
+          <View
+            // isVisible={props.dispalyoverlay}
+            // windowBackgroundColor="rgba(0, 0, 0, .41)"
+            // overlayBackgroundColor={theme.colors.DEFAULT_BACKGROUND_COLOR}
+
+            // onBackdropPress={() => props.setdispalyoverlay(false)}
+            style={{
+              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+              marginTop: 16,
+              width: width - 40,
+              height: 'auto',
+              maxHeight: height - 98,
+              padding: 0,
+              // margin: 0,
+              borderRadius: 10,
+              overflow: 'hidden',
             }}
-            selectedTab={selectedTab}
-          />
-          <ScrollView bounces={false}>
-            {selectedTab === tabs[0].title ? (
-              <ConsultOnline
-                doctor={props.doctor}
-                timeArray={timeArray}
-                date={new Date()}
-                setDate={setDate}
-                nextAvailableSlot={nextAvailableSlot}
-                setNextAvailableSlot={setNextAvailableSlot}
-                isConsultOnline={isConsultOnline}
-                setisConsultOnline={setisConsultOnline}
-                setavailableInMin={setavailableInMin}
-                availableInMin={availableInMin}
-                setselectedTimeSlot={setselectedTimeSlot}
-                selectedTimeSlot={selectedTimeSlot}
-              />
-            ) : (
-              <ConsultPhysical
-                clinics={props.clinics}
-                setDate={setDate}
-                setselectedTimeSlot={setselectedTimeSlot}
-                selectedTimeSlot={selectedTimeSlot}
-                timeArray={timeArray}
-                date={new Date()}
-              />
-            )}
-            <View style={{ height: 96 }} />
-          </ScrollView>
-          {renderBottomButton()}
+          >
+            <TabsComponent
+              style={{
+                ...theme.viewStyles.cardViewStyle,
+                borderRadius: 0,
+              }}
+              data={tabs}
+              onChange={(selectedTab: string) => {
+                setselectedTab(selectedTab);
+                setselectedTimeSlot('');
+                setisConsultOnline(selectedTab === tabs[0].title ? true : false);
+              }}
+              selectedTab={selectedTab}
+            />
+            <ScrollView bounces={false}>
+              {selectedTab === tabs[0].title ? (
+                <ConsultOnline
+                  doctor={props.doctor}
+                  timeArray={timeArray}
+                  date={new Date()}
+                  setDate={setDate}
+                  nextAvailableSlot={nextAvailableSlot}
+                  setNextAvailableSlot={setNextAvailableSlot}
+                  isConsultOnline={isConsultOnline}
+                  setisConsultOnline={setisConsultOnline}
+                  setavailableInMin={setavailableInMin}
+                  availableInMin={availableInMin}
+                  setselectedTimeSlot={setselectedTimeSlot}
+                  selectedTimeSlot={selectedTimeSlot}
+                />
+              ) : (
+                <ConsultPhysical
+                  clinics={props.clinics}
+                  setDate={setDate}
+                  setselectedTimeSlot={setselectedTimeSlot}
+                  selectedTimeSlot={selectedTimeSlot}
+                  timeArray={timeArray}
+                  date={new Date()}
+                />
+              )}
+              <View style={{ height: 96 }} />
+            </ScrollView>
+            {renderBottomButton()}
+          </View>
         </View>
       </View>
+      {showSuccessPopUp && (
+        <BottomPopUp
+          title={'Appointment Confirmation'}
+          description={`Your appointment has been successfully booked with Dr. ${
+            props.doctor ? props.doctor.firstName : ''
+          }`}
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={styles.gotItStyles}
+              onPress={() => {
+                setshowSuccessPopUp(false);
+                props.navigation.replace(AppRoutes.TabBar);
+              }}
+            >
+              <Text style={styles.gotItTextStyles}>GO TO CONSULT ROOM</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
       {showSpinner && <Spinner />}
     </View>
   );
