@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
+import { Calendar, momentLocalizer, ToolbarProps } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { makeStyles } from '@material-ui/styles';
@@ -180,12 +180,19 @@ export interface MonthProps {
   onMonthChange: (range: Date[] | { start: string | Date; end: string | Date }) => void;
 }
 
-const Toolbar: React.FC = (toolbar) => {
+const Toolbar = (toolbar: ToolbarProps) => {
+  const next = () => toolbar.onNavigate('NEXT');
+  const prev = () => toolbar.onNavigate('PREV');
+  const label = () => {
+    const date = moment(toolbar.date);
+    return date.format('MMMM');
+  };
+
   return (
     <div className="calenderHeader">
-      <img src={require('images/ic_leftarrow.svg')} alt="" />
-      <span className="monthname">July </span>
-      <img src={require('images/ic_rightarrow.svg')} alt="" />
+      <img src={require('images/ic_leftarrow.svg')} alt="" onClick={prev} />
+      <span className="monthname">{label()}</span>
+      <img src={require('images/ic_rightarrow.svg')} alt="" onClick={next} />
     </div>
   );
 };
