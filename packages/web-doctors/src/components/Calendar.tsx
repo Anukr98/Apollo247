@@ -100,7 +100,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     nopionter: {
-      pointerEvents: 'none',
+      // pointerEvents: 'none',
     },
   };
 });
