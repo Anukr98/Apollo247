@@ -172,13 +172,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
-
   const { allCurrentPatients } = useAllCurrentPatients();
   const currentUserId = (allCurrentPatients && allCurrentPatients[0].id) || '';
-
+  console.log(isCalled, showVideo);
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const stopcallMsg = '^^callme`stop^^';
+  const startConsult = '^^#startconsult';
+  const stopConsult = '^^#stopconsult';
   const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
   const publishKey = 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3';
   const doctorId = props.doctorId;
@@ -193,29 +194,29 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   let rightComponent = 0;
   const pubnub = new Pubnub(config);
 
-  const startConsult = '^^#startconsult';
-  const stopConsult = '^^#stopconsult';
-
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
       withPresence: true,
     });
-
     getHistory();
-
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
-        console.log(message);
-        if (message.message.isTyping) {
-          if (message.message.message === startConsult) {
-            console.log(3);
-          } else if (message.message.message === stopConsult) {
-            console.log(4);
-          }
-        } else {
-          getHistory();
+        setMessageText('reset');
+        setMessageText('');
+        if (
+          message.message &&
+          (message.message.message === videoCallMsg || message.message.message === audioCallMsg)
+        ) {
+          //getHistory();
+          setIsCalled(true);
+          setShowVideo(false);
+          setIsVideoCall(message.message.message === videoCallMsg ? true : false);
+        }
+        if (message.message && message.message.message === stopcallMsg) {
+          setIsCalled(false);
+          setShowVideo(false);
         }
       },
     });
@@ -224,7 +225,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       pubnub.unsubscribe({ channels: [channel] });
     };
   });
-
   const getHistory = () => {
     pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
       const newmessage: MessagesObjectProps[] = [];
@@ -290,9 +290,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         setMessageText('');
       }
     );
+    //setIsCalled(false);
     //setIsVideoCall(true);
     //setIsCalled(true);
-    actionBtn();
+    //actionBtn();
   };
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     if (

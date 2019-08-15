@@ -164,7 +164,7 @@ export const ChatRoom: React.FC = (props) => {
           window.alert('An error occurred while loading :(');
         });
     }
-  }, [isSignedIn, mutationResponse]);
+  }, [isSignedIn]);
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorDetailsById,
@@ -205,12 +205,14 @@ export const ChatRoom: React.FC = (props) => {
               {data && <ConsultDoctorProfile doctorDetails={data} appointmentId={appointmentId} />}
             </div>
             <div className={classes.rightSection}>
-              <ChatWindow
-                sessionId={sessionId}
-                token={token}
-                appointmentId={appointmentId}
-                doctorId={doctorId}
-              />
+              {data && (
+                <ChatWindow
+                  sessionId={sessionId}
+                  token={token}
+                  appointmentId={appointmentId}
+                  doctorId={doctorId}
+                />
+              )}
             </div>
           </div>
         </div>
