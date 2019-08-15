@@ -143,7 +143,7 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
     //   });
     // }
 
-    return (
+    return team.length > 0 ? (
       <div className={classes.sectionGroup}>
         <div className={classes.sectionHeader}>
           <span>Dr. {firstName}'s Team</span>
@@ -244,6 +244,8 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
           })}
         </Grid>
       </div>
+    ) : (
+      <></>
     );
   } else {
     return <div>No Doctors Found...</div>;
