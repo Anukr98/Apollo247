@@ -5,6 +5,17 @@ import { AphButton } from '@aph/web-ui-components';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorDetails } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
+import {
+  GetDoctorNextAvailableSlot,
+  GetDoctorNextAvailableSlotVariables,
+} from 'graphql/types/GetDoctorNextAvailableSlot';
+
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { format } from 'date-fns';
+import { getIstTimestamp } from 'helpers/dateHelpers';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import _forEach from 'lodash/forEach';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -104,7 +115,84 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const { doctorDetails } = props;
 
-  // console.log('doctorDetails.....', doctorDetails);
+  const doctorId = doctorDetails.id;
+
+  const { data, loading } = useQueryWithSkip<
+    GetDoctorNextAvailableSlot,
+    GetDoctorNextAvailableSlotVariables
+  >(GET_DOCTOR_NEXT_AVAILABILITY, {
+    variables: {
+      DoctorNextAvailableSlotInput: {
+        doctorIds: [doctorId],
+        availableDate: format(new Date(), 'yyyy-MM-dd'),
+      },
+    },
+  });
+
+  console.log('doctor details.....', doctorDetails);
+
+  let availableSlot = 0,
+    differenceInMinutes = 0;
+
+  const clinics: any = []; // this should not be any type. we should remove in stabilization sprint.
+
+  // it must be always one record or we return only first record.
+  if (
+    data &&
+    data.getDoctorNextAvailableSlot &&
+    data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+  ) {
+    data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
+      if (availability && availability.availableSlot !== '') {
+        const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
+        const slotTimeStamp =
+          getIstTimestamp(new Date(), availability.availableSlot) + milliSeconds;
+        const currentTime = new Date().getTime();
+        if (slotTimeStamp > currentTime) {
+          availableSlot = slotTimeStamp;
+          const difference = slotTimeStamp - currentTime;
+          differenceInMinutes = Math.round(difference / 60000);
+        }
+      }
+    });
+  }
+
+  const availabilityMarkup = () => {
+    if (differenceInMinutes <= 0) {
+      return <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>;
+    } else if (differenceInMinutes > 0 && differenceInMinutes <= 15) {
+      return (
+        <div className={`${classes.availability} ${classes.availableNow}`}>
+          AVAILABLE IN {differenceInMinutes} MINS
+        </div>
+      );
+    } else if (differenceInMinutes > 15 && differenceInMinutes <= 45) {
+      return (
+        <div className={`${classes.availability}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
+      );
+    } else if (differenceInMinutes > 45 && differenceInMinutes <= 60) {
+      return <div className={`${classes.availability}`}>AVAILABLE IN 1 HOUR</div>;
+    } else if (differenceInMinutes > 60) {
+      return (
+        <div className={`${classes.availability}`}>
+          TODAY {format(new Date(availableSlot), 'h:mm a')}
+        </div>
+      );
+    }
+  };
+
+  // as per the MVP, we have only one clinic or hospital.
+  _forEach(doctorDetails.doctorHospital, (hospitalDetails) => {
+    if (
+      hospitalDetails &&
+      (hospitalDetails.facility.facilityType === 'CLINIC' ||
+        hospitalDetails.facility.facilityType === 'HOSPITAL')
+    ) {
+      clinics.push(hospitalDetails);
+    }
+  });
+
+  // console.log(clinics);
 
   return (
     <Link to={clientRoutes.doctorDetails(doctorDetails.id)}>
@@ -120,10 +208,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             className={classes.doctorAvatar}
           />
           <div className={classes.doctorInfo}>
-            {/* <div className={`${classes.availability} ${classes.availableNow}`}>
-              Available in 15 mins
-            </div> */}
-            <div className={`${classes.availability}`}>Available in 1 HOUR</div>
+            {loading ? <LinearProgress /> : availabilityMarkup()}
             <div className={classes.doctorName}>
               {`${doctorDetails.firstName} ${doctorDetails.lastName}`}
             </div>
@@ -133,13 +218,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </div>
             <div className={classes.doctorDetails}>
               <p>{doctorDetails.qualification}</p>
-              <p>Apollo Hospitals, Jubilee Hills</p>
+              {<p>{clinics && clinics.length > 0 ? clinics[0].facility.name : ''}</p>}
             </div>
           </div>
         </div>
         <div className={classes.bottomAction}>
           <AphButton fullWidth color="primary" className={classes.button}>
-            BOOK APPOINTMENT
+            {differenceInMinutes <= 15 ? 'CONSULT NOW' : 'BOOK APPOINTMENT'}
           </AphButton>
         </div>
       </div>
