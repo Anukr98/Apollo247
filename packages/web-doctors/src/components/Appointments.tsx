@@ -314,8 +314,8 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                   <span>
                     {`${activeStep === idx ? 'UP NEXT: ' : ''}${format(
                       appointment.startTime,
-                      'hh:mm'
-                    )} - ${format(appointment.endTime, 'hh:mm aa')}`}
+                      'h:mm'
+                    )} - ${format(appointment.endTime, 'h:mm aa')}`}
                   </span>
                 </Typography>
               </StepLabel>
