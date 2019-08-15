@@ -83,7 +83,7 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 16,
       borderRadius: 17,
       '& button': {
-        padding: '6px 40px',
+        padding: '6px 33px',
         height: 36,
         borderRadius: 17,
         color: '#02475b',
@@ -98,9 +98,14 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:first-child': {
         borderRadius: '17px !important',
       },
+      '&:last-child': {
+        borderRadius: '17px !important',
+        paddingLeft: 25,
+        paddingRight: 26,
+      },
     },
     nopionter: {
-      pointerEvents: 'none',
+      // pointerEvents: 'none',
     },
   };
 });
@@ -200,17 +205,18 @@ export const Calendar: React.FC = () => {
           <div>
             <ToggleButtonGroup exclusive value={viewSelection} className={classes.toggleBtn}>
               <ToggleButton
-                className={classes.customeSelect}
+                 className={`${viewSelection === 'day' ? classes.customeSelect : ''}`}
                 value="day"
                 onClick={() => {
                   setViewSelection('day');
                   setRange(getRange(selectedDate));
                 }}
+                
               >
                 Day
               </ToggleButton>
               <ToggleButton
-                className={classes.nopionter}
+                className={`${viewSelection === 'month' ? classes.customeSelect : ''}`}
                 value="month"
                 onClick={() => {
                   setViewSelection('month');
