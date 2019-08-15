@@ -28,7 +28,7 @@ import { GET_PATIENT_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profi
 import moment from 'moment';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-
+import { getDateFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -477,97 +477,93 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   bounces={false}
                   showsHorizontalScrollIndicator={false}
                   renderItem={({ item }) => {
-                    // var today = new Date();
+                    const appointmentDateTime = getDateFormat(item.appointmentDateTime);
+                    const minutes = moment
+                      .duration(moment(appointmentDateTime).diff(new Date()))
+                      .asMinutes();
+                    const title =
+                      minutes > 0 && minutes <= 15
+                        ? `${minutes} MINS`
+                        : moment(appointmentDateTime).format('h:mm A');
+                    const isActive = minutes > 0 && minutes <= 15 ? true : false;
 
-                    // var date2 = new Date(
-                    //   today.getFullYear(),
-                    //   today.getMonth(),
-                    //   today.getDate(),
-                    //   Number(time[0]),
-                    //   Number(time[1])
-                    // );
-                    // if (date2 && today) {
-                    //   timeDiff = Math.round((date2 - today) / 60000);
-                    // }
-                    if (item)
-                      return (
-                        <View style={{ width: 312 }}>
-                          <TouchableOpacity
-                            style={[styles.doctorView]}
-                            onPress={() =>
-                              props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                                data: item,
-                              })
-                            }
-                          >
-                            <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
-                              <View style={{ flexDirection: 'row' }}>
-                                {/* {(rowData.availableForPhysicalConsultation || rowData.availableForVirtualConsultation) &&
+                    return (
+                      <View style={{ width: 312 }}>
+                        <TouchableOpacity
+                          style={[styles.doctorView]}
+                          onPress={() =>
+                            props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                              data: item,
+                            })
+                          }
+                        >
+                          <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
+                            <View style={{ flexDirection: 'row' }}>
+                              {/* {(rowData.availableForPhysicalConsultation || rowData.availableForVirtualConsultation) &&
                             props.displayButton &&
                             rowData.availableIn ? ( */}
-                                {/* <CapsuleView
-                              title="15 MINS" //{`${rowData.availableIn} MINS`}
-                              style={styles.availableView}
-                              isActive={Number(17) > 15 ? false : true}
-                            /> */}
-                                {/* ) : null} */}
-                                <View style={styles.imageView}>
-                                  {item.doctorInfo && item.doctorInfo.photoUrl && (
-                                    <Image
-                                      style={{
-                                        width: 60,
-                                        height: 60,
-                                        borderRadius: 30,
-                                      }}
-                                      source={{ uri: item.doctorInfo.photoUrl }}
-                                    />
-                                  )}
+                              <CapsuleView
+                                title={title}
+                                style={styles.availableView}
+                                isActive={isActive}
+                              />
+                              <View style={styles.imageView}>
+                                {item.doctorInfo && item.doctorInfo.photoUrl && (
+                                  <Image
+                                    style={{
+                                      width: 60,
+                                      height: 60,
+                                      borderRadius: 30,
+                                    }}
+                                    source={{ uri: item.doctorInfo.photoUrl }}
+                                  />
+                                )}
 
-                                  {/* {item.isStarDoctor ? (
+                                {/* {item.isStarDoctor ? (
               <Star style={{ height: 28, width: 28, position: 'absolute', top: 66, left: 30 }} />
             ) : null} */}
-                                </View>
-                                <View style={{ flex: 1, marginRight: 16 }}>
-                                  <Text style={styles.doctorNameStyles}>
-                                    Dr.{' '}
-                                    {item.doctorInfo
-                                      ? `${item.doctorInfo.firstName} ${item.doctorInfo.lastName}`
-                                      : ''}
-                                  </Text>
-                                  <Text style={styles.doctorSpecializationStyles}>
-                                    {item.doctorInfo && item.doctorInfo.specialty
-                                      ? item.doctorInfo.specialty.name
-                                      : ''}
-                                    {item.doctorInfo ? ` | ${item.doctorInfo.experience} YRS` : ''}
-                                  </Text>
-                                  <View style={styles.separatorStyle} />
-                                  <Text style={styles.consultTextStyles}>
-                                    {item.appointmentType === 'ONLINE' ? 'Online' : 'Physical'}{' '}
-                                    Consultation
-                                  </Text>
-                                  <View style={styles.separatorStyle} />
-                                  <View
-                                    style={{
-                                      flexDirection: 'row',
-                                      marginBottom: 16,
-                                      flexWrap: 'wrap',
-                                    }}
-                                  >
-                                    {['FEVER', 'COUGH & COLD'].map((name) => (
-                                      <CapsuleView
-                                        title={name}
-                                        isActive={false}
-                                        style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
-                                        titleTextStyle={{ color: theme.colors.SKY_BLUE }}
-                                      />
-                                    ))}
-                                  </View>
+                              </View>
+                              <View style={{ flex: 1, marginRight: 16 }}>
+                                <Text style={styles.doctorNameStyles}>
+                                  Dr.{' '}
+                                  {item.doctorInfo
+                                    ? `${item.doctorInfo.firstName} ${item.doctorInfo.lastName}`
+                                    : ''}
+                                </Text>
+                                <Text style={styles.doctorSpecializationStyles}>
+                                  {item.doctorInfo && item.doctorInfo.specialty
+                                    ? item.doctorInfo.specialty.name
+                                    : ''}
+                                  {item.doctorInfo ? ` | ${item.doctorInfo.experience} YRS` : ''}
+                                </Text>
+                                <View style={styles.separatorStyle} />
+                                <Text style={styles.consultTextStyles}>
+                                  {item.appointmentType === 'ONLINE' ? 'Online' : 'Physical'}{' '}
+                                  Consultation
+                                </Text>
+                                <View style={styles.separatorStyle} />
+                                <View
+                                  style={{
+                                    flexDirection: 'row',
+                                    marginBottom: 16,
+                                    flexWrap: 'wrap',
+                                  }}
+                                >
+                                  {['FEVER', 'COUGH & COLD'].map((name) => (
+                                    <CapsuleView
+                                      title={name}
+                                      isActive={false}
+                                      style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
+                                      titleTextStyle={{ color: theme.colors.SKY_BLUE }}
+                                    />
+                                  ))}
                                 </View>
                               </View>
                             </View>
-                          </TouchableOpacity>
-                        </View>
-                      );
+                          </View>
+                        </TouchableOpacity>
+                      </View>
+                    );
                   }}
                 />
               ) : (
