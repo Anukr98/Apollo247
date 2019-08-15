@@ -129,7 +129,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     },
   });
 
-  console.log('doctor details.....', doctorDetails);
+  // console.log('doctor details.....', doctorDetails);
 
   let availableSlot = 0,
     differenceInMinutes = 0;

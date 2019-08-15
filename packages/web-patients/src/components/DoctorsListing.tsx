@@ -213,12 +213,6 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     });
   }
 
-  // console.log(
-  //   '........',
-  //   convertAvailabilityToDate(filter.availability || []),
-  //   filter.availability
-  // );
-
   const apiVairables = {
     specialty: specialityId,
     city: filter.cityName,

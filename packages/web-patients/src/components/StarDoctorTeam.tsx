@@ -125,7 +125,7 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
     doctorDetails.getDoctorDetailsById.starTeam
   ) {
     const firstName = doctorDetails.getDoctorDetailsById.firstName;
-    const lastName = doctorDetails.getDoctorDetailsById.lastName;
+    // const lastName = doctorDetails.getDoctorDetailsById.lastName;
 
     const team =
       doctorDetails.getDoctorDetailsById.starTeam.length > 0
@@ -146,9 +146,7 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
     return (
       <div className={classes.sectionGroup}>
         <div className={classes.sectionHeader}>
-          <span>
-            Dr. {firstName}&nbsp;{lastName}'s Team
-          </span>
+          <span>Dr. {firstName}'s Team</span>
           <span className={classes.count}>
             {team.length > 0 ? team.length.toString().padStart(2, '0') : '0'}
           </span>
