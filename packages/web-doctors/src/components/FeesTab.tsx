@@ -278,7 +278,12 @@ export const FeesTab: React.FC<FeesProps> = (props) => {
                 >
                   <div className={classes.columnAC}>
                     <Typography className={classes.heading}>
-                      A/C Number: {data.bankAccount && data.bankAccount![0]!.accountNumber}
+                      A/C Number:{' xxxx xxxx xxxx '}
+                      {data.bankAccount &&
+                        data.bankAccount![0]!.accountNumber.substr(
+                          data.bankAccount && data.bankAccount![0]!.accountNumber.length - 4,
+                          data.bankAccount && data.bankAccount![0]!.accountNumber.length - 1
+                        )}
                     </Typography>
                   </div>
                   <div>

@@ -420,7 +420,12 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                 } ${doctor!.associatedDoctor!.lastName}`}
               >
                 {doctor!.associatedDoctor!.salutation && doctor!.associatedDoctor!.salutation + '.'}{' '}
-                {doctor!.associatedDoctor!.firstName} {doctor!.associatedDoctor!.lastName}
+                {(doctor!.associatedDoctor!.firstName! + doctor!.associatedDoctor!.lastName!)
+                  .length < 13
+                  ? `${doctor!.associatedDoctor!.firstName} ${doctor!.associatedDoctor!.lastName}`
+                  : `${
+                      doctor!.associatedDoctor!.firstName
+                    } ${doctor!.associatedDoctor!.lastName!.charAt(0)}.`}
               </h4>
               {doctor!.isActive === true && (
                 <h6>
@@ -463,6 +468,8 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
   const { starDoctors } = props;
   const [showAddDoc, setShowAddDoc] = React.useState<boolean>();
   const client = useApolloClient();
+  const starDoctorsCardList =
+    starDoctors.filter((existingDoc) => existingDoc!.isActive === true) || [];
 
   const classes = useStyles();
   return (
@@ -471,7 +478,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
     >
       {(mutate, { loading }) => (
         <Grid container alignItems="flex-start" spacing={0}>
-          {starDoctors.map((doctor, index) => {
+          {starDoctorsCardList.map((doctor, index) => {
             return (
               doctor!.isActive === true && (
                 <Grid item lg={4} sm={6} xs={12} key={index}>
@@ -508,7 +515,6 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
                           if (starDoc!.associatedDoctor!.id === starDoctor!.associatedDoctor!.id) {
                             starDoc!.isActive = true;
                           }
-
                           return starDoc;
                         });
                         const dataAfterMutation: GetDoctorDetails = {
@@ -526,16 +532,19 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
               </div>
             </Grid>
           )}
-          <Grid item lg={12} sm={12} xs={12}>
-            <AphButton
-              variant="contained"
-              color="primary"
-              classes={{ root: classes.btnAddDoctor }}
-              onClick={() => setShowAddDoc(true)}
-            >
-              <img src={require('images/ic_add.svg')} alt="" /> ADD DOCTOR
-            </AphButton>
-          </Grid>
+          {props.starDoctors.filter((existingDoc) => existingDoc!.isActive === false).length >
+            0 && (
+            <Grid item lg={12} sm={12} xs={12}>
+              <AphButton
+                variant="contained"
+                color="primary"
+                classes={{ root: classes.btnAddDoctor }}
+                onClick={() => setShowAddDoc(true)}
+              >
+                <img src={require('images/ic_add.svg')} alt="" /> ADD DOCTOR
+              </AphButton>
+            </Grid>
+          )}
         </Grid>
       )}
     </Mutation>
@@ -675,7 +684,10 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
           <Typography className={numStarDoctors === 0 ? classes.none : classes.starDoctorHeading}>
             Your Star Doctors Team ({numStarDoctors})
           </Typography>
-          <StarDoctorsList currentDocId={doctorProfile.id} starDoctors={starDoctors} />
+          <StarDoctorsList
+            currentDocId={doctorProfile.id}
+            starDoctors={getDoctorDetailsData!.starTeam!}
+          />
         </div>
       )}
 
