@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useImperativeHandle } from 'react';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
 import Grid from '@material-ui/core/Grid';
@@ -241,6 +241,17 @@ export const Appointments: React.FC<AppointmentsProps> = ({
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
   const [loading, isLoading] = useState<boolean>(loadingData);
+  const upcomingElement = useRef(null);
+
+  useImperativeHandle(upcomingElement, () => {
+    if (upcomingElement.current) {
+      const elem = (upcomingElement!.current as unknown) as HTMLDivElement;
+      elem.scrollIntoView({ block: 'start' });
+      window.scrollTo(0, window.scrollY - 80);
+    }
+
+    return null;
+  });
 
   useEffect(() => {
     let activeStep = getActiveStep(values);
@@ -327,6 +338,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                 <div>
                   <Card
                     className={classes.card}
+                    ref={activeStep === idx ? upcomingElement : null}
                     classes={{
                       root: 'cardRow',
                     }}
