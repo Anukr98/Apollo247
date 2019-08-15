@@ -420,7 +420,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                 } ${doctor!.associatedDoctor!.lastName}`}
               >
                 {doctor!.associatedDoctor!.salutation && doctor!.associatedDoctor!.salutation + '.'}{' '}
-                {(doctor!.associatedDoctor!.firstName! + doctor!.associatedDoctor!.lastName!)
+                {`${doctor!.associatedDoctor!.firstName!} ${doctor!.associatedDoctor!.lastName!}`
                   .length < 13
                   ? `${doctor!.associatedDoctor!.firstName} ${doctor!.associatedDoctor!.lastName}`
                   : `${
@@ -468,8 +468,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
   const { starDoctors } = props;
   const [showAddDoc, setShowAddDoc] = React.useState<boolean>();
   const client = useApolloClient();
-  const starDoctorsCardList =
-    starDoctors.filter((existingDoc) => existingDoc!.isActive === true) || [];
+  const starDoctorsCardList = starDoctors.filter((existingDoc) => existingDoc!.isActive) || [];
 
   const classes = useStyles();
   return (
@@ -532,8 +531,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
               </div>
             </Grid>
           )}
-          {props.starDoctors.filter((existingDoc) => existingDoc!.isActive === false).length >
-            0 && (
+          {props.starDoctors.filter((existingDoc) => !existingDoc!.isActive).length > 0 && (
             <Grid item lg={12} sm={12} xs={12}>
               <AphButton
                 variant="contained"
@@ -630,7 +628,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   </Paper>
                 </Grid>
               )}
-             
+
               {doctor.registrationNumber && doctor.registrationNumber!.length > 0 && (
                 <Grid item lg={6} sm={12} xs={12}>
                   <Paper className={classes.serviceItem}>
@@ -639,7 +637,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   </Paper>
                 </Grid>
               )}
-               <Grid item lg={6} sm={12} xs={12}>
+              <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">In-person Consult Location</Typography>
                   {clinics.map((clinic, index) => (
@@ -682,7 +680,7 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
 
       {doctorProfile.doctorType === 'STAR_APOLLO' && (
         <div>
-          <Typography className={numStarDoctors === 0 ? classes.none : classes.starDoctorHeading}>
+          <Typography className={classes.starDoctorHeading}>
             Your Star Doctors Team ({numStarDoctors})
           </Typography>
           <StarDoctorsList
