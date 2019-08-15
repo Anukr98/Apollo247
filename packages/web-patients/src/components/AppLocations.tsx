@@ -8,9 +8,10 @@ const useStyles = makeStyles((theme: Theme) => {
       borderLeft: '0.5px solid rgba(2,71,91,0.3)',
       paddingLeft: 20,
       marginLeft: 40,
-      paddingTop: 20,
-      paddingBottom: 20,
-      marginTop: -14,
+      paddingTop: 22,
+      paddingBottom: 22,
+      marginTop: 10,
+      marginBottom: 10,
     },
     locationWrap: {
       display: 'flex',

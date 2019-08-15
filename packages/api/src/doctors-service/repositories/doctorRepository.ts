@@ -8,6 +8,13 @@ import { format } from 'date-fns';
 
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
+  getDoctorProfileData(id: string) {
+    return this.findOne({
+      where: [{ id }],
+      relations: ['specialty', 'doctorHospital'],
+    });
+  }
+
   getDoctorDetails(firebaseToken: string) {
     return this.findOne({
       where: [{ firebaseToken }],

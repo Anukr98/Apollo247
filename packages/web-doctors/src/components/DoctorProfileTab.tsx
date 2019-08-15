@@ -99,7 +99,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     tabLeftcontent: {
-      padding: '10px 5px 10px 20px',
+      padding: '10px 20px 10px 20px',
     },
     serviceItem: {
       padding: '0 0 10px 0',
@@ -630,7 +630,16 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   </Paper>
                 </Grid>
               )}
-              <Grid item lg={6} sm={12} xs={12}>
+             
+              {doctor.registrationNumber && doctor.registrationNumber!.length > 0 && (
+                <Grid item lg={6} sm={12} xs={12}>
+                  <Paper className={classes.serviceItem}>
+                    <Typography variant="h5">MCI Number</Typography>
+                    <Typography variant="h3">{doctor.registrationNumber}</Typography>
+                  </Paper>
+                </Grid>
+              )}
+               <Grid item lg={6} sm={12} xs={12}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">In-person Consult Location</Typography>
                   {clinics.map((clinic, index) => (
@@ -642,14 +651,6 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   ))}
                 </Paper>
               </Grid>
-              {doctor.registrationNumber && doctor.registrationNumber!.length > 0 && (
-                <Grid item lg={6} sm={12} xs={12}>
-                  <Paper className={classes.serviceItem}>
-                    <Typography variant="h5">MCI Number</Typography>
-                    <Typography variant="h3">{doctor.registrationNumber}</Typography>
-                  </Paper>
-                </Grid>
-              )}
             </Grid>
           </Grid>
         </Grid>

@@ -216,7 +216,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                 <img src={require('images/ic-share-green.svg')} alt="" />
               </div>
             </div>
-            <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 496px'}>
+            <Scrollbars autoHeight autoHeightMax={'calc(100vh - 496px'}>
               <div className={classes.doctorInfoGroup}>
                 <div className={classes.infoRow}>
                   <div className={classes.iconType}>
