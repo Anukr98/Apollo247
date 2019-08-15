@@ -188,16 +188,22 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
             <div className={classes.tabHeading}>
               <Typography variant="h1">
                 {selectedTabIndex === 0 && (
-                  <span>{`hi dr. ${data.getDoctorDetails.lastName.toLowerCase()} !`}</span>
+                  <span>{`hi ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()} !`}</span>
                 )}
                 {selectedTabIndex === 1 && (
-                  <span>{` ok dr. ${data.getDoctorDetails.lastName.toLowerCase()}`}!</span>
+                  <span>
+                    {` ok ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()}`}
+                    !
+                  </span>
                 )}
                 {selectedTabIndex === 2 && (
-                  <span>{`ok dr. ${data.getDoctorDetails.lastName.toLowerCase()}`}!</span>
+                  <span>
+                    {`ok ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()}`}
+                    !
+                  </span>
                 )}
                 {selectedTabIndex === 3 && (
-                  <span>{`thank you, dr. ${data.getDoctorDetails.lastName.toLowerCase()} :)`}</span>
+                  <span>{`thank you, ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()} :)`}</span>
                 )}
               </Typography>
               {selectedTabIndex === 0 && (
