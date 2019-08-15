@@ -3,7 +3,6 @@ import { Resolver } from 'api-gateway';
 import { Appointment, STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
