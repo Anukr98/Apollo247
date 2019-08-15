@@ -247,7 +247,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
     if (upcomingElement.current) {
       const elem = (upcomingElement!.current as unknown) as HTMLDivElement;
       elem.scrollIntoView({ block: 'start' });
-      window.scrollTo(0, window.scrollY - 80);
+      window.scrollTo(0, window.scrollY - 322);
     }
 
     return null;
