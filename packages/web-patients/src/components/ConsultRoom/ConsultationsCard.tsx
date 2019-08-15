@@ -190,9 +190,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
 
   const otherDateMarkup = (appointmentTime: number) => {
     if (isTomorrow(new Date(appointmentTime))) {
-      return `Tomorrow ${format(new Date(appointmentTime), 'hh:mm a')}`;
+      return `Tomorrow ${format(new Date(appointmentTime), 'h:mm a')}`;
     } else {
-      return format(new Date(appointmentTime), 'hh:mm a');
+      return format(new Date(appointmentTime), 'h:mm a');
     }
   };
 
