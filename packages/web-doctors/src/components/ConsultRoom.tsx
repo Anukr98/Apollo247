@@ -106,7 +106,6 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       width: '100%',
       boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
-
     },
     chatsendcircle: {
       position: 'absolute',
@@ -162,6 +161,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
+        setMessageText('reset');
+        setMessageText('');
         getHistory();
       },
     });
@@ -222,7 +223,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         sendByPost: true,
       },
       (status, response) => {
-        setMessageText(' ');
+        setMessageText('reset');
         setTimeout(() => {
           setMessageText('');
           const scrollDiv = document.getElementById('scrollDiv');
