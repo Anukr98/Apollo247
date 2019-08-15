@@ -14,18 +14,16 @@ import GestureRecognizer from 'react-native-swipe-gestures';
 
 const styles = StyleSheet.create({
   calendarStripStyle: {
-    height: 94,
     backgroundColor: theme.colors.CARD_BG,
     paddingHorizontal: 5,
+    paddingBottom: 7,
+    height: 48,
   },
   viewStyle: {
     width: '100%',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
-    // paddingRight: 2,
-    // height: 48,
-    // width: 44,
+    paddingVertical: 0,
     backgroundColor: theme.colors.CARD_BG,
   },
   unSelectedDateStyle: {
@@ -37,7 +35,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(12),
     letterSpacing: 0.3,
     color: '#80a3ad',
-    paddingTop: 3,
   },
   textStyleToday: {
     backgroundColor: theme.colors.APP_GREEN,
@@ -62,7 +59,7 @@ export const WeekView: ForwardRefExoticComponent<
   PropsWithoutRef<WeekViewProps> &
     RefAttributes<{ getPreviousWeek: () => void; getNextWeek: () => void }>
 > = forwardRef((props, ref) => {
-  const calendarStripRef = useRef<CalendarStrip | null>(null);
+  const calendarStripRef = useRef<CalendarStripRefType | null>(null);
 
   useImperativeHandle(ref, () => ({
     // To expose this functions to parent through ref
@@ -75,30 +72,19 @@ export const WeekView: ForwardRefExoticComponent<
   }));
 
   const renderDayComponent = (item: Date) => {
-    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    // const days = ['S', 'M', 'T ', 'W', 'T', 'F', 'S'];
     const isHighlitedDate =
       props.date.getDate() == item.getDate() &&
       props.date.getMonth() == item.getMonth() &&
       props.date.getFullYear() == item.getFullYear();
-
-    const now = new Date();
-    const isTodaysDate =
-      now.getDate() == item.getDate() &&
-      now.getMonth() == item.getMonth() &&
-      now.getFullYear() == item.getFullYear();
-
     return (
       <TouchableOpacity onPress={() => props.onTapDate(item)} style={[styles.viewStyle]}>
-        <Text numberOfLines={1} style={[styles.textStyle, { marginBottom: 18 }]}>
-          {days[item.getDay()]}
-        </Text>
         <View
           style={{
             height: 32,
             width: 32,
             borderRadius: 18,
-            backgroundColor: isHighlitedDate ? theme.colors.APP_GREEN : 'transparenr',
-            marginBottom: 13,
+            backgroundColor: isHighlitedDate ? theme.colors.APP_GREEN : 'transparent',
             alignItems: 'center',
             justifyContent: 'center',
           }}
@@ -107,7 +93,7 @@ export const WeekView: ForwardRefExoticComponent<
             numberOfLines={1}
             style={isHighlitedDate ? styles.textStyleToday : styles.unSelectedDateStyle}
           >
-            {moment(item).format('DD')}
+            {moment(item).format('D')}
           </Text>
         </View>
       </TouchableOpacity>
@@ -115,12 +101,11 @@ export const WeekView: ForwardRefExoticComponent<
   };
 
   const onSwipeRight = () => {
-    ((calendarStripRef.current &&
-      calendarStripRef.current) as CalendarStripRefType).getPreviousWeek();
+    calendarStripRef.current && calendarStripRef.current.getPreviousWeek();
   };
 
   const onSwipeLeft = () => {
-    ((calendarStripRef.current && calendarStripRef.current) as CalendarStripRefType).getNextWeek();
+    calendarStripRef.current && calendarStripRef.current.getNextWeek();
   };
 
   const config = {
@@ -137,18 +122,15 @@ export const WeekView: ForwardRefExoticComponent<
         onWeekChanged={(date) => props.onWeekChanged(date)}
         style={styles.calendarStripStyle}
         ref={(ref) => {
-          calendarStripRef.current = ref;
+          calendarStripRef.current = ref as CalendarStripRefType;
         }}
+        showDayName={false}
         iconLeft={null}
         iconRight={null}
         iconStyle={{
           width: 0,
           height: 0,
         }}
-        // dateNameStyle={styles.textStyle}
-        // dateNumberStyle={styles.textStyle}
-        // highlightDateNameStyle={[styles.textStyleToday, {}]}
-        // highlightDateNumberStyle={[styles.textStyleToday, {}]}
         dayComponent={(dayComponentProps) => {
           return renderDayComponent(new Date(dayComponentProps.date.toISOString()));
         }}
