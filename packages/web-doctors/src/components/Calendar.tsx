@@ -119,7 +119,7 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
   const newPatientsList: (string | null)[] | null = data!.getDoctorAppointments.newPatientsList;
 
   const adaptedList: Appointment[] = appointments.map(
-    (appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null, idx) => {
+    (appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null) => {
       const {
         id,
         appointmentDateTime,
