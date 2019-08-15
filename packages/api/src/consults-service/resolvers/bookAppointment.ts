@@ -83,12 +83,7 @@ const bookAppointment: Resolver<
     status: STATUS.IN_PROGRESS,
   };
 
-  const doctor = doctorsDb.getCustomRepository(DoctorRepository);
-  const docDetails = await doctor.getDoctorProfileData(appointmentInput.doctorId);
-  if (!docDetails) {
-    throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
-  }
-
+  //check if given appointment datetime is greater than current date time
   if (appointmentInput.appointmentDateTime <= new Date()) {
     throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
   }
