@@ -1,5 +1,5 @@
 import { DoctorProfile } from 'doctors-service/resolvers/getDoctors';
-import { Gender } from 'profiles-service/entity/patient';
+import { Gender } from 'profiles-service/entities';
 
 export enum INVITEDSTATUS {
   ACCEPTED = 'ACCEPTED',

@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { Patient } from 'profiles-service/entity/patient';
+import { Patient } from 'profiles-service/entities';
 import { BaseEntity } from 'typeorm';
 import { AphError, AphUserInputError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
