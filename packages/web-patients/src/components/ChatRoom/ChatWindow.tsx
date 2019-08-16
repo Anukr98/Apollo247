@@ -178,8 +178,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const stopcallMsg = '^^callme`stop^^';
-  const startConsult = '^^#startconsult';
-  const stopConsult = '^^#stopconsult';
+  // const startConsult = '^^#startconsult';
+  // const stopConsult = '^^#stopconsult';
   const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
   const publishKey = 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3';
   const doctorId = props.doctorId;
@@ -193,6 +193,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   let leftComponent = 0;
   let rightComponent = 0;
   const pubnub = new Pubnub(config);
+  let insertText: MessagesObjectProps[] = [];
 
   useEffect(() => {
     pubnub.subscribe({
@@ -203,8 +204,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
+        insertText[insertText.length] = message.message;
+        setMessages(insertText);
         setMessageText('reset');
         setMessageText('');
+        setTimeout(() => {
+          const scrollDiv = document.getElementById('scrollDiv');
+          scrollDiv!.scrollIntoView();
+        }, 200);
         if (
           message.message &&
           (message.message.message === videoCallMsg || message.message.message === audioCallMsg)
@@ -219,18 +226,23 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           setShowVideo(false);
         }
       },
+      presence: (presenceEvent) => {
+        console.log('presenceEvent', presenceEvent);
+      },
     });
 
     return function cleanup() {
       pubnub.unsubscribe({ channels: [channel] });
     };
-  });
+  }, []);
+
   const getHistory = () => {
     pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
       const newmessage: MessagesObjectProps[] = [];
       res.messages.forEach((element, index) => {
         newmessage[index] = element.entry;
       });
+      insertText = newmessage;
       if (messages.length !== newmessage.length) {
         setMessages(newmessage);
         const lastMessage = newmessage[newmessage.length - 1];
