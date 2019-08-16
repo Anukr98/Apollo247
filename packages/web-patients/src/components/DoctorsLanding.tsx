@@ -15,7 +15,6 @@ import { SearchObject } from 'components/DoctorsFilter';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import Scrollbars from 'react-custom-scrollbars';
-import LinearProgress from '@material-ui/core/LinearProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
