@@ -204,6 +204,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
+        console.log(message.message);
         insertText[insertText.length] = message.message;
         setMessages(insertText);
         setMessageText('reset');
@@ -222,6 +223,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           setIsVideoCall(message.message.message === videoCallMsg ? true : false);
         }
         if (message.message && message.message.message === stopcallMsg) {
+          console.log(2222222222);
           setIsCalled(false);
           setShowVideo(false);
         }

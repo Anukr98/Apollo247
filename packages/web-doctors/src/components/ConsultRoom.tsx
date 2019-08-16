@@ -327,6 +327,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setShowVideoChat(false);
     const cookieStr = `action=`;
     document.cookie = cookieStr + ';path=/;';
+    const text = {
+      id: doctorId,
+      message: stopcallMsg,
+      isTyping: true,
+    };
+    pubnub.publish(
+      {
+        channel: channel,
+        message: text,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        setMessageText('');
+      }
+    );
     //setIsVideoCall(false);
   };
   return (
