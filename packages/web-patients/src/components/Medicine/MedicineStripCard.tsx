@@ -270,6 +270,25 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#00b38e',
       fontWeight: 600,
     },
+    popHeader: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#02475b',
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      paddingBottom: 15,
+      marginBottom: 15,
+      display: 'flex',
+      alignItems: 'center',
+      '& span:first-child': {
+        opacity: 0.6,
+      },
+      '& span:last-child': {
+        marginLeft: 'auto',
+      },
+      '& img': {
+        verticalAlign: 'middle',
+      },
+    },
   };
 });
 
@@ -578,6 +597,12 @@ export const MedicineStripCard: React.FC = (props) => {
         }}
       >
         <Paper className={classes.medicineInformationPopup}>
+          <div className={classes.popHeader}>
+            <span>This medicine requires doctor’s prescription</span>
+            <span>
+              <img src={require('images/ic_tablets_rx.svg')} alt="" />
+            </span>
+          </div>
           <Typography variant="h4">How Metformin 500mg Works</Typography>
           <p>
             Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus

@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, FormControlLabel } from '@material-ui/core';
 import React from 'react';
-import { AphRadio, AphButton } from '@aph/web-ui-components';
+import { AphRadio, AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -43,11 +43,24 @@ const useStyles = makeStyles((theme: Theme) => {
     viewAllBtn: {
       marginLeft: 'auto',
     },
+    dialogContent: {
+      padding: 10,
+    },
+    backArrow: {
+      cursor: 'pointer',
+      position: 'absolute',
+      left: 0,
+      top: -2,
+      '& img': {
+        verticalAlign: 'middle',
+      },
+    },
   };
 });
 
 export const HomeDelivery: React.FC = (props) => {
   const classes = useStyles();
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
 
   return (
     <div className={classes.root}>
@@ -72,8 +85,19 @@ export const HomeDelivery: React.FC = (props) => {
       </ul>
       <div className={classes.bottomActions}>
         <AphButton>Add new address</AphButton>
-        <AphButton className={classes.viewAllBtn}>View All</AphButton>
+        <AphButton onClick={() => setIsDialogOpen(true)} className={classes.viewAllBtn}>
+          View All
+        </AphButton>
       </div>
+      <AphDialog open={isDialogOpen} maxWidth="sm">
+        <AphDialogTitle>
+          <div className={classes.backArrow}>
+            <img src={require('images/ic_back.svg')} alt="" />
+          </div>
+          Add New Address
+        </AphDialogTitle>
+        <div className={classes.dialogContent}>Add New Address</div>
+      </AphDialog>
     </div>
   );
 };
