@@ -154,16 +154,23 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       </View>
     );
   };
-  const renderAvailabilityView = () => {
+  const renderAvailabilityView = (data: GetDoctorDetails_getDoctorDetails) => {
     return (
       <View style={[styles.cardContainer]}>
-        <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-          <Notification />
-          <Text style={styles.headingText}>Availibility</Text>
-          <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
-            <RightIcon />
+        <TouchableOpacity
+          onPress={() => {
+            console.log('hi', data);
+            props.navigation.navigate(AppRoutes.MyAvailability, { ProfileData: data });
+          }}
+        >
+          <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
+            <Notification />
+            <Text style={styles.headingText}>Availibility</Text>
+            <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
+              <RightIcon />
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -246,7 +253,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                   <View style={{ marginTop: 16 }}>
                     {renderMyStatsView()}
                     {renderMyProfileView(getDoctorProfile)}
-                    {renderAvailabilityView()}
+                    {renderAvailabilityView(getDoctorProfile)}
                     {renderFeesView()}
                     {renderSmartPrescriptionView()}
                     {renderSettingsView()}

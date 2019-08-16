@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000000',
     shadowRadius: 2,
     shadowOpacity: 0.2,
-    elevation: 2,
+    elevation: 10,
   },
 
   arrowview: {

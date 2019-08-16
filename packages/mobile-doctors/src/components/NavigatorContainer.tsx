@@ -21,6 +21,7 @@ import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/Ca
 import { NotificationScreen } from '@aph/mobile-doctors/src/components/Notification/NotificationScreen';
 import { HelpScreen } from '@aph/mobile-doctors/src/components/HelpScreen';
 import { MyAccountProfile } from '@aph/mobile-doctors/src/components/Account/MyAccountProfile';
+import { MyAvailability } from '@aph/mobile-doctors/src/components/Account/MyAvailability';
 import {
   createAppContainer,
   createStackNavigator,
@@ -53,6 +54,7 @@ export enum AppRoutes {
   NotificationScreen = 'NotificationScreen',
   HelpScreen = 'HelpScreen',
   MyAccountProfile = 'MyAccountProfile',
+  MyAvailability = 'MyAvailability',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -134,6 +136,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MyAccountProfile]: {
     screen: MyAccountProfile,
+  },
+  [AppRoutes.MyAvailability]: {
+    screen: MyAvailability,
   },
 };
 

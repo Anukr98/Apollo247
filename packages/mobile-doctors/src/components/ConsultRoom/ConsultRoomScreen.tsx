@@ -33,6 +33,7 @@ import {
   Keyboard,
   StatusBar,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import MaterialTabs from 'react-native-material-tabs';
 //import ImagePicker from 'react-native-image-picker';
@@ -68,7 +69,6 @@ import {
 import { CREATEAPPOINTMENTSESSION } from '@aph/mobile-doctors/src/graphql/profiles';
 import { REQUEST_ROLES } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import moment from 'moment';
-import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 
 const styles = StyleSheet.create({
   mainview: {
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     shadowOpacity: 0.2,
     elevation: 10,
-    backgroundColor: 'red',
+    backgroundColor: 'white',
   },
 });
 
@@ -99,6 +99,7 @@ const audioCallMsg = '^^callme`audio^^';
 const doctorId = 'Ravi';
 const patientId = 'Sai';
 // const channel = 'Channel7';
+let insertText: object[] = [];
 
 export interface ConsultRoomScreenProps
   extends NavigationScreenProps<{
@@ -158,7 +159,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       });
   }, []);
 
-  // console.log('Doctoid', props.navigation.getParam('DoctorId'));
+  //console.log('Doctoid', props.navigation.getParam('DoctorId'));
   // console.log('PatientId', props.navigation.getParam('PatientId'));
   // console.log('PatientConsultTime', props.navigation.getParam('PatientConsultTime'));
 
@@ -184,6 +185,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
   const [startConsult, setStartConsult] = useState<boolean>(false);
   const [returnToCall, setReturnToCall] = useState<boolean>(false);
+  const [textinputStyles, setTextInputStyles] = useState<Object>({
+    width: width,
+    height: 66,
+    backgroundColor: 'white',
+    top: 0,
+    // bottom: -20,
+  });
 
   useEffect(() => {
     console.log('PatientConsultTime'), PatientConsultTime;
@@ -200,10 +208,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     bottom: 0,
     left: 0,
     right: 0,
+    elevation: 1000,
+    zIndex: 100,
   });
   const [subscriberStyles, setSubscriberStyles] = useState<object>({
     width,
     height,
+    zIndex: 100,
   });
   const [publisherStyles, setPublisherStyles] = useState<object>({
     position: 'absolute',
@@ -211,7 +222,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     right: 20,
     width: 112,
     height: 148,
-    zIndex: 1000,
+    zIndex: 100,
+    elevation: 1000,
     borderRadius: 30,
   });
   const [audioCallStyles, setAudioCallStyles] = useState<object>({
@@ -221,6 +233,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     left: 0,
     right: 0,
     bottom: 0,
+    elevation: 10000,
   });
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const [consultStarted, setConsultStarted] = useState<boolean>(false);
@@ -287,6 +300,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     },
     connected: (event) => {
       console.log('Subscribe stream connected!', event);
+
+      console.log('after styles', event);
     },
     disconnected: (event) => {
       console.log('Subscribe stream disconnected!', event);
@@ -356,11 +371,36 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       },
       message: (message) => {
         console.log('addListener', message.message.message);
-        if (message.message.message === '^^#callAccepted') {
-          startTimer(0);
-          setCallAccepted(true);
+        if (message.message.isTyping) {
+          if (message.message.message === '^^#callAccepted') {
+            startTimer(0);
+            setCallAccepted(true);
+          } else if (message.message.message === '^^#endCall') {
+            setIsCall(false);
+            setIsAudioCall(false);
+            setHideStatusBar(false);
+            stopTimer();
+            setCallAccepted(false);
+            setReturnToCall(false);
+          }
         } else {
-          getHistory();
+          console.log('messages', messages);
+
+          console.log('before insertText', insertText);
+
+          insertText[insertText.length] = message.message;
+          setMessages(insertText);
+
+          console.log('after insertText', insertText);
+          console.log('messages', messages);
+
+          if (!isCall || !isAudioCall) {
+            setChatReceived(true);
+            console.log('true chat icon');
+          }
+          setTimeout(() => {
+            flatListRef.current!.scrollToEnd();
+          }, 200);
         }
       },
       presence: (presenceEvent) => {
@@ -406,6 +446,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
       if (messages.length !== newmessage.length) {
         console.log('set saved');
+        insertText = newmessage;
+
         setMessages(newmessage);
         if (!isCall || !isAudioCall) {
           console.log('chat icon', chatReceived);
@@ -421,14 +463,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     if (messageText.length == 0) {
       console.log('on send clicked empty');
       setMessageText('');
+      //Alert.alert('Please enter message');
       return;
     }
 
     const text = {
-      id: 'Ravi',
+      id: props.navigation.getParam('DoctorId'), //'Ravi',
       message: messageText,
     };
-    // console.log('on send clicked', text);
+    console.log('on send clicked', text);
 
     pubnub.publish(
       {
@@ -452,7 +495,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   let rightComponent = 0;
 
   const renderChatRow = (rowData: any, index: number) => {
-    if (rowData.id !== 'Ravi') {
+    if (rowData.id !== props.navigation.getParam('DoctorId')) {
       leftComponent++;
       // console.log('leftComponent', leftComponent);
 
@@ -637,6 +680,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 zIndex: 1000,
+                elevation: 2000,
               }}
             >
               <Text style={{ color: 'white', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
@@ -682,6 +726,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           eventHandlers={sessionEventHandlers}
           ref={otSessionRef}
         >
+          <OTPublisher
+            style={publisherStyles}
+            properties={{
+              publishVideo: false,
+              publishAudio: mute,
+              audioVolume: 100,
+            }}
+            eventHandlers={publisherEventHandlers}
+          />
           <OTSubscriber
             style={subscriberStyles}
             subscribeToSelf={true}
@@ -691,15 +744,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               subscribeToVideo: false,
               audioVolume: 100,
             }}
-          />
-          <OTPublisher
-            style={publisherStyles}
-            properties={{
-              publishVideo: false,
-              publishAudio: mute,
-              audioVolume: 100,
-            }}
-            eventHandlers={publisherEventHandlers}
           />
         </OTSession>
         <Text
@@ -829,6 +873,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               token={token}
               eventHandlers={sessionEventHandlers}
               ref={otSessionRef}
+              options={{
+                connectionEventsSuppressed: true, // default is false
+                androidZOrder: 'onTop', // Android only - valid options are 'mediaOverlay' or 'onTop'
+                androidOnTop: 'publisher', // Android only - valid options are 'publisher' or 'subscriber'
+                useTextureViews: true, // Android only - default is false
+                isCamera2Capable: false, // Android only - default is false
+              }}
             >
               <OTSubscriber
                 style={subscriberStyles}
@@ -840,13 +891,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   //audioVolume: 100,
                 }}
               />
+
               <OTPublisher
                 style={publisherStyles}
                 properties={{
                   cameraPosition: cameraPosition,
                   publishVideo: showVideo,
                   publishAudio: mute,
-
                   //audioVolume: 100,
                 }}
                 eventHandlers={publisherEventHandlers}
@@ -879,6 +930,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     zIndex: 1000,
+                    elevation: 2000,
                   }}
                 >
                   <Text style={{ color: 'white', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
@@ -952,6 +1004,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               left: 0,
               right: 0,
               zIndex: 100,
+              elevation: 2000,
             });
             setSubscriberStyles({
               width,
@@ -964,6 +1017,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               width: 112,
               height: 148,
               zIndex: 1000,
+              elevation: 2000,
               borderRadius: 30,
             });
             setPipView(false);
@@ -1029,10 +1083,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               width: 1,
               height: 1,
               zIndex: 1000,
+              elevation: 2000,
             });
 
             setPipView(true);
             setChatReceived(false);
+            setTextInputStyles({
+              width: width,
+              height: 66,
+              backgroundColor: 'white',
+              top: 20,
+              // bottom: -20,
+            });
           }}
         >
           {chatReceived ? (
@@ -1161,6 +1223,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           width: width,
           backgroundColor: 'transparent',
           position: 'absolute',
+          elevation: 2000,
         }}
       >
         <View
@@ -1327,6 +1390,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               left: 0,
               right: 0,
               bottom: 0,
+              elevation: 2000,
             });
           }}
         >
@@ -1354,73 +1418,77 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
-  const options = {
-    title: 'Select Avatar',
-    customButtons: [{ name: 'fb', title: 'Choose Photo from Facebook' }],
-    storageOptions: {
-      skipBackup: true,
-      path: 'images',
-    },
-  };
-
   const ChatRoom = () => {
-    setTimeout(() => {
-      flatListRef.current && flatListRef.current!.scrollToEnd();
-    }, 1000);
+    // setTimeout(() => {
+    //   flatListRef.current && flatListRef.current!.scrollToEnd();
+    // }, 1000);
     return (
-      <View style={{ ...theme.viewStyles.container }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: '#fff',
+        }}
+      >
         {renderChatView()}
-
-        <View
-          style={{
-            width: width,
-            height: 66,
-            backgroundColor: 'white',
-            top: 0,
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', width: width }}>
-            <TextInput
-              autoCorrect={false}
-              placeholder="Type here…"
+        <KeyboardAvoidingView behavior="padding" enabled>
+          <View style={textinputStyles}>
+            <View
               style={{
-                marginLeft: 20,
-                marginTop: 0,
-                height: 44,
-                width: width - 84,
-                ...theme.fonts.IBMPlexSansMedium(16),
+                flexDirection: 'row',
+                alignItems: 'center',
+                width: width,
+                // backgroundColor: 'red',
+                paddingBottom: 0,
+                bottom: 0,
               }}
-              placeholderTextColor="rgba(2, 71, 91, 0.3)"
-              value={messageText}
-              onChangeText={(value) => {
-                setMessageText(value);
-                pubnub.publish(
-                  {
-                    message: {
-                      senderId: 'user123',
-                      isTyping: true,
-                      message: 'callme',
+            >
+              <TextInput
+                autoCorrect={false}
+                placeholder="Type here…"
+                style={{
+                  marginLeft: 20,
+                  marginTop: 0,
+                  height: 44,
+                  width: width - 84,
+                  ...theme.fonts.IBMPlexSansMedium(16),
+                }}
+                placeholderTextColor="rgba(2, 71, 91, 0.3)"
+                value={messageText}
+                onChangeText={(value) => {
+                  setMessageText(value);
+                  pubnub.publish(
+                    {
+                      message: {
+                        senderId: 'user123',
+                        isTyping: true,
+                        message: '^^#typing',
+                      },
+                      channel: channel,
+                      storeInHistory: false,
                     },
-                    channel: channel,
-                    storeInHistory: false,
-                  },
-                  (status, response) => {}
-                );
-              }}
-              onSubmitEditing={() => {
-                console.log('on submit');
-                send();
-              }}
-              // onKeyPress={(event) => {
-              //   console.log('event', event.nativeEvent.key);
-              //   if (event.nativeEvent.key == 'Enter') {
-              //   } else {
-              //     console.log('Something else Pressed');
-              //   }
-              // }}
-            />
-            <View>
-              {isDropdownVisible == true ? (
+                    (status, response) => {}
+                  );
+                }}
+                onSubmitEditing={() => {
+                  console.log('on submit');
+                  const textMessage = messageText.trim();
+
+                  if (textMessage.length == 0) {
+                    Alert.alert('Apollo', 'Please write something to send message.');
+                    return;
+                  }
+                  send();
+                }}
+                // onKeyPress={(event) => {
+                //   console.log('event', event.nativeEvent.key);
+                //   if (event.nativeEvent.key == 'Enter') {
+                //   } else {
+                //     console.log('Something else Pressed');
+                //   }
+                // }}
+              />
+              <View>
+                {/* {isDropdownVisible == true ? (
                 <View
                   style={{
                     width: 200,
@@ -1475,40 +1543,40 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     ]}
                   />
                 </View>
-              ) : null}
+              ) : null} */}
+              </View>
+              <TouchableOpacity
+                onPress={async () => {
+                  if (messageText.length == 0) {
+                    //Alert.alert('Apollo', 'Please write something to send');
+                    setDropdownVisible(!isDropdownVisible);
+                    return;
+                  }
+                  if (!startConsult) {
+                    console.log('consult not started');
+                    Alert.alert('Apollo', 'Please start the consultation');
+                    return;
+                  }
+                  send();
+                }}
+              >
+                <AddIcon
+                  style={{ width: 22, height: 22, marginTop: 18, marginLeft: 22, zIndex: -1 }}
+                />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              onPress={async () => {
-                if (messageText.length == 0) {
-                  //Alert.alert('Apollo', 'Please write something to send');
-                  setDropdownVisible(!isDropdownVisible);
-                  return;
-                }
-                if (!startConsult) {
-                  console.log('consult not started');
-                  Alert.alert('Apollo', 'Please start the consultation');
-                  return;
-                }
-                send();
+            <View
+              style={{
+                marginLeft: 20,
+                marginRight: 64,
+                marginTop: 0,
+                height: 2,
+                backgroundColor: '#00b38e',
+                zIndex: -1,
               }}
-            >
-              <AddIcon
-                style={{ width: 22, height: 22, marginTop: 18, marginLeft: 22, zIndex: -1 }}
-              />
-            </TouchableOpacity>
+            />
           </View>
-          <View
-            style={{
-              marginLeft: 20,
-              marginRight: 64,
-              marginTop: 0,
-              height: 2,
-              backgroundColor: '#00b38e',
-              zIndex: -1,
-            }}
-          />
-        </View>
-
+        </KeyboardAvoidingView>
         {returnToCall && ReturnCallView()}
         {}
       </View>
@@ -1518,7 +1586,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const renderTabPage = () => {
     return (
       <>
-        <View style={[styles.shadowview, showPopUp ? { elevation: 0 } : {}]}>
+        <View style={[styles.shadowview, showPopUp ? { elevation: 1000 } : {}]}>
           <MaterialTabs
             items={['Case Sheet', 'Chat']}
             selectedIndex={activeTabIndex}
