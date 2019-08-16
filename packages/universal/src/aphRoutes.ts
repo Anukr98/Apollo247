@@ -4,7 +4,7 @@ const environment = process.env.NODE_ENV;
 
 const buildUrl = ({ application, port }: { application: string; port: string }) =>
   environment === 'local'
-    ? 'http://aph.development.api.popcornapps.com'
+    ? `${protocol}://localhost${getPortStr(port)}`
     : `${protocol}://aph.${environment}.${application}.popcornapps.com${getPortStr(port)}`;
 
 export const getPortStr = (port: string) => (port === '80' || port === '443' ? '' : `:${port}`);
