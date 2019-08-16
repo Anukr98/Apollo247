@@ -71,8 +71,7 @@ const getPatinetAppointments: Resolver<
   PatientAppointmentsResult
 > = async (parent, { patientAppointmentsInput }, { consultsDb, doctorsDb }) => {
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
-  const patinetAppointments = await appts.getPatientDateAppointments(
-    patientAppointmentsInput.appointmentDate,
+  const patinetAppointments = await appts.getPatinetUpcomingAppointments(
     patientAppointmentsInput.patientId
   );
 
