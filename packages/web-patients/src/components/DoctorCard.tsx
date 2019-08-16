@@ -16,6 +16,8 @@ import { format } from 'date-fns';
 import { getIstTimestamp } from 'helpers/dateHelpers';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import _forEach from 'lodash/forEach';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -210,7 +212,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <div className={classes.doctorInfo}>
             {loading ? <LinearProgress /> : availabilityMarkup()}
             <div className={classes.doctorName}>
-              {`${doctorDetails.firstName} ${doctorDetails.lastName}`}
+              {`${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
+                _toLower(doctorDetails.lastName)
+              )}`}
             </div>
             <div className={classes.doctorType}>
               {doctorDetails.specialty.name}
