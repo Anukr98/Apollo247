@@ -280,10 +280,10 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#658f9b',
       display: '-webkit-box',
       maxWidth: 400,
-      height: 36,
+      height: 15,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-      lineClamp: 2,
+      lineClamp: 1,
       paddingRight: '20px',
       width: '90%',
       boxOrient: 'vertical',
@@ -456,14 +456,46 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           subheader={
             <div>
               {doctor!.isActive === true && (
-                <span
-                  className={classes.qualification}
-                  title={`${doctor!.associatedDoctor!.qualification}, ${
-                    doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1
-                  }`}
-                >
-                  {doctor!.associatedDoctor!.qualification},
-                  {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1}
+                <span>
+                  <span
+                    className={classes.qualification}
+                    title={`${doctor!.associatedDoctor!.qualification}`}
+                  >
+                    {doctor!.associatedDoctor!.qualification}
+                  </span>
+                  <span
+                    className={classes.qualification}
+                    title={`${
+                      doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1
+                        ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1 + ', '
+                        : ''
+                    }${
+                      doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine2
+                        ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine2 + ', '
+                        : ''
+                    }${
+                      doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine3
+                        ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine3 + ', '
+                        : ''
+                    }${
+                      doctor!.associatedDoctor!.doctorHospital[0]!.facility!.city
+                        ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.city
+                        : ''
+                    }`}
+                  >
+                    {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1
+                      ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1 + ', '
+                      : ''}
+                    {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine2
+                      ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine2 + ', '
+                      : ''}
+                    {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine3
+                      ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine3 + ', '
+                      : ''}
+                    {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.city
+                      ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.city
+                      : ''}
+                  </span>
                 </span>
               )}
             </div>
