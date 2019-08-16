@@ -180,8 +180,10 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
     //By default selectedRelation 1 st profile should be ME when there is an empty input
     if (number === 1 && selectedRelation === '') {
       setSelectedRelation(Relation.ME);
+      const updatedPatient = { ...patient, relation: Relation.ME };
+      props.onUpdatePatient(updatedPatient);
     }
-  }, [number, selectedRelation]);
+  }, [number, selectedRelation, patient, props]);
 
   return (
     <div className={classes.profileBox} data-cypress="PatientProfile">
@@ -242,7 +244,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const [patients, setPatients] = useState(props.patients);
   const [loading, setLoading] = useState(false);
   const disabled = patients.some(isPatientInvalid);
-  const [Message, setMessage] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
   const validMessage = '';
   let isOK = false;
   return (
@@ -264,7 +266,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
             </p>
           )}
           <FormHelperText component="div" className={classes.errorText}>
-            {Message}
+            {message}
           </FormHelperText>
 
           <div className={classes.formGroup}>
@@ -321,6 +323,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
                     .then(() => props.onComplete())
                     .catch(() => window.alert('Something went wrong :('))
                     .finally(() => setLoading(false));
+                  window.location.reload();
                 }
               }}
               disabled={disabled}
