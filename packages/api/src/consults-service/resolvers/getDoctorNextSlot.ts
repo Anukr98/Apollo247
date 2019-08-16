@@ -53,7 +53,6 @@ const getDoctorNextAvailableSlot: Resolver<
   const docConsultRep = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const doctorAvailalbeSlots: SlotAvailability[] = [];
-  console.log('cur date', new Date());
   function slots(doctorId: string) {
     return new Promise<SlotAvailability>(async (resolve) => {
       let availableSlot: string = '';
