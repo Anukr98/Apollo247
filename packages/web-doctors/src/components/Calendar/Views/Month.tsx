@@ -7,7 +7,7 @@ import {
   GetDoctorAppointments,
   GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
 } from 'graphql/types/GetDoctorAppointments';
-import { addMinutes, format, setDate, startOfToday } from 'date-fns/esm';
+import { addMinutes, format, startOfToday } from 'date-fns/esm';
 import { startOfMonth, endOfMonth } from 'date-fns';
 
 const useStyles = makeStyles(() => {
