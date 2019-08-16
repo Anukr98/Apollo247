@@ -80,6 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 10,
       display: 'flex',
       alignItems: 'center',
+      zIndex: 9999,
       '& button': {
         padding: 0,
         boxShadow: 'none',

@@ -367,7 +367,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   setMessageText(event.currentTarget.value);
                 }}
               />
-              <Button className={classes.chatsendcircle} onClick={() => send()}>
+              <Button className={classes.chatsendcircle}>
                 <img src={require('images/ic_add_circle.svg')} alt="" />
               </Button>
             </div>
