@@ -371,20 +371,18 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </Button>
             </span>
           ) : (
-            isPastAppointment && (
-              <Button
-                className={classes.consultButton}
-                onClick={() => {
-                  !startAppointment ? startInterval(900) : stopInterval();
-                  setStartAppointment(!startAppointment);
-                }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                  <path fill="#fff" d="M8 5v14l11-7z" />
-                </svg>
-                {startAppointment ? 'End Consult' : 'Start Consult'}
-              </Button>
-            )
+            <Button
+              className={classes.consultButton}
+              onClick={() => {
+                !startAppointment ? startInterval(900) : stopInterval();
+                setStartAppointment(!startAppointment);
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path fill="#fff" d="M8 5v14l11-7z" />
+              </svg>
+              {startAppointment ? 'End Consult' : 'Start Consult'}
+            </Button>
           )}
           <Button
             className={classes.consultIcon}

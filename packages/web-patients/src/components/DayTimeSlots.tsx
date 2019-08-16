@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
     },
     tabsRoot: {
-      borderBottom: '1px solid rgba(0,0,0,0.2)',
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
     },
     tabRoot: {
       fontSize: 16,
@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: 10,
         margin: '5px 4px',
         textTransform: 'none',
-        padding: '9px 10px',
+        padding: '9px 13px',
       },
     },
     noSlotsAvailable: {

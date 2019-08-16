@@ -65,10 +65,24 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: theme.palette.common.white,
     },
+    afterloginForm: {
+      width: 320,
+      minHeight: 230,
+      padding: 15,
+      borderRadius: 10,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
     topPopover: {
       overflow: 'initial',
       backgroundColor: 'none',
       boxShadow: 'none',
+    },
+    signedTopPopover: {
+      overflow: 'initial',
+      backgroundColor: 'none',
+      boxShadow: 'none',
+      marginTop: '63px',
     },
     container: {
       maxWidth: 1024,
@@ -79,6 +93,7 @@ const useStyles = makeStyles((theme: Theme) => {
     cross: {
       position: 'absolute',
       right: 0,
+      paddingTop: '13px',
       top: '10px',
       fontSize: '18px',
       color: '#02475b',
@@ -133,14 +148,23 @@ export const Header: React.FC = (props) => {
                 vertical: 'top',
                 horizontal: 'right',
               }}
-              classes={{ paper: classes.topPopover }}
+              classes={{ paper: classes.signedTopPopover }}
             >
-              <Paper className={classes.loginForm}>
-                <Button onClick={() => setIsHelpPopupOpen(false)} className={classes.cross}>
-                  <img src={require('images/ic_cross.svg')} alt="" />
-                </Button>
-                <HelpPopup setBackArrow={() => setIsHelpPopupOpen(true)} />
-              </Paper>
+              {isSignedIn ? (
+                <Paper className={classes.afterloginForm}>
+                  <Button onClick={() => setIsHelpPopupOpen(false)} className={classes.cross}>
+                    <img src={require('images/ic_cross.svg')} alt="" />
+                  </Button>
+                  <HelpPopup setBackArrow={() => setIsHelpPopupOpen(true)} />
+                </Paper>
+              ) : (
+                <Paper className={classes.loginForm}>
+                  <Button onClick={() => setIsHelpPopupOpen(false)} className={classes.cross}>
+                    <img src={require('images/ic_cross.svg')} alt="" />
+                  </Button>
+                  <HelpPopup setBackArrow={() => setIsHelpPopupOpen(true)} />
+                </Paper>
+              )}
             </Popover>
           ) : (
             <Popover

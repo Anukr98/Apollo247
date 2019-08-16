@@ -128,7 +128,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     btnContainer: {
       borderTop: 'solid 2px rgba(101,143,155,0.2)',
-      marginTop: 30,
+      marginTop: 0,
       paddingTop: 10,
       textAlign: 'right',
     },

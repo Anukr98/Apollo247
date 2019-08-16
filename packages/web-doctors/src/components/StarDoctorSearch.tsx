@@ -164,12 +164,8 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
               }}
             >
               {data &&
-              data.getDoctorDetails &&
-              data.getDoctorDetails.starTeam &&
-              data.getDoctorDetails.starTeam.filter(
-                (existingDoc: GetDoctorDetails_getDoctorDetails_starTeam | null) =>
-                  existingDoc!.isActive === false
-              ).length > 0 ? (
+                data.getDoctorDetails &&
+                data.getDoctorDetails.starTeam &&
                 data.getDoctorDetails.starTeam
                   .filter(
                     (existingDoc: GetDoctorDetails_getDoctorDetails_starTeam | null) =>
@@ -192,10 +188,7 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
                         </MenuItem>
                       )
                     )
-                  )
-              ) : (
-                <MenuItem disabled={true}>No Data Available</MenuItem>
-              )}
+                  )}
             </AphSelect>
           </div>
         );
