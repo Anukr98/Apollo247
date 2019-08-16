@@ -7,7 +7,7 @@ import {
   GetDoctorAppointments,
   GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
 } from 'graphql/types/GetDoctorAppointments';
-import { addMinutes, format } from 'date-fns/esm';
+import { addMinutes, format, setDate, startOfToday } from 'date-fns/esm';
 
 const useStyles = makeStyles(() => {
   return {
@@ -202,6 +202,7 @@ const Toolbar = (toolbar: ToolbarProps) => {
 export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange }) => {
   const classes = useStyles();
   const [events, setEvents] = useState<MonthEvent[]>(eventsAdapter(data));
+  const [selectedDate, setSelectedDate] = useState(date);
 
   useEffect(() => {
     setEvents(eventsAdapter(data));
@@ -209,17 +210,25 @@ export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange }) => {
 
   return (
     <div className={classes.calendarContainer}>
-      <div className={classes.calenderIcon}>
+      <div
+        className={classes.calenderIcon}
+        onClick={() => {
+          setSelectedDate(startOfToday());
+        }}
+      >
         <img src={require('images/ic_calendar.svg')} alt="" />
       </div>
       <div className={classes.monthView}>
         <Calendar
-          defaultDate={date}
+          date={selectedDate}
           events={events}
           localizer={localizer}
           views={{ month: true }}
           onRangeChange={(range) => onMonthChange(range)}
           components={{ toolbar: Toolbar }}
+          onNavigate={(date) => {
+            setSelectedDate(moment(date).toDate());
+          }}
         />
       </div>
       <div className={classes.moreIcon}>
