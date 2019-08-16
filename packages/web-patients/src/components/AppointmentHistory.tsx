@@ -195,12 +195,16 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
                       aptArray[1].substring(0, 5)
                     )
                   ),
-                  'hh:mm a'
+                  'h:mm a'
                 );
                 return (
                   <Grid item sm={3} key={_uniqueId('avagr_')}>
                     <div className={classes.root} key={_uniqueId('aphistory_')}>
-                      <div className={classes.appointType}>{appointment.appointmentType}</div>
+                      <div className={classes.appointType}>
+                        {appointment.appointmentType === 'ONLINE'
+                          ? 'Online Consult'
+                          : 'Clinic Visit'}
+                      </div>
                       <div className={classes.appointmentInfo}>
                         <div className={classes.timeGroup}>
                           <div className={classes.appointDate}>{appointmentDate}</div>
