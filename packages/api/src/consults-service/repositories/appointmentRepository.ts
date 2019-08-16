@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Between } from 'typeorm';
+import { EntityRepository, Repository, Between, MoreThan } from 'typeorm';
 import { Appointment, AppointmentSessions } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -17,7 +17,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  checkAppointmentIfExisit(doctorId: string, appointmentDateTime: Date) {
+  checkIfAppointmentExist(doctorId: string, appointmentDateTime: Date) {
     return this.count({ where: { doctorId, appointmentDateTime } });
   }
 
@@ -69,6 +69,11 @@ export class AppointmentRepository extends Repository<Appointment> {
     const startDate = new Date(inputDate + 'T00:00');
     const endDate = new Date(inputDate + 'T23:59');
     return this.find({ where: { patientId, appointmentDateTime: Between(startDate, endDate) } });
+  }
+
+  getPatinetUpcomingAppointments(patientId: string) {
+    const startDate = new Date();
+    return this.find({ where: { patientId, appointmentDateTime: MoreThan(startDate) } });
   }
 
   async findNextOpenAppointment(doctorId: string, consultHours: ConsultHours[]) {

@@ -88,7 +88,7 @@ const bookAppointment: Resolver<
   }
 
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
-  const apptCount = await appts.checkAppointmentIfExisit(
+  const apptCount = await appts.checkIfAppointmentExist(
     appointmentInput.doctorId,
     appointmentInput.appointmentDateTime
   );
