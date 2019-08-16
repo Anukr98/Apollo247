@@ -5,8 +5,6 @@ import _uniqueId from 'lodash/uniqueId';
 import {
   GetDoctorDetailsById as DoctorDetails,
   GetDoctorDetailsById_getDoctorDetailsById_starTeam as StarTeam,
-  GetDoctorDetailsById_getDoctorDetailsById_doctorHospital as Facility,
-  GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor as StarDoctorProfile,
 } from 'graphql/types/GetDoctorDetailsById';
 import { clientRoutes } from 'helpers/clientRoutes';
 import _map from 'lodash/map';
