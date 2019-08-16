@@ -39,8 +39,6 @@ export const getDoctorDetailsTypeDefs = gql`
     MR
     MRS
     DR
-    Dr
-    dr
   }
 
   enum WeekDay {
@@ -67,6 +65,7 @@ export const getDoctorDetailsTypeDefs = gql`
     consultMode: ConsultMode!
     consultType: ConsultType!
     endTime: String!
+    facility: Facility
     id: ID!
     isActive: Boolean!
     startTime: String!
@@ -123,6 +122,7 @@ export const getDoctorDetailsTypeDefs = gql`
     city: String
     country: String
     facilityType: String!
+    id: ID!
     latitude: String
     longitude: String
     name: String!
@@ -133,9 +133,9 @@ export const getDoctorDetailsTypeDefs = gql`
   }
 
   type Packages {
-    name: String!
-    id: String!
     fees: String!
+    id: String!
+    name: String!
   }
 
   type Profile @key(fields: "id") {
