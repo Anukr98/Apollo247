@@ -205,13 +205,12 @@ export const Calendar: React.FC = () => {
           <div>
             <ToggleButtonGroup exclusive value={viewSelection} className={classes.toggleBtn}>
               <ToggleButton
-                 className={`${viewSelection === 'day' ? classes.customeSelect : ''}`}
+                className={`${viewSelection === 'day' ? classes.customeSelect : ''}`}
                 value="day"
                 onClick={() => {
                   setViewSelection('day');
                   setRange(getRange(selectedDate));
                 }}
-                
               >
                 Day
               </ToggleButton>
