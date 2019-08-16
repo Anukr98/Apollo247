@@ -204,6 +204,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
+        console.log(message.message);
         insertText[insertText.length] = message.message;
         setMessages(insertText);
         setMessageText('reset');
