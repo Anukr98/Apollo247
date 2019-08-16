@@ -195,7 +195,9 @@ export const Calendar: React.FC = () => {
       </div>
       <div className={classes.container}>
         <div className={classes.tabHeading}>
-          <Typography variant="h1">hello dr. {currentPatient!.lastName} :)</Typography>
+          <Typography variant="h1">
+            hello dr. {(currentPatient!.lastName || '').toLowerCase()} :)
+          </Typography>
           <p>
             here’s your schedule for {isToday(selectedDate) ? 'today, ' : ''}{' '}
             {format(selectedDate, isToday(selectedDate) ? 'dd MMM yyyy' : 'MMM, dd')}
