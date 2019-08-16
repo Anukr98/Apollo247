@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '0px 0 50px 0',
       '& p': {
         paddingTop: '25px',
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 500,
         lineHeight: 1.5,
         color: theme.palette.secondary.main,
@@ -37,7 +37,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     orange: {
       color: '#fc9916',
-      fontWeight: 700,
+      fontWeight: 600,
+      fontSize: 18,
     },
   };
 });

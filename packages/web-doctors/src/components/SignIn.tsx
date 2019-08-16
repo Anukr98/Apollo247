@@ -317,10 +317,12 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           </div>
           <div className={classes.errorText}>
             {!showTimer &&
+              !(isSigningIn || isVerifyingOtp) &&
               submitCount === 2 &&
               submitCount > 0 &&
               ' Incorrect OTP, ' + (3 - submitCount) + ' attempt left'}
             {!showTimer &&
+              !(isSigningIn || isVerifyingOtp) &&
               submitCount === 1 &&
               submitCount > 0 &&
               ' Incorrect OTP, ' + (3 - submitCount) + ' attempts left'}

@@ -22,8 +22,11 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   findByDateDoctorId(doctorId: string, appointmentDate: Date) {
+    const inputDate = format(appointmentDate, 'yyyy-MM-dd');
+    const startDate = new Date(inputDate + 'T00:00');
+    const endDate = new Date(inputDate + 'T23:59');
     return this.find({
-      where: { doctorId, appointmentDate },
+      where: { doctorId, appointmentDateTime: Between(startDate, endDate) },
     });
   }
 

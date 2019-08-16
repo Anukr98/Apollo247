@@ -280,7 +280,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#658f9b',
       display: 'block',
       maxWidth: 400,
-      whiteSpace:'nowrap',
+      whiteSpace: 'nowrap',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       paddingRight: '20px',
@@ -434,11 +434,13 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                 {doctor!.associatedDoctor!.salutation &&
                   doctor!.associatedDoctor!.salutation!.charAt(0).toUpperCase()}
                 {doctor.associatedDoctor!.salutation!.slice(1).toLowerCase() + '.'}{' '}
-                {`${doctor!.associatedDoctor!.firstName!} ${doctor!.associatedDoctor!.lastName!}`
-                  .length < 13
-                  ? `${doctor!.associatedDoctor!.firstName} ${doctor!.associatedDoctor!.lastName}`
+                {`${doctor!.associatedDoctor!.firstName!.split(' ')[0]} ${doctor!.associatedDoctor!
+                  .lastName!}`.length < 15
+                  ? `${doctor!.associatedDoctor!.firstName!.split(' ')[0]} ${
+                      doctor!.associatedDoctor!.lastName
+                    }`
                   : `${
-                      doctor!.associatedDoctor!.firstName
+                      doctor!.associatedDoctor!.firstName!.split(' ')[0]
                     } ${doctor!.associatedDoctor!.lastName!.charAt(0)}.`}
               </h4>
               {doctor!.isActive === true && (

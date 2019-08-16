@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
+import { Calendar, momentLocalizer, ToolbarProps } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { makeStyles } from '@material-ui/styles';
@@ -29,6 +29,7 @@ const useStyles = makeStyles(() => {
       height: 76,
       '& img': {
         margin: 'auto',
+        width: 24,
       },
     },
     moreIcon: {
@@ -83,14 +84,14 @@ const useStyles = makeStyles(() => {
         fontWeight: 700,
       },
       '& .rbc-event': {
-          fontSize: 6,
-          lineHeight: '8px',
-          backgroundColor: 'rgba(0,135,186,0.1)',
-          marginBottom: 1,
-          borderRadius: 2,
-          fontWeight: 500,
-          borderLeft: '2px solid #0087ba',
-          color: '#02475b',
+        fontSize: 6,
+        lineHeight: '8px',
+        backgroundColor: 'rgba(0,135,186,0.1)',
+        marginBottom: 1,
+        borderRadius: 2,
+        fontWeight: 500,
+        borderLeft: '2px solid #0087ba',
+        color: '#02475b',
       },
       '& .rbc-show-more': {
         fontSize: 6,
@@ -135,7 +136,8 @@ const useStyles = makeStyles(() => {
       },
       '& .calenderHeader img': {
         position: 'relative',
-        top: 4,
+        top: 9,
+        width: 30,
       },
       '& .monthname': {
         paddingRight: 70,
@@ -180,15 +182,22 @@ export interface MonthProps {
   onMonthChange: (range: Date[] | { start: string | Date; end: string | Date }) => void;
 }
 
-const Toolbar: React.FC = (toolbar) => {
+const Toolbar = (toolbar: ToolbarProps) => {
+  const next = () => toolbar.onNavigate('NEXT');
+  const prev = () => toolbar.onNavigate('PREV');
+  const label = () => {
+    const date = moment(toolbar.date);
+    return date.format('MMMM');
+  };
+
   return (
     <div className="calenderHeader">
-      <img src={require('images/ic_leftarrow.svg')} alt="" />
-      <span className="monthname">July </span>
-      <img src={require('images/ic_rightarrow.svg')} alt="" />
+      <img src={require('images/ic_leftarrow.svg')} alt="" onClick={prev} />
+      <span className="monthname">{label()}</span>
+      <img src={require('images/ic_rightarrow.svg')} alt="" onClick={next} />
     </div>
   );
-}
+};
 
 export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange }) => {
   const classes = useStyles();
@@ -200,19 +209,18 @@ export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange }) => {
 
   return (
     <div className={classes.calendarContainer}>
-      <div
-        className={classes.calenderIcon} >
+      <div className={classes.calenderIcon}>
         <img src={require('images/ic_calendar.svg')} alt="" />
       </div>
       <div className={classes.monthView}>
-      <Calendar
-        defaultDate={date}
-        events={events}
-        localizer={localizer}
-        views={{ month: true }}
-        onRangeChange={(range) => onMonthChange(range)}
-        components={{toolbar: Toolbar  }}
-      />
+        <Calendar
+          defaultDate={date}
+          events={events}
+          localizer={localizer}
+          views={{ month: true }}
+          onRangeChange={(range) => onMonthChange(range)}
+          components={{ toolbar: Toolbar }}
+        />
       </div>
       <div className={classes.moreIcon}>
         <img src={require('images/ic_more.svg')} alt="" />
