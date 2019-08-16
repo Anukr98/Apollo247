@@ -9,7 +9,7 @@ export class SearchHistoryRepository extends Repository<SearchHistory> {
     return this.create(saveSearchAttrs)
       .save()
       .catch((saveSearchError) => {
-        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, {
+        throw new AphError(AphErrorMessages.SAVE_SEARCH_ERROR, undefined, {
           saveSearchError,
         });
       });
