@@ -1,6 +1,6 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React from 'react';
+import React, { useState } from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -242,6 +242,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
       clear: 'both',
     },
+    hideMore: {
+      display: 'none',
+    },
   };
 });
 
@@ -270,6 +273,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
 
   const { doctorDetails, appointmentId } = props;
   const { allCurrentPatients } = useAllCurrentPatients();
+
+  const [showMore, setShowMore] = useState<boolean>(true);
 
   const doctorId =
     doctorDetails && doctorDetails.getDoctorDetailsById
@@ -352,11 +357,11 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
               appointmentDetails[0].appointmentDateTime.split('T')[1].substring(0, 5)
             )
           ),
-          'hh:mm a'
+          'h:mm a'
         )
       : '';
 
-  // console.log('---------------', appointmentDetails, data);
+  // console.log('--------------->>>>>>>>>>>>>>>', appointmentDetails);
 
   if (
     doctorDetails &&
@@ -364,7 +369,10 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     doctorDetails.getDoctorDetailsById.doctorHospital
   ) {
     _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
-      if (hospitalDetails.facility.facilityType === 'HOSPITAL') {
+      if (
+        hospitalDetails.facility.facilityType === 'HOSPITAL' ||
+        hospitalDetails.facility.facilityType === 'CLINIC'
+      ) {
         hospitalLocation = hospitalDetails.facility.name;
       }
     });
@@ -383,9 +391,22 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           <div className={classes.doctorName}>{`${firstName} ${lastName}`}</div>
           <div className={classes.specialits}>
             {speciality} <span className={classes.lineDivider}>|</span> {experience} Yrs
-            <div className={classes.moreToggle}>More</div>
+            <div
+              className={classes.moreToggle}
+              onClick={(e) => {
+                const currentShowMore = showMore;
+                setShowMore(!currentShowMore);
+              }}
+            >
+              More
+            </div>
           </div>
-          <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 514px'}>
+          <Scrollbars
+            autoHide={true}
+            autoHeight
+            autoHeightMax={'calc(100vh - 514px'}
+            className={showMore ? classes.hideMore : ''}
+          >
             <div className={classes.doctorInfoGroup}>
               <div className={classes.infoRow}>
                 <div className={classes.iconType}>

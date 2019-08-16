@@ -99,7 +99,18 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     tabLeftcontent: {
-      padding: '10px 5px 10px 20px',
+      padding: '10px 20px 10px 20px',
+    },
+    columnContent: {
+      '-webkit-column-break-inside': 'avoid',
+      'page-break-inside': 'avoid',
+      'break-inside': 'avoid',
+      'max-width': 'initial',
+    },
+    gridContainer: {
+      'column-count': 2,
+      'column-fill': 'initial',
+      display: 'block',
     },
     serviceItem: {
       padding: '0 0 10px 0',
@@ -415,12 +426,22 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
             <div>
               <h4
                 title={`${doctor!.associatedDoctor!.salutation &&
-                  doctor!.associatedDoctor!.salutation + '.'} ${
-                  doctor!.associatedDoctor!.firstName
-                } ${doctor!.associatedDoctor!.lastName}`}
+                  doctor!
+                    .associatedDoctor!.salutation!.charAt(0)
+                    .toUpperCase()}${doctor.associatedDoctor!.salutation!.slice(1).toLowerCase() +
+                  '.'} ${doctor!.associatedDoctor!.firstName} ${
+                  doctor!.associatedDoctor!.lastName
+                }`}
               >
-                {doctor!.associatedDoctor!.salutation && doctor!.associatedDoctor!.salutation + '.'}{' '}
-                {doctor!.associatedDoctor!.firstName} {doctor!.associatedDoctor!.lastName}
+                {doctor!.associatedDoctor!.salutation &&
+                  doctor!.associatedDoctor!.salutation!.charAt(0).toUpperCase()}
+                {doctor.associatedDoctor!.salutation!.slice(1).toLowerCase() + '.'}{' '}
+                {`${doctor!.associatedDoctor!.firstName!} ${doctor!.associatedDoctor!.lastName!}`
+                  .length < 13
+                  ? `${doctor!.associatedDoctor!.firstName} ${doctor!.associatedDoctor!.lastName}`
+                  : `${
+                      doctor!.associatedDoctor!.firstName
+                    } ${doctor!.associatedDoctor!.lastName!.charAt(0)}.`}
               </h4>
               {doctor!.isActive === true && (
                 <h6>
@@ -463,6 +484,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
   const { starDoctors } = props;
   const [showAddDoc, setShowAddDoc] = React.useState<boolean>();
   const client = useApolloClient();
+  const starDoctorsCardList = starDoctors.filter((existingDoc) => existingDoc!.isActive) || [];
 
   const classes = useStyles();
   return (
@@ -471,7 +493,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
     >
       {(mutate, { loading }) => (
         <Grid container alignItems="flex-start" spacing={0}>
-          {starDoctors.map((doctor, index) => {
+          {starDoctorsCardList.map((doctor, index) => {
             return (
               doctor!.isActive === true && (
                 <Grid item lg={4} sm={6} xs={12} key={index}>
@@ -508,7 +530,6 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
                           if (starDoc!.associatedDoctor!.id === starDoctor!.associatedDoctor!.id) {
                             starDoc!.isActive = true;
                           }
-
                           return starDoc;
                         });
                         const dataAfterMutation: GetDoctorDetails = {
@@ -526,16 +547,18 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
               </div>
             </Grid>
           )}
-          <Grid item lg={12} sm={12} xs={12}>
-            <AphButton
-              variant="contained"
-              color="primary"
-              classes={{ root: classes.btnAddDoctor }}
-              onClick={() => setShowAddDoc(true)}
-            >
-              <img src={require('images/ic_add.svg')} alt="" /> ADD DOCTOR
-            </AphButton>
-          </Grid>
+          {props.starDoctors.filter((existingDoc) => !existingDoc!.isActive).length > 0 && (
+            <Grid item lg={12} sm={12} xs={12}>
+              <AphButton
+                variant="contained"
+                color="primary"
+                classes={{ root: classes.btnAddDoctor }}
+                onClick={() => setShowAddDoc(true)}
+              >
+                <img src={require('images/ic_add.svg')} alt="" /> ADD DOCTOR
+              </AphButton>
+            </Grid>
+          )}
         </Grid>
       )}
     </Mutation>
@@ -566,7 +589,8 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
               </div>
               <Typography variant="h4">
-                Dr. {doctor.firstName} {doctor.lastName}
+                {doctor.salutation!.charAt(0).toUpperCase()}
+                {doctor.salutation!.slice(1).toLowerCase()}. {doctor.firstName} {doctor.lastName}
               </Typography>
               <Typography variant="h6">
                 {(doctor.specialty.name || '').toUpperCase()} <span> | </span>
@@ -575,9 +599,9 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             </Paper>
           </Grid>
           <Grid item lg={8} sm={6} xs={12} className={classes.tabLeftcontent}>
-            <Grid container alignItems="flex-start" spacing={0}>
+            <Grid container alignItems="flex-start" spacing={0} className={classes.gridContainer}>
               {doctor.qualification && doctor.qualification!.length > 0 && (
-                <Grid item lg={6} sm={12} xs={12}>
+                <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">Education</Typography>
                     <Typography variant="h3">{doctor.qualification}</Typography>
@@ -585,7 +609,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 </Grid>
               )}
               {doctor.awards && doctor.awards!.length > 0 && (
-                <Grid item lg={6} sm={12} xs={12}>
+                <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">Awards</Typography>
                     <Typography variant="h3">
@@ -598,7 +622,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 </Grid>
               )}
               {doctor.specialty.name && doctor.specialty.name!.length > 0 && (
-                <Grid item lg={6} sm={12} xs={12}>
+                <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">Speciality</Typography>
                     <Typography variant="h3">{doctor.specialty.name}</Typography>
@@ -606,7 +630,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 </Grid>
               )}
               {doctor.languages && doctor.languages!.length > 0 && (
-                <Grid item lg={6} sm={12} xs={12}>
+                <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">Speaks</Typography>
                     <Typography variant="h3">{doctor.languages}</Typography>
@@ -614,14 +638,23 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 </Grid>
               )}
               {doctor.specialization && doctor!.specialization!.length > 0 && (
-                <Grid item lg={6} sm={12} xs={12}>
+                <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">Services</Typography>
                     <Typography variant="h3">{doctor.specialization}</Typography>
                   </Paper>
                 </Grid>
               )}
-              <Grid item lg={6} sm={12} xs={12}>
+
+              {doctor.registrationNumber && doctor.registrationNumber!.length > 0 && (
+                <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
+                  <Paper className={classes.serviceItem}>
+                    <Typography variant="h5">MCI Number</Typography>
+                    <Typography variant="h3">{doctor.registrationNumber}</Typography>
+                  </Paper>
+                </Grid>
+              )}
+              <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">In-person Consult Location</Typography>
                   {clinics.map((clinic, index) => (
@@ -633,14 +666,6 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   ))}
                 </Paper>
               </Grid>
-              {doctor.registrationNumber && doctor.registrationNumber!.length > 0 && (
-                <Grid item lg={6} sm={12} xs={12}>
-                  <Paper className={classes.serviceItem}>
-                    <Typography variant="h5">MCI Number</Typography>
-                    <Typography variant="h3">{doctor.registrationNumber}</Typography>
-                  </Paper>
-                </Grid>
-              )}
             </Grid>
           </Grid>
         </Grid>
@@ -672,10 +697,13 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
 
       {doctorProfile.doctorType === 'STAR_APOLLO' && (
         <div>
-          <Typography className={numStarDoctors === 0 ? classes.none : classes.starDoctorHeading}>
+          <Typography className={classes.starDoctorHeading}>
             Your Star Doctors Team ({numStarDoctors})
           </Typography>
-          <StarDoctorsList currentDocId={doctorProfile.id} starDoctors={starDoctors} />
+          <StarDoctorsList
+            currentDocId={doctorProfile.id}
+            starDoctors={getDoctorDetailsData!.starTeam!}
+          />
         </div>
       )}
 

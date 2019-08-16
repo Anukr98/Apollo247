@@ -145,73 +145,73 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
         : [];
 
     const firstName = doctorDetails.getDoctorDetailsById.firstName;
-    const lastName = doctorDetails.getDoctorDetailsById.lastName;
+    // const lastName = doctorDetails.getDoctorDetailsById.lastName;
 
-    return (
-      <div className={classes.sectionGroup}>
-        <div className={classes.sectionHeader}>
-          <span>
-            Dr. {firstName}&nbsp;{lastName}'s Clinic
-          </span>
-          <span className={classes.count}>
-            {clinics.length < 10 ? `0${clinics.length}` : clinics.length}
-          </span>
+    return clinics.length > 0 ? (
+      <>
+        <div className={classes.sectionGroup}>
+          <div className={classes.sectionHeader}>
+            <span>Dr. {firstName}'s Clinic</span>
+            <span className={classes.count}>
+              {clinics.length < 10 ? `0${clinics.length}` : clinics.length}
+            </span>
+          </div>
+          <Grid className={classes.gridContainer} container spacing={2}>
+            {_map(clinics, (clinicDetails) => {
+              return (
+                <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('avagr_')}>
+                  <div className={classes.root} key={_uniqueId('clinic_')}>
+                    <div className={classes.clinicImg}>
+                      <img src="https://via.placeholder.com/328x100" />
+                    </div>
+                    <div className={classes.clinicInfo}>
+                      <div className={classes.address}>
+                        {clinicDetails && clinicDetails.facility.streetLine1
+                          ? clinicDetails.facility.streetLine1
+                          : ''}
+                        &nbsp;
+                        {clinicDetails && clinicDetails.facility.streetLine2
+                          ? clinicDetails.facility.streetLine2
+                          : ''}
+                        &nbsp;
+                        {clinicDetails && clinicDetails.facility.streetLine3
+                          ? clinicDetails.facility.streetLine3
+                          : ''}
+                      </div>
+                      <div className={classes.availableTimings}>
+                        {_map(consultationHours, (consultationDetails: ConsultHours) => {
+                          const startTime = format(
+                            getTimestamp(new Date(), consultationDetails.startTime),
+                            'h:mm a'
+                          );
+                          const endTime = format(
+                            getTimestamp(new Date(), consultationDetails.endTime),
+                            'h:mm a'
+                          );
+                          return (
+                            <div className={classes.timingsRow} key={_uniqueId('ava_')}>
+                              <span>
+                                {(consultationDetails && consultationDetails.weekDay) || ''}
+                              </span>
+                              <span>
+                                {startTime ? startTime : ''}
+                                &nbsp;-&nbsp;
+                                {endTime ? endTime : ''}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </Grid>
+              );
+            })}
+          </Grid>
         </div>
-        <Grid className={classes.gridContainer} container spacing={2}>
-          {_map(clinics, (clinicDetails) => {
-            return (
-              <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('avagr_')}>
-                <div className={classes.root} key={_uniqueId('clinic_')}>
-                  <div className={classes.clinicImg}>
-                    <img src="https://via.placeholder.com/328x100" />
-                  </div>
-                  <div className={classes.clinicInfo}>
-                    <div className={classes.address}>
-                      {clinicDetails && clinicDetails.facility.streetLine1
-                        ? clinicDetails.facility.streetLine1
-                        : ''}
-                      &nbsp;
-                      {clinicDetails && clinicDetails.facility.streetLine2
-                        ? clinicDetails.facility.streetLine2
-                        : ''}
-                      &nbsp;
-                      {clinicDetails && clinicDetails.facility.streetLine3
-                        ? clinicDetails.facility.streetLine3
-                        : ''}
-                    </div>
-                    <div className={classes.availableTimings}>
-                      {_map(consultationHours, (consultationDetails: ConsultHours) => {
-                        const startTime = format(
-                          getTimestamp(new Date(), consultationDetails.startTime),
-                          'hh:mm a'
-                        );
-                        const endTime = format(
-                          getTimestamp(new Date(), consultationDetails.endTime),
-                          'hh:mm a'
-                        );
-                        return (
-                          <div className={classes.timingsRow} key={_uniqueId('ava_')}>
-                            <span>
-                              {(consultationDetails && consultationDetails.weekDay) || ''}
-                            </span>
-                            <span>
-                              {startTime ? startTime : ''}
-                              &nbsp;-&nbsp;
-                              {endTime ? endTime : ''}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </Grid>
-            );
-          })}
-        </Grid>
-      </div>
-    );
+      </>
+    ) : null;
   } else {
-    return <div>No Clinics Found...</div>;
+    return <></>;
   }
 };

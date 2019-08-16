@@ -35,11 +35,12 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: '100%',
+      overflow: 'hidden',
     },
     consultGroup: {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: theme.palette.text.primary,
-      padding: 15,
+      padding: 16,
       marginTop: 10,
       marginBottom: 10,
       display: 'inline-block',
@@ -54,8 +55,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     actions: {
-      paddingTop: 10,
-      paddingBottom: 10,
+      paddingTop: 5,
+      paddingBottom: 4,
       marginLeft: -8,
       marginRight: -8,
     },
@@ -78,7 +79,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     bottomActions: {
-      padding: '30px 15px 15px 15px',
+      padding: '10px 15px 15px 15px',
+      boxShadow: '0 -5px 20px 0 #f7f8f5',
+      position: 'relative',
       '& button': {
         borderRadius: 10,
         textTransform: 'none',
@@ -86,7 +89,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     customScrollBar: {
       paddingTop: 10,
-      paddingBottom: 10,
+      paddingBottom: 30,
     },
     timeSlots: {
       paddingTop: 5,
@@ -126,7 +129,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
       lineHeight: 1.54,
       letterSpacing: 0.33,
-      borderLeft: '1px solid rgba(0,0,0,0.2)',
+      borderLeft: '0.5px solid rgba(2,71,91,0.3)',
       paddingLeft: 15,
       width: '22%',
       textAlign: 'right',
@@ -425,7 +428,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             onClick={() => {
               setIsDialogOpen(false);
               // setMutationSuccess(true);
-              window.location.href = clientRoutes.welcome();
+              window.location.href = clientRoutes.consultRoom();
             }}
             autoFocus
           >

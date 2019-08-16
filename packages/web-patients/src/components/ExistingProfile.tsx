@@ -184,6 +184,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
       props.onUpdatePatient(updatedPatient);
     }
   }, [number, selectedRelation, patient, props]);
+
   return (
     <div className={classes.profileBox} data-cypress="PatientProfile">
       <div className={classes.boxHeader}>
@@ -193,8 +194,9 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
       <div className={classes.boxContent}>
         <div className={classes.userName}>{_capitalize(patient.firstName || '')}</div>
         <div className={classes.userInfo}>
-          {_capitalize(patient.gender || '') + ''}
-          {patient.dateOfBirth && (format(patient.dateOfBirth, 'dd month yyyy') || '').toString()}
+          {_capitalize(patient.gender || '')}
+          {patient.gender && ' | '}
+          {patient.dateOfBirth && (format(patient.dateOfBirth, 'dd MMMM yyyy') || '').toString()}
         </div>
         <AphSelect
           value={selectedRelation}

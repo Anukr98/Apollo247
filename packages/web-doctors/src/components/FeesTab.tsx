@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& h6': {
         color: '#658f9b',
-        padding: '5px 5px 5px 0',
+        padding: '5px 5px 0 0',
         letterSpacing: '0.3px',
         marginLeft: 20,
         fontWeight: theme.typography.fontWeightMedium,
@@ -138,7 +138,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     btnContainer: {
       borderTop: 'solid 2px rgba(101,143,155,0.2)',
-      marginTop: 30,
+      marginTop: 0,
       paddingTop: 10,
       textAlign: 'right',
     },
@@ -172,7 +172,7 @@ const useStyles = makeStyles((theme: Theme) => {
       flexBank: '60%',
     },
     columnAC: {
-      flexBasis: '40%',
+      flexBasis: '50%',
     },
     columnType: {
       flexBasis: '10%',
@@ -202,6 +202,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       marginLeft: 20,
       fontSize: 16,
+      marginBottom: 10,
     },
     accountDetails: {
       fontWeight: theme.typography.fontWeightMedium,
@@ -278,7 +279,12 @@ export const FeesTab: React.FC<FeesProps> = (props) => {
                 >
                   <div className={classes.columnAC}>
                     <Typography className={classes.heading}>
-                      A/C Number: {data.bankAccount && data.bankAccount![0]!.accountNumber}
+                      A/C Number:{' xxxx xxxx xxxx '}
+                      {data.bankAccount &&
+                        data.bankAccount![0]!.accountNumber.substr(
+                          data.bankAccount && data.bankAccount![0]!.accountNumber.length - 4,
+                          data.bankAccount && data.bankAccount![0]!.accountNumber.length - 1
+                        )}
                     </Typography>
                   </div>
                   <div>

@@ -164,12 +164,8 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
               }}
             >
               {data &&
-              data.getDoctorDetails &&
-              data.getDoctorDetails.starTeam &&
-              data.getDoctorDetails.starTeam.filter(
-                (existingDoc: GetDoctorDetails_getDoctorDetails_starTeam | null) =>
-                  existingDoc!.isActive === false
-              ).length > 0 ? (
+                data.getDoctorDetails &&
+                data.getDoctorDetails.starTeam &&
                 data.getDoctorDetails.starTeam
                   .filter(
                     (existingDoc: GetDoctorDetails_getDoctorDetails_starTeam | null) =>
@@ -185,17 +181,18 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
                         >
                           {`${
                             item!.associatedDoctor!.salutation
-                              ? `${item!.associatedDoctor!.salutation} `
+                              ? `${item!
+                                  .associatedDoctor!.salutation!.charAt(0)
+                                  .toUpperCase()}${item!
+                                  .associatedDoctor!.salutation!.slice(1)
+                                  .toLowerCase()}. `
                               : ''
                           }
                           ${item!.associatedDoctor!.firstName} ${item!.associatedDoctor!.lastName}`}
                         </MenuItem>
                       )
                     )
-                  )
-              ) : (
-                <MenuItem disabled={true}>No Data Available</MenuItem>
-              )}
+                  )}
             </AphSelect>
           </div>
         );

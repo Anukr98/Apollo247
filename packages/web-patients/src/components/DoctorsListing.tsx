@@ -213,12 +213,6 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     });
   }
 
-  // console.log(
-  //   '........',
-  //   convertAvailabilityToDate(filter.availability || []),
-  //   filter.availability
-  // );
-
   const apiVairables = {
     specialty: specialityId,
     city: filter.cityName,
@@ -236,24 +230,24 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   });
 
   // this effect will watch for data loaded and triggers popup after 20 and 40 secs.
-  useEffect(() => {
-    if (data) {
-      const timer1 = setTimeout(() => {
-        setShow20SecPopup(true);
-        setIsPopoverOpen(true);
-      }, 20000);
-      const timer2 = setTimeout(() => {
-        setShow40SecPopup(true);
-        setShow20SecPopup(false);
-        setIsPopoverOpen(true);
-      }, 40000);
-      // this will clear Timeout when component unmount like in willComponentUnmount
-      return () => {
-        clearTimeout(timer1);
-        clearTimeout(timer2);
-      };
-    }
-  }, [data]);
+  // useEffect(() => {
+  //   if (data) {
+  //     const timer1 = setTimeout(() => {
+  //       setShow20SecPopup(true);
+  //       setIsPopoverOpen(true);
+  //     }, 20000);
+  //     const timer2 = setTimeout(() => {
+  //       setShow40SecPopup(true);
+  //       setShow20SecPopup(false);
+  //       setIsPopoverOpen(true);
+  //     }, 40000);
+  //     // this will clear Timeout when component unmount like in willComponentUnmount
+  //     return () => {
+  //       clearTimeout(timer1);
+  //       clearTimeout(timer2);
+  //     };
+  //   }
+  // }, [data]);
 
   if (loading) {
     return (

@@ -3,6 +3,8 @@ import { Resolver } from 'api-gateway';
 import { Appointment, STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -74,12 +76,25 @@ const bookAppointment: Resolver<
   AppointmentInputArgs,
   ConsultServiceContext,
   BookAppointmentResult
-> = async (parent, { appointmentInput }, { consultsDb }) => {
+> = async (parent, { appointmentInput }, { consultsDb, doctorsDb }) => {
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
     ...appointmentInput,
     status: STATUS.IN_PROGRESS,
   };
+
+  //check if given appointment datetime is greater than current date time
+  if (appointmentInput.appointmentDateTime <= new Date()) {
+    throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
+  }
+
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
+  const apptCount = await appts.checkIfAppointmentExist(
+    appointmentInput.doctorId,
+    appointmentInput.appointmentDateTime
+  );
+  if (apptCount > 0) {
+    throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
+  }
   const appointment = await appts.saveAppointment(appointmentAttrs);
   return { appointment };
 };

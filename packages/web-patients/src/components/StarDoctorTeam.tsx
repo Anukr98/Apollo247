@@ -5,8 +5,6 @@ import _uniqueId from 'lodash/uniqueId';
 import {
   GetDoctorDetailsById as DoctorDetails,
   GetDoctorDetailsById_getDoctorDetailsById_starTeam as StarTeam,
-  GetDoctorDetailsById_getDoctorDetailsById_doctorHospital as Facility,
-  GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor as StarDoctorProfile,
 } from 'graphql/types/GetDoctorDetailsById';
 import { clientRoutes } from 'helpers/clientRoutes';
 import _map from 'lodash/map';
@@ -125,7 +123,7 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
     doctorDetails.getDoctorDetailsById.starTeam
   ) {
     const firstName = doctorDetails.getDoctorDetailsById.firstName;
-    const lastName = doctorDetails.getDoctorDetailsById.lastName;
+    // const lastName = doctorDetails.getDoctorDetailsById.lastName;
 
     const team =
       doctorDetails.getDoctorDetailsById.starTeam.length > 0
@@ -143,12 +141,10 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
     //   });
     // }
 
-    return (
+    return team.length > 0 ? (
       <div className={classes.sectionGroup}>
         <div className={classes.sectionHeader}>
-          <span>
-            Dr. {firstName}&nbsp;{lastName}'s Team
-          </span>
+          <span>Dr. {firstName}'s Team</span>
           <span className={classes.count}>
             {team.length > 0 ? team.length.toString().padStart(2, '0') : '0'}
           </span>
@@ -246,6 +242,8 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
           })}
         </Grid>
       </div>
+    ) : (
+      <></>
     );
   } else {
     return <div>No Doctors Found...</div>;

@@ -88,7 +88,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.secondary.dark,
       fontSize: 14,
       fontWeight: 500,
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       paddingBottom: 10,
       paddingTop: 10,
       marginBottom: 20,
@@ -195,12 +195,16 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
                       aptArray[1].substring(0, 5)
                     )
                   ),
-                  'hh:mm a'
+                  'h:mm a'
                 );
                 return (
                   <Grid item sm={3} key={_uniqueId('avagr_')}>
                     <div className={classes.root} key={_uniqueId('aphistory_')}>
-                      <div className={classes.appointType}>{appointment.appointmentType}</div>
+                      <div className={classes.appointType}>
+                        {appointment.appointmentType === 'ONLINE'
+                          ? 'Online Consult'
+                          : 'Clinic Visit'}
+                      </div>
                       <div className={classes.appointmentInfo}>
                         <div className={classes.timeGroup}>
                           <div className={classes.appointDate}>{appointmentDate}</div>
