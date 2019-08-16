@@ -8,6 +8,7 @@ import {
   GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
 } from 'graphql/types/GetDoctorAppointments';
 import { addMinutes, format, setDate, startOfToday } from 'date-fns/esm';
+import { startOfMonth, endOfMonth } from 'date-fns';
 
 const useStyles = makeStyles(() => {
   return {
@@ -214,6 +215,7 @@ export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange }) => {
         className={classes.calenderIcon}
         onClick={() => {
           setSelectedDate(startOfToday());
+          onMonthChange({ start: startOfMonth(startOfToday()), end: endOfMonth(startOfToday()) });
         }}
       >
         <img src={require('images/ic_calendar.svg')} alt="" />
