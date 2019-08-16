@@ -94,11 +94,13 @@ const useStyles = makeStyles({
     '& input': {
       background: `url(${require('images/ic_cal_up.svg')}) no-repeat right center`,
       cursor: 'pointer',
+      backgroundSize: 30,
     },
   },
   datePickerClose: {
     '& input': {
       'background-image': `url(${require('images/ic_cal_down.svg')})`,
+      backgroundSize: 30,
     },
   },
 });

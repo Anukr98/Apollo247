@@ -29,6 +29,7 @@ const useStyles = makeStyles(() => {
       height: 76,
       '& img': {
         margin: 'auto',
+        width: 24,
       },
     },
     moreIcon: {
@@ -135,7 +136,8 @@ const useStyles = makeStyles(() => {
       },
       '& .calenderHeader img': {
         position: 'relative',
-        top: 4,
+        top: 9,
+        width: 30,
       },
       '& .monthname': {
         paddingRight: 70,
