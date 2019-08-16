@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
-import { addMinutes, differenceInHours } from 'date-fns';
+import { addMinutes, differenceInHours, format, differenceInMinutes } from 'date-fns';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
@@ -38,14 +38,15 @@ const getDoctorAvailableSlots: Resolver<
   AvailabilityResult
 > = async (parent, { DoctorAvailabilityInput }, { doctorsDb, consultsDb }) => {
   const consultHourRep = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
-  const timeSlots = await consultHourRep.getConsultHours(DoctorAvailabilityInput.doctorId);
+  const weekDay = format(DoctorAvailabilityInput.availableDate, 'EEEE').toUpperCase();
+  const timeSlots = await consultHourRep.getConsultHours(DoctorAvailabilityInput.doctorId, weekDay);
   let availableSlots: string[] = [];
-  if (timeSlots) {
+  if (timeSlots && timeSlots.length > 0) {
     const st = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlots[0].startTime.toString()}`;
     const ed = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlots[0].endTime.toString()}`;
     const consultStartTime = new Date(st);
     const consultEndTime = new Date(ed);
-    const slotsCount = differenceInHours(consultEndTime, consultStartTime) * 4;
+    const slotsCount = Math.ceil(differenceInMinutes(consultEndTime, consultStartTime) / 60) * 4;
     const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
     let startTime = new Date(DoctorAvailabilityInput.availableDate.toDateString() + ' ' + stTime);
     availableSlots = Array(slotsCount)
@@ -69,7 +70,7 @@ const getDoctorAvailableSlots: Resolver<
     DoctorAvailabilityInput.doctorId,
     DoctorAvailabilityInput.availableDate
   );
-  if (apptSlots) {
+  if (apptSlots && apptSlots.length > 0) {
     apptSlots.map((appt) => {
       const sl = `${appt.appointmentDateTime
         .getHours()
@@ -78,7 +79,9 @@ const getDoctorAvailableSlots: Resolver<
         .getMinutes()
         .toString()
         .padStart(2, '0')}`;
-      availableSlots.splice(availableSlots.indexOf(sl), 1);
+      if (availableSlots.indexOf(sl) >= 0) {
+        availableSlots.splice(availableSlots.indexOf(sl), 1);
+      }
     });
   }
 
