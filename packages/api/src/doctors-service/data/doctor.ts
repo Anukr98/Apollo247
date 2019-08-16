@@ -1,6 +1,6 @@
 import { Doctor } from 'doctors-service/resolvers/getDoctors';
 import { INVITEDSTATUS } from 'doctors-service/data/doctorProfile';
-import { Gender } from 'profiles-service/entity/patient';
+import { Gender } from 'profiles-service/entities';
 
 export const doctors: Doctor[] = [
   {

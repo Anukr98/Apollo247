@@ -55,6 +55,9 @@ export interface GetDoctorDetails_getDoctorDetails_doctorHospital {
 export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_doctorHospital_facility {
   __typename: "Facility";
   streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  city: string | null;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_doctorHospital {

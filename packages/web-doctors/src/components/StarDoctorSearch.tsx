@@ -181,7 +181,11 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
                         >
                           {`${
                             item!.associatedDoctor!.salutation
-                              ? `${item!.associatedDoctor!.salutation} `
+                              ? `${item!
+                                  .associatedDoctor!.salutation!.charAt(0)
+                                  .toUpperCase()}${item!
+                                  .associatedDoctor!.salutation!.slice(1)
+                                  .toLowerCase()}. `
                               : ''
                           }
                           ${item!.associatedDoctor!.firstName} ${item!.associatedDoctor!.lastName}`}

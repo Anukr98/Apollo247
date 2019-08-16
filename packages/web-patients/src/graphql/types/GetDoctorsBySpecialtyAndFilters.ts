@@ -25,6 +25,25 @@ export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   endTime: string;
 }
 
+export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital_facility {
+  __typename: "Facility";
+  city: string | null;
+  country: string | null;
+  facilityType: string;
+  latitude: string | null;
+  longitude: string | null;
+  name: string;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+}
+
+export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital_facility;
+}
+
 export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors {
   __typename: "DoctorDetails";
   id: string;
@@ -35,6 +54,7 @@ export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   photoUrl: string | null;
   qualification: string | null;
   consultHours: (GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_consultHours | null)[] | null;
+  doctorHospital: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital[];
 }
 
 export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters {

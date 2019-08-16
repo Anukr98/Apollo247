@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { getTime } from 'date-fns/esm';
 import { format } from 'date-fns';
 import { clientRoutes } from 'helpers/clientRoutes';
+import isTomorrow from 'date-fns/isTomorrow';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -132,6 +133,9 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    disableLink: {
+      pointerEvents: 'none',
+    },
   };
 });
 
@@ -175,14 +179,22 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       aptArray[1].substring(0, 5)
     );
     if (
-      appointmentTime > currentTime &&
-      appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+      // appointmentTime > currentTime &&
+      // appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+      // the above condition is commented as per demo feedback on 13/08/2019
+      appointmentTime > currentTime
     ) {
       return appointmentDetails;
     }
   });
 
-  console.log(filterAppointments);
+  const otherDateMarkup = (appointmentTime: number) => {
+    if (isTomorrow(new Date(appointmentTime))) {
+      return `Tomorrow ${format(new Date(appointmentTime), 'h:mm a')}`;
+    } else {
+      return format(new Date(appointmentTime), 'h:mm a');
+    }
+  };
 
   return (
     <div className={classes.root}>
@@ -226,7 +238,14 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   : '';
               return (
                 <Grid item sm={6} key={index}>
-                  <Link to={clientRoutes.chatRoom(appointmentId, doctorId)}>
+                  <Link
+                    to={clientRoutes.chatRoom(appointmentId, doctorId)}
+                    className={
+                      appointmentDetails.appointmentType === APPOINTMENT_TYPE.PHYSICAL
+                        ? classes.disableLink
+                        : ''
+                    }
+                  >
                     <div className={classes.consultCard}>
                       <div className={classes.startDoctor}>
                         <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
@@ -245,14 +264,18 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         >
                           {difference <= 15
                             ? `Available in ${difference} mins`
-                            : `${format(new Date(appointmentTime), 'hh:mm a')}`}
+                            : otherDateMarkup(appointmentTime)}
                         </div>
                         <div className={classes.doctorName}>{`${firstName} ${lastName}`}</div>
                         <div className={classes.doctorType}>
                           {specialization}
                           <span className={classes.doctorExp}>{experience} YRS</span>
                         </div>
-                        <div className={classes.consultaitonType}>Online Consultation</div>
+                        <div className={classes.consultaitonType}>
+                          {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+                            ? 'Online Consultation'
+                            : 'Clinic visit'}
+                        </div>
                         <div className={classes.appointBooked}>
                           <ul>
                             <li>Fever</li>

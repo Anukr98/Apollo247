@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { Patient } from 'profiles-service/entity/patient';
+import { Patient } from 'profiles-service/entities';
 import fetch from 'node-fetch';
 
 import {

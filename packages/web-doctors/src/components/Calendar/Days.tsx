@@ -21,7 +21,6 @@ const useStyles = makeStyles({
   },
   day: {
     display: 'block',
-    
   },
   date: {
     display: 'block',

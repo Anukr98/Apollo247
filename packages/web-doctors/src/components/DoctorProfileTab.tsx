@@ -101,6 +101,17 @@ const useStyles = makeStyles((theme: Theme) => {
     tabLeftcontent: {
       padding: '10px 20px 10px 20px',
     },
+    columnContent: {
+      '-webkit-column-break-inside': 'avoid',
+      'page-break-inside': 'avoid',
+      'break-inside': 'avoid',
+      'max-width': 'initial',
+    },
+    gridContainer: {
+      'column-count': 2,
+      'column-fill': 'initial',
+      display: 'block',
+    },
     serviceItem: {
       padding: '0 0 10px 0',
       position: 'relative',
@@ -267,15 +278,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       fontWeight: theme.typography.fontWeightMedium,
       color: '#658f9b',
-      display: '-webkit-box',
+      display: 'block',
       maxWidth: 400,
-      height: 36,
+      whiteSpace:'nowrap',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-      lineClamp: 2,
       paddingRight: '20px',
-      width: '90%',
-      boxOrient: 'vertical',
+      width: '51%',
     },
     profileAvatar: {
       width: 80,
@@ -415,11 +424,16 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
             <div>
               <h4
                 title={`${doctor!.associatedDoctor!.salutation &&
-                  doctor!.associatedDoctor!.salutation + '.'} ${
-                  doctor!.associatedDoctor!.firstName
-                } ${doctor!.associatedDoctor!.lastName}`}
+                  doctor!
+                    .associatedDoctor!.salutation!.charAt(0)
+                    .toUpperCase()}${doctor.associatedDoctor!.salutation!.slice(1).toLowerCase() +
+                  '.'} ${doctor!.associatedDoctor!.firstName} ${
+                  doctor!.associatedDoctor!.lastName
+                }`}
               >
-                {doctor!.associatedDoctor!.salutation && doctor!.associatedDoctor!.salutation + '.'}{' '}
+                {doctor!.associatedDoctor!.salutation &&
+                  doctor!.associatedDoctor!.salutation!.charAt(0).toUpperCase()}
+                {doctor.associatedDoctor!.salutation!.slice(1).toLowerCase() + '.'}{' '}
                 {`${doctor!.associatedDoctor!.firstName!} ${doctor!.associatedDoctor!.lastName!}`
                   .length < 13
                   ? `${doctor!.associatedDoctor!.firstName} ${doctor!.associatedDoctor!.lastName}`
@@ -440,14 +454,46 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           subheader={
             <div>
               {doctor!.isActive === true && (
-                <span
-                  className={classes.qualification}
-                  title={`${doctor!.associatedDoctor!.qualification}, ${
-                    doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1
-                  }`}
-                >
-                  {doctor!.associatedDoctor!.qualification},
-                  {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1}
+                <span>
+                  <span
+                    className={classes.qualification}
+                    title={`${doctor!.associatedDoctor!.qualification}`}
+                  >
+                    {doctor!.associatedDoctor!.qualification}
+                  </span>
+                  <span
+                    className={classes.qualification}
+                    title={`${
+                      doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1
+                        ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1 + ', '
+                        : ''
+                    }${
+                      doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine2
+                        ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine2 + ', '
+                        : ''
+                    }${
+                      doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine3
+                        ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine3 + ', '
+                        : ''
+                    }${
+                      doctor!.associatedDoctor!.doctorHospital[0]!.facility!.city
+                        ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.city
+                        : ''
+                    }`}
+                  >
+                    {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1
+                      ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1 + ', '
+                      : ''}
+                    {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine2
+                      ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine2 + ', '
+                      : ''}
+                    {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine3
+                      ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine3 + ', '
+                      : ''}
+                    {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.city
+                      ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.city
+                      : ''}
+                  </span>
                 </span>
               )}
             </div>
@@ -573,7 +619,8 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
               </div>
               <Typography variant="h4">
-                Dr. {doctor.firstName} {doctor.lastName}
+                {doctor.salutation!.charAt(0).toUpperCase()}
+                {doctor.salutation!.slice(1).toLowerCase()}. {doctor.firstName} {doctor.lastName}
               </Typography>
               <Typography variant="h6">
                 {(doctor.specialty.name || '').toUpperCase()} <span> | </span>
@@ -582,9 +629,9 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             </Paper>
           </Grid>
           <Grid item lg={8} sm={6} xs={12} className={classes.tabLeftcontent}>
-            <Grid container alignItems="flex-start" spacing={0}>
+            <Grid container alignItems="flex-start" spacing={0} className={classes.gridContainer}>
               {doctor.qualification && doctor.qualification!.length > 0 && (
-                <Grid item lg={6} sm={12} xs={12}>
+                <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">Education</Typography>
                     <Typography variant="h3">{doctor.qualification}</Typography>
@@ -592,7 +639,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 </Grid>
               )}
               {doctor.awards && doctor.awards!.length > 0 && (
-                <Grid item lg={6} sm={12} xs={12}>
+                <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">Awards</Typography>
                     <Typography variant="h3">
@@ -605,7 +652,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 </Grid>
               )}
               {doctor.specialty.name && doctor.specialty.name!.length > 0 && (
-                <Grid item lg={6} sm={12} xs={12}>
+                <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">Speciality</Typography>
                     <Typography variant="h3">{doctor.specialty.name}</Typography>
@@ -613,7 +660,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 </Grid>
               )}
               {doctor.languages && doctor.languages!.length > 0 && (
-                <Grid item lg={6} sm={12} xs={12}>
+                <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">Speaks</Typography>
                     <Typography variant="h3">{doctor.languages}</Typography>
@@ -621,7 +668,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 </Grid>
               )}
               {doctor.specialization && doctor!.specialization!.length > 0 && (
-                <Grid item lg={6} sm={12} xs={12}>
+                <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">Services</Typography>
                     <Typography variant="h3">{doctor.specialization}</Typography>
@@ -630,14 +677,14 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               )}
 
               {doctor.registrationNumber && doctor.registrationNumber!.length > 0 && (
-                <Grid item lg={6} sm={12} xs={12}>
+                <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">MCI Number</Typography>
                     <Typography variant="h3">{doctor.registrationNumber}</Typography>
                   </Paper>
                 </Grid>
               )}
-              <Grid item lg={6} sm={12} xs={12}>
+              <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">In-person Consult Location</Typography>
                   {clinics.map((clinic, index) => (

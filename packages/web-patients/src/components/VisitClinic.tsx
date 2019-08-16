@@ -428,7 +428,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             onClick={() => {
               setIsDialogOpen(false);
               // setMutationSuccess(true);
-              window.location.href = clientRoutes.welcome();
+              window.location.href = clientRoutes.consultRoom();
             }}
             autoFocus
           >
