@@ -278,15 +278,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       fontWeight: theme.typography.fontWeightMedium,
       color: '#658f9b',
-      display: '-webkit-box',
+      display: 'block',
       maxWidth: 400,
-      height: 36,
+      whiteSpace:'nowrap',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-      lineClamp: 2,
       paddingRight: '20px',
-      width: '90%',
-      boxOrient: 'vertical',
+      width: '51%',
     },
     profileAvatar: {
       width: 80,
@@ -456,14 +454,46 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
           subheader={
             <div>
               {doctor!.isActive === true && (
-                <span
-                  className={classes.qualification}
-                  title={`${doctor!.associatedDoctor!.qualification}, ${
-                    doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1
-                  }`}
-                >
-                  {doctor!.associatedDoctor!.qualification},
-                  {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1}
+                <span>
+                  <span
+                    className={classes.qualification}
+                    title={`${doctor!.associatedDoctor!.qualification}`}
+                  >
+                    {doctor!.associatedDoctor!.qualification}
+                  </span>
+                  <span
+                    className={classes.qualification}
+                    title={`${
+                      doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1
+                        ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1 + ', '
+                        : ''
+                    }${
+                      doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine2
+                        ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine2 + ', '
+                        : ''
+                    }${
+                      doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine3
+                        ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine3 + ', '
+                        : ''
+                    }${
+                      doctor!.associatedDoctor!.doctorHospital[0]!.facility!.city
+                        ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.city
+                        : ''
+                    }`}
+                  >
+                    {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1
+                      ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine1 + ', '
+                      : ''}
+                    {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine2
+                      ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine2 + ', '
+                      : ''}
+                    {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine3
+                      ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.streetLine3 + ', '
+                      : ''}
+                    {doctor!.associatedDoctor!.doctorHospital[0]!.facility!.city
+                      ? doctor!.associatedDoctor!.doctorHospital[0]!.facility!.city
+                      : ''}
+                  </span>
                 </span>
               )}
             </div>
