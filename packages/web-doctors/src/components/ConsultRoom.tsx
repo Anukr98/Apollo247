@@ -33,6 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 #00000026',
       fontSize: 15,
+      wordBreak: 'break-all',
     },
     doctor: {
       backgroundColor: '#f0f4f5',
@@ -46,6 +47,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'left',
       fontSize: 16,
       maxWidth: '40%',
+      wordBreak: 'break-all',
     },
     boldTxt: {
       fontWeight: 700,
@@ -151,6 +153,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   let leftComponent = 0;
   let rightComponent = 0;
   const pubnub = new Pubnub(config);
+  let insertText: MessagesObjectProps[] = [];
+
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
@@ -161,6 +165,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
+        insertText[insertText.length] = message.message;
+        setMessages(insertText);
+        setMessageText('reset');
+        setMessageText('');
+        setTimeout(() => {
+          const scrollDiv = document.getElementById('scrollDiv');
+          scrollDiv!.scrollIntoView();
+        }, 200);
         setMessageText('reset');
         setMessageText('');
         getHistory();
@@ -169,7 +181,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return function cleanup() {
       pubnub.unsubscribe({ channels: [channel] });
     };
-  });
+  }, [messageText]);
   function getCookieValue() {
     const name = 'action=';
     const ca = document.cookie.split(';');
@@ -199,6 +211,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       res.messages.forEach((element, index) => {
         newmessage[index] = element.entry;
       });
+      insertText = newmessage;
       if (messages.length !== newmessage.length) {
         setMessages(newmessage);
       }
