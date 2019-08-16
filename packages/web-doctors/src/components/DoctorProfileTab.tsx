@@ -426,11 +426,16 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
             <div>
               <h4
                 title={`${doctor!.associatedDoctor!.salutation &&
-                  doctor!.associatedDoctor!.salutation + '.'} ${
-                  doctor!.associatedDoctor!.firstName
-                } ${doctor!.associatedDoctor!.lastName}`}
+                  doctor!
+                    .associatedDoctor!.salutation!.charAt(0)
+                    .toUpperCase()}${doctor.associatedDoctor!.salutation!.slice(1).toLowerCase() +
+                  '.'} ${doctor!.associatedDoctor!.firstName} ${
+                  doctor!.associatedDoctor!.lastName
+                }`}
               >
-                {doctor!.associatedDoctor!.salutation && doctor!.associatedDoctor!.salutation + '.'}{' '}
+                {doctor!.associatedDoctor!.salutation &&
+                  doctor!.associatedDoctor!.salutation!.charAt(0).toUpperCase()}
+                {doctor.associatedDoctor!.salutation!.slice(1).toLowerCase() + '.'}{' '}
                 {`${doctor!.associatedDoctor!.firstName!} ${doctor!.associatedDoctor!.lastName!}`
                   .length < 13
                   ? `${doctor!.associatedDoctor!.firstName} ${doctor!.associatedDoctor!.lastName}`
@@ -584,7 +589,8 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
               </div>
               <Typography variant="h4">
-                Dr. {doctor.firstName} {doctor.lastName}
+                {doctor.salutation!.charAt(0).toUpperCase()}
+                {doctor.salutation!.slice(1).toLowerCase()}. {doctor.firstName} {doctor.lastName}
               </Typography>
               <Typography variant="h6">
                 {(doctor.specialty.name || '').toUpperCase()} <span> | </span>
