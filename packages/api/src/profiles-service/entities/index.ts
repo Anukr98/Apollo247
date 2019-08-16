@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, OneToMany, ManyToOne } from 'typeorm';
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 
@@ -63,6 +63,9 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   //@IsDate()
   dateOfBirth: Date;
+
+  @OneToMany((type) => SearchHistory, (searchHistory) => searchHistory.patient)
+  searchHistory: SearchHistory[];
 }
 //patient Ends
 
@@ -78,8 +81,8 @@ export class SearchHistory extends BaseEntity {
   @Column('uuid')
   typeId: string;
 
-  @Column('uuid')
-  patientId: string;
+  @ManyToOne((type) => Patient, (patient) => patient.searchHistory)
+  patient: Patient;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
