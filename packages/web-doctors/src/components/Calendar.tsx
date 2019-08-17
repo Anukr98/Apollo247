@@ -175,8 +175,6 @@ export const Calendar: React.FC = () => {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
 
-  console.log(viewSelection, range, startOfMonth(selectedDate));
-
   const setStartOfMonthDate = ({ start }: { start: string | Date; end: string | Date }) => {
     setSelectedDate(startOfMonth(start as Date));
   };
