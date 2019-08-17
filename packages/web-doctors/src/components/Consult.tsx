@@ -99,6 +99,18 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
       zIndex: 9,
     },
+    timerCls: {
+      position: 'absolute',
+      top: 40,
+      zIndex: 99,
+      left: 40,
+      fontSize: 12,
+      fontWeight: 600,
+    },
+    patientName: {
+      fontSize: 20,
+      fontWeight: 600,
+    },
   };
 });
 interface ConsultProps {
@@ -123,6 +135,22 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     <div className={classes.consult}>
       <div>
         <div className={props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''}>
+          {!props.showVideoChat && (
+            <div className={classes.timerCls}>
+              <div className={classes.patientName}>Seema Singh</div>
+              {props.isCallAccepted &&
+                ` ${
+                  props.timerMinuts.toString().length < 2
+                    ? '0' + props.timerMinuts
+                    : props.timerMinuts
+                } :  ${
+                  props.timerSeconds.toString().length < 2
+                    ? '0' + props.timerSeconds
+                    : props.timerSeconds
+                }`}
+            </div>
+          )}
+
           {isCall && (
             <OTSession
               apiKey="46393582"
@@ -215,36 +243,19 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             className={classes.muteBtn}
                             onClick={() => props.toggelChatVideo()}
                           >
-                            {props.isNewMsg ? (
-                              <img
-                                className={classes.whiteArrow}
-                                src={require('images/ic_message.svg')}
-                                alt="msgicon"
-                              />
-                            ) : (
-                              <img
-                                className={classes.whiteArrow}
-                                src={require('images/ic_chat_circle.svg')}
-                                alt="msgicon"
-                              />
-                            )}
+                            <img
+                              className={classes.whiteArrow}
+                              src={
+                                props.isNewMsg
+                                  ? require('images/ic_message.svg')
+                                  : require('images/ic_chat_circle.svg')
+                              }
+                              alt="msgicon"
+                            />
                           </button>
                         )}
                       </Grid>
                       <Grid item lg={10} sm={8} xs={8} className={classes.VideoAlignment}>
-                        <span>
-                          {props.isCallAccepted &&
-                            `Time start ${
-                              props.timerMinuts.toString().length < 2
-                                ? '0' + props.timerMinuts
-                                : props.timerMinuts
-                            } :  ${
-                              props.timerSeconds.toString().length < 2
-                                ? '0' + props.timerSeconds
-                                : props.timerSeconds
-                            }`}
-                        </span>
-
                         {isCall && mute && (
                           <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
                             <img

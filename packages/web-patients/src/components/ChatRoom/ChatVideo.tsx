@@ -292,12 +292,12 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                           <img src={require('images/ic_videooff.svg')} alt="video off" />
                         </Button>
                       )}
-                      <span>
+                      {/* <span>
                         {`Time start ${
                           timerMinuts.toString().length < 2 ? '0' + timerMinuts : timerMinuts
                         } : 
              ${timerSeconds.toString().length < 2 ? '0' + timerSeconds : timerSeconds}`}
-                      </span>
+                      </span> */}
                     </Grid>
 
                     <Grid item xs={4} className={classes.rightActions}>
