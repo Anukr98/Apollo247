@@ -8,6 +8,11 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
   }
 
   getPhysicalConsultHours(doctor: string, weekDay: string, facility: string) {
-    return this.find({ where: { doctor, weekDay, facility, consultMode: 'BOTH' } });
+    return this.find({
+      where: [
+        { doctor, weekDay, facility, consultMode: 'BOTH' },
+        { doctor, weekDay, facility, consultMode: 'PHYSICAL' },
+      ],
+    });
   }
 }
