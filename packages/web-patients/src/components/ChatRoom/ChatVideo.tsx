@@ -134,6 +134,7 @@ interface ConsultProps {
   isVideoCall: boolean;
   sessionId: string;
   token: string;
+  isNewMsg: boolean;
 }
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
@@ -262,7 +263,11 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                     <Grid item xs={4}>
                       {isCall && (
                         <Button onClick={() => props.toggelChatVideo()}>
-                          <img src={require('images/ic_chat_circle.svg')} alt="chat" />
+                          {props.isNewMsg ? (
+                            <img src={require('images/ic_message.svg')} alt="msgicon" />
+                          ) : (
+                            <img src={require('images/ic_chat_circle.svg')} alt="msgicon" />
+                          )}
                         </Button>
                       )}
                     </Grid>
@@ -287,12 +292,12 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                           <img src={require('images/ic_videooff.svg')} alt="video off" />
                         </Button>
                       )}
-                      <span>
+                      {/* <span>
                         {`Time start ${
                           timerMinuts.toString().length < 2 ? '0' + timerMinuts : timerMinuts
                         } : 
              ${timerSeconds.toString().length < 2 ? '0' + timerSeconds : timerSeconds}`}
-                      </span>
+                      </span> */}
                     </Grid>
 
                     <Grid item xs={4} className={classes.rightActions}>
