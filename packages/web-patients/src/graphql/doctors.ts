@@ -127,6 +127,20 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
           weekDay
           endTime
         }
+        doctorHospital {
+          facility {
+            city
+            country
+            facilityType
+            latitude
+            longitude
+            name
+            state
+            streetLine1
+            streetLine2
+            streetLine3
+          }
+        }
       }
     }
   }
@@ -146,6 +160,20 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
         experience
         photoUrl
         qualification
+        doctorHospital {
+          facility {
+            city
+            country
+            facilityType
+            latitude
+            longitude
+            name
+            state
+            streetLine1
+            streetLine2
+            streetLine3
+          }
+        }
       }
       specialties {
         name
@@ -264,6 +292,17 @@ export const GET_PATIENT_APPOINTMENTS = gql`
             name
           }
         }
+      }
+    }
+  }
+`;
+
+export const GET_DOCTOR_NEXT_AVAILABILITY = gql`
+  query GetDoctorNextAvailableSlot($DoctorNextAvailableSlotInput: DoctorNextAvailableSlotInput) {
+    getDoctorNextAvailableSlot(DoctorNextAvailableSlotInput: $DoctorNextAvailableSlotInput) {
+      doctorAvailalbeSlots {
+        doctorId
+        availableSlot
       }
     }
   }

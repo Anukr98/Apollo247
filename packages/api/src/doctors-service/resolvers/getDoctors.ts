@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsData, INVITEDSTATUS } from 'doctors-service/data/doctorProfile';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { Gender } from 'profiles-service/entity/patient';
+import { Gender } from 'profiles-service/entities';
 
 export const doctorTypeDefs = gql`
   enum INVITEDSTATUS {

@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Between } from 'typeorm';
+import { EntityRepository, Repository, Between, MoreThan, LessThan } from 'typeorm';
 import { Appointment, AppointmentSessions } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -17,9 +17,16 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  checkIfAppointmentExist(doctorId: string, appointmentDateTime: Date) {
+    return this.count({ where: { doctorId, appointmentDateTime } });
+  }
+
   findByDateDoctorId(doctorId: string, appointmentDate: Date) {
+    const inputDate = format(appointmentDate, 'yyyy-MM-dd');
+    const startDate = new Date(inputDate + 'T00:00');
+    const endDate = new Date(inputDate + 'T23:59');
     return this.find({
-      where: { doctorId, appointmentDate },
+      where: { doctorId, appointmentDateTime: Between(startDate, endDate) },
     });
   }
 
@@ -40,7 +47,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getPatientAppointments(doctorId: string, patientId: string) {
-    return this.find({ where: { doctorId, patientId } });
+    return this.find({ where: { doctorId, patientId, appointmentDateTime: LessThan(new Date()) } });
   }
 
   getDoctorAppointments(doctorId: string, startDate: Date, endDate: Date) {
@@ -65,6 +72,11 @@ export class AppointmentRepository extends Repository<Appointment> {
     const startDate = new Date(inputDate + 'T00:00');
     const endDate = new Date(inputDate + 'T23:59');
     return this.find({ where: { patientId, appointmentDateTime: Between(startDate, endDate) } });
+  }
+
+  getPatinetUpcomingAppointments(patientId: string) {
+    const startDate = new Date();
+    return this.find({ where: { patientId, appointmentDateTime: MoreThan(startDate) } });
   }
 
   async findNextOpenAppointment(doctorId: string, consultHours: ConsultHours[]) {

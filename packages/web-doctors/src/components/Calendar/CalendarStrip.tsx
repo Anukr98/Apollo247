@@ -52,6 +52,11 @@ const useStyles = makeStyles({
     fontSize: 25,
     color: '#658f9b',
     cursor: 'pointer',
+    verticalAlign: 'middle',
+    '& img': {
+      width: 30,
+      marginTop: 8,
+    },
   },
   nextBtn: {
     width: '4%',
@@ -60,6 +65,11 @@ const useStyles = makeStyles({
     fontSize: 25,
     color: '#658f9b',
     cursor: 'pointer',
+    verticalAlign: 'middle',
+    '& img': {
+      width: 30,
+      marginTop: 8,
+    },
   },
   calendarContainer: {
     display: 'flex',
@@ -74,6 +84,7 @@ const useStyles = makeStyles({
     backgroundColor: '#fff',
     '& img': {
       margin: 'auto',
+      width: 24,
     },
   },
   moreIcon: {
@@ -149,8 +160,7 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
             }
           }}
         >
-          {' '}
-          &lt;{' '}
+          <img src={require('images/ic_leftarrow.svg')} alt="" />
         </div>
         <Days
           userSelection={userSelection}
@@ -175,8 +185,7 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
             }
           }}
         >
-          {' '}
-          >{' '}
+          <img src={require('images/ic_rightarrow.svg')} alt="" />
         </div>
       </div>
       <div className={classes.moreIcon}>

@@ -41,13 +41,27 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const Navigation: React.FC = (props) => {
   const classes = useStyles();
+  const currentPath = window.location.pathname;
   return (
     <div className={classes.appNavigation} data-cypress="Navigation">
-      <Link className={classes.menuItemActive} to={clientRoutes.consultRoom()}>
+      <Link
+        className={currentPath === clientRoutes.consultRoom() ? classes.menuItemActive : ''}
+        to={clientRoutes.consultRoom()}
+      >
         Consult Room
       </Link>
-      <Link to={clientRoutes.healthRecords()}>Health Records</Link>
-      <Link to={clientRoutes.testsAndMedicine()}>Tests &amp; Medicines</Link>
+      <Link
+        to={clientRoutes.healthRecords()}
+        className={currentPath === clientRoutes.healthRecords() ? classes.menuItemActive : ''}
+      >
+        Health Records
+      </Link>
+      <Link
+        to={clientRoutes.testsAndMedicine()}
+        className={currentPath === clientRoutes.testsAndMedicine() ? classes.menuItemActive : ''}
+      >
+        Tests &amp; Medicines
+      </Link>
     </div>
   );
 };

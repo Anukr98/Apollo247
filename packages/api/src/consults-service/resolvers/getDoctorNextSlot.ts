@@ -2,6 +2,8 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
+import { format } from 'date-fns';
 
 export const getNextAvailableSlotTypeDefs = gql`
   input DoctorNextAvailableSlotInput {
@@ -49,14 +51,25 @@ const getDoctorNextAvailableSlot: Resolver<
   ConsultServiceContext,
   SlotAvailabilityResult
 > = async (parent, { DoctorNextAvailableSlotInput }, { doctorsDb, consultsDb }) => {
+  const docConsultRep = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
+  const weekDay = format(new Date(), 'EEEE').toUpperCase();
   const doctorAvailalbeSlots: SlotAvailability[] = [];
   function slots(doctorId: string) {
     return new Promise<SlotAvailability>(async (resolve) => {
       let availableSlot: string = '';
-      const slot = await appts.getDoctorNextAvailSlot(doctorId);
-      if (slot) {
-        availableSlot = slot;
+      const docConsultHrs = await docConsultRep.getConsultHours(doctorId, weekDay);
+      if (docConsultHrs.length === 0) {
+        availableSlot = '';
+      } else {
+        const slot = await appts.getDoctorNextAvailSlot(doctorId);
+        if (slot && docConsultHrs) {
+          if (slot >= docConsultHrs[0].startTime && slot <= docConsultHrs[0].endTime) {
+            availableSlot = slot;
+          } else {
+            availableSlot = '';
+          }
+        }
       }
       const doctorSlot: SlotAvailability = { doctorId, availableSlot };
       doctorAvailalbeSlots.push(doctorSlot);
