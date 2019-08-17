@@ -43,6 +43,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
               country
               latitude
               longitude
+              id
             }
           }
         }
@@ -66,6 +67,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
           streetLine1
           streetLine2
           streetLine3
+          id
         }
       }
       consultHours {
@@ -139,6 +141,7 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
             streetLine1
             streetLine2
             streetLine3
+            id
           }
         }
       }
@@ -172,6 +175,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
             streetLine1
             streetLine2
             streetLine3
+            id
           }
         }
       }

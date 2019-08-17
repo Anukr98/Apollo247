@@ -287,14 +287,17 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const clinics: Facility[] = [];
   if (doctorDetails && doctorDetails.getDoctorDetailsById) {
     _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
-      if (hospitalDetails.facility.facilityType === 'CLINIC') {
+      if (
+        hospitalDetails.facility.facilityType === 'CLINIC' ||
+        hospitalDetails.facility.facilityType === 'HOSPITAL'
+      ) {
         clinics.push(hospitalDetails);
       }
     });
   }
 
   const defaultClinicId =
-    clinics.length > 0 && clinics[0] && clinics[0].facility ? clinics[0].facility.city : '';
+    clinics.length > 0 && clinics[0] && clinics[0].facility ? clinics[0].facility.id : '';
 
   const defaultClinicAddress =
     clinics.length > 0 && clinics[0] && clinics[0].facility
@@ -335,7 +338,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                   <MenuItem
                     classes={{ selected: classes.menuSelected }}
                     key={_uniqueId('clinic_')}
-                    value={(clinicDetails.facility.city && clinicDetails.facility.city) || ''}
+                    value={(clinicDetails.facility.id && clinicDetails.facility.id) || ''}
                   >
                     {clinicDetails.facility.name}
                   </MenuItem>
@@ -381,7 +384,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
               doctorId: doctorId,
               appointmentDateTime: `${apiDateFormat}T${timeSelected.padStart(5, '0')}:00.000Z`,
               appointmentType: APPOINTMENT_TYPE.PHYSICAL,
-              hospitalId: '',
+              hospitalId: defaultClinicId,
             },
           }}
           onCompleted={() => {
