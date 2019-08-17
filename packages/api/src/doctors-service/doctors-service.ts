@@ -35,6 +35,10 @@ import {
   getDoctorDetailsTypeDefs,
   getDoctorDetailsResolvers,
 } from 'doctors-service/resolvers/getDoctorDetails';
+import {
+  delegateFunctionsTypeDefs,
+  delegateFunctionsResolvers,
+} from 'doctors-service/resolvers/delegateFunctions';
 
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
@@ -128,6 +132,10 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
       {
         typeDefs: doctorTypeDefs,
         resolvers: doctorResolvers,
+      },
+      {
+        typeDefs: delegateFunctionsTypeDefs,
+        resolvers: delegateFunctionsResolvers,
       },
       {
         typeDefs: getSpecialtyDoctorsTypeDefs,
