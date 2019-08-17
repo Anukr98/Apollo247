@@ -102,6 +102,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: '18px',
       color: '#02475b',
     },
+    accountIc: {
+      marginTop: '9px !important',
+      marginRight: '0 !important',
+    },
   };
 });
 
@@ -120,7 +124,7 @@ export const Header: React.FC = (props) => {
             <img src={require('images/ic_logo.png')} />
           </Link>
         </div>
-        <Navigation />
+        {isSignedIn && <Navigation />}        
         <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup, isProtected }) => (
@@ -131,19 +135,15 @@ export const Header: React.FC = (props) => {
               >
                 {isSigningIn ? (
                   <CircularProgress />
-                ) : (
-                  <div>
-                    <img src={require('images/ic_inbox.svg')} />
-                    <img src={require('images/ic_notifications.svg')} />
-                    <img
-                    src={
-                      !isSignedIn ? require('images/ic_account.svg') : require('images/ic_help.svg')
-                    }
-                  />
-                  
-                  
+                ) : isSignedIn ? (<div>
+                  <img src={require('images/ic_inbox.svg')} />
+                  <img src={require('images/ic_notifications.svg')} />
+                  <img src={require('images/ic_help.svg')} />             
                   <img src={require('images/ic_profile.svg')} />
-                  </div>
+                </div>) : (
+                  <div>
+                    <img className={classes.accountIc} src={require('images/ic_account.svg')} />
+                  </div> 
                 )}
               </div>
             )}
