@@ -8,11 +8,9 @@ import { Doctor } from 'doctors-service/entities';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 
 export const delegateFunctionsTypeDefs = gql`
-  extend type Query {
-    removeDelegateNumber: Profile
-  }
   extend type Mutation {
     updateDelegateNumber(delegateNumber: String): Profile
+    removeDelegateNumber: Profile
   }
 `;
 
@@ -52,7 +50,7 @@ const removeDelegateNumber: Resolver<null, {}, DoctorsServiceContext, Doctor> = 
     await doctorRepository.updateDelegateNumber(doctorData.id, '');
 
   const updatedDoctorDetails =
-    doctorData.delegateNumber == null
+    doctorData.delegateNumber != null
       ? await doctorRepository.getDoctorProfileData(doctorData.id)
       : doctorData;
   if (updatedDoctorDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
@@ -60,10 +58,8 @@ const removeDelegateNumber: Resolver<null, {}, DoctorsServiceContext, Doctor> = 
 };
 
 export const delegateFunctionsResolvers = {
-  Query: {
-    removeDelegateNumber,
-  },
   Mutation: {
     updateDelegateNumber,
+    removeDelegateNumber,
   },
 };
