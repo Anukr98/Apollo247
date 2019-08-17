@@ -27,6 +27,9 @@ const useStyles = makeStyles((theme: Theme) => {
       minHeight: 'calc(100vh - 360px)',
       display: 'flex',
     },
+    expandIcon: {
+      color: '#02475b'
+    }
   };
 });
 
@@ -50,7 +53,7 @@ export const CaseSheet: React.FC = () => {
           expanded={expanded === 'symptoms'}
           onChange={handlePanelExpansion('symptoms')}
         >
-          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
             <Typography>Symptoms</Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
@@ -63,7 +66,7 @@ export const CaseSheet: React.FC = () => {
           expanded={expanded === 'lifestyle'}
           onChange={handlePanelExpansion('lifestyle')}
         >
-          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
             <Typography>Patient History &amp; Lifestyle</Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
@@ -76,7 +79,7 @@ export const CaseSheet: React.FC = () => {
           expanded={expanded === 'healthVault'}
           onChange={handlePanelExpansion('healthVault')}
         >
-          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
             <Typography>Patient Health Vault</Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
@@ -86,7 +89,7 @@ export const CaseSheet: React.FC = () => {
 
         {/* Juniour Doctor's Notes Panel */}
         <ExpansionPanel expanded={expanded === 'notes'} onChange={handlePanelExpansion('notes')}>
-          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
             <Typography>Juniour Doctor's Notes</Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
@@ -99,7 +102,7 @@ export const CaseSheet: React.FC = () => {
           expanded={expanded === 'diagnosis'}
           onChange={handlePanelExpansion('diagnosis')}
         >
-          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
             <Typography>Diagnosis</Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
@@ -112,7 +115,7 @@ export const CaseSheet: React.FC = () => {
           expanded={expanded === 'medicinePrescription'}
           onChange={handlePanelExpansion('medicinePrescription')}
         >
-          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
             <Typography>Medicine Prescription</Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
@@ -125,7 +128,7 @@ export const CaseSheet: React.FC = () => {
           expanded={expanded === 'diagnosticPrescription'}
           onChange={handlePanelExpansion('diagnosticPrescription')}
         >
-          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
             <Typography>Diagnostic Prescription</Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
@@ -138,7 +141,7 @@ export const CaseSheet: React.FC = () => {
           expanded={expanded === 'followup'}
           onChange={handlePanelExpansion('followup')}
         >
-          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
             <Typography>Follow up</Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
@@ -151,7 +154,7 @@ export const CaseSheet: React.FC = () => {
           expanded={expanded === 'otherInstructions'}
           onChange={handlePanelExpansion('otherInstructions')}
         >
-          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
             <Typography>Other Instructions</Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
