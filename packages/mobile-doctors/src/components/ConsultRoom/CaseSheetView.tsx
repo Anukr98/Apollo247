@@ -12,6 +12,7 @@ import {
   Add,
   PlaceHolderDoctor,
   PlaceHolderDoctors,
+  DiagonisisRemove,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import { string } from '@aph/mobile-doctors/src/strings/string';
@@ -33,6 +34,9 @@ import { Slider } from 'react-native-elements';
 import { NavigationScreenProps, NavigationParams } from 'react-navigation';
 import { NavigationScreenProp } from 'react-navigation';
 import { NavigationRoute } from 'react-navigation';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import console = require('console');
+import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
 
 const styles = StyleSheet.create({
   casesheetView: {
@@ -55,7 +59,7 @@ const styles = StyleSheet.create({
   },
   understatusline: {
     borderStyle: 'solid',
-    borderWidth: 1,
+    borderWidth: 0.5,
     borderColor: 'rgba(2, 71, 91, 0.4)',
     ...ifIphoneX(
       {
@@ -71,7 +75,7 @@ const styles = StyleSheet.create({
   },
   line: {
     height: 16,
-    borderWidth: 1,
+    borderWidth: 0.5,
     borderColor: 'rgba(2, 71, 91, 0.6)',
     marginLeft: 15,
     marginTop: 10,
@@ -96,7 +100,7 @@ const styles = StyleSheet.create({
   },
   underlineend: {
     borderStyle: 'solid',
-    borderWidth: 1,
+    borderWidth: 0.5,
     borderColor: '#02475b',
     opacity: 0.4,
     ...ifIphoneX(
@@ -211,11 +215,11 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#30c1a3',
+    borderColor: 'rgba(2, 71, 91, 0.15)',
     marginBottom: 16,
     marginLeft: 16,
     marginRight: 16,
-    backgroundColor: 'rgba(216, 216, 216, 0.08)',
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
   },
   symptomsText: {
     marginTop: 12,
@@ -226,9 +230,10 @@ const styles = StyleSheet.create({
   },
 
   familyText: {
-    marginTop: 12,
+    //marginTop: 12,
     marginLeft: 16,
-    color: '#232643',
+    color: '#02475b',
+    opacity: 0.6,
     ...theme.fonts.IBMPlexSansMedium(16),
     letterSpacing: 0.03,
     marginBottom: 12,
@@ -237,31 +242,24 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#30c1a3',
     marginBottom: 16,
     marginLeft: 16,
     marginRight: 16,
-    backgroundColor: 'rgba(216, 216, 216, 0.08)',
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+    borderStyle: 'solid',
+    borderColor: 'rgba(2, 71, 91, 0.15)',
   },
-  medicalView: {
-    flex: 1,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#30c1a3',
-    marginBottom: 16,
-    marginLeft: 16,
-    marginRight: 16,
-    backgroundColor: 'rgba(216, 216, 216, 0.08)',
-  },
+
   AllergiesInputView: {
     flex: 1,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#30c1a3',
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+    borderStyle: 'solid',
+    borderColor: 'rgba(2, 71, 91, 0.15)',
     marginBottom: 16,
     marginLeft: 16,
     marginRight: 16,
-    backgroundColor: 'rgba(216, 216, 216, 0.08)',
   },
   otherInstructionsInput: {
     borderRadius: 36,
@@ -352,7 +350,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   addDoctorText: {
-    ...theme.fonts.IBMPlexSansMedium(16),
+    ...theme.fonts.IBMPlexSansSemiBold(14),
     letterSpacing: 0,
     color: '#fc9916',
     marginTop: 2,
@@ -447,24 +445,6 @@ const renderBasicProfileDetails = (
   );
 };
 
-const renderPhotosUploadedPatient = () => {
-  return (
-    <View>
-      <Text style={styles.familyText}>Photos uploaded by the Patient</Text>
-      <View
-        style={{
-          width: 64,
-          height: 64,
-          borderRadius: 10,
-          backgroundColor: '#d8d8d8',
-          marginLeft: 16,
-          marginBottom: 16,
-        }}
-      ></View>
-    </View>
-  );
-};
-
 export interface CaseSheetViewProps extends NavigationScreenProps {
   onStartConsult: () => void;
   onStopConsult: () => void;
@@ -479,19 +459,23 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   console.log('Appintmentdatetimeconsultpagecase', Appintmentdatetimeconsultpage);
   const [value, setValue] = useState<string>('');
   const [symptonsValue, setSymptonsValue] = useState<string>('Fever, Cough and Cold, Nausea');
+
   const [familyValues, setFamilyValues] = useState<string>(
     'Father: Cardiac patient\nMother: Severe diabetes\nMarried, No kids'
   );
-  const [medicalRecordValues, setMedicalRecordValues] = useState<string>(
-    'New Patient No\nPrescriptions uploaded'
-  );
+
   const [allergiesData, setAllergiesData] = useState<string>('Paracetamol, Dairy, Dust');
   const [lifeStyleData, setLifeStyleData] = useState<string>(
     'Patient doesn’t smoke\nRecovered from chickenpox 6 months\nago'
   );
+  const [juniordoctornotes, setJuniorDoctorNotes] = useState<string>(
+    'Fever, Cough and Cold, Nausea'
+  );
+
   const [medinceName, setMedinceName] = useState<string>('Ibuprofen, 200mg');
   const [showButtons, setShowButtons] = useState(false);
   const [show, setShow] = useState(false);
+  const [juniorshow, setJuniorShow] = useState(false);
   const [patientHistoryshow, setpatientHistoryshow] = useState(false);
   const [otherInstructions, setOtherInstructions] = useState(false);
   const [diagonisticPrescription, setdiagonisticPrescription] = useState(false);
@@ -503,7 +487,39 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [switchValue, setSwitchValue] = useState(false);
   const [sliderValue, setSliderValue] = useState(2);
   const [stepValue, setStepValue] = useState(3);
+  const [diagnosisView, setDiagnosisView] = useState(false);
+  const appointments = [
+    {
+      id: '1',
+      firstName: 'Viral Fever',
+    },
+    {
+      id: '2',
+      firstName: 'Throat Infection',
+    },
+  ];
 
+  const diagnosis = [
+    {
+      id: '1',
+      firstName: 'Diagnostic ABC',
+    },
+    {
+      id: '2',
+      firstName: 'Diagnostic DEF',
+    },
+  ];
+
+  const favdiagnosis = [
+    {
+      id: '1',
+      firstName: 'Diagnostic XYZ',
+    },
+    {
+      id: '2',
+      firstName: 'Diagnostic TUV',
+    },
+  ];
   useEffect(() => {
     setShowButtons(props.startConsult);
   }, []);
@@ -564,22 +580,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-  const renderMedicalRecordsDetails = () => {
-    return (
-      <View>
-        <Text style={styles.familyText}>Medical Records</Text>
-        <View style={styles.medicalView}>
-          <TextInput
-            style={styles.symptomsText}
-            multiline={true}
-            onChangeText={(medicalRecordValues) => setMedicalRecordValues(medicalRecordValues)}
-          >
-            {medicalRecordValues}
-          </TextInput>
-        </View>
-      </View>
-    );
-  };
+
   const renderAllergiesView = () => {
     return (
       <View>
@@ -639,15 +640,33 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           onPress={() => setpatientHistoryshow(!patientHistoryshow)}
         >
           {renderFamilyDetails()}
-          {renderMedicalRecordsDetails()}
           {renderAllergiesView()}
           {renderLifeStylesHabits()}
-          {renderPhotosUploadedPatient()}
         </CollapseCard>
       </View>
     );
   };
-
+  const renderJuniorDoctorNotes = () => {
+    return (
+      <View>
+        <CollapseCard
+          heading="Junior Doctor’s Notes"
+          collapse={juniorshow}
+          onPress={() => setJuniorShow(!juniorshow)}
+        >
+          <View style={styles.symptomsInputView}>
+            <TextInput
+              style={styles.symptomsText}
+              multiline={true}
+              onChangeText={(juniordoctornotes) => setJuniorDoctorNotes(juniordoctornotes)}
+            >
+              {juniordoctornotes}
+            </TextInput>
+          </View>
+        </CollapseCard>
+      </View>
+    );
+  };
   const renderOtherInstructionsView = () => {
     return (
       <View>
@@ -722,66 +741,30 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         collapse={diagonisticPrescription}
         onPress={() => setdiagonisticPrescription(!diagonisticPrescription)}
       >
-        <View style={styles.otherMainView}></View>
-        <View style={{ marginLeft: 16, marginBottom: 30 }}>
-          <Text style={{ color: 'rgba(2, 71, 91, 0.6)', ...theme.fonts.IBMPlexSansMedium(12) }}>
-            {' '}
-            Already added:
-          </Text>
-          <View style={{ marginTop: 7, flexDirection: 'row' }}>
-            <ChipViewCard
-              text="MRI"
-              selected={true}
-              icon={<Up />}
-              textSelectedStyle={{ marginTop: 3, marginBottom: 2, marginLeft: 3 }}
-            />
-          </View>
-        </View>
-        <View style={{ marginLeft: 16, marginBottom: 30, marginRight: 20 }}>
-          <Text style={{ color: 'rgba(2, 71, 91, 0.6)', ...theme.fonts.IBMPlexSansMedium(12) }}>
-            Diagnostic Name
-          </Text>
-          <TextInputComponent
-            placeholder="Enter here..."
-            multiline={true}
-            value={diagnosisvalues}
-            onChangeText={(diagnosisvalues) => setDiagnosisvalues(diagnosisvalues)}
-            autoCorrect={true}
-            conatinerstyles={[styles.otherInstructionsInput]}
-          />
-        </View>
-        <View style={{ marginLeft: 16, marginBottom: 20 }}>
-          <Text style={{ color: 'rgba(2, 71, 91, 0.6)', ...theme.fonts.IBMPlexSansMedium(12) }}>
-            Favorites:
-          </Text>
+        <Text style={[styles.familyText, { marginBottom: 12 }]}>Diagnostics</Text>
+        {diagnosis.map((showdata, i) => {
+          console.log('showsara', showdata);
+          return (
+            <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
+              <DiagnosicsCard diseaseName={showdata.firstName} icon={<DiagonisisRemove />} />
+            </View>
+          );
+        })}
+        <Text style={[styles.familyText, { marginBottom: 12 }]}>Favorite Diagnostics</Text>
 
-          <View
-            style={{
-              flexDirection: 'row',
-              marginBottom: 20,
-              flex: 2,
-              marginRight: 16,
-              marginTop: 7,
-            }}
-          >
-            <View style={{ flex: 1 }}>
-              <ChipViewCard
-                text="Urine Test"
-                selected={true}
-                icon={<Up />}
-                textUnSelectedStyle={{ ...theme.fonts.IBMPlexSansMedium(13) }}
-              />
+        {favdiagnosis.map((showdata, i) => {
+          console.log('showsara', showdata);
+          return (
+            <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
+              <DiagnosicsCard diseaseName={showdata.firstName} icon={<DiagonisisRemove />} />
             </View>
-            <View style={{ flex: 0.1 }} />
-            <View style={{ flex: 1 }}>
-              <ChipViewCard
-                text="Full Check up"
-                selected={false}
-                icon={<Up />}
-                textUnSelectedStyle={{ ...theme.fonts.IBMPlexSansMedium(13) }}
-              />
-            </View>
-          </View>
+          );
+        })}
+        <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
+          <Add />
+          <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddDiagnostics)}>
+            <Text style={styles.addDoctorText}>ADD DIAGNOSTICS</Text>
+          </TouchableOpacity>
         </View>
       </CollapseCard>
     );
@@ -854,7 +837,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               marginBottom: 23,
             }}
           ></View>
-          <View style={{ flexDirection: 'row', marginBottom: 23 }}>
+          <View style={{ flexDirection: 'row', marginBottom: 19 }}>
             <Add />
             <TouchableOpacity>
               <Text style={styles.addDoctorText}>Add Medicine</Text>
@@ -923,6 +906,47 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
+
+  const renderDiagnosisView = () => {
+    return (
+      <View>
+        <CollapseCard
+          heading="Diagnosis"
+          collapse={diagnosisView}
+          onPress={() => setDiagnosisView(!diagnosisView)}
+        >
+          <Text style={styles.familyText}>Diagnosed Medical Condition</Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginLeft: 16,
+              marginRight: 16,
+              marginBottom: 19,
+            }}
+          >
+            {appointments.map((showdata, i) => {
+              console.log('showsara', showdata);
+              return (
+                <ChipViewCard
+                  text={showdata.firstName}
+                  selected={true}
+                  icon={<DiagonisisRemove />}
+                  textSelectedStyle={{ marginTop: 3, marginBottom: 2, marginLeft: 3 }}
+                />
+              );
+            })}
+          </View>
+          <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
+            <Add />
+            <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddCondition)}>
+              <Text style={styles.addDoctorText}>ADD CONDITION</Text>
+            </TouchableOpacity>
+          </View>
+        </CollapseCard>
+      </View>
+    );
+  };
   return (
     <View style={styles.casesheetView}>
       <ScrollView bounces={false} contentContainerStyle={styles.contentContainer}>
@@ -931,7 +955,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         {renderSymptonsView()}
         {renderPatientHistoryLifestyle()}
         <PatientHealthVault />
-        <Diagnosis />
+        {renderJuniorDoctorNotes()}
+        {renderDiagnosisView()}
         {renderMedicinePrescription()}
         {renderDiagonisticPrescription()}
         {renderFollowUpView()}

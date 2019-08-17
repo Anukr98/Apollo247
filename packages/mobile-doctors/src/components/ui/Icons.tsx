@@ -518,3 +518,11 @@ export const RightIcon: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/ic_arrow_right.png')}
   />
 );
+
+export const DiagonisisRemove: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/ic_cross_popup.png')}
+  />
+);

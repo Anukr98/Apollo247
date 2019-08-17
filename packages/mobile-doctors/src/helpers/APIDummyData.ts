@@ -179,41 +179,25 @@ const _doctors = [
   {
     profile: {
       id: '1',
-      firstName: 'Ranjit',
-      lastName: 'Mehra',
-      mobileNumber: '',
-      experience: '',
-      isStarDoctor: true,
+      firstName: 'Sore Throat',
     },
   },
   {
     profile: {
       id: '2',
-      firstName: 'Simran',
-      lastName: 'Kaur',
-      mobileNumber: '',
-      experience: '',
-      isStarDoctor: true,
+      firstName: 'Sorosis',
     },
   },
   {
     profile: {
       id: '3',
-      firstName: 'Pranjal',
-      lastName: 'Seth',
-      mobileNumber: '',
-      experience: '',
-      isStarDoctor: false,
+      firstName: 'Mayuri',
     },
   },
   {
     profile: {
       id: '4',
-      firstName: 'Neha',
-      lastName: 'Agarwal',
-      mobileNumber: '',
-      experience: '',
-      isStarDoctor: false,
+      firstName: 'Apollo',
     },
   },
 ] as DoctorProfile[];

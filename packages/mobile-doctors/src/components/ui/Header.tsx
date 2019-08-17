@@ -52,19 +52,48 @@ export const Header: React.FC<HeaderProps> = (props) => {
     iconMarginRight,
   } = props;
   return (
-    <View style={[styles.container, containerStyle]}>
-      <View>
-        {leftComponent ? (
-          leftComponent
+    <View>
+      <View style={[styles.container, containerStyle]}>
+        <View>
+          {leftComponent ? (
+            leftComponent
+          ) : (
+            <View style={styles.iconContainer}>
+              {leftIcons &&
+                leftIcons.map((icon, i) => (
+                  <TouchableOpacity
+                    onPress={icon.onPress}
+                    key={i}
+                    style={{
+                      marginRight: i !== leftIcons.length - 1 ? iconMarginRight || 12 : 0,
+                    }}
+                  >
+                    {icon.icon}
+                  </TouchableOpacity>
+                ))}
+            </View>
+          )}
+        </View>
+        <Text
+          style={{
+            ...theme.fonts.IBMPlexSansSemiBold(13),
+            color: '#01475b',
+            textAlign: 'center',
+          }}
+        >
+          {props.headerText}
+        </Text>
+        {rightComponent ? (
+          rightComponent
         ) : (
           <View style={styles.iconContainer}>
-            {leftIcons &&
-              leftIcons.map((icon, i) => (
+            {rightIcons &&
+              rightIcons.map((icon, i) => (
                 <TouchableOpacity
                   onPress={icon.onPress}
                   key={i}
                   style={{
-                    marginRight: i !== leftIcons.length - 1 ? iconMarginRight || 12 : 0,
+                    marginRight: i !== rightIcons.length - 1 ? iconMarginRight || 20 : 0,
                   }}
                 >
                   {icon.icon}
@@ -73,33 +102,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
           </View>
         )}
       </View>
-      <Text
-        style={{
-          ...theme.fonts.IBMPlexSansSemiBold(13),
-          color: '#01475b',
-          textAlign: 'center',
-        }}
-      >
-        {props.headerText}
-      </Text>
-      {rightComponent ? (
-        rightComponent
-      ) : (
-        <View style={styles.iconContainer}>
-          {rightIcons &&
-            rightIcons.map((icon, i) => (
-              <TouchableOpacity
-                onPress={icon.onPress}
-                key={i}
-                style={{
-                  marginRight: i !== rightIcons.length - 1 ? iconMarginRight || 20 : 0,
-                }}
-              >
-                {icon.icon}
-              </TouchableOpacity>
-            ))}
-        </View>
-      )}
+      {props.children}
     </View>
   );
 };

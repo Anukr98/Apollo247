@@ -26,14 +26,14 @@ const styles = StyleSheet.create({
     margin: 5,
     marginLeft: 20,
     marginRight: 20,
-    shadowOffset: {
-      height: 1,
-      width: 0,
-    },
     shadowColor: '#000000',
-    shadowRadius: 2,
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowRadius: 10,
     shadowOpacity: 0.2,
-    elevation: 10,
+    elevation: 5,
   },
 
   arrowview: {

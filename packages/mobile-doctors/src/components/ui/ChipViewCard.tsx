@@ -5,7 +5,7 @@ import { StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-n
 const styles = StyleSheet.create({
   receiveText: {
     color: '#ffffff',
-    ...theme.fonts.IBMPlexSansSemiBold(12),
+    ...theme.fonts.IBMPlexSansSemiBold(14),
     textAlign: 'center',
     justifyContent: 'center',
     paddingLeft: 10,
@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
   },
   blankText: {
     color: '#00b38e',
-    ...theme.fonts.IBMPlexSansMedium(12),
+    ...theme.fonts.IBMPlexSansMedium(14),
     textAlign: 'center',
     justifyContent: 'center',
     alignItems: 'center',
@@ -65,7 +65,7 @@ export const ChipViewCard: React.FC<ChipViewCardProps> = (props) => {
           <View style={[styles.containerSelectedStyle, props.containerSelectedStyle]}>
             <View style={styles.commonview}>
               <Text style={[styles.receiveText, props.textSelectedStyle]}>{props.text}</Text>
-              <View style={{ margin: 3 }}>{props.icon}</View>
+              <View style={{ margin: 5 }}>{props.icon}</View>
             </View>
           </View>
         </>

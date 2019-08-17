@@ -18,10 +18,13 @@ import { NeedHelpAppointment } from '@aph/mobile-doctors/src/components/Appointm
 import { CallRequestScreen } from '@aph/mobile-doctors/src/components/Appointments/CallRequestScreen';
 import { ConsultRoomScreen } from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen';
 import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView';
+import { AddCondition } from '@aph/mobile-doctors/src/components/ConsultRoom/AddCondition';
+import { AddDiagnostics } from '@aph/mobile-doctors/src/components/ConsultRoom/AddDiagnostics';
 import { NotificationScreen } from '@aph/mobile-doctors/src/components/Notification/NotificationScreen';
 import { HelpScreen } from '@aph/mobile-doctors/src/components/HelpScreen';
 import { MyAccountProfile } from '@aph/mobile-doctors/src/components/Account/MyAccountProfile';
 import { MyAvailability } from '@aph/mobile-doctors/src/components/Account/MyAvailability';
+
 import {
   createAppContainer,
   createStackNavigator,
@@ -55,6 +58,8 @@ export enum AppRoutes {
   HelpScreen = 'HelpScreen',
   MyAccountProfile = 'MyAccountProfile',
   MyAvailability = 'MyAvailability',
+  AddCondition = 'AddCondition',
+  AddDiagnostics = 'AddDiagnostics',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -139,6 +144,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MyAvailability]: {
     screen: MyAvailability,
+  },
+  [AppRoutes.AddCondition]: {
+    screen: AddCondition,
+  },
+  [AppRoutes.AddDiagnostics]: {
+    screen: AddDiagnostics,
   },
 };
 
