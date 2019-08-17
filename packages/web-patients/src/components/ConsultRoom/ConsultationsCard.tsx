@@ -13,6 +13,8 @@ import { format } from 'date-fns';
 import { clientRoutes } from 'helpers/clientRoutes';
 import isTomorrow from 'date-fns/isTomorrow';
 import { getIstTimestamp } from 'helpers/dateHelpers';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -216,7 +218,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 aptArray[1].substring(0, 5)
               );
               const difference = Math.round((appointmentTime - currentTime) / 60000);
-              console.log('difference is....', difference);
+              // console.log('difference is....', difference);
               const doctorId =
                 appointmentDetails.doctorInfo && appointmentDetails.doctorId
                   ? appointmentDetails.doctorId
@@ -251,7 +253,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                             ? `Available in ${difference} mins`
                             : otherDateMarkup(appointmentTime)}
                         </div>
-                        <div className={classes.doctorName}>{`${firstName} ${lastName}`}</div>
+                        <div className={classes.doctorName}>{`Dr. ${_startCase(
+                          _toLower(firstName)
+                        )} ${_startCase(_toLower(lastName))}`}</div>
                         <div className={classes.doctorType}>
                           {specialization}
                           <span className={classes.doctorExp}>{experience} YRS</span>

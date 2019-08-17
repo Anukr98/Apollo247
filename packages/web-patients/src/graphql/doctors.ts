@@ -292,6 +292,9 @@ export const GET_PATIENT_APPOINTMENTS = gql`
           photoUrl
           qualification
           specialization
+          streetLine1
+          streetLine2
+          streetLine3
           specialty {
             name
             id

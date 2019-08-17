@@ -25,6 +25,9 @@ export interface GetPatientAppointments_getPatinetAppointments_patinetAppointmen
   photoUrl: string | null;
   qualification: string | null;
   specialization: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
   specialty: GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_specialty;
 }
 

@@ -216,7 +216,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <div className={classes.doctorInfo}>
             {loading ? <LinearProgress /> : availabilityMarkup()}
             <div className={classes.doctorName}>
-              {`${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
+              {`Dr. ${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
                 _toLower(doctorDetails.lastName)
               )}`}
             </div>
