@@ -1,11 +1,11 @@
 import React from 'react';
-import { StyleProp, StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, Text, TouchableOpacity, ViewStyle, View } from 'react-native';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 
 const styles = StyleSheet.create({
   container: {
-    width: 96,
-    paddingVertical: 12,
+    //width: 96,
+    // paddingVertical: 12,
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
@@ -28,11 +28,17 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(16),
     textAlign: 'center',
     color: '#00b38e',
+    marginTop: 12,
+    marginBottom: 12,
+    marginRight: 20,
   },
   textSelectedStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
     textAlign: 'center',
     color: '#ffffff',
+    marginTop: 12,
+    marginBottom: 12,
+    marginRight: 20,
   },
 });
 
@@ -46,6 +52,7 @@ export interface SelectableButtonProps {
   textStyle?: StyleProp<ViewStyle>;
   textSelectedStyle?: StyleProp<ViewStyle>;
   buttonWidth?: number;
+  icon?: Element;
 }
 
 export const SelectableButton: React.FC<SelectableButtonProps> = (props) => {
@@ -76,13 +83,27 @@ export const SelectableButton: React.FC<SelectableButtonProps> = (props) => {
           : [styles.container, containerStyle, styles.containerUnSelected, containerUnSelectedStyle]
       }
     >
-      <Text
-        style={
-          isChecked ? [styles.textSelectedStyle, textSelectedStyle] : [styles.textStyle, textStyle]
-        }
-      >
-        {title}
-      </Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View
+          style={{
+            marginTop: 12,
+            marginBottom: 12,
+            marginLeft: 20,
+            marginRight: 12,
+          }}
+        >
+          {props.icon}
+        </View>
+        <Text
+          style={
+            isChecked
+              ? [styles.textSelectedStyle, textSelectedStyle]
+              : [styles.textStyle, textStyle]
+          }
+        >
+          {title}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 };
