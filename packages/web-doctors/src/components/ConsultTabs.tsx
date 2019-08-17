@@ -15,6 +15,7 @@ import {
 } from 'graphql/types/createAppointmentSession';
 import { CREATE_APPOINTMENT_SESSION } from 'graphql/profiles';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
+import { CaseSheet } from 'components/case-sheet/CaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -23,9 +24,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingTop: 68,
       },
-    },
-    caseSheet: {
-      minHeight: 'calc(100vh - 360px)',
     },
     chatContainer: {
       minHeight: 'calc(100vh - 360px)',
@@ -173,7 +171,6 @@ export const ConsultTabs: React.FC = (props) => {
                 <Tab
                   classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
                   label="Case Sheet"
-                  className={classes.pointerNone}
                 />
                 <Tab
                   classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
@@ -183,7 +180,7 @@ export const ConsultTabs: React.FC = (props) => {
             </div>
             {tabValue === 0 && (
               <TabContainer>
-                <div className={classes.caseSheet}>Case sheet</div>
+                <CaseSheet />
               </TabContainer>
             )}
             {tabValue === 1 && (
