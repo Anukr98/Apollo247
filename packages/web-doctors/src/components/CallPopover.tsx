@@ -186,7 +186,6 @@ interface CallPopoverProps {
 let intervalId: any;
 let stoppedTimer: number;
 let cda: any;
-
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -220,8 +219,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }, 1000);
   };
   const stopInterval = () => {
-    const stopTimer = 900 - stoppedTimer;
-    setRemainingTime(stopTimer);
+    setRemainingTime(900);
     intervalId && clearInterval(intervalId);
   };
   function handleClick(event: any) {
@@ -355,6 +353,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 className={classes.endconsultButton}
                 onClick={() => {
                   setStartAppointment(!startAppointment);
+                  stopInterval();
                 }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">

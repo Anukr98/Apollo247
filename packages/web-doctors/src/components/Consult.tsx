@@ -111,6 +111,7 @@ interface ConsultProps {
   timerMinuts: number;
   timerSeconds: number;
   isCallAccepted: boolean;
+  isNewMsg: boolean;
 }
 export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
@@ -214,11 +215,19 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             className={classes.muteBtn}
                             onClick={() => props.toggelChatVideo()}
                           >
-                            <img
-                              className={classes.whiteArrow}
-                              src={require('images/ic_message.svg')}
-                              alt="msgicon"
-                            />
+                            {props.isNewMsg ? (
+                              <img
+                                className={classes.whiteArrow}
+                                src={require('images/ic_message.svg')}
+                                alt="msgicon"
+                              />
+                            ) : (
+                              <img
+                                className={classes.whiteArrow}
+                                src={require('images/ic_chat_circle.svg')}
+                                alt="msgicon"
+                              />
+                            )}
                           </button>
                         )}
                       </Grid>

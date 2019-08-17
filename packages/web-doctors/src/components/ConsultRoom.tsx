@@ -139,6 +139,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [messageText, setMessageText] = useState<string>('');
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
+  const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -201,6 +202,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setMessages(insertText);
         setMessageText('reset');
         setMessageText('');
+        if (
+          !showVideoChat &&
+          message.message.message !== videoCallMsg &&
+          message.message.message !== audioCallMsg &&
+          message.message.message !== stopcallMsg &&
+          message.message.message !== acceptcallMsg
+        ) {
+          setIsNewMsg(true);
+        }
         if (message.message && message.message.message === acceptcallMsg) {
           setIsCallAccepted(true);
         }
@@ -363,6 +373,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         })
       : '';
   const toggelChatVideo = () => {
+    setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
   };
   const actionBtn = () => {
@@ -424,6 +435,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             timerMinuts={timerMinuts}
             timerSeconds={timerSeconds}
             isCallAccepted={isCallAccepted}
+            isNewMsg={isNewMsg}
           />
         )}
         <div>

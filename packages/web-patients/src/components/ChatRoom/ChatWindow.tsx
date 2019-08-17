@@ -175,6 +175,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const { allCurrentPatients } = useAllCurrentPatients();
   const currentUserId = (allCurrentPatients && allCurrentPatients[0].id) || '';
+  const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const stopcallMsg = '^^callme`stop^^';
@@ -213,6 +214,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           const scrollDiv = document.getElementById('scrollDiv');
           scrollDiv!.scrollIntoView();
         }, 200);
+        if (
+          !showVideoChat &&
+          message.message.message !== videoCallMsg &&
+          message.message.message !== audioCallMsg &&
+          message.message.message !== stopcallMsg &&
+          message.message.message !== acceptcallMsg
+        ) {
+          setIsNewMsg(true);
+        }
         if (
           message.message &&
           (message.message.message === videoCallMsg || message.message.message === audioCallMsg)
@@ -360,6 +370,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         })
       : '';
   const toggelChatVideo = () => {
+    setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
   };
   const actionBtn = () => {
@@ -410,6 +421,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             token={props.token}
             showVideoChat={showVideoChat}
             isVideoCall={isVideoCall}
+            isNewMsg={isNewMsg}
           />
         )}
         <div>
