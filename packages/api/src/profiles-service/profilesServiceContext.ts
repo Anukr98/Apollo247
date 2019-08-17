@@ -4,5 +4,6 @@ import { Connection } from 'typeorm';
 
 export interface ProfilesServiceContext extends GatewayContext {
   profilesDb: Connection;
+  doctorsDb: Connection;
   currentPatient: Patient | null;
 }
