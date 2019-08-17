@@ -231,12 +231,13 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
         rightComponent={
           <TouchableOpacity
             onPress={() => {
+              console.log(data, 'data1111111111');
               const filterData = data.map((obj) => {
-                obj.selectedOptions = [];
+                if (obj) obj.selectedOptions = [];
                 return obj;
               });
               setData(filterData);
-              props.setData([]);
+              props.setData(filterData);
             }}
           >
             <Reload />

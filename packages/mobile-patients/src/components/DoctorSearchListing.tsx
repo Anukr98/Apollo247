@@ -13,7 +13,7 @@ import {
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_consultHours,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
-import { ConsultMode, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { ConsultMode, Gender, Range } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { default as string } from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import axios from 'axios';
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowRadius: 2,
     position: 'absolute',
-    top: 24,
+    top: Platform.OS === 'ios' ? 24 : 0,
     left: 0,
     right: 0,
     zIndex: 3,
@@ -64,14 +64,14 @@ export interface DoctorSearchListingProps extends NavigationScreenProps {}
 export type filterDataType = {
   label: string;
   options: string[];
-  selectedOptions?: string[]; // | { minimum: number; maximum: number }[];
+  selectedOptions: string[]; // | { minimum: number; maximum: number }[];
 };
 
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
   const specialityName = props.navigation.state.params
     ? props.navigation.state.params!.specialityName
     : '';
-  const filterData: filterDataType = [
+  const filterData: filterDataType[] = [
     {
       label: 'City',
       options: ['Hyderabad', 'Chennai'],
@@ -146,44 +146,43 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, []);
 
   console.log('FilterData1111111', FilterData);
-  let experienceArray = [];
+  let experienceArray: Range[] = [];
   if (FilterData[1].selectedOptions && FilterData[1].selectedOptions.length > 0)
-    FilterData[1].selectedOptions.forEach((element) => {
+    FilterData[1].selectedOptions.forEach((element: string) => {
       const splitArray = element.split(' - ');
-      const object =
-        splitArray.length > 0
-          ? {
-              minimum: splitArray.length > 0 ? Number(splitArray[0].replace('+', '')) : '',
-              maximum: splitArray.length > 1 ? Number(element.split(' - ')[1]) : -1,
-            }
-          : null;
+      let object: Range | null = {};
+      if (splitArray.length > 0)
+        object = {
+          minimum: Number(splitArray[0].replace('+', '')),
+          maximum: splitArray.length > 1 ? Number(element.split(' - ')[1]) : -1,
+        };
       if (object) {
         experienceArray.push(object);
       }
     });
 
-  let feesArray = [];
+  let feesArray: Range[] = [];
   if (FilterData[3].selectedOptions && FilterData[3].selectedOptions.length > 0)
-    FilterData[3].selectedOptions.forEach((element) => {
+    FilterData[3].selectedOptions.forEach((element: string) => {
       const splitArray = element.split(' - ');
       console.log(splitArray, 'splitArray');
-      const object =
-        splitArray.length > 0
-          ? {
-              minimum: splitArray.length > 0 ? Number(splitArray[0].replace('+', '')) : '',
-              maximum: splitArray.length > 1 ? Number(element.split(' - ')[1]) : -1,
-            }
-          : null;
+      let object: Range | null = {};
+      if (splitArray.length > 0)
+        object = {
+          minimum: Number(splitArray[0].replace('+', '')),
+          maximum: splitArray.length > 1 ? Number(element.split(' - ')[1]) : -1,
+        };
+
       if (object) {
         feesArray.push(object);
       }
     });
 
-  let availabilityArray = [];
+  let availabilityArray: string[] = [];
   const today = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
   console.log('moment', moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'));
   if (FilterData[2].selectedOptions && FilterData[2].selectedOptions.length > 0)
-    FilterData[2].selectedOptions.forEach((element) => {
+    FilterData[2].selectedOptions.forEach((element: string) => {
       if (element === 'Now') {
         availabilityArray.push(today);
       }
@@ -246,10 +245,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     'FilterDataFilterDataFilterData',
     FilterInput
   );
-  const { data, error } = useQuery<
-    getDoctorsBySpecialtyAndFilters,
-    getDoctorsBySpecialtyAndFiltersVariables
-  >(DOCTOR_SPECIALITY_BY_FILTERS, {
+  const { data, error } = useQuery<getDoctorsBySpecialtyAndFilters>(DOCTOR_SPECIALITY_BY_FILTERS, {
     variables: {
       filterInput: FilterInput,
     },
@@ -377,7 +373,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const doctors = filter
       ? doctorsList.filter(
           (obj: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null) => {
-            return consultionType(obj!.consultHours, filter);
+            return (
+              consultionType(obj!.consultHours, filter) ||
+              consultionType(obj!.consultHours, ConsultMode.BOTH)
+            );
           }
         )
       : doctorsList;
@@ -443,7 +442,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           position: 'absolute',
           height: 156,
           width: '100%',
-          top: 80,
+          top: Platform.OS === 'ios' ? 80 : 56,
           backgroundColor: headColor,
           justifyContent: 'flex-end',
           flexDirection: 'column',
@@ -489,7 +488,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           bounces={false}
           scrollEventThrottle={16}
           contentContainerStyle={{
-            paddingTop: 208,
+            paddingTop: 215,
           }}
           onScroll={Animated.event(
             [
@@ -561,7 +560,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             setDisplayFilter(false);
             setFilterData(data);
           }}
-          setData={() => {
+          setData={(data) => {
             setFilterData(data);
           }}
           data={FilterData}

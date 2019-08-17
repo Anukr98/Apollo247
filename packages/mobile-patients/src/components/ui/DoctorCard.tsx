@@ -102,7 +102,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
-  const [availableInMin, setavailableInMin] = useState<Number>(0);
+  const [availableInMin, setavailableInMin] = useState<number>();
 
   const todayDate = new Date().toISOString().slice(0, 10);
   const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
@@ -127,7 +127,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
       availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
       availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot &&
-      availableInMin === 0
+      availableInMin === undefined
     ) {
       const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
         .availableSlot;
@@ -135,7 +135,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       console.log(IOSFormat, new Date(IOSFormat));
       const formatedTime = Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
       console.log(formatedTime, todayDate, 'formatedTime', nextSlot, 'nextSlot');
-      let timeDiff: Number = 0;
+      let timeDiff: number = 0;
       const time = formatedTime.split(':');
       let today: Date = new Date();
       let date2: Date = new Date(
@@ -146,24 +146,30 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         Number(time[1])
       );
       if (date2 && today) {
-        timeDiff = Math.round((date2 - today) / 60000);
+        timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
       }
       console.log(timeDiff, 'timeDiff');
       setavailableInMin(timeDiff);
     }
   }
 
+  const navigateToDetails = (id: string, params?: {}) => {
+    props.navigation.navigate(AppRoutes.DoctorDetails, {
+      doctorId: id,
+      ...params,
+    });
+  };
+
   const rowData = props.rowData;
-  if (rowData)
+  if (rowData) {
+    const availabilityInHrs: number = availableInMin ? availableInMin / 60 : 0; // availableInMin ? parseInt() : null;
     return (
       <TouchableOpacity
         style={[styles.doctorView, props.style]}
         onPress={() => {
           props.onPress
             ? props.onPress(rowData.id!)
-            : props.navigation.navigate(AppRoutes.DoctorDetails, {
-                doctorId: rowData.id ? rowData.id : '',
-              });
+            : navigateToDetails(rowData.id ? rowData.id : '');
         }}
       >
         <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
@@ -172,9 +178,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <CapsuleView
                 title={`AVAILABLE IN ${
                   availableInMin >= 60
-                    ? `${parseInt(availableInMin / 60)} ${
-                        parseInt(availableInMin / 60) > 1 ? 'HOURS' : 'HOUR'
-                      }`
+                    ? `${availabilityInHrs.toString()} ${availabilityInHrs > 1 ? 'HOURS' : 'HOUR'}`
                     : `${availableInMin} MINS`
                 }`}
                 style={styles.availableView}
@@ -207,16 +211,24 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           </View>
           {props.displayButton && (
             <View style={{ overflow: 'hidden' }}>
-              <View style={styles.buttonView}>
+              <TouchableOpacity
+                style={styles.buttonView}
+                onPress={() =>
+                  availableInMin! > 60
+                    ? navigateToDetails(rowData.id ? rowData.id : '', { showBookAppointment: true })
+                    : navigateToDetails(rowData.id ? rowData.id : '')
+                }
+              >
                 <Text style={styles.buttonText}>
-                  {availableInMin > 60 ? string.common.book_apointment : string.common.consult_now}
+                  {availableInMin! > 60 ? string.common.book_apointment : string.common.consult_now}
                 </Text>
-              </View>
+              </TouchableOpacity>
             </View>
           )}
         </View>
       </TouchableOpacity>
     );
+  }
   return null;
 };
 

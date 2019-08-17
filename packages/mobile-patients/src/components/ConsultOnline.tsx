@@ -111,7 +111,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
 
   const [selectedtiming, setselectedtiming] = useState<string>(timings[0].title);
   const [selectedCTA, setselectedCTA] = useState<string>(onlineCTA[0]);
-  const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.WEEK);
+  const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
 
   const [date, setDate] = useState<Date>(new Date());
   const [availableInMin, setavailableInMin] = useState<Number>(0);
@@ -160,7 +160,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
         Number(time[1])
       );
       if (date2 && today) {
-        timeDiff = Math.round((date2 - today) / 60000);
+        timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
       }
       console.log(timeDiff, 'timeDiff');
 
@@ -181,7 +181,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     if (Number(time_array[0]) > 12) {
       time_array[0] = (Number(time_array[0]) - 12).toString();
     }
-    return time_array[0].replace(/^0+/, '') + ':' + time_array[1] + ' ' + ampm;
+    return time_array[0].replace(/^00/, '12').replace(/^0/, '') + ':' + time_array[1] + ' ' + ampm;
   };
 
   const renderTimings = () => {
@@ -265,6 +265,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
         onCalendarTypeChanged={(type) => {
           setType(type);
         }}
+        minDate={new Date()}
       />
     );
   };
@@ -307,6 +308,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             titleTextStyle={[
               {
                 color: theme.colors.APP_GREEN,
+                letterSpacing: -0.36,
                 ...theme.fonts.IBMPlexSansMedium(16),
               },
               selectedCTA === onlineCTA[0] ? styles.selectedButtonText : null,
@@ -314,6 +316,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             onPress={() => {
               setselectedCTA(onlineCTA[0]);
               props.setisConsultOnline(true);
+              props.setselectedTimeSlot('');
             }}
           />
           <View style={{ width: 16 }} />
@@ -333,12 +336,14 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               {
                 color: theme.colors.APP_GREEN,
                 ...theme.fonts.IBMPlexSansMedium(16),
+                letterSpacing: -0.36,
               },
               selectedCTA === onlineCTA[1] ? styles.selectedButtonText : null,
             ]}
             onPress={() => {
               setselectedCTA(onlineCTA[1]);
               props.setisConsultOnline(false);
+              props.setselectedTimeSlot('');
             }}
           />
         </View>

@@ -22,6 +22,7 @@ export interface CalendarViewProps {
   onMonthChanged?: (date: Date) => void;
   calendarType?: CALENDAR_TYPE;
   onCalendarTypeChanged?: (type: CALENDAR_TYPE) => void;
+  minDate?: Date;
 }
 
 export const CalendarView: React.FC<CalendarViewProps> = (props) => {
@@ -133,6 +134,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
           weekViewRef.current = ref;
         }}
         date={props.date}
+        minDate={props.minDate}
         onTapDate={(date: Date) => {
           props.onPressDate(moment(date).toDate());
           setCalendarDate(moment(date).toDate());
@@ -158,28 +160,43 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
       height: 32,
       width: 32,
       borderRadius: 18,
-      backgroundColor: isHighlightedDate ? theme.colors.APP_GREEN : theme.colors.CLEAR,
+      backgroundColor:
+        day.state === 'disabled'
+          ? theme.colors.CLEAR
+          : isHighlightedDate
+          ? theme.colors.APP_GREEN
+          : theme.colors.CLEAR,
       alignItems: 'center',
       justifyContent: 'center',
     };
-    const dayTextStyle: StyleProp<TextStyle> = isHighlightedDate
-      ? {
-          backgroundColor: theme.colors.APP_GREEN,
-          ...theme.fonts.IBMPlexSansSemiBold(14),
-          letterSpacing: 0.35,
-          color: theme.colors.WHITE,
-        }
-      : {
-          ...theme.fonts.IBMPlexSansSemiBold(14),
-          color: theme.colors.APP_GREEN,
-          backgroundColor: theme.colors.CLEAR,
-        };
+    const dayTextStyle: StyleProp<TextStyle> =
+      day.state === 'disabled'
+        ? {
+            backgroundColor: theme.colors.CLEAR,
+            ...theme.fonts.IBMPlexSansSemiBold(14),
+            color: 'rgba(128,128,128, 0.3)',
+          }
+        : isHighlightedDate
+        ? {
+            backgroundColor: theme.colors.APP_GREEN,
+            ...theme.fonts.IBMPlexSansSemiBold(14),
+            letterSpacing: 0.35,
+            color: theme.colors.WHITE,
+          }
+        : {
+            ...theme.fonts.IBMPlexSansSemiBold(14),
+            color: theme.colors.APP_GREEN,
+            backgroundColor: theme.colors.CLEAR,
+          };
     return (
       <TouchableOpacity
         onPress={() => {
-          props.onPressDate(dayDate);
-          setCalendarDate(dayDate);
+          if (day.state !== 'disabled') {
+            props.onPressDate(dayDate);
+            setCalendarDate(dayDate);
+          }
         }}
+        activeOpacity={day.state === 'disabled' ? 1 : 0}
         style={dayViewStyle}
       >
         <Text style={dayTextStyle}>{dayDate.getDate()}</Text>
@@ -196,6 +213,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
             calendarRef.current = ref as CalendarRefType;
           }}
           current={calendarDate}
+          minDate={props.minDate}
           dayComponent={(day) => renderMonthCalendarDayComponent(day)}
           markedDates={{
             [props.date.toISOString().slice(0, 10)]: {

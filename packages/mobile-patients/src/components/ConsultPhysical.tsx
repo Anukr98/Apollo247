@@ -108,7 +108,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   const [selectedtiming, setselectedtiming] = useState<string>(timings[0].title);
   const [distance, setdistance] = useState<string>('');
   const [date, setDate] = useState<Date>(new Date());
-  const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.WEEK);
+  const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((position) => {
@@ -272,6 +272,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     return (
       <CalendarView
         date={date}
+        minDate={new Date()}
         onPressDate={(date) => {
           setDate(date);
           props.setDate(date);

@@ -35,7 +35,6 @@ const styles = StyleSheet.create({
   viewName: {
     backgroundColor: theme.colors.WHITE,
     width: '100%',
-    // height: 266,
     paddingHorizontal: 20,
     paddingBottom: 20,
     shadowColor: '#808080',
@@ -87,7 +86,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(14),
   },
   labelViewStyle: {
-    // marginTop: 16,
     marginHorizontal: 20,
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
@@ -96,17 +94,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    top: 172,
+    top: 174,
     zIndex: 3,
-    elevation: 3,
+    elevation: 5,
   },
   doctorView: {
-    // flex: 1,
     marginHorizontal: 8,
     ...theme.viewStyles.cardViewStyle,
-    marginBottom: 16,
+    marginVertical: 16,
     borderRadius: 10,
-    // marginBottom
   },
   buttonView: {
     height: 44,
@@ -471,7 +467,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               {consultations.length > 0 ? (
                 <FlatList
                   keyExtractor={(_, index) => index.toString()}
-                  contentContainerStyle={{ padding: 12 }}
+                  contentContainerStyle={{ padding: 12, paddingTop: 0 }}
                   horizontal={true}
                   data={consultations}
                   bounces={false}

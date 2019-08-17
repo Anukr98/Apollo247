@@ -42,6 +42,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.35,
     color: theme.colors.WHITE,
   },
+  disabledTextStyle: {
+    ...theme.fonts.IBMPlexSansSemiBold(14),
+    color: 'rgba(128,128,128, 0.3)',
+    backgroundColor: theme.colors.CLEAR,
+  },
 });
 
 interface CalendarStripRefType extends CalendarStrip {
@@ -53,6 +58,7 @@ export interface WeekViewProps {
   date: Date;
   onTapDate: (date: Date) => void;
   onWeekChanged: (date: Date) => void;
+  minDate?: Date;
 }
 
 export const WeekView: ForwardRefExoticComponent<
@@ -77,6 +83,9 @@ export const WeekView: ForwardRefExoticComponent<
       props.date.getDate() == item.getDate() &&
       props.date.getMonth() == item.getMonth() &&
       props.date.getFullYear() == item.getFullYear();
+
+    const isDiabled = props.minDate ? props.minDate > new Date(item) : false;
+
     return (
       <TouchableOpacity onPress={() => props.onTapDate(item)} style={[styles.viewStyle]}>
         <View
@@ -84,14 +93,24 @@ export const WeekView: ForwardRefExoticComponent<
             height: 32,
             width: 32,
             borderRadius: 18,
-            backgroundColor: isHighlitedDate ? theme.colors.APP_GREEN : 'transparent',
+            backgroundColor: isDiabled
+              ? theme.colors.CLEAR
+              : isHighlitedDate
+              ? theme.colors.APP_GREEN
+              : theme.colors.CLEAR,
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
           <Text
             numberOfLines={1}
-            style={isHighlitedDate ? styles.textStyleToday : styles.unSelectedDateStyle}
+            style={
+              isDiabled
+                ? styles.disabledTextStyle
+                : isHighlitedDate
+                ? styles.textStyleToday
+                : styles.unSelectedDateStyle
+            }
           >
             {moment(item).format('D')}
           </Text>

@@ -27,6 +27,7 @@ import {
 import {
   APPOINTMENT_TYPE,
   BookAppointmentInput,
+  DoctorType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -116,8 +117,8 @@ const monthsArray = [
 ];
 export interface ConsultOverlayProps extends NavigationScreenProps {
   // dispalyoverlay: boolean;
-  setdispalyoverlay: (arg0: boolean) => void;
-  // setdispalyoverlay: () => void;
+  setdisplayoverlay: (arg0: boolean) => void;
+  // setdisplayoverlay: () => void;
   patientId: string;
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
@@ -125,7 +126,10 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   // availableSlots: string[] | null;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
-  const tabs = [{ title: 'Consult Online' }, { title: 'Visit Clinic' }];
+  const tabs =
+    props.doctor!.doctorType !== DoctorType.PAYROLL
+      ? [{ title: 'Consult Online' }, { title: 'Visit Clinic' }]
+      : [{ title: 'Consult Online' }];
   const today = new Date().toISOString().slice(0, 10);
 
   // const timeArray = {
@@ -156,7 +160,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       unselectedIcon: <NightUnselected />,
     },
   ];
-  const [timeArray, settimeArray] = useState<TimeArray>([]);
+
+  const [timeArray, settimeArray] = useState<TimeArray>([
+    { label: 'Morning', time: [] },
+    { label: 'Afternoon', time: [] },
+    { label: 'Evening', time: [] },
+    { label: 'Night', time: [] },
+  ]);
   const [allTimeSlots, setallTimeSlots] = useState<string[] | null>([]);
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
@@ -189,34 +199,43 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       { label: 'Night', time: [] },
     ];
     console.log(availableSlots, 'setTimeArrayData');
-    var morningTime = moment('12:00', 'HH:mm');
-    var afternoonTime = moment('17:00', 'HH:mm');
-    var eveningTime = moment('21:00', 'HH:mm');
+    var morningStartTime = moment('06:00', 'HH:mm');
+    var morningEndTime = moment('12:00', 'HH:mm');
+    var afternoonStartTime = moment('12:01', 'HH:mm');
+    var afternoonEndTime = moment('17:00', 'HH:mm');
+    var eveningStartTime = moment('17:01', 'HH:mm');
+    var eveningEndTime = moment('21:00', 'HH:mm');
+    var nightStartTime = moment('21:01', 'HH:mm');
+    var nightEndTime = moment('05:59', 'HH:mm');
 
     // if (allTimeSlots !== availableSlots) {
     //   setallTimeSlots(availableSlots);
     // }
     availableSlots.forEach((slot) => {
-      const slotTime = moment(slot, 'HH:mm');
-      if (slotTime.isBefore(morningTime)) {
+      const IOSFormat = `${date.toISOString().split('T')[0]}T${slot}:48.000Z`;
+      const formatedSlot = moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
+      console.log('formatedSlot', formatedSlot, formatedSlot.toString());
+
+      const slotTime = moment(formatedSlot, 'HH:mm');
+      if (slotTime.isBetween(nightEndTime, afternoonStartTime)) {
         array[0] = {
           label: 'Morning',
-          time: [...array[0].time, slot],
+          time: [...array[0].time, formatedSlot],
         };
-      } else if (slotTime.isBetween(morningTime, afternoonTime)) {
+      } else if (slotTime.isBetween(morningEndTime, eveningStartTime)) {
         array[1] = {
           ...array[1],
-          time: [...array[1].time, slot],
+          time: [...array[1].time, formatedSlot],
         };
-      } else if (slotTime.isBetween(afternoonTime, eveningTime)) {
+      } else if (slotTime.isBetween(afternoonEndTime, nightStartTime)) {
         array[2] = {
           ...array[2],
-          time: [...array[2].time, slot],
+          time: [...array[2].time, formatedSlot],
         };
       } else {
         array[3] = {
           ...array[3],
-          time: [...array[3].time, slot],
+          time: [...array[3].time, formatedSlot],
         };
       }
     });
@@ -303,12 +322,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               }
               onPress={() => {
                 setshowSpinner(true);
-                // props.setdispalyoverlay(false);
+                // props.setdisplayoverlay(false);
                 // const formatDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-                const formatDate =
-                  Object.keys(dateSelected).length > 0
-                    ? Object.keys(dateSelected)[0]
-                    : moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
+                const formatDate = date.toISOString().split('T')[0];
+                // Object.keys(dateSelected).length > 0
+                //   ? Object.keys(dateSelected)[0]
+                //   : moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
                 console.log(formatDate, 'formatDate');
                 var today = new Date();
                 var time =
@@ -343,7 +362,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             >
               {data
                 ? (console.log('bookAppointment data', data),
-                  // props.setdispalyoverlay(false),
+                  // props.setdisplayoverlay(false),
                   setshowSpinner(false),
                   setshowSuccessPopUp(true))
                 : null}
@@ -377,7 +396,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           }}
         >
           <TouchableOpacity
-            onPress={() => props.setdispalyoverlay(false)}
+            onPress={() => props.setdisplayoverlay(false)}
             style={{
               marginTop: Platform.OS === 'ios' ? 38 : 14,
               backgroundColor: 'white',
@@ -402,7 +421,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             // windowBackgroundColor="rgba(0, 0, 0, .41)"
             // overlayBackgroundColor={theme.colors.DEFAULT_BACKGROUND_COLOR}
 
-            // onBackdropPress={() => props.setdispalyoverlay(false)}
+            // onBackdropPress={() => props.setdisplayoverlay(false)}
             style={{
               backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
               marginTop: 16,
