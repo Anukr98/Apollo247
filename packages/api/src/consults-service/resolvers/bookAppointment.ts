@@ -5,6 +5,8 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -81,6 +83,26 @@ const bookAppointment: Resolver<
     ...appointmentInput,
     status: STATUS.IN_PROGRESS,
   };
+
+  //check if docotr id is valid
+  const doctor = doctorsDb.getCustomRepository(DoctorRepository);
+  const docDetails = await doctor.findById(appointmentInput.doctorId);
+  if (!docDetails) {
+    throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+  }
+
+  //check if docotr and hospital are matched
+  const facilityId = appointmentInput.hospitalId;
+  if (facilityId) {
+    const doctorHospRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
+    const docHospital = await doctorHospRepo.findDoctorHospital(
+      appointmentInput.doctorId,
+      facilityId
+    );
+    if (!docHospital) {
+      throw new AphError(AphErrorMessages.INVALID_FACILITY_ID, undefined, {});
+    }
+  }
 
   //check if given appointment datetime is greater than current date time
   if (appointmentInput.appointmentDateTime <= new Date()) {

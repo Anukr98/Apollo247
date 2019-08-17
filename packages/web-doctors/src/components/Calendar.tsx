@@ -175,8 +175,6 @@ export const Calendar: React.FC = () => {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
 
-  console.log(viewSelection, range, startOfMonth(selectedDate));
-
   const setStartOfMonthDate = ({ start }: { start: string | Date; end: string | Date }) => {
     setSelectedDate(startOfMonth(start as Date));
   };
@@ -195,7 +193,9 @@ export const Calendar: React.FC = () => {
       </div>
       <div className={classes.container}>
         <div className={classes.tabHeading}>
-          <Typography variant="h1">hello dr. {currentPatient!.lastName} :)</Typography>
+          <Typography variant="h1">
+            hello dr. {(currentPatient!.lastName || '').toLowerCase()} :)
+          </Typography>
           <p>
             here’s your schedule for {isToday(selectedDate) ? 'today, ' : ''}{' '}
             {format(selectedDate, isToday(selectedDate) ? 'dd MMM yyyy' : 'MMM, dd')}
@@ -219,7 +219,7 @@ export const Calendar: React.FC = () => {
                 value="month"
                 onClick={() => {
                   setViewSelection('month');
-                  setRange({ start: selectedDate, end: endOfMonth(selectedDate) });
+                  setRange({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
                 }}
               >
                 Month
