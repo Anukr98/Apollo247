@@ -21,7 +21,7 @@ import { useAuth } from 'hooks/authHooks';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
-      paddingTop: 68,
+      paddingTop: 65,
       [theme.breakpoints.down('xs')]: {
         paddingTop: 78,
       },

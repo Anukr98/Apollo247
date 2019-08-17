@@ -9,9 +9,9 @@ import React from 'react';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
-      paddingTop: 68,
+      paddingTop: 65,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 68,
+        paddingTop: 65,
       },
     },
     booksLink: {

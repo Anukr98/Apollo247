@@ -8,6 +8,7 @@ import Button from '@material-ui/core/Button';
 import { SignIn } from 'components/SignIn';
 import { HelpPopup } from 'components/Help';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -17,12 +18,14 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: theme.palette.common.white,
-      padding: '10px 20px 5px 20px',
+      padding: '5px 20px',
       [theme.breakpoints.down('xs')]: {
         padding: '15px 20px 5px 20px',
       },
     },
     logo: {
+      lineHeight: 0,
+      paddingTop: 5,
       '& a': {
         display: 'block',
       },
@@ -34,14 +37,15 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     userAccount: {
-      marginBottom: 10,
+      marginBottom: 0,
       marginLeft: 20,
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
       '& img': {
-        marginTop: 10,
-        width: 30,
+        marginTop: 15,
+        marginRight: 25,
+        width: 28,
       },
     },
     userAccountLogin: {
@@ -62,7 +66,7 @@ const useStyles = makeStyles((theme: Theme) => {
       minHeight: 290,
       padding: 20,
       borderRadius: 10,
-      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: theme.palette.common.white,
     },
     afterloginForm: {
@@ -70,7 +74,7 @@ const useStyles = makeStyles((theme: Theme) => {
       minHeight: 230,
       padding: 15,
       borderRadius: 10,
-      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: theme.palette.common.white,
     },
     topPopover: {
@@ -116,6 +120,7 @@ export const Header: React.FC = (props) => {
             <img src={require('images/ic_logo.png')} />
           </Link>
         </div>
+        <Navigation />
         <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup, isProtected }) => (
@@ -127,11 +132,18 @@ export const Header: React.FC = (props) => {
                 {isSigningIn ? (
                   <CircularProgress />
                 ) : (
-                  <img
+                  <div>
+                    <img src={require('images/ic_inbox.svg')} />
+                    <img src={require('images/ic_notifications.svg')} />
+                    <img
                     src={
                       !isSignedIn ? require('images/ic_account.svg') : require('images/ic_help.svg')
                     }
                   />
+                  
+                  
+                  <img src={require('images/ic_profile.svg')} />
+                  </div>
                 )}
               </div>
             )}
