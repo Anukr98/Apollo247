@@ -166,8 +166,6 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
     }, 1000);
   };
   const stopIntervalTimer = () => {
-    console.log(timerLastSeconds);
-    console.log(timerLastMinuts);
     setStartingTime(0);
     timerIntervalId && clearInterval(timerIntervalId);
   };
