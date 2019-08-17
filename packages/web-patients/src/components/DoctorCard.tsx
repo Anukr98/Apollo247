@@ -129,9 +129,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         availableDate: format(new Date(), 'yyyy-MM-dd'),
       },
     },
+    fetchPolicy: 'network-only',
   });
 
-  // console.log('doctor details.....', doctorDetails);
+  // console.log('doctor details.....', data);
 
   let availableSlot = 0,
     differenceInMinutes = 0;
@@ -155,12 +156,15 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           const difference = slotTimeStamp - currentTime;
           differenceInMinutes = Math.round(difference / 60000);
         }
+      } else {
+        differenceInMinutes = -1;
       }
     });
   }
 
   const availabilityMarkup = () => {
-    if (differenceInMinutes <= 0) {
+    console.log(differenceInMinutes, 'diff........');
+    if (differenceInMinutes === 0) {
       return <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>;
     } else if (differenceInMinutes > 0 && differenceInMinutes <= 15) {
       return (
@@ -228,7 +232,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         </div>
         <div className={classes.bottomAction}>
           <AphButton fullWidth color="primary" className={classes.button}>
-            {differenceInMinutes <= 15 ? 'CONSULT NOW' : 'BOOK APPOINTMENT'}
+            {differenceInMinutes >= 0 && differenceInMinutes <= 15
+              ? 'CONSULT NOW'
+              : 'BOOK APPOINTMENT'}
           </AphButton>
         </div>
       </div>

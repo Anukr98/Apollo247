@@ -17,6 +17,8 @@ import { format, addDays } from 'date-fns';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
+import { ConsultMode } from 'graphql/types/globalTypes';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     mascotCircle: {
@@ -304,10 +306,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
               doctors.consultHours[0].consultMode
                 ? doctors.consultHours[0].consultMode
                 : '';
-            if (
-              _toLower(consultMode) === _toLower(selectedFilterOption) ||
-              _toLower(consultMode) === 'BOTH'
-            ) {
+            if (consultMode === selectedFilterOption || consultMode === ConsultMode.BOTH) {
               return true;
             }
             return false;

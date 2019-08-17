@@ -202,6 +202,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         availableDate: format(new Date(), 'yyyy-MM-dd'),
       },
     },
+    fetchPolicy: 'network-only',
   });
 
   if (loading) {
@@ -225,12 +226,14 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
           const difference = slotTimeStamp - currentTime;
           differenceInMinutes = Math.round(difference / 60000);
         }
+      } else {
+        differenceInMinutes = -1;
       }
     });
   }
 
   const availabilityMarkup = () => {
-    if (differenceInMinutes <= 0) {
+    if (differenceInMinutes === 0) {
       return <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>;
     } else if (differenceInMinutes > 0 && differenceInMinutes <= 15) {
       return (

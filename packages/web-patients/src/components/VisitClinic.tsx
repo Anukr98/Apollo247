@@ -237,6 +237,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     variables: {
       DoctorAvailabilityInput: { doctorId: doctorId, availableDate: apiDateFormat },
     },
+    fetchPolicy: 'network-only',
   });
 
   if (loading) {

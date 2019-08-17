@@ -188,6 +188,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     }
   });
 
+  // console.log('filter appointments......', filterAppointments);
+
   const otherDateMarkup = (appointmentTime: number) => {
     if (isTomorrow(new Date(appointmentTime))) {
       return `Tomorrow ${format(new Date(appointmentTime), 'h:mm a')}`;

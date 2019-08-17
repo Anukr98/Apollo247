@@ -189,8 +189,10 @@ export const ConsultRoom: React.FC = (props) => {
       aptArray[1].substring(0, 5)
     );
     if (
-      appointmentTime > currentTime &&
-      appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+      // appointmentTime > currentTime &&
+      // appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+      // the above condition is commented as per demo feedback on 13/08/2019
+      appointmentTime > currentTime
     )
       return appointmentDetails;
   });
@@ -264,7 +266,10 @@ export const ConsultRoom: React.FC = (props) => {
                 </div>
               </>
             ) : (
-              <p>You have {filterAppointments.length} consultations today!</p>
+              <p>
+                You have {filterAppointments.length}{' '}
+                {filterAppointments.length > 1 ? 'consultations' : 'consultation'} today!
+              </p>
             )}
           </div>
         </div>

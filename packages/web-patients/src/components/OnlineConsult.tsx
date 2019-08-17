@@ -233,6 +233,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     variables: {
       DoctorAvailabilityInput: { doctorId: doctorId, availableDate: apiDateFormat },
     },
+    fetchPolicy: 'network-only',
   });
 
   if (loading) {
