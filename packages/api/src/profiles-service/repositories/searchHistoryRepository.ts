@@ -14,4 +14,16 @@ export class SearchHistoryRepository extends Repository<SearchHistory> {
         });
       });
   }
+
+  getRecentSearchHistory(patientId: string) {
+    return (
+      this.createQueryBuilder('searchHistory')
+        .select('DISTINCT searchHistory.typeId')
+        .where('searchHistory.patient = :patientId', { patientId })
+        //.groupBy('searchHistory.typeId')
+        .orderBy('searchHistory.typeId', 'DESC')
+        .limit(10)
+        .getRawMany()
+    );
+  }
 }
