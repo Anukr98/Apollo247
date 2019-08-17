@@ -221,7 +221,7 @@ export const Calendar: React.FC = () => {
                 value="month"
                 onClick={() => {
                   setViewSelection('month');
-                  setRange({ start: selectedDate, end: endOfMonth(selectedDate) });
+                  setRange({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
                 }}
               >
                 Month
