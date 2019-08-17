@@ -164,6 +164,7 @@ interface ChatWindowProps {
   appointmentId: string;
   doctorId: string;
 }
+
 export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const classes = useStyles();
   const [isCalled, setIsCalled] = useState<boolean>(false);
@@ -174,10 +175,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const { allCurrentPatients } = useAllCurrentPatients();
   const currentUserId = (allCurrentPatients && allCurrentPatients[0].id) || '';
-  console.log(isCalled, showVideo);
+  const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const stopcallMsg = '^^callme`stop^^';
+  const acceptcallMsg = '^^callme`accept^^';
   // const startConsult = '^^#startconsult';
   // const stopConsult = '^^#stopconsult';
   const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
@@ -212,6 +214,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           const scrollDiv = document.getElementById('scrollDiv');
           scrollDiv!.scrollIntoView();
         }, 200);
+        if (
+          !showVideoChat &&
+          message.message.message !== videoCallMsg &&
+          message.message.message !== audioCallMsg &&
+          message.message.message !== stopcallMsg &&
+          message.message.message !== acceptcallMsg
+        ) {
+          setIsNewMsg(true);
+        }
         if (
           message.message &&
           (message.message.message === videoCallMsg || message.message.message === audioCallMsg)
@@ -312,7 +323,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       rowData.id === patientId &&
       rowData.message !== videoCallMsg &&
       rowData.message !== audioCallMsg &&
-      rowData.message !== stopcallMsg
+      rowData.message !== stopcallMsg &&
+      rowData.message !== acceptcallMsg
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -329,7 +341,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       rowData.id === doctorId &&
       rowData.message !== videoCallMsg &&
       rowData.message !== audioCallMsg &&
-      rowData.message !== stopcallMsg
+      rowData.message !== stopcallMsg &&
+      rowData.message !== acceptcallMsg
     ) {
       leftComponent = 0;
       rightComponent++;
@@ -357,9 +370,26 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         })
       : '';
   const toggelChatVideo = () => {
+    setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
   };
   const actionBtn = () => {
+    const text = {
+      id: patientId,
+      message: acceptcallMsg,
+      isTyping: true,
+    };
+    pubnub.publish(
+      {
+        channel: channel,
+        message: text,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        setMessageText('');
+      }
+    );
     setShowVideo(true);
   };
   const stopAudioVideoCall = () => {
@@ -391,6 +421,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             token={props.token}
             showVideoChat={showVideoChat}
             isVideoCall={isVideoCall}
+            isNewMsg={isNewMsg}
           />
         )}
         <div>

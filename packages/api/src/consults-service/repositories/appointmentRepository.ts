@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Between, MoreThan } from 'typeorm';
+import { EntityRepository, Repository, Between, MoreThan, LessThan } from 'typeorm';
 import { Appointment, AppointmentSessions } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -47,7 +47,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getPatientAppointments(doctorId: string, patientId: string) {
-    return this.find({ where: { doctorId, patientId } });
+    return this.find({ where: { doctorId, patientId, appointmentDateTime: LessThan(new Date()) } });
   }
 
   getDoctorAppointments(doctorId: string, startDate: Date, endDate: Date) {

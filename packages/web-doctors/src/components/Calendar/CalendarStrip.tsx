@@ -160,7 +160,7 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
             }
           }}
         >
-         <img src={require('images/ic_leftarrow.svg')} alt="" />
+          <img src={require('images/ic_leftarrow.svg')} alt="" />
         </div>
         <Days
           userSelection={userSelection}
