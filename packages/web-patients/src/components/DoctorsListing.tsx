@@ -316,9 +316,9 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   return (
     <>
       <div className={classes.sectionHead} ref={mascotRef}>
-        <Typography variant="h2">Okay!</Typography>
+        {doctorsList.length > 0 ? <Typography variant="h2">Okay!</Typography> : ''}
         <div className={classes.pageHeader}>
-          <div>Here are our best {specialityName}</div>
+          {doctorsList.length > 0 ? <div>Here are our best {specialityName}</div> : ''}
           <div className={classes.filterSection}>
             {_map(consultOptions, (consultName, consultType) => {
               return (
