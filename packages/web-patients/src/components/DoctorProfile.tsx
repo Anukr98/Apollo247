@@ -269,7 +269,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
     const profileImage = doctorDetails.getDoctorDetailsById.photoUrl;
 
     const onlineConsultFees = doctorDetails.getDoctorDetailsById.onlineConsultationFees;
-    const physicalConsultationFees = doctorDetails.getDoctorDetailsById.physicalConsultationFees;
+    // const physicalConsultationFees = doctorDetails.getDoctorDetailsById.physicalConsultationFees;
 
     _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
       if (hospitalDetails.facility.facilityType === 'HOSPITAL') {

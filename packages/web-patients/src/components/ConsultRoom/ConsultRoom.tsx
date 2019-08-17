@@ -15,7 +15,7 @@ import {
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
+// import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { getTime } from 'date-fns/esm';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
@@ -184,10 +184,7 @@ export const ConsultRoom: React.FC = (props) => {
   const filterAppointments = appointments.filter((appointmentDetails) => {
     const currentTime = new Date().getTime();
     const aptArray = appointmentDetails.appointmentDateTime.split('T');
-    const appointmentTime = getTimestamp(
-      new Date(appointmentDetails.appointmentDateTime),
-      aptArray[1].substring(0, 5)
-    );
+    const appointmentTime = getTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
     if (
       // appointmentTime > currentTime &&
       // appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE

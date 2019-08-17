@@ -308,6 +308,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     }
   }
 
+  // console.log(data, '................');
+
   const firstName =
     doctorDetails && doctorDetails.getDoctorDetailsById
       ? doctorDetails.getDoctorDetailsById.firstName

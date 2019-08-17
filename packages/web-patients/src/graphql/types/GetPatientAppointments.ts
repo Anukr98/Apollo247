@@ -11,6 +11,7 @@ import { PatientAppointmentsInput, APPOINTMENT_TYPE, STATUS, DoctorType } from "
 export interface GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_specialty {
   __typename: "DoctorSpecialties";
   name: string;
+  id: string;
 }
 
 export interface GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo {

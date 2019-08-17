@@ -294,6 +294,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
           specialization
           specialty {
             name
+            id
           }
         }
       }
