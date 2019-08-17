@@ -129,6 +129,8 @@ interface ConsultRoomProps {
   doctorId: string;
   patientId: string;
 }
+let timerIntervalId: any;
+let stoppedConsulTimer: number;
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const classes = useStyles();
   const [showVideo, setShowVideo] = useState<boolean>(false);
@@ -136,10 +138,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
+  const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const stopcallMsg = '^^callme`stop^^';
+  const acceptcallMsg = '^^callme`accept^^';
   const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
   const publishKey = 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3';
   const doctorId = props.doctorId;
@@ -155,6 +159,34 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const pubnub = new Pubnub(config);
   let insertText: MessagesObjectProps[] = [];
 
+  const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
+  const [startingTime, setStartingTime] = useState<number>(0);
+
+  const timerMinuts = Math.floor(startingTime / 60);
+  const timerSeconds = startingTime - timerMinuts * 60;
+  const timerLastMinuts = Math.floor(startingTime / 60);
+  const timerLastSeconds = startingTime - timerMinuts * 60;
+  const startIntervalTimer = (timer: number) => {
+    setstartTimerAppoinmentt(true);
+    timerIntervalId = setInterval(() => {
+      timer = timer + 1;
+      stoppedConsulTimer = timer;
+      setStartingTime(timer);
+      // if (timer == 900) {
+      //   setStartingTime(900);
+      //   clearInterval(timerIntervalId);
+      // }
+    }, 1000);
+  };
+  const stopIntervalTimer = () => {
+    setStartingTime(0);
+    timerIntervalId && clearInterval(timerIntervalId);
+  };
+  useEffect(() => {
+    if (isCallAccepted) {
+      startIntervalTimer(0);
+    }
+  }, [isCallAccepted]);
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
@@ -169,6 +201,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setMessages(insertText);
         setMessageText('reset');
         setMessageText('');
+        if (message.message && message.message.message === acceptcallMsg) {
+          setIsCallAccepted(true);
+        }
         setTimeout(() => {
           const scrollDiv = document.getElementById('scrollDiv');
           scrollDiv!.scrollIntoView();
@@ -196,6 +231,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     return '';
   }
+  useEffect(() => {
+    //if (props.startConsult !== isVideoCall) {
+    if (getCookieValue() !== '') {
+      setIsVideoCall(props.startConsult === 'videocall' ? true : false);
+      setMessageText(videoCallMsg);
+      autoSend();
+    }
+  }, []);
+
   useEffect(() => {
     //if (props.startConsult !== isVideoCall) {
     if (getCookieValue() !== '') {
@@ -272,7 +316,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.id === doctorId &&
       rowData.message !== videoCallMsg &&
       rowData.message !== audioCallMsg &&
-      rowData.message !== stopcallMsg
+      rowData.message !== stopcallMsg &&
+      rowData.message !== acceptcallMsg
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -289,7 +334,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.id === patientId &&
       rowData.message !== videoCallMsg &&
       rowData.message !== audioCallMsg &&
-      rowData.message !== stopcallMsg
+      rowData.message !== stopcallMsg &&
+      rowData.message !== acceptcallMsg
     ) {
       leftComponent = 0;
       rightComponent++;
@@ -323,6 +369,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setShowVideo(true);
   };
   const stopAudioVideoCall = () => {
+    setIsCallAccepted(false);
     setShowVideo(false);
     setShowVideoChat(false);
     const cookieStr = `action=`;
@@ -343,6 +390,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setMessageText('');
       }
     );
+    const stoptext = {
+      id: doctorId,
+      message: `call ended ${
+        timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
+      } :  ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+      isTyping: true,
+    };
+    pubnub.publish(
+      {
+        channel: channel,
+        message: stoptext,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        setMessageText('');
+      }
+    );
     //setIsVideoCall(false);
   };
   return (
@@ -356,6 +421,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             isVideoCall={isVideoCall}
             sessionId={props.sessionId}
             token={props.token}
+            timerMinuts={timerMinuts}
+            timerSeconds={timerSeconds}
+            isCallAccepted={isCallAccepted}
           />
         )}
         <div>

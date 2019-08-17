@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Theme, Button } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import { makeStyles } from '@material-ui/styles';
@@ -135,6 +135,8 @@ interface ConsultProps {
   sessionId: string;
   token: string;
 }
+let timerIntervalId: any;
+let stoppedConsulTimer: number;
 
 const openTokApiKey = '46393582';
 
@@ -144,6 +146,32 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const [mute, setMute] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const [subscribeToAudio, setSubscribeToAudio] = React.useState(props.isVideoCall ? false : true);
+  const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
+  const [startingTime, setStartingTime] = useState<number>(0);
+
+  const timerMinuts = Math.floor(startingTime / 60);
+  const timerSeconds = startingTime - timerMinuts * 60;
+  const timerLastMinuts = Math.floor(startingTime / 60);
+  const timerLastSeconds = startingTime - timerMinuts * 60;
+  const startIntervalTimer = (timer: number) => {
+    setstartTimerAppoinmentt(true);
+    timerIntervalId = setInterval(() => {
+      timer = timer + 1;
+      stoppedConsulTimer = timer;
+      setStartingTime(timer);
+      // if (timer == 900) {
+      //   setStartingTime(900);
+      //   clearInterval(timerIntervalId);
+      // }
+    }, 1000);
+  };
+  const stopIntervalTimer = () => {
+    setStartingTime(0);
+    timerIntervalId && clearInterval(timerIntervalId);
+  };
+  useEffect(() => {
+    startIntervalTimer(0);
+  }, []);
   return (
     <div className={classes.root}>
       <div
@@ -259,7 +287,14 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                           <img src={require('images/ic_videooff.svg')} alt="video off" />
                         </Button>
                       )}
+                      <span>
+                        {`Time start ${
+                          timerMinuts.toString().length < 2 ? '0' + timerMinuts : timerMinuts
+                        } : 
+             ${timerSeconds.toString().length < 2 ? '0' + timerSeconds : timerSeconds}`}
+                      </span>
                     </Grid>
+
                     <Grid item xs={4} className={classes.rightActions}>
                       {isCall && (
                         <Button

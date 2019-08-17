@@ -108,22 +108,16 @@ interface ConsultProps {
   isVideoCall: boolean;
   sessionId: string;
   token: string;
+  timerMinuts: number;
+  timerSeconds: number;
+  isCallAccepted: boolean;
 }
 export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
-  //const [publishVideo, setPublishVideo] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
-  const [subscribeToAudio, setSubscribeToAudio] = React.useState(props.isVideoCall ? false : true);
-  console.log(
-    mute,
-    subscribeToVideo,
-    subscribeToVideo,
-    subscribeToAudio,
-    props.sessionId,
-    props.token
-  );
+
   return (
     <div className={classes.consult}>
       <div>
@@ -229,6 +223,19 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         )}
                       </Grid>
                       <Grid item lg={10} sm={8} xs={8} className={classes.VideoAlignment}>
+                        <span>
+                          {props.isCallAccepted &&
+                            `Time start ${
+                              props.timerMinuts.toString().length < 2
+                                ? '0' + props.timerMinuts
+                                : props.timerMinuts
+                            } :  ${
+                              props.timerSeconds.toString().length < 2
+                                ? '0' + props.timerSeconds
+                                : props.timerSeconds
+                            }`}
+                        </span>
+
                         {isCall && mute && (
                           <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
                             <img
