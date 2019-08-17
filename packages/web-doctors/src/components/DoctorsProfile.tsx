@@ -66,7 +66,7 @@ const useStyles = makeStyles((theme: Theme) => {
       pointerEvents: 'none',
     },
     profile: {
-      paddingTop: 68,
+      paddingTop: 64,
       [theme.breakpoints.down('xs')]: {
         paddingTop: 62,
       },
