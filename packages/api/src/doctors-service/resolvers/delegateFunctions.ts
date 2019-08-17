@@ -48,9 +48,13 @@ const removeDelegateNumber: Resolver<null, {}, DoctorsServiceContext, Doctor> = 
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
-  await doctorRepository.updateDelegateNumber(doctorData.id, '');
+  if (doctorData.delegateNumber != null)
+    await doctorRepository.updateDelegateNumber(doctorData.id, '');
 
-  const updatedDoctorDetails = await doctorRepository.getDoctorProfileData(doctorData.id);
+  const updatedDoctorDetails =
+    doctorData.delegateNumber == null
+      ? await doctorRepository.getDoctorProfileData(doctorData.id)
+      : doctorData;
   if (updatedDoctorDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   return updatedDoctorDetails;
 };
