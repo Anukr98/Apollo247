@@ -166,7 +166,8 @@ interface DoctorsListingProps {
 
 const convertAvailabilityToDate = (availability: String[]) => {
   return _map(availability, (ava) => {
-    if (ava === 'now' || ava === 'today') return format(new Date(), 'yyyy-MM-dd');
+    if (ava === 'now') return 'NOW';
+    if (ava === 'today') return format(new Date(), 'yyyy-MM-dd');
     if (ava === 'tomorrow') return format(addDays(new Date(), 1), 'yyyy-MM-dd');
     if (ava === 'next3') return format(addDays(new Date(), 3), 'yyyy-MM-dd');
   });
