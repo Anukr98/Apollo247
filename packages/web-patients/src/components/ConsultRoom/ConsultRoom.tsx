@@ -15,7 +15,7 @@ import {
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
+// import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { getTime } from 'date-fns/esm';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
@@ -184,13 +184,12 @@ export const ConsultRoom: React.FC = (props) => {
   const filterAppointments = appointments.filter((appointmentDetails) => {
     const currentTime = new Date().getTime();
     const aptArray = appointmentDetails.appointmentDateTime.split('T');
-    const appointmentTime = getTimestamp(
-      new Date(appointmentDetails.appointmentDateTime),
-      aptArray[1].substring(0, 5)
-    );
+    const appointmentTime = getTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
     if (
-      appointmentTime > currentTime &&
-      appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+      // appointmentTime > currentTime &&
+      // appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+      // the above condition is commented as per demo feedback on 13/08/2019
+      appointmentTime > currentTime
     )
       return appointmentDetails;
   });
@@ -264,7 +263,10 @@ export const ConsultRoom: React.FC = (props) => {
                 </div>
               </>
             ) : (
-              <p>You have {filterAppointments.length} consultations today!</p>
+              <p>
+                You have {filterAppointments.length}{' '}
+                {filterAppointments.length > 1 ? 'consultations' : 'consultation'} today!
+              </p>
             )}
           </div>
         </div>

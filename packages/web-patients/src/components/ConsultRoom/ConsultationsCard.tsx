@@ -9,10 +9,12 @@ import {
 import { DoctorType, APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import _isNull from 'lodash/isNull';
 import { Link } from 'react-router-dom';
-import { getTime } from 'date-fns/esm';
 import { format } from 'date-fns';
 import { clientRoutes } from 'helpers/clientRoutes';
 import isTomorrow from 'date-fns/isTomorrow';
+import { getIstTimestamp } from 'helpers/dateHelpers';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -143,21 +145,6 @@ interface ConsultationsCardProps {
   appointments: GetPatientAppointments;
 }
 
-const getTimestamp = (today: Date, slotTime: string) => {
-  const hhmm = slotTime.split(':');
-  return getTime(
-    new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-      parseInt(hhmm[0], 10),
-      parseInt(hhmm[1], 10),
-      0,
-      0
-    )
-  );
-};
-
 export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const classes = useStyles();
 
@@ -174,10 +161,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const filterAppointments = bookedAppointments.filter((appointmentDetails) => {
     const currentTime = new Date().getTime();
     const aptArray = appointmentDetails.appointmentDateTime.split('T');
-    const appointmentTime = getTimestamp(
-      new Date(appointmentDetails.appointmentDateTime),
-      aptArray[1].substring(0, 5)
-    );
+    const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
     if (
       // appointmentTime > currentTime &&
       // appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
@@ -188,11 +172,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     }
   });
 
+  // console.log('filter appointments......', filterAppointments);
+
   const otherDateMarkup = (appointmentTime: number) => {
     if (isTomorrow(new Date(appointmentTime))) {
       return `Tomorrow ${format(new Date(appointmentTime), 'h:mm a')}`;
     } else {
-      return format(new Date(appointmentTime), 'h:mm a');
+      return format(new Date(appointmentTime), 'dd MMM yyyy, h:mm a');
     }
   };
 
@@ -227,11 +213,12 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   : '';
               const currentTime = new Date().getTime();
               const aptArray = appointmentDetails.appointmentDateTime.split('T');
-              const appointmentTime = getTimestamp(
-                new Date(appointmentDetails.appointmentDateTime),
+              const appointmentTime = getIstTimestamp(
+                new Date(aptArray[0]),
                 aptArray[1].substring(0, 5)
               );
               const difference = Math.round((appointmentTime - currentTime) / 60000);
+              // console.log('difference is....', difference);
               const doctorId =
                 appointmentDetails.doctorInfo && appointmentDetails.doctorId
                   ? appointmentDetails.doctorId
@@ -266,7 +253,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                             ? `Available in ${difference} mins`
                             : otherDateMarkup(appointmentTime)}
                         </div>
-                        <div className={classes.doctorName}>{`${firstName} ${lastName}`}</div>
+                        <div className={classes.doctorName}>{`Dr. ${_startCase(
+                          _toLower(firstName)
+                        )} ${_startCase(_toLower(lastName))}`}</div>
                         <div className={classes.doctorType}>
                           {specialization}
                           <span className={classes.doctorExp}>{experience} YRS</span>
@@ -274,7 +263,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         <div className={classes.consultaitonType}>
                           {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
                             ? 'Online Consultation'
-                            : 'Clinic visit'}
+                            : 'Clinic Visit'}
                         </div>
                         <div className={classes.appointBooked}>
                           <ul>

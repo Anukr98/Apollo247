@@ -119,6 +119,12 @@ export interface Range {
   maximum?: number | null;
 }
 
+export interface SaveSearchInput {
+  type?: SEARCH_TYPE | null;
+  typeId: string;
+  patient: string;
+}
+
 export interface UpdateAppointmentSessionInput {
   appointmentId: string;
   requestRole: string;

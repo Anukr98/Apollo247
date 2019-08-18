@@ -5,18 +5,22 @@ import { AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import _forEach from 'lodash/forEach';
+
+import { GET_PATIENT_APPOINTMENTS } from 'graphql/doctors';
 import {
-  AppointmentHistory as TypeAppointmentHistory,
-  AppointmentHistory_getAppointmentHistory_appointmentsHistory as AppointmentHistory,
-  AppointmentHistoryVariables,
-} from 'graphql/types/AppointmentHistory';
+  GetPatientAppointments,
+  GetPatientAppointmentsVariables,
+} from 'graphql/types/GetPatientAppointments';
+
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { PATIENT_APPOINTMENT_HISTORY } from 'graphql/doctors';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import _findIndex from 'lodash/findIndex';
-import { getTime } from 'date-fns/esm';
 import { format } from 'date-fns';
+import isTomorrow from 'date-fns/isTomorrow';
+import { getIstTimestamp } from 'helpers/dateHelpers';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -253,41 +257,27 @@ interface ConsultDoctorProfileProps {
   appointmentId: string;
 }
 
-const getTimestamp = (today: Date, slotTime: string) => {
-  const hhmm = slotTime.split(':');
-  return getTime(
-    new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-      parseInt(hhmm[0], 10),
-      parseInt(hhmm[1], 10),
-      0,
-      0
-    )
-  );
-};
-
 export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props) => {
   const classes = useStyles();
 
   const { doctorDetails, appointmentId } = props;
   const { allCurrentPatients } = useAllCurrentPatients();
+  const currentDate = new Date().toISOString().substring(0, 10);
 
   const [showMore, setShowMore] = useState<boolean>(true);
-
-  const doctorId =
-    doctorDetails && doctorDetails.getDoctorDetailsById
-      ? doctorDetails.getDoctorDetailsById.id
-      : '';
 
   const patientId = (allCurrentPatients && allCurrentPatients[0].id) || '';
 
   const { data, loading, error } = useQueryWithSkip<
-    TypeAppointmentHistory,
-    AppointmentHistoryVariables
-  >(PATIENT_APPOINTMENT_HISTORY, {
-    variables: { appointmentHistoryInput: { patientId: patientId, doctorId: doctorId } },
+    GetPatientAppointments,
+    GetPatientAppointmentsVariables
+  >(GET_PATIENT_APPOINTMENTS, {
+    variables: {
+      patientAppointmentsInput: {
+        patientId: patientId || '',
+        appointmentDate: currentDate,
+      },
+    },
   });
 
   if (loading) {
@@ -297,16 +287,21 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     return <></>;
   }
 
-  const appointmentDetails: AppointmentHistory[] = [];
-  let hospitalLocation = '';
+  const appointmentDetails = [];
+  let hospitalLocation = '',
+    address1 = '',
+    address2 = '',
+    address3 = '';
 
-  if (data && data.getAppointmentHistory && data.getAppointmentHistory.appointmentsHistory) {
-    const previousAppointments = data.getAppointmentHistory.appointmentsHistory;
+  if (data && data.getPatinetAppointments && data.getPatinetAppointments.patinetAppointments) {
+    const previousAppointments = data.getPatinetAppointments.patinetAppointments;
     const findAppointment = _findIndex(previousAppointments, { id: appointmentId });
     if (findAppointment > 0) {
       appointmentDetails.push(previousAppointments[findAppointment]);
     }
   }
+
+  // console.log(doctorDetails, '................');
 
   const firstName =
     doctorDetails && doctorDetails.getDoctorDetailsById
@@ -348,18 +343,10 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     doctorDetails && doctorDetails.getDoctorDetailsById
       ? doctorDetails.getDoctorDetailsById.physicalConsultationFees
       : '';
-  const appointmentTime =
-    appointmentDetails && appointmentDetails.length > 0 && appointmentDetails[0].appointmentDateTime
-      ? format(
-          new Date(
-            getTimestamp(
-              new Date(appointmentDetails[0].appointmentDateTime || ''),
-              appointmentDetails[0].appointmentDateTime.split('T')[1].substring(0, 5)
-            )
-          ),
-          'h:mm a'
-        )
-      : '';
+  const currentTime = new Date().getTime();
+  const aptArray = appointmentDetails[0].appointmentDateTime.split('T');
+  const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
+  const difference = Math.round((appointmentTime - currentTime) / 60000);
 
   // console.log('--------------->>>>>>>>>>>>>>>', appointmentDetails);
 
@@ -374,9 +361,20 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         hospitalDetails.facility.facilityType === 'CLINIC'
       ) {
         hospitalLocation = hospitalDetails.facility.name;
+        address1 = hospitalDetails.facility.streetLine1 || '';
+        address2 = hospitalDetails.facility.streetLine2 || '';
+        address3 = hospitalDetails.facility.streetLine3 || '';
       }
     });
   }
+
+  const otherDateMarkup = (appointmentTime: number) => {
+    if (isTomorrow(new Date(appointmentTime))) {
+      return `Tomorrow ${format(new Date(appointmentTime), 'h:mm a')}`;
+    } else {
+      return format(new Date(appointmentTime), 'dd MMM yyyy, h:mm a');
+    }
+  };
 
   return (
     <div className={classes.root}>
@@ -388,7 +386,9 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           />
         </div>
         <div className={classes.doctorInfo}>
-          <div className={classes.doctorName}>{`${firstName} ${lastName}`}</div>
+          <div className={classes.doctorName}>{`Dr. ${_startCase(_toLower(firstName))} ${_startCase(
+            _toLower(lastName)
+          )}`}</div>
           <div className={classes.specialits}>
             {speciality} <span className={classes.lineDivider}>|</span> {experience} Yrs
             <div
@@ -401,57 +401,54 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
               More
             </div>
           </div>
-          <Scrollbars
-            autoHide={true}
-            autoHeight
-            autoHeightMax={'calc(100vh - 514px'}
-            className={showMore ? classes.hideMore : ''}
-          >
-            <div className={classes.doctorInfoGroup}>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType}>
-                  <img src={require('images/ic-edu.svg')} alt="" />
-                </div>
-                <div className={classes.details}>{education}</div>
-              </div>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType}>
-                  <img src={require('images/ic-awards.svg')} alt="" />
-                </div>
-                <div className={classes.details}>
-                  {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
-                </div>
-              </div>
-            </div>
-            <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType}>
-                  <img src={require('images/ic-location.svg')} alt="" />
-                </div>
-                <div className={classes.details}>{hospitalLocation}</div>
-              </div>
-              <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                <div className={classes.iconType}>
-                  <img src={require('images/ic-language.svg')} alt="" />
-                </div>
-                <div className={classes.details}>{languages}</div>
-              </div>
-            </div>
-            <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
-              <div className={classes.consultGroup}>
+          <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 514px'}>
+            <div className={showMore ? classes.hideMore : ''}>
+              <div className={classes.doctorInfoGroup}>
                 <div className={classes.infoRow}>
                   <div className={classes.iconType}>
-                    <img src={require('images/ic-rupee.svg')} alt="" />
+                    <img src={require('images/ic-edu.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>{education}</div>
+                </div>
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic-awards.svg')} alt="" />
                   </div>
                   <div className={classes.details}>
-                    Online Consultation
-                    <br />
-                    Clinic Visit
-                    {/* <div className={classes.doctorPriceIn}>Rs. 299</div> */}
+                    {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
                   </div>
-                  <div className={classes.doctorPrice}>
-                    Rs. {onlineConsultFees} <br />
-                    Rs. {physicalConsultationFees}
+                </div>
+              </div>
+              <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic-location.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>{hospitalLocation}</div>
+                </div>
+                <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic-language.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>{languages}</div>
+                </div>
+              </div>
+              <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
+                <div className={classes.consultGroup}>
+                  <div className={classes.infoRow}>
+                    <div className={classes.iconType}>
+                      <img src={require('images/ic-rupee.svg')} alt="" />
+                    </div>
+                    <div className={classes.details}>
+                      Online Consultation
+                      <br />
+                      Clinic Visit
+                      {/* <div className={classes.doctorPriceIn}>Rs. 299</div> */}
+                    </div>
+                    <div className={classes.doctorPrice}>
+                      Rs. {onlineConsultFees} <br />
+                      Rs. {physicalConsultationFees}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -469,7 +466,11 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                     <div className={classes.iconType}>
                       <img src={require('images/ic_calendar_show.svg')} alt="" />
                     </div>
-                    <div className={classes.details}>Today, {appointmentTime}</div>
+                    <div className={classes.details}>
+                      {difference <= 15
+                        ? `in ${difference} mins`
+                        : otherDateMarkup(appointmentTime)}
+                    </div>
                   </div>
                   <div className={`${classes.infoRow} ${classes.textCenter}`}>
                     <div className={classes.iconType}>
@@ -482,11 +483,11 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                       <img src={require('images/ic-location.svg')} alt="" />
                     </div>
                     <div className={classes.details}>
-                      Apollo Hospital
+                      {hospitalLocation}
                       <br />
-                      Road No 72, Film Nagar
+                      {address1}
                       <br />
-                      Jubilee Hills, Hyderabad
+                      {`${address2} ${address3}`}
                     </div>
                   </div>
                 </div>
