@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
@@ -30,6 +30,7 @@ import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,
 } from 'graphql/types/GetDoctorNextAvailableSlot';
+import { usePrevious } from 'hooks/reactCustomHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -214,6 +215,11 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:00');
   const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:00');
   const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:00');
+  const prevDateSelected = usePrevious(dateSelected);
+
+  useEffect(() => {
+    if (prevDateSelected !== dateSelected) setTimeSelected('');
+  }, [dateSelected, prevDateSelected]);
 
   // get available slots.
   const {

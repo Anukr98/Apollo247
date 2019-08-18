@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem, CircularProgress } from '@material-ui/core';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AphButton, AphSelect } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
@@ -15,7 +15,6 @@ import {
   GetDoctorAvailableSlotsVariables,
 } from 'graphql/types/GetDoctorAvailableSlots';
 import { GET_DOCTOR_AVAILABLE_SLOTS, BOOK_APPOINTMENT } from 'graphql/doctors';
-import { getTime } from 'date-fns/esm';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { Mutation } from 'react-apollo';
 import { BookAppointment, BookAppointmentVariables } from 'graphql/types/BookAppointment';
@@ -30,6 +29,8 @@ import Button from '@material-ui/core/Button';
 import { clientRoutes } from 'helpers/clientRoutes';
 // import { Redirect } from 'react-router';
 import _forEach from 'lodash/forEach';
+import { getIstTimestamp } from 'helpers/dateHelpers';
+import { usePrevious } from 'hooks/reactCustomHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -77,6 +78,10 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#00b38e',
         color: theme.palette.common.white,
       },
+    },
+    buttonDisable: {
+      backgroundColor: '#fed984',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2) !important',
     },
     bottomActions: {
       padding: '10px 15px 15px 15px',
@@ -159,21 +164,6 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-const getTimestamp = (today: Date, slotTime: string) => {
-  const hhmm = slotTime.split(':');
-  return getTime(
-    new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-      parseInt(hhmm[0], 10),
-      parseInt(hhmm[1], 10),
-      0,
-      0
-    )
-  );
-};
-
 const getYyMmDd = (ddmmyyyy: string) => {
   const splitString = ddmmyyyy.split('/');
   return `${splitString[2]}-${splitString[1]}-${splitString[0]}`;
@@ -193,8 +183,8 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   // const [mutationSuccess, setMutationSuccess] = React.useState(false);
 
+  const prevDateSelected = usePrevious(dateSelected);
   const { currentPatient } = useAllCurrentPatients();
-
   const { doctorDetails } = props;
 
   const currentTime = new Date().getTime();
@@ -221,9 +211,9 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const apiDateFormat =
     dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
 
-  const morningTime = getTimestamp(new Date(apiDateFormat), '12:00');
-  const afternoonTime = getTimestamp(new Date(apiDateFormat), '17:00');
-  const eveningTime = getTimestamp(new Date(apiDateFormat), '21:00');
+  const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:00');
+  const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:00');
+  const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:00');
 
   const doctorId =
     doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.id
@@ -240,6 +230,10 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     fetchPolicy: 'network-only',
   });
 
+  useEffect(() => {
+    if (prevDateSelected !== dateSelected) setTimeSelected('');
+  }, [dateSelected, prevDateSelected]);
+
   if (loading) {
     return (
       <div className={classes.circlularProgress}>
@@ -254,7 +248,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
 
   const availableSlots = (data && data.getDoctorAvailableSlots.availableSlots) || [];
   availableSlots.map((slot) => {
-    const slotTime = getTimestamp(new Date(apiDateFormat), slot);
+    const slotTime = getIstTimestamp(new Date(apiDateFormat), slot);
     if (slotTime > currentTime) {
       if (slotTime < morningTime) morningSlots.push(slotTime);
       else if (slotTime >= morningTime && slotTime < afternoonTime) afternoonSlots.push(slotTime);
@@ -264,13 +258,11 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   });
 
   const disableSubmit =
-    (morningSlots.length > 0 ||
-      afternoonSlots.length > 0 ||
-      eveningSlots.length > 0 ||
-      lateNightSlots.length > 0) &&
-    timeSelected !== ''
-      ? false
-      : true;
+    (morningSlots.length === 0 &&
+      afternoonSlots.length === 0 &&
+      eveningSlots.length === 0 &&
+      lateNightSlots.length === 0) ||
+    timeSelected === '';
 
   // if (mutationSuccess) {
   //   return <Redirect to={clientRoutes.welcome()} />;
@@ -399,11 +391,14 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             <AphButton
               fullWidth
               color="primary"
-              disabled={disableSubmit}
+              disabled={disableSubmit || mutationLoading || isDialogOpen}
               onClick={(e) => {
                 setMutationLoading(true);
                 mutate();
               }}
+              className={
+                disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''
+              }
             >
               {mutationLoading ? (
                 <CircularProgress size={22} color="secondary" />
