@@ -34,10 +34,11 @@ const useStyles = makeStyles({
   weekView: {
     backgroundColor: '#fff',
     borderRadius: '10px',
-    width: '80%',
+    width: '82%',
     margin: 'auto',
     padding: '0 15px',
     textAlign: 'center',
+    marginLeft: 25,
     boxShadow: '-10px 2px 10px 0 rgba(0, 0, 0, 0.1)',
   },
   monthPopup: {
@@ -52,6 +53,11 @@ const useStyles = makeStyles({
     fontSize: 25,
     color: '#658f9b',
     cursor: 'pointer',
+    verticalAlign: 'middle',
+    '& img': {
+      width: 30,
+      marginTop: 8,
+    },
   },
   nextBtn: {
     width: '4%',
@@ -60,6 +66,11 @@ const useStyles = makeStyles({
     fontSize: 25,
     color: '#658f9b',
     cursor: 'pointer',
+    verticalAlign: 'middle',
+    '& img': {
+      width: 30,
+      marginTop: 8,
+    },
   },
   calendarContainer: {
     display: 'flex',
@@ -74,6 +85,7 @@ const useStyles = makeStyles({
     backgroundColor: '#fff',
     '& img': {
       margin: 'auto',
+      width: 24,
     },
   },
   moreIcon: {
@@ -149,8 +161,7 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
             }
           }}
         >
-          {' '}
-          &lt;{' '}
+          <img src={require('images/ic_leftarrow.svg')} alt="" />
         </div>
         <Days
           userSelection={userSelection}
@@ -175,8 +186,7 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
             }
           }}
         >
-          {' '}
-          >{' '}
+          <img src={require('images/ic_rightarrow.svg')} alt="" />
         </div>
       </div>
       <div className={classes.moreIcon}>

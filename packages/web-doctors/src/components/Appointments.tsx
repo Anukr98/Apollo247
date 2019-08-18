@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useImperativeHandle } from 'react';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
 import Grid from '@material-ui/core/Grid';
@@ -140,15 +140,19 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     AppointmentTime: {
       position: 'relative',
-      top: -70,
-      marginLeft: '5%',
+      top: -65,
+      marginLeft: 30,
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
       color: '#0087ba',
     },
     step: {
+      marginTop: -8,
       '& .stepContent': {
         borderLeft: '2px solid #0087ba',
+        marginTop: 0,
+        marginLeft: 30,
+        paddingLeft: 0,
       },
       '&:last-child': {
         '& .stepContent': {
@@ -159,14 +163,17 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#fff',
         border: '2px solid #0087ba',
         borderRadius: '50%',
+        marginTop: 0,
+        marginLeft: 19,
       },
       '& .cardRow': {
         border: '1px solid #0087ba',
         backgroundColor: '#fff',
         position: 'relative',
-        top: -70,
+        top: -60,
         height: 96,
         marginLeft: '5%',
+        marginBottom: 25,
         width: '95%',
         boxShadow: '0 2px 4px 0 rgba(0,0,0,0.3)',
       },
@@ -181,7 +188,6 @@ const useStyles = makeStyles((theme: Theme) =>
           border: '1px solid #ff748e',
           backgroundColor: '#fff',
           position: 'relative',
-          top: -70,
           marginLeft: '5%',
           width: '95%',
           boxShadow: '0 2px 4px 0 rgba(0,0,0,0.3)',
@@ -226,10 +232,16 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const checkIfComplete = (status: string) => status === STATUS.COMPLETED;
+const checkIfComplete = (status: string) => status === STATUS.COMPLETED || status === STATUS.MISSED;
 
 const getActiveStep = (appointments: Appointment[]) =>
-  appointments.findIndex((appointment) => checkIfComplete(appointment.status));
+  appointments.reduce((acc, appointment) => {
+    if (checkIfComplete(appointment.status)) {
+      return ++acc;
+    }
+
+    return acc;
+  }, 0);
 
 export const Appointments: React.FC<AppointmentsProps> = ({
   values,
@@ -241,6 +253,17 @@ export const Appointments: React.FC<AppointmentsProps> = ({
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
   const [loading, isLoading] = useState<boolean>(loadingData);
+  const upcomingElement = useRef(null);
+
+  useImperativeHandle(upcomingElement, () => {
+    if (upcomingElement.current) {
+      const elem = (upcomingElement!.current as unknown) as HTMLDivElement;
+      elem.scrollIntoView({ block: 'start' });
+      window.scrollTo(0, window.scrollY - 180);
+    }
+
+    return null;
+  });
 
   useEffect(() => {
     let activeStep = getActiveStep(values);
@@ -284,12 +307,12 @@ export const Appointments: React.FC<AppointmentsProps> = ({
               key={idx}
               active={true}
               className={
-                activeStep === idx
-                  ? 'upcoming'
+                appointment.status === STATUS.MISSED
+                  ? classes.missing
                   : activeStep - 1 >= idx
                   ? classes.completed
-                  : appointment.status === STATUS.MISSED
-                  ? classes.missing
+                  : activeStep === idx
+                  ? 'upcoming'
                   : ''
               }
               classes={{
@@ -314,8 +337,8 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                   <span>
                     {`${activeStep === idx ? 'UP NEXT: ' : ''}${format(
                       appointment.startTime,
-                      'hh:mm'
-                    )} - ${format(appointment.endTime, 'hh:mm aa')}`}
+                      'h:mm'
+                    )} - ${format(appointment.endTime, 'h:mm aa')}`}
                   </span>
                 </Typography>
               </StepLabel>
@@ -327,6 +350,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                 <div>
                   <Card
                     className={classes.card}
+                    ref={activeStep === idx ? upcomingElement : null}
                     classes={{
                       root: 'cardRow',
                     }}

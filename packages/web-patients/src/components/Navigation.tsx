@@ -8,7 +8,6 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     appNavigation: {
       marginLeft: 'auto',
-      marginBottom: 10,
       [theme.breakpoints.down('xs')]: {
         display: 'none',
       },
@@ -17,12 +16,24 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         color: theme.palette.secondary.dark,
         textTransform: 'uppercase',
-        paddingLeft: 20,
-        paddingRight: 20,
+        padding: '36px 20px 35px 20px',
         [theme.breakpoints.down('sm')]: {
           paddingLeft: 10,
           paddingRight: 10,
         },
+      },
+    },
+    menuItemActive: {
+      backgroundColor: '#f7f8f5',
+      position: 'relative',
+      '&:after': {
+        position: 'absolute',
+        content: '""',
+        bottom: 0,
+        left: 0,
+        height: 5,
+        width: '100%',
+        backgroundColor: '#00b38e',
       },
     },
   };
@@ -30,11 +41,27 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const Navigation: React.FC = (props) => {
   const classes = useStyles();
+  const currentPath = window.location.pathname;
   return (
     <div className={classes.appNavigation} data-cypress="Navigation">
-      <Link to={clientRoutes.consultRoom()}>Consult Room</Link>
-      <Link to={clientRoutes.healthRecords()}>Health Records</Link>
-      <Link to={clientRoutes.testsAndMedicine()}>Tests &amp; Medicines</Link>
+      <Link
+        className={currentPath === clientRoutes.consultRoom() ? classes.menuItemActive : ''}
+        to={clientRoutes.consultRoom()}
+      >
+        Consult Room
+      </Link>
+      <Link
+        to={clientRoutes.healthRecords()}
+        className={currentPath === clientRoutes.healthRecords() ? classes.menuItemActive : ''}
+      >
+        Health Records
+      </Link>
+      <Link
+        to={clientRoutes.testsAndMedicine()}
+        className={currentPath === clientRoutes.testsAndMedicine() ? classes.menuItemActive : ''}
+      >
+        Tests &amp; Medicines
+      </Link>
     </div>
   );
 };

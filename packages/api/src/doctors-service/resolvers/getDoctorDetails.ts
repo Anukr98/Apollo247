@@ -27,12 +27,18 @@ export const getDoctorDetailsTypeDefs = gql`
     STAR_APOLLO
   }
 
+  enum LoggedInUserType {
+    APOLLO
+    PAYROLL
+    STAR_APOLLO
+    SECRETARY
+    NONE
+  }
+
   enum Salutation {
     MR
     MRS
     DR
-    Dr
-    dr
   }
 
   enum WeekDay {
@@ -59,6 +65,7 @@ export const getDoctorDetailsTypeDefs = gql`
     consultMode: ConsultMode!
     consultType: ConsultType!
     endTime: String!
+    facility: Facility
     id: ID!
     isActive: Boolean!
     startTime: String!
@@ -115,6 +122,7 @@ export const getDoctorDetailsTypeDefs = gql`
     city: String
     country: String
     facilityType: String!
+    id: ID!
     latitude: String
     longitude: String
     name: String!
@@ -125,12 +133,12 @@ export const getDoctorDetailsTypeDefs = gql`
   }
 
   type Packages {
-    name: String!
-    id: String!
     fees: String!
+    id: String!
+    name: String!
   }
 
-  type Profile {
+  type Profile @key(fields: "id") {
     city: String
     country: String
     doctorType: DoctorType!
@@ -162,8 +170,17 @@ export const getDoctorDetailsTypeDefs = gql`
   extend type Query {
     getDoctorDetails: DoctorDetails
     getDoctorDetailsById(id: String): DoctorDetails
+    findLoggedinUserType: LoggedInUserType
   }
 `;
+
+enum LoggedInUserType {
+  APOLLO,
+  PAYROLL,
+  STAR_APOLLO,
+  SECRETARY,
+  NONE,
+}
 
 const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = async (
   parent,
@@ -199,6 +216,30 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
   return doctordata;
 };
 
+const findLoggedinUserType: Resolver<null, {}, DoctorsServiceContext, LoggedInUserType> = async (
+  parent,
+  args,
+  { mobileNumber, doctorsDb, firebaseUid }
+) => {
+  let doctorData;
+  let doctorType;
+  try {
+    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+    doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+    if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+    const doctorType =
+      doctorData.delegateNumber === mobileNumber
+        ? LoggedInUserType.SECRETARY
+        : doctorData.doctorType;
+
+    return doctorType;
+  } catch (getProfileError) {
+    throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
+  }
+
+  return doctorType;
+};
+
 export const getDoctorDetailsResolvers = {
   DoctorDetails: {
     async __resolveReference(object: Doctor) {
@@ -207,8 +248,17 @@ export const getDoctorDetailsResolvers = {
       return await doctorRepo.findById(object.id.toString());
     },
   },
+  Profile: {
+    async __resolveReference(object: Doctor) {
+      const connection = getConnection();
+      const doctorRepo = connection.getCustomRepository(DoctorRepository);
+      return await doctorRepo.getDoctorProfileData(object.id.toString());
+    },
+  },
+
   Query: {
     getDoctorDetails,
     getDoctorDetailsById,
+    findLoggedinUserType,
   },
 };

@@ -180,8 +180,11 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
     //By default selectedRelation 1 st profile should be ME when there is an empty input
     if (number === 1 && selectedRelation === '') {
       setSelectedRelation(Relation.ME);
+      const updatedPatient = { ...patient, relation: Relation.ME };
+      props.onUpdatePatient(updatedPatient);
     }
-  }, [number, selectedRelation]);
+  }, [number, selectedRelation, patient, props]);
+
   return (
     <div className={classes.profileBox} data-cypress="PatientProfile">
       <div className={classes.boxHeader}>
@@ -191,8 +194,9 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
       <div className={classes.boxContent}>
         <div className={classes.userName}>{_capitalize(patient.firstName || '')}</div>
         <div className={classes.userInfo}>
-          {_capitalize(patient.gender || '') + ''}
-          {patient.dateOfBirth && (format(patient.dateOfBirth, 'dd month yyyy') || '').toString()}
+          {_capitalize(patient.gender || '')}
+          {patient.gender && ' | '}
+          {patient.dateOfBirth && (format(patient.dateOfBirth, 'dd MMMM yyyy') || '').toString()}
         </div>
         <AphSelect
           value={selectedRelation}
@@ -240,7 +244,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const [patients, setPatients] = useState(props.patients);
   const [loading, setLoading] = useState(false);
   const disabled = patients.some(isPatientInvalid);
-  const [Message, setMessage] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
   const validMessage = '';
   let isOK = false;
   return (
@@ -262,7 +266,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
             </p>
           )}
           <FormHelperText component="div" className={classes.errorText}>
-            {Message}
+            {message}
           </FormHelperText>
 
           <div className={classes.formGroup}>
@@ -319,6 +323,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
                     .then(() => props.onComplete())
                     .catch(() => window.alert('Something went wrong :('))
                     .finally(() => setLoading(false));
+                  window.location.reload();
                 }
               }}
               disabled={disabled}

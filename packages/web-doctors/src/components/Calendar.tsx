@@ -21,7 +21,7 @@ import { useAuth } from 'hooks/authHooks';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
-      paddingTop: 68,
+      paddingTop: 65,
       [theme.breakpoints.down('xs')]: {
         paddingTop: 78,
       },
@@ -83,7 +83,7 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 16,
       borderRadius: 17,
       '& button': {
-        padding: '6px 40px',
+        padding: '6px 33px',
         height: 36,
         borderRadius: 17,
         color: '#02475b',
@@ -98,9 +98,14 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:first-child': {
         borderRadius: '17px !important',
       },
+      '&:last-child': {
+        borderRadius: '17px !important',
+        paddingLeft: 25,
+        paddingRight: 26,
+      },
     },
     nopionter: {
-      pointerEvents: 'none',
+      // pointerEvents: 'none',
     },
   };
 });
@@ -170,8 +175,6 @@ export const Calendar: React.FC = () => {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
 
-  console.log(viewSelection, range, startOfMonth(selectedDate));
-
   const setStartOfMonthDate = ({ start }: { start: string | Date; end: string | Date }) => {
     setSelectedDate(startOfMonth(start as Date));
   };
@@ -190,7 +193,9 @@ export const Calendar: React.FC = () => {
       </div>
       <div className={classes.container}>
         <div className={classes.tabHeading}>
-          <Typography variant="h1">hello dr. {currentPatient!.lastName} :)</Typography>
+          <Typography variant="h1">
+            hello dr. {(currentPatient!.lastName || '').toLowerCase()} :)
+          </Typography>
           <p>
             here’s your schedule for {isToday(selectedDate) ? 'today, ' : ''}{' '}
             {format(selectedDate, isToday(selectedDate) ? 'dd MMM yyyy' : 'MMM, dd')}
@@ -200,7 +205,7 @@ export const Calendar: React.FC = () => {
           <div>
             <ToggleButtonGroup exclusive value={viewSelection} className={classes.toggleBtn}>
               <ToggleButton
-                className={classes.customeSelect}
+                className={`${viewSelection === 'day' ? classes.customeSelect : ''}`}
                 value="day"
                 onClick={() => {
                   setViewSelection('day');
@@ -210,11 +215,11 @@ export const Calendar: React.FC = () => {
                 Day
               </ToggleButton>
               <ToggleButton
-                className={classes.nopionter}
+                className={`${viewSelection === 'month' ? classes.customeSelect : ''}`}
                 value="month"
                 onClick={() => {
                   setViewSelection('month');
-                  setRange({ start: selectedDate, end: endOfMonth(selectedDate) });
+                  setRange({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
                 }}
               >
                 Month

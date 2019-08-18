@@ -8,6 +8,13 @@ import { format } from 'date-fns';
 
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
+  getDoctorProfileData(id: string) {
+    return this.findOne({
+      where: [{ id }],
+      relations: ['specialty', 'doctorHospital'],
+    });
+  }
+
   getDoctorDetails(firebaseToken: string) {
     return this.findOne({
       where: [{ firebaseToken }],
@@ -37,6 +44,10 @@ export class DoctorRepository extends Repository<Doctor> {
     return this.update(id, { firebaseToken: firebaseToken });
   }
 
+  updateDelegateNumber(id: string, delegateNumber: string) {
+    return this.update(id, { delegateNumber });
+  }
+
   findById(id: string) {
     return this.findOne({
       where: [{ id }],
@@ -44,6 +55,7 @@ export class DoctorRepository extends Repository<Doctor> {
         'specialty',
         'doctorHospital',
         'consultHours',
+        'consultHours.facility',
         'starTeam',
         'bankAccount',
         'packages',

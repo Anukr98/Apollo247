@@ -24,24 +24,30 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: theme.palette.common.white,
-      padding: '20px 20px 7px 20px',
+      padding: '0 20px 0 20px',
       [theme.breakpoints.down('xs')]: {
-        padding: '15px 20px 5px 20px',
+        padding: '0 20px 0 20px',
       },
     },
     logo: {
+      paddingTop: 20,
+      paddingBottom: 11,
+      [theme.breakpoints.down('xs')]: {
+        paddingTop: 15,
+        paddingBottom: 9,
+      },
       '& a': {
         display: 'block',
       },
       '& img': {
         maxWidth: 77,
+        verticalAlign: 'middle',
         [theme.breakpoints.down('xs')]: {
           maxWidth: 67,
         },
       },
     },
     userAccount: {
-      marginBottom: 10,
       marginLeft: 20,
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',

@@ -99,6 +99,18 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
       zIndex: 9,
     },
+    timerCls: {
+      position: 'absolute',
+      top: 40,
+      zIndex: 99,
+      left: 40,
+      fontSize: 12,
+      fontWeight: 600,
+    },
+    patientName: {
+      fontSize: 20,
+      fontWeight: 600,
+    },
   };
 });
 interface ConsultProps {
@@ -108,26 +120,37 @@ interface ConsultProps {
   isVideoCall: boolean;
   sessionId: string;
   token: string;
+  timerMinuts: number;
+  timerSeconds: number;
+  isCallAccepted: boolean;
+  isNewMsg: boolean;
 }
 export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
-  //const [publishVideo, setPublishVideo] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
-  const [subscribeToAudio, setSubscribeToAudio] = React.useState(props.isVideoCall ? false : true);
-  console.log(
-    mute,
-    subscribeToVideo,
-    subscribeToVideo,
-    subscribeToAudio,
-    props.sessionId,
-    props.token
-  );
+
   return (
     <div className={classes.consult}>
       <div>
         <div className={props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''}>
+          {!props.showVideoChat && (
+            <div className={classes.timerCls}>
+              <div className={classes.patientName}>Seema Singh</div>
+              {props.isCallAccepted &&
+                ` ${
+                  props.timerMinuts.toString().length < 2
+                    ? '0' + props.timerMinuts
+                    : props.timerMinuts
+                } :  ${
+                  props.timerSeconds.toString().length < 2
+                    ? '0' + props.timerSeconds
+                    : props.timerSeconds
+                }`}
+            </div>
+          )}
+
           {isCall && (
             <OTSession
               apiKey="46393582"
@@ -222,7 +245,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           >
                             <img
                               className={classes.whiteArrow}
-                              src={require('images/ic_message.svg')}
+                              src={
+                                props.isNewMsg
+                                  ? require('images/ic_message.svg')
+                                  : require('images/ic_chat_circle.svg')
+                              }
                               alt="msgicon"
                             />
                           </button>

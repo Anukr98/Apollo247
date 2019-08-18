@@ -8,6 +8,14 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const getAppointmentHistoryTypeDefs = gql`
+  extend type Patient @key(fields: "id") {
+    id: ID! @external
+  }
+
+  extend type Profile @key(fields: "id") {
+    id: ID! @external
+  }
+
   type AppointmentHistory {
     id: ID!
     patientId: ID!
@@ -18,15 +26,12 @@ export const getAppointmentHistoryTypeDefs = gql`
     status: STATUS!
     bookingDate: DateTime
     patientInfo: Patient @provides(fields: "id")
+    doctorInfo: Profile @provides(fields: "id")
   }
 
   input AppointmentHistoryInput {
     patientId: ID!
     doctorId: ID!
-  }
-
-  extend type Patient @key(fields: "id") {
-    id: ID! @external
   }
 
   type AppointmentResult {
@@ -133,6 +138,10 @@ const getAppointmentData: Resolver<
 
 export const getAppointmentHistoryResolvers = {
   AppointmentHistory: {
+    doctorInfo(appointments: AppointmentHistory) {
+      return { __typename: 'Profile', id: appointments.doctorId };
+    },
+
     patientInfo(appointments: AppointmentHistory) {
       return { __typename: 'Patient', id: appointments.patientId };
     },

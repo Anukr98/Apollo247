@@ -142,7 +142,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       right: 0,
       top: '10px',
-      fontSize: '18px',
+      fontSize: '16px',
       color: '#02475b',
     },
   };
@@ -219,7 +219,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
 
   return displayGetHelp ? (
     <div>
-      {showBackArrow ? (
+      {showBackArrow && (
         <Button
           className={classes.backButton}
           onClick={() => {
@@ -232,16 +232,6 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           }}
         >
           <img src={require('images/ic_login_back.svg')} alt="" />
-        </Button>
-      ) : (
-        <Button
-          className={classes.cross}
-          onClick={() => {
-            popup();
-            setStickyPopupValue();
-          }}
-        >
-          {!showBackArrow && <img src={require('images/ic_cross.svg')} alt="" />}
         </Button>
       )}
       ;
@@ -327,10 +317,12 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           </div>
           <div className={classes.errorText}>
             {!showTimer &&
+              !(isSigningIn || isVerifyingOtp) &&
               submitCount === 2 &&
               submitCount > 0 &&
               ' Incorrect OTP, ' + (3 - submitCount) + ' attempt left'}
             {!showTimer &&
+              !(isSigningIn || isVerifyingOtp) &&
               submitCount === 1 &&
               submitCount > 0 &&
               ' Incorrect OTP, ' + (3 - submitCount) + ' attempts left'}

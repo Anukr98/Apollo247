@@ -113,6 +113,9 @@ export const GET_DOCTOR_DETAILS = gql`
           doctorHospital {
             facility {
               streetLine1
+              streetLine2
+              streetLine3
+              city
             }
           }
           specialty {

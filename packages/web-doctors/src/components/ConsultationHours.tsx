@@ -218,7 +218,7 @@ const useStyles = makeStyles((theme: Theme) => {
     details: {
       alignItems: 'center',
       display: 'block',
-      padding: '24px 24px 0 24px',
+      padding: '20px 24px 0 20px',
     },
     column: {
       flexBasis: '100%',
@@ -237,6 +237,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightMedium,
       textTransform: 'uppercase',
       fontSize: 14,
+      textAlign: 'right',
     },
     helper: {
       borderLeft: `2px solid ${theme.palette.divider}`,
@@ -308,9 +309,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
             return (
               <div key={index.toString()} className={classes.tabContent}>
                 <ExpansionPanel className={`${classes.serviceItem} ${classes.pointerNone}`}>
-                  <ExpansionPanelSummary
-                    expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-                  >
+                  <ExpansionPanelSummary>
                     <div className={classes.columnTime}>
                       <Typography className={classes.primaryHeading}>{`${convertTime(
                         item.startTime

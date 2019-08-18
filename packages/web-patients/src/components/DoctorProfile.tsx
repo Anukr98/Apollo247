@@ -5,6 +5,15 @@ import { AphButton } from '@aph/web-ui-components';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import Scrollbars from 'react-custom-scrollbars';
 import _forEach from 'lodash/forEach';
+import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
+import {
+  GetDoctorNextAvailableSlot,
+  GetDoctorNextAvailableSlotVariables,
+} from 'graphql/types/GetDoctorNextAvailableSlot';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { format } from 'date-fns';
+import { getIstTimestamp } from 'helpers/dateHelpers';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -173,8 +182,76 @@ interface DoctorProfileProps {
 
 export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
   const classes = useStyles();
-
   const { doctorDetails, onBookConsult } = props;
+
+  let availableSlot = 0,
+    differenceInMinutes = 0;
+
+  const doctorId =
+    doctorDetails && doctorDetails.getDoctorDetailsById
+      ? doctorDetails.getDoctorDetailsById.id
+      : '';
+
+  const { data, loading } = useQueryWithSkip<
+    GetDoctorNextAvailableSlot,
+    GetDoctorNextAvailableSlotVariables
+  >(GET_DOCTOR_NEXT_AVAILABILITY, {
+    variables: {
+      DoctorNextAvailableSlotInput: {
+        doctorIds: [doctorId],
+        availableDate: format(new Date(), 'yyyy-MM-dd'),
+      },
+    },
+  });
+
+  if (loading) {
+    return <LinearProgress />;
+  }
+
+  // it must be always one record or we return only first record.
+  if (
+    data &&
+    data.getDoctorNextAvailableSlot &&
+    data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+  ) {
+    data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
+      if (availability && availability.availableSlot !== '') {
+        const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
+        const slotTimeStamp =
+          getIstTimestamp(new Date(), availability.availableSlot) + milliSeconds;
+        const currentTime = new Date().getTime();
+        if (slotTimeStamp > currentTime) {
+          availableSlot = slotTimeStamp;
+          const difference = slotTimeStamp - currentTime;
+          differenceInMinutes = Math.round(difference / 60000);
+        }
+      }
+    });
+  }
+
+  const availabilityMarkup = () => {
+    if (differenceInMinutes <= 0) {
+      return <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>;
+    } else if (differenceInMinutes > 0 && differenceInMinutes <= 15) {
+      return (
+        <div className={`${classes.availability} ${classes.availableNow}`}>
+          AVAILABLE IN {differenceInMinutes} MINS
+        </div>
+      );
+    } else if (differenceInMinutes > 15 && differenceInMinutes <= 45) {
+      return (
+        <div className={`${classes.availability}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
+      );
+    } else if (differenceInMinutes > 45 && differenceInMinutes <= 60) {
+      return <div className={`${classes.availability}`}>AVAILABLE IN 1 HOUR</div>;
+    } else if (differenceInMinutes > 60) {
+      return (
+        <div className={`${classes.availability}`}>
+          TODAY {format(new Date(availableSlot), 'h:mm a')}
+        </div>
+      );
+    }
+  };
 
   if (doctorDetails && doctorDetails.getDoctorDetailsById) {
     let hospitalLocation = '';
@@ -216,7 +293,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                 <img src={require('images/ic-share-green.svg')} alt="" />
               </div>
             </div>
-            <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 496px'}>
+            <Scrollbars autoHeight autoHeightMax={'calc(100vh - 496px'}>
               <div className={classes.doctorInfoGroup}>
                 <div className={classes.infoRow}>
                   <div className={classes.iconType}>
@@ -257,14 +334,15 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                     <div className={classes.details}>
                       Online Consultation
                       <div className={classes.doctorPriceIn}>Rs.{onlineConsultFees}</div>
-                      <div className={`${classes.availability} ${classes.availableNow}`}>
+                      {/* <div className={`${classes.availability} ${classes.availableNow}`}>
                         Available in 15 mins
-                      </div>
+                      </div> */}
+                      {availabilityMarkup()}
                     </div>
                     <div className={classes.doctorPrice}>Rs.{onlineConsultFees}</div>
                   </div>
                 </div>
-                <div className={classes.consultGroup}>
+                {/* <div className={classes.consultGroup}>
                   <div className={classes.infoRow}>
                     <div className={`${classes.iconType} ${classes.noIcon}`}>
                       <img src={require('images/ic-rupee.svg')} alt="" />
@@ -276,7 +354,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                     </div>
                     <div className={classes.doctorPrice}>Rs.{physicalConsultationFees}</div>
                   </div>
-                </div>
+                </div> */}
               </div>
             </Scrollbars>
           </div>

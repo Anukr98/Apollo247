@@ -11,6 +11,9 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '15px',
       fontSize: 18,
       color: 'rgba(101, 143, 155, 0.6)',
+      position: 'sticky',
+      top: 64,
+      zIndex: 99,
     },
   };
 });

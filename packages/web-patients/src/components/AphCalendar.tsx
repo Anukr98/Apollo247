@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme: Theme) => {
           padding: 5,
         },
         '& >div:first-child': {
-          borderBottom: '1px solid rgba(0,0,0,0.2)',
+          borderBottom: '0.5px solid rgba(2,71,91,0.3)',
           paddingBottom: 3,
           margin: '0 -5px 12px -5px',
           '& p': {

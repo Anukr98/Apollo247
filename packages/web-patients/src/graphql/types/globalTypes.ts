@@ -61,10 +61,8 @@ export enum STATUS {
 
 export enum Salutation {
   DR = "DR",
-  Dr = "Dr",
   MR = "MR",
   MRS = "MRS",
-  dr = "dr",
 }
 
 export enum WeekDay {
@@ -93,6 +91,11 @@ export interface BookAppointmentInput {
 export interface DoctorAvailabilityInput {
   availableDate: any;
   doctorId: string;
+}
+
+export interface DoctorNextAvailableSlotInput {
+  availableDate: any;
+  doctorIds: string[];
 }
 
 export interface FilterDoctorInput {
