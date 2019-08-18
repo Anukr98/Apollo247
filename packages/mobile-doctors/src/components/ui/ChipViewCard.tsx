@@ -1,82 +1,111 @@
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import { StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
+import {
+  StyleProp,
+  StyleSheet,
+  Text,
+  TextStyle,
+  View,
+  ViewStyle,
+  TouchableOpacity,
+} from 'react-native';
 
 const styles = StyleSheet.create({
-  receiveText: {
-    color: '#ffffff',
+  container: {
+    //width: 96,
+    // paddingVertical: 12,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 24,
+  },
+  containerUnSelected: {
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    borderColor: '#00b38e',
+    borderWidth: 1,
+  },
+  containerSelected: {
+    backgroundColor: '#00b38e',
+    borderRadius: 14,
+  },
+  textStyle: {
+    color: '#00b38e',
     ...theme.fonts.IBMPlexSansSemiBold(14),
     textAlign: 'center',
     justifyContent: 'center',
-    paddingLeft: 10,
-    paddingTop: 5,
-    paddingBottom: 5,
-    paddingRight: 10,
+    paddingLeft: 13,
+    paddingTop: 2,
+    paddingBottom: 10,
+    paddingRight: 13,
     letterSpacing: 0.02,
   },
-  blankText: {
-    color: '#00b38e',
+  textSelectedStyle: {
+    color: '#ffffff',
     ...theme.fonts.IBMPlexSansMedium(14),
     textAlign: 'center',
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
-    paddingLeft: 10,
-    paddingTop: 4,
+    paddingLeft: 13,
+    paddingTop: 2,
     paddingBottom: 4,
-    paddingRight: 10,
+    paddingRight: 13,
     letterSpacing: 0.02,
-  },
-
-  containerSelectedStyle: {
-    borderRadius: 16,
-    backgroundColor: '#00b38e',
-  },
-  containerUnSelectedStyle: {
-    borderRadius: 16,
-    backgroundColor: '#ffffff',
-    borderColor: '#00b38e',
-    borderWidth: 1,
-  },
-  commonview: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    alignSelf: 'center',
   },
 });
 
 export interface ChipViewCardProps {
-  text: string;
-  selected: boolean;
-  icon?: Element;
+  title: string;
+  isChecked: boolean;
+  onChange: (isChecked: boolean) => void;
+  containerStyle?: StyleProp<ViewStyle>;
   containerUnSelectedStyle?: StyleProp<ViewStyle>;
   containerSelectedStyle?: StyleProp<ViewStyle>;
-  textUnSelectedStyle?: StyleProp<TextStyle>;
-  textSelectedStyle?: StyleProp<TextStyle>;
-  container?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<ViewStyle>;
+  textSelectedStyle?: StyleProp<ViewStyle>;
+  buttonWidth?: number;
+  icon?: Element;
 }
 
 export const ChipViewCard: React.FC<ChipViewCardProps> = (props) => {
+  const {
+    title,
+    isChecked,
+    onChange,
+    containerStyle,
+    containerUnSelectedStyle,
+    containerSelectedStyle,
+    textStyle,
+    textSelectedStyle,
+    buttonWidth,
+  } = props;
   return (
-    <View style={props.container}>
-      {props.selected ? (
-        <>
-          <View style={[styles.containerSelectedStyle, props.containerSelectedStyle]}>
-            <View style={styles.commonview}>
-              <Text style={[styles.receiveText, props.textSelectedStyle]}>{props.text}</Text>
-              <View style={{ margin: 5 }}>{props.icon}</View>
-            </View>
-          </View>
-        </>
-      ) : (
-        <View style={[styles.containerUnSelectedStyle, props.containerUnSelectedStyle]}>
-          <View style={styles.commonview}>
-            <Text style={[styles.blankText, props.textUnSelectedStyle]}>{props.text}</Text>
-            <View style={{ margin: 3 }}>{props.icon}</View>
-          </View>
-        </View>
-      )}
-    </View>
+    <TouchableOpacity
+      onPress={() => onChange(!isChecked)}
+      style={
+        isChecked
+          ? [
+              styles.container,
+              containerStyle,
+              styles.containerSelected,
+              containerSelectedStyle,
+              // buttonWidth ? { width: buttonWidth } : {},
+            ]
+          : [styles.container, containerStyle, styles.containerUnSelected, containerUnSelectedStyle]
+      }
+    >
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Text
+          style={
+            isChecked
+              ? [styles.textSelectedStyle, textSelectedStyle]
+              : [styles.textStyle, textStyle]
+          }
+        >
+          {title}
+        </Text>
+      </View>
+    </TouchableOpacity>
   );
 };

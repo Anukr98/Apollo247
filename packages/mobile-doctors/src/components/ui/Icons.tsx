@@ -526,3 +526,26 @@ export const DiagonisisRemove: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/ic_cross_popup.png')}
   />
 );
+
+export const Minus: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/ic_minus.png')}
+  />
+);
+export const Plus: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/ic_plus.png')}
+  />
+);
+
+export const AddPlus: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/ic_plus_onorange.png')}
+  />
+);

@@ -20,6 +20,8 @@ import { ConsultRoomScreen } from '@aph/mobile-doctors/src/components/ConsultRoo
 import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView';
 import { AddCondition } from '@aph/mobile-doctors/src/components/ConsultRoom/AddCondition';
 import { AddDiagnostics } from '@aph/mobile-doctors/src/components/ConsultRoom/AddDiagnostics';
+import { AddMedicine } from '@aph/mobile-doctors/src/components/ConsultRoom/AddMedicine';
+import { MedicineUpdate } from '@aph/mobile-doctors/src/components/ConsultRoom/MedicineUpdate';
 import { NotificationScreen } from '@aph/mobile-doctors/src/components/Notification/NotificationScreen';
 import { HelpScreen } from '@aph/mobile-doctors/src/components/HelpScreen';
 import { MyAccountProfile } from '@aph/mobile-doctors/src/components/Account/MyAccountProfile';
@@ -60,6 +62,8 @@ export enum AppRoutes {
   MyAvailability = 'MyAvailability',
   AddCondition = 'AddCondition',
   AddDiagnostics = 'AddDiagnostics',
+  AddMedicine = 'AddMedicine',
+  MedicineUpdate = 'MedicineUpdate',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -151,10 +155,16 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.AddDiagnostics]: {
     screen: AddDiagnostics,
   },
+  [AppRoutes.AddMedicine]: {
+    screen: AddMedicine,
+  },
+  [AppRoutes.MedicineUpdate]: {
+    screen: MedicineUpdate,
+  },
 };
 
 const stackConfig: StackNavigatorConfig = {
-  initialRouteName: AppRoutes.SplashScreen,
+  initialRouteName: AppRoutes.CaseSheetView,
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   transitionConfig: () => {

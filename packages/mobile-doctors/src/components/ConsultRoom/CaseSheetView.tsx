@@ -11,6 +11,7 @@ import {
   Start,
   Add,
   DiagonisisRemove,
+  AddPlus,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import { string } from '@aph/mobile-doctors/src/strings/string';
@@ -315,6 +316,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     color: '#fc9916',
     marginTop: 2,
+    marginLeft: 5,
   },
   normalSliderText: {
     textAlign: 'center',
@@ -443,6 +445,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [medicinePrescription, setMedicinePrescription] = useState(false);
   const [followup, setFollowUp] = useState(false);
   const [count, setCount] = useState(0);
+
   const [diagnosisvalues, setDiagnosisvalues] = useState<string>('');
   const [otherinstrutionsValue, setOtherinstrutionsValue] = useState<string>('');
   const [switchValue, setSwitchValue] = useState(false);
@@ -699,7 +702,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           );
         })}
         <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
-          <Add />
+          <AddPlus />
           <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddDiagnostics)}>
             <Text style={styles.addDoctorText}>ADD DIAGNOSTICS</Text>
           </TouchableOpacity>
@@ -718,30 +721,41 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         {medicineList.map((showdata, i) => {
           console.log('showsara', showdata);
           return (
-            <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
-              {showdata.isActive ? (
-                <MedicalCard
-                  diseaseName={showdata.firstName}
-                  icon={<DiagonisisRemove />}
-                  tabDesc={showdata.secondName}
-                  containerStyle={{
-                    borderRadius: 5,
-                    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                    borderStyle: 'solid',
-                    borderWidth: 1,
-                    borderColor: '#00b38e',
-                  }}
-                />
-              ) : (
-                <MedicalCard
-                  diseaseName={showdata.firstName}
-                  icon={<DiagonisisRemove />}
-                  tabDesc={showdata.secondName}
-                />
-              )}
+            <View>
+              <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
+                {showdata.isActive ? (
+                  <MedicalCard
+                    diseaseName={showdata.firstName}
+                    icon={<DiagonisisRemove />}
+                    tabDesc={showdata.secondName}
+                    containerStyle={{
+                      borderRadius: 5,
+                      backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                      borderStyle: 'solid',
+                      borderWidth: 1,
+                      borderColor: '#00b38e',
+                    }}
+                    onPress={() => {
+                      props.navigation.push(AppRoutes.MedicineUpdate);
+                    }}
+                  />
+                ) : (
+                  <MedicalCard
+                    diseaseName={showdata.firstName}
+                    icon={<DiagonisisRemove />}
+                    tabDesc={showdata.secondName}
+                  />
+                )}
+              </View>
             </View>
           );
         })}
+        <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
+          <AddPlus />
+          <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddMedicine)}>
+            <Text style={styles.addDoctorText}>ADD MEDICINE</Text>
+          </TouchableOpacity>
+        </View>
       </CollapseCard>
     );
   };
@@ -923,7 +937,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             })}
           </View>
           <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
-            <Add />
+            <AddPlus />
             <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddCondition)}>
               <Text style={styles.addDoctorText}>ADD CONDITION</Text>
             </TouchableOpacity>
@@ -960,7 +974,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             );
           })}
           <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
-            <Add />
+            <AddPlus />
             <TouchableOpacity>
               <Text style={styles.addDoctorText}>ADD INSTRUCTIONS</Text>
             </TouchableOpacity>
@@ -973,7 +987,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     <View style={styles.casesheetView}>
       <ScrollView bounces={false} contentContainerStyle={styles.contentContainer}>
         {renderPatientImage()}
-        {renderBasicProfileDetails(PatientInfoData, AppId, Appintmentdatetimeconsultpage)}
+        {/* {renderBasicProfileDetails(PatientInfoData, AppId, Appintmentdatetimeconsultpage)} */}
         {renderSymptonsView()}
         {renderPatientHistoryLifestyle()}
         <PatientHealthVault />
@@ -995,8 +1009,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             autoCorrect={true}
           />
         </View>
-        {moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') > startDate ||
-        moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate
+        {moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate
           ? renderButtonsView()
           : null}
       </ScrollView>
