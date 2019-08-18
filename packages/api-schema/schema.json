@@ -4867,6 +4867,41 @@
             "deprecationReason": null
           },
           {
+            "name": "updateDelegateNumber",
+            "description": null,
+            "args": [
+              {
+                "name": "delegateNumber",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Profile",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "removeDelegateNumber",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Profile",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "addDoctorToStarDoctorProgram",
             "description": null,
             "args": [
