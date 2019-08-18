@@ -11,7 +11,7 @@ import { UPDATE_PATIENT } from 'graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _capitalize from 'lodash/capitalize';
 import _sortBy from 'lodash/sortBy';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -196,7 +196,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
         <div className={classes.userInfo}>
           {_capitalize(patient.gender || '')}
           {patient.gender && ' | '}
-          {patient.dateOfBirth && (format(patient.dateOfBirth, 'dd MMMM yyyy') || '').toString()}
+          {patient.dateOfBirth && format(parseISO(patient.dateOfBirth), 'dd MMMM yyyy')}
         </div>
         <AphSelect
           value={selectedRelation}
