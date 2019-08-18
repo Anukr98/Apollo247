@@ -4,6 +4,7 @@ import React from 'react';
 import { AphRadio, AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
+import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -62,6 +63,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 10,
       boxShadow: '0 -5px 20px 0 #ffffff',
       position: 'relative',
+      '& button': {
+        borderRadius: 10,
+      },
     },
     customScrollBar: {
       paddingRight: 20,
@@ -75,7 +79,10 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const HomeDelivery: React.FC = (props) => {
   const classes = useStyles();
-  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
+  const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
+  const [isViewAllAddressDialogOpen, setIsViewAllAddressDialogOpen] = React.useState<boolean>(
+    false
+  );
 
   return (
     <div className={classes.root}>
@@ -99,10 +106,15 @@ export const HomeDelivery: React.FC = (props) => {
         </li>
       </ul>
       <div className={classes.bottomActions}>
-        <AphButton onClick={() => setIsDialogOpen(true)}>Add new address</AphButton>
-        <AphButton className={classes.viewAllBtn}>View All</AphButton>
+        <AphButton onClick={() => setIsAddAddressDialogOpen(true)}>Add new address</AphButton>
+        <AphButton
+          onClick={() => setIsViewAllAddressDialogOpen(true)}
+          className={classes.viewAllBtn}
+        >
+          View All
+        </AphButton>
       </div>
-      <AphDialog open={isDialogOpen} maxWidth="sm">
+      <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
         <AphDialogTitle>
           <div className={classes.backArrow}>
             <img src={require('images/ic_back.svg')} alt="" />
@@ -120,6 +132,28 @@ export const HomeDelivery: React.FC = (props) => {
           <div className={classes.dialogActions}>
             <AphButton color="primary" fullWidth>
               Save & Use
+            </AphButton>
+          </div>
+        </div>
+      </AphDialog>
+      <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
+        <AphDialogTitle>
+          <div className={classes.backArrow}>
+            <img src={require('images/ic_back.svg')} alt="" />
+          </div>
+          Select Delivery Address
+        </AphDialogTitle>
+        <div className={classes.shadowHide}>
+          <div className={classes.dialogContent}>
+            <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
+              <div className={classes.customScrollBar}>
+                <ViewAllAddress />
+              </div>
+            </Scrollbars>
+          </div>
+          <div className={classes.dialogActions}>
+            <AphButton color="primary" fullWidth>
+              Done
             </AphButton>
           </div>
         </div>
