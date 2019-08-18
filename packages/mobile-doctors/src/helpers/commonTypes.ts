@@ -5,10 +5,15 @@ import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graph
 // Set isLoggedIn to true when otp verification is done
 // Set isLoggedIn & isProfileFlowDone to false before logging out
 export type LocalStorage = {
-  isLoggedIn?: boolean;
   isProfileFlowDone?: boolean;
   isOnboardingDone?: boolean;
   doctorDetails: GetDoctorDetails_getDoctorDetails | null;
+};
+
+export type TimeOutData = {
+  phoneNumber: string;
+  startTime: string;
+  invalidAttems: number;
 };
 
 export type DummyQueryResult = {

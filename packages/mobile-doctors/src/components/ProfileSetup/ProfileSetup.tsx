@@ -4,25 +4,21 @@ import { Fees } from '@aph/mobile-doctors/src/components/ProfileSetup/Fees';
 import { Profile } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/Profile';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import { RoundIcon, ApploLogo } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { ApploLogo, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
-
-import {
-  GetDoctorProfile,
-  GetDoctorProfile_getDoctorProfile,
-} from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
-
+import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   GetDoctorDetails,
   GetDoctorDetails_getDoctorDetails,
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-
-import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { setDoctorDetails, setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useRef, useState, useEffect } from 'react';
-
+import React, { useEffect, useRef, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
   Alert,
@@ -36,12 +32,6 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
-import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
-import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
-import { useQuery } from 'react-apollo-hooks';
-import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
-import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
-import { useApolloClient } from 'react-apollo-hooks';
 //import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
 const isMobileNumberValid = (n: string) => true;
@@ -191,7 +181,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [isReloading, setReloading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
-
+  const { doctorDetails } = useAuth();
   // useEffect(()=>{
   //   props.navigation.addListener((''))
   // })
@@ -204,12 +194,19 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         const result = _data.data.getDoctorDetails;
         console.log('getDoctorProfile', _data!);
 
+        try {
+          setDoctorDetails(result);
+        } catch (e) {
+          console.log('Unable to set DoctorDetails');
+        }
+
         setGetDoctorProfile(result);
         setLoading(false);
       })
       .catch((e) => {
         setLoading(false);
-        console.log('Error occured while fetching Doctor', e);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while fetching Doctor profile', error);
       });
   }, []);
 
@@ -229,26 +226,12 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       });
   };
 
-  // const { data, error, loading } = useQuery<GetDoctorDetails, GetDoctorDetails_getDoctorDetails>(
-  //   GET_DOCTOR_DETAILS
-  // );
   const [
     getDoctorProfile,
     setGetDoctorProfile,
   ] = useState<GetDoctorDetails_getDoctorDetails | null>(null);
-  // const {
-  //   data: { getDoctorProfile },
-  //   error,
-  //   loading,
-  // } = doctorProfile;
-  // if (!loading) {
-  //   console.log('getDoctorProfileerror');
-  //   Alert.alert('Error', 'Unable to get the data');
-  // } else {
-  //   console.log('getDoctorProfile', getDoctorProfile!);
-  // }
 
-  const onReload = (func: () => Promise<void>) => {
+  const onReload = () => {
     setReloading(true);
     client
       .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })

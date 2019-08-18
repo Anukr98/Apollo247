@@ -10,17 +10,22 @@ import { NavigationActions } from 'react-navigation';
 export interface MyAccountProps extends NavigationScreenProps {}
 
 export const MyAccount: React.FC<MyAccountProps> = (props) => {
-  const { signOut } = useAuth();
+  const { clearFirebaseUser } = useAuth();
 
   return (
     <View
-      style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}
+      style={{
+        flex: 1,
+        backgroundColor: 'white',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
     >
       <Button
+        style={{ width: '80%' }}
         title="LOGOUT"
         onPress={() => {
-          signOut();
-          clearUserData()
+          Promise.all([clearFirebaseUser && clearFirebaseUser(), clearUserData()])
             .then(() => {
               props.navigation.dispatch(
                 StackActions.reset({

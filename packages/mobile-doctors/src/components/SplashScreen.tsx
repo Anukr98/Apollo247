@@ -23,14 +23,14 @@ const styles = StyleSheet.create({
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { currentUser, isAuthenticating } = useAuth();
+  const { firebaseUser, doctorDetails } = useAuth();
 
   useEffect(() => {
     firebase.analytics().setCurrentScreen('SplashScreen');
     setTimeout(() => {
       getLocalData()
         .then((localData) => {
-          if (localData.isLoggedIn) {
+          if (firebaseUser && doctorDetails) {
             if (localData.isProfileFlowDone) {
               props.navigation.replace(AppRoutes.TabBar);
             } else {
@@ -49,7 +49,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('getLocalData error', e);
         });
     }, 1000);
-  }, [props.navigation]);
+  }, [props.navigation, firebaseUser, doctorDetails]);
 
   return (
     <View style={styles.mainView}>
