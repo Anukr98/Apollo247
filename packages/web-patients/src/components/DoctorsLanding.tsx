@@ -332,8 +332,8 @@ export const DoctorsLanding: React.FC = (props) => {
                                 <div className={classes.sectionHeader}>
                                   <span>Matching Doctors</span>
                                   <span className={classes.count}>
-                                    {matchingDoctorsFound > 0 && matchingDoctorsFound < 10
-                                      ? `0${matchingDoctorsFound}`
+                                    {matchingDoctorsFound > 0
+                                      ? matchingDoctorsFound.toString().padStart(2, '0')
                                       : matchingDoctorsFound}
                                   </span>
                                 </div>

@@ -130,8 +130,8 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
           <div className={classes.sectionHeader}>
             <span>{subHeading}</span>
             <span className={classes.count}>
-              {filterSpecialites.length > 0 && filterSpecialites.length < 10
-                ? `0${filterSpecialites.length}`
+              {filterSpecialites.length > 0
+                ? filterSpecialites.length.toString().padStart(2, '0')
                 : filterSpecialites.length}
             </span>
           </div>
