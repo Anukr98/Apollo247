@@ -134,11 +134,13 @@ const useStyles = makeStyles(() => {
         fontSize: 18,
         lineHeight: '24px',
         padding: 24,
+        backgroundColor: '#f7f7f7',
       },
       '& .calenderHeader img': {
         position: 'relative',
         top: 9,
         width: 30,
+        cursor: 'pointer',
       },
       '& .monthname': {
         paddingRight: 70,

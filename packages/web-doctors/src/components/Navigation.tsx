@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         color: theme.palette.secondary.dark,
         textTransform: 'uppercase',
-        padding: 23,
+        padding: 24,
         [theme.breakpoints.down('sm')]: {
           paddingLeft: 10,
           paddingRight: 10,
