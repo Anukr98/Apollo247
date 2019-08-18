@@ -1,5 +1,5 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -38,6 +38,15 @@ export interface TabsComponentProps {
 }
 
 export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
+  const [selected, setselectedTab] = useState<string>(props.selectedTab);
+
+  useEffect(() => {
+    if (selected !== props.selectedTab) {
+      console.log(selected, 'TabsComponent', props.selectedTab);
+      setselectedTab(props.selectedTab);
+    }
+  }, [props.selectedTab]);
+
   const renderTabs = () => {
     return props.data.map((item, index) => {
       // const title = props.showIcons ? item.title : item;
@@ -46,7 +55,7 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
           key={index}
           style={[
             styles.tabView,
-            props.selectedTab === item.title ? { borderBottomColor: theme.colors.APP_GREEN } : {},
+            selected === item.title ? { borderBottomColor: theme.colors.APP_GREEN } : {},
           ]}
           onPress={() => props.onChange(item.title)}
         >
@@ -57,13 +66,14 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
                 paddingBottom: 10,
               }}
             >
-              {props.selectedTab === item.title ? item.selectedIcon : item.unselectedIcon}
+              {selected === item.title ? item.selectedIcon : null}
+              {selected !== item.title ? item.unselectedIcon : null}
             </View>
           ) : (
             <Text
               style={[
                 styles.textStyle,
-                props.selectedTab === item.title ? { color: theme.colors.LIGHT_BLUE } : {},
+                selected === item.title ? { color: theme.colors.LIGHT_BLUE } : {},
               ]}
             >
               {item.title}

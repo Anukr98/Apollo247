@@ -104,7 +104,7 @@ type updatePateint = {
   relation: Relation | null;
 };
 
-export interface MultiSignupProps extends NavigationScreenProps { }
+export interface MultiSignupProps extends NavigationScreenProps {}
 
 export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [relationIndex, setRelationIndex] = useState<number>(0);
@@ -206,7 +206,12 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                         allCurrentPatients.relation ? null : styles.placeholderStyle,
                       ]}
                     >
-                      {allCurrentPatients.relation ? allCurrentPatients.relation : 'Relation'}
+                      {allCurrentPatients.relation
+                        ? allCurrentPatients.relation.replace(
+                            /\w+/g,
+                            (w) => w[0].toUpperCase() + w.slice(1).toLowerCase()
+                          )
+                        : 'Relation'}
                     </Text>
                     <DropdownGreen size="sm" />
                   </View>
@@ -249,24 +254,20 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
       value: Relation.SISTER,
     },
     {
+      name: 'Brother',
+      value: Relation.BROTHER,
+    },
+    {
+      name: 'Cousin',
+      value: Relation.COUSIN,
+    },
+    {
       name: 'Wife',
       value: Relation.WIFE,
     },
     {
       name: 'Husband',
       value: Relation.HUSBAND,
-    },
-    // {
-    //   name: 'Son',
-    //   value: Relation.SON,
-    // },
-    // {
-    //   name: 'Daughter',
-    //   value: Relation.DAUGHTER,
-    // },
-    {
-      name: 'Other',
-      value: Relation.OTHER,
     },
   ];
 
@@ -372,7 +373,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
-                  props.navigation.replace(AppRoutes.TabBar))
+                  props.navigation.replace(AppRoutes.ConsultRoom))
                 : null}
               {error
                 ? (setVerifyingPhoneNumber(false),
@@ -407,6 +408,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                 marginTop: 20,
                 shadowOffset: { width: 0, height: -10 },
                 shadowOpacity: 0.4,
+                backgroundColor: theme.colors.WHITE,
               }}
               heading={string.login.welcome_text}
               description={showText ? discriptionText : string.login.multi_signup_desc}

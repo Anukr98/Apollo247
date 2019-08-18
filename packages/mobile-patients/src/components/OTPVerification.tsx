@@ -1,13 +1,14 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { BackArrow, OkText, OkTextDisabled } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   AsyncStorage,
+  EmitterSubscription,
   Keyboard,
   Platform,
   SafeAreaView,
@@ -15,7 +16,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  EmitterSubscription,
 } from 'react-native';
 import SmsListener from 'react-native-android-sms-listener';
 import { NavigationScreenProps } from 'react-navigation';
@@ -75,6 +75,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [intervalId, setIntervalId] = useState<number>(0);
   const [otp, setOtp] = useState<string>('');
   const [isresent, setIsresent] = useState<boolean>(false);
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
   const { verifyOtp, sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
@@ -209,14 +210,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           props.navigation.replace(AppRoutes.MultiSignup);
         } else {
           AsyncStorage.setItem('userLoggedIn', 'true');
-          props.navigation.replace(AppRoutes.TabBar);
+          props.navigation.replace(AppRoutes.ConsultRoom);
         }
       } else {
         if (currentPatient.firstName == '') {
           props.navigation.replace(AppRoutes.SignUp);
         } else {
           AsyncStorage.setItem('userLoggedIn', 'true');
-          props.navigation.replace(AppRoutes.TabBar);
+          props.navigation.replace(AppRoutes.ConsultRoom);
         }
       }
     }
@@ -232,6 +233,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const onClickOk = async () => {
     console.log('otp OTPVerification', otp);
     Keyboard.dismiss();
+    setshowSpinner(true);
 
     verifyOtp(otp)
       .then((result) => {
@@ -239,6 +241,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         _removeFromStore();
       })
       .catch((error) => {
+        setshowSpinner(false);
         // console.log('error', error);
         _storeTimerData(invalidOtpCount + 1);
 
@@ -399,24 +402,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           </Card>
         )}
       </SafeAreaView>
-      {isSigningIn || isVerifyingOtp ? (
-        <View
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0, 0.2)',
-            alignSelf: 'center',
-            justifyContent: 'center',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-          }}
-        >
-          <ActivityIndicator animating={isSigningIn || isVerifyingOtp} size="large" color="green" />
-        </View>
-      ) : null}
+      {showSpinner && <Spinner />}
     </View>
   );
 };
