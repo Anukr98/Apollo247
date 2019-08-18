@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
   viewName: {
     backgroundColor: theme.colors.WHITE,
     width: '100%',
-    height: 294,
+    height: 274,
   },
   gotItStyles: {
     height: 60,
@@ -407,21 +407,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             source={require('@aph/mobile-patients/src/images/doctor/doctor.png')}
             style={{
               right: 20,
-              top: 207,
+              top: 187,
               position: 'absolute',
               zIndex: 2,
             }}
           />
-          <View style={{ top: 200, position: 'absolute', zIndex: 3 }}>
+          <View style={{ top: 180, position: 'absolute', zIndex: 3 }}>
             <Button
               title={string.home.consult_doctor}
               style={styles.buttonStyles}
               onPress={() => {}}
             />
           </View>
-          <View style={{ width: '100%', height: 456 }}>
+          <View style={{ width: '100%', height: 436 }}>
             <View style={styles.viewName}>
-              <View style={{ alignItems: 'flex-end', marginTop: 20 }}>
+              <View style={{ alignItems: 'flex-end', marginTop: 20, height: 57 }}>
                 <TouchableOpacity onPress={() => props.navigation.replace(AppRoutes.TabBar)}>
                   <ApolloLogo style={{ right: 20 }} />
                 </TouchableOpacity>
@@ -431,7 +431,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 activeOpacity={1}
                 style={{
                   flexDirection: 'row',
-                  marginTop: 18,
+                  marginTop: 8,
                   alignItems: 'center',
                 }}
               >
@@ -470,6 +470,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   <View
                     style={{
                       ...theme.viewStyles.cardViewStyle,
+                      ...theme.viewStyles.shadowStyle,
                       padding: 16,
                       marginHorizontal: 20,
                       backgroundColor: theme.colors.CARD_BG,
@@ -508,7 +509,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </View>
             ))}
           </View>
-          {renderStarDoctors()}
+          {/* {renderStarDoctors()} */}
           <View style={styles.helpView}>
             <Mascot style={{ height: 80, width: 80 }} />
             <Button

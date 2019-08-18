@@ -17,8 +17,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 2,
-    elevation: 2,
+    zIndex: 5,
+    elevation: 5,
   },
   cardContainer: {
     padding: 20,
@@ -80,6 +80,7 @@ type dataType = {
 export interface FilterSceneProps {
   onClickClose: (arg0: filterDataType[]) => void;
   data: filterDataType[];
+  setData: (arg0: filterDataType[]) => void;
 }
 export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   const [data, setData] = useState<filterDataType[]>(props.data);
@@ -169,9 +170,14 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
               ) : (
                 <View style={styles.optionsView}>
                   {selectedOptions &&
+                    options &&
+                    options.length > 0 &&
                     options.map((name) => (
                       <Button
-                        title={name}
+                        title={name.replace(
+                          /\w+/g,
+                          (w) => w[0].toUpperCase() + w.slice(1).toLowerCase()
+                        )}
                         style={[
                           styles.buttonStyle,
                           selectedOptions.includes(name)
@@ -225,11 +231,13 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
         rightComponent={
           <TouchableOpacity
             onPress={() => {
+              console.log(data, 'data1111111111');
               const filterData = data.map((obj) => {
-                obj.selectedOptions = [];
+                if (obj) obj.selectedOptions = [];
                 return obj;
               });
               setData(filterData);
+              props.setData(filterData);
             }}
           >
             <Reload />

@@ -382,6 +382,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       salutation
       firstName
       lastName
+      doctorType
       qualification
       mobileNumber
       experience
@@ -417,11 +418,67 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
           experience
           city
           photoUrl
+          qualification
           specialty {
             name
+            image
           }
         }
         isActive
+      }
+      consultHours {
+        consultMode
+        endTime
+        startTime
+        weekDay
+        isActive
+        id
+      }
+    }
+  }
+`;
+
+export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
+  query getDoctorsBySpecialtyAndFilters($filterInput: FilterDoctorInput) {
+    getDoctorsBySpecialtyAndFilters(filterInput: $filterInput) {
+      doctors {
+        id
+        salutation
+        firstName
+        lastName
+        experience
+        city
+        photoUrl
+        qualification
+        specialty {
+          name
+          image
+        }
+        onlineConsultationFees
+        languages
+        consultHours {
+          consultMode
+        }
+      }
+    }
+  }
+`;
+
+export const UPDATE_APPOINTMENT_SESSION = gql`
+  mutation updateAppointmentSession($UpdateAppointmentSessionInput: UpdateAppointmentSessionInput) {
+    updateAppointmentSession(updateAppointmentSessionInput: $UpdateAppointmentSessionInput) {
+      sessionId
+      appointmentToken
+    }
+  }
+`;
+
+export const NEXT_AVAILABLE_SLOT = gql`
+  query GetDoctorNextAvailableSlot($DoctorNextAvailableSlotInput: DoctorNextAvailableSlotInput!) {
+    getDoctorNextAvailableSlot(DoctorNextAvailableSlotInput: $DoctorNextAvailableSlotInput) {
+      doctorAvailalbeSlots {
+        availableSlot
+        doctorId
       }
     }
   }

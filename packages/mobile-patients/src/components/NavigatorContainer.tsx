@@ -43,6 +43,7 @@ export enum AppRoutes {
   Consult = 'Consult',
   FilterScene = 'FilterScene',
   DoctorDetails = 'DoctorDetails',
+  AssociateDoctorDetails = 'AssociateDoctorDetails',
   AppointmentDetails = 'AppointmentDetails',
   SearchMedicineScene = 'SearchMedicineScene',
   MedicineDetailsScene = 'MedicineDetailsScene',
@@ -115,6 +116,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
     screen: FilterScene,
   },
   [AppRoutes.DoctorDetails]: {
+    screen: DoctorDetails,
+  },
+  [AppRoutes.AssociateDoctorDetails]: {
     screen: DoctorDetails,
   },
   [AppRoutes.AppointmentDetails]: {

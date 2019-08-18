@@ -34,10 +34,11 @@ const useStyles = makeStyles({
   weekView: {
     backgroundColor: '#fff',
     borderRadius: '10px',
-    width: '80%',
+    width: '82%',
     margin: 'auto',
     padding: '0 15px',
     textAlign: 'center',
+    marginLeft: 25,
     boxShadow: '-10px 2px 10px 0 rgba(0, 0, 0, 0.1)',
   },
   monthPopup: {
