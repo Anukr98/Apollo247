@@ -140,15 +140,19 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     AppointmentTime: {
       position: 'relative',
-      top: -70,
-      marginLeft: '5%',
+      top: -65,
+      marginLeft: 30,
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
       color: '#0087ba',
     },
     step: {
+      marginTop: -8,
       '& .stepContent': {
         borderLeft: '2px solid #0087ba',
+        marginTop: 0,
+        marginLeft: 30,
+        paddingLeft: 0,
       },
       '&:last-child': {
         '& .stepContent': {
@@ -159,14 +163,17 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#fff',
         border: '2px solid #0087ba',
         borderRadius: '50%',
+        marginTop: 0,
+        marginLeft: 19,
       },
       '& .cardRow': {
         border: '1px solid #0087ba',
         backgroundColor: '#fff',
         position: 'relative',
-        top: -70,
+        top: -60,
         height: 96,
         marginLeft: '5%',
+        marginBottom: 25,
         width: '95%',
         boxShadow: '0 2px 4px 0 rgba(0,0,0,0.3)',
       },
@@ -181,7 +188,6 @@ const useStyles = makeStyles((theme: Theme) =>
           border: '1px solid #ff748e',
           backgroundColor: '#fff',
           position: 'relative',
-          top: -70,
           marginLeft: '5%',
           width: '95%',
           boxShadow: '0 2px 4px 0 rgba(0,0,0,0.3)',
