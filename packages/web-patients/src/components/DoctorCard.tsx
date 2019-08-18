@@ -3,7 +3,6 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Avatar } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorDetails } from 'graphql/types/SearchDoctorAndSpecialtyByName';
-import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
 import {
@@ -18,6 +17,12 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import _forEach from 'lodash/forEach';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
+
+import { Mutation } from 'react-apollo';
+import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
+import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
+import { SEARCH_TYPE } from 'graphql/types/globalTypes';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -116,6 +121,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles();
 
   const { doctorDetails } = props;
+  const { currentPatient } = useAllCurrentPatients();
 
   const doctorId = doctorDetails.id;
 
@@ -163,7 +169,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   }
 
   const availabilityMarkup = () => {
-    console.log(differenceInMinutes, 'diff........');
+    // console.log(differenceInMinutes, 'diff........');
     if (differenceInMinutes === 0) {
       return <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>;
     } else if (differenceInMinutes > 0 && differenceInMinutes <= 15) {
@@ -201,43 +207,65 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   // console.log(clinics);
 
   return (
-    <Link to={clientRoutes.doctorDetails(doctorDetails.id)}>
-      <div className={classes.root}>
-        <div className={classes.topContent}>
-          <Avatar
-            alt={doctorDetails.firstName || ''}
-            src={
-              doctorDetails.photoUrl || '' !== ''
-                ? doctorDetails.photoUrl
-                : require('images/ic_placeholder.png')
-            }
-            className={classes.doctorAvatar}
-          />
-          <div className={classes.doctorInfo}>
-            {loading ? <LinearProgress /> : availabilityMarkup()}
-            <div className={classes.doctorName}>
-              {`Dr. ${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
-                _toLower(doctorDetails.lastName)
-              )}`}
-            </div>
-            <div className={classes.doctorType}>
-              {doctorDetails.specialty.name}
-              <span className={classes.doctorExp}>{doctorDetails.experience} YRS</span>
-            </div>
-            <div className={classes.doctorDetails}>
-              <p>{doctorDetails.qualification}</p>
-              {<p>{clinics && clinics.length > 0 ? clinics[0].facility.name : ''}</p>}
+    <Mutation<SaveSearch, SaveSearchVariables>
+      mutation={SAVE_PATIENT_SEARCH}
+      variables={{
+        saveSearchInput: {
+          type: SEARCH_TYPE.DOCTOR,
+          typeId: doctorId,
+          patient: currentPatient ? currentPatient.id : '',
+        },
+      }}
+      onCompleted={(data) => {
+        window.location.href = clientRoutes.doctorDetails(doctorId);
+      }}
+      onError={(error) => {
+        console.log(error);
+      }}
+    >
+      {(mutation) => (
+        <div
+          className={classes.root}
+          onClick={() => {
+            mutation();
+          }}
+        >
+          <div className={classes.topContent}>
+            <Avatar
+              alt={doctorDetails.firstName || ''}
+              src={
+                doctorDetails.photoUrl || '' !== ''
+                  ? doctorDetails.photoUrl
+                  : require('images/ic_placeholder.png')
+              }
+              className={classes.doctorAvatar}
+            />
+            <div className={classes.doctorInfo}>
+              {loading ? <LinearProgress /> : availabilityMarkup()}
+              <div className={classes.doctorName}>
+                {`Dr. ${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
+                  _toLower(doctorDetails.lastName)
+                )}`}
+              </div>
+              <div className={classes.doctorType}>
+                {doctorDetails.specialty.name}
+                <span className={classes.doctorExp}>{doctorDetails.experience} YRS</span>
+              </div>
+              <div className={classes.doctorDetails}>
+                <p>{doctorDetails.qualification}</p>
+                {<p>{clinics && clinics.length > 0 ? clinics[0].facility.name : ''}</p>}
+              </div>
             </div>
           </div>
+          <div className={classes.bottomAction}>
+            <AphButton fullWidth color="primary" className={classes.button}>
+              {differenceInMinutes >= 0 && differenceInMinutes <= 15
+                ? 'CONSULT NOW'
+                : 'BOOK APPOINTMENT'}
+            </AphButton>
+          </div>
         </div>
-        <div className={classes.bottomAction}>
-          <AphButton fullWidth color="primary" className={classes.button}>
-            {differenceInMinutes >= 0 && differenceInMinutes <= 15
-              ? 'CONSULT NOW'
-              : 'BOOK APPOINTMENT'}
-          </AphButton>
-        </div>
-      </div>
-    </Link>
+      )}
+    </Mutation>
   );
 };

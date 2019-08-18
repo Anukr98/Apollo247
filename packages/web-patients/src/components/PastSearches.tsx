@@ -126,7 +126,7 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
         );
       })
     ) : (
-      <div>No data found....</div>
+      <div>No searches found...</div>
     );
 
   return (

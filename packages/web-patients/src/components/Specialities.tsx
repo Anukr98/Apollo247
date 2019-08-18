@@ -11,6 +11,12 @@ import { GetAllSpecialties } from 'graphql/types/GetAllSpecialties';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
+import { Mutation } from 'react-apollo';
+import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
+import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
+import { SEARCH_TYPE } from 'graphql/types/globalTypes';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     root: {
@@ -97,6 +103,8 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
   const { loading, error, data } = useQueryWithSkip<GetAllSpecialties>(GET_ALL_SPECIALITIES);
   const { keyword, matched, speciality, disableFilter, subHeading } = props;
 
+  const { currentPatient } = useAllCurrentPatients();
+
   if (loading) {
     return <LinearProgress variant="query" />;
   }
@@ -133,28 +141,48 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
             <Grid container spacing={2}>
               {_map(filterSpecialites, (specialityDetails) => {
                 return (
-                  <Grid
-                    item
-                    xs={6}
-                    sm={6}
-                    md={4}
-                    lg={3}
-                    key={_uniqueId('special_')}
-                    title={specialityDetails.name || ''}
-                    onClick={(e) => {
-                      speciality(e.currentTarget.title);
-                      disableFilter(false);
+                  <Mutation<SaveSearch, SaveSearchVariables>
+                    mutation={SAVE_PATIENT_SEARCH}
+                    variables={{
+                      saveSearchInput: {
+                        type: SEARCH_TYPE.SPECIALTY,
+                        typeId: specialityDetails.id,
+                        patient: currentPatient ? currentPatient.id : '',
+                      },
                     }}
+                    onCompleted={(data) => {
+                      console.log(data);
+                    }}
+                    onError={(error) => {
+                      console.log(error);
+                    }}
+                    key={_uniqueId('special_')}
                   >
-                    <div className={classes.contentBox}>
-                      <Avatar
-                        alt={specialityDetails.name || ''}
-                        src={specialityDetails.image || ''}
-                        className={classes.bigAvatar}
-                      />
-                      {specialityDetails.name}
-                    </div>
-                  </Grid>
+                    {(mutation) => (
+                      <Grid
+                        item
+                        xs={6}
+                        sm={6}
+                        md={4}
+                        lg={3}
+                        title={specialityDetails.name || ''}
+                        onClick={(e) => {
+                          mutation();
+                          speciality(e.currentTarget.title);
+                          disableFilter(false);
+                        }}
+                      >
+                        <div className={classes.contentBox}>
+                          <Avatar
+                            alt={specialityDetails.name || ''}
+                            src={specialityDetails.image || ''}
+                            className={classes.bigAvatar}
+                          />
+                          {specialityDetails.name}
+                        </div>
+                      </Grid>
+                    )}
+                  </Mutation>
                 );
               })}
             </Grid>
