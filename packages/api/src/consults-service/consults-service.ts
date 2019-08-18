@@ -41,6 +41,10 @@ import {
   getNextAvailableSlotTypeDefs,
   getNextAvailableSlotResolvers,
 } from 'consults-service/resolvers/getDoctorNextSlot';
+import {
+  getPhysicalAvailableSlotsTypeDefs,
+  getPhysicalAvailableSlotsResolvers,
+} from 'consults-service/resolvers/getDoctorPhysicalAvailability';
 import { GatewayHeaders } from 'api-gateway';
 
 (async () => {
@@ -132,6 +136,10 @@ import { GatewayHeaders } from 'api-gateway';
       {
         typeDefs: getNextAvailableSlotTypeDefs,
         resolvers: getNextAvailableSlotResolvers,
+      },
+      {
+        typeDefs: getPhysicalAvailableSlotsTypeDefs,
+        resolvers: getPhysicalAvailableSlotsResolvers,
       },
     ]),
   });
