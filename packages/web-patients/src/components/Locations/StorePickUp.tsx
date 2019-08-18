@@ -83,6 +83,12 @@ const useStyles = makeStyles((theme: Theme) => {
     shadowHide: {
       overflow: 'hidden',
     },
+    noAddress: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#0087ba',
+      paddingBottom: 10,
+    },
   };
 });
 
@@ -119,6 +125,10 @@ export const StorePickUp: React.FC = (props) => {
           />
         </li>
       </ul>
+      <div className={classes.noAddress}>
+        Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from
+        a nearby store, or change the pincode.
+      </div>
       <div className={classes.bottomActions}>
         <AphButton onClick={() => setIsAddAddressDialogOpen(true)}>Add new address</AphButton>
         <AphButton

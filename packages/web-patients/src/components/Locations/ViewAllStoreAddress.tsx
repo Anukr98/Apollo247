@@ -52,6 +52,12 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
     },
+    noAddress: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#0087ba',
+      paddingBottom: 10,
+    },
   };
 });
 
@@ -92,6 +98,10 @@ export const ViewAllStoreAddress: React.FC = (props) => {
             />
           </li>
         </ul>
+        <div className={classes.noAddress}>
+          Sorry! We’re working hard to get to this area! In the meantime, you can either pick up
+          from a nearby store, or change the pincode.
+        </div>
       </div>
     </div>
   );
