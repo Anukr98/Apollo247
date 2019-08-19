@@ -135,7 +135,6 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
   // >({
   //   associatedDoctor: {},
   // } as GetDoctorDetails_getDoctorDetails_starTeam);
-
   const [data, setData] = useState<GetDoctorDetails>();
 
   return (
