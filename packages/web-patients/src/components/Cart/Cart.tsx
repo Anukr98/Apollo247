@@ -3,11 +3,12 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, Tabs, Tab } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
+import { Checkout } from 'components/Cart/Checkout';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -200,6 +201,26 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 10,
       paddingBottom: 0,
     },
+    dialogContent: {
+      paddingTop: 10,
+    },
+    dialogActions: {
+      padding: 20,
+      paddingTop: 10,
+      boxShadow: '0 -5px 20px 0 #ffffff',
+      position: 'relative',
+      '& button': {
+        borderRadius: 10,
+      },
+    },
+    customScrollBar: {
+      paddingRight: 20,
+      paddingLeft: 20,
+      paddingBottom: 20,
+    },
+    shadowHide: {
+      overflow: 'hidden',
+    },
   };
 });
 
@@ -210,6 +231,7 @@ const TabContainer: React.FC = (props) => {
 export const Cart: React.FC = (props) => {
   const classes = useStyles();
   const [tabValue, setTabValue] = useState<number>(0);
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
 
   return (
     <div className={classes.root}>
@@ -308,11 +330,28 @@ export const Cart: React.FC = (props) => {
           </div>
         </Scrollbars>
         <div className={classes.checkoutBtn}>
-          <AphButton color="primary" fullWidth>
+          <AphButton onClick={() => setIsDialogOpen(true)} color="primary" fullWidth>
             Proceed to pay — RS. 480
           </AphButton>
         </div>
       </div>
+      <AphDialog open={isDialogOpen} maxWidth="sm">
+        <AphDialogTitle>Checkout</AphDialogTitle>
+        <div className={classes.shadowHide}>
+          <div className={classes.dialogContent}>
+            <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
+              <div className={classes.customScrollBar}>
+                <Checkout />
+              </div>
+            </Scrollbars>
+          </div>
+          <div className={classes.dialogActions}>
+            <AphButton color="primary" fullWidth>
+              Done
+            </AphButton>
+          </div>
+        </div>
+      </AphDialog>
     </div>
   );
 };
