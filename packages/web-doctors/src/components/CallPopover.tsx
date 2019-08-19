@@ -224,7 +224,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     intervalId && clearInterval(intervalId);
   };
   function handleClick(event: any) {
-    console.log(startAppointment, '11111111111');
     if (startAppointment) {
       setAnchorEl(event.currentTarget);
     }
@@ -272,10 +271,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         channel: channel,
         storeInHistory: false,
       },
-      (status, response) => {
-        setStartAppointment(!startAppointment);
-        startInterval(900);
-      }
+      (status, response) => {}
     );
   };
   const onStopConsult = () => {
@@ -290,10 +286,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         channel: channel,
         storeInHistory: false,
       },
-      (status, response) => {
-        setStartAppointment(!startAppointment);
-        stopInterval();
-      }
+      (status, response) => {}
     );
   };
 

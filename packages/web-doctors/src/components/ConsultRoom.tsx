@@ -404,7 +404,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
     const stoptext = {
       id: doctorId,
-      message: `call ended ${
+      message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended ${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
       } :  ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       isTyping: true,
