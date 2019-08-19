@@ -290,9 +290,9 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             ...theme.fonts.IBMPlexSansMedium(14),
           }}
         >
-          {`${
-            props.doctor ? `Dr. ${props.doctor.firstName}` : 'Doctor'
-          } is available in ${availableInMin} mins!\nWould you like to consult now or schedule for later?`}
+          {`${props.doctor ? `Dr. ${props.doctor.firstName}` : 'Doctor'} is available in ${
+            availableInMin < 0 ? '15' : availableInMin
+          } mins!\nWould you like to consult now or schedule for later?`}
         </Text>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 }}>
           <Button

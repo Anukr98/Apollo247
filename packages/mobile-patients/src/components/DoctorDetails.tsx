@@ -154,6 +154,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [scrollY] = useState(new Animated.Value(0));
   const [availableInMin, setavailableInMin] = useState<Number>();
+  const [availableTime, setavailableTime] = useState<string>('');
 
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
@@ -255,6 +256,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       if (date2 && today) {
         timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
       }
+      if (timeDiff < 0) {
+        const availableTime = Moment(new Date(ISOFormat), 'HH:mm:ss.SSSz').format('h:mm A');
+        console.log(availableTime, 'availableTime');
+        setavailableTime(availableTime);
+      }
       console.log(timeDiff, 'timeDiff');
       setavailableInMin(timeDiff);
     }
@@ -297,8 +303,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   </Text>
                   {availableInMin && (
                     <CapsuleView
-                      title={`AVAILABLE IN ${availableInMin} MIN${availableInMin > 1 ? 'S' : ''}`}
-                      isActive={availableInMin <= 15}
+                      title={
+                        availableInMin < 0
+                          ? `${availableTime}`
+                          : `AVAILABLE IN ${availableInMin} MIN${availableInMin > 1 ? 'S' : ''}`
+                      }
+                      isActive={availableInMin >= 15 ? true : false}
                     />
                   )}
                 </View>
@@ -314,10 +324,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       </Text>
                       {availableInMin && (
                         <CapsuleView
-                          title={`AVAILABLE IN ${availableInMin} MIN${
-                            availableInMin > 1 ? 'S' : ''
-                          }`}
-                          isActive={availableInMin <= 15}
+                          title={
+                            availableInMin < 0
+                              ? `${availableTime}`
+                              : `AVAILABLE IN ${availableInMin} MIN${availableInMin > 1 ? 'S' : ''}`
+                          }
+                          isActive={availableInMin >= 15 ? true : false}
                         />
                       )}
                     </>

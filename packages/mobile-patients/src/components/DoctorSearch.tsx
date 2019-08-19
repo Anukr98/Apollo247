@@ -7,6 +7,8 @@ import {
   GET_ALL_SPECIALTIES,
   GET_PAST_SEARCHES,
   SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
+  SAVE_SEARCH,
+  GET_PATIENT_PAST_SEARCHES,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAllSpecialties,
@@ -26,6 +28,8 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors,
 } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialtyByName';
+import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
+
 import React, { useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import {
@@ -43,6 +47,10 @@ import { theme } from '../theme/theme';
 import { Button } from './ui/Button';
 import { DoctorCard } from './ui/DoctorCard';
 import { NeedHelpAssistant } from './ui/NeedHelpAssistant';
+import { Mutation } from 'react-apollo';
+import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { getPatientPastSearches } from '@aph/mobile-patients/src/graphql/types/getPatientPastSearches';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -139,6 +147,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [otherDoctors, setotherDoctors] = useState<
     (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors | null)[] | null
   >();
+  const { currentPatient } = useAllCurrentPatients();
 
   const newData = useQuery<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>(
     SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
@@ -244,21 +253,22 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   }
 
-  const pastData = useQuery<getPastSearches, getPastSearches_getPastSearches>(
-    GET_PAST_SEARCHES,
-    {}
-  );
+  const pastData = useQuery<getPatientPastSearches>(GET_PATIENT_PAST_SEARCHES, {
+    variables: {
+      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+    },
+  });
   if (pastData.error) {
     console.log('pastData.error', pastData.error);
   } else {
     console.log(pastData, 'pastDatapastDatapastData');
     if (
       pastData.data &&
-      pastData.data.getPastSearches &&
-      PastSearches !== pastData.data.getPastSearches
+      pastData.data.getPatientPastSearches &&
+      PastSearches !== pastData.data.getPatientPastSearches
     ) {
-      console.log('pastData.data', pastData.data.getPastSearches);
-      setPastSearches(pastData.data.getPastSearches);
+      console.log('pastData.data', pastData.data.getPatientPastSearches);
+      setPastSearches(pastData.data.getPatientPastSearches);
     }
   }
 
@@ -428,7 +438,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             data={SpecialitiesList}
             onEndReachedThreshold={0.5}
             renderItem={({ item, index }) =>
-              renderSpecialistRow(item, index, SpecialitiesList.length)
+              renderSpecialistRow(item, index, SpecialitiesList.length, searchText.length > 2)
             }
             keyExtractor={(_, index) => index.toString()}
             numColumns={2}
@@ -441,32 +451,53 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const renderSpecialistRow = (
     rowData: getAllSpecialties_getAllSpecialties | null,
     rowID: number,
-    length: number
+    length: number,
+    isSearchResult?: boolean
   ) => {
     if (rowData)
       return (
-        <TouchableOpacity
-          onPress={() => onClickSearch(rowData)}
-          style={{
-            // flex: 1,
-            width: '50%',
-            paddingHorizontal: 8,
-            marginVertical: 8,
-            marginTop: rowID === 0 || rowID === 1 ? 16 : 8,
-            marginBottom: length === rowID + 1 || (length - 1) % 2 === 1 ? 16 : 8,
-            height: 100,
-          }}
-          activeOpacity={1}
-          key={rowID}
-        >
-          <View style={styles.listSpecialistView}>
-            {rowData.image && (
-              <Image source={{ uri: rowData.image }} style={{ height: 44, width: 44 }} />
-            )}
-            {/* {SpecialityImages[rowID % 4]} */}
-            <Text style={styles.rowSpecialistStyles}>{rowData.name!.toUpperCase()}</Text>
-          </View>
-        </TouchableOpacity>
+        <Mutation<saveSearch> mutation={SAVE_SEARCH}>
+          {(mutate, { loading, data, error }) => (
+            <TouchableOpacity
+              onPress={() => {
+                onClickSearch(rowData);
+                const searchInput = {
+                  type: SEARCH_TYPE.SPECIALTY,
+                  typeId: rowData.id,
+                  patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+                };
+                if (isSearchResult) {
+                  mutate({
+                    variables: {
+                      saveSearchInput: searchInput,
+                    },
+                  });
+                }
+              }}
+              style={{
+                // flex: 1,
+                width: '50%',
+                paddingHorizontal: 8,
+                marginVertical: 8,
+                marginTop: rowID === 0 || rowID === 1 ? 16 : 8,
+                marginBottom: length === rowID + 1 || (length - 1) % 2 === 1 ? 16 : 8,
+                height: 100,
+              }}
+              activeOpacity={1}
+              key={rowID}
+            >
+              <View style={styles.listSpecialistView}>
+                {rowData.image && (
+                  <Image source={{ uri: rowData.image }} style={{ height: 44, width: 44 }} />
+                )}
+                {/* {SpecialityImages[rowID % 4]} */}
+                <Text style={styles.rowSpecialistStyles}>{rowData.name!.toUpperCase()}</Text>
+              </View>
+              {data ? console.log(data, 'savesearch data') : null}
+              {error ? console.log(error, 'savesearch error') : null}
+            </TouchableOpacity>
+          )}
+        </Mutation>
       );
     else return null;
   };
@@ -514,14 +545,70 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const renderSearchDoctorResultsRow = (
     rowData: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors | null
   ) => {
-    if (rowData) return <DoctorCard rowData={rowData} navigation={props.navigation} />;
+    if (rowData)
+      return (
+        <Mutation<saveSearch> mutation={SAVE_SEARCH}>
+          {(mutate, { loading, data, error }) => (
+            <DoctorCard
+              rowData={rowData}
+              navigation={props.navigation}
+              onPress={() => {
+                const searchInput = {
+                  type: SEARCH_TYPE.DOCTOR,
+                  typeId: rowData.id,
+                  patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+                };
+                mutate({
+                  variables: {
+                    saveSearchInput: searchInput,
+                  },
+                });
+                props.navigation.navigate(AppRoutes.DoctorDetails, {
+                  doctorId: rowData.id,
+                });
+              }}
+            >
+              {data ? console.log(data, 'savesearch doctor data ') : null}
+              {error ? console.log(error, 'savesearch doctor error') : null}
+            </DoctorCard>
+          )}
+        </Mutation>
+      );
     return null;
   };
 
   const renderPossibleDoctorResultsRow = (
     rowData: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors | null
   ) => {
-    if (rowData) return <DoctorCard rowData={rowData} navigation={props.navigation} />;
+    if (rowData)
+      return (
+        <Mutation<saveSearch> mutation={SAVE_SEARCH}>
+          {(mutate, { loading, data, error }) => (
+            <DoctorCard
+              rowData={rowData}
+              navigation={props.navigation}
+              onPress={() => {
+                const searchInput = {
+                  type: SEARCH_TYPE.DOCTOR,
+                  typeId: rowData.id,
+                  patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+                };
+                mutate({
+                  variables: {
+                    saveSearchInput: searchInput,
+                  },
+                });
+                props.navigation.navigate(AppRoutes.DoctorDetails, {
+                  doctorId: rowData.id,
+                });
+              }}
+            >
+              {data ? console.log(data, 'savesearch doctor data ') : null}
+              {error ? console.log(error, 'savesearch doctor error') : null}
+            </DoctorCard>
+          )}
+        </Mutation>
+      );
     return null;
   };
 
@@ -550,7 +637,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         {possibleMatches && possibleMatches.specialties && possibleMatches.specialties.length > 0 && (
           <View>
             <SectionHeaderComponent
-              sectionTitle={` Possible Specialities — ${possibleMatches.specialties.length}`}
+              sectionTitle={`Possible Specialities — ${possibleMatches.specialties.length}`}
               style={{
                 marginBottom: 0,
                 marginTop: 4,
@@ -565,7 +652,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               data={possibleMatches.specialties}
               onEndReachedThreshold={0.5}
               renderItem={({ item, index }) =>
-                renderSpecialistRow(item, index, possibleMatches.specialties!.length)
+                renderSpecialistRow(item, index, possibleMatches.specialties!.length, true)
               }
               keyExtractor={(_, index) => index.toString()}
               numColumns={2}

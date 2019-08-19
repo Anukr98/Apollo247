@@ -103,6 +103,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>();
+  const [availableTime, setavailableTime] = useState<string>('');
 
   const todayDate = new Date().toISOString().slice(0, 10);
   const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
@@ -131,14 +132,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     ) {
       const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
         .availableSlot;
-      const IOSFormat = `${todayDate}T${nextSlot}:48.000Z`;
-      console.log(IOSFormat, new Date(IOSFormat));
-      const formatedTime = Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
+      const ISOFormat = `${todayDate}T${nextSlot}:48.000Z`;
+      console.log(ISOFormat, new Date(ISOFormat));
+      const formatedTime = Moment(new Date(ISOFormat), 'HH:mm:ss.SSSz').format('HH:mm');
       console.log(formatedTime, todayDate, 'formatedTime', nextSlot, 'nextSlot');
       let timeDiff: number = 0;
       const time = formatedTime.split(':');
-      let today: Date = new Date();
-      let date2: Date = new Date(
+      const today: Date = new Date();
+      const date2: Date = new Date(
         today.getFullYear(),
         today.getMonth(),
         today.getDate(),
@@ -147,6 +148,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       );
       if (date2 && today) {
         timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+      }
+      if (timeDiff < 0) {
+        const availableTime = Moment(new Date(ISOFormat), 'HH:mm:ss.SSSz').format('h:mm A');
+        console.log(availableTime, 'availableTime');
+        setavailableTime(availableTime);
       }
       console.log(timeDiff, 'timeDiff');
       setavailableInMin(timeDiff);
@@ -167,22 +173,26 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       <TouchableOpacity
         style={[styles.doctorView, props.style]}
         onPress={() => {
-          props.onPress
-            ? props.onPress(rowData.id!)
-            : navigateToDetails(rowData.id ? rowData.id : '');
+          props.onPress ? props.onPress(rowData.id!) : navigateToDetails(rowData.id!);
         }}
       >
         <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
           <View style={{ flexDirection: 'row' }}>
-            {props.displayButton && availableInMin ? (
+            {props.displayButton && availableInMin !== undefined ? (
               <CapsuleView
-                title={`AVAILABLE IN ${
-                  availableInMin >= 60
-                    ? `${availabilityInHrs.toString()} ${availabilityInHrs > 1 ? 'HOURS' : 'HOUR'}`
-                    : `${availableInMin} MINS`
-                }`}
+                title={
+                  availableInMin < 0
+                    ? `${availableTime}`
+                    : `AVAILABLE IN ${
+                        availableInMin >= 60
+                          ? `${availabilityInHrs.toString()} ${
+                              availabilityInHrs > 1 ? 'HOURS' : 'HOUR'
+                            }`
+                          : `${availableInMin} MINS`
+                      }`
+                }
                 style={styles.availableView}
-                isActive={Number(availableInMin) >= 60 ? false : true}
+                isActive={Number(availableInMin) >= 60 || availableInMin < 0 ? false : true}
               />
             ) : null}
             <View style={styles.imageView}>

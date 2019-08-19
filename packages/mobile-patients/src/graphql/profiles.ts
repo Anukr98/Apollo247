@@ -75,6 +75,17 @@ export const SAVE_SEARCH = gql`
   }
 `;
 
+export const GET_PATIENT_PAST_SEARCHES = gql`
+  query getPatientPastSearches($patientId: ID!) {
+    getPatientPastSearches(patientId: $patientId) {
+      searchType
+      typeId
+      name
+      image
+    }
+  }
+`;
+
 export const GET_SPECIALTIES = gql`
   query getSpecialties {
     getSpecialties {
