@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, Tabs, Tab } from '@material-ui/core';
+import { Theme, Typography, Tabs, Tab, Popover } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
+import { Checkout } from 'components/Cart/Checkout';
+import { OrderSuccess } from 'components/Cart/OrderSuccess';
+import { OrderPlaced } from 'components/Cart/OrderPlaced';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -200,6 +203,57 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 10,
       paddingBottom: 0,
     },
+    dialogContent: {
+      paddingTop: 10,
+    },
+    dialogActions: {
+      padding: 20,
+      paddingTop: 10,
+      boxShadow: '0 -5px 20px 0 #ffffff',
+      position: 'relative',
+      '& button': {
+        borderRadius: 10,
+      },
+    },
+    customScrollBar: {
+      paddingRight: 20,
+      paddingLeft: 20,
+      paddingBottom: 20,
+    },
+    shadowHide: {
+      overflow: 'hidden',
+    },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
   };
 });
 
@@ -210,6 +264,9 @@ const TabContainer: React.FC = (props) => {
 export const Cart: React.FC = (props) => {
   const classes = useStyles();
   const [tabValue, setTabValue] = useState<number>(0);
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
+  const mascotRef = useRef(null);
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   return (
     <div className={classes.root}>
@@ -308,11 +365,51 @@ export const Cart: React.FC = (props) => {
           </div>
         </Scrollbars>
         <div className={classes.checkoutBtn}>
-          <AphButton color="primary" fullWidth>
+          <AphButton onClick={() => setIsPopoverOpen(true)} color="primary" fullWidth>
             Proceed to pay — RS. 480
           </AphButton>
         </div>
       </div>
+      <AphDialog open={isDialogOpen} maxWidth="sm">
+        <AphDialogTitle>Checkout</AphDialogTitle>
+        <div className={classes.shadowHide}>
+          <div className={classes.dialogContent}>
+            <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
+              <div className={classes.customScrollBar}>
+                <Checkout />
+              </div>
+            </Scrollbars>
+          </div>
+          <div className={classes.dialogActions}>
+            <AphButton onClick={() => setIsDialogOpen(true)} color="primary" fullWidth>
+              Done
+            </AphButton>
+          </div>
+        </div>
+      </AphDialog>
+      <Popover
+        open={isPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <OrderSuccess />
+            <OrderPlaced />
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };
