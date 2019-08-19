@@ -17,6 +17,8 @@ import { format, addDays } from 'date-fns';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
+import { ConsultMode } from 'graphql/types/globalTypes';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     mascotCircle: {
@@ -164,7 +166,8 @@ interface DoctorsListingProps {
 
 const convertAvailabilityToDate = (availability: String[]) => {
   return _map(availability, (ava) => {
-    if (ava === 'now' || ava === 'today') return format(new Date(), 'yyyy-MM-dd');
+    if (ava === 'now') return 'NOW';
+    if (ava === 'today') return format(new Date(), 'yyyy-MM-dd');
     if (ava === 'tomorrow') return format(addDays(new Date(), 1), 'yyyy-MM-dd');
     if (ava === 'next3') return format(addDays(new Date(), 3), 'yyyy-MM-dd');
   });
@@ -304,10 +307,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
               doctors.consultHours[0].consultMode
                 ? doctors.consultHours[0].consultMode
                 : '';
-            if (
-              _toLower(consultMode) === _toLower(selectedFilterOption) ||
-              _toLower(consultMode) === 'BOTH'
-            ) {
+            if (consultMode === selectedFilterOption || consultMode === ConsultMode.BOTH) {
               return true;
             }
             return false;
@@ -317,9 +317,9 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   return (
     <>
       <div className={classes.sectionHead} ref={mascotRef}>
-        <Typography variant="h2">Okay!</Typography>
+        {doctorsList.length > 0 ? <Typography variant="h2">Okay!</Typography> : ''}
         <div className={classes.pageHeader}>
-          <div>Here are our best {specialityName}</div>
+          {doctorsList.length > 0 ? <div>Here are our best {specialityName}</div> : ''}
           <div className={classes.filterSection}>
             {_map(consultOptions, (consultName, consultType) => {
               return (
