@@ -199,7 +199,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
-        console.log(message.message);
         insertText[insertText.length] = message.message;
         setMessages(insertText);
         setMessageText('reset');

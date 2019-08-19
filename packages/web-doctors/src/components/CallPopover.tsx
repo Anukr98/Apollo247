@@ -291,7 +291,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const getTimerText = () => {
-    console.log(props.appointmentDateTime);
     const now = new Date();
     const diff = moment.duration(
       moment(props.appointmentDateTime + ':00').diff(
