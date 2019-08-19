@@ -67,6 +67,14 @@ export const BOOK_APPOINTMENT = gql`
   }
 `;
 
+export const SAVE_SEARCH = gql`
+  mutation saveSearch($saveSearchInput: SaveSearchInput!) {
+    saveSearch(saveSearchInput: $saveSearchInput) {
+      saveStatus
+    }
+  }
+`;
+
 export const GET_SPECIALTIES = gql`
   query getSpecialties {
     getSpecialties {
@@ -399,6 +407,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       physicalConsultationFees
       doctorHospital {
         facility {
+          id
           name
           city
           latitude

@@ -243,12 +243,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     if (array !== timeArray) settimeArray(array);
   };
 
-  console.log(date, date.toISOString().split('T')[0], 'dateeeeeeee', props.doctorId, 'doctorId');
+  const availableDate = date.toISOString().split('T')[0];
+  console.log(availableDate, 'dateeeeeeee', props.doctorId, 'doctorId');
   const availabilityData = useQuery<getDoctorAvailableSlots>(GET_AVAILABLE_SLOTS, {
     fetchPolicy: 'no-cache',
     variables: {
       DoctorAvailabilityInput: {
-        availableDate: date.toISOString().split('T')[0],
+        availableDate: availableDate,
         doctorId: props.doctorId,
       },
     },
@@ -257,15 +258,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   if (availabilityData.error) {
     console.log('error', availabilityData.error);
   } else {
-    console.log(availabilityData.data, 'availabilityData', availableSlots, 'availableSlots');
+    console.log(availabilityData.data, 'availableSlots');
     if (
       availabilityData &&
       availabilityData.data &&
       availabilityData.data.getDoctorAvailableSlots &&
       availabilityData.data.getDoctorAvailableSlots.availableSlots &&
-      availabilityData.data.getDoctorAvailableSlots.availableSlots.length !== 0 &&
-      availableSlots &&
-      availableSlots.length === 0
+      availableSlots !== availabilityData.data.getDoctorAvailableSlots.availableSlots
     ) {
       setTimeArrayData(availabilityData.data.getDoctorAvailableSlots.availableSlots);
       console.log(availableSlots, 'availableSlots1111');
@@ -350,7 +349,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                     selectedTab === tabs[0].title
                       ? APPOINTMENT_TYPE.ONLINE
                       : APPOINTMENT_TYPE.PHYSICAL,
-                  hospitalId: '1',
+                  hospitalId:
+                    props.clinics && props.clinics.length > 0 && props.clinics[0].facility
+                      ? props.clinics[0].facility.id
+                      : '',
                 };
                 console.log(appointmentInput, 'appointmentInput');
                 mutate({

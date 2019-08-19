@@ -260,6 +260,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
         onPressDate={(date) => {
           setDate(date);
           props.setDate(date);
+          props.setselectedTimeSlot('');
         }}
         calendarType={type}
         onCalendarTypeChanged={(type) => {
