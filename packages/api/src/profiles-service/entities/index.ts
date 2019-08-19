@@ -85,6 +85,9 @@ export class SearchHistory extends BaseEntity {
   patient: Patient;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedDate: Date;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 }
 //searchHistory Ends

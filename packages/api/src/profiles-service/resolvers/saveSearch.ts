@@ -49,7 +49,12 @@ const saveSearch: Resolver<
     ...saveSearchInput,
   };
   const searchHistoryRepository = profilesDb.getCustomRepository(SearchHistoryRepository);
-  await searchHistoryRepository.saveSearch(saveSearchAttrs);
+  const pastSearchRecords = await searchHistoryRepository.findByPatientAndType(saveSearchAttrs);
+  if (pastSearchRecords.length > 0) {
+    await searchHistoryRepository.updatePastSearch(saveSearchAttrs);
+  } else {
+    await searchHistoryRepository.saveSearch(saveSearchAttrs);
+  }
   return { saveStatus: true };
 };
 

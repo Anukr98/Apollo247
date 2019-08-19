@@ -64,6 +64,15 @@ export class DoctorRepository extends Repository<Doctor> {
     });
   }
 
+  getSearchDoctorsByIds(doctorIds: string[]) {
+    return this.createQueryBuilder('doctor')
+      .select('doctor.id', 'typeId')
+      .addSelect("doctor.firstName || ' ' || doctor.lastName", 'name')
+      .addSelect('doctor.photoUrl', 'image')
+      .where('doctor.id IN (:...doctorIds)', { doctorIds })
+      .getRawMany();
+  }
+
   searchByName(searchString: string) {
     return this.createQueryBuilder('doctor')
       .leftJoinAndSelect('doctor.specialty', 'specialty')
