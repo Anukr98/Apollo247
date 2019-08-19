@@ -291,15 +291,20 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const getTimerText = () => {
+    console.log(props.appointmentDateTime);
     const now = new Date();
     const diff = moment.duration(
-      moment(props.appointmentDateTime).diff(moment(moment(now).format('YYYY-MM-DD hh:ss')))
+      moment(props.appointmentDateTime + ':00').diff(
+        moment(moment(now).format('YYYY-MM-DD hh:mm:ss'))
+      )
     );
     const diffInHours = diff.asHours();
     if (diffInHours > 0 && diffInHours < 12)
-      return `Time to consult ${moment(new Date(0, 0, 0, diff.hours(), diff.minutes())).format(
-        'hh: mm'
-      )}`;
+      if (diff.hours() <= 0) {
+        return `Time to consult ${
+          diff.minutes().toString().length < 2 ? '0' + diff.minutes() : diff.minutes()
+        } : ${diff.seconds().toString().length < 2 ? '0' + diff.seconds() : diff.seconds()}`;
+      }
     return '';
   };
   return (
