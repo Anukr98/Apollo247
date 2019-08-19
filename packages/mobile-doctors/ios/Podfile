@@ -10,6 +10,7 @@ target 'ApolloPatient' do
  pod 'Firebase/Core', '~> 6.2.0'
  pod 'Firebase/Analytics'
  pod 'Firebase/Auth'
+ pod 'Firebase/Messaging'
  pod 'GoogleAppMeasurement'
  pod 'OpenTok', '~> 2.15.3'
  
