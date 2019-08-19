@@ -27,6 +27,7 @@ import {
   NavigationRouteConfig,
   StackNavigatorConfig,
 } from 'react-navigation';
+import { YourOrdersScene } from './YourOrdersScene';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -52,6 +53,7 @@ export enum AppRoutes {
   ApplyCouponScene = 'ApplyCouponScene',
   StorPickupScene = 'StorPickupScene',
   ChatRoom = 'ChatRoom',
+  YourOrdersScene = 'YourOrdersScene',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -141,6 +143,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ChatRoom]: {
     screen: ChatRoom,
+  },
+  [AppRoutes.YourOrdersScene]: {
+    screen: YourOrdersScene,
   },
 };
 
