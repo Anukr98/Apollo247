@@ -35,6 +35,7 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
 
 export interface GetDoctorAppointments_getDoctorAppointments {
   __typename: "DoctorAppointmentResult";
+  newPatientsList: (string | null)[] | null;
   appointmentsHistory: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null)[] | null;
 }
 

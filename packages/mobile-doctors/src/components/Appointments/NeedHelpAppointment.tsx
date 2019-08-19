@@ -33,7 +33,7 @@ export const NeedHelpAppointment: React.FC<NeedHelpAppointmentProps> = (props) =
         leftIcons={[
           {
             icon: <BackArrow />,
-            onPress: () => props.navigation.pop(),
+            onPress: () => props.navigation.goBack(),
           },
         ]}
         headerText="NEED HELP?"

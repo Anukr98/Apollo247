@@ -28,7 +28,7 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import { Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { CalendarList } from 'react-native-calendars';
+import { CalendarList, PeriodMarking } from 'react-native-calendars';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { WeekView } from './WeekView';
 
@@ -133,7 +133,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
 
   console.log('DoctorIdAPPPPP', DoctorId);
   const [date, setDate] = useState<Date>(new Date());
-  const [calendarDate, setCalendarDate] = useState<Date | null>(new Date()); // to maintain a sync between week view change and calendar month
+  const [calendarDate, setCalendarDate] = useState<Date>(new Date()); // to maintain a sync between week view change and calendar month
   const [isCalendarVisible, setCalendarVisible] = useState(false);
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
@@ -215,8 +215,8 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           showWeekNumbers={false}
           onPressArrowLeft={(substractMonth) => substractMonth()}
           onPressArrowRight={(addMonth) => addMonth()}
-          markingType={'custom'}
-          markedDates={mark}
+          // markingType={'custom'}
+          // markedDates={mark}
           theme={{
             backgroundColor: '#ffffff',
             calendarBackground: '#ffffff',

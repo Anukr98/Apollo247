@@ -132,26 +132,6 @@ export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const { analytics, currentUser, authError, clearCurrentUser } = useAuth();
-
-  useEffect(() => {
-    //  analytics.setCurrentScreen(AppRoutes.Login);
-    // setVerifyingPhonenNumber(false);
-    console.log('login currentUser', currentUser);
-  }, [analytics, currentUser]);
-
-  useEffect(() => {
-    console.log('login Screen');
-  }, []);
-
-  useEffect(() => {
-    console.log('authError Login', authError);
-    if (authError) {
-      clearCurrentUser();
-      setVerifyingPhonenNumber(false);
-      //Alert.alert('Error', 'Unable to connect the server at the moment.');
-    }
-  }, [authError]);
 
   const validateAndSetPhoneNumber = (number: string) => {
     if (/^\d+$/.test(number) || number == '') {

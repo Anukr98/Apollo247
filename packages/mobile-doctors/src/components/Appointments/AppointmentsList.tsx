@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
 });
 
 export interface AppointmentsListProps extends NavigationScreenProps {
-  appointmentsHistory: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory)[];
+  appointmentsHistory: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null)[];
   newPatientsList: (string | null)[];
   navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
 }
@@ -129,7 +129,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
           flex: 1,
         }}
       >
-        {props.appointmentsHistory.map((i, index, array) => {
+        {props.appointmentsHistory.map((_i, index, array) => {
+          const i = _i!;
           return (
             <>
               {index == 0 && <View style={{ height: 20 }} />}

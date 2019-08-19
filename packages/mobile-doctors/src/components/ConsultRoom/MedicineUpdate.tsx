@@ -8,7 +8,6 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { CapsuleView } from '@aph/mobile-doctors/src/components/ui/CapsuleView';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import { string } from '@aph/mobile-doctors/src/strings/string';
-import console = require('console');
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 
@@ -122,13 +121,22 @@ const styles = StyleSheet.create({
   },
 });
 
+type ConsultationType = {
+  morning: string;
+  noon: string;
+  evening: string;
+  night: string;
+  afterfood: string;
+  beforefood: string;
+};
+
 export interface ProfileProps extends NavigationScreenProps {}
 
 export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
   const [count, setCount] = useState(0);
   const [medinceName, setMedinceName] = useState<string>('Ibuprofen, 200mg');
   const [value, setValue] = useState<string>('');
-  const [consultationType, setConsultationType] = useState({
+  const [consultationType, setConsultationType] = useState<ConsultationType>({
     morning: 'Morning',
     noon: 'Noon',
     evening: 'Evening',
@@ -231,10 +239,10 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
                 return;
               } else {
                 console.log('morngn', consultationType.morning);
-                setConsultationType({ ...consultationType, morning: isChecked });
+                // setConsultationType({ ...consultationType, morning: isChecked });
               }
             }}
-            isChecked={consultationType.morning}
+            isChecked={!!consultationType.morning}
           />
           <ChipViewCard
             title="Noon"
@@ -243,10 +251,10 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
                 return;
               } else {
                 console.log('morngn', consultationType.noon);
-                setConsultationType({ ...consultationType, noon: isChecked });
+                // setConsultationType({ ...consultationType, noon: isChecked });
               }
             }}
-            isChecked={consultationType.noon}
+            isChecked={!!consultationType.noon}
           />
           <ChipViewCard
             title="Evening"
@@ -255,10 +263,10 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
                 return;
               } else {
                 console.log('morngn', consultationType.evening);
-                setConsultationType({ ...consultationType, evening: isChecked });
+                // setConsultationType({ ...consultationType, evening: isChecked });
               }
             }}
-            isChecked={consultationType.evening}
+            isChecked={!!consultationType.evening}
           />
           <ChipViewCard
             title="Night"
@@ -267,10 +275,10 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
                 return;
               } else {
                 console.log('morngn', consultationType.night);
-                setConsultationType({ ...consultationType, night: isChecked });
+                // setConsultationType({ ...consultationType, night: isChecked });
               }
             }}
-            isChecked={consultationType.night}
+            isChecked={!!consultationType.night}
           />
         </View>
         <Text style={styles.dosage}>To be taken</Text>
@@ -290,10 +298,10 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
                 return;
               } else {
                 console.log('morngn', consultationType.afterfood);
-                setConsultationType({ ...consultationType, afterfood: isChecked });
+                // setConsultationType({ ...consultationType, afterfood: isChecked });
               }
             }}
-            isChecked={consultationType.afterfood}
+            isChecked={!!consultationType.afterfood}
           />
 
           <View style={{ flex: 0.1 }} />
@@ -305,10 +313,10 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
                 return;
               } else {
                 console.log('morngn', consultationType.beforefood);
-                setConsultationType({ ...consultationType, beforefood: isChecked });
+                // setConsultationType({ ...consultationType, beforefood: isChecked });
               }
             }}
-            isChecked={consultationType.beforefood}
+            isChecked={!!consultationType.beforefood}
           />
         </View>
         <Text style={styles.dosage}>Duration of Consumption</Text>

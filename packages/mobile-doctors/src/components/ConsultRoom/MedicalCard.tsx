@@ -59,7 +59,7 @@ export const MedicalCard: React.FC<CapsuleViewProps> = (props) => {
         <Text numberOfLines={1} style={styles.doctorNameStyles}>
           {props.diseaseName}
         </Text>
-        <TouchableOpacity onPress={() => props.onPress()}>
+        <TouchableOpacity onPress={() => props.onPress && props.onPress()}>
           <View style={{ marginTop: 12, marginRight: 12 }}>{props.icon}</View>
         </TouchableOpacity>
       </View>

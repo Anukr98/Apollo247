@@ -16,6 +16,12 @@ export type TimeOutData = {
   invalidAttems: number;
 };
 
+export type PatientInfoData = {
+  firstName: string;
+  gender: string;
+  uhid: string;
+};
+
 export type DummyQueryResult = {
   error: string | null;
   loading: boolean;

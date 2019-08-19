@@ -117,7 +117,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
       .then((_data) => {
         setSelectedDoctor('Select Doctor');
         setIsLoading(false);
-        const result = _data.data.makeTeamDoctorActive;
+        const result = _data.data!.makeTeamDoctorActive;
         console.log('addDoctorToProgram', result);
         if (result) {
           onReload();

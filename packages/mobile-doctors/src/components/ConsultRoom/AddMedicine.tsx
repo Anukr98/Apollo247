@@ -2,7 +2,7 @@ import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow, Cancel } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram } from '@aph/mobile-doctors/src/graphql/types/getDoctorsForStarDoctorProgram';
 import { getDoctorsForStarDoctorProgram as getDoctorsForStarDoctorProgramData } from '@aph/mobile-doctors/src/helpers/APIDummyData';
-import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { DoctorProfile, Doctor } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -28,9 +28,7 @@ export interface ProfileProps extends NavigationScreenProps {}
 
 export const AddMedicine: React.FC<ProfileProps> = (props) => {
   const [doctorSearchText, setDoctorSearchText] = useState<string>('');
-  const [filteredStarDoctors, setFilteredStarDoctors] = useState<
-    (GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram['profile'] | null)[] | null
-  >([]);
+  const [filteredStarDoctors, setFilteredStarDoctors] = useState<Doctor[] | null>([]);
   const client = useApolloClient();
   const showHeaderView = () => {
     return (

@@ -31,6 +31,7 @@ import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/D
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { Switch } from 'react-native-switch';
 import { MedicalCard } from '@aph/mobile-doctors/src/components/ConsultRoom/MedicalCard';
+import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
 
 const styles = StyleSheet.create({
   casesheetView: {
@@ -338,7 +339,7 @@ const renderPatientImage = () => {
   );
 };
 const profileRow = (
-  PatientInfoData: object,
+  PatientInfoData: PatientInfoData,
   AppId: string,
   Appintmentdatetimeconsultpage: string
 ) => {
@@ -397,8 +398,8 @@ const registerDetailsAppDate = (ApptId: string, appIdDate: string) => {
 };
 // moment(Appintmentdatetimeconsultpage).format('DD/MM/YYYY | HH:mm A');
 const renderBasicProfileDetails = (
-  PatientInfoData: object,
-  AppId: String,
+  PatientInfoData: PatientInfoData,
+  AppId: string,
   Appintmentdatetimeconsultpage: string
 ) => {
   return (
@@ -781,7 +782,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               {/* <Switch onValueChange={() => setSwitchValue(!switchValue)} value={switchValue} /> */}
               <Switch
                 value={switchValue}
-                onValueChange={(switchValue) => setSwitchValue(switchValue)}
+                onValueChange={(switchValue: boolean) => setSwitchValue(switchValue)}
                 // disabled={false}
                 activeText={'On'}
                 inActiveText={'Off'}
@@ -928,8 +929,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               console.log('showsara', showdata);
               return (
                 <ChipViewCard
-                  text={showdata.firstName}
-                  selected={true}
+                  onChange={() => {}}
+                  isChecked={true}
+                  title={showdata.firstName}
                   icon={<DiagonisisRemove />}
                   textSelectedStyle={{ marginTop: 3, marginBottom: 2, marginLeft: 3 }}
                 />

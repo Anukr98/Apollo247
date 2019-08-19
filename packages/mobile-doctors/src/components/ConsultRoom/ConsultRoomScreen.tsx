@@ -34,6 +34,7 @@ import {
   StatusBar,
   Platform,
   KeyboardAvoidingView,
+  KeyboardEvent,
 } from 'react-native';
 import MaterialTabs from 'react-native-material-tabs';
 //import ImagePicker from 'react-native-image-picker';
@@ -69,6 +70,7 @@ import {
 import { CREATEAPPOINTMENTSESSION } from '@aph/mobile-doctors/src/graphql/profiles';
 import { REQUEST_ROLES } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import moment from 'moment';
+import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
 
 const styles = StyleSheet.create({
   mainview: {
@@ -106,12 +108,12 @@ export interface ConsultRoomScreenProps
     DoctorId: string;
     PatientId: string;
     PatientConsultTime: string;
-    PatientInfoAll: object;
+    PatientInfoAll: PatientInfoData;
     AppId: string;
-    Appintmentdatetime: string;
-    //navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
+    Appintmentdatetime: Date;
+    // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   }> {
-  navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
+  // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
 }
 
 export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
@@ -143,7 +145,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         variables: {
           createAppointmentSessionInput: {
             appointmentId: AppId,
-            requestRole: 'DOCTOR',
+            requestRole: REQUEST_ROLES.DOCTOR,
           },
         },
       })
@@ -166,7 +168,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const PatientConsultTime = props.navigation.getParam('PatientConsultTime');
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const flatListRef = useRef<FlatList<any> | null>();
+  const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
 
   const [messages, setMessages] = useState([]);
@@ -286,39 +288,39 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const publisherEventHandlers = {
-    streamCreated: (event) => {
+    streamCreated: (event: string) => {
       console.log('Publisher stream created!', event);
     },
-    streamDestroyed: (event) => {
+    streamDestroyed: (event: string) => {
       console.log('Publisher stream destroyed!', event);
     },
   };
 
   const subscriberEventHandlers = {
-    error: (error) => {
+    error: (error: string) => {
       console.log(`There was an error with the subscriber: ${error}`);
     },
-    connected: (event) => {
+    connected: (event: string) => {
       console.log('Subscribe stream connected!', event);
 
       console.log('after styles', event);
     },
-    disconnected: (event) => {
+    disconnected: (event: string) => {
       console.log('Subscribe stream disconnected!', event);
     },
   };
 
   const sessionEventHandlers = {
-    error: (error) => {
+    error: (error: string) => {
       console.log(`There was an error with the session: ${error}`);
     },
-    connectionCreated: (event) => {
+    connectionCreated: (event: string) => {
       connectionCount++;
       console.log('otSessionRef', otSessionRef);
       console.log('Another client connected. ' + connectionCount + ' total.');
       console.log('session stream connectionCreated!', event);
     },
-    connectionDestroyed: (event) => {
+    connectionDestroyed: (event: string) => {
       connectionCount--;
       setIsCall(false);
       setIsAudioCall(false);
@@ -328,19 +330,19 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       setReturnToCall(false);
       console.log('session stream connectionDestroyed!', event);
     },
-    sessionConnected: (event) => {
+    sessionConnected: (event: string) => {
       console.log('session stream sessionConnected!', event);
     },
-    sessionDisconnected: (event) => {
+    sessionDisconnected: (event: string) => {
       console.log('session stream sessionDisconnected!', event);
     },
-    sessionReconnected: (event) => {
+    sessionReconnected: (event: string) => {
       console.log('session stream sessionReconnected!', event);
     },
-    sessionReconnecting: (event) => {
+    sessionReconnecting: (event: string) => {
       console.log('session stream sessionReconnecting!', event);
     },
-    signal: (event) => {
+    signal: (event: string) => {
       console.log('session stream signal!', event);
     },
   };
@@ -389,7 +391,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           console.log('before insertText', insertText);
 
           insertText[insertText.length] = message.message;
-          setMessages(insertText);
+          setMessages(insertText as []);
 
           console.log('after insertText', insertText);
           console.log('messages', messages);
@@ -399,7 +401,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             console.log('true chat icon');
           }
           setTimeout(() => {
-            flatListRef.current!.scrollToEnd();
+            flatListRef.current && flatListRef.current.scrollToEnd();
           }, 200);
         }
       },
@@ -418,12 +420,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     };
   }, []);
 
-  const keyboardDidShow = (e) => {
-    const { keyboardHeight } = e.endCoordinates;
-    console.log('Keyboard Shown', keyboardHeight);
-    console.log('Keyboard Shown', e.endCoordinates.height);
+  const keyboardDidShow = (e: KeyboardEvent) => {
+    // const { keyboardHeight } = e.endCoordinates;
+    // console.log('Keyboard Shown', keyboardHeight);
+    // console.log('Keyboard Shown', e.endCoordinates.height);
 
-    setHeightList(height - e.endCoordinates.height - 185);
+    // setHeightList(height - e.endCoordinates.height - 185);
 
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
@@ -448,7 +450,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         console.log('set saved');
         insertText = newmessage;
 
-        setMessages(newmessage);
+        setMessages(newmessage as []);
         if (!isCall || !isAudioCall) {
           console.log('chat icon', chatReceived);
           setChatReceived(true);
@@ -494,7 +496,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   let leftComponent = 0;
   let rightComponent = 0;
 
-  const renderChatRow = (rowData: any, index: number) => {
+  const renderChatRow = (rowData: { id: string; message: string }, index: number) => {
     if (rowData.id !== props.navigation.getParam('DoctorId')) {
       leftComponent++;
       // console.log('leftComponent', leftComponent);
@@ -623,7 +625,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       >
         {messages.length != 0 ? (
           <FlatList
-            ref={flatListRef}
+            ref={(ref) => (flatListRef.current = ref)}
             contentContainerStyle={{
               marginHorizontal: 20,
               marginTop: 0,
@@ -1701,7 +1703,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               }`
             : getTimerText()
         }
-        timerremaintext={!consultStarted ? PatientConsultTime : null}
+        timerremaintext={!consultStarted ? PatientConsultTime : undefined}
         textStyles={{ marginTop: 10 }}
         rightIcons={[
           {
