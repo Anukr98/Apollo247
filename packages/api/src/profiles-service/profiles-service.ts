@@ -120,11 +120,11 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
       },
       {
         typeDefs: getPastSearchesTypeDefs,
-        resolvers: getPatientPastSearchesResolvers,
+        resolvers: getPastSearchesResolvers,
       },
       {
         typeDefs: getPatientPastSearchesTypeDefs,
-        resolvers: getPastSearchesResolvers,
+        resolvers: getPatientPastSearchesResolvers,
       },
       {
         typeDefs: saveSearchTypeDefs,

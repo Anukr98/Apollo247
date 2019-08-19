@@ -54,7 +54,7 @@ const getPatientPastSearches: Resolver<
     const searchSpecialtiesArray = await specialtiesRepo.getSearchSpecialtiesByIds(searchTypeIds);
     const searchSpecialtiesObject = convertArrayToObject(searchSpecialtiesArray);
 
-    //creating response as array of SearchData
+    //forming response as an array of SearchData
     recentSearches.forEach((item) => {
       let searchItem;
       if (item.type == 'DOCTOR') {
