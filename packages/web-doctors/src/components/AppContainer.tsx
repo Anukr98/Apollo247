@@ -19,7 +19,10 @@ const App: React.FC = () => {
   const classes = useStyles();
   const { signInError, isSignedIn } = useAuth();
   useEffect(() => {
-    if (signInError) window.alert('Error signing in :(');
+    if (signInError)
+      window.alert(
+        'Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll.'
+      );
   }, [signInError]);
   return isSignedIn ? (
     <div className={classes.app}>
