@@ -1,4 +1,4 @@
-import { ApplyCouponScene } from '@aph/mobile-patients/src/components/ApplyCouponScene';
+import { ApplyCouponScene } from '@aph/mobile-patients/src/components/Medicines/ApplyCouponScene';
 import { AppointmentDetails } from '@aph/mobile-patients/src/components/AppointmentDetails';
 import { Consult } from '@aph/mobile-patients/src/components/Consult';
 import { ConsultRoom } from '@aph/mobile-patients/src/components/ConsultRoom';
@@ -8,16 +8,16 @@ import { DoctorSearchListing } from '@aph/mobile-patients/src/components/DoctorS
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { HealthRecords } from '@aph/mobile-patients/src/components/HealthRecords';
 import { Login } from '@aph/mobile-patients/src/components/Login';
-import { Medicine } from '@aph/mobile-patients/src/components/Medicine';
-import { MedicineDetailsScene } from '@aph/mobile-patients/src/components/MedicineDetailsScene';
+import { Medicine } from '@aph/mobile-patients/src/components/Medicines/Medicine';
+import { MedicineDetailsScene } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
 import { MyAccount } from '@aph/mobile-patients/src/components/MyAccount';
 import { Onboarding } from '@aph/mobile-patients/src/components/Onboarding';
 import { OTPVerification } from '@aph/mobile-patients/src/components/OTPVerification';
-import { SearchMedicineScene } from '@aph/mobile-patients/src/components/SearchMedicineScene';
+import { SearchMedicineScene } from '@aph/mobile-patients/src/components/Medicines/SearchMedicineScene';
 import { SignUp } from '@aph/mobile-patients/src/components/SignUp';
 import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
-import { StorePickupScene } from '@aph/mobile-patients/src/components/StorePickupScene';
+import { StorePickupScene } from '@aph/mobile-patients/src/components/Medicines/StorePickupScene';
 import { TabBar } from '@aph/mobile-patients/src/components/TabBar';
 import { ChatRoom } from '@aph/mobile-patients/src/components/ChatRoom';
 
@@ -29,8 +29,10 @@ import {
 } from 'react-navigation';
 import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';
 import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
-import { SelectPrescription } from '@aph/mobile-patients/src/components/SelectPrescription';
-import { UploadPrescription } from '@aph/mobile-patients/src/components/UploadPrescription';
+import { SelectPrescription } from '@aph/mobile-patients/src/components/Medicines/SelectPrescription';
+import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicines/UploadPrescription';
+import { YourCart } from '@aph/mobile-patients/src/components/Medicines/YourCart';
+import { AddAddress } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -60,6 +62,8 @@ export enum AppRoutes {
   OrderDetailsScene = 'OrderDetailsScene',
   SelectPrescription = 'SelectPrescription',
   UploadPrescription = 'UploadPrescription',
+  YourCart = 'YourCart',
+  AddAddress = 'AddAddress',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -161,6 +165,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.UploadPrescription]: {
     screen: UploadPrescription,
+  },
+  [AppRoutes.YourCart]: {
+    screen: YourCart,
+  },
+  [AppRoutes.AddAddress]: {
+    screen: AddAddress,
   },
 };
 

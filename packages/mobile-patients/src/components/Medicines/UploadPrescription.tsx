@@ -1,9 +1,17 @@
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import {
+  CrossYellow,
+  PrescriptionIcon,
+  PrescriptionThumbnail,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import {
-  Dimensions,
-  Image,
   ImageSourcePropType,
   SafeAreaView,
   StyleSheet,
@@ -11,20 +19,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import {
-  CrossPopup,
-  CrossYellow,
-  PrescriptionThumbnail,
-  PrescriptionIcon,
-  Check,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { fonts } from '@aph/mobile-patients/src/theme/fonts';
-import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/UploadPrescriprionPopup';
 import { Image as PickerImage } from 'react-native-image-crop-picker';
+import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -102,7 +98,9 @@ const Prescriptions: prescriptions[] = [
 export interface UploadPrescriptionProps extends NavigationScreenProps {}
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const [Images, setImages] = useState<[]>(props.navigation.state.params!.images);
+  const [Images, setImages] = useState<[]>(
+    props.navigation.state.params ? props.navigation.state.params!.images : []
+  );
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
 
   const renderLabel = (label: string) => {
@@ -296,7 +294,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     );
   };
 
-  console.log('UploadPrescription', props.navigation.state.params!.images);
   return (
     <View
       style={{

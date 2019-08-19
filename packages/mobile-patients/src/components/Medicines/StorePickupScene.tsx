@@ -5,7 +5,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { RadioSelectionItem } from '@aph/mobile-patients/src/components/ui/RadioSelectionItem';
+import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {

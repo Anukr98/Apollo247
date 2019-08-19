@@ -405,6 +405,8 @@ export const AddAttachmentIcon: React.FC<IconProps> = (props) => (
 
 export const ChatWithNotification: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ChatWithNotification.png')} />
+);
+
 export const NotificationIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_notification.png')} />
 );
@@ -481,4 +483,8 @@ export const OrderDelayedIcon: React.FC<IconProps> = (props) => (
 
 export const OrderTrackerSmallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ic_tracker_small.png')} />
+);
+
+export const CouponIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_coupon.png')} />
 );

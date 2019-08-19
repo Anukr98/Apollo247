@@ -310,6 +310,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
           doctorType
           doctorHospital {
             facility {
+              id
               name
               streetLine1
               streetLine2

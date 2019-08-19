@@ -24,7 +24,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { AppRoutes } from './NavigatorContainer';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {

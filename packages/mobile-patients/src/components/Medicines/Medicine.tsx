@@ -22,7 +22,7 @@ import {
   CartIcon,
   NotificationIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/UploadPrescriprionPopup';
+import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const { width } = Dimensions.get('window');
@@ -308,6 +308,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setShowPopop(false);
             props.navigation.navigate(AppRoutes.UploadPrescription, { images });
           }}
+          navigation={props.navigation}
         />
       )}
     </View>

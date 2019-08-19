@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface UploadPrescriprionPopupProps {
+export interface UploadPrescriprionPopupProps extends NavigationScreenProps {
   onClickClose: () => void;
   getData: (arg0: PickerImage | PickerImage[]) => void;
 }
@@ -231,12 +231,16 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
                 <GalleryIcon />
                 <Text style={styles.yelloTextStyle}>{`CHOOSE\nFROM GALLERY`}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.cardContainer} onPress={() => {}}>
+              <TouchableOpacity
+                style={styles.cardContainer}
+                onPress={() => {
+                  props.navigation.navigate(AppRoutes.UploadPrescription);
+                }}
+              >
                 <PrescriptionIcon />
                 <Text style={styles.yelloTextStyle}>{`SELECT FROM\nE-PRESCRIPTION`}</Text>
               </TouchableOpacity>
             </View>
-
             <View
               style={{
                 marginHorizontal: 16,
