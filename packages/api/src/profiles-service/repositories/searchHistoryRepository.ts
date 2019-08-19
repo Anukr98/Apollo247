@@ -36,6 +36,11 @@ export class SearchHistoryRepository extends Repository<SearchHistory> {
       .where('searchHistory.patient = :patientId', { patientId })
       .orderBy('searchHistory.updatedDate', 'DESC')
       .limit(10)
-      .getMany();
+      .getMany()
+      .catch((getSearchError) => {
+        throw new AphError(AphErrorMessages.GET_PAST_SEARCHES_ERROR, undefined, {
+          getSearchError,
+        });
+      });
   }
 }

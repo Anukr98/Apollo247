@@ -58,13 +58,13 @@ const saveSearch: Resolver<
   if (saveSearchAttrs.type == 'DOCTOR') {
     const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
     const doctorData = await doctorRepo.findById(saveSearchAttrs.typeId);
-    if (!doctorData) {
+    if (doctorData == null) {
       throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
     }
   } else {
     const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
     const specialtyData = await specialtiesRepo.findById(saveSearchAttrs.typeId);
-    if (!specialtyData) {
+    if (specialtyData == null) {
       throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
     }
   }
