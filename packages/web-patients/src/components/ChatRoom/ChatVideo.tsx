@@ -180,6 +180,13 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
           props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''
         }`}
       >
+        {/* {!props.showVideoChat && (
+          <span>
+            {`Time start ${timerMinuts.toString().length < 2 ? '0' + timerMinuts : timerMinuts} : 
+             ${timerSeconds.toString().length < 2 ? '0' + timerSeconds : timerSeconds}`}
+          </span>
+        )} */}
+
         {isCall && (
           <OTSession
             apiKey={openTokApiKey}
@@ -292,12 +299,6 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                           <img src={require('images/ic_videooff.svg')} alt="video off" />
                         </Button>
                       )}
-                      {/* <span>
-                        {`Time start ${
-                          timerMinuts.toString().length < 2 ? '0' + timerMinuts : timerMinuts
-                        } : 
-             ${timerSeconds.toString().length < 2 ? '0' + timerSeconds : timerSeconds}`}
-                      </span> */}
                     </Grid>
 
                     <Grid item xs={4} className={classes.rightActions}>

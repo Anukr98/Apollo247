@@ -16,10 +16,10 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
 import LinearProgress from '@material-ui/core/LinearProgress';
 // import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
-import { getTime } from 'date-fns/esm';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
 import { useAuth } from 'hooks/authHooks';
+import { getIstTimestamp } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -136,21 +136,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
-const getTimestamp = (today: Date, slotTime: string) => {
-  const hhmm = slotTime.split(':');
-  return getTime(
-    new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-      parseInt(hhmm[0], 10),
-      parseInt(hhmm[1], 10),
-      0,
-      0
-    )
-  );
-};
-
 export const ConsultRoom: React.FC = (props) => {
   const classes = useStyles();
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
@@ -184,7 +169,7 @@ export const ConsultRoom: React.FC = (props) => {
   const filterAppointments = appointments.filter((appointmentDetails) => {
     const currentTime = new Date().getTime();
     const aptArray = appointmentDetails.appointmentDateTime.split('T');
-    const appointmentTime = getTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
+    const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
     if (
       // appointmentTime > currentTime &&
       // appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
