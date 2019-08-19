@@ -79,6 +79,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const Checkout: React.FC = (props) => {
   const classes = useStyles();
+
   return (
     <div className={classes.root}>
       <div className={classes.sectionHeader}>How would you prefer to pay?</div>
