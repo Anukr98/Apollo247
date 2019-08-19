@@ -170,6 +170,7 @@ export const AuthProvider: React.FC = (props) => {
 
   const verifyOtp = async (otp: string) => {
     setVerifyOtpError(false);
+
     if (!otpVerifier) {
       setSendOtpError(true);
       return;
