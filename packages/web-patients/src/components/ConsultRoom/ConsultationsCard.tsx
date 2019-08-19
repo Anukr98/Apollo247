@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { clientRoutes } from 'helpers/clientRoutes';
 import isTomorrow from 'date-fns/isTomorrow';
 import { getIstTimestamp } from 'helpers/dateHelpers';
+import { STATUS } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 
@@ -162,11 +163,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     const currentTime = new Date().getTime();
     const aptArray = appointmentDetails.appointmentDateTime.split('T');
     const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
+    const appointmentStatus = appointmentDetails.status;
     if (
       // appointmentTime > currentTime &&
       // appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
       // the above condition is commented as per demo feedback on 13/08/2019
-      appointmentTime > currentTime
+      appointmentTime > currentTime &&
+      appointmentStatus === STATUS.IN_PROGRESS
     ) {
       return appointmentDetails;
     }
