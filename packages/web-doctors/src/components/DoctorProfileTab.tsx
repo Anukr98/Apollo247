@@ -284,7 +284,7 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       paddingRight: '20px',
-      width: '51%',
+      width: '78%',
     },
     profileAvatar: {
       width: 80,
