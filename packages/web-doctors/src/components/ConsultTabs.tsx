@@ -154,6 +154,7 @@ export const ConsultTabs: React.FC = (props) => {
             setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
             appointmentId={appointmentId}
             appointmentDateTime={appointmentDateTime}
+            doctorId={doctorId}
           />
           <div>
             <div>

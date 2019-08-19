@@ -182,6 +182,7 @@ interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
   appointmentId: string;
   appointmentDateTime: string;
+  doctorId: string;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -223,6 +224,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     intervalId && clearInterval(intervalId);
   };
   function handleClick(event: any) {
+    console.log(startAppointment, '11111111111');
     if (startAppointment) {
       setAnchorEl(event.currentTarget);
     }
@@ -248,23 +250,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     });
     pubnub.addListener({
       status: (statusEvent) => {},
-      message: (message) => {
-        if (message.message.isTyping) {
-          if (message.message.message === '^^#callAccepted') {
-            console.log(1);
-          }
-
-          // if (message.message.message === audioCallMsg) {
-          //   console.log(1);
-          // } else if (message.message.message === videoCallMsg) {
-          //   console.log(2);
-          // } else if (message.message.message === startConsult) {
-          //   console.log(3);
-          // } else if (message.message.message === stopConsult) {
-          //   console.log(4);
-          // }
-        }
-      },
+      message: (message) => {},
       // presence: (presenceEvent) => {
       //   console.log('presenceEvent', presenceEvent);
       // },
@@ -273,13 +259,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       pubnub.unsubscribe({ channels: [channel] });
     };
   });
+
   const onStartConsult = () => {
+    const text = {
+      id: props.doctorId,
+      message: startConsult,
+      isTyping: true,
+    };
     pubnub.publish(
       {
-        message: {
-          isTyping: true,
-          message: startConsult,
-        },
+        message: text,
         channel: channel,
         storeInHistory: false,
       },
@@ -290,12 +279,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     );
   };
   const onStopConsult = () => {
+    const text = {
+      id: props.doctorId,
+      message: stopConsult,
+      isTyping: true,
+    };
     pubnub.publish(
       {
-        message: {
-          isTyping: true,
-          message: stopConsult,
-        },
+        message: text,
         channel: channel,
         storeInHistory: false,
       },
@@ -340,18 +331,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         <span>
           {startAppointment ? (
             <span>
-              <Button
-                className={classes.backButton}
-                onClick={() => {
-                  !startAppointment ? onStartConsult() : onStopConsult();
-                  //setStartAppointment(!startAppointment);
-                }}
-              >
-                Save
-              </Button>
+              <Button className={classes.backButton}>Save</Button>
               <Button
                 className={classes.endconsultButton}
                 onClick={() => {
+                  onStopConsult();
                   setStartAppointment(!startAppointment);
                   stopInterval();
                 }}
@@ -373,6 +357,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             <Button
               className={classes.consultButton}
               onClick={() => {
+                !startAppointment ? onStartConsult() : onStopConsult();
                 !startAppointment ? startInterval(900) : stopInterval();
                 setStartAppointment(!startAppointment);
               }}
