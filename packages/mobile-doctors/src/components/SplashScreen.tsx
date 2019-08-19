@@ -27,7 +27,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const handleOpenURL = (url: string) => {
     console.log(url);
-    Alert.alert('Linking Worked');
+    // Alert.alert('Linking Worked');
     const { navigate } = props.navigation;
     const route = url.replace(/.*?:\/\//g, '');
     const id = route && route.match(/\/([^\/]+)\/?$/) && route.match(/\/([^\/]+)\/?$/)![1];
@@ -44,33 +44,33 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
 
   const getRegistrationToken = async () => {
-    const fcmToken = await firebase.messaging().getToken();
-    if (fcmToken) {
-      // user has a device token
-      console.log('%cfcmToken', fcmToken, 'color:red');
-    } else {
-      // user doesn't have a device token yet
-      console.log('%cuser doesnt have a device token yet', 'color:red');
-    }
+    // const fcmToken = await firebase.messaging().getToken();
+    // if (fcmToken) {
+    //   // user has a device token
+    //   console.log('%cfcmToken', fcmToken, 'color:red');
+    // } else {
+    //   // user doesn't have a device token yet
+    //   console.log('%cuser doesnt have a device token yet', 'color:red');
+    // }
   };
 
   const checkNotificationPermission = async () => {
-    const enabled = await firebase.messaging().hasPermission();
-    if (enabled) {
-      // user has permissions
-      console.log('%cuser has permissions', 'color:green');
-    } else {
-      // user doesn't have permission
-      console.log('%cuser doesnt have permission', 'color:blue');
-      try {
-        await firebase.messaging().requestPermission();
-        // User has authorised
-        console.log('%cUser has authorised', 'color:green');
-      } catch (error) {
-        // User has rejected permissions
-        console.log('%cUser has rejected permissions', 'color:red');
-      }
-    }
+    // const enabled = await firebase.messaging().hasPermission();
+    // if (enabled) {
+    //   // user has permissions
+    //   console.log('%cuser has permissions', 'color:green');
+    // } else {
+    //   // user doesn't have permission
+    //   console.log('%cuser doesnt have permission', 'color:blue');
+    //   try {
+    //     await firebase.messaging().requestPermission();
+    //     // User has authorised
+    //     console.log('%cUser has authorised', 'color:green');
+    //   } catch (error) {
+    //     // User has rejected permissions
+    //     console.log('%cUser has rejected permissions', 'color:red');
+    //   }
+    // }
   };
 
   useEffect(() => {
@@ -79,13 +79,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     getRegistrationToken();
-    const onTokenRefreshListener = firebase.messaging().onTokenRefresh((fcmToken) => {
-      // Process your token as required
-      console.log('%cfcmToken', fcmToken, 'color:red');
-    });
-    return () => {
-      onTokenRefreshListener();
-    };
+    // const onTokenRefreshListener = firebase.messaging().onTokenRefresh((fcmToken) => {
+    //   // Process your token as required
+    //   console.log('%cfcmToken', fcmToken, 'color:red');
+    // });
+    // return () => {
+    //   onTokenRefreshListener();
+    // };
   }, []);
 
   useEffect(() => {
