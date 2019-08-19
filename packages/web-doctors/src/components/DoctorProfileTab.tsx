@@ -279,7 +279,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightMedium,
       color: '#658f9b',
       display: 'block',
-      maxWidth: 400,
+      maxWidth: 270,
       whiteSpace: 'nowrap',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
