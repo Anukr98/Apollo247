@@ -412,7 +412,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           !showVideo ? classes.chatWindowContainer : classes.audioVideoContainer
         }`}
       >
-        {showVideo && (
+        {showVideo && props.sessionId !== '' && props.token !== '' && (
           <ChatVideo
             stopAudioVideoCall={() => stopAudioVideoCall()}
             toggelChatVideo={() => toggelChatVideo()}
