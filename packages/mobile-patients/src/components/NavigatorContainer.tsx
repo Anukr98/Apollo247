@@ -31,8 +31,8 @@ import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersS
 import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
 import { YourCart } from '@aph/mobile-patients/src/components/Medicines/YourCart';
 import { AddAddress } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
-import { SelectPrescription } from '@aph/mobile-patients/src/components/SelectPrescription';
-import { UploadPrescription } from '@aph/mobile-patients/src/components/UploadPrescription';
+import { SelectPrescription } from '@aph/mobile-patients/src/components/Medicines/SelectPrescription';
+import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicines/UploadPrescription';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',

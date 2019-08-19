@@ -183,7 +183,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const rowData = props.rowData;
   if (rowData) {
-    const availabilityInHrs: number = availableInMin ? Math.round(availableInMin / 60) : 0;
     return (
       <TouchableOpacity
         activeOpacity={1}

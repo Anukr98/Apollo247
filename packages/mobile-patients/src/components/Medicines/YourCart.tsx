@@ -7,7 +7,6 @@ import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsCompon
 import {
   getProductsBasedOnCategory,
   MedicineProductsResponse,
-  quoteId,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -62,24 +61,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const [medicineList, setMedicineList] = useState<MedicineProductsResponse['products']>([]);
   const { currentPatient } = useAllCurrentPatients();
-
-  useEffect(() => {
-    Axios.get(
-      `http://api.apollopharmacy.in/apollo_api.php?type=guest_quote_info&quote_id=${quoteId}`,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
-        },
-      }
-    )
-      .then((res) => {
-        console.log(res, 'YourCartProps dt');
-      })
-      .catch((err) => {
-        console.log(err, 'YourCartProps err');
-      });
-  }, []);
 
   const renderHeader = () => {
     return (
