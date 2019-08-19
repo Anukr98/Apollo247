@@ -205,14 +205,12 @@ export const ChatRoom: React.FC = (props) => {
               {data && <ConsultDoctorProfile doctorDetails={data} appointmentId={appointmentId} />}
             </div>
             <div className={classes.rightSection}>
-              {data && (
-                <ChatWindow
-                  sessionId={sessionId}
-                  token={token}
-                  appointmentId={appointmentId}
-                  doctorId={doctorId}
-                />
-              )}
+              <ChatWindow
+                sessionId={sessionId}
+                token={token}
+                appointmentId={appointmentId}
+                doctorId={doctorId}
+              />
             </div>
           </div>
         </div>
