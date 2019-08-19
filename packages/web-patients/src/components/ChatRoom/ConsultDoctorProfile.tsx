@@ -21,6 +21,7 @@ import isTomorrow from 'date-fns/isTomorrow';
 import { getIstTimestamp } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -284,7 +285,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     return <LinearProgress />;
   }
   if (error) {
-    return <></>;
+    return <div>Unable to load appointment information.</div>;
   }
 
   const appointmentDetails = [];
@@ -296,10 +297,21 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   if (data && data.getPatinetAppointments && data.getPatinetAppointments.patinetAppointments) {
     const previousAppointments = data.getPatinetAppointments.patinetAppointments;
     const findAppointment = _findIndex(previousAppointments, { id: appointmentId });
-    if (findAppointment > 0) {
+    if (findAppointment >= 0) {
       appointmentDetails.push(previousAppointments[findAppointment]);
     }
   }
+
+  // redirect the user to consult room if any mismatch in appointment id.
+  if (appointmentDetails.length === 0) {
+    window.location.href = clientRoutes.consultRoom();
+  }
+
+  // console.log(
+  //   '--------------->>>>>>>>>>>>>>>',
+  //   appointmentDetails,
+  //   data && data.getPatinetAppointments.patinetAppointments
+  // );
 
   // console.log(doctorDetails, '................');
 
@@ -344,11 +356,12 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       ? doctorDetails.getDoctorDetailsById.physicalConsultationFees
       : '';
   const currentTime = new Date().getTime();
-  const aptArray = appointmentDetails[0].appointmentDateTime.split('T');
+  const aptArray =
+    appointmentDetails[0] && appointmentDetails[0].appointmentDateTime
+      ? appointmentDetails[0].appointmentDateTime.split('T')
+      : ['', ''];
   const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
   const difference = Math.round((appointmentTime - currentTime) / 60000);
-
-  // console.log('--------------->>>>>>>>>>>>>>>', appointmentDetails);
 
   if (
     doctorDetails &&
