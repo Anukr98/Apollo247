@@ -1,7 +1,16 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, FormControlLabel } from '@material-ui/core';
 import React from 'react';
-import { AphRadio, AphButton, AphTextField } from '@aph/web-ui-components';
+import {
+  AphDialog,
+  AphRadio,
+  AphButton,
+  AphTextField,
+  AphDialogTitle,
+} from '@aph/web-ui-components';
+import Scrollbars from 'react-custom-scrollbars';
+import { AddNewAddress } from 'components/Locations/AddNewAddress';
+import { ViewAllStoreAddress } from 'components/Locations/ViewAllStoreAddress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -46,11 +55,49 @@ const useStyles = makeStyles((theme: Theme) => {
     searchAddress: {
       paddingBottom: 20,
     },
+    dialogContent: {
+      paddingTop: 10,
+    },
+    backArrow: {
+      cursor: 'pointer',
+      position: 'absolute',
+      left: 0,
+      top: -2,
+      '& img': {
+        verticalAlign: 'middle',
+      },
+    },
+    dialogActions: {
+      padding: 20,
+      paddingTop: 10,
+      boxShadow: '0 -5px 20px 0 #ffffff',
+      position: 'relative',
+      '& button': {
+        borderRadius: 10,
+      },
+    },
+    customScrollBar: {
+      paddingRight: 20,
+      paddingLeft: 20,
+    },
+    shadowHide: {
+      overflow: 'hidden',
+    },
+    noAddress: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#0087ba',
+      paddingBottom: 10,
+    },
   };
 });
 
 export const StorePickUp: React.FC = (props) => {
   const classes = useStyles();
+  const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
+  const [isViewAllAddressDialogOpen, setIsViewAllAddressDialogOpen] = React.useState<boolean>(
+    false
+  );
 
   return (
     <div className={classes.root}>
@@ -78,10 +125,63 @@ export const StorePickUp: React.FC = (props) => {
           />
         </li>
       </ul>
-      <div className={classes.bottomActions}>
-        <AphButton>Add new address</AphButton>
-        <AphButton className={classes.viewAllBtn}>View All</AphButton>
+      <div className={classes.noAddress}>
+        Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from
+        a nearby store, or change the pincode.
       </div>
+      <div className={classes.bottomActions}>
+        <AphButton onClick={() => setIsAddAddressDialogOpen(true)}>Add new address</AphButton>
+        <AphButton
+          onClick={() => setIsViewAllAddressDialogOpen(true)}
+          className={classes.viewAllBtn}
+        >
+          View All
+        </AphButton>
+      </div>
+      <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
+        <AphDialogTitle>
+          <div className={classes.backArrow}>
+            <img src={require('images/ic_back.svg')} alt="" />
+          </div>
+          Add New Address
+        </AphDialogTitle>
+        <div className={classes.shadowHide}>
+          <div className={classes.dialogContent}>
+            <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
+              <div className={classes.customScrollBar}>
+                <AddNewAddress />
+              </div>
+            </Scrollbars>
+          </div>
+          <div className={classes.dialogActions}>
+            <AphButton color="primary" fullWidth>
+              Save & Use
+            </AphButton>
+          </div>
+        </div>
+      </AphDialog>
+      <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
+        <AphDialogTitle>
+          <div className={classes.backArrow}>
+            <img src={require('images/ic_back.svg')} alt="" />
+          </div>
+          Store Pick Up
+        </AphDialogTitle>
+        <div className={classes.shadowHide}>
+          <div className={classes.dialogContent}>
+            <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
+              <div className={classes.customScrollBar}>
+                <ViewAllStoreAddress />
+              </div>
+            </Scrollbars>
+          </div>
+          <div className={classes.dialogActions}>
+            <AphButton color="primary" fullWidth>
+              Done
+            </AphButton>
+          </div>
+        </div>
+      </AphDialog>
     </div>
   );
 };
