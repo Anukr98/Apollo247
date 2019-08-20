@@ -7,6 +7,7 @@ import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsCompon
 import {
   getProductsBasedOnCategory,
   MedicineProductsResponse,
+  quoteId,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';

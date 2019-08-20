@@ -6,14 +6,15 @@ import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/S
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import {
   addProductToCartApi,
+  incOrDecProductCountToCartApi,
   MedicineProduct,
+  quoteId,
   removeProductFromCartApi,
   searchMedicineApi,
-  incOrDecProductCountToCartApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { AxiosResponse } from 'axios';
+import Axios, { AxiosResponse } from 'axios';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -187,6 +188,30 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       });
   };
 
+  const addToCart = (sku: string) => {
+    const cartItem = {
+      cartItem: {
+        quote_id: quoteId,
+        sku: sku,
+        qty: 1,
+      },
+    };
+    console.log(cartItem, 'cartItem', CartId, 'CartId');
+    Axios.post(`http://api.apollopharmacy.in/rest/V1/guest-carts/${CartId}/items`, {
+      cartItem,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+      },
+    })
+      .then((res) => {
+        console.log(res, 'addToCart dt');
+      })
+      .catch((err) => {
+        console.log(err, 'addToCart err');
+      });
+  };
+
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
     return (
       <View style={[styles.labelView, containerStyle]}>
@@ -236,6 +261,30 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   const performTextInputEvent = (event: 'focus' | 'blur') => {
     searchText.length < 3 && setShowMatchingMedicines(event == 'focus' ? true : false);
+  };
+
+  const fetchSearchData = (searchText: string) => {
+    console.log('fetchSearchData');
+    Axios.post(
+      'http://uat.apollopharmacy.in/searchprd_api.php',
+      { params: searchText },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+        },
+      }
+    )
+      .then((res) => {
+        //do something
+        console.log(res, 'res');
+        if (res.data.products) setMedicineList(res.data.products);
+      })
+      .catch((err) => {
+        console.log(err, 'err');
+
+        //do something
+      });
   };
 
   const renderSearchInput = () => {
