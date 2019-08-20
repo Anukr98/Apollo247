@@ -7,6 +7,8 @@ import {
   ManyToOne,
   BeforeInsert,
   BeforeUpdate,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
@@ -37,12 +39,19 @@ export enum SEARCH_TYPE {
 //patient Starts
 @Entity()
 export class Patient extends BaseEntity {
+  @ManyToMany((type) => Allergies)
+  @JoinTable({ name: 'patient_allergies' })
+  allergy: Allergies[];
+
   @Column({ nullable: true })
   dateOfBirth: Date;
 
   @Column({ nullable: true })
   @IsOptional()
   emailAddress: string;
+
+  @OneToMany((type) => PatientFamilyHistory, (familyHistory) => familyHistory.patient)
+  familyHistory: PatientFamilyHistory[];
 
   @Column()
   firebaseUid: string;
@@ -54,15 +63,24 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   gender: Gender;
 
+  @OneToMany((type) => PatientHealthVault, (healthVault) => healthVault.patient)
+  healthVault: PatientHealthVault[];
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   lastName: string;
 
+  @OneToMany((type) => PatientLifeStyle, (lifeStyle) => lifeStyle.patient)
+  lifeStyle: PatientLifeStyle[];
+
   @Column()
   @Validate(MobileNumberValidator)
   mobileNumber: string;
+
+  @OneToMany((type) => PatientAllergies, (patientAllergies) => patientAllergies.patient)
+  patientAllergies: PatientAllergies[];
 
   @Column({ nullable: true, type: 'text' })
   photoUrl: string;
@@ -148,3 +166,159 @@ export class PatientAddress extends BaseEntity {
   }
 }
 //patientAddress Ends
+
+//patient family history starts
+@Entity()
+export class PatientFamilyHistory extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true, type: 'text' })
+  description: string;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @ManyToOne((type) => Patient, (patient) => patient.familyHistory)
+  patient: Patient;
+
+  @Column({ nullable: true })
+  relation: Relation;
+
+  @Column({ type: 'timestamp', nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//patient family history ends
+
+//patientLifeStyle starts
+@Entity()
+export class PatientLifeStyle extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true, type: 'text' })
+  description: string;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @ManyToOne((type) => Patient, (patient) => patient.lifeStyle)
+  patient: Patient;
+
+  @Column({ type: 'timestamp', nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//patientLifestyle ends
+
+//patientHealthVault starts
+@Entity()
+export class PatientHealthVault extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true, type: 'text' })
+  imageUrls: string;
+
+  @ManyToOne((type) => Patient, (patient) => patient.healthVault)
+  patient: Patient;
+
+  @Column({ nullable: true, type: 'text' })
+  reportUrls: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//patientHealthVault ends
+
+//allergies starts
+@Entity()
+export class Allergies extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  name: string;
+
+  @OneToMany((type) => PatientAllergies, (patientAllergies) => patientAllergies.allergies)
+  patientAllergies: PatientAllergies[];
+
+  @Column({ type: 'timestamp', nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//allergies ends
+
+//patientAllergies starts
+@Entity()
+export class PatientAllergies extends BaseEntity {
+  @ManyToOne((type) => Allergies, (allergies) => allergies.patientAllergies)
+  allergies: Allergies;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @ManyToOne((type) => Patient, (patient) => patient.patientAllergies)
+  patient: Patient;
+
+  @Column({ type: 'timestamp', nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//patientAllergies ends

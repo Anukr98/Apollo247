@@ -4,7 +4,16 @@ import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
 import { createConnections, getConnection } from 'typeorm';
-import { Patient, SearchHistory, PatientAddress } from 'profiles-service/entities';
+import {
+  Patient,
+  SearchHistory,
+  PatientAddress,
+  PatientFamilyHistory,
+  PatientLifeStyle,
+  PatientHealthVault,
+  Allergies,
+  PatientAllergies,
+} from 'profiles-service/entities';
 import {
   Doctor,
   DoctorSpecialty,
@@ -44,7 +53,16 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
 (async () => {
   await createConnections([
     {
-      entities: [Patient, SearchHistory, PatientAddress],
+      entities: [
+        Patient,
+        SearchHistory,
+        PatientAddress,
+        PatientFamilyHistory,
+        PatientLifeStyle,
+        PatientHealthVault,
+        Allergies,
+        PatientAllergies,
+      ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
       port: parseInt(process.env.PROFILES_DB_PORT, 10),
