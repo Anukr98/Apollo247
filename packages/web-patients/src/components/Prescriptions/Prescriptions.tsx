@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
-import { AphTextField, AphButton } from '@aph/web-ui-components';
+import { AphTextField, AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
 
@@ -178,11 +178,43 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: 10,
       },
     },
+    dialogContent: {
+      paddingTop: 10,
+    },
+    backArrow: {
+      cursor: 'pointer',
+      position: 'absolute',
+      left: 0,
+      top: -2,
+      '& img': {
+        verticalAlign: 'middle',
+      },
+    },
+    dialogActions: {
+      padding: 20,
+      paddingTop: 10,
+      boxShadow: '0 -5px 20px 0 #ffffff',
+      position: 'relative',
+      textAlign: 'center',
+      '& button': {
+        borderRadius: 10,
+        width: 288,
+      },
+    },
+    customScrollBar: {
+      padding: 20,
+      paddingTop: 14,
+    },
+    shadowHide: {
+      overflow: 'hidden',
+    },
   };
 });
 
 export const Prescriptions: React.FC = (props) => {
   const classes = useStyles();
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -279,7 +311,12 @@ export const Prescriptions: React.FC = (props) => {
             <div className={classes.ePrescriptionSec}>
               <EPrescriptionCard />
               <EPrescriptionCard />
-              <AphButton className={classes.addPrescriptionBtn}>Add More Prescriptions</AphButton>
+              <AphButton
+                onClick={() => setIsDialogOpen(true)}
+                className={classes.addPrescriptionBtn}
+              >
+                Add More Prescriptions
+              </AphButton>
             </div>
           </div>
         </Scrollbars>
@@ -287,6 +324,31 @@ export const Prescriptions: React.FC = (props) => {
           <AphButton color="primary">Submit Prescriptions</AphButton>
         </div>
       </div>
+      <AphDialog open={isDialogOpen} maxWidth="md">
+        <AphDialogTitle>
+          <div className={classes.backArrow}>
+            <img src={require('images/ic_back.svg')} alt="" />
+          </div>
+          Select From e-Prescriptions
+        </AphDialogTitle>
+        <div className={classes.shadowHide}>
+          <div className={classes.dialogContent}>
+            <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
+              <div className={classes.customScrollBar}>
+                <EPrescriptionCard />
+                <EPrescriptionCard />
+                <EPrescriptionCard />
+                <EPrescriptionCard />
+                <EPrescriptionCard />
+                <EPrescriptionCard />
+              </div>
+            </Scrollbars>
+          </div>
+          <div className={classes.dialogActions}>
+            <AphButton color="primary">Upload</AphButton>
+          </div>
+        </div>
+      </AphDialog>
     </div>
   );
 };
