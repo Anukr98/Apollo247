@@ -124,7 +124,7 @@ export const Header: React.FC = (props) => {
             <img src={require('images/ic_logo.png')} />
           </Link>
         </div>
-        {isSignedIn && <Navigation />}        
+        {isSignedIn && <Navigation />}
         <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup, isProtected }) => (
@@ -135,15 +135,17 @@ export const Header: React.FC = (props) => {
               >
                 {isSigningIn ? (
                   <CircularProgress />
-                ) : isSignedIn ? (<div>
-                  <img src={require('images/ic_inbox.svg')} />
-                  <img src={require('images/ic_notifications.svg')} />
-                  <img src={require('images/ic_help.svg')} />             
-                  <img src={require('images/ic_profile.svg')} />
-                </div>) : (
+                ) : isSignedIn ? (
+                  <div>
+                    <img src={require('images/ic_inbox.svg')} />
+                    <img src={require('images/ic_notifications.svg')} />
+                    <img src={require('images/ic_help.svg')} />
+                    <img src={require('images/ic_profile.svg')} />
+                  </div>
+                ) : (
                   <div>
                     <img className={classes.accountIc} src={require('images/ic_account.svg')} />
-                  </div> 
+                  </div>
                 )}
               </div>
             )}
