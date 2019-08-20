@@ -208,7 +208,42 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     .concat(diff2.toString().length > 1 ? diff2.toString() : val.concat(diff2.toString()));
   //logic for before start counsult timer end
 
+  // const startInterval = (timer: number) => {
+  //   intervalId = setInterval(() => {
+  //     timer = timer - 1;
+  //     stoppedTimer = timer;
+  //     setRemainingTime(timer);
+  //     if (timer == 0) {
+  //       setRemainingTime(0);
+  //       clearInterval(intervalId);
+  //     }
+  //   }, 1000);
+  // };
+
   const startInterval = (timer: number) => {
+    const current = new Date();
+    const consult = new Date(props.appointmentDateTime + ':00');
+    const year = consult.getFullYear();
+    const month = consult.getMonth() + 1;
+    const day = consult.getDate();
+    let hour = consult.getHours();
+    let minute = consult.getMinutes() + 15;
+    const second = consult.getSeconds();
+    if (minute > 59) {
+      const diff = minute - 60;
+      hour = hour + 1;
+      if (hour === 14) {
+        hour = 0;
+      }
+      minute = diff;
+    }
+    const addedMinutes = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+    const addedTime = new Date(addedMinutes);
+    if (current > consult && addedTime > current) {
+      const now = new Date();
+      const diffrent = current.getTime() - consult.getTime();
+      timer = 900 - Math.floor(diffrent / 1000);
+    }
     intervalId = setInterval(() => {
       timer = timer - 1;
       stoppedTimer = timer;
@@ -219,6 +254,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     }, 1000);
   };
+
   const stopInterval = () => {
     setRemainingTime(900);
     intervalId && clearInterval(intervalId);
@@ -269,7 +305,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       {
         message: text,
         channel: channel,
-        storeInHistory: false,
+        storeInHistory: true,
       },
       (status, response) => {}
     );
@@ -284,7 +320,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       {
         message: text,
         channel: channel,
-        storeInHistory: false,
+        storeInHistory: true,
       },
       (status, response) => {}
     );
@@ -294,9 +330,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const now = new Date();
     const diff = moment.duration(
       moment(props.appointmentDateTime + ':00').diff(
-        moment(moment(now).format('YYYY-MM-DD hh:mm:ss'))
+        moment(moment(now).format('YYYY-MM-DD HH:mm:ss'))
       )
     );
+    console.log(diff);
     const diffInHours = diff.asHours();
     if (diffInHours > 0 && diffInHours < 12)
       if (diff.hours() <= 0) {

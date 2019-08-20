@@ -155,6 +155,45 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
+    missCall: {
+      color: '#890000',
+      backgroundColor: 'rgba(229, 0, 0, 0.1)',
+      borderRadius: 10,
+      padding: '5px 20px',
+      fontSize: 12,
+      fontWeight: 500,
+      lineHeight: '24px',
+    },
+    callMsg: {
+      fontSize: 14,
+      color: '#02475b',
+      fontWeight: 500,
+      marginRight: 32,
+      lineHeight: 'normal',
+      '& img': {
+        position: 'relative',
+        top: 5,
+        marginRight: 7,
+        width: 'auto',
+        left: 0,
+      },
+    },
+    durationMsg: {
+      fontSize: 10,
+      marginTop: 2,
+      display: 'block',
+    },
+    callEnded: {
+      display: 'flex',
+      '& img': {
+        position: 'inherit',
+        maxWidth: 20,
+      },
+    },
+    durattiocallMsg:{
+      marginLeft: 40,
+      marginTop: 7,
+    }
   };
 });
 
@@ -263,11 +302,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
-        // console.log(message, '99999999999');
-        // console.log(message.message.message.message, ' ', startConsult);
         insertText[insertText.length] = message.message;
         setMessages(insertText);
-        setMessageText('reset');
+        setMessageText(' ');
         setMessageText('');
 
         setTimeout(() => {
@@ -286,9 +323,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         ) {
           setIsNewMsg(true);
         }
-        // console.log('before start consult.....', message.message.message);
         if (message.message.message === autoMessageStrings.startConsult) {
-          // console.log('in start consult.....');
           setStartConsult(true);
           props.hasDoctorJoined(true);
         }
@@ -298,7 +333,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           (message.message.message === autoMessageStrings.videoCallMsg ||
             message.message.message === autoMessageStrings.audioCallMsg)
         ) {
-          //getHistory();
           setIsCalled(true);
           setShowVideo(false);
           setIsVideoCall(
@@ -386,10 +420,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         setMessageText('');
       }
     );
-    //setIsCalled(false);
-    //setIsVideoCall(true);
-    //setIsCalled(true);
-    //actionBtn();
   };
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     if (
@@ -405,9 +435,28 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       rightComponent = 0;
       return (
         <div className={classes.meChat}>
-          <div className={classes.chatBubble}>
+          <div className={rowData.duration ? classes.callMsg : classes.chatBubble}>
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
-            <span>{`${rowData.message} ${rowData.duration ? rowData.duration : ''}`}</span>
+            {rowData.duration === '00 : 00' ? (
+              <span className={classes.missCall}>
+                <img src={require('images/ic_missedcall.svg')} />
+                You missed a call
+              </span>
+            ) : rowData.duration ? (
+              <div className={classes.callEnded}>
+                <span>
+                  <img src={require('images/ic_round_call.svg')} />
+                </span>
+                <div>
+                  {rowData.message}
+                  <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <span>{rowData.message}</span>
+              </div>
+            )}
           </div>
         </div>
       );
@@ -424,14 +473,33 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       leftComponent = 0;
       rightComponent++;
       return (
-        <div className={classes.patientChat}>
-          <div className={classes.petient}>
-            {rightComponent == 1 && (
+        <div className={rowData.duration ? classes.durattiocallMsg : classes.patientChat}>
+          <div className={rowData.duration ? classes.callMsg : classes.petient}>
+            {rightComponent == 1 && !rowData.duration && (
               <span className={classes.boldTxt}>
                 <img src={require('images/ic_patientchat.png')} />
               </span>
             )}
-            <span>{`${rowData.message} ${rowData.duration ? rowData.duration : ''}`}</span>
+            {rowData.duration === '00 : 00' ? (
+              <span className={classes.missCall}>
+                <img src={require('images/ic_missedcall.svg')} />
+                You missed a call
+              </span>
+            ) : rowData.duration ? (
+              <div className={classes.callEnded}>
+                <span>
+                  <img src={require('images/ic_round_call.svg')} />
+                </span>
+                <div>
+                  {rowData.message}
+                  <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <span>{rowData.message}</span>
+              </div>
+            )}
           </div>
         </div>
       );
