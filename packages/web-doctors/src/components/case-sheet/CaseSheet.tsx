@@ -25,11 +25,23 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     caseSheet: {
       minHeight: 'calc(100vh - 360px)',
+      marginTop: '10px',
       display: 'flex',
+      flexFlow: 'row',
+      flexWrap: 'wrap',
+    },
+    column: {
+      display: 'flex',
+      flexDirection: 'column',
+      flex: 1,
+    },
+    right: {
+      flex: 'initial',
+      margin: '0 15px',
     },
     expandIcon: {
-      color: '#02475b'
-    }
+      color: '#02475b',
+    },
   };
 });
 
@@ -44,10 +56,10 @@ export const CaseSheet: React.FC = () => {
 
   return (
     <div className={classes.caseSheet}>
-      <section>
+      <section className={`${classes.column} ${classes.right}`}>
         <UserCard />
       </section>
-      <section>
+      <section className={classes.column}>
         {/* Symptoms Panel */}
         <ExpansionPanel
           expanded={expanded === 'symptoms'}
