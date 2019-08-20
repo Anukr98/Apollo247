@@ -1,5 +1,5 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Filter, ShoppingCart } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Filter, ShoppingCart, CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
@@ -7,6 +7,7 @@ import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextI
 import {
   getProductsBasedOnCategory,
   MedicineProductsResponse,
+  quoteId,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -25,6 +26,7 @@ import {
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
+import Axios from 'axios';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -115,16 +117,77 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const [medicineCardStatus, setMedicineCardStatus] = useState<{
     [id: string]: MedicineCardState;
   }>({});
+  const [CartId, setCartId] = useState<string>('');
 
   useEffect(() => {
-    getProductsBasedOnCategory()
-      .then(({ data: { products } }) => {
-        setMedicineList(products);
+    // getProductsBasedOnCategory()
+    //   .then(({ data: { products } }) => {
+    //     console.log(products, 'products');
+
+    //   })
+    //   .catch((e) => {
+    //     Alert.alert('Error occurred', e);
+    //   });
+    setMedicineList([
+      {
+        description:
+          'Pampers Disposable Diapers Medium 6-11kg, 10 pads: Pampers Disposable diapers provides up to 10 hours superior dryness. Lotion with Aloe to help protect skin, Absorbs up to 6 wettings, helps keep baby dry &amp; Tape Sticks many times.',
+        id: 99,
+        image: '/p/a/pam0002.jpg',
+        is_in_stock: true,
+        is_prescription_required: '0',
+        name: 'Pamper baby dry Diapers Medium 10s',
+        price: 149,
+        sku: 'PAM0002',
+        small_image: '/p/a/pam0002.jpg',
+        status: 2,
+        thumbnail: '/p/a/pam0002.jpg',
+        type_id: 'simple',
+      },
+    ]);
+
+    // api call to get cart details
+    Axios.get(
+      `http://api.apollopharmacy.in/apollo_api.php?type=guest_quote_info&quote_id=${quoteId}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+        },
+      }
+    )
+      .then((res) => {
+        console.log(res, 'YourCartProps dt');
+        if (res.data.id) setCartId(res.data.id);
       })
-      .catch((e) => {
-        Alert.alert('Error occurred', e);
+      .catch((err) => {
+        console.log(err, 'YourCartProps err');
       });
   }, []);
+
+  const addToCart = (sku: string) => {
+    const cartItem = {
+      cartItem: {
+        quote_id: quoteId,
+        sku: sku,
+        qty: 1,
+      },
+    };
+    console.log(cartItem, 'cartItem', CartId, 'CartId');
+    Axios.post(`http://api.apollopharmacy.in/rest/V1/guest-carts/${CartId}/items`, {
+      cartItem,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+      },
+    })
+      .then((res) => {
+        console.log(res, 'addToCart dt');
+      })
+      .catch((err) => {
+        console.log(err, 'addToCart err');
+      });
+  };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
     return (
@@ -145,8 +208,14 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         title={'SEARCH MEDICINE'}
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity style={{ marginRight: 24 }} onPress={() => {}}>
-              <ShoppingCart />
+            <TouchableOpacity
+              style={{ marginRight: 24 }}
+              onPress={() => {
+                console.log('YourCartProps onpress');
+                props.navigation.navigate(AppRoutes.YourCart);
+              }}
+            >
+              <CartIcon />
               {cartItems > 0 && renderBadge(cartItems, {})}
             </TouchableOpacity>
             <TouchableOpacity onPress={() => {}}>
@@ -171,6 +240,30 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     searchText.length < 3 && setShowMatchingMedicines(event == 'focus' ? true : false);
   };
 
+  const fetchSearchData = (searchText: string) => {
+    console.log('fetchSearchData');
+    Axios.post(
+      'http://uat.apollopharmacy.in/searchprd_api.php',
+      { params: searchText },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+        },
+      }
+    )
+      .then((res) => {
+        //do something
+        console.log(res, 'res');
+        if (res.data.products) setMedicineList(res.data.products);
+      })
+      .catch((err) => {
+        console.log(err, 'err');
+
+        //do something
+      });
+  };
+
   const renderSearchInput = () => {
     return (
       <View style={{ paddingHorizontal: 20, backgroundColor: theme.colors.WHITE }}>
@@ -187,6 +280,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           underlineColorAndroid="transparent"
           onChangeText={(value) => {
             setSearchText(value);
+            console.log(value, 'value');
+            fetchSearchData(value);
             // value.length > 2 ? setShowMatchingMedicines(true) : setShowMatchingMedicines(false);
           }}
           onFocus={() => performTextInputEvent('focus')}
@@ -289,6 +384,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                   ...medicineCardStatus,
                   [id]: { isAddedToCart: true, isCardExpanded: true },
                 });
+                addToCart(medicine.sku);
                 // Call Add to cart API
               }}
               onPressRemove={(id) => {

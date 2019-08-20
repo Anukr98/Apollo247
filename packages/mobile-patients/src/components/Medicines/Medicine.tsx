@@ -190,7 +190,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     <ApolloLogo />
                   </View>
                   <View style={{ flexDirection: 'row', marginTop: 16 }}>
-                    <CartIcon style={{ right: 20 }} />
+                    <TouchableOpacity onPress={() => props.navigation.navigate(AppRoutes.YourCart)}>
+                      <CartIcon style={{ right: 20 }} />
+                    </TouchableOpacity>
                     <NotificationIcon />
                   </View>
                 </View>

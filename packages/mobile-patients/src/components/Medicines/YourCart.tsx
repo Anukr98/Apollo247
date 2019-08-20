@@ -7,6 +7,7 @@ import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsCompon
 import {
   getProductsBasedOnCategory,
   MedicineProductsResponse,
+  quoteId,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -15,6 +16,7 @@ import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import Axios from 'axios';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -62,13 +64,20 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
-    getProductsBasedOnCategory()
-      .then(({ data: { products } }) => {
-        console.log(medicineList, 'medicineList');
-        setMedicineList(products.slice(0, 2));
+    Axios.get(
+      `http://api.apollopharmacy.in/apollo_api.php?type=guest_quote_info&quote_id=${quoteId}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+        },
+      }
+    )
+      .then((res) => {
+        console.log(res, 'YourCartProps dt');
       })
-      .catch((e) => {
-        console.log('Error occurred', e);
+      .catch((err) => {
+        console.log(err, 'YourCartProps err');
       });
   }, []);
 

@@ -9,9 +9,11 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, Text, View, ViewStyle, Dimensions } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { DropDown, Option } from './DropDown';
+
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -22,7 +24,6 @@ const styles = StyleSheet.create({
   },
   rowSpaceBetweenView: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
   flexStyle: {
@@ -172,12 +173,22 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   const renderTitleAndIcon = () => {
     return (
       <View style={styles.rowSpaceBetweenView}>
-        <Text numberOfLines={1} style={styles.medicineTitle}>
-          {medicineName}
-        </Text>
-        {isCardExpanded
-          ? renderTouchable(<RemoveIcon />, () => onPressRemove(id))
-          : renderTouchable(<AddIcon />, () => onPressAdd(id))}
+        {renderMedicineIcon()}
+        <View
+          style={{
+            // flex: 1,
+            width: width - 152,
+          }}
+        >
+          <Text numberOfLines={1} style={styles.medicineTitle}>
+            {medicineName}
+          </Text>
+        </View>
+        <View style={{ flex: 1, alignItems: 'flex-end' }}>
+          {isCardExpanded
+            ? renderTouchable(<RemoveIcon />, () => onPressRemove(id))
+            : renderTouchable(<AddIcon />, () => onPressAdd(id))}
+        </View>
       </View>
     );
   };
@@ -277,21 +288,21 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
       onPress={() => onPress(id, sku)}
     >
       {renderPersonSelectionView()}
-      <View style={{ flexDirection: 'row' }}>
-        {renderMedicineIcon()}
-        <View style={styles.flexStyle}>
-          {renderTitleAndIcon()}
-          {isCardExpanded ? (
-            <>
-              {(packOfCount || 10) && (
-                <Text style={styles.packOfTextStyle}>{`Pack of ${packOfCount || 10}`}</Text>
-              )}
-              <View style={[styles.separator, { marginTop: 0 }]} />
-              {renderUnitDropdownAndPrice()}
-            </>
-          ) : null}
-        </View>
-      </View>
+      {/* <View> */}
+      {/* {renderMedicineIcon()} */}
+      {/* <View style={styles.flexStyle}> */}
+      {renderTitleAndIcon()}
+      {isCardExpanded ? (
+        <>
+          {(packOfCount || 10) && (
+            <Text style={styles.packOfTextStyle}>{`Pack of ${packOfCount || 10}`}</Text>
+          )}
+          <View style={[styles.separator, { marginTop: 0 }]} />
+          {renderUnitDropdownAndPrice()}
+        </>
+      ) : null}
+      {/* </View> */}
+      {/* </View> */}
       {isCardExpanded ? (
         <>
           <View style={[styles.separator, { marginBottom: 8 }]} />
