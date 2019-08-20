@@ -1,7 +1,12 @@
+import {
+  MedicineIcon,
+  OrderDelayedIcon,
+  OrderOnHoldIcon,
+  OrderPlacedIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { MedicineIcon, OrderPlacedIcon } from './Icons';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -15,6 +20,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 4,
+  },
+  detailsViewStyle: {
+    flex: 1,
+    marginLeft: 16,
   },
   titleStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
@@ -61,60 +70,119 @@ const styles = StyleSheet.create({
     height: 28,
     width: 28,
   },
+  progressLineContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  progressLineDone: {
+    flex: 1,
+    height: 4,
+    backgroundColor: '#00b38e',
+    marginTop: 20,
+    marginBottom: 16,
+  },
   progressLineBefore: {
     flex: 1,
     height: 4,
     backgroundColor: '#0087ba',
   },
   progressLineAfter: {
-    flex: 3,
+    flex: 1,
     height: 4,
     backgroundColor: '#00b38e',
     opacity: 0.2,
   },
 });
 
+type OrderStatusType =
+  | 'Order Placed'
+  | 'Order Verified'
+  | 'On Hold'
+  | 'Order Delayed'
+  | 'Out For Delivery'
+  | 'Order Ready At Store'
+  | 'Order Delivered'
+  | 'Return Requested'
+  | 'Items Returned'
+  | 'Return Rejected'
+  | 'Return Accepted'
+  | 'Cancelation Requested'
+  | 'Order Cancelled';
+
 export interface OrderCardProps {
   orderId: string;
   title: string;
   description: string;
   dateTime: string;
-  status:
-    | 'Order Placed'
-    | 'Order Verified'
-    | 'On Hold'
-    | 'Order Delayed'
-    | 'Out For Delivery'
-    | 'Order Ready At Store'
-    | 'Order Delivered'
-    | 'Return Requested'
-    | 'Items Returned'
-    | 'Return Rejected'
-    | 'Return Accepted'
-    | 'Cancelation Requested'
-    | 'Order Cancelled';
+  status: OrderStatusType;
   onPress: (orderId: string) => void;
   style?: StyleProp<ViewStyle>;
 }
 
 export const OrderCard: React.FC<OrderCardProps> = (props) => {
+  const isOrderWithProgressIcons =
+    props.status == 'Order Placed' ||
+    props.status == 'Order Verified' ||
+    props.status == 'On Hold' ||
+    props.status == 'Order Delayed' ||
+    props.status == 'Out For Delivery' ||
+    props.status == 'Order Ready At Store';
+
+  const getProgressWidth = (
+    status: OrderCardProps['status'],
+    progresDirection: 'left' | 'right'
+  ) => {
+    if (progresDirection == 'left') {
+      if (
+        status == 'Order Placed' ||
+        status == 'Order Verified' ||
+        status == 'On Hold' ||
+        status == 'Order Delayed'
+      ) {
+        return 1;
+      }
+      return 3;
+    } else {
+      if (status == 'Order Placed') {
+        return 3;
+      }
+      return 1;
+    }
+  };
+
   const renderGraphicalStatus = () => {
-    if (
-      props.status == 'Order Placed' ||
-      props.status == 'Order Verified' ||
-      props.status == 'On Hold' ||
-      props.status == 'Order Delayed' ||
-      props.status == 'Out For Delivery' ||
-      props.status == 'Order Ready At Store' ||
-      props.status == 'Order Delivered'
-    )
+    if (props.status == 'Order Delivered') {
+      return <View style={styles.progressLineDone} />;
+    }
+    if (isOrderWithProgressIcons) {
       return (
-        <View style={{ flexDirection: 'row', flex: 1, alignItems: 'center', marginTop: 8 }}>
-          <View style={styles.progressLineBefore} />
-          <OrderPlacedIcon style={styles.statusIconStyle} />
-          <View style={styles.progressLineAfter} />
+        <View style={styles.progressLineContainer}>
+          <View
+            style={[
+              styles.progressLineBefore,
+              props.status == 'On Hold' ? {} : {},
+              { flex: getProgressWidth(props.status, 'left') },
+            ]}
+          />
+          {props.status == 'On Hold' ? (
+            <OrderOnHoldIcon style={styles.statusIconStyle} />
+          ) : props.status == 'Order Delayed' ? (
+            <OrderDelayedIcon style={styles.statusIconStyle} />
+          ) : (
+            <OrderPlacedIcon style={styles.statusIconStyle} />
+          )}
+          <View
+            style={[
+              styles.progressLineAfter,
+              props.status == 'On Hold' ? { backgroundColor: '#e50000' } : {},
+              { flex: getProgressWidth(props.status, 'right') },
+            ]}
+          />
         </View>
       );
+    }
     return <View style={styles.separator} />;
   };
 
@@ -155,7 +223,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
 
   const renderDetails = () => {
     return (
-      <View style={{ flex: 1, marginLeft: 16 }}>
+      <View style={styles.detailsViewStyle}>
         <Text style={styles.titleStyle}>{props.title || 'Medicines'}</Text>
         {renderDescriptionAndId()}
         {renderGraphicalStatus()}
@@ -166,7 +234,9 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
 
   return (
     <TouchableOpacity
-      onPress={() => props.onPress}
+      onPress={() => {
+        props.onPress(props.orderId);
+      }}
       style={[
         styles.containerStyle,
         props.style,
