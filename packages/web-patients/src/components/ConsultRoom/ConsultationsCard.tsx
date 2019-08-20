@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { clientRoutes } from 'helpers/clientRoutes';
 import isTomorrow from 'date-fns/isTomorrow';
+import isToday from 'date-fns/isToday';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 import { STATUS } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
@@ -179,7 +180,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   // console.log('filter appointments......', filterAppointments);
 
   const otherDateMarkup = (appointmentTime: number) => {
-    if (isTomorrow(new Date(appointmentTime))) {
+    if (isToday(new Date(appointmentTime))) {
+      return format(new Date(appointmentTime), 'h:mm a');
+    } else if (isTomorrow(new Date(appointmentTime))) {
       return `Tomorrow ${format(new Date(appointmentTime), 'h:mm a')}`;
     } else {
       return format(new Date(appointmentTime), 'dd MMM yyyy, h:mm a');

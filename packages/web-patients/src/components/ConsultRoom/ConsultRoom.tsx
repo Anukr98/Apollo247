@@ -20,6 +20,7 @@ import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/Ge
 import _isEmpty from 'lodash/isEmpty';
 import { useAuth } from 'hooks/authHooks';
 import { STATUS } from 'graphql/types/globalTypes';
+import isToday from 'date-fns/isToday';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -161,6 +162,8 @@ export const ConsultRoom: React.FC = (props) => {
     return <div>Unable to load Consults...</div>;
   }
 
+  let todaysConsultations = 0;
+
   const appointments =
     data && data.getPatinetAppointments && data.getPatinetAppointments.patinetAppointments
       ? data.getPatinetAppointments.patinetAppointments
@@ -179,8 +182,11 @@ export const ConsultRoom: React.FC = (props) => {
       // the above condition is commented as per demo feedback on 13/08/2019
       appointmentTime > currentTime &&
       appointmentStatus === STATUS.IN_PROGRESS
-    )
+    ) {
+      if (isToday(appointmentTime)) todaysConsultations++;
+
       return appointmentDetails;
+    }
   });
 
   return isSignedIn ? (
@@ -251,11 +257,13 @@ export const ConsultRoom: React.FC = (props) => {
                   />
                 </div>
               </>
-            ) : (
+            ) : todaysConsultations > 0 ? (
               <p>
                 You have {filterAppointments.length}
                 {filterAppointments.length > 1 ? ' consultations' : ' consultation'} today!
               </p>
+            ) : (
+              <p>You have no consultations today :)</p>
             )}
           </div>
         </div>

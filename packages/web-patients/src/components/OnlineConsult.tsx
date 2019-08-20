@@ -414,8 +414,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             setMutationLoading(false);
             setIsDialogOpen(true);
           }}
-          onError={(error) => {
-            alert(error);
+          onError={(errorResponse) => {
+            alert(errorResponse);
+            disableSubmit = false;
+            setMutationLoading(false);
           }}
         >
           {(mutate) => (
