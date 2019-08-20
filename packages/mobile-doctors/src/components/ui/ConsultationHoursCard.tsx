@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.09,
   },
   fixedSlotText: {
-    ...theme.fonts.IBMPlexSansMedium(13),
+    ...theme.fonts.IBMPlexSansMedium(12),
     lineHeight: 24,
     color: '#ff748e',
   },
@@ -58,22 +58,22 @@ const styles = StyleSheet.create({
 
 export interface ConsultationHoursCardProps {
   containerStyle?: StyleProp<ViewStyle>;
-  days: string;
-  timing: string;
+  days?: string;
+  timing?: string;
   type: 'fixed' | 'can-change';
-  isAvailableForOnlineConsultation: boolean;
-  isAvailableForPhysicalConsultation: boolean;
+  isAvailableForOnlineConsultation?: string;
+  //isAvailableForPhysicalConsultation?: string;
   onPress?: TouchableOpacityProps['onPress'];
   disabled?: boolean;
 }
 
 export const ConsultationHoursCard: React.FC<ConsultationHoursCardProps> = (props) => {
-  const consultation = [
-    props.isAvailableForOnlineConsultation ? 'Online' : '',
-    props.isAvailableForPhysicalConsultation ? 'Physical' : '',
-  ]
-    .filter((i) => i)
-    .join(',');
+  // const consultation = [
+  //   props.isAvailableForOnlineConsultation ? 'Online' : '',
+  //   props.isAvailableForPhysicalConsultation ? 'Physical' : '',
+  // ]
+  //   .filter((i) => i)
+  //   .join(',');
   return (
     <View style={[styles.containerStyle, props.containerStyle]}>
       <View style={styles.rowSpaceBetween}>
@@ -83,7 +83,7 @@ export const ConsultationHoursCard: React.FC<ConsultationHoursCardProps> = (prop
       <View style={[styles.rowSpaceBetweendays]}>
         <Text style={styles.daysText}>{props.days}</Text>
         <View style={styles.separator}></View>
-        <Text style={styles.consultationText}>{consultation}</Text>
+        <Text style={styles.consultationText}>{props.isAvailableForOnlineConsultation}</Text>
       </View>
     </View>
   );

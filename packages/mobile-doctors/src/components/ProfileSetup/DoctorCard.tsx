@@ -36,6 +36,7 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.SEARCH_DOCTOR_NAME,
+    flex: 0.9,
   },
   invitetext: {
     ...theme.fonts.IBMPlexSansMedium(15),
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
     height: 24,
     width: 24,
     marginTop: 16,
-    marginRight: 12,
+    marginRight: 20,
   },
   doctorSpecializationStyles: {
     paddingTop: 4,
@@ -61,6 +62,7 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: '#658f9b',
+    marginRight: 16,
   },
 
   educationTextStyles: {
@@ -122,7 +124,37 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
   return (
     <View style={styles.doctorView}>
       <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
-        {props.inviteStatus == INVITEDSTATUS.ACCEPTED ? (
+        <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
+          <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+            <View style={styles.imageView}>
+              <Image source={require('../../images/doctor/rahul.png')} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={styles.iconview}>
+                <Text style={styles.doctorNameStyles} numberOfLines={1}>
+                  Dr. {props.doctorName}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setisMenuHidden(!isMenuHidden)}
+                  style={{ flex: 0.2 }}
+                >
+                  <Image
+                    style={styles.imageremovestyles}
+                    source={require('../../images/icons/remove.png')}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.doctorSpecializationStyles}>
+                {props.specialization ? props.specialization + ' | ' : ''}
+                {props.experience} YRS
+              </Text>
+              <Text style={styles.educationTextStyles}>{props.education}</Text>
+              <Text style={styles.doctorLocation}>{props.location}</Text>
+            </View>
+          </View>
+        </View>
+        {/* {props.inviteStatus == INVITEDSTATUS.ACCEPTED ? (
           <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
             <View style={{ flexDirection: 'row', marginBottom: 16 }}>
               <View style={styles.imageView}>
@@ -171,12 +203,15 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
               </View>
             </View>
           </View>
-        )}
+        )} */}
       </View>
       {isMenuHidden ? (
         <View style={styles.removebuttonview}>
           <Button
-            onPress={() => props.onRemove(props.doctorId)}
+            onPress={() => {
+              setisMenuHidden(false);
+              props.onRemove(props.doctorId);
+            }}
             title="Remove"
             titleTextStyle={styles.titleTextStyle}
             style={[styles.containerStyles]}

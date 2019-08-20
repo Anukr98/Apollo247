@@ -6,7 +6,7 @@
  */
 
 #import "AppDelegate.h"
-
+#import <React/RCTLinkingManager.h>
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
@@ -16,6 +16,16 @@
 #import "RNSplashScreen.h"
 
 @implementation AppDelegate
+
+// iOS 8.x or older
+#import <React/RCTLinkingManager.h>
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url
+  sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+{
+  return [RCTLinkingManager application:application openURL:url
+                      sourceApplication:sourceApplication annotation:annotation];
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -32,7 +42,7 @@
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
 //  [RNSplashScreen show];
-  [RNSplashScreen showSplash:@"LaunchScreen" inRootView:rootView];
+ [RNSplashScreen showSplash:@"LaunchScreen" inRootView:rootView];
   [FIRApp configure];
 //  [Fabric with:@[[Crashlytics class]]];
 

@@ -10,8 +10,12 @@ target 'ApolloPatient' do
  pod 'Firebase/Core', '~> 6.2.0'
  pod 'Firebase/Analytics'
  pod 'Firebase/Auth'
+ pod 'Firebase/Messaging'
  pod 'GoogleAppMeasurement'
+ pod 'OpenTok', '~> 2.15.3'
+ 
+# pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
 
- pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
+#   pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
 
  end

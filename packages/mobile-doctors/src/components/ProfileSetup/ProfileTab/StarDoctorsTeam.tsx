@@ -1,42 +1,29 @@
 import { DoctorCard } from '@aph/mobile-doctors/src/components/ProfileSetup/DoctorCard';
-import { Add, Send } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Add, Down, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
 import {
-  ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM,
-  GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
-  REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM,
+  MAKE_TEAM_DOCTOR_ACTIVE,
+  REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
-  addDoctorToStartDoctorProgram,
-  addDoctorToStartDoctorProgramVariables,
-} from '@aph/mobile-doctors/src/graphql/types/addDoctorToStartDoctorProgram';
-import { GetDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+  GetDoctorDetails_getDoctorDetails,
+  GetDoctorDetails_getDoctorDetails_starTeam,
+} from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import {
-  GetDoctorsForStarDoctorProgram,
-  GetDoctorsForStarDoctorProgramVariables,
-  GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram,
-} from '@aph/mobile-doctors/src/graphql/types/getDoctorsForStarDoctorProgram';
-import { INVITEDSTATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+  MakeTeamDoctorActive,
+  MakeTeamDoctorActiveVariables,
+} from '@aph/mobile-doctors/src/graphql/types/MakeTeamDoctorActive';
 import {
-  removeDoctorFromStartDoctorProgram,
-  removeDoctorFromStartDoctorProgramVariables,
-} from '@aph/mobile-doctors/src/graphql/types/removeDoctorFromStartDoctorProgram';
+  RemoveTeamDoctorFromStarTeam,
+  RemoveTeamDoctorFromStarTeamVariables,
+} from '@aph/mobile-doctors/src/graphql/types/RemoveTeamDoctorFromStarTeam';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  ActivityIndicator,
-  Keyboard,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  Alert,
-  Platform,
-} from 'react-native';
+import { Platform, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
-import { getDoctorsForStarDoctorProgram as getDoctorsForStarDoctorProgramData } from '@aph/mobile-doctors/src/helpers/APIDummyData';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 
 const styles = StyleSheet.create({
   inputTextStyle: {
@@ -48,12 +35,8 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(18),
     width: '100%',
     color: theme.colors.INPUT_TEXT,
-    paddingBottom: 4,
-    marginTop: 12,
     borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
     borderBottomWidth: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   addDoctorText: {
     fontFamily: 'IBMPlexSans',
@@ -65,117 +48,115 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     marginTop: 2,
   },
+  dropDownCardStyle: {
+    marginTop: Platform.OS == 'android' ? -35 : -35,
+    marginBottom: 26,
+    paddingTop: 16,
+    paddingBottom: 15,
+    //position: Platform.OS == 'android' ? 'relative' : 'absolute',
+    top: 0,
+    zIndex: 2,
+    width: '80%',
+    alignSelf: 'center',
+    justifyContent: 'flex-end',
+    ...theme.viewStyles.whiteRoundedCornerCard,
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 16,
+  },
 });
 
 export interface StarDoctorsTeamProps {
-  profileData: GetDoctorProfile_getDoctorProfile;
+  profileData: GetDoctorDetails_getDoctorDetails;
+  scrollViewRef: KeyboardAwareScrollView | null;
+  onReload: () => void;
 }
 
-export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _profileData }) => {
-  const [addshow, setAddShow] = useState<boolean>(false);
-  const [doctorSearchText, setDoctorSearchText] = useState<string>('');
-  const [filteredStarDoctors, setFilteredStarDoctors] = useState<
-    (GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram['profile'] | null)[] | null
-  >([]);
-  const [isShowAddDoctorButton, setIsShowAddDoctorButton] = useState<boolean>(false);
+export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
+  profileData: _profileData,
+  scrollViewRef,
+  onReload,
+}) => {
+  const [selectedDoctor, setSelectedDoctor] = useState<string>('Select Doctor');
+  const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
+  const [isSelectDoctorVisible, setSelectDoctorVisible] = useState<boolean>(false);
+  // const [starDoctors, setFilteredStarDoctors] = useState<
+  //   (GetDoctorsForStarDoctorProgram_getDoctorsForStarDoctorProgram['profile'] | null)[] | null
+  // >([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [profileData, setProfileData] = useState(_profileData);
-
-  const [isSuggestionExist, setIsSuggestionExist] = useState<boolean>(false);
   const client = useApolloClient();
+  const [profileData, setProfileData] = useState(_profileData);
+  const starDoctors = _profileData.starTeam!;
+  const starDoctorsActive = _profileData.starTeam!.filter((doctor) => doctor!.isActive);
+  console.log('starDoctorsActive', starDoctorsActive);
+  const starDoctorsInActive = _profileData.starTeam!.filter((doctor) => !doctor!.isActive);
+  console.log('starDoctorsInActive2', starDoctorsInActive);
 
-  const filterDoctors = (searchText: string) => {
-    if (searchText != '' && !/^[A-Za-z .]+$/.test(searchText)) {
-      return;
-    }
-    if (isSuggestionExist) {
-      setIsSuggestionExist(false);
-      setIsShowAddDoctorButton(false);
-    }
-    setDoctorSearchText(searchText);
-    console.log(searchText);
-    if (searchText == '') {
-      setFilteredStarDoctors([]);
-      return;
-    }
-    // do api call
-    client
-      .query<GetDoctorsForStarDoctorProgram, GetDoctorsForStarDoctorProgramVariables>({
-        query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
-        variables: { searchString: searchText.replace('Dr. ', '') },
-      })
-      // getDoctorsForStarDoctorProgramData.data.getDoctorsForStarDoctorProgram!(
-      //   searchText.replace('Dr. ', '')
-      // )
-      .then((_data) => {
-        console.log('flitered array', _data);
-        const doctorProfile =
-          (_data.data.getDoctorsForStarDoctorProgram &&
-            _data.data.getDoctorsForStarDoctorProgram.map((i) => i!.profile)) ||
-          [];
-        // const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
-        setFilteredStarDoctors(doctorProfile);
-      })
-      .catch((e) => {
-        console.log('Error occured while searching for Doctors', e);
-        //Alert.alert('Error', 'Error occured while searching for Doctors');
-      });
+  const onSelectStarDoctor = (searchText: boolean) => {
+    setDropdownOpen(!isDropdownOpen);
+    scrollViewRef && scrollViewRef.scrollToEnd();
   };
 
-  const onPressDoctorSearchListItem = (text: string) => {
-    Keyboard.dismiss();
-    setIsSuggestionExist(true);
-    setDoctorSearchText(text);
-    setFilteredStarDoctors([]);
-    setIsShowAddDoctorButton(true);
+  const onPressDoctorSearchListItem = (text: string, id: string) => {
+    setDropdownOpen(false);
+    setSelectedDoctor(text);
+    addDoctorToProgram(id);
   };
 
-  const addDoctorToProgram = (name: string) => {
-    setIsShowAddDoctorButton(false);
-    setDoctorSearchText('');
-    setIsSuggestionExist(false);
+  const addDoctorToProgram = (id: string) => {
     setIsLoading(true);
     client
-      .mutate<addDoctorToStartDoctorProgram, addDoctorToStartDoctorProgramVariables>({
-        mutation: ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM,
-        variables: { starDoctorId: '1', doctorId: '2' },
+      .mutate<MakeTeamDoctorActive, MakeTeamDoctorActiveVariables>({
+        mutation: MAKE_TEAM_DOCTOR_ACTIVE,
+        variables: { associatedDoctor: id, starDoctor: profileData.id },
+        fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        setSelectedDoctor('Select Doctor');
         setIsLoading(false);
-        // Note: This is for demo/testing purpose only, do real implementation after real API
-        const array = [...profileData.starDoctorTeam!];
-        array.push({
-          ...profileData.starDoctorTeam![0]!,
-          id: Math.random().toString(36),
-          firstName: name.replace('Dr. ', ''),
-          lastName: '',
-          inviteStatus: INVITEDSTATUS.ACCEPTED,
-        });
-        setProfileData({ ...profileData, starDoctorTeam: array });
+        const result = _data.data!.makeTeamDoctorActive;
+        console.log('addDoctorToProgram', result);
+        if (result) {
+          onReload();
+        }
       })
       .catch((e) => {
+        setSelectedDoctor('Select Doctor');
         setIsLoading(false);
-        console.log('Error occured while adding Doctor', e);
-        Alert.alert('Error occured while adding Doctor');
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while adding Doctor', errorMessage, error);
+        Alert.alert('Error', errorMessage);
       });
   };
 
   const removeDoctorFromProgram = (id: string) => {
-    const array = [...profileData.starDoctorTeam!];
-    setProfileData({ ...profileData, starDoctorTeam: array.filter((i) => i!.id !== id) });
+    console.log('removeDoctorFromProgram', id, profileData.id);
 
+    setIsLoading(true);
     client
-      .mutate<removeDoctorFromStartDoctorProgram, removeDoctorFromStartDoctorProgramVariables>({
-        mutation: REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM,
-        variables: { starDoctorId: id || '1', doctorId: '2' },
+      .mutate<RemoveTeamDoctorFromStarTeam, RemoveTeamDoctorFromStarTeamVariables>({
+        mutation: REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
+        variables: { associatedDoctor: id, starDoctor: profileData.id },
+        fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        console.log(_data);
+        setIsLoading(false);
+        const result = _data!.data!.removeTeamDoctorFromStarTeam;
+        console.log('removeDoctorFromProgram', result);
+        if (result) {
+          onReload();
+        }
       })
       .catch((e) => {
-        console.log('Error occured while removing Doctor', e);
-        // Alert.alert('Error occured while removing Doctor');
+        setIsLoading(false);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while removing Doctor', errorMessage, error);
+        Alert.alert('Error', errorMessage);
       });
   };
 
@@ -196,124 +177,155 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({ profileData: _
     );
   };
 
-  const renderSuggestionCard = () => (
+  const renderDropdownCard = () => (
     <View style={{ marginTop: 2 }}>
-      {filteredStarDoctors!.length > 0 ? (
-        <View
-          style={{
-            paddingTop: 16,
-            paddingBottom: 15,
-            position: Platform.OS == 'android' ? 'relative' : 'absolute',
-            top: 0,
-            zIndex: 2,
-            width: '100%',
-            alignSelf: 'center',
-            justifyContent: 'flex-end',
-            ...theme.viewStyles.whiteRoundedCornerCard,
-          }}
-        >
-          {filteredStarDoctors!.map((item, i) => {
-            const drName = `Dr. ${item!.firstName} ${item!.lastName}`;
-            return (
-              <TouchableOpacity
-                onPress={() =>
-                  onPressDoctorSearchListItem(`Dr. ${item!.firstName} ${item!.lastName}`)
-                }
-                style={{ marginHorizontal: 16 }}
-                key={i}
-              >
-                {formatSuggestionsText(drName, doctorSearchText)}
-                {i < filteredStarDoctors!.length - 1 ? (
-                  <View
-                    style={{
-                      marginTop: 8,
-                      marginBottom: 7,
-                      height: 1,
-                      opacity: 0.1,
-                      borderStyle: 'solid',
-                      borderWidth: 0.5,
-                      borderColor: theme.colors.darkBlueColor(),
-                    }}
-                  ></View>
-                ) : null}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      ) : null}
+      <View style={styles.dropDownCardStyle}>
+        {starDoctorsInActive!.map((_doctor, i, array) => {
+          const doctor = _doctor!.associatedDoctor!;
+          const drName = `Dr. ${doctor.firstName} ${doctor.lastName}`;
+          return (
+            <TouchableOpacity
+              onPress={() =>
+                onPressDoctorSearchListItem(
+                  `Dr. ${doctor.firstName} ${doctor.lastName}`,
+                  _doctor!.associatedDoctor!.id
+                )
+              }
+              style={{ marginHorizontal: 16 }}
+              key={i}
+            >
+              {formatSuggestionsText(drName, '')}
+              {i < array!.length - 1 ? (
+                <View
+                  style={{
+                    marginTop: 8,
+                    marginBottom: 7,
+                    height: 1,
+                    opacity: 0.1,
+                  }}
+                />
+              ) : null}
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
   );
 
-  return (
-    <SquareCardWithTitle
-      title={`Your Star Doctors Team (${profileData!.starDoctorTeam!.length})`}
-      containerStyle={{ marginTop: 20 }}
-    >
-      <View style={{ height: 16 }} />
-      {profileData!.starDoctorTeam!.map((starDoctor, i) => (
+  const getFormattedLocation = (d: GetDoctorDetails_getDoctorDetails_starTeam | null) => {
+    console.log('d', d);
+    let location = '';
+    try {
+      return (location =
+        [
+          d!.associatedDoctor!.doctorHospital[0].facility.streetLine1,
+          d!.associatedDoctor!.doctorHospital[0].facility.streetLine2,
+          d!.associatedDoctor!.doctorHospital[0].facility.streetLine3,
+          d!.associatedDoctor!.doctorHospital[0].facility.city,
+          d!.associatedDoctor!.doctorHospital[0].facility.state,
+          d!.associatedDoctor!.doctorHospital[0].facility.country,
+        ]
+          .filter(Boolean) //.filter((data) => !data)
+          .join(',') || '');
+    } catch (e) {
+      console.log('e', e);
+    }
+    console.log('location', location);
+    return location;
+  };
+
+  const renderStarDoctorCards = () => {
+    return starDoctorsActive.map((starDoctor, i) => {
+      return (
         <DoctorCard
           onRemove={(id) => {
             removeDoctorFromProgram(id);
           }}
-          doctorId={starDoctor!.id}
+          doctorId={starDoctor!.associatedDoctor!.id}
           key={i}
-          image={starDoctor!.photoUrl || ''}
-          doctorName={`${starDoctor!.firstName} ${starDoctor!.lastName}`}
-          experience={starDoctor!.experience || ''}
-          // specialization={'GENERAL PHYSICIAN '} //{starDoctor.designation}
-          specialization={(starDoctor!.specialization || '').toUpperCase()}
-          education={starDoctor!.education}
-          location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
-          inviteStatus={
-            starDoctor!.inviteStatus! == 'ACCEPTED'
-              ? INVITEDSTATUS.ACCEPTED
-              : INVITEDSTATUS.NOTAPPLICABLE
-          }
+          image={starDoctor!.associatedDoctor!.photoUrl || ''}
+          doctorName={`${starDoctor!.associatedDoctor!.firstName || ''} ${starDoctor!
+            .associatedDoctor!.lastName || ''}`}
+          experience={starDoctor!.associatedDoctor!.experience || ''}
+          specialization={profileData.specialty.name.toLocaleUpperCase()} //{(starDoctor!.associatedDoctor!.qualification || '').toUpperCase()}
+          education={starDoctor!.associatedDoctor!.qualification!}
+          // location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
+          location={getFormattedLocation(starDoctor)}
         />
-      ))}
-      {isLoading && <ActivityIndicator style={{ marginBottom: 16 }} />}
-      {!addshow ? (
-        <View style={{ flexDirection: 'row', margin: 20, marginTop: 7 }}>
-          <Add />
-          <TouchableOpacity onPress={() => setAddShow(!addshow)}>
-            <Text style={styles.addDoctorText}>ADD DOCTOR</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
+      );
+    });
+  };
+
+  const renderAddDoctor = () => {
+    return (
+      <View style={{ flexDirection: 'row', margin: 20, marginTop: 7 }}>
+        <Add />
+        <TouchableOpacity onPress={() => setSelectDoctorVisible(!isSelectDoctorVisible)}>
+          <Text style={styles.addDoctorText}>ADD DOCTOR</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderSelectDoctorField = () => {
+    return (
+      <View>
         <View
           style={{
             ...theme.viewStyles.whiteRoundedCornerCard,
             margin: 20,
             marginTop: 0,
             borderRadius: 10,
+            //marginBottom: 0,
           }}
         >
           <View style={{ margin: 20 }}>
             <Text style={styles.inputTextStyle}>Add a doctor to your team</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-              <TextInput
-                maxLength={20}
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoFocus
-                style={styles.inputStyle}
-                value={doctorSearchText}
-                onChange={(text) => filterDoctors(text.nativeEvent.text.replace(/\\/g, ''))}
-              />
-              {isShowAddDoctorButton ? (
-                <TouchableOpacity
-                  style={{ marginLeft: -20 }}
-                  onPress={() => addDoctorToProgram(doctorSearchText)}
+            <TouchableOpacity onPress={() => onSelectStarDoctor(isDropdownOpen)}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text
+                  style={{
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                    color: '#02475b',
+                    opacity: 0.4,
+                    marginTop: 10,
+                    marginBottom: 9,
+                  }}
                 >
-                  <Send />
-                  <View style={{ height: 6 }} />
-                </TouchableOpacity>
-              ) : null}
-            </View>
-            {renderSuggestionCard()}
+                  {selectedDoctor}
+                </Text>
+                <View style={{ alignItems: 'flex-end', alignSelf: 'flex-end' }}>
+                  {!isDropdownOpen ? <Down /> : <Up />}
+                </View>
+              </View>
+            </TouchableOpacity>
+            <View
+              style={[
+                styles.inputStyle,
+                !isDropdownOpen ? { borderBottomColor: 'rgba(2, 71, 91, 0.6)' } : {},
+              ]}
+            />
           </View>
         </View>
-      )}
-    </SquareCardWithTitle>
+        {isDropdownOpen ? <View style={{ top: 0 }}>{renderDropdownCard()}</View> : null}
+      </View>
+    );
+  };
+  return (
+    <View>
+      {isLoading ? <Loader fullScreen /> : null}
+      <SquareCardWithTitle
+        title={`Your Star Doctors Team (${starDoctorsActive.length})`}
+        containerStyle={{ marginTop: 20 }}
+      >
+        <View style={{ height: 16 }} />
+        {renderStarDoctorCards()}
+        {starDoctorsInActive.length == 0
+          ? null
+          : !isSelectDoctorVisible
+          ? renderAddDoctor()
+          : renderSelectDoctorField()}
+      </SquareCardWithTitle>
+    </View>
   );
 };

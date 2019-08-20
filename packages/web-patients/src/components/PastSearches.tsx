@@ -121,60 +121,54 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
     return <></>;
   }
 
-  const pastSearches =
-    data && data.getPatientPastSearches ? (
-      data.getPatientPastSearches.map((searchDetails) => {
-        return searchDetails && searchDetails.searchType === SEARCH_TYPE.DOCTOR ? (
-          <Grid item xs={6} sm={6} md={4} lg={3} key={_uniqueId('psearch_doctor_')}>
-            <Link to={`/doctor-details/${searchDetails.typeId}`}>
-              <div className={classes.contentBox}>
-                <Avatar
-                  alt={(searchDetails && searchDetails.name) || ''}
-                  src={(searchDetails && searchDetails.image) || ''}
-                  className={classes.bigAvatar}
-                />
-                {searchDetails && `Dr. ${_startCase(_toLower(searchDetails.name || ''))}`}
-              </div>
-            </Link>
-          </Grid>
-        ) : (
-          <Grid
-            item
-            xs={6}
-            sm={6}
-            md={4}
-            lg={3}
-            title={(searchDetails && searchDetails.name) || ''}
-            onClick={(e) => {
-              speciality(e.currentTarget.title);
-              disableFilter(false);
-            }}
-            key={_uniqueId('psearch_spl_')}
-          >
-            <div className={classes.contentBox}>
-              <Avatar
-                alt={(searchDetails && searchDetails.name) || ''}
-                src={(searchDetails && searchDetails.image) || ''}
-                className={classes.bigAvatar}
-              />
-              {(searchDetails && searchDetails.name) || ''}
-            </div>
-          </Grid>
-        );
-      })
-    ) : (
-      <div>No searches found...</div>
-    );
-
-  return (
+  return data && data.getPatientPastSearches ? (
     <div className={classes.root}>
       <div className={classes.searchList}>
         <div className={classes.sectionHeader}>Your Past Searches</div>
-
         <Grid container spacing={2}>
-          {pastSearches}
+          {data.getPatientPastSearches.map((searchDetails) => {
+            return searchDetails && searchDetails.searchType === SEARCH_TYPE.DOCTOR ? (
+              <Grid item xs={6} sm={6} md={4} lg={3} key={_uniqueId('psearch_doctor_')}>
+                <Link to={`/doctor-details/${searchDetails.typeId}`}>
+                  <div className={classes.contentBox}>
+                    <Avatar
+                      alt={(searchDetails && searchDetails.name) || ''}
+                      src={(searchDetails && searchDetails.image) || ''}
+                      className={classes.bigAvatar}
+                    />
+                    {searchDetails && `Dr. ${_startCase(_toLower(searchDetails.name || ''))}`}
+                  </div>
+                </Link>
+              </Grid>
+            ) : (
+              <Grid
+                item
+                xs={6}
+                sm={6}
+                md={4}
+                lg={3}
+                title={(searchDetails && searchDetails.name) || ''}
+                onClick={(e) => {
+                  speciality(e.currentTarget.title);
+                  disableFilter(false);
+                }}
+                key={_uniqueId('psearch_spl_')}
+              >
+                <div className={classes.contentBox}>
+                  <Avatar
+                    alt={(searchDetails && searchDetails.name) || ''}
+                    src={(searchDetails && searchDetails.image) || ''}
+                    className={classes.bigAvatar}
+                  />
+                  {(searchDetails && searchDetails.name) || ''}
+                </div>
+              </Grid>
+            );
+          })}
         </Grid>
       </div>
     </div>
+  ) : (
+    <></>
   );
 };
