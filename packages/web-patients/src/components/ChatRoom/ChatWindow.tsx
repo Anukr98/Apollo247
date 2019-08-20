@@ -174,6 +174,8 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'relative',
         top: 5,
         marginRight: 7,
+        width: 'auto',
+        left: 0,
       },
     },
     durationMsg: {
@@ -188,6 +190,10 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 20,
       },
     },
+    durattiocallMsg:{
+      marginLeft: 40,
+      marginTop: 7,
+    }
   };
 });
 
@@ -467,9 +473,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       leftComponent = 0;
       rightComponent++;
       return (
-        <div className={classes.patientChat}>
+        <div className={rowData.duration ? classes.durattiocallMsg : classes.patientChat}>
           <div className={rowData.duration ? classes.callMsg : classes.petient}>
-            {rightComponent == 1 && (
+            {rightComponent == 1 && !rowData.duration && (
               <span className={classes.boldTxt}>
                 <img src={require('images/ic_patientchat.png')} />
               </span>
