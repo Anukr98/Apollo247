@@ -3,9 +3,10 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
-import { AphTextField } from '@aph/web-ui-components';
-import { MedicineCard } from 'components/Medicine/MedicineCard';
-import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
+import { AphTextField, AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
+import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
+import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
+import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -102,12 +103,25 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 30,
     },
     pinCode: {
-      width: 203,
+      width: 154,
+      position: 'relative',
+      '& input': {
+        textAlign: 'right',
+      },
+    },
+    pinLabel: {
+      position: 'absolute',
+      right: 0,
+      top: -8,
+      fontSize: 10,
+      fontWeight: 500,
+      color: '#02475b',
     },
     searchMedicine: {
-      width: 'calc(100% - 203px)',
+      width: 'calc(100% - 154px)',
       marginRight: 20,
       position: 'relative',
+      opacity: 0,
     },
     uploadPrescriptionBtn: {
       position: 'absolute',
@@ -138,11 +152,71 @@ const useStyles = makeStyles((theme: Theme) => {
     pastSearches: {
       paddingBottom: 10,
     },
+    ePrescriptionSec: {
+      textAlign: 'right',
+      paddingBottom: 20,
+    },
+    addPrescriptionBtn: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      marginLeft: 'auto',
+      fontWeight: 'bold',
+      color: '#fc9916',
+      marginTop: 10,
+      padding: 0,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    submitPrescriptions: {
+      boxShadow: '0 -5px 20px 0 #f7f8f5',
+      paddingTop: 10,
+      paddingLeft: 20,
+      paddingRight: 15,
+      textAlign: 'center',
+      '& button': {
+        width: 288,
+        borderRadius: 10,
+      },
+    },
+    dialogContent: {
+      paddingTop: 10,
+    },
+    backArrow: {
+      cursor: 'pointer',
+      position: 'absolute',
+      left: 0,
+      top: -2,
+      '& img': {
+        verticalAlign: 'middle',
+      },
+    },
+    dialogActions: {
+      padding: 20,
+      paddingTop: 10,
+      boxShadow: '0 -5px 20px 0 #ffffff',
+      position: 'relative',
+      textAlign: 'center',
+      '& button': {
+        borderRadius: 10,
+        width: 288,
+      },
+    },
+    customScrollBar: {
+      padding: 20,
+      paddingTop: 14,
+    },
+    shadowHide: {
+      overflow: 'hidden',
+    },
   };
 });
 
-export const SearchMedicines: React.FC = (props) => {
+export const Prescriptions: React.FC = (props) => {
   const classes = useStyles();
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
+  const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -218,26 +292,71 @@ export const SearchMedicines: React.FC = (props) => {
             </div>
           </div>
           <div className={classes.pinCode}>
+            <label className={classes.pinLabel}>Delivery Pincode</label>
             <AphTextField placeholder="Enter Pincode" />
           </div>
         </div>
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 262px)'}>
+        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 312px)'}>
           <div className={classes.medicineListGroup}>
             <div className={classes.sectionHeader}>
-              <span>Past Searches</span>
-              <span className={classes.count}>04</span>
+              <span>Physical Prescriptions</span>
+              <span className={classes.count}>02</span>
             </div>
             <div className={classes.pastSearches}>
-              <MedicineCard />
+              <PrescriptionCard />
+              <PrescriptionCard />
             </div>
             <div className={classes.sectionHeader}>
-              <span>Matching Medicines</span>
-              <span className={classes.count}>03</span>
+              <span>Prescriptions From Health Records</span>
+              <span className={classes.count}>01</span>
             </div>
-            <MedicineStripCard />
+            <div className={classes.ePrescriptionSec}>
+              <EPrescriptionCard />
+              <EPrescriptionCard />
+              <AphButton
+                onClick={() => setIsDialogOpen(true)}
+                className={classes.addPrescriptionBtn}
+              >
+                Add More Prescriptions
+              </AphButton>
+            </div>
           </div>
         </Scrollbars>
+        <div className={classes.submitPrescriptions}>
+          <AphButton onClick={() => setIsUploadPreDialogOpen(true)} color="primary">
+            Submit Prescriptions
+          </AphButton>
+        </div>
       </div>
+      <AphDialog open={isDialogOpen} maxWidth="md">
+        <AphDialogTitle>
+          <div className={classes.backArrow}>
+            <img src={require('images/ic_back.svg')} alt="" />
+          </div>
+          Select From e-Prescriptions
+        </AphDialogTitle>
+        <div className={classes.shadowHide}>
+          <div className={classes.dialogContent}>
+            <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
+              <div className={classes.customScrollBar}>
+                <EPrescriptionCard />
+                <EPrescriptionCard />
+                <EPrescriptionCard />
+                <EPrescriptionCard />
+                <EPrescriptionCard />
+                <EPrescriptionCard />
+              </div>
+            </Scrollbars>
+          </div>
+          <div className={classes.dialogActions}>
+            <AphButton color="primary">Upload</AphButton>
+          </div>
+        </div>
+      </AphDialog>
+      <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
+        <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
+        <UploadPrescription />
+      </AphDialog>
     </div>
   );
 };
