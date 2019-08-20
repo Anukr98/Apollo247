@@ -28,8 +28,15 @@ export enum SEARCH_TYPE {
 //patient Starts
 @Entity()
 export class Patient extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @Column({ nullable: true, type: 'text' })
+  allergies: string;
+
+  @Column({ nullable: true })
+  dateOfBirth: Date;
+
+  @Column({ nullable: true })
+  @IsOptional()
+  emailAddress: string;
 
   @Column()
   firebaseUid: string;
@@ -38,31 +45,27 @@ export class Patient extends BaseEntity {
   @Validate(NameValidator)
   firstName: string;
 
-  @Column()
-  //@Validate(NameValidator)
-  lastName: string;
-
   @Column({ nullable: true })
   gender: Gender;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  lastName: string;
 
   @Column()
   @Validate(MobileNumberValidator)
   mobileNumber: string;
 
+  @Column({ nullable: true, type: 'text' })
+  photoUrl: string;
+
   @Column({ nullable: true })
   uhid: string;
 
   @Column({ nullable: true })
-  @IsOptional()
-  //@Validate(EmailValidator)
-  emailAddress: string;
-
-  @Column({ nullable: true })
   relation: Relation;
-
-  @Column({ nullable: true })
-  //@IsDate()
-  dateOfBirth: Date;
 
   @OneToMany((type) => SearchHistory, (searchHistory) => searchHistory.patient)
   searchHistory: SearchHistory[];

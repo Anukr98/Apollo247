@@ -7,8 +7,6 @@ import {
   BeforeUpdate,
   OneToOne,
   JoinColumn,
-  OneToMany,
-  ManyToOne,
 } from 'typeorm';
 import { IsDate } from 'class-validator';
 
@@ -45,6 +43,7 @@ export enum REQUEST_ROLES {
   PATIENT = 'PATIENT',
 }
 
+//Appointment starts
 @Entity()
 export class Appointment extends BaseEntity {
   @Column({ type: 'timestamp' })
@@ -69,12 +68,6 @@ export class Appointment extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  /*@OneToMany(
-    (type) => MedicinePrescription,
-    (medicinePrescription) => medicinePrescription.appointment
-  )
-  medicinePrescription: MedicinePrescription[]; */
-
   @Column()
   patientId: string;
 
@@ -92,7 +85,9 @@ export class Appointment extends BaseEntity {
     this.updatedDate = new Date();
   }
 }
+//Appointment ends
 
+//AppointmentSessions starts
 @Entity()
 export class AppointmentSessions extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -127,12 +122,11 @@ export class AppointmentSessions extends BaseEntity {
     this.updatedDate = new Date();
   }
 }
+//AppointmentSessions ends
 
+//MedicinePrescription starts
 @Entity()
 export class MedicinePrescription extends BaseEntity {
-  /*@ManyToOne((type) => Appointment, (appointment) => appointment.medicinePrescription)
-  appointment: Appointment; */
-
   @Column({ nullable: true })
   consumptionDurationInDays: number;
 
@@ -173,3 +167,4 @@ export class MedicinePrescription extends BaseEntity {
     this.updatedDate = new Date();
   }
 }
+//MedicinePrescription ends
