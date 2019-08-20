@@ -4,14 +4,12 @@ import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { ChipViewCard } from '@aph/mobile-doctors/src/components/ui/ChipViewCard';
 import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
 import {
-  Down,
-  Notification,
-  PatientPlaceHolderImage,
-  Up,
-  Start,
-  Add,
-  DiagonisisRemove,
+  SampleImage,
   AddPlus,
+  DiagonisisRemove,
+  End,
+  Start,
+  PatientPlaceHolderImage,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import { string } from '@aph/mobile-doctors/src/strings/string';
@@ -32,6 +30,8 @@ import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/Selectab
 import { Switch } from 'react-native-switch';
 import { MedicalCard } from '@aph/mobile-doctors/src/components/ConsultRoom/MedicalCard';
 import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
+import { HealthCard } from '@aph/mobile-doctors/src/components/ConsultRoom/HealthCard';
 
 const styles = StyleSheet.create({
   casesheetView: {
@@ -482,37 +482,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     },
   ];
 
-  const favdiagnosis = [
-    {
-      id: '1',
-      firstName: 'Diagnostic XYZ',
-    },
-    {
-      id: '2',
-      firstName: 'Diagnostic TUV',
-    },
-  ];
-
   const instructions = [
     {
       id: '1',
       firstName: 'Drink plenty of water',
     },
   ];
-  const instructionsfav = [
-    {
-      id: '1',
-      firstName: 'Use sunscreen every day',
-    },
-    {
-      id: '2',
-      firstName: 'Avoid outside food for a few days',
-    },
-    {
-      id: '3',
-      firstName: 'Avoid stepping out with wet hair',
-    },
-  ];
+
   const medicineList = [
     {
       id: '1',
@@ -525,6 +501,18 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       firstName: 'Dextromethorphan (generic)',
       secondName: '4 times a day (morning, afternoon, evening, night) for 5 days after food',
       isActive: false,
+    },
+  ];
+  const patientlist = [
+    {
+      id: '1',
+      firstName: 'image001.jpg ',
+      secondName: '5 MB  |  5 Aug 2019, 11.05 AM ',
+    },
+    {
+      id: '2',
+      firstName: 'image003.jpg ',
+      secondName: '5 MB  |  5 Aug 2019, 11.05 AM ',
     },
   ];
 
@@ -559,7 +547,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             />
             <Button
               title="END CONSULT"
-              buttonIcon={<Notification />}
+              buttonIcon={<End />}
               onPress={() => {
                 setShowButtons(false);
                 props.onStopConsult();
@@ -692,16 +680,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             </View>
           );
         })}
-        <Text style={[styles.familyText, { marginBottom: 12 }]}>Favorite Diagnostics</Text>
 
-        {favdiagnosis.map((showdata, i) => {
-          console.log('showsara', showdata);
-          return (
-            <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
-              <DiagnosicsCard diseaseName={showdata.firstName} icon={<DiagonisisRemove />} />
-            </View>
-          );
-        })}
         <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
           <AddPlus />
           <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddDiagnostics)}>
@@ -926,15 +905,18 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             }}
           >
             {appointments.map((showdata, i) => {
-              console.log('showsara', showdata);
+              console.log('DiagnosisCard', showdata);
               return (
-                <ChipViewCard
-                  onChange={() => {}}
-                  isChecked={true}
-                  title={showdata.firstName}
-                  icon={<DiagonisisRemove />}
-                  textSelectedStyle={{ marginTop: 3, marginBottom: 2, marginLeft: 3 }}
-                />
+                // <ChipViewCard
+                //   onChange={() => {}}
+                //   isChecked={true}
+                //   title={showdata.firstName}
+                //   icon={<DiagonisisRemove />}
+                //   textSelectedStyle={{ marginTop: 3, marginBottom: 2, marginLeft: 3 }}
+                // />
+                <View>
+                  <DiagnosisCard diseaseName={showdata.firstName} icon={<DiagonisisRemove />} />
+                </View>
               );
             })}
           </View>
@@ -965,16 +947,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               </View>
             );
           })}
-          <Text style={[styles.familyText, { marginBottom: 12 }]}>Favorite Diagnostics</Text>
 
-          {instructionsfav.map((showdata, i) => {
-            console.log('showsara', showdata);
-            return (
-              <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
-                <DiagnosicsCard diseaseName={showdata.firstName} icon={<DiagonisisRemove />} />
-              </View>
-            );
-          })}
           <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
             <AddPlus />
             <TouchableOpacity>
@@ -985,14 +958,63 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
+  const renderPatientHealthWallet = () => {
+    return (
+      <View>
+        <CollapseCard
+          heading="Patient Health Vault"
+          collapse={otherInstructions}
+          onPress={() => setOtherInstructions(!otherInstructions)}
+        >
+          <Text style={[styles.familyText, { marginBottom: 12 }]}>
+            Photos uploaded by the Patient
+          </Text>
+          {patientlist.map((showdata, i) => {
+            console.log('showsara', showdata);
+            return (
+              <View style={{ marginLeft: 16, marginRight: 20, marginBottom: 0 }}>
+                <HealthCard
+                  icon={
+                    <View style={{ height: 90, width: 90 }}>
+                      <SampleImage />
+                    </View>
+                  }
+                  diseaseName={showdata.firstName}
+                  description={showdata.secondName}
+                />
+              </View>
+            );
+          })}
+          <Text style={[styles.familyText, { marginBottom: 12 }]}>Reports</Text>
+          {patientlist.map((showdata, i) => {
+            console.log('showsara', showdata);
+            return (
+              <View style={{ marginLeft: 16, marginRight: 20, marginBottom: 0 }}>
+                <HealthCard
+                  icon={
+                    <View style={{ height: 90, width: 90 }}>
+                      <SampleImage />
+                    </View>
+                  }
+                  diseaseName={showdata.firstName}
+                  description={showdata.secondName}
+                />
+              </View>
+            );
+          })}
+          <Text style={[styles.familyText, { marginBottom: 12 }]}>Past Consultations</Text>
+        </CollapseCard>
+      </View>
+    );
+  };
   return (
     <View style={styles.casesheetView}>
       <ScrollView bounces={false} contentContainerStyle={styles.contentContainer}>
         {renderPatientImage()}
-        {/* {renderBasicProfileDetails(PatientInfoData, AppId, Appintmentdatetimeconsultpage)} */}
+        {renderBasicProfileDetails(PatientInfoData, AppId, Appintmentdatetimeconsultpage)}
         {renderSymptonsView()}
         {renderPatientHistoryLifestyle()}
-        <PatientHealthVault />
+        {renderPatientHealthWallet()}
         {renderJuniorDoctorNotes()}
         {renderDiagnosisView()}
         {renderMedicinePrescription()}

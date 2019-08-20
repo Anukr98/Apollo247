@@ -546,6 +546,69 @@ export const AddPlus: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 24, width: 24 }}
     {...props}
-    source={require('../../images/icons/ic_plus_onorange.png')}
+    source={require('../../images/icons/round_add_24_px.png')}
   />
+);
+
+export const Profile: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/profile.png')}
+  />
+);
+
+export const AvailabilityIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/availibility.png')}
+  />
+);
+
+export const FeeIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/fees.png')}
+  />
+);
+
+export const SmartPrescription: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/smart_prescription.png')}
+  />
+);
+
+export const Settings: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/settings.png')}
+  />
+);
+
+export const End: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/end.png')}
+  />
+);
+
+export const SampleImage: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 90, width: 90 }}
+    {...props}
+    source={require('../../images/icons/sampleimage.png')}
+  />
+);
+export const ChatCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ChatCall.png')} />
+);
+
+export const MissedCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/MissedCall.png')} />
 );

@@ -4,6 +4,11 @@ import {
   CalendarIcon,
   RightIcon,
   Notification,
+  Profile,
+  AvailabilityIcon,
+  FeeIcon,
+  SmartPrescription,
+  Settings,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
@@ -28,6 +33,7 @@ import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { Availability } from '@aph/mobile-doctors/src/components/ProfileSetup/Availability';
 
 const { height } = Dimensions.get('window');
 
@@ -144,7 +150,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
           }}
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-            <Notification />
+            <Profile />
             <Text style={styles.headingText}>My Profile</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
@@ -164,7 +170,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
           }}
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-            <Notification />
+            <AvailabilityIcon />
             <Text style={styles.headingText}>Availibility</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
@@ -179,7 +185,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
     return (
       <View style={[styles.cardContainer]}>
         <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-          <Notification />
+          <FeeIcon />
           <Text style={styles.headingText}>Fees</Text>
           <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
             <RightIcon />
@@ -192,7 +198,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
     return (
       <View style={[styles.cardContainer]}>
         <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-          <Notification />
+          <SmartPrescription />
           <Text style={styles.headingText}>Smart Prescription</Text>
           <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
             <RightIcon />
@@ -206,7 +212,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       <View style={[styles.cardContainer]}>
         <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.MyAccount)}>
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-            <Notification />
+            <Settings />
             <Text style={styles.headingText}>Settings</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
