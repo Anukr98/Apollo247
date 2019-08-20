@@ -12,6 +12,5 @@ target 'ApolloPatient' do
  pod 'Firebase/Auth'
  pod 'GoogleAppMeasurement'
  pod 'OpenTok', '~> 2.15.3'
-#  pod 'react-native-document-picker', :path => '../node_modules/react-native-document-picker'
 
 end
