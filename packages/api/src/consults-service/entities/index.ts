@@ -58,9 +58,6 @@ export class Appointment extends BaseEntity {
   @IsDate()
   appointmentDateTime: Date;
 
-  @Column({ generated: 'increment' })
-  appointmentId: number;
-
   @Column()
   appointmentType: APPOINTMENT_TYPE;
 
@@ -72,6 +69,9 @@ export class Appointment extends BaseEntity {
 
   @OneToMany((type) => CaseSheet, (caseSheet) => caseSheet.appointment)
   caseSheet: CaseSheet[];
+
+  @Column({ generated: 'increment' })
+  displayId: number;
 
   @Column()
   doctorId: string;
