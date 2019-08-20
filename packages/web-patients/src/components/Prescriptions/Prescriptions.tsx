@@ -4,8 +4,7 @@ import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphTextField } from '@aph/web-ui-components';
-import { MedicineCard } from 'components/Medicine/MedicineCard';
-import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
+import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -102,12 +101,16 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 30,
     },
     pinCode: {
-      width: 203,
+      width: 154,
+      '& input': {
+        textAlign: 'right',
+      },
     },
     searchMedicine: {
-      width: 'calc(100% - 203px)',
+      width: 'calc(100% - 154px)',
       marginRight: 20,
       position: 'relative',
+      opacity: 0,
     },
     uploadPrescriptionBtn: {
       position: 'absolute',
@@ -141,7 +144,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const SearchMedicines: React.FC = (props) => {
+export const Prescriptions: React.FC = (props) => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
@@ -224,17 +227,18 @@ export const SearchMedicines: React.FC = (props) => {
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 262px)'}>
           <div className={classes.medicineListGroup}>
             <div className={classes.sectionHeader}>
-              <span>Past Searches</span>
-              <span className={classes.count}>04</span>
+              <span>Physical Prescriptions</span>
+              <span className={classes.count}>02</span>
             </div>
             <div className={classes.pastSearches}>
-              <MedicineCard />
+              <PrescriptionCard />
+              <PrescriptionCard />
             </div>
             <div className={classes.sectionHeader}>
-              <span>Matching Medicines</span>
-              <span className={classes.count}>03</span>
+              <span>Prescriptions From Health Records</span>
+              <span className={classes.count}>01</span>
             </div>
-            <MedicineStripCard />
+            Mallesh
           </div>
         </Scrollbars>
       </div>

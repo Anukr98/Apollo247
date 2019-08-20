@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
 import React, { useState } from 'react';
 import { Header } from 'components/Header';
-import { SearchMedicines } from 'components/Medicine/SearchMedicines';
+import { Prescriptions } from 'components/Prescriptions/Prescriptions';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -98,7 +98,7 @@ export const PrescriptionsLanding: React.FC = (props) => {
           </Tabs>
           {tabValue === 0 && (
             <TabContainer>
-              <SearchMedicines />
+              <Prescriptions />
             </TabContainer>
           )}
           {tabValue === 1 && <TabContainer>Test</TabContainer>}
