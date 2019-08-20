@@ -1,10 +1,10 @@
 import { EntityRepository, Repository, Brackets } from 'typeorm';
-import { Doctor } from 'doctors-service/entities';
+import { Doctor, ConsultMode } from 'doctors-service/entities';
 import {
   Range,
   FilterDoctorInput,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
-import { format } from 'date-fns';
+import { format, differenceInMinutes } from 'date-fns';
 
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
@@ -189,21 +189,67 @@ export class DoctorRepository extends Repository<Doctor> {
 
     let doctorsResult = await queryBuilder.getMany();
 
+    // const doctorIds = doctorsResult.map((doctor) => {
+    //   return doctor.id;
+    // });
+
     //filtering doctors by date
     if (availability && availability.length > 0) {
       const selectedDays: string[] = [];
+
       availability.forEach((date: string) => {
         const weekDay = format(new Date(date), 'EEEE').toUpperCase();
         selectedDays.push(weekDay);
       });
+
+      type AvailabilityData = {
+        slotsCount: number;
+      };
+      type DoctorConsultModes = {
+        online: AvailabilityData;
+        physical: AvailabilityData;
+      };
+      type DoctorDateData = { [index: string]: DoctorConsultModes };
+      type DoctorData = { [index: string]: DoctorDateData };
+      const doctorData: DoctorData = {};
       doctorsResult = doctorsResult.filter((doctor) => {
         return (
-          doctor.consultHours.filter((daySchedule) => {
-            return selectedDays.includes(daySchedule.weekDay);
+          doctor.consultHours.filter((day) => {
+            if (selectedDays.includes(day.weekDay)) {
+              const doctorDateData: DoctorDateData = {};
+              const slotsCount = this.getNumberOfIntervalSlots(day.startTime, day.endTime, 15);
+              const availableDate = availability[selectedDays.indexOf(day.weekDay)];
+              doctorDateData[availableDate] = {
+                online: { slotsCount: 0 },
+                physical: { slotsCount: 0 },
+              };
+              if (day.consultMode == ConsultMode.ONLINE) {
+                doctorDateData[availableDate].online.slotsCount = slotsCount;
+              } else if (day.consultMode == ConsultMode.PHYSICAL) {
+                doctorDateData[availableDate].physical.slotsCount = slotsCount;
+              } else {
+                doctorDateData[availableDate].physical.slotsCount = slotsCount;
+                doctorDateData[availableDate].online.slotsCount = slotsCount;
+              }
+              doctorData[doctor.id] = doctorDateData;
+            }
+            return selectedDays.includes(day.weekDay);
           }).length > 0
         );
       });
+      console.log(doctorData);
     }
     return doctorsResult;
+  }
+
+  //returns number of time interval slots between the start and end times
+  getNumberOfIntervalSlots(startTime: string, endTime: string, interval: number) {
+    const dayStartTime = `${format(new Date(), 'yyyy-MM-dd')} ${startTime.toString()}`;
+    const dayEndTime = `${format(new Date(), 'yyyy-MM-dd')} ${endTime.toString()}`;
+    const startDateTime = new Date(dayStartTime);
+    const endDateTime = new Date(dayEndTime);
+    const slotsCount = Math.ceil(differenceInMinutes(endDateTime, startDateTime) / 15);
+    console.log(slotsCount);
+    return slotsCount;
   }
 }

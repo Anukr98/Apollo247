@@ -20,6 +20,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     city: [String]
     experience: [Range]
     availability: [String]
+    availableNow: String
     fees: [Range]
     gender: [Gender]
     language: [String]
@@ -35,19 +36,20 @@ type FilterDoctorsResult = {
 };
 
 export type Range = {
-  minimum: Number;
-  maximum: Number;
+  minimum: number;
+  maximum: number;
 };
 
 export type FilterDoctorInput = {
-  specialty: String;
-  city: String[];
+  specialty: string;
+  city: string[];
   experience: Range[];
-  availability: String[];
+  availability: string[];
+  availableNow: string;
   fees: Range[];
-  gender: String[];
-  language: String[];
-  location: String;
+  gender: string[];
+  language: string[];
+  location: string;
 };
 
 const getDoctorsBySpecialtyAndFilters: Resolver<
