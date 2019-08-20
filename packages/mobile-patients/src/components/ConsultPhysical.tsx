@@ -276,6 +276,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
         onPressDate={(date) => {
           setDate(date);
           props.setDate(date);
+          props.setselectedTimeSlot('');
         }}
         calendarType={type}
         onCalendarTypeChanged={(type) => {

@@ -214,41 +214,43 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     availableSlots.forEach((slot) => {
       const IOSFormat = `${date.toISOString().split('T')[0]}T${slot}:48.000Z`;
       const formatedSlot = moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
-      console.log('formatedSlot', formatedSlot, formatedSlot.toString());
-
+      console.log(new Date() < new Date(IOSFormat), 'IOSFormat......');
       const slotTime = moment(formatedSlot, 'HH:mm');
-      if (slotTime.isBetween(nightEndTime, afternoonStartTime)) {
-        array[0] = {
-          label: 'Morning',
-          time: [...array[0].time, formatedSlot],
-        };
-      } else if (slotTime.isBetween(morningEndTime, eveningStartTime)) {
-        array[1] = {
-          ...array[1],
-          time: [...array[1].time, formatedSlot],
-        };
-      } else if (slotTime.isBetween(afternoonEndTime, nightStartTime)) {
-        array[2] = {
-          ...array[2],
-          time: [...array[2].time, formatedSlot],
-        };
-      } else {
-        array[3] = {
-          ...array[3],
-          time: [...array[3].time, formatedSlot],
-        };
+      if (new Date() < new Date(IOSFormat)) {
+        if (slotTime.isBetween(nightEndTime, afternoonStartTime)) {
+          array[0] = {
+            label: 'Morning',
+            time: [...array[0].time, formatedSlot],
+          };
+        } else if (slotTime.isBetween(morningEndTime, eveningStartTime)) {
+          array[1] = {
+            ...array[1],
+            time: [...array[1].time, formatedSlot],
+          };
+        } else if (slotTime.isBetween(afternoonEndTime, nightStartTime)) {
+          array[2] = {
+            ...array[2],
+            time: [...array[2].time, formatedSlot],
+          };
+        } else {
+          array[3] = {
+            ...array[3],
+            time: [...array[3].time, formatedSlot],
+          };
+        }
       }
     });
     console.log(array, 'array', timeArray, 'timeArray');
     if (array !== timeArray) settimeArray(array);
   };
 
-  console.log(date, date.toISOString().split('T')[0], 'dateeeeeeee', props.doctorId, 'doctorId');
+  const availableDate = date.toISOString().split('T')[0];
+  console.log(availableDate, 'dateeeeeeee', props.doctorId, 'doctorId');
   const availabilityData = useQuery<getDoctorAvailableSlots>(GET_AVAILABLE_SLOTS, {
     fetchPolicy: 'no-cache',
     variables: {
       DoctorAvailabilityInput: {
-        availableDate: date.toISOString().split('T')[0],
+        availableDate: availableDate,
         doctorId: props.doctorId,
       },
     },
@@ -257,15 +259,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   if (availabilityData.error) {
     console.log('error', availabilityData.error);
   } else {
-    console.log(availabilityData.data, 'availabilityData', availableSlots, 'availableSlots');
+    console.log(availabilityData.data, 'availableSlots');
     if (
       availabilityData &&
       availabilityData.data &&
       availabilityData.data.getDoctorAvailableSlots &&
       availabilityData.data.getDoctorAvailableSlots.availableSlots &&
-      availabilityData.data.getDoctorAvailableSlots.availableSlots.length !== 0 &&
-      availableSlots &&
-      availableSlots.length === 0
+      availableSlots !== availabilityData.data.getDoctorAvailableSlots.availableSlots
     ) {
       setTimeArrayData(availabilityData.data.getDoctorAvailableSlots.availableSlots);
       console.log(availableSlots, 'availableSlots1111');
@@ -350,7 +350,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                     selectedTab === tabs[0].title
                       ? APPOINTMENT_TYPE.ONLINE
                       : APPOINTMENT_TYPE.PHYSICAL,
-                  hospitalId: '1',
+                  hospitalId:
+                    props.clinics && props.clinics.length > 0 && props.clinics[0].facility
+                      ? props.clinics[0].facility.id
+                      : '',
                 };
                 console.log(appointmentInput, 'appointmentInput');
                 mutate({
