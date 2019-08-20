@@ -18,3 +18,14 @@ export const SAVE_PATIENT_SEARCH = gql`
     }
   }
 `;
+
+export const PATIENT_PAST_SEARCHES = gql`
+  query GetPatientPastSearches($patientId: ID!) {
+    getPatientPastSearches(patientId: $patientId) {
+      searchType
+      typeId
+      name
+      image
+    }
+  }
+`;

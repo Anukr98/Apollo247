@@ -7,9 +7,9 @@ import { clientRoutes } from 'helpers/clientRoutes';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     appNavigation: {
-        padding: '17px 0',
-        borderLeft: '1px solid rgba(2,71,91,0.1)',
-        marginLeft: 20,
+      padding: '17px 0',
+      borderLeft: '1px solid rgba(2,71,91,0.1)',
+      marginLeft: 20,
       [theme.breakpoints.down('xs')]: {
         display: 'none',
       },
@@ -46,18 +46,10 @@ export const Navigation: React.FC = (props) => {
   const currentPath = window.location.pathname;
   return (
     <div className={classes.appNavigation} data-cypress="Navigation">
-      <Link
-        to={clientRoutes.welcome()}
-        className={classes.menuItemActive}
-      >
+      <Link to={clientRoutes.welcome()} className={classes.menuItemActive}>
         Home
       </Link>
-      <Link
-        to={clientRoutes.testsAndMedicine()}
-        
-      >
-        Patients
-      </Link>
+      <Link to={clientRoutes.testsAndMedicine()}>Patients</Link>
     </div>
   );
 };

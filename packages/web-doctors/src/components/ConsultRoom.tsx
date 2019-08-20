@@ -120,6 +120,7 @@ interface MessagesObjectProps {
   message: string;
   username: string;
   text: string;
+  duration: string;
 }
 interface ConsultRoomProps {
   startConsult: string;
@@ -335,7 +336,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <div className={classes.docterChat}>
           <div className={classes.doctor}>
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
-            <span>{rowData.message}</span>
+            <span>{`${rowData.message} ${rowData.duration ? rowData.duration : ''}`}</span>
           </div>
         </div>
       );
@@ -357,7 +358,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <img src={require('images/ic_patientchat.png')} />
               </span>
             )}
-            <span>{rowData.message}</span>
+            <span>{`${rowData.message} ${rowData.duration ? rowData.duration : ''}`}</span>
           </div>
         </div>
       );
@@ -403,7 +404,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
     const stoptext = {
       id: doctorId,
-      message: `call ended ${
+      message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
+      duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
       } :  ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       isTyping: true,
