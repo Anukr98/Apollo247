@@ -7,6 +7,8 @@ import {
   BeforeUpdate,
   OneToOne,
   JoinColumn,
+  OneToMany,
+  ManyToOne,
 } from 'typeorm';
 import { IsDate } from 'class-validator';
 
@@ -15,12 +17,27 @@ export enum STATUS {
   CONFIRMED = 'CONFIRMED',
   CANCELLED = 'CANCELLED',
   COMPLETED = 'COMPLETED',
-  MISSED = 'MISSED',
+  NO_SHOW = 'NO_SHOW',
+  FOLLOW_UP = 'FOLLOW_UP',
+  TRANSFER = 'TRANSFER',
+  RESCHEDULE = 'RESCHEDULE',
 }
 
 export enum APPOINTMENT_TYPE {
   ONLINE = 'ONLINE',
   PHYSICAL = 'PHYSICAL',
+}
+
+export enum MEDICINE_TIMINGS {
+  EVENING = 'EVENING',
+  MORNING = 'MORNING',
+  NIGHT = 'NIGHT',
+  NOON = 'NOON',
+}
+
+export enum MEDICINE_TO_BE_TAKEN {
+  AFTER_FOOD = 'AFTER_FOOD',
+  BEFORE_FOOD = 'BEFORE_FOOD',
 }
 
 export enum REQUEST_ROLES {
@@ -30,30 +47,50 @@ export enum REQUEST_ROLES {
 
 @Entity()
 export class Appointment extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column()
-  patientId: string;
-
-  @Column()
-  doctorId: string;
-
   @Column({ type: 'timestamp' })
   @IsDate()
   appointmentDateTime: Date;
 
-  @Column()
-  appointmentType: APPOINTMENT_TYPE;
+  @Column({ generated: 'increment' })
+  appointmentId: number;
 
   @Column()
-  status: STATUS;
+  appointmentType: APPOINTMENT_TYPE;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   bookingDate: Date;
 
+  @Column()
+  doctorId: string;
+
   @Column({ nullable: true })
   hospitalId: string;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  /*@OneToMany(
+    (type) => MedicinePrescription,
+    (medicinePrescription) => medicinePrescription.appointment
+  )
+  medicinePrescription: MedicinePrescription[]; */
+
+  @Column()
+  patientId: string;
+
+  @Column({ nullable: true })
+  parentId: string;
+
+  @Column()
+  status: STATUS;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 }
 
 @Entity()
@@ -76,6 +113,52 @@ export class AppointmentSessions extends BaseEntity {
 
   @Column()
   createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
+@Entity()
+export class MedicinePrescription extends BaseEntity {
+  /*@ManyToOne((type) => Appointment, (appointment) => appointment.medicinePrescription)
+  appointment: Appointment; */
+
+  @Column({ nullable: true })
+  consumptionDurationInDays: number;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  externalId: string;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'text' })
+  instructions: string;
+
+  @Column()
+  name: string;
+
+  @Column()
+  tabletCount: number;
+
+  @Column()
+  medicineTimings: MEDICINE_TIMINGS;
+
+  @Column()
+  medicineToBeTaken: MEDICINE_TO_BE_TAKEN;
 
   @Column({ nullable: true })
   updatedDate: Date;

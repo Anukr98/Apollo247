@@ -6,7 +6,7 @@ import { buildFederatedSchema } from '@apollo/federation';
 import gql from 'graphql-tag';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { createConnections, getConnection } from 'typeorm';
-import { Appointment, AppointmentSessions } from 'consults-service/entities';
+import { Appointment, AppointmentSessions, MedicinePrescription } from 'consults-service/entities';
 import {
   Doctor,
   DoctorSpecialty,
@@ -50,7 +50,7 @@ import { GatewayHeaders } from 'api-gateway';
 (async () => {
   await createConnections([
     {
-      entities: [Appointment, AppointmentSessions],
+      entities: [Appointment, AppointmentSessions, MedicinePrescription],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
       port: parseInt(process.env.CONSULTS_DB_PORT, 10),
