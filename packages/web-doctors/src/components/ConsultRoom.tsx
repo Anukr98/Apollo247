@@ -133,6 +133,8 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'relative',
         top: 5,
         marginRight: 7,
+        left: 0,
+        width: 'auto',
       },
     },
     durationMsg: {
@@ -393,7 +395,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       return (
         <div className={classes.patientChat}>
           <div className={rowData.duration ? classes.callMsg : classes.petient}>
-            {rightComponent == 1 && (
+            {rightComponent == 1 && !rowData.duration && (
               <span className={classes.boldTxt}>
                 <img src={require('images/ic_patientchat.png')} />
               </span>
