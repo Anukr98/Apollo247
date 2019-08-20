@@ -7,15 +7,23 @@ import {
   BeforeUpdate,
   OneToOne,
   JoinColumn,
+  OneToMany,
+  ManyToOne,
 } from 'typeorm';
 import { IsDate } from 'class-validator';
+import { ConsultType } from 'doctors-service/entities';
 
 export enum STATUS {
+  PENDING = 'PENDING',
   IN_PROGRESS = 'IN_PROGRESS',
   CONFIRMED = 'CONFIRMED',
   CANCELLED = 'CANCELLED',
   COMPLETED = 'COMPLETED',
   NO_SHOW = 'NO_SHOW',
+}
+
+export enum APPOINTMENT_STATE {
+  NEW = 'NEW',
   FOLLOW_UP = 'FOLLOW_UP',
   TRANSFER = 'TRANSFER',
   RESCHEDULE = 'RESCHEDULE',
@@ -56,8 +64,14 @@ export class Appointment extends BaseEntity {
   @Column()
   appointmentType: APPOINTMENT_TYPE;
 
+  @Column({ nullable: true })
+  appointmentState: APPOINTMENT_STATE;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   bookingDate: Date;
+
+  @OneToMany((type) => CaseSheet, (caseSheet) => caseSheet.appointment)
+  caseSheet: CaseSheet[];
 
   @Column()
   doctorId: string;
@@ -127,6 +141,9 @@ export class AppointmentSessions extends BaseEntity {
 //MedicinePrescription starts
 @Entity()
 export class MedicinePrescription extends BaseEntity {
+  @ManyToOne((type) => CaseSheet, (caseSheet) => caseSheet.medicinePrescription)
+  caseSheet: CaseSheet;
+
   @Column({ nullable: true })
   consumptionDurationInDays: number;
 
@@ -146,7 +163,7 @@ export class MedicinePrescription extends BaseEntity {
   name: string;
 
   @Column()
-  tabletCount: number;
+  dosage: string;
 
   @Column()
   medicineTimings: MEDICINE_TIMINGS;
@@ -168,3 +185,64 @@ export class MedicinePrescription extends BaseEntity {
   }
 }
 //MedicinePrescription ends
+
+//case sheet starts
+@Entity()
+export class CaseSheet extends BaseEntity {
+  @ManyToOne((type) => Appointment, (appointment) => appointment.caseSheet)
+  appointment: Appointment;
+
+  @Column()
+  consultType: ConsultType;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true, type: 'json' })
+  diagnosis: string;
+
+  @Column({ nullable: true, type: 'json' })
+  diagnosisPrescription: string;
+
+  @Column({ nullable: true })
+  doctorId: string;
+
+  @Column({ nullable: true })
+  followUp: Boolean;
+
+  @Column({ nullable: true })
+  followUpAfterInDays: number;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @OneToMany(
+    (type) => MedicinePrescription,
+    (medicinePrescription) => medicinePrescription.caseSheet
+  )
+  medicinePrescription: MedicinePrescription[];
+
+  @Column({ type: 'text' })
+  notes: string;
+
+  @Column({ nullable: true, type: 'json' })
+  otherInstructions: string;
+
+  @Column({ nullable: true, type: 'json' })
+  symptoms: string;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
+//case sheet ends
