@@ -98,6 +98,9 @@ export const EPrescriptionCard: React.FC = (props) => {
           <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
         </AphButton>
         <AphCheckbox color="primary" />
+        <AphButton>
+          <img src={require('images/ic_tickmark.svg')} alt="" />
+        </AphButton>
       </div>
     </div>
   );
