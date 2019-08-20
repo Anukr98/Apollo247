@@ -7,8 +7,6 @@ import {
   ManyToOne,
   BeforeInsert,
   BeforeUpdate,
-  ManyToMany,
-  JoinTable,
 } from 'typeorm';
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
@@ -39,10 +37,6 @@ export enum SEARCH_TYPE {
 //patient Starts
 @Entity()
 export class Patient extends BaseEntity {
-  @ManyToMany((type) => Allergies)
-  @JoinTable({ name: 'patient_allergies' })
-  allergy: Allergies[];
-
   @Column({ nullable: true })
   dateOfBirth: Date;
 
@@ -296,7 +290,7 @@ export class Allergies extends BaseEntity {
 //patientAllergies starts
 @Entity()
 export class PatientAllergies extends BaseEntity {
-  @ManyToOne((type) => Allergies, (allergies) => allergies.patientAllergies)
+  @ManyToOne((type) => Allergies, (allergies) => allergies.patientAllergies, { primary: true })
   allergies: Allergies;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -305,7 +299,7 @@ export class PatientAllergies extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne((type) => Patient, (patient) => patient.patientAllergies)
+  @ManyToOne((type) => Patient, (patient) => patient.patientAllergies, { primary: true })
   patient: Patient;
 
   @Column({ type: 'timestamp', nullable: true })
