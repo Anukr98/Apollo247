@@ -37,9 +37,6 @@ export enum SEARCH_TYPE {
 //patient Starts
 @Entity()
 export class Patient extends BaseEntity {
-  @Column({ nullable: true, type: 'text' })
-  allergies: string;
-
   @Column({ nullable: true })
   dateOfBirth: Date;
 
