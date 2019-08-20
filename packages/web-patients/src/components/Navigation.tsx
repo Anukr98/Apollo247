@@ -82,7 +82,11 @@ export const Navigation: React.FC = (props) => {
       </Link>
       <Link
         to={clientRoutes.testsAndMedicine()}
-        className={currentPath === clientRoutes.testsAndMedicine() ? classes.menuItemActive : ''}
+        className={
+          currentPath === clientRoutes.testsAndMedicine() || clientRoutes.prescriptionsLanding()
+            ? classes.menuItemActive
+            : ''
+        }
       >
         Tests &amp; Medicines
       </Link>

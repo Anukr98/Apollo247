@@ -11,6 +11,8 @@ import { StorePickUp } from 'components/Locations/StorePickUp';
 import { Checkout } from 'components/Cart/Checkout';
 import { OrderSuccess } from 'components/Cart/OrderSuccess';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
+import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
+import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -254,6 +256,28 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 80,
       },
     },
+    uploadPrescription: {
+      paddingBottom: 10,
+      marginTop: -5,
+    },
+    noPrescriptionUpload: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#0087ba',
+      paddingBottom: 10,
+    },
+    presUploadBtn: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      marginLeft: 'auto',
+      fontWeight: 'bold',
+      color: '#fc9916',
+      marginTop: 10,
+      padding: 0,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
   };
 });
 
@@ -267,6 +291,7 @@ export const Cart: React.FC = (props) => {
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
 
   return (
     <div className={classes.root}>
@@ -279,6 +304,24 @@ export const Cart: React.FC = (props) => {
               <AphButton className={classes.addItemBtn}>Add Items</AphButton>
             </div>
             <MedicineStripCard />
+            <div className={classes.sectionHeader}>
+              <span>Upload Prescription</span>
+              <span className={classes.count}>
+                <AphButton
+                  onClick={() => setIsUploadPreDialogOpen(true)}
+                  className={classes.presUploadBtn}
+                >
+                  Upload
+                </AphButton>
+              </span>
+            </div>
+            <div className={classes.uploadPrescription}>
+              <div className={classes.noPrescriptionUpload}>
+                Some of your medicines require prescription to make a purchase. Please upload the
+                necessary prescriptions.
+              </div>
+              <EPrescriptionCard />
+            </div>
             <div className={classes.sectionHeader}>
               <span>You Should Also Add</span>
               <span className={classes.count}>04</span>
@@ -410,6 +453,10 @@ export const Cart: React.FC = (props) => {
           </div>
         </div>
       </Popover>
+      <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
+        <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
+        <UploadPrescription />
+      </AphDialog>
     </div>
   );
 };
