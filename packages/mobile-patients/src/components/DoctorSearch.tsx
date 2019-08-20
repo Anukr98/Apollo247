@@ -362,7 +362,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const renderPastSearch = () => {
-    if (pastSearch) {
+    if (pastSearch && PastSearches.length > 0) {
       return (
         <View>
           <SectionHeaderComponent sectionTitle={'Past Searches'} style={{ marginBottom: 0 }} />
@@ -426,7 +426,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             }
             style={{
               marginBottom: 0,
-              marginTop: searchText.length > 0 && doctorsList && doctorsList.length === 0 ? 24 : 8,
+              marginTop:
+                PastSearches.length > 0
+                  ? searchText.length > 0 && doctorsList && doctorsList.length === 0
+                    ? 24
+                    : 8
+                  : 24,
             }}
           />
           <FlatList
