@@ -1,7 +1,8 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import { AphButton, AphLinearProgress } from '@aph/web-ui-components';
+import { AphButton } from '@aph/web-ui-components';
+import { AphCheckbox } from 'components/AphCheckbox';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -12,6 +13,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 10,
       display: 'flex',
       marginBottom: 10,
+      textAlign: 'left',
     },
     prescriptionGroup: {
       fontSize: 14,
@@ -33,7 +35,6 @@ const useStyles = makeStyles((theme: Theme) => {
     imgThumb: {
       paddingRight: 14,
       '& img': {
-        maxWidth: 30,
         verticalAlign: 'middle',
       },
     },
@@ -44,31 +45,59 @@ const useStyles = makeStyles((theme: Theme) => {
       height: 2,
       marginTop: 5,
     },
+    priscriptionInfo: {
+      paddingTop: 5,
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#0087ba',
+      lineHeight: '1.67px',
+      letterSpacing: 0.04,
+      display: 'inline-block',
+      width: '100%',
+      '& span': {
+        borderRight: '0.5px solid rgba(2,71,91,0.3)',
+        paddingRight: 10,
+        marginRight: 10,
+      },
+      '& span:last-child': {
+        marginRight: 0,
+        paddingRight: 0,
+        border: 'none',
+      },
+    },
+    name: {
+      opacity: 0.6,
+      color: '#02475b',
+    },
+    date: {
+      opacity: 0.6,
+      color: '#02475b',
+    },
   };
 });
 
-export const PrescriptionCard: React.FC = (props) => {
+export const EPrescriptionCard: React.FC = (props) => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
       <div className={classes.prescriptionGroup}>
         <div className={classes.imgThumb}>
-          <img src={require('images/ic_prescription_thumbnail.png')} alt="" />
+          <img src={require('images/ic_prescription.svg')} alt="" />
         </div>
         <div className={classes.fileInfo}>
-          IMG_20190726
-          <AphLinearProgress
-            color="secondary"
-            variant="determinate"
-            className={classes.progressRoot}
-            value={100}
-          />
+          Dr. Simran Rai
+          <div className={classes.priscriptionInfo}>
+            <span className={classes.name}>Preeti</span>
+            <span className={classes.date}>27 July 2019</span>
+            <span>Cytoplam, Metformin, Insulin, Crocin</span>
+          </div>
         </div>
       </div>
       <div className={classes.closeBtn}>
         <AphButton>
           <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
         </AphButton>
+        <AphCheckbox color="primary" />
       </div>
     </div>
   );

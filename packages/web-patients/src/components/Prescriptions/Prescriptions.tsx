@@ -3,8 +3,9 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
-import { AphTextField } from '@aph/web-ui-components';
+import { AphTextField, AphButton } from '@aph/web-ui-components';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
+import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -102,9 +103,18 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     pinCode: {
       width: 154,
+      position: 'relative',
       '& input': {
         textAlign: 'right',
       },
+    },
+    pinLabel: {
+      position: 'absolute',
+      right: 0,
+      top: -8,
+      fontSize: 10,
+      fontWeight: 500,
+      color: '#02475b',
     },
     searchMedicine: {
       width: 'calc(100% - 154px)',
@@ -140,6 +150,33 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     pastSearches: {
       paddingBottom: 10,
+    },
+    ePrescriptionSec: {
+      textAlign: 'right',
+      paddingBottom: 20,
+    },
+    addPrescriptionBtn: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      marginLeft: 'auto',
+      fontWeight: 'bold',
+      color: '#fc9916',
+      marginTop: 10,
+      padding: 0,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    submitPrescriptions: {
+      boxShadow: '0 -5px 20px 0 #f7f8f5',
+      paddingTop: 10,
+      paddingLeft: 20,
+      paddingRight: 15,
+      textAlign: 'center',
+      '& button': {
+        width: 288,
+        borderRadius: 10,
+      },
     },
   };
 });
@@ -221,10 +258,11 @@ export const Prescriptions: React.FC = (props) => {
             </div>
           </div>
           <div className={classes.pinCode}>
+            <label className={classes.pinLabel}>Delivery Pincode</label>
             <AphTextField placeholder="Enter Pincode" />
           </div>
         </div>
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 262px)'}>
+        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 312px)'}>
           <div className={classes.medicineListGroup}>
             <div className={classes.sectionHeader}>
               <span>Physical Prescriptions</span>
@@ -238,9 +276,16 @@ export const Prescriptions: React.FC = (props) => {
               <span>Prescriptions From Health Records</span>
               <span className={classes.count}>01</span>
             </div>
-            Mallesh
+            <div className={classes.ePrescriptionSec}>
+              <EPrescriptionCard />
+              <EPrescriptionCard />
+              <AphButton className={classes.addPrescriptionBtn}>Add More Prescriptions</AphButton>
+            </div>
           </div>
         </Scrollbars>
+        <div className={classes.submitPrescriptions}>
+          <AphButton color="primary">Submit Prescriptions</AphButton>
+        </div>
       </div>
     </div>
   );
