@@ -4,7 +4,7 @@ import { ArrowDisabled, ArrowYellow } from '@aph/mobile-doctors/src/components/u
 import { setOnboardingDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -25,8 +25,10 @@ import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 import { NavigationEventSubscription } from 'react-navigation';
-import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
-//const isMobileNumberValid = () => true;
+import { TimeOutData } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { AuthContext } from '@aph/mobile-doctors/src/components/AuthProvider';
+// import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
+const isMobileNumberValid = (phoneNumber: string) => true;
 
 const styles = StyleSheet.create({
   container: {
@@ -121,29 +123,16 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const { analytics, currentUser } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<any>();
+  const { analytics } = useAuth();
+
+  const sendOtp = useContext(AuthContext).sendOtp;
 
   useEffect(() => {
     setOnboardingDone(true);
-  }, []);
-
-  useEffect(() => {
-    analytics.setCurrentScreen(AppRoutes.Login);
-  }, [analytics, currentUser]);
-
-  useEffect(() => {
+    analytics && analytics.setCurrentScreen(AppRoutes.Login);
     Platform.OS === 'android' && requestReadSmsPermission();
   }, []);
-
-  // useEffect(() => {
-  //   console.log('authError Login', authError);
-  //   if (authError) {
-  //     clearCurrentUser();
-  //     setVerifyingPhonenNumber(false);
-  //     //Alert.alert('Error', 'Unable to connect the server at the moment.');
-  //   }
-  // }, [authError, clearCurrentUser]);
 
   const requestReadSmsPermission = () => {
     PermissionsAndroid.requestMultiple([
@@ -181,18 +170,10 @@ export const Login: React.FC<LoginProps> = (props) => {
   const validateAndSetPhoneNumber = (number: string) => {
     if (/^\d+$/.test(number) || number == '') {
       setPhoneNumber(number);
-      // if (number.length == 10) {
       setPhoneNumberIsValid(isPhoneNumberValid(number));
-      // }
     } else {
       return false;
     }
-  };
-
-  type TimeOutData = {
-    phoneNumber: string;
-    startTime: string;
-    invalidAttems: number;
   };
 
   const _getTimerData = async () => {
@@ -202,7 +183,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       if (data) {
         const timeOutData: TimeOutData[] = JSON.parse(data);
         timeOutData.map((obj) => {
-          if (obj.phoneNumber === `+91${phoneNumber}`) {
+          if (obj.phoneNumber === `${phoneNumber}`) {
             const t1 = new Date();
             const t2 = new Date(obj.startTime);
             const dif = t1.getTime() - t2.getTime();
@@ -255,29 +236,30 @@ export const Login: React.FC<LoginProps> = (props) => {
                 props.navigation.navigate(AppRoutes.OTPVerification, {
                   phoneNumberVerificationCredential: '',
                   otpString,
-                  phoneNumber: '+91' + phoneNumber,
+                  phoneNumber: phoneNumber,
                 });
               } else {
                 setVerifyingPhonenNumber(true);
-                firebase
-                  .auth()
-                  .signInWithPhoneNumber('+91' + phoneNumber)
-                  .then((confirmResult) => {
-                    setVerifyingPhonenNumber(false);
-                    console.log(confirmResult, 'confirmResult');
+                (sendOtp &&
+                  sendOtp(phoneNumber)
+                    .then((confirmResult) => {
+                      setVerifyingPhonenNumber(false);
+                      console.log(confirmResult, 'confirmResult');
 
-                    props.navigation.navigate(AppRoutes.OTPVerification, {
-                      phoneNumberVerificationCredential: confirmResult.verificationId,
-                      confirmResult,
-                      otpString,
-                      phoneNumber: '+91' + phoneNumber,
-                    });
-                  })
-                  .catch((error) => {
-                    console.log(error, 'error');
-                    setVerifyingPhonenNumber(false);
-                    Alert.alert('Error', 'The interaction was cancelled by the user.');
-                  });
+                      props.navigation.navigate(AppRoutes.OTPVerification, {
+                        // phoneNumberVerificationCredential: confirmResult.verificationId,
+                        // confirmResult,
+                        otpString,
+                        phoneNumber: phoneNumber,
+                      });
+                      setPhoneNumber('');
+                    })
+                    .catch((error) => {
+                      console.log(error, 'error');
+                      setVerifyingPhonenNumber(false);
+                      Alert.alert('Error', 'The interaction was cancelled by the user.');
+                    })) ||
+                  Alert.alert('Something wrong');
               }
             }
           }}
@@ -311,8 +293,9 @@ export const Login: React.FC<LoginProps> = (props) => {
               : string.LocalStrings.wrong_number}
           </Text>
           {phoneNumber == '' || phoneNumberIsValid ? null : (
+            // <View style={{ height: 28 }} />
             <TouchableOpacity
-              onPress={() => props.navigation.push(AppRoutes.NeedHelp)}
+              onPress={() => props.navigation.push(AppRoutes.HelpScreen)}
               style={{ marginTop: -10 }}
             >
               <Text style={[styles.gethelpText]}>{string.LocalStrings.gethelp}</Text>

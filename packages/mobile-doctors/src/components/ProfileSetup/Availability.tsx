@@ -2,38 +2,46 @@ import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/Con
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { SelectableButton } from '../ui/SelectableButton';
 import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
-import { GetDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { format } from 'date-fns';
+import { Notification, RoundChatIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
-  consultTypeSelection: {
-    flexDirection: 'row',
-    marginHorizontal: 20,
-    marginTop: 12,
-    marginBottom: 20,
-  },
+  // consultTypeSelection: {
+  //   flexDirection: 'row',
+  //   marginHorizontal: 20,
+  //   marginTop: 12,
+  //   marginBottom: 20,
+  // },
   consultDescText: {
-    ...theme.fonts.IBMPlexSansMedium(14),
+    fontFamily: 'IBMPlexSans',
+    fontSize: 14,
     color: theme.colors.darkBlueColor(0.5),
     marginTop: 16,
     marginHorizontal: 20,
   },
+  descriptionview: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: '#0087ba',
+    lineHeight: 24,
+    //marginTop: 20,
+  },
 });
 
 export interface AvailabilityProps {
-  profileData: GetDoctorProfile_getDoctorProfile;
+  profileData: GetDoctorDetails_getDoctorDetails;
 }
 
 export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
-  const [consultationType, setConsultationType] = useState({
-    physical: profileData.consultationHours![0]!.availableForPhysicalConsultation,
-    online: profileData.consultationHours![0]!.availableForVirtualConsultation,
-  });
+  // const [consultationType, setConsultationType] = useState({
+  //   physical: profileData.consultHours![0]!.consultMode,
+  //   online: profileData.consultHours![0]!.consultMode,
+  // });
 
   const get12HrsFormat = (timeString: string /* 12:30 */) => {
     const hoursAndMinutes = timeString.split(':').map((i) => parseInt(i));
@@ -45,12 +53,23 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
 
   return (
     <View style={styles.container}>
-      {profileData!.profile!.isStarDoctor ? (
-        <SquareCardWithTitle title="Consultation Type" containerStyle={{ marginTop: 16 }}>
+      {profileData!.delegateNumber ? (
+        <SquareCardWithTitle title="Consultation Type" containerStyle={{ marginTop: 0 }}>
           <Text style={styles.consultDescText}>
             What type of consults will you be available for?
           </Text>
-          <View style={styles.consultTypeSelection}>
+          <Text
+            style={{
+              marginLeft: 20,
+              marginTop: 8,
+              ...theme.fonts.IBMPlexSansMedium(16),
+              color: '#02475b',
+              marginBottom: 20,
+            }}
+          >
+            Physical, Online
+          </Text>
+          {/* <View style={styles.consultTypeSelection}>
             <SelectableButton
               containerStyle={{ marginRight: 20 }}
               onChange={(isChecked) => {
@@ -74,24 +93,42 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
               title="Online"
               isChecked={consultationType.online}
             />
-          </View>
+          </View> */}
         </SquareCardWithTitle>
       ) : null}
       <SquareCardWithTitle
         title="Consultation Hours"
         containerStyle={{ marginTop: 16, paddingBottom: 16 }}
       >
-        {profileData!.consultationHours!.map((i, idx) => (
+        {profileData!.consultHours!.map((i, idx) => (
           <ConsultationHoursCard
-            days={i!.days}
+            days={i!.weekDay}
             timing={fromatConsultationHours(i!.startTime, i!.endTime)}
-            isAvailableForOnlineConsultation={i!.availableForVirtualConsultation}
-            isAvailableForPhysicalConsultation={i!.availableForPhysicalConsultation}
+            isAvailableForOnlineConsultation={i!.consultMode.toLocaleLowerCase()}
+            //isAvailableForPhysicalConsultation={i!.consultType}
             key={idx}
             type="fixed"
           />
         ))}
       </SquareCardWithTitle>
+      <View style={{ margin: 20, flexDirection: 'row', marginBottom: -10 }}>
+        <View style={{ marginTop: 4 }}>
+          <RoundChatIcon />
+        </View>
+
+        <View style={{ marginLeft: 14 }}>
+          <Text>
+            <Text style={styles.descriptionview}>Call</Text>
+            <Text
+              style={{ color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(16), lineHeight: 22 }}
+            >
+              {' '}
+              1800 - 3455 - 3455{' '}
+            </Text>
+            <Text style={styles.descriptionview}>to make any changes</Text>
+          </Text>
+        </View>
+      </View>
     </View>
   );
 };

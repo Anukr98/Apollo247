@@ -14,7 +14,7 @@ export const viewStyles = {
     backgroundColor: colors.WHITE,
     shadowColor: colors.CARD_SHADOW_COLOR,
     shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.2,
     shadowRadius: 10,
     borderRadius: 10,
     elevation: 10,

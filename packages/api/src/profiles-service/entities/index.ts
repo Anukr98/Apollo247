@@ -1,4 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, OneToMany, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  BaseEntity,
+  OneToMany,
+  ManyToOne,
+  BeforeInsert,
+  BeforeUpdate,
+} from 'typeorm';
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 
@@ -69,6 +78,9 @@ export class Patient extends BaseEntity {
 
   @OneToMany((type) => SearchHistory, (searchHistory) => searchHistory.patient)
   searchHistory: SearchHistory[];
+
+  @OneToMany((type) => PatientAddress, (patientAddress) => patientAddress.patient)
+  patientAddress: PatientAddress[];
 }
 //patient Ends
 
@@ -94,3 +106,48 @@ export class SearchHistory extends BaseEntity {
   createdDate: Date;
 }
 //searchHistory Ends
+
+//patientAddress Starts
+@Entity()
+export class PatientAddress extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  addressLine1: string;
+
+  @Column({ nullable: true })
+  addressLine2: string;
+
+  @Column({ nullable: true })
+  city: string;
+
+  @Column({ nullable: true })
+  state: string;
+
+  @Column()
+  zipcode: string;
+
+  @Column({ nullable: true })
+  landmark: string;
+
+  @ManyToOne((type) => Patient, (patient) => patient.patientAddress)
+  patient: Patient;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//patientAddress Ends

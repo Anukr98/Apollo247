@@ -4,7 +4,7 @@ import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
 import { createConnections, getConnection } from 'typeorm';
-import { Patient, SearchHistory } from 'profiles-service/entities';
+import { Patient, SearchHistory, PatientAddress } from 'profiles-service/entities';
 import {
   Doctor,
   DoctorSpecialty,
@@ -33,6 +33,10 @@ import {
   getPatientPastSearchesTypeDefs,
   getPatientPastSearchesResolvers,
 } from 'profiles-service/resolvers/getPatientPastSearches';
+import {
+  addPatientAddressTypeDefs,
+  addPatientAddressResolvers,
+} from 'profiles-service/resolvers/patientAddress';
 import gql from 'graphql-tag';
 import { GatewayHeaders } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
@@ -40,7 +44,7 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
 (async () => {
   await createConnections([
     {
-      entities: [Patient, SearchHistory],
+      entities: [Patient, SearchHistory, PatientAddress],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
       port: parseInt(process.env.PROFILES_DB_PORT, 10),
@@ -129,6 +133,10 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
       {
         typeDefs: saveSearchTypeDefs,
         resolvers: saveSearchResolvers,
+      },
+      {
+        typeDefs: addPatientAddressTypeDefs,
+        resolvers: addPatientAddressResolvers,
       },
     ]),
   });

@@ -6,6 +6,33 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum APPOINTMENT_TYPE {
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+}
+
+export enum AccountType {
+  CURRENT = "CURRENT",
+  SAVINGS = "SAVINGS",
+}
+
+export enum ConsultMode {
+  BOTH = "BOTH",
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+}
+
+export enum ConsultType {
+  FIXED = "FIXED",
+  PREFERRED = "PREFERRED",
+}
+
+export enum DoctorType {
+  APOLLO = "APOLLO",
+  PAYROLL = "PAYROLL",
+  STAR_APOLLO = "STAR_APOLLO",
+}
+
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
@@ -17,6 +44,11 @@ export enum INVITEDSTATUS {
   NONE = "NONE",
   NOTAPPLICABLE = "NOTAPPLICABLE",
   REJECTED = "REJECTED",
+}
+
+export enum REQUEST_ROLES {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
 }
 
 export enum Relation {
@@ -31,6 +63,33 @@ export enum Relation {
   WIFE = "WIFE",
 }
 
+export enum STATUS {
+  CANCELLED = "CANCELLED",
+  CONFIRMED = "CONFIRMED",
+  IN_PROGRESS = "IN_PROGRESS",
+}
+
+export enum Salutation {
+  DR = "DR",
+  MR = "MR",
+  MRS = "MRS",
+}
+
+export enum WeekDay {
+  FRIDAY = "FRIDAY",
+  MONDAY = "MONDAY",
+  SATURDAY = "SATURDAY",
+  SUNDAY = "SUNDAY",
+  THURSDAY = "THURSDAY",
+  TUESDAY = "TUESDAY",
+  WEDNESDAY = "WEDNESDAY",
+}
+
+export interface CreateAppointmentSessionInput {
+  appointmentId: string;
+  requestRole: REQUEST_ROLES;
+}
+
 export interface UpdatePatientInput {
   id: string;
   firstName?: string | null;
@@ -43,15 +102,6 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
 }
 
-
-export enum ErrorMsgs {
-  INVALID_MOBILE_NUMBER = 'INVALID_MOBILE_NUMBER',
-  INVALID_TOKEN = 'INVALID_TOKEN',
-  PRISM_AUTH_TOKEN_ERROR = 'PRISM_AUTH_TOKEN_ERROR',
-  PRISM_GET_USERS_ERROR = 'PRISM_GET_USERS_ERROR',
-  PRISM_NO_DATA = 'PRISM_NO_DATA',
-  UPDATE_PROFILE_ERROR = 'UPDATE_PROFILE_ERROR',
-}
 //==============================================================
 // END Enums and Input Objects
 //==============================================================
