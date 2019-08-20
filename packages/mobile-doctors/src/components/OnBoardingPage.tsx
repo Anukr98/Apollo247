@@ -31,18 +31,17 @@ import { ifIphoneX } from 'react-native-iphone-x-helper';
 
 const styles = StyleSheet.create({
   container: {
-    //...theme.viewStyles.container,
     flex: 1,
     width: '100%',
-    height: 600,
     backgroundColor: '#f0f4f5',
   },
   mainView: {
-    flex: 9,
+    flex: 6,
     backgroundColor: '#f0f4f5',
   },
   itemContainer: {
-    height: 490, //height === 812 || height === 896 ? height - 160 : height - 100,
+    flex: 1,
+    height: 'auto', //height === 812 || height === 896 ? height - 160 : height - 100,
     margin: 20,
     backgroundColor: '#ffffff',
     alignItems: 'center',
@@ -53,16 +52,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 10,
     elevation: 8,
-    marginBottom: 30,
+    marginBottom: 118,
   },
   descptionText: {
-    marginTop: 20,
     color: 'rgba(0,0,0,0.4)',
     textAlign: 'center',
-    marginHorizontal: 40,
     lineHeight: 20,
     ...theme.fonts.IBMPlexSansMedium(14),
-    paddingBottom: 50,
+    marginTop: 20,
   },
   titleStyle: {
     color: '#02475b',
@@ -73,8 +70,12 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'flex-start',
     backgroundColor: 'transparent',
-    // backgroundColor: 'red',
-    top: -70,
+
+    ...Platform.select({
+      ios: {
+        top: -30,
+      },
+    }),
   },
   imageStyle: {
     marginTop: -90,
@@ -85,7 +86,8 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     ...theme.fonts.IBMPlexSansBold(13),
     textAlign: 'center',
-    // top: -70,
+    //top: -50,
+    //backgroundColor: 'red',
   },
   statusBarBg: {
     width: '100%',
@@ -129,7 +131,7 @@ const slides: Slide[] = [
   {
     key: 'somethun-dos',
     title: 'easy follow ups',
-    text: 'Follow up with your patients virtually  and whenever you want',
+    text: 'Follow up with your patients virtually\nand whenever you want',
     image: require('@aph/mobile-doctors/src/images/onboard/img_onboarding_easy_follow_ups.png'),
     backgroundColor: '#FBFCFD',
     index: 2,
@@ -138,7 +140,7 @@ const slides: Slide[] = [
   {
     key: 'somethun1',
     title: 'anytime anywhere',
-    text: ' Consult virtually, at a time of your convenience',
+    text: ' Consult virtually, at a time of your\nconvenience',
     image: require('@aph/mobile-doctors/src/images/onboard/img_onboarding_anytime_anywhere.png'),
     backgroundColor: '#FBFCFD',
     index: 3,
@@ -147,7 +149,7 @@ const slides: Slide[] = [
   {
     key: 'somethun2',
     title: 'medico-legal assistance',
-    text: 'Get immediate help from our expert medico legal team',
+    text: 'Get immediate help from our expert\nmedico legal team',
     image: require('@aph/mobile-doctors/src/images/onboard/img_onboarding_medico_legal_assistance.png'),
     backgroundColor: '#FBFCFD',
     index: 4,
@@ -160,42 +162,43 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
   const appIntroSliderRef = React.useRef<any>(null);
   // const { currentUser } = useAuth();
   const [state, setState] = useState(true);
-  const { currentUser, authError } = useAuth();
-  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
 
   useEffect(() => {
     firebase.analytics().setCurrentScreen('Onboarding');
   });
+
+  const onSlideChange = (index: number) => {
+    if (index === slides.length) {
+      props.navigation.replace(AppRoutes.Login);
+    } else {
+      index === slides.length - 1 ? setState(false) : setState(true);
+      appIntroSliderRef.current!.goToSlide(index);
+    }
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.statusBarBg} />
       <SafeAreaView style={styles.container}>
         <View style={styles.mainView}>
-          <View style={{ flex: 2 }}>
+          <View style={{ flex: 15 }}>
             <AppIntroSlider
               ref={appIntroSliderRef}
               hidePagination
               slides={slides}
+              onSlideChange={onSlideChange}
               renderItem={(item: Slide) => (
                 <View style={styles.itemContainer}>
                   <Image source={item.image} style={styles.imageStyle} resizeMode="contain" />
-                  <View style={{ marginTop: -135 }}>
+
+                  <View style={{ marginBottom: 53, marginTop: -90 }}>
                     <Text style={styles.titleStyle}>{item.title}</Text>
                     <Text style={styles.descptionText}>{item.text}</Text>
                   </View>
                   <TouchableOpacity
-                    style={{ marginTop: -30 }}
+                    style={{ marginBottom: 25 }}
                     onPress={() => {
-                      if (item.index === slides.length) {
-                        AsyncStorage.setItem('onboarding', 'true');
-                        props.navigation.replace(AppRoutes.Login);
-                      } else {
-                        if (item.index === slides.length - 1) {
-                          setState(false);
-                        }
-                        appIntroSliderRef.current.goToSlide(item.index);
-                      }
+                      onSlideChange(item.index);
                     }}
                   >
                     {item.icon}
@@ -204,22 +207,32 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
               )}
             />
           </View>
-
-          {!state ? null : (
-            <View style={styles.skipView}>
-              <TouchableOpacity
-                onPress={() => {
-                  AsyncStorage.setItem('onboarding', 'true').then(() => {
-                    console.log('view');
-                  });
-                  props.navigation.replace(AppRoutes.Login);
-                }}
-              >
-                <Text style={styles.skipTextStyle}>SKIP</Text>
-              </TouchableOpacity>
-            </View>
-          )}
         </View>
+
+        {!state ? null : (
+          // <TouchableOpacity
+          //   onPress={() => {
+          //     AsyncStorage.setItem('onboarding', 'true').then(() => {
+          //       console.log('view');
+          //       props.navigation.replace(AppRoutes.Login);
+          //     });
+          //   }}
+          // >
+          <View style={styles.skipView}>
+            <Text
+              style={styles.skipTextStyle}
+              onPress={() => {
+                AsyncStorage.setItem('onboarding', 'true').then(() => {
+                  console.log('view');
+                  props.navigation.replace(AppRoutes.Login);
+                });
+              }}
+            >
+              SKIP
+            </Text>
+          </View>
+          // </TouchableOpacity>
+        )}
       </SafeAreaView>
     </View>
   );

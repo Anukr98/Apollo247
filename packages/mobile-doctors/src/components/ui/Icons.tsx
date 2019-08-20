@@ -101,19 +101,66 @@ export const Star: React.FC<IconProps> = (props) => (
 );
 
 export const ConsultationRoom: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('../../images/icons/ic_consultroom.png')} />
+  <IconBase
+    size="sm"
+    style={{ marginTop: 8 }}
+    {...props}
+    source={require('../../images/icons/ic_consultroom.png')}
+  />
+);
+
+export const ConsultationRoomFocused: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    style={{ marginTop: 8 }}
+    {...props}
+    source={require('../../images/icons/ic_consultroom_white.png')}
+  />
 );
 
 export const MyHealth: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('../../images/icons/ic_myhealth.png')} />
+  <IconBase
+    size="sm"
+    style={{ marginTop: 8 }}
+    {...props}
+    source={require('../../images/icons/ic_myhealth.png')}
+  />
+);
+
+export const MyHealthFocused: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    style={{ marginTop: 8 }}
+    {...props}
+    source={require('../../images/icons/ic_myhealth_best.png')}
+  />
 );
 
 export const InboxIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('../../images/icons/ic_round_inbox.png')} />
+  <IconBase
+    size="sm"
+    style={{ marginTop: 8 }}
+    {...props}
+    source={require('../../images/icons/ic_round_inbox.png')}
+  />
 );
 
 export const Person: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('../../images/icons/ic_account.png')} />
+  <IconBase
+    size="sm"
+    style={{ marginTop: 8 }}
+    {...props}
+    source={require('../../images/icons/ic_account.png')}
+  />
+);
+
+export const PersonFocused: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    style={{ marginTop: 8 }}
+    {...props}
+    source={require('../../images/icons/ic_account_white.png')}
+  />
 );
 
 export const GeneralPhysician: React.FC<IconProps> = (props) => (
@@ -318,5 +365,187 @@ export const NextAppointmentIcon: React.FC<IconProps> = (props) => (
     {...props}
     style={{ height: 20, width: 20 }}
     source={require('../../images/icons/ic_status_incomplete.png')}
+  />
+);
+export const UpComingIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    style={{ height: 20, width: 20 }}
+    source={require('../../images/icons/ic_status_upcoming.png')}
+  />
+);
+export const Call: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/call.png')}
+  />
+);
+
+export const PatientPlaceHolderImage: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 178, width: '100%' }}
+    {...props}
+    source={require('../../images/icons/patient_01.png')}
+  />
+);
+
+export const NoCalenderData: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 131, width: 138 }}
+    {...props}
+    source={require('../../images/icons/no_data.png')}
+  />
+);
+export const StartConsult: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 39, width: 149 }}
+    {...props}
+    source={require('../../images/icons/start_consult.png')}
+  />
+);
+export const PlaceHolderDoctor: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 44, width: 44 }}
+    {...props}
+    source={require('../../images/icons/placeholderdoctor.png')}
+  />
+);
+export const PlaceHolderDoctors: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 44, width: 44 }}
+    {...props}
+    source={require('../../images/icons/PlaceHolderDoctor2.png')}
+  />
+);
+
+export const Start: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/start.png')}
+  />
+);
+
+export const DoctorCall: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/doctorcall.png')} />
+);
+
+export const ChatIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_chat_circle.png')} />
+);
+
+export const FullScreenIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_expand_circle.png')} />
+);
+
+export const AddIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_add.png')} />
+);
+
+export const VideoOffIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_video_off.png')} />
+);
+
+export const AttachmentIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_attachment.png')} />
+);
+
+export const MuteIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_mute_circle.png')} />
+);
+
+export const EndCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_endcall_big.png')} />
+);
+
+export const PickCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_callpick.png')} />
+);
+
+export const ClosePopup: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('../../images/icons/round_clear_24_px.png')} />
+);
+
+export const VideoOnIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/CallVideoOn.png')} />
+);
+
+export const SpeakerOn: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/speakerOn.png')} />
+);
+
+export const SpeakerOff: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/speakerOff.png')} />
+);
+
+export const UnMuteIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/unMute.png')} />
+);
+
+export const FrontCameraIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/frontCamera.png')} />
+);
+
+export const BackCameraIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/backCamera.png')} />
+);
+
+export const RoundCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/roundCallIcon.png')} />
+);
+
+export const RoundVideoIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/round_videocam_24_px.png')} />
+);
+
+export const ChatWithNotification: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ChatWithNotification.png')} />
+);
+
+export const RoundChatIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/round_info_24_px.png')}
+  />
+);
+
+export const RightIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/ic_arrow_right.png')}
+  />
+);
+
+export const DiagonisisRemove: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/ic_cross_popup.png')}
+  />
+);
+
+export const Minus: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/ic_minus.png')}
+  />
+);
+export const Plus: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/ic_plus.png')}
+  />
+);
+
+export const AddPlus: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/ic_plus_onorange.png')}
   />
 );

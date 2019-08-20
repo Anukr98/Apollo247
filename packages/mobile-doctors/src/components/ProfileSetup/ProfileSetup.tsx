@@ -4,19 +4,21 @@ import { Fees } from '@aph/mobile-doctors/src/components/ProfileSetup/Fees';
 import { Profile } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/Profile';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import { RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { ApploLogo, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
-import { GET_DOCTOR_PROFILE } from '@aph/mobile-doctors/src/graphql/profiles';
+import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
-  GetDoctorProfile,
-  GetDoctorProfile_getDoctorProfile,
-} from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
-import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
+  GetDoctorDetails,
+  GetDoctorDetails_getDoctorDetails,
+} from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import { setDoctorDetails, setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useRef, useState } from 'react';
-import { useQuery } from 'react-apollo-hooks';
+import React, { useEffect, useRef, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
   Alert,
@@ -30,8 +32,9 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
-import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
-// const isMobileNumberValid = (phoneNumber: string) => true;
+//import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
+
+const isMobileNumberValid = (n: string) => true;
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -42,13 +45,15 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     marginHorizontal: 20,
     flexDirection: 'row',
+    width: '92%',
   },
   buttonStyle: {
-    width: 152,
+    width: '46%',
   },
   buttonTextStyle: {
     ...theme.fonts.IBMPlexSansBold(13),
     textAlign: 'center',
+    margin: 1.5,
   },
   buttonView: {
     borderRadius: 10,
@@ -173,63 +178,128 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [modelvisible, setmodelvisible] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
+  const [isReloading, setReloading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const client = useApolloClient();
+  const { doctorDetails } = useAuth();
+  // useEffect(()=>{
+  //   props.navigation.addListener((''))
+  // })
 
-  const { data, error, loading } = useQuery<GetDoctorProfile, GetDoctorProfile_getDoctorProfile>(
-    GET_DOCTOR_PROFILE
-  );
-  const getDoctorProfile = data && data.getDoctorProfile;
-  // const {
-  //   data: { getDoctorProfile },
-  //   error,
-  //   loading,
-  // } = doctorProfile;
-  if (!loading && error) {
-    Alert.alert('Error', 'Unable to get the data');
-  } else {
-    console.log('getDoctorProfile', getDoctorProfile);
-  }
+  useEffect(() => {
+    setLoading(true);
+    client
+      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
+      .then((_data) => {
+        const result = _data.data.getDoctorDetails;
+        console.log('getDoctorProfile', _data!);
+
+        try {
+          setDoctorDetails(result);
+        } catch (e) {
+          console.log('Unable to set DoctorDetails');
+        }
+
+        setGetDoctorProfile(result);
+        setLoading(false);
+      })
+      .catch((e) => {
+        setLoading(false);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while fetching Doctor profile', error);
+      });
+  }, []);
+
+  const fetchProfileData = (isReload: boolean) => {
+    isReload ? setReloading(true) : setLoading(true);
+    client
+      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
+      .then((_data) => {
+        console.log('getDoctorProfile', _data!);
+        const result = _data.data.getDoctorDetails;
+        setGetDoctorProfile(result);
+        isReload ? setReloading(false) : setLoading(false);
+      })
+      .catch((e) => {
+        isReload ? setReloading(false) : setLoading(false);
+        console.log('Error occured while loading data', e);
+      });
+  };
+
+  const [
+    getDoctorProfile,
+    setGetDoctorProfile,
+  ] = useState<GetDoctorDetails_getDoctorDetails | null>(null);
+
+  const onReload = () => {
+    setReloading(true);
+    client
+      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
+      .then((_data) => {
+        const result = _data.data.getDoctorDetails;
+        setGetDoctorProfile(result);
+        console.log('GET_DOCTOR_DETAILS', result);
+        setReloading(false);
+      })
+      .catch((e) => {
+        console.log('Error occured while adding Doctor', e);
+        setReloading(false);
+        Alert.alert('Error', 'Error occured while reloading data');
+      });
+  };
 
   const renderHeader = (
     <Header
+      leftIcons={[
+        {
+          icon: <ApploLogo />,
+          // onPress: () => props.navigation.push(AppRoutes.TabBar),
+        },
+      ]}
       rightIcons={[
         {
           icon: <RoundIcon />,
-          onPress: () => setmodelvisible(true),
+          onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment), //setmodelvisible(true),
         },
       ]}
     />
   );
 
-  const renderProgressBar = (tabIndex: number, data: GetDoctorProfile_getDoctorProfile) => (
+  const renderProgressBar = (tabIndex: number, data: GetDoctorDetails_getDoctorDetails) => (
     <ProfileTabHeader
-      title={headerContent[tabIndex].heading(data!.profile!.firstName)}
+      title={headerContent[tabIndex].heading(data!.lastName)}
       description={headerContent[tabIndex].description}
-      tabs={(data!.profile!.isStarDoctor
+      tabs={(data!.doctorType == 'STAR_APOLLO' || data!.doctorType == 'APOLLO'
         ? headerContent
         : [headerContent[0], headerContent[1]]
       ).map((content) => content.tab)}
       activeTabIndex={tabIndex}
     />
   );
-  const renderComponent = (tabIndex: number, data: GetDoctorProfile_getDoctorProfile) =>
+  const renderComponent = (tabIndex: number, data: GetDoctorDetails_getDoctorDetails) =>
     tabIndex == 0 ? (
-      <Profile profileData={data} />
+      <Profile
+        profileData={data}
+        scrollViewRef={scrollViewRef.current!}
+        onReload={() => onReload()}
+      />
     ) : tabIndex == 1 ? (
       <Availability profileData={data} />
     ) : (
       <Fees profileData={data} />
     );
 
-  const renderFooterButtons = (tabIndex: number, data: GetDoctorProfile_getDoctorProfile) => {
+  const renderFooterButtons = (tabIndex: number, data: GetDoctorDetails_getDoctorDetails) => {
     const onPressProceed = () => {
-      const tabsCount = data!.profile!.isStarDoctor ? 3 : 2;
+      const tabsCount = data!.doctorType == 'STAR_APOLLO' || data!.doctorType == 'APOLLO' ? 3 : 2;
       if (tabIndex < tabsCount - 1) {
         setActiveTabIndex(tabIndex + 1);
         scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0, false);
       } else {
         setProfileFlowDone(true).finally(() => {
-          props.navigation.navigate(AppRoutes.TransitionPage, {
-            doctorName: data.profile!.firstName,
+          props.navigation.replace(AppRoutes.TransitionPage, {
+            doctorName: data.lastName,
+            DoctorId: data.id,
           });
         });
       }
@@ -243,7 +313,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         {tabIndex == 0 ? (
           <Button
             onPress={onPressProceed}
-            title={data!.profile!.isStarDoctor ? 'SAVE AND PROCEED' : 'PROCEED'}
+            title={data!.doctorType == 'STAR_APOLLO' ? 'SAVE AND PROCEED' : 'PROCEED'}
             titleTextStyle={styles.buttonTextStyle}
             style={{ width: 240 }}
           />
@@ -258,7 +328,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
             />
             <Button
               onPress={onPressProceed}
-              title={'SAVE AND PROCEED'}
+              title={data!.doctorType == 'STAR_APOLLO' ? 'SAVE AND PROCEED' : 'PROCEED'}
               titleTextStyle={styles.buttonTextStyle}
               style={styles.buttonStyle}
             />
@@ -287,97 +357,97 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
     return isValidNumber;
   };
-  const scrollViewRef = useRef<KeyboardAwareScrollView | null>();
-  return (
-    <SafeAreaView style={theme.viewStyles.container}>
-      <KeyboardAwareScrollView
-        style={{ flex: 1 }}
-        showsVerticalScrollIndicator={false}
-        ref={(ref) => (scrollViewRef.current = ref)}
-        scrollEnabled
-        enableAutomaticScroll
-        enableOnAndroid={false}
-        onKeyboardDidShow={() => {
-          scrollViewRef.current && scrollViewRef.current.scrollToEnd();
-        }}
-        bounces={false}
-        keyboardShouldPersistTaps="always"
-      >
-        {renderHeader}
-        {loading ? (
-          <View style={{ flex: 1, alignSelf: 'center', marginTop: height / 3 }}>
-            <ActivityIndicator size="large" color="green" />
-          </View>
-        ) : (
-          !!getDoctorProfile && (
-            <>
-              {renderProgressBar(activeTabIndex, getDoctorProfile)}
-              {renderComponent(activeTabIndex, getDoctorProfile)}
-              {renderFooterButtons(activeTabIndex, getDoctorProfile)}
-            </>
-          )
-        )}
-      </KeyboardAwareScrollView>
 
-      {modelvisible ? (
-        <View>
-          <NeedHelpCard
-            onPress={() => setmodelvisible(false)}
-            heading="need help?"
-            description="You can request a call back for us to resolve your issue ASAP"
+  const renderNeedHelpModal = () => {
+    return modelvisible ? (
+      <View>
+        <NeedHelpCard
+          onPress={() => setmodelvisible(false)}
+          heading="need help?"
+          description="You can request a call back for us to resolve your issue ASAP"
+        >
+          <View
+            style={[
+              { height: 56 },
+              phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
+            ]}
           >
-            <View
-              style={[
-                { height: 56 },
-                phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
-              ]}
-            >
-              <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
-              <TextInput
-                autoFocus
-                style={styles.inputStyle}
-                keyboardType="numeric"
-                maxLength={10}
-                value={phoneNumber}
-                onChangeText={(value) => validateAndSetPhoneNumber(value)}
-              />
-            </View>
-            <View
-              style={{
-                height: 50,
-                width: '100%',
-                paddingVertical: 10,
-                overflow: 'hidden',
-                marginLeft: 20,
-              }}
-            >
-              <Text
-                style={
-                  phoneNumber == '' || phoneNumberIsValid
-                    ? styles.bottomValidDescription
-                    : styles.bottomDescription
-                }
-              >
-                {phoneNumber == '' || phoneNumberIsValid ? null : string.LocalStrings.wrong_number}
-              </Text>
-            </View>
-
-            <Button
-              title={'CALL ME'}
-              titleTextStyle={styles.buttonTextStyle}
-              style={
-                phoneNumber == '' || phoneNumberIsValid ? styles.buttonViewLess : styles.buttonView
-              }
-              onPress={() => moveNextPage()}
-              disabled={
-                phoneNumberIsValid && phoneNumber.length === 10 && isMobileNumberValid(phoneNumber)
-                  ? false
-                  : true
-              }
+            <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
+            <TextInput
+              autoFocus
+              style={styles.inputStyle}
+              keyboardType="numeric"
+              maxLength={10}
+              value={phoneNumber}
+              onChangeText={(value) => validateAndSetPhoneNumber(value)}
             />
-          </NeedHelpCard>
-        </View>
-      ) : null}
-    </SafeAreaView>
+          </View>
+          <View
+            style={{
+              height: 50,
+              width: '100%',
+              paddingVertical: 10,
+              overflow: 'hidden',
+              marginLeft: 20,
+            }}
+          >
+            <Text
+              style={
+                phoneNumber == '' || phoneNumberIsValid
+                  ? styles.bottomValidDescription
+                  : styles.bottomDescription
+              }
+            >
+              {phoneNumber == '' || phoneNumberIsValid ? null : string.LocalStrings.wrong_number}
+            </Text>
+          </View>
+
+          <Button
+            title={'CALL ME'}
+            titleTextStyle={styles.buttonTextStyle}
+            style={
+              phoneNumber == '' || phoneNumberIsValid ? styles.buttonViewLess : styles.buttonView
+            }
+            onPress={() => moveNextPage()}
+            disabled={
+              phoneNumberIsValid && phoneNumber.length === 10 && isMobileNumberValid(phoneNumber)
+                ? false
+                : true
+            }
+          />
+        </NeedHelpCard>
+      </View>
+    ) : null;
+  };
+  const scrollViewRef = useRef<KeyboardAwareScrollView | null>();
+
+  return (
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={theme.viewStyles.container}>
+        <KeyboardAwareScrollView
+          style={{ flex: 1 }}
+          showsVerticalScrollIndicator={false}
+          ref={(ref) => (scrollViewRef.current = ref)}
+          bounces={false}
+        >
+          {renderHeader}
+          {loading ? (
+            <View style={{ flex: 1, alignSelf: 'center', marginTop: height / 3 }}>
+              <ActivityIndicator size="large" color="green" />
+            </View>
+          ) : (
+            !!getDoctorProfile && (
+              <>
+                {renderProgressBar(activeTabIndex, getDoctorProfile)}
+                {renderComponent(activeTabIndex, getDoctorProfile)}
+                {renderFooterButtons(activeTabIndex, getDoctorProfile)}
+              </>
+            )
+          )}
+        </KeyboardAwareScrollView>
+        {renderNeedHelpModal()}
+      </SafeAreaView>
+      {isReloading && <Loader fullScreen flex1 />}
+    </View>
   );
 };

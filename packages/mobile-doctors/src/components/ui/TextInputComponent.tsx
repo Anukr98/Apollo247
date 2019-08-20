@@ -25,11 +25,12 @@ const styles = StyleSheet.create({
   },
   textInputStyle: {
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-    ...theme.fonts.IBMPlexSansMedium(18),
-    borderBottomWidth: 2,
-    paddingBottom: 3,
-    paddingLeft: Platform.OS === 'ios' ? 0 : -3,
-    paddingTop: 0,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    paddingBottom: 12,
+    paddingLeft: Platform.OS === 'ios' ? 12 : 12,
+    paddingTop: 8,
+    color: 'rgba(1, 71, 91, 0.4)',
+    textAlign: 'left',
   },
   textview: {
     flexDirection: 'row',

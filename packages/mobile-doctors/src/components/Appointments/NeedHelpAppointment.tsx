@@ -1,80 +1,62 @@
+import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import { SafeAreaView, Alert, View, Text, StyleSheet } from 'react-native';
-import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-const styles = StyleSheet.create({
-  containerStyles: {
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: theme.colors.BUTTON_BG,
-    width: 200,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    shadowColor: 'rgba(0,0,0,0.2)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 2,
-  },
+import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 
-  titleTextStyle: {
-    ...theme.fonts.IBMPlexSansBold(14),
-    color: theme.colors.BUTTON_TEXT,
-  },
+const styles = StyleSheet.create({
   mainview: {
-    marginLeft: 20,
+    marginTop: 16,
     marginBottom: 20,
+    marginLeft: 16,
   },
   descriptionview: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: '#003646',
-    letterSpacing: 0.05,
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: '#0087ba',
+    lineHeight: 24,
+    marginRight: 16,
   },
-  textview: {
-    fontFamily: 'IBMPlexSans',
-    fontSize: 15,
-    color: '#003646',
-  },
-  buttonview: {
-    justifyContent: 'center',
-    alignItems: 'center',
+  fullview: {
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    margin: 20,
   },
 });
-export interface NeedHelpAppointmentProps {}
+export interface NeedHelpAppointmentProps extends NavigationScreenProps {}
 
 export const NeedHelpAppointment: React.FC<NeedHelpAppointmentProps> = (props) => {
+  const showHeaderView = () => {
+    return (
+      <Header
+        containerStyle={{ height: 50 }}
+        leftIcons={[
+          {
+            icon: <BackArrow />,
+            onPress: () => props.navigation.goBack(),
+          },
+        ]}
+        headerText="NEED HELP?"
+      />
+    );
+  };
   return (
-    <SafeAreaView style={theme.viewStyles.container}>
-      <View style={{ marginBottom: 32 }}>
-        <NotificationHeader
-          leftIcons={[
-            {
-              icon: <BackArrow />,
-              onPress: () => Alert.alert('click'),
-            },
-          ]}
-          middleText="NEED HELP"
-        />
-      </View>
-      <View style={styles.mainview}>
-        <Text style={styles.descriptionview}>We’re here to help!</Text>
-      </View>
-      <View style={{ marginLeft: 20, marginBottom: 32 }}>
-        <Text style={styles.textview}>
-          Don’t worry. We’ve got you! {'\n'}Someone from our team will reach out {'\n'}to you
-          shortly!
-        </Text>
-      </View>
-      <View style={styles.buttonview}>
-        <Button
-          style={styles.containerStyles}
-          title="CALLME"
-          titleTextStyle={styles.titleTextStyle}
-          onPress={() => Alert.alert('Call me')}
-        />
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+      {showHeaderView()}
+      <View style={styles.fullview}>
+        <View style={styles.mainview}>
+          <Text style={styles.descriptionview}>Don’t worry. We are here for you :)</Text>
+        </View>
+        <View style={{ marginLeft: 16, marginBottom: 32 }}>
+          <Text style={styles.descriptionview}>
+            Call
+            <Text style={{ color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(18) }}>
+              {' '}
+              1800 - 3455 - 3455{' '}
+            </Text>
+            to reach an expert from our team who will resolve your issue.
+          </Text>
+        </View>
       </View>
     </SafeAreaView>
   );

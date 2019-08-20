@@ -1,0 +1,423 @@
+import { StarDoctorsTeam } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/StarDoctorsTeam';
+import {
+  Star,
+  BackArrow,
+  RoundIcon,
+  RoundChatIcon,
+} from '@aph/mobile-doctors/src/components/ui/Icons';
+import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import React, { useState } from 'react';
+import {
+  Image,
+  StyleSheet,
+  Text,
+  View,
+  SafeAreaView,
+  TextInput,
+  Platform,
+  TouchableOpacity,
+} from 'react-native';
+import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { AccountStarTeam } from '@aph/mobile-doctors/src/components/Account/AccountStarTem';
+import { string } from '@aph/mobile-doctors/src/strings/string';
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: '#f7f7f7',
+  },
+  understatusline: {
+    width: '95%',
+    backgroundColor: '#02475b',
+    marginTop: 11,
+    opacity: 0.1,
+    marginBottom: 16,
+    ...ifIphoneX(
+      {
+        height: 2,
+      },
+      {
+        height: 1,
+      }
+    ),
+  },
+  education: {
+    color: '#658f9b',
+    fontFamily: 'IBMPlexSans',
+    fontSize: 12,
+    letterSpacing: 0.3,
+  },
+  educationtext: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: '#02475b',
+    marginBottom: 16,
+    letterSpacing: 0.35,
+    marginTop: 2,
+  },
+  cardView: {
+    margin: 16,
+    ...theme.viewStyles.whiteRoundedCornerCard,
+  },
+  imageview: {
+    height: 141,
+    marginBottom: 16,
+  },
+  drname: {
+    ...theme.fonts.IBMPlexSansSemiBold(20),
+    color: '#02475b',
+  },
+  drnametext: {
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+    color: '#0087ba',
+    lineHeight: 16,
+    marginTop: 4,
+  },
+  starIconStyle: {
+    position: 'absolute',
+    right: 16,
+    top: 141 - 28,
+  },
+  columnContainer: {
+    flexDirection: 'column',
+    marginLeft: 16,
+  },
+  inputTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.INPUT_TEXT,
+    paddingRight: 6,
+    lineHeight: 28,
+    paddingBottom: Platform.OS === 'ios' ? 5 : 0,
+  },
+  inputStyle: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    width: '80%',
+    color: theme.colors.INPUT_TEXT,
+    paddingBottom: 4,
+  },
+  inputValidView: {
+    borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+    borderBottomWidth: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '85%',
+    marginRight: 20,
+    marginLeft: 20,
+    paddingBottom: 0,
+  },
+  inputView: {
+    borderBottomColor: theme.colors.INPUT_BORDER_FAILURE,
+    borderBottomWidth: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '85%',
+    paddingBottom: 0,
+    marginRight: 0,
+    marginLeft: 20,
+  },
+  bottomDescription: {
+    lineHeight: 24,
+    color: '#890000', //theme.colors.INPUT_FAILURE_TEXT,
+    // opacity: 0.6,
+    paddingVertical: 10,
+    ...theme.fonts.IBMPlexSansMedium(12),
+    marginLeft: 20,
+  },
+  bottomValidDescription: {
+    lineHeight: 24,
+    color: theme.colors.INPUT_SUCCESS_TEXT,
+    opacity: 0.6,
+    paddingVertical: 10,
+    ...theme.fonts.IBMPlexSansMedium(12),
+    marginLeft: 20,
+  },
+  gethelpText: {
+    marginTop: 22,
+    color: '#fc9916',
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+  },
+  descriptionview: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: '#0087ba',
+    lineHeight: 24,
+    //marginTop: 20,
+  },
+});
+
+export interface ProfileProps
+  extends NavigationScreenProps<{
+    ProfileData: GetDoctorDetails_getDoctorDetails;
+
+    //navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
+  }> {
+  //profileData: object;
+  scrollViewRef: KeyboardAwareScrollView | null;
+  onReload: () => void;
+}
+
+export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
+  const [phoneNumber, setPhoneNumber] = useState<string>('');
+  const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
+  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
+
+  const profileData = props.navigation.getParam('ProfileData');
+  console.log('p', profileData);
+
+  const profileRow = (title: string, description: string) => {
+    if (!description) return null;
+    return (
+      <View style={styles.columnContainer}>
+        <Text style={styles.education}>{title}</Text>
+        <Text style={styles.educationtext}>{description}</Text>
+      </View>
+    );
+  };
+
+  const formatSpecialityAndExperience = (speciality: string, experience: string) =>
+    `${(speciality || '').toUpperCase()}     |   ${experience}YRS`;
+
+  const getFormattedLocation = () => {
+    let location = '';
+    try {
+      location = [
+        profileData.doctorHospital[0].facility.streetLine1,
+        profileData.doctorHospital[0].facility.streetLine2,
+        profileData.doctorHospital[0].facility.streetLine3,
+        profileData.doctorHospital[0].facility.city,
+        profileData.doctorHospital[0].facility.state,
+        profileData.doctorHospital[0].facility.country,
+      ]
+        // .filter((data) => console.log('data', data))
+        .filter(Boolean)
+        .join(', ');
+    } catch (e) {
+      console.log(e);
+    }
+    return location;
+  };
+
+  const showHeaderView = () => {
+    return (
+      <Header
+        containerStyle={{ height: 50 }}
+        leftIcons={[
+          {
+            icon: <BackArrow />,
+            onPress: () => props.navigation.pop(),
+          },
+        ]}
+        headerText="My PROFILE"
+        rightIcons={[
+          {
+            icon: <RoundIcon />,
+            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+          },
+        ]}
+      />
+    );
+  };
+
+  const isPhoneNumberValid = (number: string) => {
+    const isValidNumber =
+      // (number.replace(/^0+/, '').length !== 10 && number.length !== 0) ||
+      !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
+    return isValidNumber;
+  };
+  const validateAndSetPhoneNumber = (number: string) => {
+    if (/^\d+$/.test(number) || number == '') {
+      setPhoneNumber(number);
+      // if (number.length == 10) {
+      setPhoneNumberIsValid(isPhoneNumberValid(number));
+      // }
+    } else {
+      return false;
+    }
+  };
+
+  const renderHelpView = () => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          marginLeft: 20,
+          marginRight: 20,
+          marginTop: 12,
+          marginBottom: 32,
+        }}
+      >
+        <View style={{ marginTop: 4 }}>
+          <RoundChatIcon />
+        </View>
+        <View style={{ marginLeft: 14 }}>
+          <Text>
+            <Text style={styles.descriptionview}>Call</Text>
+            <Text
+              style={{
+                color: '#fc9916',
+                ...theme.fonts.IBMPlexSansSemiBold(16),
+                lineHeight: 22,
+              }}
+            >
+              {' '}
+              1800 - 3455 - 3455{' '}
+            </Text>
+            <Text style={styles.descriptionview}>to make any changes</Text>
+          </Text>
+        </View>
+      </View>
+    );
+  };
+  const renderMobilePhoneView = () => {
+    return (
+      <View
+        style={{
+          margin: 20,
+          backgroundColor: '#ffffff',
+          borderRadius: 5,
+          shadowColor: '#000000',
+          shadowOffset: {
+            width: 0,
+            height: 5,
+          },
+          shadowRadius: 10,
+          shadowOpacity: 0.2,
+          elevation: 5,
+        }}
+      >
+        <Text
+          style={{
+            ...theme.fonts.IBMPlexSansMedium(16),
+            color: '#01475b',
+            marginRight: 12,
+            marginLeft: 20,
+            marginTop: 16,
+            marginBottom: 18,
+          }}
+        >
+          Enter the mobile number you’d like to assign access of your account to
+        </Text>
+
+        <View
+          style={[
+            phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
+          ]}
+        >
+          <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
+          <TextInput
+            autoFocus
+            style={styles.inputStyle}
+            keyboardType="numeric"
+            maxLength={10}
+            value={phoneNumber}
+            onChangeText={(value) => validateAndSetPhoneNumber(value)}
+          />
+        </View>
+        <Text
+          style={
+            phoneNumber == '' || phoneNumberIsValid
+              ? styles.bottomValidDescription
+              : styles.bottomDescription
+          }
+        >
+          {phoneNumber == '' || phoneNumberIsValid
+            ? string.LocalStrings.otp_sent_to
+            : string.LocalStrings.wrong_number}
+        </Text>
+        {/* {phoneNumber == '' || phoneNumberIsValid ? null : (
+                <TouchableOpacity
+                  onPress={() => props.navigation.push(AppRoutes.HelpScreen)}
+                  style={{ marginTop: -10 }}
+                >
+                  <Text style={[styles.gethelpText]}>{string.LocalStrings.gethelp}</Text>
+                </TouchableOpacity>
+              )} */}
+      </View>
+    );
+  };
+  return (
+    <SafeAreaView style={styles.container}>
+      <View>{showHeaderView()}</View>
+      <ScrollView bounces={false}>
+        <SquareCardWithTitle title="Your Profile">
+          <View style={styles.cardView}>
+            <View style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}>
+              {profileData!.photoUrl ? (
+                // <Image
+                //   style={styles.imageview}
+                //   source={{
+                //     uri: profileData!.photoUrl,
+                //   }}
+                // />
+                <Image
+                  style={styles.imageview}
+                  source={require('@aph/mobile-doctors/src/images/doctor/doctor.png')}
+                />
+              ) : (
+                <Image
+                  style={styles.imageview}
+                  source={require('@aph/mobile-doctors/src/images/doctor/doctor.png')}
+                />
+              )}
+            </View>
+            {profileData!.doctorType == 'STAR_APOLLO' ? (
+              <Star style={styles.starIconStyle}></Star>
+            ) : null}
+            <View style={styles.columnContainer}>
+              <Text style={[styles.drname]} numberOfLines={1}>
+                {`Dr. ${profileData!.firstName} ${profileData!.lastName}`}
+              </Text>
+              <Text style={styles.drnametext}>
+                {formatSpecialityAndExperience(
+                  profileData!.specialty.name,
+                  profileData!.experience || ''
+                )}
+              </Text>
+              <View style={styles.understatusline} />
+            </View>
+            {profileRow('Education', profileData!.qualification!)}
+            {profileRow('Speciality', profileData!.specialty.name!)}
+            {profileRow('Services', profileData!.specialization || '')}
+            {profileRow(
+              'Awards',
+              (profileData!.awards || '')
+                .replace('&amp;', '&')
+                .replace(/<\/?[^>]+>/gi, '')
+                .trim()
+            )}
+            {profileRow('Speaks', (profileData!.languages || '').split(',').join(', '))}
+            {profileRow('MCI Number', profileData!.registrationNumber)}
+            {profileRow('In-person Consult Location', getFormattedLocation())}
+          </View>
+          {profileData!.doctorType == 'STAR_APOLLO' ? (
+            <AccountStarTeam
+              profileData={profileData}
+              scrollViewRef={props.scrollViewRef}
+              onReload={props.onReload}
+            />
+          ) : null}
+          <View>
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansSemiBold(16),
+                letterSpacing: 0.06,
+                color: '#02475b',
+                marginLeft: 20,
+                // marginBottom: 18,
+              }}
+            >
+              Secretary Login
+            </Text>
+            {renderMobilePhoneView()}
+            {renderHelpView()}
+          </View>
+        </SquareCardWithTitle>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};

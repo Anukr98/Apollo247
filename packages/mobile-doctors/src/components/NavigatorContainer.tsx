@@ -1,22 +1,32 @@
+import { MyAccountProfile } from '@aph/mobile-doctors/src/components/Account/MyAccountProfile';
+import { MyAvailability } from '@aph/mobile-doctors/src/components/Account/MyAvailability';
+import { AppointmentNotifications } from '@aph/mobile-doctors/src/components/Appointments/AppointmentNotifications';
 import { Appointments } from '@aph/mobile-doctors/src/components/Appointments/Appointments';
+import { CallRequestScreen } from '@aph/mobile-doctors/src/components/Appointments/CallRequestScreen';
+import { NeedHelpAppointment } from '@aph/mobile-doctors/src/components/Appointments/NeedHelpAppointment';
+import { AddCondition } from '@aph/mobile-doctors/src/components/ConsultRoom/AddCondition';
+import { AddDiagnostics } from '@aph/mobile-doctors/src/components/ConsultRoom/AddDiagnostics';
+import { AddMedicine } from '@aph/mobile-doctors/src/components/ConsultRoom/AddMedicine';
+import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView';
+import { ConsultRoomScreen } from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen';
+import { MedicineUpdate } from '@aph/mobile-doctors/src/components/ConsultRoom/MedicineUpdate';
+import { HelpScreen } from '@aph/mobile-doctors/src/components/HelpScreen';
 import { Inbox } from '@aph/mobile-doctors/src/components/Inbox';
-import { SplashScreen } from '@aph/mobile-doctors/src/components/SplashScreen';
 import { LandingPage } from '@aph/mobile-doctors/src/components/LandingPage';
 import { Login } from '@aph/mobile-doctors/src/components/Login';
 import { MyAccount } from '@aph/mobile-doctors/src/components/MyAccount';
 import { NeedHelp } from '@aph/mobile-doctors/src/components/NeedHelp';
+import { NeedHelpDonePage } from '@aph/mobile-doctors/src/components/NeedHelpDonePage';
+import { NotificationScreen } from '@aph/mobile-doctors/src/components/Notification/NotificationScreen';
 import { Onboarding } from '@aph/mobile-doctors/src/components/Onboarding';
 import { OnBoardingPage } from '@aph/mobile-doctors/src/components/OnBoardingPage';
 import { OTPVerification } from '@aph/mobile-doctors/src/components/OTPVerification';
+import { OTPVerificationApiCall } from '@aph/mobile-doctors/src/components/OTPVerificationApiCall';
 import { Patients } from '@aph/mobile-doctors/src/components/Patients';
 import { ProfileSetup } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileSetup';
+import { SplashScreen } from '@aph/mobile-doctors/src/components/SplashScreen';
 import { TabBar } from '@aph/mobile-doctors/src/components/TabBar';
 import { TransitionPage } from '@aph/mobile-doctors/src/components/TransitionPage';
-import { NeedHelpDonePage } from '@aph/mobile-doctors/src/components/NeedHelpDonePage';
-import { AppointmentNotifications } from '@aph/mobile-doctors/src/components/Appointments/AppointmentNotifications';
-import { NeedHelpAppointment } from '@aph/mobile-doctors/src/components/Appointments/NeedHelpAppointment';
-import { CallRequestScreen } from '@aph/mobile-doctors/src/components/Appointments/CallRequestScreen';
-
 import {
   createAppContainer,
   createStackNavigator,
@@ -30,6 +40,7 @@ export enum AppRoutes {
   Appointments = 'Appointments',
   TabBar = 'TabBar',
   OTPVerification = 'OTPVerification',
+  OTPVerificationApiCall = 'OTPVerificationApiCall',
   Patients = 'Patients',
   Inbox = 'Inbox',
   MyAccount = 'MyAccount',
@@ -43,6 +54,17 @@ export enum AppRoutes {
   AppointmentNotifications = 'AppointmentNotifications',
   NeedHelpAppointment = 'NeedHelpAppointment',
   CallRequestScreen = 'CallRequestScreen',
+  ConsultRoomScreen = 'ConsultRoomScreen',
+  TabPage = 'TabPage',
+  CaseSheetView = 'CaseSheetView',
+  NotificationScreen = 'NotificationScreen',
+  HelpScreen = 'HelpScreen',
+  MyAccountProfile = 'MyAccountProfile',
+  MyAvailability = 'MyAvailability',
+  AddCondition = 'AddCondition',
+  AddDiagnostics = 'AddDiagnostics',
+  AddMedicine = 'AddMedicine',
+  MedicineUpdate = 'MedicineUpdate',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -66,6 +88,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.OTPVerification]: {
     screen: OTPVerification,
+  },
+  [AppRoutes.OTPVerificationApiCall]: {
+    screen: OTPVerificationApiCall,
   },
   [AppRoutes.Appointments]: {
     screen: Appointments,
@@ -109,12 +134,46 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.CallRequestScreen]: {
     screen: CallRequestScreen,
   },
+  [AppRoutes.ConsultRoomScreen]: {
+    screen: ConsultRoomScreen,
+  },
+
+  [AppRoutes.CaseSheetView]: {
+    screen: CaseSheetView,
+  },
+  [AppRoutes.NotificationScreen]: {
+    screen: NotificationScreen,
+  },
+  [AppRoutes.HelpScreen]: {
+    screen: HelpScreen,
+  },
+  [AppRoutes.MyAccountProfile]: {
+    screen: MyAccountProfile,
+  },
+  [AppRoutes.MyAvailability]: {
+    screen: MyAvailability,
+  },
+  [AppRoutes.AddCondition]: {
+    screen: AddCondition,
+  },
+  [AppRoutes.AddDiagnostics]: {
+    screen: AddDiagnostics,
+  },
+  [AppRoutes.AddMedicine]: {
+    screen: AddMedicine,
+  },
+  [AppRoutes.MedicineUpdate]: {
+    screen: MedicineUpdate,
+  },
 };
 
 const stackConfig: StackNavigatorConfig = {
   initialRouteName: AppRoutes.SplashScreen,
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
+  navigationOptions: {
+    gesturesEnabled: false,
+  },
   transitionConfig: () => {
     return {
       transitionSpec: {

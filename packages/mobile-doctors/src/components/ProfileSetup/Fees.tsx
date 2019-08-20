@@ -3,9 +3,14 @@ import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/Squar
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { GetDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import { ifIphoneX } from 'react-native-iphone-x-helper';
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+  },
   feeeducation: {
     color: 'rgba(2, 71, 91, 0.5)',
     fontFamily: 'IBMPlexSans',
@@ -31,7 +36,7 @@ const styles = StyleSheet.create({
     color: 'rgba(2, 71, 91, 0.5)',
     marginBottom: 16,
     letterSpacing: 0.35,
-    marginTop: 2,
+    marginTop: 4,
   },
   feeeducationname: {
     color: '#02475b',
@@ -39,8 +44,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   separator: {
+    flex: 1,
     height: 1,
-    width: '120%',
+    //width: 300,
     marginRight: 0,
     marginLeft: 15,
     backgroundColor: '#658f9b',
@@ -56,17 +62,32 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     marginLeft: 16,
   },
+  understatusline: {
+    width: '100%',
+    backgroundColor: '#02475b',
+    marginTop: 11,
+    opacity: 0.1,
+    marginBottom: 16,
+    marginLeft: 15,
+    ...ifIphoneX(
+      {
+        height: 2,
+      },
+      {
+        height: 1,
+      }
+    ),
+  },
 });
 
 export interface FeesProps {
-  profileData: GetDoctorProfile_getDoctorProfile;
+  profileData: GetDoctorDetails_getDoctorDetails;
 }
 
 export const Fees: React.FC<FeesProps> = ({ profileData }) => {
-  const Feedata = profileData!.profile;
-  const BankDetails = profileData!.paymentDetails![0];
-  console.log('fee', Feedata);
-  console.log('BankDetails', BankDetails);
+  const Feedata = profileData!;
+  const BankDetails = profileData!.packages![0];
+  console.log(Feedata.bankAccount!.length);
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
   const renderCard = (title: string, children: Element) => (
     <SquareCardWithTitle title={title} containerStyle={{ marginTop: 16 }}>
@@ -84,7 +105,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
     if (!description) return null;
     return (
       <View style={styles.commonView}>
-        <Text style={styles.feeeducation}>{title}</Text>
+        <Text style={styles.feeeducation}> {title}</Text>
         <Text style={styles.feeeducationtext}>{description}</Text>
       </View>
     );
@@ -111,63 +132,84 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
     if (!description) return null;
     return (
       <View style={styles.commonView}>
-        <Text style={styles.feeeducationname}>{title}</Text>
+        <Text style={styles.feeeducationname}>
+          A/C Number: *********{title.toString().slice(-4)}
+        </Text>
         <Text style={styles.feeeducationtextname}>{description}</Text>
       </View>
     );
   };
   return (
-    <View>
-      {renderCard(
-        'Consultation Fees',
-        <View style={{ marginTop: 16 }}>
-          {feeprofileRowBold(
-            <Text>
-              <Text style={styles.feeeducation}>What are your</Text>
-              <Text style={styles.feeeducationbold}> online</Text>
-              <Text style={styles.feeeducation}> consultation fees?</Text>
-            </Text>,
-            Feedata!.onlineConsultationFees
-          )}
-          {feeprofileRowBold(
-            <Text>
-              <Text style={styles.feeeducation}>What are your</Text>
-              <Text style={styles.feeeducationbold}> physical</Text>
-              <Text style={styles.feeeducation}> consultation fees?</Text>
-            </Text>,
-            Feedata!.physicalConsultationFees
-          )}
-          {feeprofileRow('What package do you offer your patients?', Feedata!.package || '')}
-        </View>
-      )}
+    <View style={styles.container}>
+      <View style={{ marginTop: -20 }}>
+        {renderCard(
+          'Consultation Fees',
+          <View style={{ marginTop: 16 }}>
+            {feeprofileRowBold(
+              <Text>
+                <Text style={styles.feeeducation}>What are your</Text>
+                <Text style={styles.feeeducationbold}> online</Text>
+                <Text style={styles.feeeducation}> consultation fees?</Text>
+              </Text>,
+              Feedata!.onlineConsultationFees
+            )}
+            {feeprofileRowBold(
+              <Text>
+                <Text style={styles.feeeducation}>What are your</Text>
+                <Text style={styles.feeeducationbold}> physical</Text>
+                <Text style={styles.feeeducation}> consultation fees?</Text>
+              </Text>,
+              Feedata!.physicalConsultationFees
+            )}
+
+            {BankDetails != null ? (
+              <View>
+                {feeprofileRow(
+                  'What package do you offer your patients?',
+                  [BankDetails!.name, '@Rs. '.concat(BankDetails!.fees)].join(', ') || ''
+                )}
+              </View>
+            ) : (
+              <View>{feeprofileRow('What package do you offer your patients?', ' N/A')}</View>
+            )}
+          </View>
+        )}
+      </View>
+
       {renderCard(
         'Payment Details',
-        <View style={{ flexDirection: 'row', marginTop: 16, justifyContent: 'space-between' }}>
-          <View>
-            {feeprofileRowbankname(
-              'A/C Number: xxx xxx xxx 7890',
-              (profileData!.paymentDetails![0] && profileData!.paymentDetails![0]!.address) || ''
-            )}
-            {showPaymentDetails ? (
-              <>
-                <View style={styles.separator}></View>
-                {feeprofileRowdetails(
-                  'Account Holder’s Name',
-                  `Dr. ${Feedata!.firstName} ${Feedata!.lastName}`
+        <View>
+          {Feedata.bankAccount!.length > 0 ? (
+            <View style={{ flexDirection: 'row', marginTop: 16, justifyContent: 'space-between' }}>
+              <View style={{ flex: 1 }}>
+                {feeprofileRowbankname(
+                  Feedata.bankAccount![0]!.accountNumber,
+                  Feedata.bankAccount![0]!.bankName
                 )}
-                {feeprofileRowdetails('IFSC Code', 'SBIN 000 1109')}
-                {feeprofileRowdetails('Account Type', 'Savings Account')}
-              </>
-            ) : null}
-          </View>
-          <View>
-            <TouchableOpacity
-              style={styles.paymentbutton}
-              onPress={() => setShowPaymentDetails(!showPaymentDetails)}
-            >
-              {showPaymentDetails ? <Up /> : <Down />}
-            </TouchableOpacity>
-          </View>
+
+                {showPaymentDetails ? (
+                  <>
+                    {/* <View style={styles.separator}></View> */}
+                    <View style={styles.understatusline} />
+                    {feeprofileRowdetails(
+                      'Account Holder’s Name',
+                      `Dr. ${Feedata.bankAccount![0]!.accountHolderName}`
+                    )}
+                    {feeprofileRowdetails('IFSC Code', Feedata.bankAccount![0]!.IFSCcode)}
+                    {feeprofileRowdetails('Account Type', Feedata.bankAccount![0]!.accountType)}
+                  </>
+                ) : null}
+              </View>
+              <View>
+                <TouchableOpacity
+                  style={styles.paymentbutton}
+                  onPress={() => setShowPaymentDetails(!showPaymentDetails)}
+                >
+                  {showPaymentDetails ? <Up /> : <Down />}
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : null}
         </View>
       )}
     </View>
