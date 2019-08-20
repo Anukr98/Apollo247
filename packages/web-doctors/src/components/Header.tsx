@@ -157,7 +157,13 @@ export const Header: React.FC = (props) => {
                   )
                 ) : (
                   <div>
-                    <img className={classes.accountIc} src={require('images/ic_account.svg')} />
+                    <img
+                      className={classes.accountIc}
+                      onClick={() =>
+                        isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true)
+                      }
+                      src={require('images/ic_account.svg')}
+                    />
                   </div>
                 )}
               </div>
