@@ -57,7 +57,12 @@ import {
   DoctorBankAccounts,
   Packages,
 } from 'doctors-service/entities';
-import { Appointment } from 'consults-service/entities/';
+import {
+  Appointment,
+  AppointmentSessions,
+  MedicinePrescription,
+  CaseSheet,
+} from 'consults-service/entities/';
 import { GatewayHeaders } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 
@@ -85,7 +90,7 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
     },
     {
       name: 'consults-db',
-      entities: [Appointment],
+      entities: [Appointment, AppointmentSessions, MedicinePrescription, CaseSheet],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
       port: parseInt(process.env.CONSULTS_DB_PORT, 10),
