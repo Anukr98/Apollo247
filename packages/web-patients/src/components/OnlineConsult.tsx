@@ -212,9 +212,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const apiDateFormat =
     dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
 
-  const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:00');
-  const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:00');
-  const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:00');
+  const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:01');
+  const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
+  const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:01');
   const prevDateSelected = usePrevious(dateSelected);
 
   useEffect(() => {
@@ -309,7 +309,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       afternoonSlots.length === 0 &&
       eveningSlots.length === 0 &&
       lateNightSlots.length === 0) ||
-    timeSelected === '';
+    (timeSelected === '' && slotAvailableNext === '');
 
   return (
     <div className={classes.root}>
@@ -398,11 +398,13 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             bookAppointment: {
               patientId: currentPatient ? currentPatient.id : '',
               doctorId: doctorId,
-              appointmentDateTime: `${apiDateFormat}T${
-                timeSelected !== ''
-                  ? timeSelected.padStart(5, '0')
-                  : slotAvailableNext.padStart(5, '0')
-              }:00Z`,
+              appointmentDateTime: new Date(
+                `${apiDateFormat} ${
+                  timeSelected !== ''
+                    ? timeSelected.padStart(5, '0')
+                    : slotAvailableNext.padStart(5, '0')
+                }:00`
+              ).toISOString(),
               appointmentType: APPOINTMENT_TYPE.ONLINE,
               hospitalId: '',
             },

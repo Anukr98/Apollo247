@@ -374,7 +374,9 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             bookAppointment: {
               patientId: currentPatient ? currentPatient.id : '',
               doctorId: doctorId,
-              appointmentDateTime: `${apiDateFormat}T${timeSelected.padStart(5, '0')}:00.000Z`,
+              appointmentDateTime: new Date(
+                `${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`
+              ).toISOString(),
               appointmentType: APPOINTMENT_TYPE.PHYSICAL,
               hospitalId: defaultClinicId,
             },

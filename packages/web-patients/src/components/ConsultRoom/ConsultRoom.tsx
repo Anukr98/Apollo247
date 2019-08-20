@@ -19,7 +19,8 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
 import { useAuth } from 'hooks/authHooks';
-import { getIstTimestamp } from 'helpers/dateHelpers';
+import { STATUS } from 'graphql/types/globalTypes';
+// import { getIstTimestamp } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -168,13 +169,16 @@ export const ConsultRoom: React.FC = (props) => {
   // filter appointments that are greater than current time.
   const filterAppointments = appointments.filter((appointmentDetails) => {
     const currentTime = new Date().getTime();
-    const aptArray = appointmentDetails.appointmentDateTime.split('T');
-    const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
+    // const aptArray = appointmentDetails.appointmentDateTime.split('T');
+    // const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
+    const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
+    const appointmentStatus = appointmentDetails.status;
     if (
       // appointmentTime > currentTime &&
       // appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
       // the above condition is commented as per demo feedback on 13/08/2019
-      appointmentTime > currentTime
+      appointmentTime > currentTime &&
+      appointmentStatus === STATUS.IN_PROGRESS
     )
       return appointmentDetails;
   });
@@ -249,8 +253,8 @@ export const ConsultRoom: React.FC = (props) => {
               </>
             ) : (
               <p>
-                You have {filterAppointments.length}{' '}
-                {filterAppointments.length > 1 ? 'consultations' : 'consultation'} today!
+                You have {filterAppointments.length}
+                {filterAppointments.length > 1 ? ' consultations' : ' consultation'} today!
               </p>
             )}
           </div>

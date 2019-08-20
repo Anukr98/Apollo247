@@ -188,7 +188,8 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
                             getTimestamp(new Date(), consultationDetails.endTime),
                             'h:mm a'
                           );
-                          return (
+                          return consultationDetails.consultMode === 'PHYSICAL' ||
+                            consultationDetails.consultMode === 'BOTH' ? (
                             <div className={classes.timingsRow} key={_uniqueId('ava_')}>
                               <span>
                                 {(consultationDetails && consultationDetails.weekDay) || ''}
@@ -199,7 +200,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
                                 {endTime ? endTime : ''}
                               </span>
                             </div>
-                          );
+                          ) : null;
                         })}
                       </div>
                     </div>

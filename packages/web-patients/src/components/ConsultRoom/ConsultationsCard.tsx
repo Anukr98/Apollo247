@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { clientRoutes } from 'helpers/clientRoutes';
 import isTomorrow from 'date-fns/isTomorrow';
-import { getIstTimestamp } from 'helpers/dateHelpers';
+// import { getIstTimestamp } from 'helpers/dateHelpers';
 import { STATUS } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
@@ -161,8 +161,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   // filter appointments that are greater than current time.
   const filterAppointments = bookedAppointments.filter((appointmentDetails) => {
     const currentTime = new Date().getTime();
-    const aptArray = appointmentDetails.appointmentDateTime.split('T');
-    const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
+    // const aptArray = appointmentDetails.appointmentDateTime.split('T');
+    // const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
+    const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
     const appointmentStatus = appointmentDetails.status;
     if (
       // appointmentTime > currentTime &&
@@ -215,13 +216,15 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   ? appointmentDetails.doctorInfo.specialty.name
                   : '';
               const currentTime = new Date().getTime();
-              const aptArray = appointmentDetails.appointmentDateTime.split('T');
-              const appointmentTime = getIstTimestamp(
-                new Date(aptArray[0]),
-                aptArray[1].substring(0, 5)
-              );
-              const difference = Math.round((appointmentTime - currentTime) / 60000);
+              const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
+              // const aptArray = appointmentDetails.appointmentDateTime.split('T');
+              // const appointmentTime = getIstTimestamp(
+              //   new Date(aptArray[0]),
+              //   aptArray[1].substring(0, 5)
+              // );
+              // console.log('....................', appointmentTime);
               // console.log('difference is....', difference);
+              const difference = Math.round((appointmentTime - currentTime) / 60000);
               const doctorId =
                 appointmentDetails.doctorInfo && appointmentDetails.doctorId
                   ? appointmentDetails.doctorId
