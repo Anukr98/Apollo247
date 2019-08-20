@@ -6,6 +6,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { AphTextField, AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
+import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -214,6 +215,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const Prescriptions: React.FC = (props) => {
   const classes = useStyles();
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
+  const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
 
   return (
     <div className={classes.root}>
@@ -321,7 +323,9 @@ export const Prescriptions: React.FC = (props) => {
           </div>
         </Scrollbars>
         <div className={classes.submitPrescriptions}>
-          <AphButton color="primary">Submit Prescriptions</AphButton>
+          <AphButton onClick={() => setIsUploadPreDialogOpen(true)} color="primary">
+            Submit Prescriptions
+          </AphButton>
         </div>
       </div>
       <AphDialog open={isDialogOpen} maxWidth="md">
@@ -348,6 +352,10 @@ export const Prescriptions: React.FC = (props) => {
             <AphButton color="primary">Upload</AphButton>
           </div>
         </div>
+      </AphDialog>
+      <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
+        <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
+        <UploadPrescription />
       </AphDialog>
     </div>
   );
