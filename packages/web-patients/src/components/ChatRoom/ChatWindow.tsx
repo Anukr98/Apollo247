@@ -190,10 +190,10 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 20,
       },
     },
-    durattiocallMsg:{
+    durattiocallMsg: {
       marginLeft: 40,
       marginTop: 7,
-    }
+    },
   };
 });
 
