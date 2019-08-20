@@ -124,27 +124,46 @@ export const Header: React.FC = (props) => {
             <img src={require('images/ic_logo.png')} />
           </Link>
         </div>
-        {isSignedIn && <Navigation />}
+        {isSignedIn && !window.location.href.includes('/profile') && <Navigation />}
         <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup, isProtected }) => (
-              <div
-                className={`${!isSignedIn ? classes.userCircle : ''}`}
-                onClick={() => (isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true))}
-                ref={avatarRef}
-              >
+              <div className={`${!isSignedIn ? classes.userCircle : ''}`} ref={avatarRef}>
                 {isSigningIn ? (
                   <CircularProgress />
                 ) : isSignedIn ? (
-                  <div>
-                    <img src={require('images/ic_inbox.svg')} />
-                    <img src={require('images/ic_notifications.svg')} />
-                    <img src={require('images/ic_help.svg')} />
-                    <img src={require('images/ic_profile.svg')} />
-                  </div>
+                  window.location.href.includes('/profile') ? (
+                    <div>
+                      <img
+                        className={classes.accountIc}
+                        onClick={() =>
+                          isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true)
+                        }
+                        src={require('images/ic_help.svg')}
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <img src={require('images/ic_inbox.svg')} />
+                      <img src={require('images/ic_notifications.svg')} />
+                      <img
+                        onClick={() =>
+                          isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true)
+                        }
+                        src={require('images/ic_help.svg')}
+                      />
+                      <img src={require('images/ic_profile.svg')} />
+                    </div>
+                  )
                 ) : (
                   <div>
-                    <img className={classes.accountIc} src={require('images/ic_account.svg')} />
+                    <img
+                      className={classes.accountIc}
+                      onClick={() =>
+                        isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true)
+                      }
+                      src={require('images/ic_account.svg')}
+                    />
                   </div>
                 )}
               </div>

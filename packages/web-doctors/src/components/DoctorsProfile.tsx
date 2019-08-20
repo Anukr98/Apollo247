@@ -89,6 +89,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 40,
       minWidth: 120,
       boxShadow: '0 5px 20px rgba(128,128,128,0.1)',
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 0,
+      },
       '& button': {
         textTransform: 'capitalize',
         fontSize: 16,
@@ -102,6 +105,9 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '30px 40px 20px 40px',
       backgroundColor: theme.palette.secondary.contrastText,
       boxShadow: '0px 1px 5px 0 rgba(128, 128, 128, 0.3)',
+      [theme.breakpoints.down('xs')]: {
+        padding: '30px 20px 20px 20px',
+      },
       '& h1': {
         display: 'flex',
         paddingTop: 12,
