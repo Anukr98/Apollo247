@@ -22,6 +22,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { CalendarView, CALENDAR_TYPE } from './ui/CalendarView';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -138,15 +139,17 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   }, [props.clinics]);
 
   const timeTo12HrFormat = (time: string) => {
-    var time_array = time.split(':');
-    var ampm = 'am';
+    const IOSFormat = `${date.toISOString().split('T')[0]}T${time}:00.000Z`;
+    const formatedSlot = moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
+    const time_array = formatedSlot.split(':');
+    let ampm = 'am';
     if (Number(time_array[0]) >= 12) {
       ampm = 'pm';
     }
     if (Number(time_array[0]) > 12) {
       time_array[0] = (Number(time_array[0]) - 12).toString();
     }
-    return time_array[0].replace(/^0+/, '') + ':' + time_array[1] + ' ' + ampm;
+    return time_array[0].replace(/^00/, '12').replace(/^0/, '') + ':' + time_array[1] + ' ' + ampm;
   };
 
   const renderTimings = () => {
