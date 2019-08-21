@@ -1,5 +1,4 @@
 import { makeStyles } from '@material-ui/styles';
-import { Header } from 'components/Header';
 import { MoreVert } from '@material-ui/icons';
 import React, { useState } from 'react';
 import isNumeric from 'validator/lib/isNumeric';

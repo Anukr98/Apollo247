@@ -1,14 +1,13 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React, { useState } from 'react';
+import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import { AphButton } from '@aph/web-ui-components';
 import { ConsultationHours } from 'components/ConsultationHours';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { GetDoctorDetails_getDoctorDetails_consultHours } from 'graphql/types/GetDoctorDetails';
-
 import { ConsultMode } from 'graphql/types/globalTypes';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
