@@ -181,7 +181,7 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
     ]),
   });
 
-  server.listen({ port: 80 }).then(({ url }) => {
-    console.log(`🚀 doctors-service ready`);
+  server.listen({ port: process.env.DOCTORS_SERVICE_PORT }).then(({ url }) => {
+    console.log(`🚀 doctors-service ready (internal url: ${url})`);
   });
 })();
