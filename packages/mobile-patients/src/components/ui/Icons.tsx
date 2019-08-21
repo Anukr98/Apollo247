@@ -406,3 +406,11 @@ export const AddAttachmentIcon: React.FC<IconProps> = (props) => (
 export const ChatWithNotification: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ChatWithNotification.png')} />
 );
+
+export const ChatCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/ChatCall.png')} />
+);
+
+export const MissedCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/MissedCall.png')} />
+);
