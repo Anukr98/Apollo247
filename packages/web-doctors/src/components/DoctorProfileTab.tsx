@@ -193,6 +193,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#e28913',
       },
+      [theme.breakpoints.down('xs')]: {
+        minWidth: 140,
+      },
     },
     backButton: {
       minWidth: 120,

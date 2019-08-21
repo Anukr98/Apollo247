@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingLeft: 140,
       },
       [theme.breakpoints.down('xs')]: {
-        display: 'flex',
+        textAlign: 'center',
       },
       '& h5': {
         fontSize: 17,
