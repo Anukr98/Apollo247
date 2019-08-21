@@ -48,7 +48,7 @@ services:
       ) > /dev/null;
       do echo waiting for services to start...; sleep 5;
       done;
-      (while ! curl -s http://${API_GATEWAY_HOST}:${API_GATEWAY_PORT} > /dev/null;
+      (while ! curl -s http://localhost:${API_GATEWAY_PORT} > /dev/null;
       do echo waiting for gateway to start...; sleep 5;
       done;
       npm run apollo:download) &
