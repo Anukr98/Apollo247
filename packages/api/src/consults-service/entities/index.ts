@@ -213,6 +213,9 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   followUpAfterInDays: number;
 
+  @Column({ nullable: true })
+  followUpDate: Date;
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
