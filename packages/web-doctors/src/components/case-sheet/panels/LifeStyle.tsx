@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { Typography, List, ListItem, ListItemText } from '@material-ui/core';
+import { Typography, List, ListItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 
 const useStyles = makeStyles(() => ({
@@ -46,24 +46,20 @@ export const LifeStyle: React.FC = () => {
   return (
     <Typography component="div" className={classes.container}>
       {data.map((item, idx) => (
-        <Typography className={classes.column} component="div">
+        <Typography key={idx} className={classes.column} component="div">
           <Typography component="h5" variant="h5" className={classes.header}>
             {Object.keys(item)[0]}
           </Typography>
           <Typography component="div" className={classes.content}>
             <List>
               {!!Object.values(item).length &&
-                Object.values(item).map((text) => (
-                  <ListItem>
-                    <ListItemText
-                      secondary={
-                        <Fragment>
-                          <Typography component="p" className={classes.textContent}>
-                            {text}
-                          </Typography>
-                        </Fragment>
-                      }
-                    />
+                Object.values(item).map((text, i) => (
+                  <ListItem key={i}>
+                    <Fragment>
+                      <Typography component="p" className={classes.textContent}>
+                        {text}
+                      </Typography>
+                    </Fragment>
                   </ListItem>
                 ))}
             </List>

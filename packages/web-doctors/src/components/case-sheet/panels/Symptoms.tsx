@@ -24,6 +24,10 @@ const useStyles = makeStyles(() => ({
     border: 'solid 1px rgba(2, 71, 91, 0.15)',
     borderRadius: '5px',
   },
+  listItem: {
+    display: 'flex',
+    flexFlow: 'column',
+  },
 }));
 
 export const Symptoms: React.FC = () => {
@@ -33,29 +37,25 @@ export const Symptoms: React.FC = () => {
     <Typography className={classes.container} component="div">
       <List>
         {data.map((item, idx) => (
-          <ListItem key={idx} alignItems="flex-start">
-            <ListItemText
-              primary={Object.keys(item)[0]}
-              secondary={
-                <Fragment>
-                  <List>
-                    {!!item &&
-                      !!Object.values(item).length &&
-                      Object.values(item)[0]!.map((text, iidx) => (
-                        <ListItem key={iidx} alignItems="flex-start">
-                          <ListItemText
-                            secondary={
-                              <Fragment>
-                                <Typography>{text}</Typography>
-                              </Fragment>
-                            }
-                          />
-                        </ListItem>
-                      ))}
-                  </List>
-                </Fragment>
-              }
-            />
+          <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
+            <ListItemText primary={Object.keys(item)[0]} />
+            <Fragment>
+              <List>
+                {!!item &&
+                  !!Object.values(item).length &&
+                  Object.values(item)[0]!.map((text, iidx) => (
+                    <ListItem key={iidx} alignItems="flex-start">
+                      <ListItemText
+                        secondary={
+                          <Fragment>
+                            <Typography component="span">{text}</Typography>
+                          </Fragment>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+              </List>
+            </Fragment>
           </ListItem>
         ))}
       </List>
