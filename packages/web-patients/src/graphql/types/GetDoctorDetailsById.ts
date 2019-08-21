@@ -106,10 +106,10 @@ export interface GetDoctorDetailsById_getDoctorDetailsById {
   onlineConsultationFees: string;
   physicalConsultationFees: string;
   qualification: string | null;
+  doctorType: DoctorType;
   starTeam: (GetDoctorDetailsById_getDoctorDetailsById_starTeam | null)[] | null;
   specialty: GetDoctorDetailsById_getDoctorDetailsById_specialty;
   zip: string | null;
-  doctorType: DoctorType;
   doctorHospital: GetDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
   consultHours: (GetDoctorDetailsById_getDoctorDetailsById_consultHours | null)[] | null;
 }

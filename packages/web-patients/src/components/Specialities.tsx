@@ -151,10 +151,10 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                       },
                     }}
                     onCompleted={(data) => {
-                      console.log(data);
+                      // console.log(data);
                     }}
                     onError={(error) => {
-                      console.log(error);
+                      // console.log(error);
                     }}
                     key={_uniqueId('special_')}
                   >

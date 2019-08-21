@@ -180,15 +180,31 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
                       </div>
                       <div className={classes.availableTimings}>
                         {_map(consultationHours, (consultationDetails: ConsultHours) => {
-                          const startTime = format(
-                            getTimestamp(new Date(), consultationDetails.startTime),
-                            'h:mm a'
-                          );
-                          const endTime = format(
-                            getTimestamp(new Date(), consultationDetails.endTime),
-                            'h:mm a'
-                          );
-                          return (
+                          const startTimeUtc = new Date(
+                            new Date(
+                              `${format(new Date(), 'yyyy-MM-dd')} ${
+                                consultationDetails.startTime
+                              }:00`
+                            ).toISOString()
+                          ).getTime();
+
+                          const endTimeUtc = new Date(
+                            new Date(
+                              `${format(new Date(), 'yyyy-MM-dd')} ${
+                                consultationDetails.endTime
+                              }:00`
+                            ).toISOString()
+                          ).getTime();
+
+                          const localTimeOffset = new Date().getTimezoneOffset() * 60000;
+
+                          const startTimeStamp = new Date(startTimeUtc - localTimeOffset).getTime();
+                          const startTime = format(startTimeStamp, 'h:mm a');
+                          const endTimeStamp = new Date(endTimeUtc - localTimeOffset).getTime();
+                          const endTime = format(endTimeStamp, 'h:mm a');
+
+                          return consultationDetails.consultMode === 'PHYSICAL' ||
+                            consultationDetails.consultMode === 'BOTH' ? (
                             <div className={classes.timingsRow} key={_uniqueId('ava_')}>
                               <span>
                                 {(consultationDetails && consultationDetails.weekDay) || ''}
@@ -199,7 +215,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
                                 {endTime ? endTime : ''}
                               </span>
                             </div>
-                          );
+                          ) : null;
                         })}
                       </div>
                     </div>

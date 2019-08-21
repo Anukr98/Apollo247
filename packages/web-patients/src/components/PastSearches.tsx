@@ -121,7 +121,7 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
     return <></>;
   }
 
-  return data && data.getPatientPastSearches ? (
+  return data && data.getPatientPastSearches && data.getPatientPastSearches.length > 0 ? (
     <div className={classes.root}>
       <div className={classes.searchList}>
         <div className={classes.sectionHeader}>Your Past Searches</div>

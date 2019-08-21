@@ -87,6 +87,9 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_o
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors {
   __typename: "DoctorDetails";
   firstName: string;
+  lastName: string;
+  experience: string | null;
+  id: string;
   specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_specialty;
 }
 
