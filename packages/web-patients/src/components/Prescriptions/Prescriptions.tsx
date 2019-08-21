@@ -7,6 +7,7 @@ import { AphTextField, AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
+import { ScheduleConfirmationCall } from 'components/Prescriptions/ScheduleConfirmationCall';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -216,6 +217,7 @@ export const Prescriptions: React.FC = (props) => {
   const classes = useStyles();
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
+  const [isScheduleCallDialogOpen, setIsScheduleCallDialogOpen] = React.useState<boolean>(false);
 
   return (
     <div className={classes.root}>
@@ -234,7 +236,11 @@ export const Prescriptions: React.FC = (props) => {
               </Link>
             </div>
             <div className={classes.sectionGroup}>
-              <Link className={classes.serviceType} to="/prescriptions">
+              <Link
+                onClick={() => setIsUploadPreDialogOpen(true)}
+                className={classes.serviceType}
+                to="/prescriptions"
+              >
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_medicines.png')} alt="" />
                 </span>
@@ -323,7 +329,7 @@ export const Prescriptions: React.FC = (props) => {
           </div>
         </Scrollbars>
         <div className={classes.submitPrescriptions}>
-          <AphButton onClick={() => setIsUploadPreDialogOpen(true)} color="primary">
+          <AphButton onClick={() => setIsScheduleCallDialogOpen(true)} color="primary">
             Submit Prescriptions
           </AphButton>
         </div>
@@ -356,6 +362,21 @@ export const Prescriptions: React.FC = (props) => {
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
         <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
         <UploadPrescription />
+      </AphDialog>
+      <AphDialog open={isScheduleCallDialogOpen} maxWidth="sm">
+        <AphDialogTitle>Schedule Confirmation Call</AphDialogTitle>
+        <div className={classes.shadowHide}>
+          <div className={classes.dialogContent}>
+            <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
+              <div className={classes.customScrollBar}>
+                <ScheduleConfirmationCall />
+              </div>
+            </Scrollbars>
+          </div>
+          <div className={classes.dialogActions}>
+            <AphButton color="primary">Done</AphButton>
+          </div>
+        </div>
       </AphDialog>
     </div>
   );
