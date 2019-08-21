@@ -10,7 +10,8 @@ import { MyProfile } from 'components/MyProfile';
 import { GetDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 
-import { FeesTab } from 'components/FeesTab';
+import { MyAccountFeeTab } from 'components/MyAccountFeeTab';
+import { MyAccountAvailabilityTab } from 'components/MyAccountAvailabilityTab';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -215,7 +216,8 @@ export const MyAccount: React.FC = (props) => {
                   </div>
                 </Paper>
                 <Paper
-                  className={`${classes.serviceItemLeft} ${classes.tabContent} ${classes.tabActive}`}
+                  className={`${classes.serviceItemLeft} ${classes.tabContent} ${selectedNavTab ===
+                    1 && classes.tabActive}`}
                 >
                   <div onClick={() => setselectedNavTab(1)} className={classes.leftNav}>
                     <img
@@ -231,8 +233,11 @@ export const MyAccount: React.FC = (props) => {
                     />
                   </div>
                 </Paper>
-                <Paper className={`${classes.serviceItemLeft} ${classes.tabContent}`}>
-                  <div className={classes.leftNav}>
+                <Paper
+                  className={`${classes.serviceItemLeft} ${classes.tabContent} ${selectedNavTab ===
+                    2 && classes.tabActive}`}
+                >
+                  <div onClick={() => setselectedNavTab(2)} className={classes.leftNav}>
                     <img
                       alt=""
                       src={require('images/ic_availibility.svg')}
@@ -246,7 +251,10 @@ export const MyAccount: React.FC = (props) => {
                     />
                   </div>
                 </Paper>
-                <Paper className={`${classes.serviceItemLeft} ${classes.tabContent}`}>
+                <Paper
+                  className={`${classes.serviceItemLeft} ${classes.tabContent} ${selectedNavTab ===
+                    3 && classes.tabActive}`}
+                >
                   <div onClick={() => setselectedNavTab(3)} className={classes.leftNav}>
                     <img
                       alt=""
@@ -294,8 +302,15 @@ export const MyAccount: React.FC = (props) => {
               </Grid>
               {selectedNavTab === 1 ? (
                 <MyProfile doctor={doctorProfile} clinics={clinics} />
+              ) : selectedNavTab === 3 ? (
+                <MyAccountFeeTab
+                  values={doctorProfile}
+                  onNext={() => onNext()}
+                  onBack={() => onBack()}
+                  key={3}
+                />
               ) : (
-                <FeesTab
+                <MyAccountAvailabilityTab
                   values={doctorProfile}
                   onNext={() => onNext()}
                   onBack={() => onBack()}
