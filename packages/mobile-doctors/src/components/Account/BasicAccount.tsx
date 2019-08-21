@@ -34,6 +34,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Availability } from '@aph/mobile-doctors/src/components/ProfileSetup/Availability';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 const { height } = Dimensions.get('window');
 
@@ -131,7 +132,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
     return (
       <View style={[styles.cardContainer]}>
         <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-          <Notification />
+          <SmartPrescription />
           <Text style={styles.headingText}>My Stats</Text>
           <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
             <RightIcon />

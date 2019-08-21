@@ -244,10 +244,74 @@ export const MAKE_TEAM_DOCTOR_ACTIVE = gql`
   }
 `;
 
+export const REMOVE_DELEGATE_NUMBER = gql`
+  mutation RemoveDelegateNumber {
+    removeDelegateNumber {
+      city
+      country
+      doctorType
+      delegateNumber
+      emailAddress
+      experience
+      firstName
+      gender
+      id
+      lastName
+      mobileNumber
+      photoUrl
+      qualification
+      salutation
+      state
+      streetLine1
+      streetLine2
+      streetLine3
+      zip
+      specialty {
+        id
+        name
+        createdDate
+        image
+      }
+    }
+  }
+`;
+
 export const REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM = gql`
   mutation RemoveTeamDoctorFromStarTeam($associatedDoctor: String!, $starDoctor: String!) {
     removeTeamDoctorFromStarTeam(associatedDoctor: $associatedDoctor, starDoctor: $starDoctor) {
       firstName
+    }
+  }
+`;
+
+export const UPDATE_DELEGATE_NUMBER = gql`
+  mutation UpdateDelegateNumber($delegateNumber: String!) {
+    updateDelegateNumber(delegateNumber: $delegateNumber) {
+      city
+      country
+      doctorType
+      delegateNumber
+      emailAddress
+      experience
+      firstName
+      gender
+      id
+      lastName
+      mobileNumber
+      photoUrl
+      qualification
+      salutation
+      state
+      streetLine1
+      streetLine2
+      streetLine3
+      zip
+      specialty {
+        id
+        name
+        createdDate
+        image
+      }
     }
   }
 `;

@@ -158,6 +158,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const getAppointments = data && data.getDoctorAppointments;
   const todayDateStyle = moment(calendarDate).format('YYYY-MM-DD');
   console.log('todayDateStyle', todayDateStyle);
+  console.log('getAppointments', getAppointments);
   const mark = {
     [todayDateStyle]: {
       customStyles: {
@@ -287,7 +288,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             marginLeft: 20,
             marginBottom: 2,
           }}
-        >{`hello dr. ${(doctorName || '').toLowerCase()} :)`}</Text>
+        >{`hello Dr. ${(doctorName || '').toLowerCase()} :)`}</Text>
         <Text
           style={{
             ...theme.fonts.IBMPlexSansMedium(16),

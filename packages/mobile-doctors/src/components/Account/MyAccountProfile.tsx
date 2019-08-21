@@ -17,6 +17,7 @@ import {
   TextInput,
   Platform,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
@@ -26,12 +27,67 @@ import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { AccountStarTeam } from '@aph/mobile-doctors/src/components/Account/AccountStarTem';
 import { string } from '@aph/mobile-doctors/src/strings/string';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  UpdateDelegateNumber,
+  UpdateDelegateNumberVariables,
+} from '@aph/mobile-doctors/src/graphql/types/UpdateDelegateNumber';
+import {
+  UPDATE_DELEGATE_NUMBER,
+  REMOVE_DELEGATE_NUMBER,
+} from '@aph/mobile-doctors/src/graphql/profiles';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+
+import { RemoveDelegateNumber } from '@aph/mobile-doctors/src/graphql/types/RemoveDelegateNumber';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: '100%',
     backgroundColor: '#f7f7f7',
+  },
+  buttonendStyle: {
+    width: '45%',
+    height: 40,
+    backgroundColor: '#fc9916',
+    shadowOffset: {
+      height: 2,
+      width: 0,
+    },
+    shadowColor: '#000000',
+    shadowRadius: 2,
+    shadowOpacity: 0.4,
+    elevation: 2,
+  },
+  buttonsaveStyle: {
+    width: '35%',
+    height: 40,
+    shadowOffset: {
+      height: 2,
+      width: 0,
+    },
+    shadowColor: '#000000',
+    shadowRadius: 2,
+    shadowOpacity: 0.2,
+    elevation: 2,
+  },
+  buttonTextStyle: {
+    ...theme.fonts.IBMPlexSansBold(13),
+    textAlign: 'center',
+  },
+  footerButtonsContainer: {
+    // zIndex: -1,
+    justifyContent: 'center',
+    paddingTop: 20,
+    paddingBottom: 20,
+    marginLeft: 10,
+    marginRight: 10,
+    marginHorizontal: 20,
+    flexDirection: 'row',
+    width: '100%',
+    alignSelf: 'center',
+    alignItems: 'center',
   },
   understatusline: {
     width: '95%',
@@ -137,11 +193,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     marginLeft: 20,
   },
-  gethelpText: {
-    marginTop: 22,
-    color: '#fc9916',
-    ...theme.fonts.IBMPlexSansSemiBold(12),
-  },
+
   descriptionview: {
     ...theme.fonts.IBMPlexSansMedium(16),
     color: '#0087ba',
@@ -153,22 +205,69 @@ const styles = StyleSheet.create({
 export interface ProfileProps
   extends NavigationScreenProps<{
     ProfileData: GetDoctorDetails_getDoctorDetails;
-
-    //navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   }> {
-  //profileData: object;
   scrollViewRef: KeyboardAwareScrollView | null;
   onReload: () => void;
 }
 
 export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
-  const [phoneNumber, setPhoneNumber] = useState<string>('');
-  const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-
+  const client = useApolloClient();
   const profileData = props.navigation.getParam('ProfileData');
   console.log('p', profileData);
+  const [phoneNumber, setPhoneNumber] = useState<string>(profileData!.delegateNumber!);
+  const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
+  const { doctorDetails, setDoctorDetails } = useAuth();
 
+  console.log(doctorDetails);
+
+  const delegateNumberUpdate = (phoneNumber: string) => {
+    console.log('delegateNumberUpdate', phoneNumber);
+    if (phoneNumber.length == 0) {
+      // Alert.alert('Please add Delegate Number');
+      client
+        .mutate<RemoveDelegateNumber>({
+          mutation: REMOVE_DELEGATE_NUMBER,
+          fetchPolicy: 'no-cache',
+        })
+        .then((_data) => {
+          const result = _data.data!.removeDelegateNumber;
+          const newDoctorDetails = {
+            ...doctorDetails,
+            ...{ delegateNumber: phoneNumber },
+          } as GetDoctorDetails_getDoctorDetails;
+          setDoctorDetails && setDoctorDetails(newDoctorDetails);
+          console.log('updatedelegatenumber', result);
+          if (result) {
+            props.navigation.push(AppRoutes.MyAccountProfile);
+          }
+        })
+        .catch((e) => {
+          console.log('Error occured while updatedelegatenumber ', e);
+        });
+    } else {
+      client
+        .mutate<UpdateDelegateNumber, UpdateDelegateNumberVariables>({
+          mutation: UPDATE_DELEGATE_NUMBER,
+          variables: { delegateNumber: phoneNumber },
+          fetchPolicy: 'no-cache',
+        })
+        .then((_data) => {
+          const result = _data.data!.updateDelegateNumber;
+          const newDoctorDetails = {
+            ...doctorDetails,
+            ...{ delegateNumber: phoneNumber },
+          } as GetDoctorDetails_getDoctorDetails;
+          setDoctorDetails && setDoctorDetails(newDoctorDetails);
+          console.log('updatedelegatenumber', result);
+          if (result) {
+            props.navigation.push(AppRoutes.MyAccountProfile);
+          }
+        })
+        .catch((e) => {
+          console.log('Error occured while updatedelegatenumber ', e);
+        });
+    }
+  };
   const profileRow = (title: string, description: string) => {
     if (!description) return null;
     return (
@@ -248,7 +347,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           marginLeft: 20,
           marginRight: 20,
           marginTop: 12,
-          marginBottom: 32,
+          //marginBottom: 32,
         }}
       >
         <View style={{ marginTop: 4 }}>
@@ -310,7 +409,6 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
         >
           <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
           <TextInput
-            autoFocus
             style={styles.inputStyle}
             keyboardType="numeric"
             maxLength={10}
@@ -329,14 +427,26 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
             ? string.LocalStrings.otp_sent_to
             : string.LocalStrings.wrong_number}
         </Text>
-        {/* {phoneNumber == '' || phoneNumberIsValid ? null : (
-                <TouchableOpacity
-                  onPress={() => props.navigation.push(AppRoutes.HelpScreen)}
-                  style={{ marginTop: -10 }}
-                >
-                  <Text style={[styles.gethelpText]}>{string.LocalStrings.gethelp}</Text>
-                </TouchableOpacity>
-              )} */}
+      </View>
+    );
+  };
+
+  const renderButtonsView = () => {
+    return (
+      <View style={{ backgroundColor: '#f0f4f5' }}>
+        <View style={styles.footerButtonsContainer}>
+          <Button
+            title="CANCEL"
+            titleTextStyle={styles.buttonTextStyle}
+            variant="white"
+            style={[styles.buttonsaveStyle, { marginRight: 16 }]}
+          />
+          <Button
+            title="SAVE"
+            style={styles.buttonendStyle}
+            onPress={() => delegateNumberUpdate(phoneNumber)}
+          />
+        </View>
       </View>
     );
   };
@@ -415,6 +525,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
             </Text>
             {renderMobilePhoneView()}
             {renderHelpView()}
+            {renderButtonsView()}
           </View>
         </SquareCardWithTitle>
       </ScrollView>

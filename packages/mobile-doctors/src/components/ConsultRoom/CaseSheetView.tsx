@@ -344,7 +344,7 @@ const profileRow = (
   Appintmentdatetimeconsultpage: string
 ) => {
   // if (!firstName) return null;
-  console.log('ranith', PatientInfoData);
+
   return (
     <View>
       <View style={{ flexDirection: 'row' }}>
@@ -515,7 +515,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       secondName: '5 MB  |  5 Aug 2019, 11.05 AM ',
     },
   ];
-
   useEffect(() => {
     setShowButtons(props.startConsult);
   }, []);
@@ -673,7 +672,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       >
         <Text style={[styles.familyText, { marginBottom: 12 }]}>Diagnostics</Text>
         {diagnosis.map((showdata, i) => {
-          console.log('showsara', showdata);
           return (
             <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
               <DiagnosicsCard diseaseName={showdata.firstName} icon={<DiagonisisRemove />} />
@@ -699,7 +697,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       >
         <Text style={[styles.familyText, { marginBottom: 12 }]}>Medicines</Text>
         {medicineList.map((showdata, i) => {
-          console.log('showsara', showdata);
           return (
             <View>
               <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
@@ -940,7 +937,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         >
           <Text style={[styles.familyText, { marginBottom: 12 }]}>Instructions to the patient</Text>
           {instructions.map((showdata, i) => {
-            console.log('showsara', showdata);
             return (
               <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
                 <DiagnosicsCard diseaseName={showdata.firstName} icon={<DiagonisisRemove />} />
