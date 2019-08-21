@@ -1,8 +1,7 @@
 const environment = process.env.NODE_ENV;
 
-const protocol = process.env.USE_SSL === 'false' ? 'http' : 'https';
-
 const buildUrl = ({ application, port }: { application: string; port: string }) => {
+  const protocol = process.env.USE_SSL === 'false' ? 'http' : 'https';
   const portStr = port === '80' || port === '443' ? '' : `:${port}`;
   return environment === 'local'
     ? `${protocol}://localhost${portStr}`
