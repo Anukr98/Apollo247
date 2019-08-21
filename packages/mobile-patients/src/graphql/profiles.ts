@@ -453,6 +453,9 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         weekDay
         isActive
         id
+        facility {
+          id
+        }
       }
     }
   }
@@ -500,6 +503,18 @@ export const NEXT_AVAILABLE_SLOT = gql`
         availableSlot
         doctorId
       }
+    }
+  }
+`;
+
+export const GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS = gql`
+  query getDoctorPhysicalAvailableSlots(
+    $DoctorPhysicalAvailabilityInput: DoctorPhysicalAvailabilityInput!
+  ) {
+    getDoctorPhysicalAvailableSlots(
+      DoctorPhysicalAvailabilityInput: $DoctorPhysicalAvailabilityInput
+    ) {
+      availableSlots
     }
   }
 `;
