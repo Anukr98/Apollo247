@@ -199,20 +199,20 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       { label: 'Night', time: [] },
     ];
     console.log(availableSlots, 'setTimeArrayData');
-    var morningStartTime = moment('06:00', 'HH:mm');
-    var morningEndTime = moment('12:00', 'HH:mm');
-    var afternoonStartTime = moment('12:01', 'HH:mm');
-    var afternoonEndTime = moment('17:00', 'HH:mm');
-    var eveningStartTime = moment('17:01', 'HH:mm');
-    var eveningEndTime = moment('21:00', 'HH:mm');
-    var nightStartTime = moment('21:01', 'HH:mm');
-    var nightEndTime = moment('05:59', 'HH:mm');
+    const morningStartTime = moment('06:00', 'HH:mm');
+    const morningEndTime = moment('12:00', 'HH:mm');
+    const afternoonStartTime = moment('12:01', 'HH:mm');
+    const afternoonEndTime = moment('17:00', 'HH:mm');
+    const eveningStartTime = moment('17:01', 'HH:mm');
+    const eveningEndTime = moment('21:00', 'HH:mm');
+    const nightStartTime = moment('21:01', 'HH:mm');
+    const nightEndTime = moment('05:59', 'HH:mm');
 
     // if (allTimeSlots !== availableSlots) {
-    //   setallTimeSlots(availableSlots);
+    // setallTimeSlots(availableSlots);
     // }
     availableSlots.forEach((slot) => {
-      const IOSFormat = `${date.toISOString().split('T')[0]}T${slot}:48.000Z`;
+      const IOSFormat = `${date.toISOString().split('T')[0]}T${slot}:00.000Z`;
       const formatedSlot = moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
       console.log(new Date() < new Date(IOSFormat), 'IOSFormat......');
       const slotTime = moment(formatedSlot, 'HH:mm');
@@ -220,22 +220,22 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         if (slotTime.isBetween(nightEndTime, afternoonStartTime)) {
           array[0] = {
             label: 'Morning',
-            time: [...array[0].time, formatedSlot],
+            time: [...array[0].time, slot],
           };
         } else if (slotTime.isBetween(morningEndTime, eveningStartTime)) {
           array[1] = {
             ...array[1],
-            time: [...array[1].time, formatedSlot],
+            time: [...array[1].time, slot],
           };
         } else if (slotTime.isBetween(afternoonEndTime, nightStartTime)) {
           array[2] = {
             ...array[2],
-            time: [...array[2].time, formatedSlot],
+            time: [...array[2].time, slot],
           };
         } else {
           array[3] = {
             ...array[3],
-            time: [...array[3].time, formatedSlot],
+            time: [...array[3].time, slot],
           };
         }
       }
