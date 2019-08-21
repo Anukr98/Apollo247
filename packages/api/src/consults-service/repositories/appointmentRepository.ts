@@ -113,7 +113,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           let finalSlot = '';
           console.log(appts, 'appts');
           appts.map((appt) => {
-            if (appt.appointmentDateTime != firstAppt) {
+            if (appt.appointmentDateTime != firstAppt && flag === 0) {
               console.log(
                 Math.abs(differenceInMinutes(firstAppt, appt.appointmentDateTime)),
                 'diff'
@@ -126,6 +126,7 @@ export class AppointmentRepository extends Repository<Appointment> {
                 } else {
                   finalSlot = this.getAddAlignedSlot(firstAppt, 15);
                 }
+                console.log(finalSlot, 'final slot');
               }
             }
             firstAppt = appt.appointmentDateTime;
