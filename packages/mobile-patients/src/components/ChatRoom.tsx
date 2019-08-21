@@ -1,0 +1,1768 @@
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import {
+  BackCameraIcon,
+  ChatIcon,
+  DoctorCall,
+  DoctorImage,
+  EndCallIcon,
+  FrontCameraIcon,
+  FullScreenIcon,
+  MuteIcon,
+  PickCallIcon,
+  SpeakerOn,
+  UnMuteIcon,
+  VideoOffIcon,
+  VideoOnIcon,
+  AddAttachmentIcon,
+  ChatWithNotification,
+  ChatCallIcon,
+  MissedCallIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { UPDATE_APPOINTMENT_SESSION } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  updateAppointmentSession,
+  updateAppointmentSessionVariables,
+} from '@aph/mobile-patients/src/graphql/types/updateAppointmentSession';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
+import Pubnub from 'pubnub';
+import React, { useEffect, useRef, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  Dimensions,
+  FlatList,
+  Keyboard,
+  SafeAreaView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Alert,
+  Platform,
+  KeyboardAvoidingView,
+} from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
+import DocumentPicker from 'react-native-document-picker';
+import { DropDown } from '@aph/mobile-patients/src/components/ui/DropDown';
+import InCallManager from 'react-native-incall-manager';
+import DeviceHelper from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import moment from 'moment';
+
+const { height, width } = Dimensions.get('window');
+
+let timer = 900;
+let timerId: any;
+let insertText: object[] = [];
+let diffInHours: number;
+
+export interface ChatRoomProps extends NavigationScreenProps {}
+export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
+  const appointmentData = props.navigation.state.params!.data;
+  // console.log('appointmentData', appointmentData);
+
+  const flatListRef = useRef<FlatList<any> | null>();
+  const otSessionRef = React.createRef();
+
+  const [messages, setMessages] = useState([]);
+  const [messageText, setMessageText] = useState<string>('');
+  const [heightList, setHeightList] = useState<number>(
+    DeviceHelper.isIphoneX() ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 210
+  );
+
+  const [sessionId, setsessionId] = useState<string>('');
+  const [token, settoken] = useState<string>('');
+  const [cameraPosition, setCameraPosition] = useState<string>('front');
+  const [mute, setMute] = useState<boolean>(true);
+  const [showVideo, setShowVideo] = useState<boolean>(true);
+  const [PipView, setPipView] = useState<boolean>(false);
+  const [isCall, setIsCall] = useState<boolean>(false);
+  const [onSubscribe, setOnSubscribe] = useState<boolean>(false);
+  const [isAudio, setIsAudio] = useState<boolean>(false);
+  const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
+  const [showAudioPipView, setShowAudioPipView] = useState<boolean>(true);
+  const [talkStyles, setTalkStyles] = useState<object>({
+    flex: 1,
+    backgroundColor: 'black',
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+  });
+  const [subscriberStyles, setSubscriberStyles] = useState<object>({
+    width,
+    height,
+  });
+  const [publisherStyles, setPublisherStyles] = useState<object>({
+    position: 'absolute',
+    top: DeviceHelper.isIphoneX() ? 74 : 44,
+    right: 20,
+    width: 112,
+    height: 148,
+    zIndex: 1000,
+    borderRadius: 30,
+  });
+  const [audioCallStyles, setAudioCallStyles] = useState<object>({
+    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100,
+  });
+  const [audioCallImageStyles, setAudioCallImageStyles] = useState<object>({
+    width,
+    height,
+  });
+
+  const [timerStyles, setTimerStyles] = useState<object>({
+    position: 'absolute',
+    marginHorizontal: 20,
+    marginTop: DeviceHelper.isIphoneX() ? 91 : 81,
+    width: width - 40,
+    color: 'white',
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+    textAlign: 'center',
+    letterSpacing: 0.46,
+  });
+
+  const [textinputStyles, setTextInputStyles] = useState<Object>({
+    width: width,
+    height: 66,
+    backgroundColor: 'white',
+    top: 0,
+    // bottom: -20,
+  });
+  const [linestyles, setLinestyles] = useState<Object>({
+    marginLeft: 20,
+    marginRight: 64,
+    marginTop: 0,
+    height: 2,
+    backgroundColor: '#00b38e',
+    zIndex: -1,
+  });
+
+  const [remainingTime, setRemainingTime] = useState<number>(900);
+  const [consultStarted, setConsultStarted] = useState<boolean>(true);
+  const [callTimer, setCallTimer] = useState<number>(0);
+  const [callAccepted, setCallAccepted] = useState<boolean>(false);
+  const [hideStatusBar, setHideStatusBar] = useState<boolean>(false);
+  const [isDropdownVisible, setDropdownVisible] = useState(false);
+  const [chatReceived, setChatReceived] = useState(false);
+  const [doctorJoined, setDoctorJoined] = useState(false);
+  const [apiCalled, setApiCalled] = useState(false);
+
+  const videoCallMsg = '^^callme`video^^';
+  const audioCallMsg = '^^callme`audio^^';
+  const acceptedCallMsg = '^^callme`accept^^';
+  const endCallMsg = '^^callme`stop^^';
+  const startConsultMsg = '^^#startconsult';
+  const stopConsultMsg = '^^#stopconsult';
+  const typingMsg = '^^#typing';
+
+  const doctorId = appointmentData.doctorInfo.id;
+  const patientId = appointmentData.patientId;
+  const channel = appointmentData.id;
+
+  let intervalId: any;
+  let stoppedTimer: number;
+  const client = useApolloClient();
+
+  const updateSessionAPI = () => {
+    console.log('apiCalled', apiCalled);
+
+    if (!apiCalled) {
+      console.log('createsession', appointmentData.id);
+      const input = {
+        appointmentId: appointmentData.id,
+        requestRole: 'PATIENT',
+      };
+
+      console.log('input', input);
+
+      setDoctorJoined(true);
+
+      setTimeout(() => {
+        setApiCalled(true);
+      }, 1000);
+
+      setTimeout(() => {
+        setDoctorJoined(false);
+      }, 4000);
+
+      client
+        .mutate<updateAppointmentSession, updateAppointmentSessionVariables>({
+          mutation: UPDATE_APPOINTMENT_SESSION,
+          variables: {
+            UpdateAppointmentSessionInput: input,
+          },
+        })
+        .then((sessionInfo: any) => {
+          console.log('createsession', sessionInfo);
+          setsessionId(sessionInfo.data.updateAppointmentSession.sessionId);
+          settoken(sessionInfo.data.updateAppointmentSession.appointmentToken);
+        })
+        .catch((e: any) => {
+          console.log('Error occured while adding Doctor', e);
+        });
+    }
+  };
+
+  const startInterval = (timer: number) => {
+    setConsultStarted(true);
+    intervalId = setInterval(() => {
+      timer = timer - 1;
+      stoppedTimer = timer;
+      setRemainingTime(timer);
+      // console.log('descriptionTextStyle remainingTime', timer);
+
+      if (timer == 0) {
+        // console.log('descriptionTextStyles remainingTime', timer);
+        setRemainingTime(0);
+        clearInterval(intervalId);
+      }
+    }, 1000);
+  };
+
+  const startTimer = (timer: number) => {
+    timerId = setInterval(() => {
+      timer = timer + 1;
+      stoppedTimer = timer;
+      setCallTimer(timer);
+      // console.log('uptimer', timer);
+
+      if (timer == 0) {
+        console.log('uptimer', timer);
+        setCallTimer(0);
+        clearInterval(timerId);
+      }
+    }, 1000);
+  };
+
+  const stopTimer = () => {
+    console.log('stopTimer', timerId);
+    setCallTimer(0);
+    timerId && clearInterval(timerId);
+  };
+
+  const stopInterval = () => {
+    // setConsultStarted(false);
+
+    // const stopTimer = 900 - stoppedTimer;
+    // setRemainingTime(stopTimer);
+    // !intervalId && setRemainingTime(0);
+    // intervalId && clearInterval(intervalId);
+
+    if (intervalId) {
+      setConsultStarted(false);
+
+      const stopTimer = 900 - stoppedTimer;
+      setRemainingTime(stopTimer);
+      intervalId && clearInterval(intervalId);
+    }
+  };
+
+  const publisherEventHandlers = {
+    streamCreated: (event) => {
+      console.log('Publisher stream created!', event);
+    },
+    streamDestroyed: (event) => {
+      console.log('Publisher stream destroyed!', event);
+    },
+  };
+
+  const subscriberEventHandlers = {
+    error: (error) => {
+      console.log(`There was an error with the subscriber: ${error}`);
+    },
+    connected: (event) => {
+      console.log('Subscribe stream connected!', event);
+    },
+    disconnected: (event) => {
+      console.log('Subscribe stream disconnected!', event);
+    },
+  };
+
+  const sessionEventHandlers = {
+    error: (error) => {
+      console.log(`There was an error with the session: ${error}`);
+    },
+    connectionCreated: (event) => {},
+    connectionDestroyed: (event) => {
+      setIsCall(false);
+      setIsAudioCall(false);
+      stopTimer();
+      setCallAccepted(false);
+      setHideStatusBar(false);
+      console.log('session stream connectionDestroyed!', event);
+
+      setTimerStyles({
+        position: 'absolute',
+        marginHorizontal: 20,
+        marginTop: DeviceHelper.isIphoneX() ? 91 : 81,
+        width: width - 40,
+        color: 'white',
+        ...theme.fonts.IBMPlexSansSemiBold(12),
+        textAlign: 'center',
+        letterSpacing: 0.46,
+      });
+    },
+    sessionConnected: (event) => {
+      console.log('session stream sessionConnected!', event);
+    },
+    sessionDisconnected: (event) => {
+      console.log('session stream sessionDisconnected!', event);
+    },
+    sessionReconnected: (event) => {
+      console.log('session stream sessionReconnected!', event);
+    },
+    sessionReconnecting: (event) => {
+      console.log('session stream sessionReconnecting!', event);
+    },
+    signal: (event) => {
+      console.log('session stream signal!', event);
+    },
+  };
+
+  const config: Pubnub.PubnubConfig = {
+    subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
+    publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
+    ssl: true,
+  };
+  const pubnub = new Pubnub(config);
+
+  // const checkingAppointmentDates = () => {
+  //   const currentTime = moment(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(
+  //     'YYYY-MM-DD HH:mm:ss'
+  //   );
+
+  //   const appointmentTime = moment
+  //     .utc(appointmentData.appointmentDateTime)
+  //     .format('YYYY-MM-DD HH:mm:ss');
+
+  //   const diff = moment.duration(moment(appointmentTime).diff(currentTime));
+  //   diffInHours = diff.asMinutes();
+
+  //   if (diffInHours > 0) {
+  //     console.log('diff', diff);
+  //     console.log('duration', diffInHours);
+  //     setDoctorJoinsIn(true);
+  //   } else {
+  //     setDoctorJoinsIn(false);
+  //   }
+  // };
+
+  useEffect(() => {
+    pubnub.subscribe({
+      channels: [channel],
+      withPresence: true,
+    });
+
+    getHistory();
+    // checkingAppointmentDates();
+
+    pubnub.addListener({
+      status: (statusEvent) => {
+        console.log('statusEvent', statusEvent);
+
+        if (statusEvent.category === Pubnub.CATEGORIES.PNConnectedCategory) {
+          console.log(statusEvent.category);
+        } else if (statusEvent.operation === Pubnub.OPERATIONS.PNAccessManagerAudit) {
+          console.log(statusEvent.operation);
+        }
+      },
+      message: (message) => {
+        pubNubMessages(message);
+      },
+      presence: (presenceEvent) => {
+        if (presenceEvent.occupancy >= 2) {
+        }
+      },
+    });
+
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', keyboardDidShow);
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', keyboardDidHide);
+
+    return function cleanup() {
+      pubnub.unsubscribe({ channels: [channel] });
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
+  const getHistory = () => {
+    pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
+      const newmessage: object[] = [];
+
+      res.messages.forEach((element, index) => {
+        newmessage[index] = element.entry;
+      });
+
+      if (messages.length !== newmessage.length) {
+        try {
+          if (newmessage[newmessage.length - 1].message === startConsultMsg) {
+            updateSessionAPI();
+            checkingAppointmentDates();
+          }
+        } catch (error) {
+          console.log('error', error);
+        }
+
+        insertText = newmessage;
+        setMessages(newmessage as []);
+        console.log('newmessage', newmessage);
+
+        setTimeout(() => {
+          flatListRef.current! && flatListRef.current!.scrollToEnd();
+        }, 1000);
+      }
+    });
+  };
+
+  const checkingAppointmentDates = () => {
+    const currentTime = moment(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(
+      'YYYY-MM-DD HH:mm:ss'
+    );
+
+    const appointmentTime = moment
+      .utc(appointmentData.appointmentDateTime)
+      .format('YYYY-MM-DD HH:mm:ss');
+
+    const diff = moment.duration(moment(appointmentTime).diff(currentTime));
+    diffInHours = diff.asMinutes();
+    console.log('duration', diffInHours);
+    console.log('appointmentTime', appointmentTime);
+
+    if (diffInHours > 0) {
+    } else {
+      diffInHours = diffInHours * 60;
+      console.log('duration', diffInHours);
+
+      const startingTime = 900 + diffInHours;
+      console.log('startingTime', startingTime);
+
+      if (startingTime > 0) {
+        startInterval(startingTime);
+      }
+    }
+  };
+
+  const pubNubMessages = (message: Pubnub.MessageEvent) => {
+    if (message.message.isTyping) {
+      if (message.message.message === audioCallMsg) {
+        setIsAudio(true);
+        setOnSubscribe(true);
+        InCallManager.startRingtone('_BUNDLE_');
+        InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+      } else if (message.message.message === videoCallMsg) {
+        setOnSubscribe(true);
+        setIsAudio(false);
+        InCallManager.startRingtone('_BUNDLE_');
+        InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+      } else if (message.message.message === startConsultMsg) {
+        startInterval(timer);
+        updateSessionAPI();
+        // checkingAppointmentDates();
+      } else if (message.message.message === stopConsultMsg) {
+        console.log('listener remainingTime', remainingTime);
+        stopInterval();
+      } else if (
+        message.message.message === 'Audio call ended' ||
+        message.message.message === 'Video call ended'
+      ) {
+        setOnSubscribe(false);
+        setIsCall(false);
+        setIsAudioCall(false);
+        InCallManager.stopRingtone();
+        InCallManager.stop();
+        addMessages(message);
+      }
+    } else {
+      addMessages(message);
+    }
+  };
+
+  const addMessages = (message: Pubnub.MessageEvent) => {
+    // console.log('addListener message', message.message);
+    console.log('before insertText', insertText);
+
+    insertText[insertText.length] = message.message;
+
+    console.log('after insertText', insertText);
+
+    setMessages(insertText as []);
+    console.log('after messages', messages);
+
+    if (!isCall || !isAudioCall) {
+      setChatReceived(true);
+    }
+    setTimeout(() => {
+      flatListRef.current! && flatListRef.current!.scrollToEnd();
+    }, 1000);
+  };
+
+  const keyboardDidShow = (e) => {
+    setHeightList(
+      DeviceHelper.isIphoneX()
+        ? height - e.endCoordinates.height - 210
+        : Platform.OS === 'ios'
+        ? height - e.endCoordinates.height - 185
+        : height - e.endCoordinates.height - 210
+    );
+    setTimeout(() => {
+      flatListRef.current! && flatListRef.current!.scrollToEnd();
+    }, 200);
+  };
+
+  const keyboardDidHide = () => {
+    setHeightList(
+      DeviceHelper.isIphoneX() ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 210
+    );
+  };
+
+  const send = () => {
+    const text = {
+      id: patientId,
+      message: messageText,
+    };
+
+    pubnub.publish(
+      {
+        channel: channel,
+        message: text,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        setMessageText('');
+      }
+    );
+  };
+
+  let leftComponent = 0;
+  let rightComponent = 0;
+
+  const renderChatRow = (rowData: any, index: number) => {
+    if (
+      rowData.message === typingMsg ||
+      rowData.message === startConsultMsg ||
+      rowData.message === stopConsultMsg ||
+      rowData.message === endCallMsg ||
+      rowData.message === audioCallMsg ||
+      rowData.message === videoCallMsg ||
+      rowData.message === acceptedCallMsg
+    ) {
+      return;
+    }
+    // console.log('rowData.message', rowData.message);
+    if (rowData.id !== patientId) {
+      leftComponent++;
+      rightComponent = 0;
+      return (
+        <View>
+          {leftComponent === 1 ? (
+            <View
+              style={{
+                backgroundColor: 'transparent',
+                width: width,
+                marginVertical: 8,
+              }}
+            />
+          ) : null}
+          {rowData.message === 'Audio call ended' || rowData.message === 'Video call ended' ? (
+            <>
+              {rowData.duration === '00 : 00' ? (
+                <View
+                  style={{
+                    backgroundColor: 'transparent',
+                    width: 282,
+                    borderRadius: 10,
+                    marginVertical: 2,
+                    alignSelf: 'flex-start',
+                    paddingVertical: 17,
+                  }}
+                >
+                  {leftComponent === 1 ? (
+                    <DoctorImage
+                      style={{
+                        width: 32,
+                        height: 32,
+                        bottom: 0,
+                        position: 'absolute',
+                        left: 0,
+                      }}
+                    />
+                  ) : null}
+                  <View
+                    style={{
+                      marginLeft: 40,
+                      borderRadius: 10,
+                      height: 29,
+                      width: 244,
+                    }}
+                  >
+                    <View
+                      style={{
+                        backgroundColor: '#e50000',
+                        opacity: 0.04,
+                        width: 244,
+                        borderRadius: 10,
+                        height: 29,
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                      }}
+                    />
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        backgroundColor: 'transparent',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <MissedCallIcon
+                        style={{ width: 16, height: 16, marginLeft: 16, marginTop: 3 }}
+                      />
+                      {rowData.message === 'Audio call ended' ? (
+                        <Text
+                          style={{
+                            color: '#890000',
+                            marginLeft: 27,
+                            textAlign: 'left',
+                            ...theme.fonts.IBMPlexSansMedium(12),
+                            lineHeight: 24,
+                            letterSpacing: 0.04,
+                            marginTop: 2,
+                          }}
+                        >
+                          You missed a voice call
+                        </Text>
+                      ) : (
+                        <Text
+                          style={{
+                            color: '#890000',
+                            marginLeft: 27,
+                            textAlign: 'left',
+                            ...theme.fonts.IBMPlexSansMedium(12),
+                            lineHeight: 24,
+                            letterSpacing: 0.04,
+                            marginTop: 2,
+                          }}
+                        >
+                          You missed a video call
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                </View>
+              ) : (
+                <View
+                  style={{
+                    backgroundColor: 'transparent',
+                    width: 282,
+                    borderRadius: 10,
+                    marginVertical: 2,
+                    alignSelf: 'flex-start',
+                  }}
+                >
+                  {leftComponent === 1 ? (
+                    <DoctorImage
+                      style={{
+                        width: 32,
+                        height: 32,
+                        bottom: 0,
+                        position: 'absolute',
+                        left: 0,
+                      }}
+                    />
+                  ) : null}
+                  <View
+                    style={{
+                      borderRadius: 10,
+                      marginVertical: 2,
+                      alignSelf: 'flex-start',
+                      flexDirection: 'row',
+                      marginLeft: 40,
+                    }}
+                  >
+                    <ChatCallIcon style={{ width: 20, height: 20 }} />
+                    <View style={{ marginLeft: 12 }}>
+                      <Text
+                        style={{
+                          color: '#01475b',
+                          marginLeft: 0,
+                          textAlign: 'left',
+                          ...theme.fonts.IBMPlexSansMedium(14),
+                        }}
+                      >
+                        {rowData.message}
+                      </Text>
+                      <Text
+                        style={{
+                          color: '#01475b',
+                          marginTop: 2,
+                          marginLeft: 0,
+                          textAlign: 'left',
+                          ...theme.fonts.IBMPlexSansMedium(10),
+                        }}
+                      >
+                        Duration - {rowData.duration}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+            </>
+          ) : (
+            <View
+              style={{
+                backgroundColor: 'transparent',
+                width: 282,
+                borderRadius: 10,
+                marginVertical: 2,
+                alignSelf: 'flex-start',
+              }}
+            >
+              {leftComponent === 1 ? (
+                <DoctorImage
+                  style={{
+                    width: 32,
+                    height: 32,
+                    bottom: 0,
+                    position: 'absolute',
+                    left: 0,
+                  }}
+                />
+              ) : null}
+              <View
+                style={{
+                  backgroundColor: 'white',
+                  marginLeft: 38,
+                  borderRadius: 10,
+                  // width: 244,
+                }}
+              >
+                <Text
+                  style={{
+                    color: '#0087ba',
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                    textAlign: 'left',
+                  }}
+                >
+                  {rowData.message}
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
+      );
+    } else {
+      leftComponent = 0;
+      rightComponent++;
+      return (
+        <View>
+          {rightComponent == 1 ? (
+            <View
+              style={{
+                backgroundColor: 'transparent',
+                width: width,
+                marginVertical: 8,
+              }}
+            />
+          ) : null}
+          {rowData.message === 'Audio call ended' || rowData.message === 'Video call ended' ? (
+            <View
+              style={{
+                borderRadius: 10,
+                marginVertical: 2,
+                alignSelf: 'flex-end',
+                flexDirection: 'row',
+              }}
+            >
+              <ChatCallIcon style={{ width: 20, height: 20 }} />
+              <View>
+                <Text
+                  style={{
+                    color: '#01475b',
+                    marginLeft: 12,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(14),
+                  }}
+                >
+                  {rowData.message}
+                </Text>
+                <Text
+                  style={{
+                    color: '#01475b',
+                    marginTop: 2,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  Duration - {rowData.duration}
+                </Text>
+              </View>
+            </View>
+          ) : (
+            <View
+              style={{
+                backgroundColor: 'white',
+                // width: 244,
+                borderRadius: 10,
+                marginVertical: 2,
+                alignSelf: 'flex-end',
+              }}
+            >
+              <Text
+                style={{
+                  color: '#01475b',
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  textAlign: 'right',
+                  ...theme.fonts.IBMPlexSansMedium(16),
+                }}
+              >
+                {rowData.message}
+              </Text>
+            </View>
+          )}
+        </View>
+      );
+    }
+  };
+
+  const renderChatView = () => {
+    console.log('heightList', heightList);
+    return (
+      <View style={{ width: width, height: heightList, marginTop: 0 }}>
+        <FlatList
+          keyboardShouldPersistTaps="always"
+          keyboardDismissMode="on-drag"
+          removeClippedSubviews={false}
+          ref={flatListRef}
+          contentContainerStyle={{
+            marginHorizontal: 20,
+            marginTop: 0,
+          }}
+          bounces={false}
+          data={messages}
+          onEndReachedThreshold={0.5}
+          renderItem={({ item, index }) => renderChatRow(item, index)}
+          keyExtractor={(_, index) => index.toString()}
+          numColumns={1}
+        />
+      </View>
+    );
+  };
+
+  const VideoCall = () => {
+    return (
+      <View style={talkStyles}>
+        {isCall && (
+          <View style={{ flex: 1, flexDirection: 'row' }}>
+            <OTSession
+              apiKey={'46393582'}
+              sessionId={sessionId}
+              token={token}
+              eventHandlers={sessionEventHandlers}
+              ref={otSessionRef}
+              options={{
+                connectionEventsSuppressed: true, // default is false
+                androidZOrder: 'onTop', // Android only - valid options are 'mediaOverlay' or 'onTop'
+                androidOnTop: 'publisher', // Android only - valid options are 'publisher' or 'subscriber'
+                useTextureViews: true, // Android only - default is false
+                isCamera2Capable: true, // Android only - default is false
+              }}
+            >
+              <OTPublisher
+                style={publisherStyles}
+                properties={{
+                  cameraPosition: cameraPosition,
+                  publishVideo: showVideo,
+                  publishAudio: mute,
+                  audioVolume: 100,
+                }}
+                eventHandlers={publisherEventHandlers}
+              />
+              <OTSubscriber
+                style={subscriberStyles}
+                subscribeToSelf={true}
+                eventHandlers={subscriberEventHandlers}
+                properties={{
+                  subscribeToAudio: true,
+                  subscribeToVideo: true,
+                  audioVolume: 100,
+                }}
+              />
+            </OTSession>
+
+            {!PipView && (
+              <>
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: DeviceHelper.isIphoneX() ? 24 : 0,
+                    left: 0,
+                    width: width,
+                    height: 24,
+                    backgroundColor: 'black',
+                    opacity: 0.6,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000,
+                  }}
+                >
+                  <Text style={{ color: 'white', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
+                    Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
+                    {seconds.toString().length < 2 ? '0' + seconds : seconds}
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    position: 'absolute',
+                    marginHorizontal: 20,
+                    marginTop: DeviceHelper.isIphoneX() ? 64 : 44,
+                    width: width - 40,
+                    color: 'white',
+                    ...theme.fonts.IBMPlexSansSemiBold(20),
+                    textAlign: 'center',
+                  }}
+                >
+                  {appointmentData.doctorInfo.firstName}
+                </Text>
+              </>
+            )}
+
+            <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+            {PipView && renderOnCallPipButtons()}
+            {!PipView && renderChatNotificationIcon()}
+            {!PipView && renderBottomButtons()}
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  const callMinutes = Math.floor(callTimer / 60);
+  const callSeconds = callTimer - callMinutes * 60;
+
+  const callTimerStarted = `${
+    callMinutes.toString().length < 2 ? '0' + callMinutes : callMinutes
+  } : ${callSeconds.toString().length < 2 ? '0' + callSeconds : callSeconds}`;
+
+  const AudioCall = () => {
+    return (
+      <View style={audioCallStyles}>
+        <DoctorCall style={audioCallImageStyles} />
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'black',
+            opacity: 0.6,
+          }}
+        />
+        {showAudioPipView && (
+          <View
+            style={{
+              position: 'absolute',
+              top: DeviceHelper.isIphoneX() ? 24 : 0,
+              left: 0,
+              width: width,
+              height: 24,
+              backgroundColor: 'black',
+              opacity: 0.6,
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+            }}
+          >
+            <Text style={{ color: 'white', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
+              Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
+              {seconds.toString().length < 2 ? '0' + seconds : seconds}
+            </Text>
+          </View>
+        )}
+        <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+        <OTSession
+          apiKey={'46393582'}
+          sessionId={sessionId}
+          token={token}
+          eventHandlers={sessionEventHandlers}
+          ref={otSessionRef}
+        >
+          <OTPublisher
+            style={{
+              position: 'absolute',
+              top: 44,
+              right: 20,
+              width: 1,
+              height: 1,
+              zIndex: 1000,
+            }}
+            properties={{
+              cameraPosition: cameraPosition,
+              publishVideo: false,
+              publishAudio: mute,
+              audioVolume: 100,
+            }}
+            eventHandlers={publisherEventHandlers}
+          />
+          <OTSubscriber
+            style={{
+              width: 1,
+              height: 1,
+            }}
+            eventHandlers={subscriberEventHandlers}
+            subscribeToSelf={true}
+            properties={{
+              subscribeToAudio: true,
+              subscribeToVideo: false,
+              audioVolume: 100,
+            }}
+          />
+        </OTSession>
+        {showAudioPipView && renderAudioCallButtons()}
+        {!showAudioPipView && renderAudioFullScreen()}
+      </View>
+    );
+  };
+
+  const renderAudioFullScreen = () => {
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          height: 205,
+          width: 155,
+          backgroundColor: 'transparent',
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => {
+            setAudioCallStyles({
+              flex: 1,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 100,
+            });
+            setAudioCallImageStyles({
+              width,
+              height,
+            });
+            setShowAudioPipView(true);
+            setTimerStyles({
+              position: 'absolute',
+              marginHorizontal: 20,
+              marginTop: DeviceHelper.isIphoneX() ? 91 : 81,
+              width: width - 40,
+              color: 'white',
+              ...theme.fonts.IBMPlexSansSemiBold(12),
+              textAlign: 'center',
+              letterSpacing: 0.46,
+            });
+            setChatReceived(false);
+          }}
+        >
+          <View
+            style={{
+              height: 205,
+              width: 155,
+              backgroundColor: 'transparent',
+            }}
+          />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderAudioCallButtons = () => {
+    return (
+      <>
+        <Text
+          style={{
+            position: 'absolute',
+            marginHorizontal: 20,
+            marginTop: DeviceHelper.isIphoneX() ? 64 : 44,
+            width: width - 40,
+            color: 'white',
+            ...theme.fonts.IBMPlexSansSemiBold(20),
+            textAlign: 'center',
+          }}
+        >
+          {appointmentData.doctorInfo.firstName}
+        </Text>
+        <View
+          style={{
+            position: 'absolute',
+            top: DeviceHelper.isIphoneX() ? 64 : 44,
+            left: 20,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => {
+              setChatReceived(false);
+
+              setAudioCallStyles({
+                flex: 1,
+                position: 'absolute',
+                top: 88,
+                right: 8,
+                height: 205,
+                width: 155,
+              });
+              setAudioCallImageStyles({
+                height: 205,
+                width: 155,
+              });
+              setShowAudioPipView(false);
+              setTimerStyles({
+                position: 'absolute',
+                marginHorizontal: 5,
+                marginTop: 5,
+                width: 155,
+                color: 'white',
+                ...theme.fonts.IBMPlexSansSemiBold(12),
+                textAlign: 'center',
+                letterSpacing: 0.46,
+              });
+            }}
+          >
+            {chatReceived ? (
+              <ChatWithNotification style={{ height: 88, width: 88, left: -20, top: -20 }} />
+            ) : (
+              <ChatIcon style={{ height: 48, width: 48 }} />
+            )}
+          </TouchableOpacity>
+        </View>
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 16,
+            left: 58,
+            right: 58,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            width: width - 116,
+          }}
+        >
+          <TouchableOpacity onPress={() => {}}>
+            <SpeakerOn style={{ width: 60, height: 60 }} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              mute === true ? setMute(false) : setMute(true);
+            }}
+          >
+            {mute === true ? (
+              <UnMuteIcon style={{ height: 60, width: 60 }} />
+            ) : (
+              <MuteIcon style={{ height: 60, width: 60 }} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setIsAudioCall(false);
+              stopTimer();
+              setHideStatusBar(false);
+              setMute(true);
+              setShowVideo(true);
+              setCameraPosition('front');
+
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: 'Audio call ended',
+                    duration: callTimerStarted,
+                    id: patientId,
+                  },
+                  channel: channel,
+                  storeInHistory: true,
+                },
+                (status, response) => {}
+              );
+            }}
+          >
+            <EndCallIcon style={{ width: 60, height: 60 }} />
+          </TouchableOpacity>
+        </View>
+      </>
+    );
+  };
+
+  const renderOnCallPipButtons = () => {
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 16,
+          left: 16,
+          zIndex: 1000,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => {
+            setTalkStyles({
+              flex: 1,
+              backgroundColor: 'transparent',
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 100,
+            });
+            setSubscriberStyles({
+              width,
+              height,
+            });
+            setPublisherStyles({
+              position: 'absolute',
+              top: DeviceHelper.isIphoneX() ? 74 : 44,
+              right: 20,
+              width: 112,
+              height: 148,
+              zIndex: 1000,
+              borderRadius: 30,
+            });
+            setPipView(false);
+            setTimerStyles({
+              position: 'absolute',
+              marginHorizontal: 20,
+              marginTop: DeviceHelper.isIphoneX() ? 91 : 81,
+              width: width - 40,
+              color: 'white',
+              ...theme.fonts.IBMPlexSansSemiBold(12),
+              textAlign: 'center',
+              letterSpacing: 0.46,
+            });
+            setChatReceived(false);
+          }}
+        >
+          <FullScreenIcon style={{ width: 40, height: 40 }} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            setIsCall(false);
+            setMute(true);
+            setShowVideo(true);
+            setCameraPosition('front');
+            stopTimer();
+            setHideStatusBar(false);
+
+            pubnub.publish(
+              {
+                message: {
+                  isTyping: true,
+                  message: 'Video call ended',
+                  duration: callTimerStarted,
+                  id: patientId,
+                },
+                channel: channel,
+                storeInHistory: true,
+              },
+              (status, response) => {}
+            );
+          }}
+        >
+          <EndCallIcon style={{ width: 40, height: 40, marginLeft: 43 }} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderChatNotificationIcon = () => {
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          top: DeviceHelper.isIphoneX() ? 64 : 44,
+          left: 20,
+          right: 0,
+          zIndex: 1000,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => {
+            setTalkStyles({
+              flex: 1,
+              backgroundColor: 'transparent',
+              position: 'absolute',
+              top: 88,
+              right: 20,
+              width: 155,
+              height: 205,
+            });
+
+            setSubscriberStyles({
+              width: 155,
+              height: 205,
+            });
+
+            setPublisherStyles({
+              position: 'absolute',
+              top: 1,
+              right: 1,
+              width: 1,
+              height: 1,
+              zIndex: 1000,
+            });
+            setTimerStyles({
+              position: 'absolute',
+              marginHorizontal: 5,
+              marginTop: 5,
+              width: 155,
+              color: 'white',
+              ...theme.fonts.IBMPlexSansSemiBold(12),
+              textAlign: 'center',
+              letterSpacing: 0.46,
+            });
+
+            setPipView(true);
+            setChatReceived(false);
+            setTextInputStyles({
+              width: width,
+              height: 66,
+              backgroundColor: 'white',
+              top: 0,
+              // bottom: -20,
+            });
+            setLinestyles({
+              marginLeft: 20,
+              marginRight: 64,
+              marginTop: -10,
+              height: 2,
+              backgroundColor: '#00b38e',
+            });
+          }}
+        >
+          {chatReceived ? (
+            <ChatWithNotification style={{ height: 88, width: 88, left: -20, top: -20 }} />
+          ) : (
+            <ChatIcon style={{ height: 48, width: 48 }} />
+          )}
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderBottomButtons = () => {
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 20,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+        }}
+      >
+        <View
+          style={{
+            marginHorizontal: Platform.OS === 'ios' ? 30 : 20,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => {
+              cameraPosition === 'front' ? setCameraPosition('back') : setCameraPosition('front');
+            }}
+          >
+            {cameraPosition === 'front' ? (
+              <BackCameraIcon style={{ height: 60, width: 60 }} />
+            ) : (
+              <FrontCameraIcon style={{ height: 60, width: 60 }} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              showVideo === true ? setShowVideo(false) : setShowVideo(true);
+            }}
+          >
+            {showVideo === true ? (
+              <VideoOnIcon style={{ height: 60, width: 60 }} />
+            ) : (
+              <VideoOffIcon style={{ height: 60, width: 60 }} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              mute === true ? setMute(false) : setMute(true);
+            }}
+          >
+            {mute === true ? (
+              <UnMuteIcon style={{ height: 60, width: 60 }} />
+            ) : (
+              <MuteIcon style={{ height: 60, width: 60 }} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setIsCall(false);
+              setMute(true);
+              setShowVideo(true);
+              setCameraPosition('front');
+              stopTimer();
+              setHideStatusBar(false);
+              setChatReceived(false);
+
+              setTextInputStyles({
+                width: width,
+                height: 66,
+                backgroundColor: 'white',
+                top: 0,
+                // bottom: -20,
+              });
+              setLinestyles({
+                marginLeft: 20,
+                marginRight: 64,
+                marginTop: -10,
+                height: 2,
+                backgroundColor: '#00b38e',
+              });
+
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: 'Video call ended',
+                    duration: callTimerStarted,
+                    id: patientId,
+                  },
+                  channel: channel,
+                  storeInHistory: true,
+                },
+                (status, response) => {}
+              );
+            }}
+          >
+            <EndCallIcon style={{ height: 60, width: 60 }} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  const IncomingCallView = () => {
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          top: 88,
+          right: 8,
+          width: 155,
+          height: 205,
+          borderRadius: 30,
+          backgroundColor: 'black',
+        }}
+      >
+        <DoctorCall
+          style={{
+            width: 155,
+            height: 205,
+            opacity: 0.5,
+            borderRadius: 30,
+          }}
+        />
+        <Text
+          style={{
+            position: 'absolute',
+            marginLeft: 0,
+            marginTop: 16,
+            width: 155,
+            color: 'white',
+            ...theme.fonts.IBMPlexSansMedium(14),
+            textAlign: 'center',
+            letterSpacing: 0,
+          }}
+        >
+          Incoming Call
+        </Text>
+        <TouchableOpacity
+          style={{
+            width: 40,
+            height: 40,
+            bottom: 16,
+            left: 58,
+            position: 'absolute',
+          }}
+          onPress={() => {
+            setOnSubscribe(false);
+            stopTimer();
+            startTimer(0);
+            setCallAccepted(true);
+            setHideStatusBar(true);
+            setChatReceived(false);
+            Keyboard.dismiss();
+            InCallManager.stopRingtone();
+            InCallManager.stop();
+            pubnub.publish(
+              {
+                message: {
+                  isTyping: true,
+                  message: acceptedCallMsg,
+                },
+                channel: channel,
+                storeInHistory: false,
+              },
+              (status, response) => {}
+            );
+            if (isAudio) {
+              setIsAudioCall(true);
+            } else {
+              setIsCall(true);
+            }
+          }}
+        >
+          <PickCallIcon
+            style={{
+              width: 40,
+              height: 40,
+              top: 0,
+              left: 0,
+              // position: 'absolute',
+            }}
+          />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.nativeEvent.key == 'Enter') {
+      console.log('handleKeyDown');
+    }
+    console.log('handleKeyDown', e.nativeEvent.key);
+  };
+
+  const minutes = Math.floor(remainingTime / 60);
+  const seconds = remainingTime - minutes * 60;
+
+  const options = {
+    title: 'Select Avatar',
+    customButtons: [{ name: 'fb', title: 'Choose Photo from Facebook' }],
+    storageOptions: {
+      skipBackup: true,
+      path: 'images',
+    },
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <StatusBar hidden={hideStatusBar} />
+      <View
+        style={{
+          width: width,
+          height: 24,
+          backgroundColor: '#f0f1ec',
+          zIndex: 100,
+          elevation: 1000,
+        }}
+      />
+      <SafeAreaView
+        style={{
+          ...theme.viewStyles.container,
+        }}
+      >
+        <Header
+          title={'CONSULT ROOM'}
+          leftIcon="backArrow"
+          container={{ borderBottomWidth: 0, zIndex: 100 }}
+          onPressLeftIcon={() => props.navigation.goBack()}
+        />
+
+        {doctorJoined ? (
+          <View
+            style={{
+              width: width,
+              height: 44,
+              flexDirection: 'row',
+              alignItems: 'center',
+              ...theme.viewStyles.cardViewStyle,
+              borderRadius: 0,
+              shadowOffset: { width: 0, height: 0 },
+              shadowRadius: 2,
+              elevation: 2,
+              zIndex: 100,
+              backgroundColor: '#ff748e',
+            }}
+          >
+            <Text
+              style={{
+                color: 'white',
+                ...theme.fonts.IBMPlexSansMedium(14),
+                marginLeft: 20,
+              }}
+            >
+              Dr. {appointmentData.doctorInfo.firstName} has joined!
+            </Text>
+          </View>
+        ) : (
+          <View
+            style={{
+              width: width,
+              height: 44,
+              flexDirection: 'row',
+              alignItems: 'center',
+              ...theme.viewStyles.cardViewStyle,
+              borderRadius: 0,
+              shadowOffset: { width: 0, height: 0 },
+              shadowRadius: 2,
+              elevation: 2,
+              zIndex: 100,
+              backgroundColor: '#f7f8f5',
+            }}
+          >
+            {consultStarted ? (
+              <Text
+                style={{
+                  color: '#0087ba',
+                  ...theme.fonts.IBMPlexSansMedium(14),
+                  marginLeft: 20,
+                }}
+              >
+                Time Remaining — {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
+                {seconds.toString().length < 2 ? '0' + seconds : seconds}
+              </Text>
+            ) : (
+              <Text
+                style={{
+                  color: '#0087ba',
+                  ...theme.fonts.IBMPlexSansMedium(14),
+                  marginLeft: 20,
+                }}
+              >
+                Consultation ended in — {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
+                {seconds.toString().length < 2 ? '0' + seconds : seconds} mins
+              </Text>
+            )}
+          </View>
+        )}
+        {renderChatView()}
+        <KeyboardAvoidingView behavior="padding" enabled>
+          <View style={textinputStyles}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', width: width }}>
+              <TextInput
+                autoCorrect={false}
+                placeholder="Type here…"
+                style={{
+                  marginLeft: 20,
+                  marginTop: 0,
+                  height: 44,
+                  width: width - 84,
+                  ...theme.fonts.IBMPlexSansMedium(16),
+                }}
+                value={messageText}
+                blurOnSubmit={false}
+                returnKeyType="send"
+                onChangeText={(value) => {
+                  setMessageText(value);
+                }}
+                onSubmitEditing={() => {
+                  const textMessage = messageText.trim();
+
+                  if (textMessage.length == 0) {
+                    Alert.alert('Apollo', 'Please write something to send message.');
+                    return;
+                  }
+
+                  send();
+                }}
+              />
+              <TouchableOpacity
+                onPress={async () => {
+                  if (messageText.length == 0) {
+                    //Alert.alert('Apollo', 'Please write something to send');
+                    setDropdownVisible(!isDropdownVisible);
+                    return;
+                  }
+                }}
+              >
+                {isDropdownVisible == true ? (
+                  <View
+                    style={{
+                      width: 200,
+                      bottom: -15,
+                      position: 'absolute',
+                      right: -15,
+                      shadowColor: '#808080',
+                      shadowOffset: { width: 0, height: 5 },
+                      shadowOpacity: 0.4,
+                      shadowRadius: 20,
+                      elevation: 16,
+                      zIndex: 2,
+                    }}
+                  >
+                    <DropDown
+                      options={[
+                        {
+                          optionText: 'Camera',
+                          onPress: () => {
+                            setDropdownVisible(false);
+                          },
+                        },
+                        {
+                          optionText: 'Document',
+
+                          onPress: () => {
+                            try {
+                              const results = DocumentPicker.pickMultiple({
+                                type: [DocumentPicker.types.allFiles],
+                              });
+                              console.log('results', results);
+                              setDropdownVisible(false);
+                            } catch (err) {
+                              if (DocumentPicker.isCancel(err)) {
+                                // User cancelled the picker, exit any dialogs or menus and move on
+                              } else {
+                                throw err;
+                              }
+                            }
+                          },
+                        },
+                        {
+                          optionText: 'Gallery',
+                          onPress: () => {
+                            setDropdownVisible(false);
+                          },
+                        },
+                      ]}
+                    />
+                  </View>
+                ) : null}
+                <AddAttachmentIcon
+                  style={{ width: 22, height: 22, marginTop: 18, marginLeft: 22, zIndex: -1 }}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={linestyles} />
+          </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+      {onSubscribe && IncomingCallView()}
+      {isCall && VideoCall()}
+      {isAudioCall && AudioCall()}
+    </View>
+  );
+};

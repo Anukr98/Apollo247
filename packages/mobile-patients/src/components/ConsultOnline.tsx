@@ -173,8 +173,10 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   }
 
   const timeTo12HrFormat = (time: string) => {
-    var time_array = time.split(':');
-    var ampm = 'am';
+    const IOSFormat = `${date.toISOString().split('T')[0]}T${time}:00.000Z`;
+    const formatedSlot = Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
+    const time_array = formatedSlot.split(':');
+    let ampm = 'am';
     if (Number(time_array[0]) >= 12) {
       ampm = 'pm';
     }

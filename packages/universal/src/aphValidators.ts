@@ -6,20 +6,10 @@ export const isEmailValid = isEmail;
 export const isMobileNumberValid = (number: string) => isMobilePhone(number, 'en-IN');
 
 export const isNameValid = (name: string) => {
-  let inBetween = false;
-  for (let i = 0; i < name.length; i++) {
-    if (name[i] === "'" && name[i + 1] === "'" && name[i] === ' ' && name[i + 1] === "'") {
-      inBetween = true;
-    }
-  }
-  return (
-    /^[A-Za-z\/\s\.'-]+$/.test(name.trim()) &&
-    name.trim().length > 0 &&
-    name.charAt(0) != "'" &&
-    name.charAt(name.length - 1) != "'" &&
-    !inBetween
-  );
+  const passesApostropheConditions =
+    !name.startsWith("'") && !name.endsWith("'") && !name.includes("''");
 
+  return /^[a-zA-Z ']*$/.test(name.trim()) && name.trim().length > 1 && passesApostropheConditions;
 };
 
 export const aphClientDateFormat = /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/;

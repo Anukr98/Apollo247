@@ -65,6 +65,10 @@ echo -e "\ncopying web-doctors files..."
 mkdir -pv skeleton/apollo-hospitals/packages/web-doctors/ || exit 2
 cp -Rv packages/web-doctors/dist/* skeleton/apollo-hospitals/packages/web-doctors/ || exit 2
 
+echo -e "\ncopying universal files..."
+mkdir -pv skeleton/apollo-hospitals/packages/universal/ || exit 2
+cp -Rv packages/universal/dist/* skeleton/apollo-hospitals/packages/universal/ || exit 2
+
 echo -e "\ncopying env and docker-compose files..."
 cp -v .env skeleton/apollo-hospitals || exit 2
 cp -v docker-compose-$1.yml skeleton/apollo-hospitals/docker-compose.yml || exit 2

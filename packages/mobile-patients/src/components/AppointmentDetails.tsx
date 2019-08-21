@@ -6,6 +6,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -162,11 +163,11 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             <Button
               title={'FILL CASE SHEET'}
               style={{ flex: 1, marginHorizontal: 40 }}
-              // onPress={() => {
-              //   props.navigation.navigate(AppRoutes.ChatRoom, {
-              //     data: data,
-              //   });
-              // }}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.ChatRoom, {
+                  data: data,
+                });
+              }}
             />
           </StickyBottomComponent>
         </SafeAreaView>

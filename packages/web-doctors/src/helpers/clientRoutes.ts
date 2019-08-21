@@ -4,6 +4,7 @@ export const clientRoutes = {
   welcome: () => '/',
   patients: () => '/patients',
   DoctorsProfile: () => '/profile',
+  profileDetails: () => '/profiledetails',
   //ConsultTabs: () => '/consultTabs',
   testsAndMedicine: () => '#',
   healthRecords: () => '#',

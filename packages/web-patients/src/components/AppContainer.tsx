@@ -21,6 +21,7 @@ import { CartLanding } from 'components/Cart/CartLanding';
 import { MedicineLanding } from 'components/Medicine/MedicineLanding';
 import { ConsultRoom } from 'components/ConsultRoom/ConsultRoom';
 import { ChatRoom } from 'components/ChatRoom/ChatRoom';
+import { PrescriptionsLanding } from 'components/Prescriptions/PrescriptionsLanding';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -50,7 +51,12 @@ const App: React.FC = () => {
         <AuthRouted exact path={clientRoutes.cartLanding()} component={CartLanding} />
         <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
         <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
-        <AuthRouted exact path={clientRoutes.searchMedicines()} component={MedicineLanding} />
+        <AuthRouted exact path={clientRoutes.testsAndMedicine()} component={MedicineLanding} />
+        <AuthRouted
+          exact
+          path={clientRoutes.prescriptionsLanding()}
+          component={PrescriptionsLanding}
+        />
         <AuthRouted exact path={clientRoutes.consultRoom()} component={ConsultRoom} />
         <AuthRouted
           exact
