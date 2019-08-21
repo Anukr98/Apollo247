@@ -5,7 +5,8 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
-import { GetDoctorProfile_getDoctorProfile } from '@aph/mobile-doctors/src/graphql/types/getDoctorProfile';
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const styles = StyleSheet.create({
   container: {
@@ -71,10 +72,14 @@ const styles = StyleSheet.create({
 });
 
 export interface ProfileProps {
-  profileData: GetDoctorProfile_getDoctorProfile;
+  profileData: GetDoctorDetails_getDoctorDetails;
+  scrollViewRef: KeyboardAwareScrollView | null;
+  onReload: () => void;
 }
 
-export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
+export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, onReload }) => {
+  console.log('p', profileData);
+
   const profileRow = (title: string, description: string) => {
     if (!description) return null;
     return (
@@ -88,17 +93,41 @@ export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
   const formatSpecialityAndExperience = (speciality: string, experience: string) =>
     `${(speciality || '').toUpperCase()}     |   ${experience}YRS`;
 
+  const getFormattedLocation = () => {
+    let location = '';
+    try {
+      location = [
+        profileData.doctorHospital[0].facility.streetLine1,
+        profileData.doctorHospital[0].facility.streetLine2,
+        profileData.doctorHospital[0].facility.streetLine3,
+        profileData.doctorHospital[0].facility.city,
+        profileData.doctorHospital[0].facility.state,
+        profileData.doctorHospital[0].facility.country,
+      ]
+        // .filter((data) => console.log('data', data))
+        .filter(Boolean)
+        .join(', ');
+    } catch (e) {
+      console.log(e);
+    }
+    return location;
+  };
+
   return (
     <View style={styles.container}>
-      <SquareCardWithTitle title="Your Profile" containerStyle={{ marginTop: 16 }}>
+      <SquareCardWithTitle title="Your Profile" containerStyle={{ marginTop: 0 }}>
         <View style={styles.cardView}>
           <View style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}>
-            {profileData!.profile!.photoUrl ? (
+            {profileData!.photoUrl ? (
+              // <Image
+              //   style={styles.imageview}
+              //   source={{
+              //     uri: profileData!.photoUrl,
+              //   }}
+              // />
               <Image
                 style={styles.imageview}
-                source={{
-                  uri: profileData!.profile!.photoUrl,
-                }}
+                source={require('../../../images/doctor/doctor.png')}
               />
             ) : (
               <Image
@@ -107,36 +136,44 @@ export const Profile: React.FC<ProfileProps> = ({ profileData }) => {
               />
             )}
           </View>
-          {profileData!.profile!.isStarDoctor ? <Star style={styles.starIconStyle}></Star> : null}
+          {profileData!.doctorType == 'STAR_APOLLO' ? (
+            <Star style={styles.starIconStyle}></Star>
+          ) : null}
           <View style={styles.columnContainer}>
-            <Text style={styles.drname}>
-              {`Dr. ${profileData!.profile!.firstName} ${profileData!.profile!.lastName}`}
+            <Text style={[styles.drname]} numberOfLines={1}>
+              {`Dr. ${profileData!.firstName} ${profileData!.lastName}`}
             </Text>
             <Text style={styles.drnametext}>
               {formatSpecialityAndExperience(
-                profileData!.profile!.speciality,
-                profileData!.profile!.experience || ''
+                profileData!.specialty.name,
+                profileData!.experience || ''
               )}
             </Text>
             <View style={styles.understatusline} />
           </View>
-          {profileRow('Education', profileData!.profile!.education)}
-          {profileRow('Speciality', profileData!.profile!.speciality)}
-          {profileRow('Services', profileData!.profile!.services || '')}
-          {profileRow('Awards', profileData!.profile!.awards || '')}
-          {profileRow('Speaks', (profileData!.profile!.languages || '').split(',').join(', '))}
-          {profileRow('MCI Number', profileData!.profile!.registrationNumber)}
+          {profileRow('Education', profileData!.qualification!)}
+          {profileRow('Speciality', profileData!.specialty.name!)}
+          {profileRow('Services', profileData!.specialization || '')}
           {profileRow(
-            'In-person Consult Location',
-            [
-              profileData!.clinics![0]!.addressLine1,
-              profileData!.clinics![0]!.addressLine2,
-              profileData!.clinics![0]!.addressLine3,
-            ].join(', ')
+            'Awards',
+            (profileData!.awards || '')
+              .replace('&amp;', '&')
+              .replace(/<\/?[^>]+>/gi, '')
+              .trim()
           )}
+          {profileRow('Speaks', (profileData!.languages || '').split(',').join(', '))}
+          {profileRow('MCI Number', profileData!.registrationNumber)}
+          {profileRow('In-person Consult Location', getFormattedLocation())}
         </View>
       </SquareCardWithTitle>
-      <StarDoctorsTeam profileData={profileData} />
+      {profileData!.doctorType == 'STAR_APOLLO' ? (
+        <StarDoctorsTeam
+          profileData={profileData}
+          scrollViewRef={scrollViewRef}
+          onReload={onReload}
+        />
+      ) : null}
+      {/* <StarDoctorsTeam profileData={profileData} /> */}
     </View>
   );
 };

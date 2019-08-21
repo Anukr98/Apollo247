@@ -37,6 +37,7 @@ export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   streetLine1: string | null;
   streetLine2: string | null;
   streetLine3: string | null;
+  id: string;
 }
 
 export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital {

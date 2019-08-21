@@ -13,7 +13,7 @@ const tangerine_yellow = '#fc9916';
 const shadowGray = '#808080';
 
 const TabBar = {
-  TAB_BAR_ACTIVE_TINT_COLOR: 'rgba(103,145,157,0.8)',
+  TAB_BAR_ACTIVE_TINT_COLOR: white,
   TAB_BAR_INACTIVE_TINT_COLOR: 'rgba(2,71,91,0.6)',
 };
 

@@ -1,5 +1,97 @@
 import gql from 'graphql-tag';
 
+export const GET_DOCTOR_DETAILS = gql`
+  query GetDoctorDetails {
+    getDoctorDetails {
+      awards
+      city
+      country
+      dateOfBirth
+      doctorType
+      delegateNumber
+      emailAddress
+      experience
+      firebaseToken
+      firstName
+      isActive
+      id
+      languages
+      lastName
+      mobileNumber
+      onlineConsultationFees
+      photoUrl
+      physicalConsultationFees
+      qualification
+      registrationNumber
+      salutation
+      specialization
+      state
+      streetLine1
+      streetLine2
+      streetLine3
+      zip
+      specialty {
+        name
+      }
+      consultHours {
+        consultMode
+        consultType
+        startTime
+        endTime
+        weekDay
+      }
+      packages {
+        name
+        fees
+      }
+      doctorHospital {
+        facility {
+          city
+          country
+          facilityType
+          latitude
+          longitude
+          name
+          state
+          streetLine1
+          streetLine2
+          streetLine3
+        }
+      }
+      starTeam {
+        isActive
+        associatedDoctor {
+          firstName
+          lastName
+          emailAddress
+          id
+          experience
+          photoUrl
+          mobileNumber
+          salutation
+          qualification
+          doctorHospital {
+            facility {
+              state
+              city
+              country
+              streetLine1
+              streetLine3
+              streetLine2
+            }
+          }
+        }
+      }
+      bankAccount {
+        bankName
+        accountType
+        accountNumber
+        accountHolderName
+        IFSCcode
+      }
+    }
+  }
+`;
 export const GET_DOCTOR_PROFILE = gql`
   query GetDoctorProfile {
     getDoctorProfile {
@@ -71,6 +163,43 @@ export const GET_DOCTOR_PROFILE = gql`
   }
 `;
 
+export const GET_DOCTOR_APPOINTMENTS = gql`
+  query GetDoctorAppointments($startDate: Date, $endDate: Date) {
+    getDoctorAppointments(startDate: $startDate, endDate: $endDate) {
+      newPatientsList
+      appointmentsHistory {
+        appointmentType
+        doctorId
+        status
+        hospitalId
+        id
+        patientId
+        appointmentDateTime
+        bookingDate
+        patientInfo {
+          firstName
+          lastName
+          id
+          uhid
+          emailAddress
+          gender
+          dateOfBirth
+          relation
+        }
+      }
+    }
+  }
+`;
+
+export const CREATEAPPOINTMENTSESSION = gql`
+  mutation CreateAppointmentSession($createAppointmentSessionInput: CreateAppointmentSessionInput) {
+    createAppointmentSession(createAppointmentSessionInput: $createAppointmentSessionInput) {
+      sessionId
+      appointmentToken
+    }
+  }
+`;
+
 /**
  * @returns {DoctorProfile}
  * @param {String} searchString
@@ -106,6 +235,20 @@ export const ADD_DOCTOR_TO_STAR_DOCTOR_PROGRAM = gql`
 export const REMOVE_DOCTOR_FROM_STAR_DOCTOR_PROGRAM = gql`
   mutation RemoveDoctorFromStarDoctorProgram($starDoctorId: String!, $doctorId: String!) {
     removeDoctorFromStarDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
+  }
+`;
+
+export const MAKE_TEAM_DOCTOR_ACTIVE = gql`
+  mutation MakeTeamDoctorActive($associatedDoctor: String!, $starDoctor: String!) {
+    makeTeamDoctorActive(associatedDoctor: $associatedDoctor, starDoctor: $starDoctor)
+  }
+`;
+
+export const REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM = gql`
+  mutation RemoveTeamDoctorFromStarTeam($associatedDoctor: String!, $starDoctor: String!) {
+    removeTeamDoctorFromStarTeam(associatedDoctor: $associatedDoctor, starDoctor: $starDoctor) {
+      firstName
+    }
   }
 `;
 

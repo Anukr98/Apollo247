@@ -63,6 +63,7 @@ export interface OtpCardProps {
   onClickButton?: TouchableOpacityProps['onPress'];
   onPress?: TouchableOpacityProps['onPress'];
   isModelCard?: boolean;
+  headingTextStyle?: StyleProp<ViewStyle>;
 }
 
 export const OtpCard: React.FC<OtpCardProps> = (props) => {
@@ -83,7 +84,7 @@ export const OtpCard: React.FC<OtpCardProps> = (props) => {
         </TouchableOpacity>
       )}
 
-      <Text style={styles.headingText}>{props.heading}</Text>
+      <Text style={[styles.headingText, props.headingTextStyle]}>{props.heading}</Text>
       <Text style={[styles.descriptionText, props.descriptionTextStyle]}>{props.description}</Text>
       <TouchableOpacity
         style={styles.buttonStyle}

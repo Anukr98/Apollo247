@@ -1,4 +1,10 @@
 rootProject.name = 'ApolloPatient'
+include ':react-native-incall-manager'
+project(':react-native-incall-manager').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-incall-manager/android')
+include ':react-native-document-picker'
+project(':react-native-document-picker').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-document-picker/android')
+include ':opentok-react-native'
+project(':opentok-react-native').projectDir = new File(rootProject.projectDir, '../node_modules/opentok-react-native/android')
 include ':react-native-splash-screen'
 project(':react-native-splash-screen').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-splash-screen/android')
 include ':react-native-firebase'

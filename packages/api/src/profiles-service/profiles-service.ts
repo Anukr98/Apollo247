@@ -3,8 +3,27 @@ import 'reflect-metadata';
 import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
 import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
-import { createConnection, getConnection } from 'typeorm';
-import { Patient, SearchHistory } from 'profiles-service/entities';
+import { createConnections, getConnection } from 'typeorm';
+import {
+  Patient,
+  SearchHistory,
+  PatientAddress,
+  PatientFamilyHistory,
+  PatientLifeStyle,
+  PatientHealthVault,
+  Allergies,
+  PatientAllergies,
+} from 'profiles-service/entities';
+import {
+  Doctor,
+  DoctorSpecialty,
+  StarTeam,
+  DoctorAndHospital,
+  Facility,
+  ConsultHours,
+  DoctorBankAccounts,
+  Packages,
+} from 'doctors-service/entities';
 import {
   getCurrentPatientsTypeDefs,
   getCurrentPatientsResolvers,
@@ -19,25 +38,62 @@ import {
   getPastSearchesTypeDefs,
   getPastSearchesResolvers,
 } from 'profiles-service/resolvers/getPastSearches';
+import {
+  getPatientPastSearchesTypeDefs,
+  getPatientPastSearchesResolvers,
+} from 'profiles-service/resolvers/getPatientPastSearches';
+import {
+  addPatientAddressTypeDefs,
+  addPatientAddressResolvers,
+} from 'profiles-service/resolvers/patientAddress';
 import gql from 'graphql-tag';
 import { GatewayHeaders } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-// import { AphAuthenticationError } from 'AphError';
-// import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 (async () => {
-  await createConnection({
-    //name: 'profiles-db',
-    entities: [Patient, SearchHistory],
-    type: 'postgres',
-    host: process.env.PROFILES_DB_HOST,
-    port: parseInt(process.env.PROFILES_DB_PORT, 10),
-    username: process.env.PROFILES_DB_USER,
-    password: process.env.PROFILES_DB_PASSWORD,
-    database: `profiles_${process.env.NODE_ENV}`,
-    logging: true,
-    synchronize: true,
-  }).catch((error) => {
+  await createConnections([
+    {
+      entities: [
+        Patient,
+        SearchHistory,
+        PatientAddress,
+        PatientFamilyHistory,
+        PatientLifeStyle,
+        PatientHealthVault,
+        Allergies,
+        PatientAllergies,
+      ],
+      type: 'postgres',
+      host: process.env.PROFILES_DB_HOST,
+      port: parseInt(process.env.PROFILES_DB_PORT, 10),
+      username: process.env.PROFILES_DB_USER,
+      password: process.env.PROFILES_DB_PASSWORD,
+      database: `profiles_${process.env.NODE_ENV}`,
+      logging: true,
+      synchronize: true,
+    },
+    {
+      name: 'doctors-db',
+      entities: [
+        Doctor,
+        DoctorSpecialty,
+        StarTeam,
+        DoctorAndHospital,
+        Facility,
+        ConsultHours,
+        DoctorBankAccounts,
+        Packages,
+      ],
+      type: 'postgres',
+      host: process.env.DOCTORS_DB_HOST,
+      port: parseInt(process.env.DOCTORS_DB_PORT, 10),
+      username: process.env.DOCTORS_DB_USER,
+      password: process.env.DOCTORS_DB_PASSWORD,
+      database: `doctors_${process.env.NODE_ENV}`,
+      logging: true,
+      synchronize: true,
+    },
+  ]).catch((error) => {
     throw new Error(error);
   });
 
@@ -46,18 +102,15 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
       const headers = req.headers as GatewayHeaders;
       const firebaseUid = headers.firebaseuid;
       const mobileNumber = headers.mobilenumber;
-      // const isSignInQuery = req.query === 'getCurrentPatients';
-      // const currentPatient = isSignInQuery
-      //   ? null
-      //   : await Patient.findOneOrFail({ where: { firebaseUid } }).catch(() => {
-      //       throw new AphAuthenticationError(AphErrorMessages.NO_CURRENT_USER);
-      //     });
+
       const profilesDb = getConnection();
+      const doctorsDb = getConnection('doctors-db');
       const currentPatient = null;
       const context: ProfilesServiceContext = {
         firebaseUid,
         mobileNumber,
         profilesDb,
+        doctorsDb,
         currentPatient,
       };
       return context;
@@ -92,8 +145,16 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
         resolvers: getPastSearchesResolvers,
       },
       {
+        typeDefs: getPatientPastSearchesTypeDefs,
+        resolvers: getPatientPastSearchesResolvers,
+      },
+      {
         typeDefs: saveSearchTypeDefs,
         resolvers: saveSearchResolvers,
+      },
+      {
+        typeDefs: addPatientAddressTypeDefs,
+        resolvers: addPatientAddressResolvers,
       },
     ]),
   });

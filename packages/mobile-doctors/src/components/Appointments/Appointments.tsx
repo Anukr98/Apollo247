@@ -1,4 +1,5 @@
 import { AppointmentsList } from '@aph/mobile-doctors/src/components/Appointments/AppointmentsList';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
@@ -7,23 +8,33 @@ import {
   CalendarTodayIcon,
   DotIcon,
   Down,
+  NoCalenderData,
   Notification,
   RoundIcon,
   Up,
+  ApploLogo,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
-import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
+import { GET_DOCTOR_APPOINTMENTS } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  GetDoctorAppointments,
+  GetDoctorAppointmentsVariables,
+} from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
-import React, { useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { CalendarList } from 'react-native-calendars';
-import { NavigationScreenProps } from 'react-navigation';
+import React, { useEffect, useState } from 'react';
+import { useQuery } from 'react-apollo-hooks';
+import { Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { CalendarList, PeriodMarking } from 'react-native-calendars';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { WeekView } from './WeekView';
 
 const styles = StyleSheet.create({
   noAppointmentsText: {
+    marginTop: 25,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: 'rgba(2, 71, 91, 0.6)',
     textAlign: 'center',
@@ -37,11 +48,19 @@ const styles = StyleSheet.create({
   },
   menuDropdown: {
     position: 'absolute',
-    zIndex: 2,
-    top: 0,
+    top: 184,
     width: '100%',
     alignItems: 'flex-end',
-    // marginLeft: 10,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        zIndex: 1,
+      },
+      android: {
+        elevation: 12,
+        zIndex: 2,
+      },
+    }),
   },
   calendarSeparator: {
     height: 1,
@@ -53,17 +72,25 @@ const styles = StyleSheet.create({
   },
   noAppointmentsView: {
     flex: 1,
-    justifyContent: 'center',
+    marginTop: 40,
+    justifyContent: 'flex-start',
     alignItems: 'center',
   },
   weekViewContainer: {
-    marginTop: 12,
+    marginTop: 16,
     backgroundColor: theme.colors.WHITE,
     shadowColor: '#808080',
-    shadowOpacity: 0.7,
     shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 1,
-    elevation: 5,
+    ...Platform.select({
+      ios: {
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+      },
+      android: {
+        shadowOpacity: 0.1,
+        elevation: 12,
+      },
+    }),
   },
 });
 
@@ -87,23 +114,66 @@ export interface AppointmentsProps extends NavigationScreenProps {
 }
 
 export const Appointments: React.FC<AppointmentsProps> = (props) => {
-  const doctorName: string | null =
-    props.navigation.state.params && props.navigation.state.params.Firstname;
+  const [doctorName, setDoctorName] = useState<string>(
+    (props.navigation.state.params && props.navigation.state.params.Firstname) || ''
+  );
+  const [DoctorId, setDoctorId] = useState<string>(
+    (props.navigation.state.params && props.navigation.state.params.DoctorId) || ''
+  );
+  useEffect(() => {
+    getLocalData()
+      .then((data) => {
+        console.log('data', data);
+        setDoctorName((data.doctorDetails! || {}).lastName);
+        setDoctorId((data.doctorDetails! || {}).id);
+      })
+      .catch(() => {});
+    console.log('DoctirNAME', doctorName);
+  });
+
+  console.log('DoctorIdAPPPPP', DoctorId);
   const [date, setDate] = useState<Date>(new Date());
-  const [calendarDate, setCalendarDate] = useState<Date | null>(new Date()); // to maintain a sync between week view change and calendar month
+  const [calendarDate, setCalendarDate] = useState<Date>(new Date()); // to maintain a sync between week view change and calendar month
   const [isCalendarVisible, setCalendarVisible] = useState(false);
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
 
-  const {
-    data: { getDoctorProfile },
-    error,
-  } = doctorProfile;
-  if (error) {
-    Alert.alert('Error', 'Unable to get the data');
-  } else {
-    //console.log('Calender', getDoctorProfile!.appointments.length);
-  }
+  const startDate = moment(date).format('YYYY-MM-DD');
+  const nextDate = new Date(date);
+  nextDate.setDate(nextDate.getDate() + 1);
+  const endDate = moment(nextDate).format('YYYY-MM-DD');
+  console.log('startDate', startDate, endDate);
+
+  const { data, error, loading } = useQuery<GetDoctorAppointments, GetDoctorAppointmentsVariables>(
+    GET_DOCTOR_APPOINTMENTS,
+    {
+      variables: {
+        startDate: startDate,
+        endDate: endDate, //'2019-09-13',
+      },
+      fetchPolicy: 'no-cache',
+    }
+  );
+
+  const getAppointments = data && data.getDoctorAppointments;
+  const todayDateStyle = moment(calendarDate).format('YYYY-MM-DD');
+  console.log('todayDateStyle', todayDateStyle);
+  const mark = {
+    [todayDateStyle]: {
+      customStyles: {
+        container: {
+          backgroundColor: '#00b38e',
+        },
+        text: {
+          color: 'white',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+      },
+    },
+  };
 
   const renderMonthSelection = () => {
     return (
@@ -124,7 +194,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       <View style={styles.calenderView}>
         <View style={styles.calendarSeparator} />
         <CalendarList
-          style={{ height: 'auto' }}
+          style={{ height: 300 }}
           horizontal={true}
           pagingEnabled={true}
           current={calendarDate || date}
@@ -145,13 +215,15 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           showWeekNumbers={false}
           onPressArrowLeft={(substractMonth) => substractMonth()}
           onPressArrowRight={(addMonth) => addMonth()}
+          // markingType={'custom'}
+          // markedDates={mark}
           theme={{
             backgroundColor: '#ffffff',
             calendarBackground: '#ffffff',
             textSectionTitleColor: '#80a3ad',
             selectedDayBackgroundColor: '#00b38e',
             selectedDayTextColor: '#ffffff',
-            todayTextColor: '#00b38e',
+            todayTextColor: '#000000',
             dayTextColor: '#00b38e',
             textDisabledColor: '#d9e1e8',
             dotColor: '#00adf5',
@@ -178,14 +250,19 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const renderMainHeader = () => {
     return (
       <Header
+        leftIcons={[
+          {
+            icon: <ApploLogo />,
+          },
+        ]}
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => Alert.alert('click'),
+            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
           },
           {
             icon: <Notification />,
-            onPress: () => Alert.alert('click'),
+            onPress: () => props.navigation.push(AppRoutes.NotificationScreen),
           },
         ]}
       />
@@ -194,11 +271,37 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
 
   const renderDoctorGreeting = () => {
     return (
-      <ProfileTabHeader
-        title={`hello dr. ${(doctorName || '').toLowerCase()} :)`}
-        description="here’s your schedule for today"
-        activeTabIndex={0}
-      />
+      // <ProfileTabHeader
+      //   title={`hello dr. ${(doctorName || '').toLowerCase()} :)`}
+      //   description={`here’s your schedule for ${
+      //     moment(date).format('DD/MM/YYYY') == moment(new Date()).format('DD/MM/YYYY')
+      //       ? 'today'
+      //       : moment(date).format('MMM, DD')
+      //   }`}
+      //   activeTabIndex={0}/>
+      <View style={{ backgroundColor: '#ffffff' }}>
+        <Text
+          style={{
+            ...theme.fonts.IBMPlexSansSemiBold(28),
+            color: '#02475b',
+            marginLeft: 20,
+            marginBottom: 2,
+          }}
+        >{`hello dr. ${(doctorName || '').toLowerCase()} :)`}</Text>
+        <Text
+          style={{
+            ...theme.fonts.IBMPlexSansMedium(16),
+            color: '#0087ba',
+            marginLeft: 20,
+            marginBottom: 14,
+            lineHeight: 24,
+          }}
+        >{`here’s your schedule for ${
+          moment(date).format('DD/MM/YYYY') == moment(new Date()).format('DD/MM/YYYY')
+            ? 'today'
+            : moment(date).format('MMM, DD')
+        }`}</Text>
+      </View>
     );
   };
 
@@ -217,7 +320,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           {
             icon: <DotIcon />,
             onPress: () => {
-              setDropdownVisible(!isDropdownVisible);
+              null;
             },
           },
         ]}
@@ -229,6 +332,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     return (
       <View style={styles.menuDropdown}>
         <DropDown
+          containerStyle={{ marginRight: 20 }}
           options={[
             {
               optionText: '  Block Calendar',
@@ -251,25 +355,38 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   };
 
   const renderNoConsultsView = () => {
+    const now = new Date();
+    const isTodaysDate = (date: Date) =>
+      now.getDate() == date.getDate() &&
+      now.getMonth() == date.getMonth() &&
+      now.getFullYear() == date.getFullYear();
+    const getCurrentDaytext = isTodaysDate(date) ? 'today' : 'for this day';
     return (
-      <View style={styles.noAppointmentsView}>
-        <Notification />
-        <Text style={styles.noAppointmentsText}>No consults scheduled today!</Text>
-      </View>
+      <ScrollView bounces={false}>
+        <View style={styles.noAppointmentsView}>
+          <NoCalenderData />
+          <Text
+            style={styles.noAppointmentsText}
+          >{`No consults scheduled ${getCurrentDaytext}!`}</Text>
+        </View>
+      </ScrollView>
     );
   };
 
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       {renderMainHeader()}
-      {renderDoctorGreeting()}
+      <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
+
       <View>
         {renderHeader()}
-        <View>{isCalendarVisible ? renderCalenderView() : null}</View>
+        <View style={{ flex: 1 }}>{isCalendarVisible ? renderCalenderView() : null}</View>
       </View>
-      <View style={isDropdownVisible ? {} : { zIndex: -1 }}>
-        {isDropdownVisible ? renderDropdown() : null}
-        <View style={styles.weekViewContainer}>
+      {isDropdownVisible ? renderDropdown() : null}
+
+      {/* <View style={isDropdownVisible ? {} : { zIndex: -1 }}> */}
+      <View style={{ zIndex: -1, flex: 1, backgroundColor: '#f7f7f7' }}>
+        <View style={[styles.weekViewContainer, { zIndex: 0 }]}>
           <WeekView
             date={date}
             onTapDate={(date: Date) => {
@@ -283,10 +400,21 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             }}
           />
         </View>
-        {getDoctorProfile!.appointments.length == 0 ? (
+        {loading ? (
+          <Loader flex1 />
+        ) : (
+            (getAppointments &&
+              getAppointments.appointmentsHistory &&
+              getAppointments.appointmentsHistory) ||
+            []
+          ).length == 0 ? (
           renderNoConsultsView()
         ) : (
-          <AppointmentsList doctorProfile={getDoctorProfile!} />
+          <AppointmentsList
+            navigation={props.navigation}
+            appointmentsHistory={(getAppointments && getAppointments.appointmentsHistory) || []}
+            newPatientsList={(getAppointments && getAppointments.newPatientsList) || []}
+          />
         )}
       </View>
     </SafeAreaView>

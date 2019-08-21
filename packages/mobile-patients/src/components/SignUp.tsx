@@ -167,6 +167,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
               shadowOffset: { width: 0, height: -10 },
               shadowOpacity: 0.35,
               shadowRadius: 20,
+              backgroundColor: theme.colors.WHITE,
             }}
             heading={string.login.welcome_text}
             description={string.login.welcome_desc}
@@ -328,7 +329,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                     AsyncStorage.setItem('userLoggedIn', 'true'),
                     AsyncStorage.setItem('signUp', 'false'),
                     AsyncStorage.setItem('gotIt', 'false'),
-                    props.navigation.replace(AppRoutes.TabBar))
+                    props.navigation.replace(AppRoutes.ConsultRoom))
                   : null}
                 {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
                 {error

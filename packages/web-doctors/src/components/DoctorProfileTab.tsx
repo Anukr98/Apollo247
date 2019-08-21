@@ -36,6 +36,9 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
       padding: '10px 20px 0 20px',
+      [theme.breakpoints.down('xs')]: {
+        padding: '10px 0 0 0',
+      },
       '& h2': {
         fontSize: 16,
         color: theme.palette.secondary.dark,
@@ -111,15 +114,16 @@ const useStyles = makeStyles((theme: Theme) => {
       'column-count': 2,
       'column-fill': 'initial',
       display: 'block',
+      [theme.breakpoints.down('xs')]: {
+        'column-count': 1,
+      },
     },
     serviceItem: {
       padding: '0 0 10px 0',
       position: 'relative',
       height: '100%',
       boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        display: 'flex',
-      },
+      [theme.breakpoints.down('xs')]: {},
     },
     avatarBlock: {
       overflow: 'hidden',
@@ -279,12 +283,12 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightMedium,
       color: '#658f9b',
       display: 'block',
-      maxWidth: 400,
+      maxWidth: 270,
       whiteSpace: 'nowrap',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       paddingRight: '20px',
-      width: '51%',
+      width: '78%',
     },
     profileAvatar: {
       width: 80,

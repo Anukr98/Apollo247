@@ -24,6 +24,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   streetLine1: string | null;
   streetLine2: string | null;
   streetLine3: string | null;
+  id: string;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital {

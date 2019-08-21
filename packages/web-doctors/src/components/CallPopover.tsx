@@ -182,6 +182,7 @@ interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
   appointmentId: string;
   appointmentDateTime: string;
+  doctorId: string;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -207,7 +208,42 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     .concat(diff2.toString().length > 1 ? diff2.toString() : val.concat(diff2.toString()));
   //logic for before start counsult timer end
 
+  // const startInterval = (timer: number) => {
+  //   intervalId = setInterval(() => {
+  //     timer = timer - 1;
+  //     stoppedTimer = timer;
+  //     setRemainingTime(timer);
+  //     if (timer == 0) {
+  //       setRemainingTime(0);
+  //       clearInterval(intervalId);
+  //     }
+  //   }, 1000);
+  // };
+
   const startInterval = (timer: number) => {
+    const current = new Date();
+    const consult = new Date(props.appointmentDateTime + ':00');
+    const year = consult.getFullYear();
+    const month = consult.getMonth() + 1;
+    const day = consult.getDate();
+    let hour = consult.getHours();
+    let minute = consult.getMinutes() + 15;
+    const second = consult.getSeconds();
+    if (minute > 59) {
+      const diff = minute - 60;
+      hour = hour + 1;
+      if (hour === 14) {
+        hour = 0;
+      }
+      minute = diff;
+    }
+    const addedMinutes = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+    const addedTime = new Date(addedMinutes);
+    if (current > consult && addedTime > current) {
+      const now = new Date();
+      const diffrent = current.getTime() - consult.getTime();
+      timer = 900 - Math.floor(diffrent / 1000);
+    }
     intervalId = setInterval(() => {
       timer = timer - 1;
       stoppedTimer = timer;
@@ -218,6 +254,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     }, 1000);
   };
+
   const stopInterval = () => {
     setRemainingTime(900);
     intervalId && clearInterval(intervalId);
@@ -248,23 +285,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     });
     pubnub.addListener({
       status: (statusEvent) => {},
-      message: (message) => {
-        if (message.message.isTyping) {
-          if (message.message.message === '^^#callAccepted') {
-            console.log(1);
-          }
-
-          // if (message.message.message === audioCallMsg) {
-          //   console.log(1);
-          // } else if (message.message.message === videoCallMsg) {
-          //   console.log(2);
-          // } else if (message.message.message === startConsult) {
-          //   console.log(3);
-          // } else if (message.message.message === stopConsult) {
-          //   console.log(4);
-          // }
-        }
-      },
+      message: (message) => {},
       // presence: (presenceEvent) => {
       //   console.log('presenceEvent', presenceEvent);
       // },
@@ -273,49 +294,53 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       pubnub.unsubscribe({ channels: [channel] });
     };
   });
+
   const onStartConsult = () => {
+    const text = {
+      id: props.doctorId,
+      message: startConsult,
+      isTyping: true,
+    };
     pubnub.publish(
       {
-        message: {
-          isTyping: true,
-          message: startConsult,
-        },
+        message: text,
         channel: channel,
-        storeInHistory: false,
+        storeInHistory: true,
       },
-      (status, response) => {
-        setStartAppointment(!startAppointment);
-        startInterval(900);
-      }
+      (status, response) => {}
     );
   };
   const onStopConsult = () => {
+    const text = {
+      id: props.doctorId,
+      message: stopConsult,
+      isTyping: true,
+    };
     pubnub.publish(
       {
-        message: {
-          isTyping: true,
-          message: stopConsult,
-        },
+        message: text,
         channel: channel,
-        storeInHistory: false,
+        storeInHistory: true,
       },
-      (status, response) => {
-        setStartAppointment(!startAppointment);
-        stopInterval();
-      }
+      (status, response) => {}
     );
   };
 
   const getTimerText = () => {
     const now = new Date();
     const diff = moment.duration(
-      moment(props.appointmentDateTime).diff(moment(moment(now).format('YYYY-MM-DD hh:ss')))
+      moment(props.appointmentDateTime + ':00').diff(
+        moment(moment(now).format('YYYY-MM-DD HH:mm:ss'))
+      )
     );
+    console.log(diff);
     const diffInHours = diff.asHours();
     if (diffInHours > 0 && diffInHours < 12)
-      return `Time to consult ${moment(new Date(0, 0, 0, diff.hours(), diff.minutes())).format(
-        'hh: mm'
-      )}`;
+      if (diff.hours() <= 0) {
+        return `Time to consult ${
+          diff.minutes().toString().length < 2 ? '0' + diff.minutes() : diff.minutes()
+        } : ${diff.seconds().toString().length < 2 ? '0' + diff.seconds() : diff.seconds()}`;
+      }
     return '';
   };
   return (
@@ -340,18 +365,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         <span>
           {startAppointment ? (
             <span>
-              <Button
-                className={classes.backButton}
-                onClick={() => {
-                  !startAppointment ? onStartConsult() : onStopConsult();
-                  //setStartAppointment(!startAppointment);
-                }}
-              >
-                Save
-              </Button>
+              <Button className={classes.backButton}>Save</Button>
               <Button
                 className={classes.endconsultButton}
                 onClick={() => {
+                  onStopConsult();
                   setStartAppointment(!startAppointment);
                   stopInterval();
                 }}
@@ -373,6 +391,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             <Button
               className={classes.consultButton}
               onClick={() => {
+                !startAppointment ? onStartConsult() : onStopConsult();
                 !startAppointment ? startInterval(900) : stopInterval();
                 setStartAppointment(!startAppointment);
               }}

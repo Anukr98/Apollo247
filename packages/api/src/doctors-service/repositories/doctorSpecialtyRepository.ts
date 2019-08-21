@@ -10,4 +10,19 @@ export class DoctorSpecialtyRepository extends Repository<DoctorSpecialty> {
       })
       .getMany();
   }
+
+  findById(id: string) {
+    return this.findOne({ where: { id } });
+  }
+
+  getSearchSpecialtiesByIds(specialtyIds: string[]) {
+    return this.createQueryBuilder('specialty')
+      .select('specialty.id', 'typeId')
+      .addSelect('specialty.name', 'name')
+      .addSelect('specialty.image', 'image')
+      .where('specialty.id IN (:...specialtyIds)', {
+        specialtyIds,
+      })
+      .getRawMany();
+  }
 }

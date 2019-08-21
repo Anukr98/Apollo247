@@ -300,17 +300,14 @@ export const DoctorsLanding: React.FC = (props) => {
                     {filterOptions.searchKeyword.length <= 0 &&
                     specialitySelected.length === 0 &&
                     showSearchAndPastSearch ? (
-                      <>
-                        <div className={classes.sectionHeader}>Your Past Searches</div>
-                        <PastSearches
-                          speciality={(specialitySelected) =>
-                            setSpecialitySelected(specialitySelected)
-                          }
-                          disableFilter={(disableFilters) => {
-                            setDisableFilters(disableFilters);
-                          }}
-                        />
-                      </>
+                      <PastSearches
+                        speciality={(specialitySelected) =>
+                          setSpecialitySelected(specialitySelected)
+                        }
+                        disableFilter={(disableFilters) => {
+                          setDisableFilters(disableFilters);
+                        }}
+                      />
                     ) : null}
 
                     {specialitySelected.length > 0 ? (
@@ -332,8 +329,8 @@ export const DoctorsLanding: React.FC = (props) => {
                                 <div className={classes.sectionHeader}>
                                   <span>Matching Doctors</span>
                                   <span className={classes.count}>
-                                    {matchingDoctorsFound > 0 && matchingDoctorsFound < 10
-                                      ? `0${matchingDoctorsFound}`
+                                    {matchingDoctorsFound > 0
+                                      ? matchingDoctorsFound.toString().padStart(2, '0')
                                       : matchingDoctorsFound}
                                   </span>
                                 </div>
@@ -387,9 +384,12 @@ export const DoctorsLanding: React.FC = (props) => {
                                 <div className={classes.sectionHeader}>
                                   <span>Possible Doctors</span>
                                   <span className={classes.count}>
-                                    {data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors.length
-                                      .toString()
-                                      .padStart(2, '0')}
+                                    {data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors
+                                      .length > 0
+                                      ? data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors.length
+                                          .toString()
+                                          .padStart(2, '0')
+                                      : '0'}
                                   </span>
                                 </div>
                                 <div className={classes.searchList}>
@@ -423,9 +423,12 @@ export const DoctorsLanding: React.FC = (props) => {
                                 <div className={classes.sectionHeader}>
                                   <span>Possible Specialities</span>
                                   <span className={classes.count}>
-                                    {data.SearchDoctorAndSpecialtyByName.possibleMatches.specialties.length
-                                      .toString()
-                                      .padStart(2, '0')}
+                                    {data.SearchDoctorAndSpecialtyByName.possibleMatches.specialties
+                                      .length > 0
+                                      ? data.SearchDoctorAndSpecialtyByName.possibleMatches.specialties.length
+                                          .toString()
+                                          .padStart(2, '0')
+                                      : '0'}
                                   </span>
                                 </div>
                                 <Specialities

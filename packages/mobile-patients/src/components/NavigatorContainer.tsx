@@ -19,6 +19,8 @@ import { SignUp } from '@aph/mobile-patients/src/components/SignUp';
 import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
 import { StorePickupScene } from '@aph/mobile-patients/src/components/StorePickupScene';
 import { TabBar } from '@aph/mobile-patients/src/components/TabBar';
+import { ChatRoom } from '@aph/mobile-patients/src/components/ChatRoom';
+
 import {
   createAppContainer,
   createStackNavigator,
@@ -43,11 +45,13 @@ export enum AppRoutes {
   Consult = 'Consult',
   FilterScene = 'FilterScene',
   DoctorDetails = 'DoctorDetails',
+  AssociateDoctorDetails = 'AssociateDoctorDetails',
   AppointmentDetails = 'AppointmentDetails',
   SearchMedicineScene = 'SearchMedicineScene',
   MedicineDetailsScene = 'MedicineDetailsScene',
   ApplyCouponScene = 'ApplyCouponScene',
   StorPickupScene = 'StorPickupScene',
+  ChatRoom = 'ChatRoom',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -117,6 +121,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.DoctorDetails]: {
     screen: DoctorDetails,
   },
+  [AppRoutes.AssociateDoctorDetails]: {
+    screen: DoctorDetails,
+  },
   [AppRoutes.AppointmentDetails]: {
     screen: AppointmentDetails,
   },
@@ -131,6 +138,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.StorPickupScene]: {
     screen: StorePickupScene,
+  },
+  [AppRoutes.ChatRoom]: {
+    screen: ChatRoom,
   },
 };
 

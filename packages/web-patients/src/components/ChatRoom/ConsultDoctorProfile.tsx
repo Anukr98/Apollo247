@@ -5,18 +5,22 @@ import { AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import _forEach from 'lodash/forEach';
+import { GET_PATIENT_APPOINTMENTS } from 'graphql/doctors';
 import {
-  AppointmentHistory as TypeAppointmentHistory,
-  AppointmentHistory_getAppointmentHistory_appointmentsHistory as AppointmentHistory,
-  AppointmentHistoryVariables,
-} from 'graphql/types/AppointmentHistory';
+  GetPatientAppointments,
+  GetPatientAppointmentsVariables,
+} from 'graphql/types/GetPatientAppointments';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { PATIENT_APPOINTMENT_HISTORY } from 'graphql/doctors';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import _findIndex from 'lodash/findIndex';
-import { getTime } from 'date-fns/esm';
 import { format } from 'date-fns';
+import isTomorrow from 'date-fns/isTomorrow';
+import { getIstTimestamp } from 'helpers/dateHelpers';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
+import { clientRoutes } from 'helpers/clientRoutes';
+import formatDistanceStrict from 'date-fns/formatDistance';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -191,6 +195,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#ff748e',
       color: theme.palette.common.white + '!important',
       borderRadius: '5px !important',
+      textTransform: 'none',
       '&:hover': {
         backgroundColor: '#ff748e',
         color: theme.palette.common.white + '!important',
@@ -251,62 +256,66 @@ const useStyles = makeStyles((theme: Theme) => {
 interface ConsultDoctorProfileProps {
   doctorDetails: DoctorDetails;
   appointmentId: string;
+  hasDoctorJoined: boolean;
 }
-
-const getTimestamp = (today: Date, slotTime: string) => {
-  const hhmm = slotTime.split(':');
-  return getTime(
-    new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-      parseInt(hhmm[0], 10),
-      parseInt(hhmm[1], 10),
-      0,
-      0
-    )
-  );
-};
 
 export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props) => {
   const classes = useStyles();
 
-  const { doctorDetails, appointmentId } = props;
+  const { doctorDetails, appointmentId, hasDoctorJoined } = props;
   const { allCurrentPatients } = useAllCurrentPatients();
+  const currentDate = new Date().toISOString().substring(0, 10);
 
   const [showMore, setShowMore] = useState<boolean>(true);
-
-  const doctorId =
-    doctorDetails && doctorDetails.getDoctorDetailsById
-      ? doctorDetails.getDoctorDetailsById.id
-      : '';
+  const [moreOrLessMessage, setMoreOrLessMessage] = useState<string>('MORE');
 
   const patientId = (allCurrentPatients && allCurrentPatients[0].id) || '';
 
   const { data, loading, error } = useQueryWithSkip<
-    TypeAppointmentHistory,
-    AppointmentHistoryVariables
-  >(PATIENT_APPOINTMENT_HISTORY, {
-    variables: { appointmentHistoryInput: { patientId: patientId, doctorId: doctorId } },
+    GetPatientAppointments,
+    GetPatientAppointmentsVariables
+  >(GET_PATIENT_APPOINTMENTS, {
+    variables: {
+      patientAppointmentsInput: {
+        patientId: patientId || '',
+        appointmentDate: currentDate,
+      },
+    },
   });
 
   if (loading) {
     return <LinearProgress />;
   }
   if (error) {
-    return <></>;
+    return <div>Unable to load appointment information.</div>;
   }
 
-  const appointmentDetails: AppointmentHistory[] = [];
-  let hospitalLocation = '';
+  const appointmentDetails = [];
+  let hospitalLocation = '',
+    address1 = '',
+    address2 = '',
+    address3 = '';
 
-  if (data && data.getAppointmentHistory && data.getAppointmentHistory.appointmentsHistory) {
-    const previousAppointments = data.getAppointmentHistory.appointmentsHistory;
+  if (data && data.getPatinetAppointments && data.getPatinetAppointments.patinetAppointments) {
+    const previousAppointments = data.getPatinetAppointments.patinetAppointments;
     const findAppointment = _findIndex(previousAppointments, { id: appointmentId });
-    if (findAppointment > 0) {
+    if (findAppointment >= 0) {
       appointmentDetails.push(previousAppointments[findAppointment]);
     }
   }
+
+  // redirect the user to consult room if any mismatch in appointment id.
+  if (appointmentDetails.length === 0) {
+    window.location.href = clientRoutes.consultRoom();
+  }
+
+  // console.log(
+  //   '--------------->>>>>>>>>>>>>>>',
+  //   appointmentDetails,
+  //   data && data.getPatinetAppointments.patinetAppointments
+  // );
+
+  // console.log(doctorDetails, '................');
 
   const firstName =
     doctorDetails && doctorDetails.getDoctorDetailsById
@@ -348,20 +357,16 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     doctorDetails && doctorDetails.getDoctorDetailsById
       ? doctorDetails.getDoctorDetailsById.physicalConsultationFees
       : '';
-  const appointmentTime =
-    appointmentDetails && appointmentDetails.length > 0 && appointmentDetails[0].appointmentDateTime
-      ? format(
-          new Date(
-            getTimestamp(
-              new Date(appointmentDetails[0].appointmentDateTime || ''),
-              appointmentDetails[0].appointmentDateTime.split('T')[1].substring(0, 5)
-            )
-          ),
-          'h:mm a'
-        )
-      : '';
+  const currentTime = new Date().getTime();
 
-  // console.log('--------------->>>>>>>>>>>>>>>', appointmentDetails);
+  const aptArray =
+    appointmentDetails[0] && appointmentDetails[0].appointmentDateTime
+      ? appointmentDetails[0].appointmentDateTime.split('T')
+      : ['', ''];
+
+  const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
+  const difference = Math.round((appointmentTime - currentTime) / 60000);
+  const differenceInWords = formatDistanceStrict(appointmentTime, currentTime);
 
   if (
     doctorDetails &&
@@ -374,9 +379,22 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         hospitalDetails.facility.facilityType === 'CLINIC'
       ) {
         hospitalLocation = hospitalDetails.facility.name;
+        address1 = hospitalDetails.facility.streetLine1 || '';
+        address2 = hospitalDetails.facility.streetLine2 || '';
+        address3 = hospitalDetails.facility.streetLine3 || '';
       }
     });
   }
+
+  // console.log(difference, 'difference in minutes.....');
+
+  const otherDateMarkup = (appointmentTime: number) => {
+    if (isTomorrow(new Date(appointmentTime))) {
+      return `Tomorrow ${format(new Date(appointmentTime), 'h:mm a')}`;
+    } else {
+      return format(new Date(appointmentTime), 'dd MMM yyyy, h:mm a');
+    }
+  };
 
   return (
     <div className={classes.root}>
@@ -388,108 +406,57 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           />
         </div>
         <div className={classes.doctorInfo}>
-          <div className={classes.doctorName}>{`${firstName} ${lastName}`}</div>
+          <div className={classes.doctorName}>{`Dr. ${_startCase(_toLower(firstName))} ${_startCase(
+            _toLower(lastName)
+          )}`}</div>
           <div className={classes.specialits}>
-            {speciality} <span className={classes.lineDivider}>|</span> {experience} Yrs
+            {speciality} <span className={classes.lineDivider}>|</span> {experience}
+            {parseInt(experience || '0', 10) > 1 ? ' Yrs' : ' Year'}
             <div
               className={classes.moreToggle}
               onClick={(e) => {
                 const currentShowMore = showMore;
+                const currentMoreOrLessMessage = moreOrLessMessage;
                 setShowMore(!currentShowMore);
+                setMoreOrLessMessage(currentMoreOrLessMessage === 'MORE' ? 'LESS' : 'MORE');
               }}
             >
-              More
+              {moreOrLessMessage}
             </div>
           </div>
-          <Scrollbars
-            autoHide={true}
-            autoHeight
-            autoHeightMax={'calc(100vh - 514px'}
-            className={showMore ? classes.hideMore : ''}
-          >
-            <div className={classes.doctorInfoGroup}>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType}>
-                  <img src={require('images/ic-edu.svg')} alt="" />
-                </div>
-                <div className={classes.details}>{education}</div>
-              </div>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType}>
-                  <img src={require('images/ic-awards.svg')} alt="" />
-                </div>
-                <div className={classes.details}>
-                  {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
-                </div>
-              </div>
-            </div>
-            <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType}>
-                  <img src={require('images/ic-location.svg')} alt="" />
-                </div>
-                <div className={classes.details}>{hospitalLocation}</div>
-              </div>
-              <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                <div className={classes.iconType}>
-                  <img src={require('images/ic-language.svg')} alt="" />
-                </div>
-                <div className={classes.details}>{languages}</div>
-              </div>
-            </div>
-            <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
-              <div className={classes.consultGroup}>
+          <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 514px'}>
+            <div className={showMore ? classes.hideMore : ''}>
+              <div className={classes.doctorInfoGroup}>
                 <div className={classes.infoRow}>
                   <div className={classes.iconType}>
-                    <img src={require('images/ic-rupee.svg')} alt="" />
+                    <img src={require('images/ic-edu.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>{education}</div>
+                </div>
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic-awards.svg')} alt="" />
                   </div>
                   <div className={classes.details}>
-                    Online Consultation
-                    <br />
-                    Clinic Visit
-                    {/* <div className={classes.doctorPriceIn}>Rs. 299</div> */}
-                  </div>
-                  <div className={classes.doctorPrice}>
-                    Rs. {onlineConsultFees} <br />
-                    Rs. {physicalConsultationFees}
+                    {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
                   </div>
                 </div>
               </div>
-            </div>
-            {appointmentDetails ? (
-              <div className={classes.appointmentDetails}>
-                <div className={classes.sectionHead}>
-                  <span>Appointment Details</span>
-                  <span className={classes.moreIcon}>
-                    <img src={require('images/ic_more.svg')} alt="" />
-                  </span>
+              <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic-location.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>{hospitalLocation}</div>
                 </div>
-                <div className={`${classes.doctorInfoGroup} ${classes.noBorder}`}>
-                  <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                    <div className={classes.iconType}>
-                      <img src={require('images/ic_calendar_show.svg')} alt="" />
-                    </div>
-                    <div className={classes.details}>Today, {appointmentTime}</div>
+                <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic-language.svg')} alt="" />
                   </div>
-                  <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                    <div className={classes.iconType}>
-                      <img src={require('images/ic-language.svg')} alt="" />
-                    </div>
-                    <div className={classes.details}>40 min average waiting time</div>
-                  </div>
-                  <div className={`${classes.infoRow}`}>
-                    <div className={classes.iconType}>
-                      <img src={require('images/ic-location.svg')} alt="" />
-                    </div>
-                    <div className={classes.details}>
-                      Apollo Hospital
-                      <br />
-                      Road No 72, Film Nagar
-                      <br />
-                      Jubilee Hills, Hyderabad
-                    </div>
-                  </div>
+                  <div className={classes.details}>{languages}</div>
                 </div>
+              </div>
+              <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
                 <div className={classes.consultGroup}>
                   <div className={classes.infoRow}>
                     <div className={classes.iconType}>
@@ -499,9 +466,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                       Online Consultation
                       <br />
                       Clinic Visit
-                      <br />
                       {/* <div className={classes.doctorPriceIn}>Rs. 299</div> */}
-                      <AphButton className={classes.invoiceBtn}>Download Invoice</AphButton>
                     </div>
                     <div className={classes.doctorPrice}>
                       Rs. {onlineConsultFees} <br />
@@ -510,25 +475,89 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                   </div>
                 </div>
               </div>
-            ) : null}
+              {appointmentDetails ? (
+                <div className={classes.appointmentDetails}>
+                  <div className={classes.sectionHead}>
+                    <span>Appointment Details</span>
+                    <span className={classes.moreIcon}>
+                      <img src={require('images/ic_more.svg')} alt="" />
+                    </span>
+                  </div>
+                  <div className={`${classes.doctorInfoGroup} ${classes.noBorder}`}>
+                    <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                      <div className={classes.iconType}>
+                        <img src={require('images/ic_calendar_show.svg')} alt="" />
+                      </div>
+                      <div className={classes.details}>
+                        {difference <= 15
+                          ? `in ${difference} mins`
+                          : otherDateMarkup(appointmentTime)}
+                      </div>
+                    </div>
+                    <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                      <div className={classes.iconType}>
+                        <img src={require('images/ic-language.svg')} alt="" />
+                      </div>
+                      <div className={classes.details}>40 min average waiting time</div>
+                    </div>
+                    <div className={`${classes.infoRow}`}>
+                      <div className={classes.iconType}>
+                        <img src={require('images/ic-location.svg')} alt="" />
+                      </div>
+                      <div className={classes.details}>
+                        {hospitalLocation}
+                        <br />
+                        {address1}
+                        <br />
+                        {`${address2} ${address3}`}
+                      </div>
+                    </div>
+                  </div>
+                  <div className={classes.consultGroup}>
+                    <div className={classes.infoRow}>
+                      <div className={classes.iconType}>
+                        <img src={require('images/ic-rupee.svg')} alt="" />
+                      </div>
+                      <div className={classes.details}>
+                        Online Consultation
+                        <br />
+                        Clinic Visit
+                        <br />
+                        {/* <div className={classes.doctorPriceIn}>Rs. 299</div> */}
+                        <AphButton className={classes.invoiceBtn}>Download Invoice</AphButton>
+                      </div>
+                      <div className={classes.doctorPrice}>
+                        Rs. {onlineConsultFees} <br />
+                        Rs. {physicalConsultationFees}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </Scrollbars>
           <div className={classes.buttonGroup}>
-            <div className={classes.joinInSection}>
-              <span>Doctor Joining In</span>
-              <span className={classes.joinTime}>9 mins</span>
-            </div>
+            {!hasDoctorJoined && (
+              <div className={classes.joinInSection}>
+                <span>Doctor Joining In</span>
+                <span className={classes.joinTime}>{differenceInWords}</span>
+              </div>
+            )}
             {/* <div className={classes.joinInSection}>
                 <span>Time Remaining</span>
                 <span className={classes.joinTime}>14 mins</span>
               </div> */}
           </div>
         </div>
-        {/* <div className={classes.bottomActions}>
-          <AphButton className={classes.joinBtn} fullWidth>
-            Doctor has joined!
-          </AphButton>
-          <AphButton fullWidth>Reschedule</AphButton>
-        </div> */}
+        <div className={classes.bottomActions}>
+          {hasDoctorJoined && (
+            <AphButton className={classes.joinBtn} fullWidth>
+              Doctor has joined!
+            </AphButton>
+          )}
+
+          {/* <AphButton fullWidth>Reschedule</AphButton> */}
+        </div>
       </div>
     </div>
   );

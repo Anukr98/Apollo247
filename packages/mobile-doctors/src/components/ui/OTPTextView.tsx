@@ -41,8 +41,8 @@ export interface OTPTextViewProps {
 
 export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
   const [focusedInput, setFocusedInput] = useState<number>(0);
-  const [otpText, setotpText] = useState<Array<string>>([]);
-  const arrayRef = useRef<any[]>([]);
+  const [otpText, setotpText] = useState<string[]>([]);
+  const arrayRef = useRef<(TextInput | null)[]>([]);
 
   const {
     defaultValue,
@@ -58,7 +58,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
   const TextInputs = [];
   useEffect(() => {
     if (otpText.length === 0) {
-      arrayRef.current && arrayRef.current[0].focus();
+      arrayRef.current && arrayRef.current[0]!.focus();
     }
   }, [otpText]);
 
@@ -70,7 +70,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
     }
     if (value === '') {
       setotpText(value.split(''));
-      arrayRef.current && arrayRef.current[0].focus();
+      arrayRef.current && arrayRef.current[0]!.focus();
     }
   }, [value]);
 
@@ -81,7 +81,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
       setotpText(otpText);
       handleTextChange(otpText.join(''));
       if (text.length === 1 && i !== inputCount - 1) {
-        arrayRef.current && arrayRef.current[i + 1].focus();
+        arrayRef.current && arrayRef.current[i + 1]!.focus();
       }
     }
   };
@@ -96,8 +96,7 @@ export const OTPTextView: React.FC<OTPTextViewProps> = (props) => {
     if (e.nativeEvent.key === 'Backspace') {
       if (otpArray[i] === '' && i !== 0) {
         otpArray[i - 1] = '';
-
-        arrayRef.current && arrayRef.current[i - 1].focus();
+        arrayRef.current && arrayRef.current[i - 1]!.focus();
       } else {
         otpArray[i] = '';
       }

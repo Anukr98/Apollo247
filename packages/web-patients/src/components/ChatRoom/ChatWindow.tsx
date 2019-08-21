@@ -6,6 +6,12 @@ import Pubnub from 'pubnub';
 import { ChatVideo } from 'components/ChatRoom/ChatVideo';
 import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { UPDATE_APPOINTMENT_SESSION } from 'graphql/consult';
+import {
+  UpdateAppointmentSession,
+  UpdateAppointmentSessionVariables,
+} from 'graphql/types/UpdateAppointmentSession';
+import { useMutation } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -149,6 +155,45 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
+    missCall: {
+      color: '#890000',
+      backgroundColor: 'rgba(229, 0, 0, 0.1)',
+      borderRadius: 10,
+      padding: '5px 20px',
+      fontSize: 12,
+      fontWeight: 500,
+      lineHeight: '24px',
+    },
+    callMsg: {
+      fontSize: 14,
+      color: '#02475b',
+      fontWeight: 500,
+      marginRight: 32,
+      lineHeight: 'normal',
+      '& img': {
+        position: 'relative',
+        top: 5,
+        marginRight: 7,
+        width: 'auto',
+        left: 0,
+      },
+    },
+    durationMsg: {
+      fontSize: 10,
+      marginTop: 2,
+      display: 'block',
+    },
+    callEnded: {
+      display: 'flex',
+      '& img': {
+        position: 'inherit',
+        maxWidth: 20,
+      },
+    },
+    durattiocallMsg:{
+      marginLeft: 40,
+      marginTop: 7,
+    }
   };
 });
 
@@ -157,31 +202,49 @@ interface MessagesObjectProps {
   message: string;
   username: string;
   text: string;
+  duration: string;
 }
+
 interface ChatWindowProps {
-  sessionId: string;
-  token: string;
   appointmentId: string;
   doctorId: string;
+  hasDoctorJoined: (hasDoctorJoined: boolean) => void;
+}
+
+interface AutoMessageStrings {
+  videoCallMsg: string;
+  audioCallMsg: string;
+  stopcallMsg: string;
+  acceptcallMsg: string;
+  startConsult: string;
+  stopConsult: string;
 }
 
 export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const classes = useStyles();
+  const { allCurrentPatients } = useAllCurrentPatients();
+  const currentUserId = (allCurrentPatients && allCurrentPatients[0].id) || '';
+
   const [isCalled, setIsCalled] = useState<boolean>(false);
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
-  const { allCurrentPatients } = useAllCurrentPatients();
-  const currentUserId = (allCurrentPatients && allCurrentPatients[0].id) || '';
+  const [isStartConsult, setStartConsult] = useState<boolean>(false);
+  const [sessionId, setsessionId] = useState<string>('');
+  const [token, settoken] = useState<string>('');
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
-  const videoCallMsg = '^^callme`video^^';
-  const audioCallMsg = '^^callme`audio^^';
-  const stopcallMsg = '^^callme`stop^^';
-  const acceptcallMsg = '^^callme`accept^^';
-  // const startConsult = '^^#startconsult';
-  // const stopConsult = '^^#stopconsult';
+
+  const autoMessageStrings: AutoMessageStrings = {
+    videoCallMsg: '^^callme`video^^',
+    audioCallMsg: '^^callme`audio^^',
+    stopcallMsg: '^^callme`stop^^',
+    acceptcallMsg: '^^callme`accept^^',
+    startConsult: '^^#startconsult',
+    stopConsult: '^^#stopconsult',
+  };
+
   const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
   const publishKey = 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3';
   const doctorId = props.doctorId;
@@ -192,10 +255,43 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     publishKey: publishKey,
     ssl: true,
   };
+
+  const mutationResponse = useMutation<UpdateAppointmentSession, UpdateAppointmentSessionVariables>(
+    UPDATE_APPOINTMENT_SESSION,
+    {
+      variables: {
+        UpdateAppointmentSessionInput: { appointmentId: channel, requestRole: 'PATIENT' },
+      },
+    }
+  );
+
+  const pubnub = new Pubnub(config);
+
   let leftComponent = 0;
   let rightComponent = 0;
-  const pubnub = new Pubnub(config);
   let insertText: MessagesObjectProps[] = [];
+
+  useEffect(() => {
+    if (isStartConsult) {
+      // console.log(isStartConsult, '...................');
+      mutationResponse()
+        .then((data) => {
+          const appointmentToken =
+            data && data.data && data.data.updateAppointmentSession
+              ? data.data.updateAppointmentSession.appointmentToken
+              : '';
+          const sessionId =
+            data && data.data && data.data.updateAppointmentSession.sessionId
+              ? data.data.updateAppointmentSession.sessionId
+              : '';
+          setsessionId(sessionId);
+          settoken(appointmentToken);
+        })
+        .catch(() => {
+          window.alert('An error occurred while loading :(');
+        });
+    }
+  }, [isStartConsult]);
 
   useEffect(() => {
     pubnub.subscribe({
@@ -208,40 +304,50 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       message: (message) => {
         insertText[insertText.length] = message.message;
         setMessages(insertText);
-        setMessageText('reset');
+        setMessageText(' ');
         setMessageText('');
+
         setTimeout(() => {
           const scrollDiv = document.getElementById('scrollDiv');
           scrollDiv!.scrollIntoView();
         }, 200);
+
         if (
           !showVideoChat &&
-          message.message.message !== videoCallMsg &&
-          message.message.message !== audioCallMsg &&
-          message.message.message !== stopcallMsg &&
-          message.message.message !== acceptcallMsg
+          message.message.message !== autoMessageStrings.videoCallMsg &&
+          message.message.message !== autoMessageStrings.audioCallMsg &&
+          message.message.message !== autoMessageStrings.stopcallMsg &&
+          message.message.message !== autoMessageStrings.acceptcallMsg &&
+          message.message.message !== autoMessageStrings.startConsult &&
+          message.message.message !== autoMessageStrings.stopConsult
         ) {
           setIsNewMsg(true);
         }
+        if (message.message.message === autoMessageStrings.startConsult) {
+          setStartConsult(true);
+          props.hasDoctorJoined(true);
+        }
+
         if (
           message.message &&
-          (message.message.message === videoCallMsg || message.message.message === audioCallMsg)
+          (message.message.message === autoMessageStrings.videoCallMsg ||
+            message.message.message === autoMessageStrings.audioCallMsg)
         ) {
-          //getHistory();
           setIsCalled(true);
           setShowVideo(false);
-          setIsVideoCall(message.message.message === videoCallMsg ? true : false);
+          setIsVideoCall(
+            message.message.message === autoMessageStrings.videoCallMsg ? true : false
+          );
         }
-        if (message.message && message.message.message === stopcallMsg) {
+        if (message.message && message.message.message === autoMessageStrings.stopcallMsg) {
           setIsCalled(false);
           setShowVideo(false);
         }
       },
       presence: (presenceEvent) => {
-        console.log('presenceEvent', presenceEvent);
+        // console.log('presenceEvent', presenceEvent);
       },
     });
-
     return function cleanup() {
       pubnub.unsubscribe({ channels: [channel] });
     };
@@ -259,10 +365,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         const lastMessage = newmessage[newmessage.length - 1];
         if (
           lastMessage &&
-          (lastMessage.message === videoCallMsg || lastMessage.message === audioCallMsg)
+          (lastMessage.message === autoMessageStrings.videoCallMsg ||
+            lastMessage.message === autoMessageStrings.audioCallMsg)
         ) {
           setIsCalled(true);
-          setIsVideoCall(lastMessage.message === videoCallMsg ? true : false);
+          setIsVideoCall(lastMessage.message === autoMessageStrings.videoCallMsg ? true : false);
         }
         setTimeout(() => {
           const scrollDiv = document.getElementById('scrollDiv');
@@ -299,7 +406,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const autoSend = () => {
     const text = {
       id: patientId,
-      message: stopcallMsg,
+      message: autoMessageStrings.stopcallMsg,
       isTyping: true,
     };
     pubnub.publish(
@@ -313,48 +420,86 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         setMessageText('');
       }
     );
-    //setIsCalled(false);
-    //setIsVideoCall(true);
-    //setIsCalled(true);
-    //actionBtn();
   };
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     if (
       rowData.id === patientId &&
-      rowData.message !== videoCallMsg &&
-      rowData.message !== audioCallMsg &&
-      rowData.message !== stopcallMsg &&
-      rowData.message !== acceptcallMsg
+      rowData.message !== autoMessageStrings.videoCallMsg &&
+      rowData.message !== autoMessageStrings.audioCallMsg &&
+      rowData.message !== autoMessageStrings.stopcallMsg &&
+      rowData.message !== autoMessageStrings.acceptcallMsg &&
+      rowData.message !== autoMessageStrings.startConsult &&
+      rowData.message !== autoMessageStrings.stopConsult
     ) {
       leftComponent++;
       rightComponent = 0;
       return (
         <div className={classes.meChat}>
-          <div className={classes.chatBubble}>
+          <div className={rowData.duration ? classes.callMsg : classes.chatBubble}>
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
-            <span>{rowData.message}</span>
+            {rowData.duration === '00 : 00' ? (
+              <span className={classes.missCall}>
+                <img src={require('images/ic_missedcall.svg')} />
+                You missed a call
+              </span>
+            ) : rowData.duration ? (
+              <div className={classes.callEnded}>
+                <span>
+                  <img src={require('images/ic_round_call.svg')} />
+                </span>
+                <div>
+                  {rowData.message}
+                  <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <span>{rowData.message}</span>
+              </div>
+            )}
           </div>
         </div>
       );
     }
     if (
       rowData.id === doctorId &&
-      rowData.message !== videoCallMsg &&
-      rowData.message !== audioCallMsg &&
-      rowData.message !== stopcallMsg &&
-      rowData.message !== acceptcallMsg
+      rowData.message !== autoMessageStrings.videoCallMsg &&
+      rowData.message !== autoMessageStrings.audioCallMsg &&
+      rowData.message !== autoMessageStrings.stopcallMsg &&
+      rowData.message !== autoMessageStrings.acceptcallMsg &&
+      rowData.message !== autoMessageStrings.startConsult &&
+      rowData.message !== autoMessageStrings.stopConsult
     ) {
       leftComponent = 0;
       rightComponent++;
       return (
-        <div className={classes.patientChat}>
-          <div className={classes.petient}>
-            {rightComponent == 1 && (
+        <div className={rowData.duration ? classes.durattiocallMsg : classes.patientChat}>
+          <div className={rowData.duration ? classes.callMsg : classes.petient}>
+            {rightComponent == 1 && !rowData.duration && (
               <span className={classes.boldTxt}>
                 <img src={require('images/ic_patientchat.png')} />
               </span>
             )}
-            <span>{rowData.message}</span>
+            {rowData.duration === '00 : 00' ? (
+              <span className={classes.missCall}>
+                <img src={require('images/ic_missedcall.svg')} />
+                You missed a call
+              </span>
+            ) : rowData.duration ? (
+              <div className={classes.callEnded}>
+                <span>
+                  <img src={require('images/ic_round_call.svg')} />
+                </span>
+                <div>
+                  {rowData.message}
+                  <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <span>{rowData.message}</span>
+              </div>
+            )}
           </div>
         </div>
       );
@@ -376,7 +521,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const actionBtn = () => {
     const text = {
       id: patientId,
-      message: acceptcallMsg,
+      message: autoMessageStrings.acceptcallMsg,
       isTyping: true,
     };
     pubnub.publish(
@@ -412,13 +557,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           !showVideo ? classes.chatWindowContainer : classes.audioVideoContainer
         }`}
       >
-        {showVideo && (
+        {showVideo && sessionId !== '' && token !== '' && (
           <ChatVideo
             stopAudioVideoCall={() => stopAudioVideoCall()}
             toggelChatVideo={() => toggelChatVideo()}
             stopConsultCall={() => stopConsultCall()}
-            sessionId={props.sessionId}
-            token={props.token}
+            sessionId={sessionId}
+            token={token}
             showVideoChat={showVideoChat}
             isVideoCall={isVideoCall}
             isNewMsg={isNewMsg}

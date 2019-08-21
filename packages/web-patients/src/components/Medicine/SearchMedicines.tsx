@@ -149,7 +149,7 @@ export const SearchMedicines: React.FC = (props) => {
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 237px)'}>
           <div className={classes.medicineSection}>
             <div className={classes.sectionGroup}>
-              <Link className={classes.serviceType} to="/search-medicines">
+              <Link className={classes.serviceType} to="/tests-medicines">
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_medicines.png')} alt="" />
                 </span>
@@ -160,7 +160,7 @@ export const SearchMedicines: React.FC = (props) => {
               </Link>
             </div>
             <div className={classes.sectionGroup}>
-              <Link className={classes.serviceType} to="/search-medicines">
+              <Link className={classes.serviceType} to="/prescriptions">
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_medicines.png')} alt="" />
                 </span>

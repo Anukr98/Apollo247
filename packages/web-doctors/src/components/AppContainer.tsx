@@ -20,7 +20,10 @@ const App: React.FC = () => {
   const classes = useStyles();
   const { signInError, isSignedIn } = useAuth();
   useEffect(() => {
-    if (signInError) window.alert('Error signing in :(');
+    if (signInError)
+      window.alert(
+        'Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll.'
+      );
   }, [signInError]);
   return isSignedIn ? (
     <div className={classes.app}>
@@ -38,6 +41,9 @@ const App: React.FC = () => {
   ) : (
     <div className={classes.app}>
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
+      <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
+      <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
+      <AuthRouted exact path={clientRoutes.ConsultTabs(':id')} component={ConsultTabs} />
     </div>
   );
 };

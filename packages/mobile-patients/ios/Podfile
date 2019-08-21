@@ -11,5 +11,6 @@ target 'ApolloPatient' do
  pod 'Firebase/Analytics'
  pod 'Firebase/Auth'
  pod 'GoogleAppMeasurement'
+ pod 'OpenTok', '~> 2.15.3'
 
 end

@@ -10,6 +10,7 @@ import {
   Text,
 } from 'react-native';
 import { theme } from '../../theme/theme';
+
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
@@ -17,8 +18,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'white',
     paddingHorizontal: 20,
-    paddingVertical: 8,
-    height: 56,
   },
   iconContainer: {
     flexDirection: 'row',
@@ -26,8 +25,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   doctorNameStyles: {
-    ...theme.fonts.IBMPlexSansSemiBold(15),
+    ...theme.fonts.IBMPlexSansSemiBold(13),
     color: '#01475b',
+    marginLeft: 70,
+  },
+  timerTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(8),
+    color: 'rgba(2, 71, 91, 0.6)',
+    marginLeft: 70,
+    textAlign: 'center',
+  },
+  timeStyles: {
+    ...theme.fonts.IBMPlexSansBold(8),
+    color: 'rgba(2, 71, 91, 0.6)',
+    textAlign: 'center',
+    marginLeft: 3,
   },
 });
 
@@ -43,7 +55,10 @@ export interface HeaderProps {
   rightComponent?: React.ReactNode;
   containerStyle?: StyleProp<ViewStyle>;
   middleText?: string;
+  timerText?: string;
   leftIcons?: HeaderRightIconProps[];
+  textStyles?: StyleProp<ViewStyle>;
+  timerremaintext?: string;
 }
 
 export const NotificationHeader: React.FC<HeaderProps> = (props) => {
@@ -67,7 +82,7 @@ export const NotificationHeader: React.FC<HeaderProps> = (props) => {
                 onPress={icon.onPress}
                 key={i}
                 style={{
-                  marginRight: i !== leftIcons.length - 1 ? iconMarginRight || 20 : 0,
+                  marginRight: i !== leftIcons.length - 1 ? iconMarginRight || 12 : 0,
                 }}
               >
                 {icon.icon}
@@ -75,7 +90,14 @@ export const NotificationHeader: React.FC<HeaderProps> = (props) => {
             ))}
         </View>
       )}
-      <Text style={styles.doctorNameStyles}>{props.middleText}</Text>
+      <View style={{ flexDirection: 'column', marginTop: 0 }}>
+        <Text style={[styles.doctorNameStyles, props.textStyles]}>{props.middleText}</Text>
+        <View style={{ flexDirection: 'row' }}>
+          <Text style={styles.timerTextStyle}>{props.timerText}</Text>
+          <Text style={styles.timeStyles}>{props.timerremaintext}</Text>
+        </View>
+      </View>
+
       {rightComponent ? (
         rightComponent
       ) : (
@@ -86,7 +108,7 @@ export const NotificationHeader: React.FC<HeaderProps> = (props) => {
                 onPress={icon.onPress}
                 key={i}
                 style={{
-                  marginRight: i !== rightIcons.length - 1 ? iconMarginRight || 20 : 0,
+                  marginRight: i !== rightIcons.length - 1 ? iconMarginRight || 12 : 0,
                 }}
               >
                 {icon.icon}

@@ -3,6 +3,10 @@ import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { Patient, SearchHistory, SEARCH_TYPE } from 'profiles-service/entities';
 import { SearchHistoryRepository } from 'profiles-service/repositories/searchHistoryRepository';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const saveSearchTypeDefs = gql`
   input SaveSearchInput {
@@ -44,12 +48,34 @@ const saveSearch: Resolver<
   SaveSearchInputArgs,
   ProfilesServiceContext,
   SaveSearchResult
-> = async (parent, { saveSearchInput }, { profilesDb }) => {
+> = async (parent, { saveSearchInput }, { profilesDb, doctorsDb }) => {
   const saveSearchAttrs: Omit<Partial<SearchHistory>, 'id'> = {
     ...saveSearchInput,
   };
+
+  //validating typeId
+  if (saveSearchAttrs.typeId == null) throw new AphError(AphErrorMessages.SAVE_SEARCH_ERROR);
+  if (saveSearchAttrs.type == 'DOCTOR') {
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctorData = await doctorRepo.findById(saveSearchAttrs.typeId);
+    if (doctorData == null) {
+      throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+    }
+  } else {
+    const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
+    const specialtyData = await specialtiesRepo.findById(saveSearchAttrs.typeId);
+    if (specialtyData == null) {
+      throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
+    }
+  }
+
   const searchHistoryRepository = profilesDb.getCustomRepository(SearchHistoryRepository);
-  await searchHistoryRepository.saveSearch(saveSearchAttrs);
+  const pastSearchRecords = await searchHistoryRepository.findByPatientAndType(saveSearchAttrs);
+  if (pastSearchRecords.length > 0) {
+    await searchHistoryRepository.updatePastSearch(saveSearchAttrs);
+  } else {
+    await searchHistoryRepository.saveSearch(saveSearchAttrs);
+  }
   return { saveStatus: true };
 };
 

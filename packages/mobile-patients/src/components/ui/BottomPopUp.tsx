@@ -11,6 +11,8 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'flex-end',
     flex: 1,
+    left: 0,
+    right: 0,
   },
   subViewPopup: {
     backgroundColor: 'white',

@@ -102,22 +102,22 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: 45,
       borderRadius: 10,
       '& ul': {
-        padding: '10px 20px',
+        padding: '10px 0px',
         '& li': {
           fontSize: 16,
-          width: 242,
+          width: 281,
           fontWeight: 500,
           color: '#02475b',
           minHeight: 'auto',
-          paddingLeft: 0,
-          paddingRight: 0,
+          paddingLeft: 10,
+          paddingRight: 10,
           borderBottom: '1px solid rgba(1,71,91,0.2)',
           textTransform: 'capitalize',
           '&:last-child': {
             borderBottom: 'none',
           },
           '&:hover': {
-            color: '#00b38e',
+            backgroundColor: '#f0f4f5',
           },
         },
       },
@@ -135,7 +135,6 @@ export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHan
   // >({
   //   associatedDoctor: {},
   // } as GetDoctorDetails_getDoctorDetails_starTeam);
-
   const [data, setData] = useState<GetDoctorDetails>();
 
   return (

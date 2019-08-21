@@ -1,19 +1,12 @@
-import { NavigationScreenProps } from 'react-navigation';
-import React, { useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  SafeAreaView,
-  Platform,
-  TouchableOpacity,
-  Text,
-  Image,
-} from 'react-native';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { More, LocationOn, Location } from '@aph/mobile-patients/src/components/ui/Icons';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { Location, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import React, { useState } from 'react';
+import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -170,7 +163,11 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             <Button
               title={'FILL CASE SHEET'}
               style={{ flex: 1, marginHorizontal: 40 }}
-              onPress={() => {}}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.ChatRoom, {
+                  data: data,
+                });
+              }}
             />
           </StickyBottomComponent>
         </SafeAreaView>

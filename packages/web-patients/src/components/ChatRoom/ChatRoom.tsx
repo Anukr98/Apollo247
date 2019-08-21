@@ -1,18 +1,12 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ChatWindow } from 'components/ChatRoom/ChatWindow';
 import { ConsultDoctorProfile } from 'components/ChatRoom/ConsultDoctorProfile';
 import { useParams } from 'hooks/routerHooks';
-import { useMutation } from 'react-apollo-hooks';
 import { useAuth } from 'hooks/authHooks';
-import { UPDATE_APPOINTMENT_SESSION } from 'graphql/consult';
-import {
-  UpdateAppointmentSession,
-  UpdateAppointmentSessionVariables,
-} from 'graphql/types/UpdateAppointmentSession';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import {
   GetDoctorDetailsById,
@@ -129,42 +123,10 @@ type Params = { appointmentId: string; doctorId: string };
 export const ChatRoom: React.FC = (props) => {
   const classes = useStyles();
   const params = useParams<Params>();
+  const [hasDoctorJoined, setHasDoctorJoined] = useState<boolean>(false);
   const appointmentId = params.appointmentId;
   const doctorId = params.doctorId;
   const { isSignedIn } = useAuth();
-
-  const [sessionId, setsessionId] = useState<string>('');
-  const [token, settoken] = useState<string>('');
-
-  const mutationResponse = useMutation<UpdateAppointmentSession, UpdateAppointmentSessionVariables>(
-    UPDATE_APPOINTMENT_SESSION,
-    {
-      variables: {
-        UpdateAppointmentSessionInput: { appointmentId: appointmentId, requestRole: 'PATIENT' },
-      },
-    }
-  );
-
-  useEffect(() => {
-    if (isSignedIn) {
-      mutationResponse()
-        .then((data) => {
-          const appointmentToken =
-            data && data.data && data.data.updateAppointmentSession
-              ? data.data.updateAppointmentSession.appointmentToken
-              : '';
-          const sessionId =
-            data && data.data && data.data.updateAppointmentSession.sessionId
-              ? data.data.updateAppointmentSession.sessionId
-              : '';
-          setsessionId(sessionId);
-          settoken(appointmentToken);
-        })
-        .catch(() => {
-          window.alert('An error occurred while loading :(');
-        });
-    }
-  }, [isSignedIn]);
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorDetailsById,
@@ -202,17 +164,20 @@ export const ChatRoom: React.FC = (props) => {
           </div>
           <div className={classes.doctorListingSection}>
             <div className={classes.leftSection}>
-              {data && <ConsultDoctorProfile doctorDetails={data} appointmentId={appointmentId} />}
-            </div>
-            <div className={classes.rightSection}>
               {data && (
-                <ChatWindow
-                  sessionId={sessionId}
-                  token={token}
+                <ConsultDoctorProfile
+                  doctorDetails={data}
                   appointmentId={appointmentId}
-                  doctorId={doctorId}
+                  hasDoctorJoined={hasDoctorJoined}
                 />
               )}
+            </div>
+            <div className={classes.rightSection}>
+              <ChatWindow
+                appointmentId={appointmentId}
+                doctorId={doctorId}
+                hasDoctorJoined={(hasDoctorJoined: boolean) => setHasDoctorJoined(hasDoctorJoined)}
+              />
             </div>
           </div>
         </div>

@@ -34,7 +34,7 @@ const routeToFocusedIcon: Partial<Record<string, NavigationRouteConfig>> = {
 };
 
 const routeConfigMap: Partial<Record<string, NavigationRouteConfig>> = {
-  'CONSULT ROOM': ConsultRoom,
+  'CONSULT ROOM': Consult,
   'HEALTH RECORDS': HealthRecords,
   'TESTS & MEDICINES': Medicine,
   'MY ACCOUNT': MyAccount,

@@ -5,6 +5,7 @@ import { AphInput } from '@aph/web-ui-components';
 import { Consult } from 'components/Consult';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
+import { red } from '@material-ui/core/colors';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -113,6 +114,34 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       right: 0,
     },
+    missCall: {
+      color: '#890000',
+      backgroundColor: 'rgba(229, 0, 0, 0.1)',
+      borderRadius: 10,
+      padding: '5px 20px',
+      fontSize: 12,
+      fontWeight: 500,
+      lineHeight: '24px',
+    },
+    callMsg: {
+      fontSize: 14,
+      color: '#02475b',
+      fontWeight: 500,
+      marginRight: 32,
+      lineHeight: 'normal',
+      '& img': {
+        position: 'relative',
+        top: 5,
+        marginRight: 7,
+        left: 0,
+        width: 'auto',
+      },
+    },
+    durationMsg: {
+      fontSize: 10,
+      marginTop: 2,
+      display: 'block',
+    },
   };
 });
 interface MessagesObjectProps {
@@ -120,6 +149,7 @@ interface MessagesObjectProps {
   message: string;
   username: string;
   text: string;
+  duration: string;
 }
 interface ConsultRoomProps {
   startConsult: string;
@@ -145,6 +175,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const audioCallMsg = '^^callme`audio^^';
   const stopcallMsg = '^^callme`stop^^';
   const acceptcallMsg = '^^callme`accept^^';
+  const startConsult = '^^#startconsult';
+  const stopConsult = '^^#stopconsult';
   const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
   const publishKey = 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3';
   const doctorId = props.doctorId;
@@ -198,9 +230,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
+        console.log(message.message.message);
         insertText[insertText.length] = message.message;
         setMessages(insertText);
-        setMessageText('reset');
+        setMessageText(' ');
         setMessageText('');
         if (
           !showVideoChat &&
@@ -218,7 +251,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const scrollDiv = document.getElementById('scrollDiv');
           scrollDiv!.scrollIntoView();
         }, 200);
-        setMessageText('reset');
+        setMessageText(' ');
         setMessageText('');
         getHistory();
       },
@@ -241,15 +274,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     return '';
   }
-  useEffect(() => {
-    //if (props.startConsult !== isVideoCall) {
-    if (getCookieValue() !== '') {
-      setIsVideoCall(props.startConsult === 'videocall' ? true : false);
-      setMessageText(videoCallMsg);
-      autoSend();
-    }
-  }, []);
-
   useEffect(() => {
     //if (props.startConsult !== isVideoCall) {
     if (getCookieValue() !== '') {
@@ -290,7 +314,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         sendByPost: true,
       },
       (status, response) => {
-        setMessageText('reset');
+        setMessageText(' ');
         setTimeout(() => {
           setMessageText('');
           const scrollDiv = document.getElementById('scrollDiv');
@@ -327,15 +351,32 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== videoCallMsg &&
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
-      rowData.message !== acceptcallMsg
+      rowData.message !== acceptcallMsg &&
+      rowData.message !== startConsult &&
+      rowData.message !== stopConsult
     ) {
       leftComponent++;
       rightComponent = 0;
       return (
         <div className={classes.docterChat}>
-          <div className={classes.doctor}>
+          <div className={rowData.duration ? classes.callMsg : classes.doctor}>
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
-            <span>{rowData.message}</span>
+            {rowData.duration === '00 : 00' ? (
+              <span className={classes.missCall}>
+                <img src={require('images/ic_missedcall.svg')} />
+                You missed a call
+              </span>
+            ) : rowData.duration ? (
+              <div>
+                <img src={require('images/ic_round_call.svg')} />
+                <span>{rowData.message}</span>
+                <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
+              </div>
+            ) : (
+              <div>
+                <span>{rowData.message}</span>
+              </div>
+            )}
           </div>
         </div>
       );
@@ -345,19 +386,36 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== videoCallMsg &&
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
-      rowData.message !== acceptcallMsg
+      rowData.message !== acceptcallMsg &&
+      rowData.message !== startConsult &&
+      rowData.message !== stopConsult
     ) {
       leftComponent = 0;
       rightComponent++;
       return (
         <div className={classes.patientChat}>
-          <div className={classes.petient}>
-            {rightComponent == 1 && (
+          <div className={rowData.duration ? classes.callMsg : classes.petient}>
+            {rightComponent == 1 && !rowData.duration && (
               <span className={classes.boldTxt}>
                 <img src={require('images/ic_patientchat.png')} />
               </span>
             )}
-            <span>{rowData.message}</span>
+            {rowData.duration === '00 : 00' ? (
+              <span className={classes.missCall}>
+                <img src={require('images/ic_missedcall.svg')} />
+                You missed a call
+              </span>
+            ) : rowData.duration ? (
+              <div>
+                <img src={require('images/ic_round_call.svg')} />
+                <span>{rowData.message}</span>
+                <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
+              </div>
+            ) : (
+              <div>
+                <span>{rowData.message}</span>
+              </div>
+            )}
           </div>
         </div>
       );
@@ -403,9 +461,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
     const stoptext = {
       id: doctorId,
-      message: `call ended ${
+      message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
+      duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-      } :  ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       isTyping: true,
     };
     pubnub.publish(
