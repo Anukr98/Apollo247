@@ -4,12 +4,16 @@ import { makeStyles } from '@material-ui/styles';
 
 const data = [
   {
-    'Fever': ['Since: Last 2 days', 'How often: Nights', 'Severity: High, 102˚F'],
+    Fever: ['Since: Last 2 days', 'How often: Nights', 'Severity: High, 102˚F'],
   },
   {
-    'Cough & Cold': ['Since: Last 1 week', 'How often: All day, even while sleeping', 'Severity: Spots of blood in flem'],
+    'Cough & Cold': [
+      'Since: Last 1 week',
+      'How often: All day, even while sleeping',
+      'Severity: Spots of blood in flem',
+    ],
   },
-  { 'Nausea': ['Since: Last 2 days', 'How often: After food', 'Severity: Mild'] }
+  { Nausea: ['Since: Last 2 days', 'How often: After food', 'Severity: Mild'] },
 ];
 
 const useStyles = makeStyles(() => ({
@@ -18,18 +22,15 @@ const useStyles = makeStyles(() => ({
     display: 'flex',
     flex: 1,
     border: 'solid 1px rgba(2, 71, 91, 0.15)',
-    borderRadius: '5px'
-  }
+    borderRadius: '5px',
+  },
 }));
 
 export const Symptoms: React.FC = () => {
   const classes = useStyles();
 
   return (
-    <Typography
-      className={classes.container}
-      component="div"
-    >
+    <Typography className={classes.container} component="div">
       <List>
         {data.map((item, idx) => (
           <ListItem key={idx} alignItems="flex-start">
