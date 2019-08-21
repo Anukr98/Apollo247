@@ -52,8 +52,8 @@ import moment from 'moment';
 
 const { height, width } = Dimensions.get('window');
 
-let timer = 900;
-let timerId: any;
+const timer: number = 900;
+let timerId: NodeJS.Timeout;
 let diffInHours: number;
 
 export interface ChatRoomProps extends NavigationScreenProps {}
@@ -164,11 +164,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const stopConsultMsg = '^^#stopconsult';
   const typingMsg = '^^#typing';
 
-  const doctorId = appointmentData.doctorInfo.id;
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
 
-  let intervalId: any;
+  let intervalId: NodeJS.Timeout;
   let stoppedTimer: number;
   const client = useApolloClient();
 
@@ -206,7 +205,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setsessionId(sessionInfo.data.updateAppointmentSession.sessionId);
           settoken(sessionInfo.data.updateAppointmentSession.appointmentToken);
         })
-        .catch((e: any) => {
+        .catch((e: string) => {
           console.log('Error occured while adding Doctor', e);
         });
     }
@@ -250,13 +249,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const stopInterval = () => {
-    // setConsultStarted(false);
-
-    // const stopTimer = 900 - stoppedTimer;
-    // setRemainingTime(stopTimer);
-    // !intervalId && setRemainingTime(0);
-    // intervalId && clearInterval(intervalId);
-
     if (intervalId) {
       setConsultStarted(false);
 
