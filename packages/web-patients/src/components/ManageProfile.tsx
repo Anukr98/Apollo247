@@ -33,6 +33,10 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'initial',
       backgroundColor: 'none',
       boxShadow: 'none',
+      right: '20px !important',
+      bottom: '20px !important',
+      left: 'auto !important',
+      top: 'auto !important',
       [theme.breakpoints.down('xs')]: {
         left: '0px !important',
         maxWidth: '100%',
@@ -85,14 +89,13 @@ export const ManageProfile: React.FC = (props) => {
             open={!isSigningIn && isPopoverOpen}
             anchorEl={mascotRef.current}
             onClose={() => setIsPopoverOpen(isDataFilled)}
-            className={classes.bottomPopover}
             anchorOrigin={{
               vertical: 'bottom',
-              horizontal: 'center',
+              horizontal: 'right',
             }}
             transformOrigin={{
               vertical: 'top',
-              horizontal: 'center',
+              horizontal: 'right',
             }}
             classes={{ paper: classes.bottomPopover }}
           >
