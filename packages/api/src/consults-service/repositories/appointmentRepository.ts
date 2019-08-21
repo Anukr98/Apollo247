@@ -110,22 +110,42 @@ export class AppointmentRepository extends Repository<Appointment> {
           // if the difference is more than or eq to 30 then add 15 mins to start appt and return slot
           let firstAppt: Date = appts[0].appointmentDateTime;
           let flag: number = 0;
+          let finalSlot = '';
+          console.log(appts, 'appts');
           appts.map((appt) => {
             if (appt.appointmentDateTime != firstAppt) {
-              if (differenceInMinutes(firstAppt, appt.appointmentDateTime) >= 30) {
+              console.log(
+                Math.abs(differenceInMinutes(firstAppt, appt.appointmentDateTime)),
+                'diff'
+              );
+              if (Math.abs(differenceInMinutes(firstAppt, appt.appointmentDateTime)) >= 30) {
                 flag = 1;
-                return this.getAddAlignedSlot(firstAppt, 15);
+                console.log(firstAppt, 'first appt inside');
+                if (Math.abs(differenceInMinutes(new Date(), firstAppt)) >= 15) {
+                  finalSlot = this.getAlignedSlot(curDate);
+                } else {
+                  finalSlot = this.getAddAlignedSlot(firstAppt, 15);
+                }
               }
-              firstAppt = appt.appointmentDateTime;
             }
+            firstAppt = appt.appointmentDateTime;
+            console.log(firstAppt, 'in loop');
           });
           //if there is no gap between any appointments
           //then add 15 mins to last appointment and return
+          console.log(flag, 'flag');
           if (flag === 0) {
-            return this.getAddAlignedSlot(appts[appts.length - 1].appointmentDateTime, 15);
+            console.log(appts[appts.length - 1].appointmentDateTime, 'last apt');
+            if (new Date() < appts[appts.length - 1].appointmentDateTime) {
+              finalSlot = this.getAlignedSlot(curDate);
+            } else {
+              finalSlot = this.getAddAlignedSlot(appts[appts.length - 1].appointmentDateTime, 15);
+            }
           }
+          return finalSlot;
         }
       } else {
+        console.log('np appts');
         //if there are no appointments, then return next nearest time
         return this.getAlignedSlot(curDate);
       }
