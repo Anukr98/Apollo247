@@ -5,6 +5,8 @@ declare namespace NodeJS {
   interface ProcessEnv {
     NODE_ENV: 'local' | 'development' | 'staging' | 'production';
 
+    USE_SSL: 'true' | 'false';
+
     FIREBASE_PROJECT_ID: string;
     GOOGLE_APPLICATION_CREDENTIALS: string;
 
