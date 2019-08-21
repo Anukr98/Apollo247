@@ -47,7 +47,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import DocumentPicker from 'react-native-document-picker';
 import { DropDown } from '@aph/mobile-patients/src/components/ui/DropDown';
 import InCallManager from 'react-native-incall-manager';
-import DeviceHelper from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import moment from 'moment';
 
 const { height, width } = Dimensions.get('window');
@@ -58,6 +58,7 @@ let diffInHours: number;
 
 export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
+  const { isIphoneX } = DeviceHelper();
   const appointmentData = props.navigation.state.params!.data;
   // console.log('appointmentData', appointmentData);
 
@@ -67,7 +68,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(
-    DeviceHelper.isIphoneX() ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 185
+    isIphoneX ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 185
   );
 
   const [sessionId, setsessionId] = useState<string>('');
@@ -97,7 +98,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   });
   const [publisherStyles, setPublisherStyles] = useState<object>({
     position: 'absolute',
-    top: DeviceHelper.isIphoneX() ? 74 : 44,
+    top: isIphoneX ? 74 : 44,
     right: 20,
     width: 112,
     height: 148,
@@ -121,7 +122,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [timerStyles, setTimerStyles] = useState<object>({
     position: 'absolute',
     marginHorizontal: 20,
-    marginTop: DeviceHelper.isIphoneX() ? 91 : 81,
+    marginTop: isIphoneX ? 91 : 81,
     width: width - 40,
     color: 'white',
     ...theme.fonts.IBMPlexSansSemiBold(12),
@@ -302,7 +303,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setTimerStyles({
         position: 'absolute',
         marginHorizontal: 20,
-        marginTop: DeviceHelper.isIphoneX() ? 91 : 81,
+        marginTop: isIphoneX ? 91 : 81,
         width: width - 40,
         color: 'white',
         ...theme.fonts.IBMPlexSansSemiBold(12),
@@ -513,7 +514,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const keyboardDidShow = (e: KeyboardEvent) => {
     setHeightList(
-      DeviceHelper.isIphoneX()
+      isIphoneX
         ? height - e.endCoordinates.height - 210
         : Platform.OS === 'ios'
         ? height - e.endCoordinates.height - 185
@@ -525,9 +526,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const keyboardDidHide = () => {
-    setHeightList(
-      DeviceHelper.isIphoneX() ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 185
-    );
+    setHeightList(isIphoneX ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 185);
   };
 
   const send = () => {
@@ -916,7 +915,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <View
                   style={{
                     position: 'absolute',
-                    top: DeviceHelper.isIphoneX() ? 24 : 0,
+                    top: isIphoneX ? 24 : 0,
                     left: 0,
                     width: width,
                     height: 24,
@@ -936,7 +935,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{
                     position: 'absolute',
                     marginHorizontal: 20,
-                    marginTop: DeviceHelper.isIphoneX() ? 64 : 44,
+                    marginTop: isIphoneX ? 64 : 44,
                     width: width - 40,
                     color: 'white',
                     ...theme.fonts.IBMPlexSansSemiBold(20),
@@ -984,7 +983,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <View
             style={{
               position: 'absolute',
-              top: DeviceHelper.isIphoneX() ? 24 : 0,
+              top: isIphoneX ? 24 : 0,
               left: 0,
               width: width,
               height: 24,
@@ -1077,7 +1076,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setTimerStyles({
               position: 'absolute',
               marginHorizontal: 20,
-              marginTop: DeviceHelper.isIphoneX() ? 91 : 81,
+              marginTop: isIphoneX ? 91 : 81,
               width: width - 40,
               color: 'white',
               ...theme.fonts.IBMPlexSansSemiBold(12),
@@ -1107,7 +1106,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           style={{
             position: 'absolute',
             marginHorizontal: 20,
-            marginTop: DeviceHelper.isIphoneX() ? 64 : 44,
+            marginTop: isIphoneX ? 64 : 44,
             width: width - 40,
             color: 'white',
             ...theme.fonts.IBMPlexSansSemiBold(20),
@@ -1119,7 +1118,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <View
           style={{
             position: 'absolute',
-            top: DeviceHelper.isIphoneX() ? 64 : 44,
+            top: isIphoneX ? 64 : 44,
             left: 20,
           }}
         >
@@ -1254,7 +1253,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             });
             setPublisherStyles({
               position: 'absolute',
-              top: DeviceHelper.isIphoneX() ? 74 : 44,
+              top: isIphoneX ? 74 : 44,
               right: 20,
               width: 112,
               height: 148,
@@ -1265,7 +1264,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setTimerStyles({
               position: 'absolute',
               marginHorizontal: 20,
-              marginTop: DeviceHelper.isIphoneX() ? 91 : 81,
+              marginTop: isIphoneX ? 91 : 81,
               width: width - 40,
               color: 'white',
               ...theme.fonts.IBMPlexSansSemiBold(12),
@@ -1321,7 +1320,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <View
         style={{
           position: 'absolute',
-          top: DeviceHelper.isIphoneX() ? 64 : 44,
+          top: isIphoneX ? 64 : 44,
           left: 20,
           right: 0,
           zIndex: 1000,
@@ -1555,6 +1554,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             Keyboard.dismiss();
             InCallManager.stopRingtone();
             InCallManager.stop();
+
             pubnub.publish(
               {
                 message: {
