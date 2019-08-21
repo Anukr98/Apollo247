@@ -246,6 +246,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     FilterInput
   );
   const { data, error } = useQuery<getDoctorsBySpecialtyAndFilters>(DOCTOR_SPECIALITY_BY_FILTERS, {
+    fetchPolicy: 'no-cache',
     variables: {
       filterInput: FilterInput,
     },
@@ -369,7 +370,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const renderDoctorSearches = (filter?: ConsultMode) => {
-    console.log(doctorsList, 'doctorsList');
     const doctors = filter
       ? doctorsList.filter(
           (obj: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null) => {
@@ -380,7 +380,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           }
         )
       : doctorsList;
-    console.log(doctors, 'doctors after filter');
     if (doctors.length === 0 && !showSpinner) {
       return (
         <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 64 }}>

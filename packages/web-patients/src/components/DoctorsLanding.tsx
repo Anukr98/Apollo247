@@ -244,7 +244,7 @@ export const DoctorsLanding: React.FC = (props) => {
 
   const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME, {
     variables: { searchText: filterOptions.searchKeyword },
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'no-cache',
   });
 
   if (data && data.SearchDoctorAndSpecialtyByName) {

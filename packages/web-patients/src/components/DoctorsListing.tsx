@@ -229,6 +229,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   const { data, loading, error } = useQueryWithSkip(GET_DOCTORS_BY_SPECIALITY_AND_FILTERS, {
     variables: { filterInput: apiVairables },
+    fetchPolicy: 'network-only',
   });
 
   // this effect will watch for data loaded and triggers popup after 20 and 40 secs.
