@@ -46,6 +46,10 @@ import {
   addPatientAddressTypeDefs,
   addPatientAddressResolvers,
 } from 'profiles-service/resolvers/patientAddress';
+import {
+  getDigitizedOrderTypeDefs,
+  getDigitizedOrderResolvers,
+} from 'profiles-service/resolvers/getDigitizedOrderDetails';
 import gql from 'graphql-tag';
 import { GatewayHeaders } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
@@ -155,6 +159,10 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
       {
         typeDefs: addPatientAddressTypeDefs,
         resolvers: addPatientAddressResolvers,
+      },
+      {
+        typeDefs: getDigitizedOrderTypeDefs,
+        resolvers: getDigitizedOrderResolvers,
       },
     ]),
   });
