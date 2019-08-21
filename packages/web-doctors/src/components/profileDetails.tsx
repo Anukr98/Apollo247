@@ -195,7 +195,12 @@ export const MyAccount: React.FC = (props) => {
                     />
                     <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
                   </div>
-                  <Typography variant="h4">{`${doctorProfile.salutation}. ${doctorProfile.firstName} ${doctorProfile.lastName}`}</Typography>
+                  <Typography variant="h4">{`${doctorProfile!.salutation &&
+                    doctorProfile!
+                      .salutation!.charAt(0)
+                      .toUpperCase()}${doctorProfile.salutation!.slice(1).toLowerCase() + '.'} ${
+                    doctorProfile.firstName
+                  } ${doctorProfile.lastName}`}</Typography>
                   <Typography variant="h6">
                     <span>{`MCI Number : ${doctorProfile.registrationNumber}`} </span>
                   </Typography>
