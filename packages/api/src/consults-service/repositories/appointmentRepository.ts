@@ -111,10 +111,16 @@ export class AppointmentRepository extends Repository<Appointment> {
           let firstAppt: Date = appts[0].appointmentDateTime;
           let flag: number = 0;
           let finalSlot = '';
+          console.log(appts, 'appts');
           appts.map((appt) => {
             if (appt.appointmentDateTime != firstAppt) {
+              console.log(
+                Math.abs(differenceInMinutes(firstAppt, appt.appointmentDateTime)),
+                'diff'
+              );
               if (Math.abs(differenceInMinutes(firstAppt, appt.appointmentDateTime)) >= 30) {
                 flag = 1;
+                console.log(firstAppt, 'first appt inside');
                 if (Math.abs(differenceInMinutes(new Date(), firstAppt)) >= 15) {
                   finalSlot = this.getAlignedSlot(curDate);
                 } else {
@@ -123,10 +129,13 @@ export class AppointmentRepository extends Repository<Appointment> {
               }
             }
             firstAppt = appt.appointmentDateTime;
+            console.log(firstAppt, 'in loop');
           });
           //if there is no gap between any appointments
           //then add 15 mins to last appointment and return
+          console.log(flag, 'flag');
           if (flag === 0) {
+            console.log(appts[appts.length - 1].appointmentDateTime, 'last apt');
             if (new Date() < appts[appts.length - 1].appointmentDateTime) {
               finalSlot = this.getAlignedSlot(curDate);
             } else {
@@ -136,6 +145,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           return finalSlot;
         }
       } else {
+        console.log('np appts');
         //if there are no appointments, then return next nearest time
         return this.getAlignedSlot(curDate);
       }
