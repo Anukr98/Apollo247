@@ -205,7 +205,7 @@ export const ConsultRoom: React.FC = (props) => {
           >
             {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
               <Typography variant="h1">
-                <span>hello</span>
+                <span>hi</span>
                 <AphSelect
                   value={currentPatient.id}
                   onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
@@ -214,7 +214,7 @@ export const ConsultRoom: React.FC = (props) => {
                   {allCurrentPatients.map((patient) => {
                     const isSelected = patient.id === currentPatient.id;
                     const name = isSelected
-                      ? (patient.firstName || '').toLocaleLowerCase()
+                      ? `${(patient.firstName || '').toLocaleLowerCase()}!`
                       : (patient.firstName || '').toLocaleLowerCase();
                     return (
                       <MenuItem
