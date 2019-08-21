@@ -199,30 +199,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const dt2 = new Date(props.appointmentDateTime); // apointment time
   const diff = dt2.getHours() - dt1.getHours();
   const diff2 = dt2.getMinutes() - dt1.getMinutes();
-  const isPastAppointment =
-    moment(new Date()).format('YYYY-MM-DD hh:ss') <= props.appointmentDateTime ? true : false;
   const val = '0';
   cda = diff
     .toString()
     .concat(':')
     .concat(diff2.toString().length > 1 ? diff2.toString() : val.concat(diff2.toString()));
-  //logic for before start counsult timer end
-
-  // const startInterval = (timer: number) => {
-  //   intervalId = setInterval(() => {
-  //     timer = timer - 1;
-  //     stoppedTimer = timer;
-  //     setRemainingTime(timer);
-  //     if (timer == 0) {
-  //       setRemainingTime(0);
-  //       clearInterval(intervalId);
-  //     }
-  //   }, 1000);
-  // };
 
   const startInterval = (timer: number) => {
     const current = new Date();
-    const consult = new Date(props.appointmentDateTime + ':00');
+    const consult = new Date(props.appointmentDateTime);
     const year = consult.getFullYear();
     const month = consult.getMonth() + 1;
     const day = consult.getDate();
@@ -329,15 +314,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const getTimerText = () => {
     const now = new Date();
     const diff = moment.duration(
-      moment(props.appointmentDateTime + ':00').diff(
+      moment(new Date(props.appointmentDateTime)).diff(
         moment(moment(now).format('YYYY-MM-DD HH:mm:ss'))
       )
     );
-    console.log(diff);
     const diffInHours = diff.asHours();
     if (diffInHours > 0 && diffInHours < 12)
       if (diff.hours() <= 0) {
-        return `Time to consult ${
+        return `| Time to consult ${
           diff.minutes().toString().length < 2 ? '0' + diff.minutes() : diff.minutes()
         } : ${diff.seconds().toString().length < 2 ? '0' + diff.seconds() : diff.seconds()}`;
       }
@@ -353,10 +337,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
         </Link>
       </div>
-      CONSULT ROOM &nbsp; {isPastAppointment && '|'} &nbsp;
+      CONSULT ROOM &nbsp;
       <span className={classes.timeLeft}>
         {startAppointment
-          ? `Time Left ${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
+          ? `| Time Left ${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
               seconds.toString().length < 2 ? '0' + seconds : seconds
             }`
           : getTimerText()}

@@ -465,7 +465,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             {rowData.duration === '00 : 00' ? (
               <span className={classes.missCall}>
                 <img src={require('images/ic_missedcall.svg')} />
-                You missed a call
+                {rowData.message.toLocaleLowerCase() === 'Video call ended' ? 'You missed a video call' : 'You missed a voice call' }
               </span>
             ) : rowData.duration ? (
               <div className={classes.callEnded}>
@@ -508,7 +508,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             {rowData.duration === '00 : 00' ? (
               <span className={classes.missCall}>
                 <img src={require('images/ic_missedcall.svg')} />
-                You missed a call
+                {rowData.message.toLocaleLowerCase() === 'Video call ended' ? 'You missed a call' : 'You missed a call' }
               </span>
             ) : rowData.duration ? (
               <div className={classes.callEnded}>
