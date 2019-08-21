@@ -216,14 +216,30 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
     data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
   ) {
     data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
+      // if (availability && availability.availableSlot !== '') {
+      //   const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
+      //   const slotTimeStamp =
+      //     getIstTimestamp(new Date(), availability.availableSlot) + milliSeconds;
+      //   const currentTime = new Date().getTime();
+      //   if (slotTimeStamp > currentTime) {
+      //     availableSlot = slotTimeStamp;
+      //     const difference = slotTimeStamp - currentTime;
+      //     differenceInMinutes = Math.round(difference / 60000);
+      //   }
+      // } else {
+      //   differenceInMinutes = -1;
+      // }
       if (availability && availability.availableSlot !== '') {
-        const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
-        const slotTimeStamp =
-          getIstTimestamp(new Date(), availability.availableSlot) + milliSeconds;
-        const currentTime = new Date().getTime();
-        if (slotTimeStamp > currentTime) {
-          availableSlot = slotTimeStamp;
-          const difference = slotTimeStamp - currentTime;
+        const slotTimeUtc = new Date(
+          new Date(
+            `${format(new Date(), 'yyyy-MM-dd')} ${availability.availableSlot}:00`
+          ).toISOString()
+        ).getTime();
+        const localTimeOffset = new Date().getTimezoneOffset() * 60000;
+        const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
+        const currentTime = new Date(new Date().toISOString()).getTime();
+        if (slotTime > currentTime) {
+          const difference = slotTime - currentTime;
           differenceInMinutes = Math.round(difference / 60000);
         }
       } else {

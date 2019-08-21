@@ -236,6 +236,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     }
   );
 
+  // console.log(availableSlotsData);
+
   // get doctor next availability.
   const { data: nextAvailableSlot, loading: nextAvailableSlotLoading } = useQueryWithSkip<
     GetDoctorNextAvailableSlot,
@@ -272,12 +274,14 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   ) {
     nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
       if (availability && availability.availableSlot !== '') {
-        const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
-        const slotTimeStamp =
-          getIstTimestamp(new Date(), availability.availableSlot) + milliSeconds;
-        const currentTime = new Date().getTime();
-        if (slotTimeStamp > currentTime) {
-          const difference = slotTimeStamp - currentTime;
+        const slotTimeUtc = new Date(
+          new Date(`${apiDateFormat} ${availability.availableSlot}:00`).toISOString()
+        ).getTime();
+        const localTimeOffset = new Date().getTimezoneOffset() * 60000;
+        const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
+        const currentTime = new Date(new Date().toISOString()).getTime();
+        if (slotTime > currentTime) {
+          const difference = slotTime - currentTime;
           differenceInMinutes = Math.round(difference / 60000);
         }
       } else {
@@ -290,7 +294,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     (availableSlotsData && availableSlotsData.getDoctorAvailableSlots.availableSlots) || [];
 
   availableSlots.map((slot) => {
-    const slotTime = getIstTimestamp(new Date(apiDateFormat), slot);
+    const slotTimeUtc = new Date(new Date(`${apiDateFormat} ${slot}:00`).toISOString()).getTime();
+    const localTimeOffset = new Date().getTimezoneOffset() * 60000;
+    const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
+    const currentTime = new Date(new Date().toISOString()).getTime();
     if (slotTime > currentTime) {
       if (slot === autoSlot) {
         slotAvailableNext = autoSlot;
@@ -428,6 +435,15 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               onClick={() => {
                 setMutationLoading(true);
                 mutate();
+                // console.log(
+                //   new Date(
+                //     `${apiDateFormat} ${
+                //       timeSelected !== ''
+                //         ? timeSelected.padStart(5, '0')
+                //         : slotAvailableNext.padStart(5, '0')
+                //     }:00`
+                //   ).toISOString()
+                // );
               }}
               className={
                 disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''

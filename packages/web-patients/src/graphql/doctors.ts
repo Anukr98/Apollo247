@@ -204,6 +204,9 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
       }
       otherDoctors {
         firstName
+        lastName
+        experience
+        id
         specialty {
           name
         }

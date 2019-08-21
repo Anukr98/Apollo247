@@ -241,9 +241,8 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                   const timeStringArray = timeString.split(':');
                   const twelveHourHour =
                     parseInt(timeStringArray[0], 10) > 12
-                      ? parseInt(timeStringArray[0], 10) - 12
-                      : timeStringArray[0];
-                  const formattedHour = twelveHourHour < 10 ? `${twelveHourHour}` : twelveHourHour;
+                      ? `${parseInt(timeStringArray[0], 10) - 12}:${timeStringArray[1]} pm`
+                      : `${timeStringArray[0]}:${timeStringArray[1]} am`;
                   return (
                     <AphButton
                       color="secondary"
@@ -255,7 +254,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                       }}
                       key={_uniqueId('latenight_')}
                     >
-                      {formattedHour}:{timeStringArray[1]}&nbsp;pm
+                      {twelveHourHour}
                     </AphButton>
                   );
                 })
