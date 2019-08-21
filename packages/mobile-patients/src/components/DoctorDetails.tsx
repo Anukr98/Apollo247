@@ -587,8 +587,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     color: theme.colors.SEARCH_DOCTOR_NAME,
                   }}
                 >
-                  {Moment.utc(item.appointmentDateTime).format('DD MMMM, hh:mm a')}
-                  {/* {Moment(item.appointmentDateTime).format('DD MMMM')}
+                  {/* {Moment.utc(item.appointmentDateTime).format('DD MMMM, hh:mm a')} */}
+                  {Moment(item.appointmentDateTime).format('DD MMMM')}
                   {' , '}
                   {formatTime(item.appointmentDateTime)} */}
                 </Text>
