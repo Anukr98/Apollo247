@@ -290,6 +290,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     });
   }
 
+  // console.log('diff in minutes.....', differenceInMinutes);
+
   const availableSlots =
     (availableSlotsData && availableSlotsData.getDoctorAvailableSlots.availableSlots) || [];
 
@@ -323,9 +325,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'50vh'}>
         <div className={classes.customScrollBar}>
           <div className={classes.consultGroup}>
-            {consultNowAvailable ? (
+            {differenceInMinutes > 0 ? (
               <p>
-                Dr. {doctorName} is available in 15mins!
+                Dr. {doctorName} is available in {differenceInMinutes} mins!
                 <br /> Would you like to consult now or schedule for later?
               </p>
             ) : null}

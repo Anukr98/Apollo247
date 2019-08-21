@@ -242,21 +242,24 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                   const twelveHourHour =
                     parseInt(timeStringArray[0], 10) > 12
                       ? `${parseInt(timeStringArray[0], 10) - 12}:${timeStringArray[1]} pm`
-                      : `${timeStringArray[0]}:${timeStringArray[1]} am`;
-                  return (
-                    <AphButton
-                      color="secondary"
-                      value={timeString}
-                      className={selectedTime === timeString ? `${classes.buttonActive}` : ''}
-                      onClick={(e) => {
-                        setTimeSelected(e.currentTarget.value);
-                        timeSelected(e.currentTarget.value);
-                      }}
-                      key={_uniqueId('latenight_')}
-                    >
-                      {twelveHourHour}
-                    </AphButton>
-                  );
+                      : '';
+                  // : `${timeStringArray[0]}:${timeStringArray[1]} am`;
+                  if (twelveHourHour !== '') {
+                    return (
+                      <AphButton
+                        color="secondary"
+                        value={timeString}
+                        className={selectedTime === timeString ? `${classes.buttonActive}` : ''}
+                        onClick={(e) => {
+                          setTimeSelected(e.currentTarget.value);
+                          timeSelected(e.currentTarget.value);
+                        }}
+                        key={_uniqueId('latenight_')}
+                      >
+                        {twelveHourHour}
+                      </AphButton>
+                    );
+                  }
                 })
               : noSlotsMessage('late night')}
           </div>
