@@ -1,13 +1,11 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React, { useState } from 'react';
+import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import { AphButton } from '@aph/web-ui-components';
 import { ConsultationHours } from 'components/ConsultationHours';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { GetDoctorDetails_getDoctorDetails_consultHours } from 'graphql/types/GetDoctorDetails';
-
 import { ConsultMode } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -134,15 +132,9 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'right',
     },
     btnActive: {
-      backgroundColor: '#00b38e',
-      color: theme.palette.secondary.contrastText,
-      margin: theme.spacing(1, 1, 1, 0),
-      textTransform: 'capitalize',
+      color: theme.palette.secondary.dark,
       fontSize: 16,
       fontWeight: theme.typography.fontWeightMedium,
-      '&:hover': {
-        backgroundColor: '#00b38e',
-      },
     },
     btnInactive: {
       backgroundColor: '#fff',
@@ -262,10 +254,13 @@ interface AvailabilityTabProps {
   onNext: () => void;
   onBack: () => void;
 }
-export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext, onBack }) => {
+export const MyAccountAvailabilityTab: React.FC<AvailabilityTabProps> = ({
+  values,
+  onNext,
+  onBack,
+}) => {
   const classes = useStyles();
   const data = values;
-  const [showOperatingHoursForm, setShowOperatingHoursForm] = useState<boolean>(false);
 
   return (
     <div className={classes.ProfileContainer}>
@@ -273,46 +268,27 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
         <Grid item lg={2} sm={6} xs={12}>
           <Typography variant="h2">Consultation Type</Typography>
         </Grid>
-        <Grid item lg={10} sm={6} xs={12}>
+        <Grid item lg={6} sm={6} xs={12}>
           <div>
             <div>
               <Typography variant="h5" className={classes.consultForm}>
                 What type of consults will you be available for?
               </Typography>
-              <AphButton
-                variant="contained"
-                classes={{
-                  root:
-                    data.consultHours &&
-                    data.consultHours!.length > 0 &&
-                    data.consultHours!.some(
-                      (_item: GetDoctorDetails_getDoctorDetails_consultHours | null) =>
-                        _item!.consultMode === ConsultMode.PHYSICAL ||
-                        _item!.consultMode === ConsultMode.BOTH
-                    )
-                      ? classes.btnActive
-                      : classes.btnInactive,
-                }}
-              >
-                Physical
-              </AphButton>
-              <AphButton
-                variant="contained"
-                classes={{
-                  root:
-                    data.consultHours &&
-                    data.consultHours!.length > 0 &&
-                    data.consultHours!.some(
-                      (_item: GetDoctorDetails_getDoctorDetails_consultHours | null) =>
-                        _item!.consultMode === ConsultMode.ONLINE ||
-                        _item!.consultMode === ConsultMode.BOTH
-                    )
-                      ? classes.btnActive
-                      : classes.btnInactive,
-                }}
-              >
-                Online
-              </AphButton>
+              <div className={classes.btnActive}>
+                {data.consultHours!.some(
+                  (_item: GetDoctorDetails_getDoctorDetails_consultHours | null) =>
+                    _item!.consultMode === ConsultMode.PHYSICAL ||
+                    _item!.consultMode === ConsultMode.BOTH
+                ) && 'Physical, '}
+                {data.consultHours &&
+                  data.consultHours!.length > 0 &&
+                  data.consultHours!.some(
+                    (_item: GetDoctorDetails_getDoctorDetails_consultHours | null) =>
+                      _item!.consultMode === ConsultMode.ONLINE ||
+                      _item!.consultMode === ConsultMode.BOTH
+                  ) &&
+                  'Online'}
+              </div>
             </div>
           </div>
         </Grid>
@@ -321,42 +297,10 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
         <Grid item lg={2} sm={6} xs={12}>
           <Typography variant="h2">Consultation Hours</Typography>
         </Grid>
-        <Grid item lg={10} sm={6} xs={12}>
+        <Grid item lg={6} sm={6} xs={12}>
           {data && data.consultHours && data.consultHours.length && (
             <ConsultationHours values={data} />
           )}
-          {!showOperatingHoursForm && (
-            <div className={classes.addDocter}>
-              <AphButton
-                variant="contained"
-                color="primary"
-                className={`${classes.btnAddDoctor} ${classes.pointerNone}`}
-                onClick={() => setShowOperatingHoursForm(!showOperatingHoursForm)}
-              >
-                + ADD CONSULTATION HOURS
-              </AphButton>
-            </div>
-          )}
-        </Grid>
-      </Grid>
-      <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
-        <Grid item lg={12} sm={12} xs={12}>
-          <AphButton
-            variant="contained"
-            color="primary"
-            classes={{ root: classes.backButton }}
-            onClick={() => onBack()}
-          >
-            BACK
-          </AphButton>
-          <AphButton
-            variant="contained"
-            color="primary"
-            classes={{ root: classes.saveButton }}
-            onClick={() => onNext()}
-          >
-            SAVE AND PROCEED
-          </AphButton>
         </Grid>
       </Grid>
     </div>
