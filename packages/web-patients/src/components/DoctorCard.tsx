@@ -125,7 +125,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const doctorId = doctorDetails.id;
 
-  const { data, loading } = useQueryWithSkip<
+  const { data, loading, error } = useQueryWithSkip<
     GetDoctorNextAvailableSlot,
     GetDoctorNextAvailableSlotVariables
   >(GET_DOCTOR_NEXT_AVAILABILITY, {
@@ -137,6 +137,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     },
     fetchPolicy: 'network-only',
   });
+
+  if (error) {
+    alert(error);
+  }
 
   // console.log('doctor details.....', data);
 

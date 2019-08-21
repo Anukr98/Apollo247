@@ -149,7 +149,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                     parseInt(timeStringArray[0], 10) > 12
                       ? parseInt(timeStringArray[0], 10) - 12
                       : timeStringArray[0];
-                  const formattedHour = twelveHourHour < 10 ? `0${twelveHourHour}` : twelveHourHour;
+                  const formattedHour = twelveHourHour < 10 ? `${twelveHourHour}` : twelveHourHour;
                   return (
                     <AphButton
                       color="secondary"
@@ -162,7 +162,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                       key={_uniqueId('morning_')}
                     >
                       {formattedHour}:{timeStringArray[1]}
-                      {formattedHour >= 12 ? 'pm' : 'am'}
+                      {formattedHour >= 12 ? ' pm' : ' am'}
                     </AphButton>
                   );
                 })
@@ -181,7 +181,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                     parseInt(timeStringArray[0], 10) > 12
                       ? parseInt(timeStringArray[0], 10) - 12
                       : timeStringArray[0];
-                  const formattedHour = twelveHourHour < 10 ? `0${twelveHourHour}` : twelveHourHour;
+                  const formattedHour = twelveHourHour < 10 ? `${twelveHourHour}` : twelveHourHour;
                   return (
                     <AphButton
                       color="secondary"
@@ -193,8 +193,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                       }}
                       key={_uniqueId('afternoon_')}
                     >
-                      {formattedHour}:{timeStringArray[1]}
-                      &nbsp;pm
+                      {formattedHour}:{timeStringArray[1]}&nbsp;pm
                     </AphButton>
                   );
                 })
@@ -213,7 +212,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                     parseInt(timeStringArray[0], 10) > 12
                       ? parseInt(timeStringArray[0], 10) - 12
                       : timeStringArray[0];
-                  const formattedHour = twelveHourHour < 10 ? `0${twelveHourHour}` : twelveHourHour;
+                  const formattedHour = twelveHourHour < 10 ? `${twelveHourHour}` : twelveHourHour;
                   return (
                     <AphButton
                       color="secondary"
@@ -225,8 +224,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                       }}
                       key={_uniqueId('evening_')}
                     >
-                      {formattedHour}:{timeStringArray[1]}
-                      &nbsp;pm
+                      {formattedHour}:{timeStringArray[1]}&nbsp;pm
                     </AphButton>
                   );
                 })
@@ -243,24 +241,25 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                   const timeStringArray = timeString.split(':');
                   const twelveHourHour =
                     parseInt(timeStringArray[0], 10) > 12
-                      ? parseInt(timeStringArray[0], 10) - 12
-                      : timeStringArray[0];
-                  const formattedHour = twelveHourHour < 10 ? `0${twelveHourHour}` : twelveHourHour;
-                  return (
-                    <AphButton
-                      color="secondary"
-                      value={timeString}
-                      className={selectedTime === timeString ? `${classes.buttonActive}` : ''}
-                      onClick={(e) => {
-                        setTimeSelected(e.currentTarget.value);
-                        timeSelected(e.currentTarget.value);
-                      }}
-                      key={_uniqueId('latenight_')}
-                    >
-                      {formattedHour}:{timeStringArray[1]}
-                      &nbsp;pm
-                    </AphButton>
-                  );
+                      ? `${parseInt(timeStringArray[0], 10) - 12}:${timeStringArray[1]} pm`
+                      : '';
+                  // : `${timeStringArray[0]}:${timeStringArray[1]} am`;
+                  if (twelveHourHour !== '') {
+                    return (
+                      <AphButton
+                        color="secondary"
+                        value={timeString}
+                        className={selectedTime === timeString ? `${classes.buttonActive}` : ''}
+                        onClick={(e) => {
+                          setTimeSelected(e.currentTarget.value);
+                          timeSelected(e.currentTarget.value);
+                        }}
+                        key={_uniqueId('latenight_')}
+                      >
+                        {twelveHourHour}
+                      </AphButton>
+                    );
+                  }
                 })
               : noSlotsMessage('late night')}
           </div>
