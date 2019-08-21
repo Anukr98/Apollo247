@@ -19,6 +19,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       onlineConsultationFees
       physicalConsultationFees
       qualification
+      doctorType
       starTeam {
         associatedDoctor {
           firstName
@@ -203,6 +204,9 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
       }
       otherDoctors {
         firstName
+        lastName
+        experience
+        id
         specialty {
           name
         }
@@ -312,6 +316,18 @@ export const GET_DOCTOR_NEXT_AVAILABILITY = gql`
         doctorId
         availableSlot
       }
+    }
+  }
+`;
+
+export const GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS = gql`
+  query GetDoctorPhysicalAvailableSlots(
+    $DoctorPhysicalAvailabilityInput: DoctorPhysicalAvailabilityInput
+  ) {
+    getDoctorPhysicalAvailableSlots(
+      DoctorPhysicalAvailabilityInput: $DoctorPhysicalAvailabilityInput
+    ) {
+      availableSlots
     }
   }
 `;
