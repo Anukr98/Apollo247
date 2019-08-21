@@ -244,6 +244,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         ? true
         : false;
 
+    const isPayrollDoctor =
+      doctorDetails &&
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
+        ? true
+        : false;
+
     const doctorId =
       doctorDetails && doctorDetails.getDoctorDetailsById
         ? doctorDetails.getDoctorDetailsById.id
@@ -333,7 +340,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   label="Consult Online"
                 />
               )}
-              {availableForPhysicalConsultation && (
+
+              {availableForPhysicalConsultation && !isPayrollDoctor && (
                 <Tab
                   classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
                   label="Visit Clinic"
@@ -348,7 +356,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 />
               </TabContainer>
             )}
-            {tabValue === 1 && availableForPhysicalConsultation && (
+
+            {tabValue === 1 && availableForPhysicalConsultation && !isPayrollDoctor && (
               <TabContainer>
                 <VisitClinic doctorDetails={doctorDetails} />
               </TabContainer>

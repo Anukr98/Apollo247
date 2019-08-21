@@ -4,7 +4,6 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import openTok, { TokenOptions } from 'opentok';
 import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { format } from 'date-fns';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -22,7 +21,7 @@ export const createAppointmentSessionTypeDefs = gql`
     appointmentToken: String!
     doctorId: ID!
     patientId: ID!
-    appointmentDateTime: String!
+    appointmentDateTime: DateTime!
   }
 
   input CreateAppointmentSessionInput {
@@ -55,7 +54,7 @@ type CreateAppointmentSession = {
   appointmentToken: string;
   doctorId: string;
   patientId: string;
-  appointmentDateTime: string;
+  appointmentDateTime: Date;
 };
 
 type CreateAppointmentSessionInput = {
@@ -86,15 +85,16 @@ const createAppointmentSession: Resolver<
   let sessionId = '',
     token = '',
     patientId = '',
-    doctorId = '',
-    appointmentDateTime = '';
+    doctorId = '';
+  let appointmentDateTime: Date = new Date();
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
   if (apptDetails) {
     patientId = apptDetails.patientId;
     doctorId = apptDetails.doctorId;
-    appointmentDateTime = format(apptDetails.appointmentDateTime, 'yyyy-MM-dd hh:mm');
+    //appointmentDateTime = format(apptDetails.appointmentDateTime, 'yyyy-MM-ddTHH:mm:ss.000Z');
+    appointmentDateTime = apptDetails.appointmentDateTime;
   }
   const apptSessionRepo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
   const apptSessionDets = await apptSessionRepo.getAppointmentSession(

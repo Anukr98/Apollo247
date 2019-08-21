@@ -309,39 +309,44 @@ describe('UpdatePatient (multiple, without uhids)', () => {
       .should('contain', 'Other');
   });
 
-  it('Should allow single quotation marks to be added to first and last names', () => {
-    const janeTheApostropheLover = {
-      ...janeNoRelation,
-      firstName: "Jane 'The Apostrophe Lover'",
-      lastName: "John'son",
-      relation: Relation.ME,
-    };
+  it('Should allow single quotation marks to be added within first and last names', () => {
+    const validNames = ["Sumeet'h", "D'Souza", "D'Souza", "D'S'ouza"];
 
-    cy.mockAphGraphqlOps({
-      operations: {
-        UpdatePatient: {
-          updatePatient: {
-            __typename: 'UpdatePatientResult',
-            patient: janeTheApostropheLover,
-          },
-        },
-      },
+    validNames.forEach((name) => {
+      cy.get('[data-cypress="NewProfile"]')
+        .find('input[name*="firstName"]')
+        .clear()
+        .type(name);
+
+      cy.get('[data-cypress="NewProfile"]')
+        .find('button[type="submit"]')
+        .should('not.be.disabled');
     });
+  });
 
-    cy.get('[data-cypress="NewProfile"]')
-      .find(`input[value="${janeNoRelation.firstName!}"]`)
-      .clear()
-      .type(janeTheApostropheLover.firstName!);
+  it('Should forbid quotation marks to be added consecutively, or at the beginning or end of a name', () => {
+    const invalidNames = [
+      "'",
+      "''",
+      "'Sumeeth",
+      "Sumeeth'",
+      "D''souza",
+      "Sumeeth '",
+      "Sumeeth ''",
+      "Kumar'",
+      "K''umar",
+    ];
 
-    cy.get('[data-cypress="NewProfile"]')
-      .find('button[type="submit"]')
-      .click();
+    invalidNames.forEach((name) => {
+      cy.get('[data-cypress="NewProfile"]')
+        .find('input[name*="firstName"]')
+        .clear()
+        .type(name);
 
-    cy.contains('congratulations!');
-
-    cy.get('[data-cypress="HeroBanner"]')
-      .contains(janeTheApostropheLover.firstName!.toLowerCase())
-      .should('exist');
+      cy.get('[data-cypress="NewProfile"]')
+        .find('button[type="submit"]')
+        .should('be.disabled');
+    });
   });
 });
 

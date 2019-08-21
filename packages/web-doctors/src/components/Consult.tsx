@@ -116,6 +116,7 @@ const useStyles = makeStyles((theme: Theme) => {
 interface ConsultProps {
   toggelChatVideo: () => void;
   stopAudioVideoCall: () => void;
+  stopAudioVideoCallpatient: () => void;
   showVideoChat: boolean;
   isVideoCall: boolean;
   sessionId: string;
@@ -159,7 +160,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               eventHandlers={{
                 connectionDestroyed: (event: any) => {
                   props.toggelChatVideo();
-                  props.stopAudioVideoCall();
+                  props.stopAudioVideoCallpatient();
                   setIscall(false);
                 },
               }}

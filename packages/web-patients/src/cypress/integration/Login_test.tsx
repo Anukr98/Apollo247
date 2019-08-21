@@ -31,6 +31,47 @@ describe('Login', () => {
       .should('exist');
   });
 
+  it("Firebase (Captcha Disabled): Blurring an incomplete mobile number beginning with 6-9 doesn't display error", () => {
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[type="tel"]')
+      .type('6')
+      .blur();
+
+    cy.get('[data-cypress="SignIn"]').should('not.contain', 'This seems like a wrong number');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[type="tel"]')
+      .clear()
+      .type('7')
+      .blur();
+
+    cy.get('[data-cypress="SignIn"]').should('not.contain', 'This seems like a wrong number');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[type="tel"]')
+      .clear()
+      .type('8')
+      .blur();
+
+    cy.get('[data-cypress="SignIn"]').should('not.contain', 'This seems like a wrong number');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[type="tel"]')
+      .clear()
+      .type('9')
+      .blur();
+
+    cy.get('[data-cypress="SignIn"]').should('not.contain', 'This seems like a wrong number');
+
+    cy.get('[data-cypress="SignIn"]')
+      .find('input[type="tel"]')
+      .clear()
+      .type('5')
+      .blur();
+
+    cy.get('[data-cypress="SignIn"]').should('contain', 'This seems like a wrong number');
+  });
+
   it('There should be validation upon entering anything non-numerical', () => {
     cy.get('[data-cypress="SignIn"]')
       .find('input[name*="mobileNumber"]')

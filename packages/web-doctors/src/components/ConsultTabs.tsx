@@ -118,7 +118,7 @@ export const ConsultTabs: React.FC = (props) => {
           setsessionId(_data.data.createAppointmentSession.sessionId);
           settoken(_data.data.createAppointmentSession.appointmentToken);
           setappointmentDateTime(_data.data.createAppointmentSession.appointmentDateTime);
-          //setappointmentDateTime('2019-08-20 15:00');
+          //setappointmentDateTime('2019-08-21T11:10:00.000Z');
           setdoctorId(_data.data.createAppointmentSession.doctorId);
           setpatientId(_data.data.createAppointmentSession.patientId);
           // setsessionId('1_MX40NjM5MzU4Mn5-MTU2NTA3MTUwNDk4MX56bVd3ZW96MFNuS2Vua2dDMnZ5VTZNNlJ-UH4');
