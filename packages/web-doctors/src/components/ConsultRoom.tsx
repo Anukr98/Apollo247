@@ -480,6 +480,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
     //setIsVideoCall(false);
   };
+  const stopAudioVideoCallpatient = () => {
+    setIsCallAccepted(false);
+    setShowVideo(false);
+    setShowVideoChat(false);
+    const cookieStr = `action=`;
+    document.cookie = cookieStr + ';path=/;';
+    const text = {
+      id: doctorId,
+      message: stopcallMsg,
+      isTyping: true,
+    };
+    pubnub.publish(
+      {
+        channel: channel,
+        message: text,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        setMessageText('');
+      }
+    );
+  };
   return (
     <div className={classes.consultRoom}>
       <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
@@ -487,6 +510,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <Consult
             toggelChatVideo={() => toggelChatVideo()}
             stopAudioVideoCall={() => stopAudioVideoCall()}
+            stopAudioVideoCallpatient={() => stopAudioVideoCallpatient()}
             showVideoChat={showVideoChat}
             isVideoCall={isVideoCall}
             sessionId={props.sessionId}

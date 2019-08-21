@@ -190,10 +190,10 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 20,
       },
     },
-    durattiocallMsg:{
+    durattiocallMsg: {
       marginLeft: 40,
       marginTop: 7,
-    }
+    },
   };
 });
 
@@ -219,7 +219,8 @@ interface AutoMessageStrings {
   startConsult: string;
   stopConsult: string;
 }
-
+let timerIntervalId: any;
+let stoppedConsulTimer: number;
 export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const classes = useStyles();
   const { allCurrentPatients } = useAllCurrentPatients();
@@ -235,6 +236,30 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
+
+  const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
+  const [startingTime, setStartingTime] = useState<number>(0);
+
+  const timerMinuts = Math.floor(startingTime / 60);
+  const timerSeconds = startingTime - timerMinuts * 60;
+  const timerLastMinuts = Math.floor(startingTime / 60);
+  const timerLastSeconds = startingTime - timerMinuts * 60;
+  const startIntervalTimer = (timer: number) => {
+    setstartTimerAppoinmentt(true);
+    timerIntervalId = setInterval(() => {
+      timer = timer + 1;
+      stoppedConsulTimer = timer;
+      setStartingTime(timer);
+      // if (timer == 900) {
+      // setStartingTime(900);
+      // clearInterval(timerIntervalId);
+      // }
+    }, 1000);
+  };
+  const stopIntervalTimer = () => {
+    setStartingTime(0);
+    timerIntervalId && clearInterval(timerIntervalId);
+  };
 
   const autoMessageStrings: AutoMessageStrings = {
     videoCallMsg: '^^callme`video^^',
@@ -536,8 +561,29 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       }
     );
     setShowVideo(true);
+    startIntervalTimer(0);
   };
   const stopAudioVideoCall = () => {
+    const stoptext = {
+      id: patientId,
+      message: `${isVideoCall ? 'Video' : 'Audio'} call ended`,
+      duration: `${
+        timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
+      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+      isTyping: true,
+    };
+    pubnub.publish(
+      {
+        channel: channel,
+        message: stoptext,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        setMessageText('');
+      }
+    );
+    stopIntervalTimer();
     setShowVideo(false);
     autoSend();
     setIsVideoCall(false);
@@ -567,6 +613,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             showVideoChat={showVideoChat}
             isVideoCall={isVideoCall}
             isNewMsg={isNewMsg}
+            timerMinuts={timerMinuts}
+            timerSeconds={timerSeconds}
           />
         )}
         <div>
