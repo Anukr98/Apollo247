@@ -53,6 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     divider: {
       margin: '20px 0',
+      backgroundColor: 'rgba(0, 0, 0, 0.4)',
     },
     notesHeader: {
       color: '#0087ba',
