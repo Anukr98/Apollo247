@@ -232,6 +232,10 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
     });
   }
 
+  // if (differenceInMinutes <= 15) {
+  //   onBookConsult(true);
+  // }
+
   const availabilityMarkup = () => {
     if (differenceInMinutes === 0) {
       return <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>;
@@ -337,9 +341,6 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                     <div className={classes.details}>
                       Online Consultation
                       <div className={classes.doctorPriceIn}>Rs.{onlineConsultFees}</div>
-                      {/* <div className={`${classes.availability} ${classes.availableNow}`}>
-                        Available in 15 mins
-                      </div> */}
                       {availabilityMarkup()}
                     </div>
                     <div className={classes.doctorPrice}>Rs.{onlineConsultFees}</div>

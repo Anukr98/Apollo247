@@ -11,10 +11,10 @@ import {
   GetDoctorDetailsById_getDoctorDetailsById_doctorHospital as Facility,
 } from 'graphql/types/GetDoctorDetailsById';
 import {
-  GetDoctorAvailableSlots,
-  GetDoctorAvailableSlotsVariables,
-} from 'graphql/types/GetDoctorAvailableSlots';
-import { GET_DOCTOR_AVAILABLE_SLOTS, BOOK_APPOINTMENT } from 'graphql/doctors';
+  GetDoctorPhysicalAvailableSlots,
+  GetDoctorPhysicalAvailableSlotsVariables,
+} from 'graphql/types/GetDoctorPhysicalAvailableSlots';
+import { GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS, BOOK_APPOINTMENT } from 'graphql/doctors';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { Mutation } from 'react-apollo';
 import { BookAppointment, BookAppointmentVariables } from 'graphql/types/BookAppointment';
@@ -211,24 +211,45 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const apiDateFormat =
     dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
 
-  const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:00');
-  const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:00');
-  const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:00');
+  const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:01');
+  const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
+  const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:01');
 
   const doctorId =
     doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.id
       ? doctorDetails.getDoctorDetailsById.id
       : '';
 
+  const clinics: Facility[] = [];
+  if (doctorDetails && doctorDetails.getDoctorDetailsById) {
+    _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
+      if (
+        hospitalDetails.facility.facilityType === 'CLINIC' ||
+        hospitalDetails.facility.facilityType === 'HOSPITAL'
+      ) {
+        clinics.push(hospitalDetails);
+      }
+    });
+  }
+
+  const defaultClinicId =
+    clinics.length > 0 && clinics[0] && clinics[0].facility ? clinics[0].facility.id : '';
+
   const { data, loading, error } = useQueryWithSkip<
-    GetDoctorAvailableSlots,
-    GetDoctorAvailableSlotsVariables
-  >(GET_DOCTOR_AVAILABLE_SLOTS, {
+    GetDoctorPhysicalAvailableSlots,
+    GetDoctorPhysicalAvailableSlotsVariables
+  >(GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS, {
     variables: {
-      DoctorAvailabilityInput: { doctorId: doctorId, availableDate: apiDateFormat },
+      DoctorPhysicalAvailabilityInput: {
+        doctorId: doctorId,
+        availableDate: apiDateFormat,
+        facilityId: defaultClinicId,
+      },
     },
     fetchPolicy: 'network-only',
   });
+
+  console.log('data is..........', data);
 
   useEffect(() => {
     if (prevDateSelected !== dateSelected) setTimeSelected('');
@@ -246,7 +267,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     return <div className={classes.noDataAvailable}>Unable to load Available slots.</div>;
   }
 
-  const availableSlots = (data && data.getDoctorAvailableSlots.availableSlots) || [];
+  const availableSlots = (data && data.getDoctorPhysicalAvailableSlots.availableSlots) || [];
   availableSlots.map((slot) => {
     const slotTime = getIstTimestamp(new Date(apiDateFormat), slot);
     if (slotTime > currentTime) {
@@ -275,21 +296,6 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   //   doctorDetails.getDoctorProfileById.clinics.length > 0
   //     ? doctorDetails.getDoctorProfileById.clinics
   //     : [];
-
-  const clinics: Facility[] = [];
-  if (doctorDetails && doctorDetails.getDoctorDetailsById) {
-    _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
-      if (
-        hospitalDetails.facility.facilityType === 'CLINIC' ||
-        hospitalDetails.facility.facilityType === 'HOSPITAL'
-      ) {
-        clinics.push(hospitalDetails);
-      }
-    });
-  }
-
-  const defaultClinicId =
-    clinics.length > 0 && clinics[0] && clinics[0].facility ? clinics[0].facility.id : '';
 
   const defaultClinicAddress =
     clinics.length > 0 && clinics[0] && clinics[0].facility

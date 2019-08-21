@@ -315,3 +315,15 @@ export const GET_DOCTOR_NEXT_AVAILABILITY = gql`
     }
   }
 `;
+
+export const GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS = gql`
+  query GetDoctorPhysicalAvailableSlots(
+    $DoctorPhysicalAvailabilityInput: DoctorPhysicalAvailabilityInput
+  ) {
+    getDoctorPhysicalAvailableSlots(
+      DoctorPhysicalAvailabilityInput: $DoctorPhysicalAvailabilityInput
+    ) {
+      availableSlots
+    }
+  }
+`;
