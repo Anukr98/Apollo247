@@ -27,8 +27,11 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         lineHeight: 1.41,
         color: theme.palette.secondary.main,
-        marginTop: 5,
+        marginTop: 10,
         marginBottom: 30,
+      },
+      '& h2': {
+        lineHeight: 'normal',
       },
     },
     inputAdornment: {
