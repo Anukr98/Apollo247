@@ -210,6 +210,32 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
         specialty {
           name
         }
+        photoUrl
+        qualification
+        consultHours {
+          consultMode
+          consultType
+          id
+          isActive
+          startTime
+          weekDay
+          endTime
+        }
+        doctorHospital {
+          facility {
+            city
+            country
+            facilityType
+            latitude
+            longitude
+            name
+            state
+            streetLine1
+            streetLine2
+            streetLine3
+            id
+          }
+        }
       }
     }
   }

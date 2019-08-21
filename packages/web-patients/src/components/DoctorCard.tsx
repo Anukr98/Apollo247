@@ -135,7 +135,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         availableDate: format(new Date(), 'yyyy-MM-dd'),
       },
     },
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'no-cache',
   });
 
   if (error) {
