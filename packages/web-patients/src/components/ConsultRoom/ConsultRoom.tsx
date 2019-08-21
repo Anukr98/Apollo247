@@ -215,7 +215,7 @@ export const ConsultRoom: React.FC = (props) => {
                   {allCurrentPatients.map((patient) => {
                     const isSelected = patient.id === currentPatient.id;
                     const name = isSelected
-                      ? `${(patient.firstName || '').toLocaleLowerCase()}!`
+                      ? (patient.firstName || '').toLocaleLowerCase()
                       : (patient.firstName || '').toLocaleLowerCase();
                     return (
                       <MenuItem

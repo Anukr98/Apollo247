@@ -208,13 +208,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     const nightStartTime = moment('21:01', 'HH:mm');
     const nightEndTime = moment('05:59', 'HH:mm');
 
-    // if (allTimeSlots !== availableSlots) {
-    // setallTimeSlots(availableSlots);
-    // }
     availableSlots.forEach((slot) => {
       const IOSFormat = `${date.toISOString().split('T')[0]}T${slot}:00.000Z`;
       const formatedSlot = moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
-      console.log(new Date() < new Date(IOSFormat), 'IOSFormat......');
+      console.log(
+        new Date() < new Date(IOSFormat),
+        new Date(),
+        new Date(IOSFormat),
+        'IOSFormat......'
+      );
       const slotTime = moment(formatedSlot, 'HH:mm');
       if (new Date() < new Date(IOSFormat)) {
         if (slotTime.isBetween(nightEndTime, afternoonStartTime)) {
@@ -232,7 +234,11 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             ...array[2],
             time: [...array[2].time, slot],
           };
-        } else {
+        } else if (
+          slotTime.isBetween(eveningEndTime, moment('23:59', 'HH:mm')) ||
+          slotTime.isSame(moment('00:00', 'HH:mm')) ||
+          slotTime.isBetween(moment('00:00', 'HH:mm'), morningStartTime)
+        ) {
           array[3] = {
             ...array[3],
             time: [...array[3].time, slot],
@@ -444,6 +450,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               }}
               data={tabs}
               onChange={(selectedTab: string) => {
+                setDate(new Date());
                 setselectedTab(selectedTab);
                 setselectedTimeSlot('');
                 setisConsultOnline(true);
@@ -456,7 +463,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 <ConsultOnline
                   doctor={props.doctor}
                   timeArray={timeArray}
-                  date={new Date()}
+                  date={date}
                   setDate={setDate}
                   nextAvailableSlot={nextAvailableSlot}
                   setNextAvailableSlot={setNextAvailableSlot}
@@ -469,12 +476,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 />
               ) : (
                 <ConsultPhysical
+                  doctor={props.doctor}
                   clinics={props.clinics}
                   setDate={setDate}
                   setselectedTimeSlot={setselectedTimeSlot}
                   selectedTimeSlot={selectedTimeSlot}
                   timeArray={timeArray}
-                  date={new Date()}
+                  date={date}
                 />
               )}
               <View style={{ height: 96 }} />

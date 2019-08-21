@@ -41,6 +41,7 @@ import {
   Alert,
   Platform,
   KeyboardAvoidingView,
+  KeyboardEvent,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import DocumentPicker from 'react-native-document-picker';
@@ -61,7 +62,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const appointmentData = props.navigation.state.params!.data;
   // console.log('appointmentData', appointmentData);
 
-  const flatListRef = useRef<FlatList<any> | null>();
+  const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
 
   const [messages, setMessages] = useState([]);
@@ -266,32 +267,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const publisherEventHandlers = {
-    streamCreated: (event) => {
+    streamCreated: (event: string) => {
       console.log('Publisher stream created!', event);
     },
-    streamDestroyed: (event) => {
+    streamDestroyed: (event: string) => {
       console.log('Publisher stream destroyed!', event);
     },
   };
 
   const subscriberEventHandlers = {
-    error: (error) => {
+    error: (error: string) => {
       console.log(`There was an error with the subscriber: ${error}`);
     },
-    connected: (event) => {
+    connected: (event: string) => {
       console.log('Subscribe stream connected!', event);
     },
-    disconnected: (event) => {
+    disconnected: (event: string) => {
       console.log('Subscribe stream disconnected!', event);
     },
   };
 
   const sessionEventHandlers = {
-    error: (error) => {
+    error: (error: string) => {
       console.log(`There was an error with the session: ${error}`);
     },
-    connectionCreated: (event) => {},
-    connectionDestroyed: (event) => {
+    connectionCreated: (event: string) => {},
+    connectionDestroyed: (event: string) => {
       setIsCall(false);
       setIsAudioCall(false);
       stopTimer();
@@ -310,19 +311,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         letterSpacing: 0.46,
       });
     },
-    sessionConnected: (event) => {
+    sessionConnected: (event: string) => {
       console.log('session stream sessionConnected!', event);
     },
-    sessionDisconnected: (event) => {
+    sessionDisconnected: (event: string) => {
       console.log('session stream sessionDisconnected!', event);
     },
-    sessionReconnected: (event) => {
+    sessionReconnected: (event: string) => {
       console.log('session stream sessionReconnected!', event);
     },
-    sessionReconnecting: (event) => {
+    sessionReconnecting: (event: string) => {
       console.log('session stream sessionReconnecting!', event);
     },
-    signal: (event) => {
+    signal: (event: string) => {
       console.log('session stream signal!', event);
     },
   };
@@ -395,7 +396,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const getHistory = () => {
     pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
-      const newmessage: object[] = [];
+      const newmessage: { message: string }[] = [];
 
       res.messages.forEach((element, index) => {
         newmessage[index] = element.entry;
@@ -504,7 +505,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }, 1000);
   };
 
-  const keyboardDidShow = (e) => {
+  const keyboardDidShow = (e: KeyboardEvent) => {
     setHeightList(
       DeviceHelper.isIphoneX()
         ? height - e.endCoordinates.height - 210
@@ -545,7 +546,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let leftComponent = 0;
   let rightComponent = 0;
 
-  const renderChatRow = (rowData: any, index: number) => {
+  const renderChatRow = (
+    rowData: { id: string; message: string; duration: string },
+    index: number
+  ) => {
     if (
       rowData.message === typingMsg ||
       rowData.message === startConsultMsg ||
@@ -555,9 +559,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === videoCallMsg ||
       rowData.message === acceptedCallMsg
     ) {
-      return;
+      return null;
     }
-    // console.log('rowData.message', rowData.message);
     if (rowData.id !== patientId) {
       leftComponent++;
       rightComponent = 0;
@@ -846,7 +849,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="on-drag"
           removeClippedSubviews={false}
-          ref={flatListRef}
+          ref={(ref) => (flatListRef.current = ref)}
           contentContainerStyle={{
             marginHorizontal: 20,
             marginTop: 0,
@@ -1549,24 +1552,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const handleKeyDown = (e) => {
-    if (e.nativeEvent.key == 'Enter') {
-      console.log('handleKeyDown');
-    }
-    console.log('handleKeyDown', e.nativeEvent.key);
-  };
-
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
-
-  const options = {
-    title: 'Select Avatar',
-    customButtons: [{ name: 'fb', title: 'Choose Photo from Facebook' }],
-    storageOptions: {
-      skipBackup: true,
-      path: 'images',
-    },
-  };
 
   return (
     <View style={{ flex: 1 }}>

@@ -17,13 +17,14 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentHistory';
 import {
   getDoctorDetailsById,
-  getDoctorDetailsByIdVariables,
   getDoctorDetailsById_getDoctorDetailsById,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
+import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import {
   Animated,
@@ -40,10 +41,8 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from './NavigatorContainer';
-import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
-import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
-const { height } = Dimensions.get('window');
+const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   topView: {
@@ -176,6 +175,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   }, []);
 
   const appointmentData = useQuery<getAppointmentHistory>(GET_APPOINTMENT_HISTORY, {
+    fetchPolicy: 'no-cache',
     variables: {
       appointmentHistoryInput: {
         patientId: currentPatient ? currentPatient.id : '',
@@ -186,6 +186,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   if (appointmentData.error) {
     console.log('error', appointmentData.error);
   } else {
+    console.log(appointmentData, '00000000000');
     if (
       appointmentData &&
       appointmentData.data &&
@@ -202,7 +203,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     variables: { id: doctorId },
   });
   if (error) {
-    ``;
     console.log('error', error);
   } else {
     console.log('getDoctorDetailsById', data);
@@ -239,7 +239,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     ) {
       const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
         .availableSlot;
-      const ISOFormat = `${todayDate}T${nextSlot}:48.000Z`;
+      const ISOFormat = `${todayDate}T${nextSlot}:00.000Z`;
       console.log(ISOFormat, new Date(ISOFormat));
       const formatedTime = Moment(new Date(ISOFormat), 'HH:mm:ss.SSSz').format('HH:mm');
       console.log(formatedTime, 'formatedTime');
@@ -266,7 +266,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     }
   }
 
-  const formatTime = (time: string) => Moment(time, 'HH:mm:ss.SSSz').format('hh:mm a');
+  const formatTime = (time: string) => {
+    const IOSFormat = `${todayDate}T${time}.000Z`;
+    return Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('hh:mm a');
+  };
+  const formatDateTime = (time: string) => {
+    return Moment(new Date(time), 'HH:mm:ss.SSSz').format('hh:mm a');
+  };
 
   const renderDoctorDetails = () => {
     if (doctorDetails)
@@ -346,102 +352,137 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const renderDoctorClinic = () => {
     if (doctorDetails && doctorDetails.doctorHospital && doctorDetails.doctorHospital.length > 0) {
       const clinic = doctorDetails.doctorHospital[0].facility;
-
-      return (
-        <View style={styles.cardView}>
-          <View style={styles.labelView}>
-            <Text style={styles.labelStyle}>
-              {doctorDetails.salutation ? doctorDetails.salutation : 'Dr'}.{' '}
-              {doctorDetails.firstName}’s Clinic
-            </Text>
-          </View>
-          <View
-            style={{
-              ...theme.viewStyles.cardViewStyle,
-              margin: 20,
-              shadowRadius: 2,
-            }}
-          >
-            <View
-              style={{
-                overflow: 'hidden',
-                borderRadius: 10,
-              }}
-            >
-              {/* {clinic.image && ( */}
-              <Image
-                source={{ uri: 'https://via.placeholder.com/328x136' }}
-                style={{
-                  height: 136,
-                  width: '100%',
-                }}
-              />
-              {/* )} */}
-
-              <View
-                style={{
-                  margin: 16,
-                  marginTop: 10,
-                }}
-              >
-                <Text
-                  style={{
-                    ...theme.fonts.IBMPlexSansMedium(14),
-                    color: theme.colors.LIGHT_BLUE,
-                  }}
-                >
-                  {clinic.streetLine1}
-                  {clinic.streetLine2
-                    ? `${clinic.streetLine1 ? ', ' : ''}${clinic.streetLine2}`
-                    : ''}
-                </Text>
-                <Text
-                  style={{
-                    ...theme.fonts.IBMPlexSansMedium(14),
-                    color: theme.colors.LIGHT_BLUE,
-                  }}
-                >
-                  {clinic.city}
-                </Text>
-                {doctorDetails.consultHours && (
-                  <>
-                    <View style={[styles.separatorStyle, { marginVertical: 8 }]} />
-
-                    {doctorDetails.consultHours.map((time) =>
-                      time ? (
+      const doctorClinics = doctorDetails.doctorHospital.filter((item) => {
+        console.log(item, item.facility);
+        return item.facility.facilityType === 'CLINIC';
+      });
+      console.log(doctorClinics, 'doctorClinics');
+      if (doctorClinics.length > 0)
+        return (
+          <View style={styles.cardView}>
+            <View style={styles.labelView}>
+              <Text style={styles.labelStyle}>Dr. {doctorDetails.firstName}’s Clinic</Text>
+            </View>
+            <FlatList
+              keyExtractor={(_, index) => index.toString()}
+              contentContainerStyle={{ margin: 12, paddingTop: 0 }}
+              horizontal={true}
+              data={doctorClinics}
+              bounces={false}
+              showsHorizontalScrollIndicator={false}
+              renderItem={({ item }) => {
+                if (item) {
+                  const clinicHours =
+                    doctorDetails && doctorDetails.consultHours
+                      ? doctorDetails.consultHours.filter(
+                          (hours) =>
+                            hours &&
+                            hours.consultMode !== ConsultMode.ONLINE &&
+                            hours.facility &&
+                            hours.facility.id === item.facility.id
+                        )
+                      : [];
+                  console.log(clinicHours, 'clinicHours');
+                  return (
+                    <View>
+                      <View
+                        style={{
+                          ...theme.viewStyles.cardViewStyle,
+                          marginHorizontal: 8,
+                          shadowRadius: 2,
+                          width: 320,
+                          marginVertical: 8,
+                        }}
+                      >
                         <View
                           style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
+                            overflow: 'hidden',
+                            borderRadius: 10,
                           }}
                         >
-                          <Text
+                          {/* {clinic.image && ( */}
+                          <Image
+                            source={{ uri: 'https://via.placeholder.com/328x136' }}
                             style={{
-                              ...theme.fonts.IBMPlexSansSemiBold(12),
-                              color: theme.colors.SKY_BLUE,
+                              height: 136,
+                              width: '100%',
                             }}
-                          >
-                            {time.weekDay.toUpperCase()}
-                          </Text>
+                          />
+                          {/* )} */}
 
-                          <Text
+                          <View
                             style={{
-                              ...theme.fonts.IBMPlexSansSemiBold(12),
-                              color: theme.colors.SKY_BLUE,
+                              margin: 16,
+                              marginTop: 10,
                             }}
                           >
-                            {formatTime(time.startTime)} - {formatTime(time.endTime)}
-                          </Text>
+                            <Text
+                              style={{
+                                ...theme.fonts.IBMPlexSansMedium(14),
+                                color: theme.colors.LIGHT_BLUE,
+                              }}
+                            >
+                              {item.facility.streetLine1}
+                              {item.facility.streetLine2
+                                ? `${item.facility.streetLine1 ? ', ' : ''}${
+                                    item.facility.streetLine2
+                                  }`
+                                : ''}
+                            </Text>
+                            <Text
+                              style={{
+                                ...theme.fonts.IBMPlexSansMedium(14),
+                                color: theme.colors.LIGHT_BLUE,
+                              }}
+                            >
+                              {item.facility.city}
+                            </Text>
+                            {clinicHours.length > 0 && (
+                              <>
+                                <View style={[styles.separatorStyle, { marginVertical: 8 }]} />
+
+                                {clinicHours.map((time) =>
+                                  time ? (
+                                    <View
+                                      style={{
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
+                                      }}
+                                    >
+                                      <Text
+                                        style={{
+                                          ...theme.fonts.IBMPlexSansSemiBold(12),
+                                          color: theme.colors.SKY_BLUE,
+                                        }}
+                                      >
+                                        {time.weekDay.toUpperCase()}
+                                      </Text>
+
+                                      <Text
+                                        style={{
+                                          ...theme.fonts.IBMPlexSansSemiBold(12),
+                                          color: theme.colors.SKY_BLUE,
+                                        }}
+                                      >
+                                        {formatTime(time.startTime)} - {formatTime(time.endTime)}
+                                      </Text>
+                                    </View>
+                                  ) : null
+                                )}
+                              </>
+                            )}
+                          </View>
                         </View>
-                      ) : null
-                    )}
-                  </>
-                )}
-              </View>
-            </View>
+                      </View>
+                    </View>
+                  );
+                }
+                return null;
+              }}
+            />
           </View>
-        </View>
-      );
+        );
+      return null;
     }
     return null;
   };
@@ -453,10 +494,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       return (
         <View style={styles.cardView}>
           <View style={styles.labelView}>
-            <Text style={styles.labelStyle}>
-              {doctorDetails.salutation ? doctorDetails.salutation : 'Dr'}.{' '}
-              {doctorDetails.firstName}’s Team
-            </Text>
+            <Text style={styles.labelStyle}>Dr. {doctorDetails.firstName}’s Team</Text>
             <Text style={styles.labelStyle}>
               {doctorDetails.starTeam!.length}
               {doctorDetails.starTeam!.length == 1 ? 'Doctor' : 'Doctors'}
@@ -470,12 +508,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               // horizontal={true}
               data={doctorDetails.starTeam}
               bounces={false}
-              numColumns={doctorDetails.starTeam ? doctorDetails.starTeam.length / 2 : 0}
+              numColumns={doctorDetails.starTeam ? Math.ceil(doctorDetails.starTeam.length / 2) : 0}
               renderItem={({ item }) => {
                 console.log(item, 'itemitemitemitem');
                 if (item && item.associatedDoctor && item.associatedDoctor.id)
                   return (
-                    <View style={{ width: 320 }} key={item.associatedDoctor.id}>
+                    <View style={{ width: width - 50 }} key={item.associatedDoctor.id}>
                       <DoctorCard
                         onPress={(doctorId) => {
                           props.navigation.navigate(AppRoutes.AssociateDoctorDetails, {
@@ -550,7 +588,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 >
                   {Moment(item.appointmentDateTime).format('DD MMMM')}
                   {' , '}
-                  {formatTime(item.appointmentDateTime)}
+                  {formatDateTime(item.appointmentDateTime)}
                 </Text>
                 <View style={styles.separatorStyle} />
                 <View style={{ flexDirection: 'row' }}>
