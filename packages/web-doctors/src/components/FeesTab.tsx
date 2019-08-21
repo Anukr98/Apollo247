@@ -72,7 +72,7 @@ const useStyles = makeStyles((theme: Theme) => {
       height: '100%',
       boxShadow: 'none',
       [theme.breakpoints.down('xs')]: {
-        display: 'flex',
+        // display: 'flex',
       },
     },
     avatarBlock: {
@@ -210,6 +210,9 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       width: '80%',
       fontSize: 14,
+      [theme.breakpoints.down('xs')]: {
+        padding: '0px 5px 10px 0 !important',
+      },
     },
     accountDetailsHeading: {
       color: '#658F9B',
@@ -217,6 +220,9 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       width: '20%',
       fontWeight: 'normal',
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
     },
     topBorder: {
       borderTop: 'solid 1px rgba(101,143,155,0.2)',
