@@ -54,7 +54,6 @@ const { height, width } = Dimensions.get('window');
 
 let timer = 900;
 let timerId: any;
-let insertText: object[] = [];
 let diffInHours: number;
 
 export interface ChatRoomProps extends NavigationScreenProps {}
@@ -68,7 +67,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(
-    DeviceHelper.isIphoneX() ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 210
+    DeviceHelper.isIphoneX() ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 185
   );
 
   const [sessionId, setsessionId] = useState<string>('');
@@ -134,8 +133,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     width: width,
     height: 66,
     backgroundColor: 'white',
-    top: 0,
-    // bottom: -20,
+    // top: 0,
+    bottom: 0,
   });
   const [linestyles, setLinestyles] = useState<Object>({
     marginLeft: 20,
@@ -357,6 +356,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   // };
 
   useEffect(() => {
+    console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
+    console.disableYellowBox = true;
+
     pubnub.subscribe({
       channels: [channel],
       withPresence: true,
@@ -394,33 +396,46 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
   }, []);
 
+  let insertText: object[] = [];
+
   const getHistory = () => {
-    pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
-      const newmessage: { message: string }[] = [];
+    pubnub.history(
+      {
+        channel: channel,
+        reverse: true,
+        count: 100000,
+        stringifiedTimeToken: true,
+        // includeTimetoken: true,
+        // start: 15663634751393502,
+      },
+      (status, res) => {
+        const newmessage: object[] = [];
 
-      res.messages.forEach((element, index) => {
-        newmessage[index] = element.entry;
-      });
+        res.messages.forEach((element, index) => {
+          newmessage[index] = element.entry;
+        });
+        console.log('res', res);
 
-      if (messages.length !== newmessage.length) {
-        try {
-          if (newmessage[newmessage.length - 1].message === startConsultMsg) {
-            updateSessionAPI();
-            checkingAppointmentDates();
+        if (messages.length !== newmessage.length) {
+          try {
+            if (newmessage[newmessage.length - 1].message === startConsultMsg) {
+              updateSessionAPI();
+              checkingAppointmentDates();
+            }
+          } catch (error) {
+            console.log('error', error);
           }
-        } catch (error) {
-          console.log('error', error);
+
+          insertText = newmessage;
+          setMessages(newmessage as []);
+          console.log('newmessage', newmessage);
+
+          setTimeout(() => {
+            flatListRef.current! && flatListRef.current!.scrollToEnd();
+          }, 1000);
         }
-
-        insertText = newmessage;
-        setMessages(newmessage as []);
-        console.log('newmessage', newmessage);
-
-        setTimeout(() => {
-          flatListRef.current! && flatListRef.current!.scrollToEnd();
-        }, 1000);
       }
-    });
+    );
   };
 
   const checkingAppointmentDates = () => {
@@ -464,6 +479,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         InCallManager.startRingtone('_BUNDLE_');
         InCallManager.start({ media: 'audio' }); // audio/video, default: audio
       } else if (message.message.message === startConsultMsg) {
+        stopInterval();
         startInterval(timer);
         updateSessionAPI();
         // checkingAppointmentDates();
@@ -511,16 +527,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ? height - e.endCoordinates.height - 210
         : Platform.OS === 'ios'
         ? height - e.endCoordinates.height - 185
-        : height - e.endCoordinates.height - 210
+        : height - e.endCoordinates.height - 185
     );
     setTimeout(() => {
       flatListRef.current! && flatListRef.current!.scrollToEnd();
-    }, 200);
+    }, 500);
   };
 
   const keyboardDidHide = () => {
     setHeightList(
-      DeviceHelper.isIphoneX() ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 210
+      DeviceHelper.isIphoneX() ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 185
     );
   };
 
@@ -842,7 +858,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const renderChatView = () => {
-    console.log('heightList', heightList);
     return (
       <View style={{ width: width, height: heightList, marginTop: 0 }}>
         <FlatList
@@ -1080,6 +1095,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               letterSpacing: 0.46,
             });
             setChatReceived(false);
+            Keyboard.dismiss();
           }}
         >
           <View
@@ -1188,6 +1204,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setShowVideo(true);
               setCameraPosition('front');
 
+              setTextInputStyles({
+                width: width,
+                height: 66,
+                backgroundColor: 'white',
+                // top: 0,
+                bottom: 0,
+              });
+
               pubnub.publish(
                 {
                   message: {
@@ -1226,7 +1250,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           onPress={() => {
             setTalkStyles({
               flex: 1,
-              backgroundColor: 'transparent',
+              backgroundColor: 'black',
               position: 'absolute',
               top: 0,
               bottom: 0,
@@ -1259,6 +1283,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               letterSpacing: 0.46,
             });
             setChatReceived(false);
+            Keyboard.dismiss();
           }}
         >
           <FullScreenIcon style={{ width: 40, height: 40 }} />
@@ -1271,6 +1296,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setCameraPosition('front');
             stopTimer();
             setHideStatusBar(false);
+
+            setTextInputStyles({
+              width: width,
+              height: 66,
+              backgroundColor: 'white',
+              // top: 0,
+              bottom: 0,
+            });
 
             pubnub.publish(
               {
@@ -1308,7 +1341,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           onPress={() => {
             setTalkStyles({
               flex: 1,
-              backgroundColor: 'transparent',
+              backgroundColor: 'black',
               position: 'absolute',
               top: 88,
               right: 20,
@@ -1346,8 +1379,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               width: width,
               height: 66,
               backgroundColor: 'white',
-              top: 0,
-              // bottom: -20,
+              // top: 0,
+              bottom: 0,
             });
             setLinestyles({
               marginLeft: 20,
@@ -1355,6 +1388,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               marginTop: -10,
               height: 2,
               backgroundColor: '#00b38e',
+              // marginLeft: 20,
+              // marginRight: 64,
+              // marginTop: 0,
+              // height: 2,
+              // backgroundColor: '#00b38e',
+              // zIndex: -1,
             });
           }}
         >
@@ -1434,8 +1473,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 width: width,
                 height: 66,
                 backgroundColor: 'white',
-                top: 0,
-                // bottom: -20,
+                // top: 0,
+                bottom: 0,
               });
               setLinestyles({
                 marginLeft: 20,
@@ -1443,6 +1482,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 marginTop: -10,
                 height: 2,
                 backgroundColor: '#00b38e',
+                // marginLeft: 20,
+                // marginRight: 64,
+                // marginTop: 0,
+                // height: 2,
+                // backgroundColor: '#00b38e',
+                // zIndex: -1,
               });
 
               pubnub.publish(
@@ -1556,17 +1601,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const seconds = remainingTime - minutes * 60;
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
       <StatusBar hidden={hideStatusBar} />
-      <View
-        style={{
-          width: width,
-          height: 24,
-          backgroundColor: '#f0f1ec',
-          zIndex: 100,
-          elevation: 1000,
-        }}
-      />
+      {Platform.OS === 'ios' ? (
+        <View
+          style={{
+            width: width,
+            height: 24,
+            backgroundColor: '#f0f1ec',
+            zIndex: 100,
+            elevation: 1000,
+          }}
+        />
+      ) : null}
+
       <SafeAreaView
         style={{
           ...theme.viewStyles.container,
