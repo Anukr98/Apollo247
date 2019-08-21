@@ -221,7 +221,10 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   }, [existingFilters]);
 
   const emptyFilters = (emptySearchKeyword: boolean) => {
-    if (emptySearchKeyword) filterOptions.searchKeyword = '';
+    if (emptySearchKeyword) {
+      filterOptions.searchKeyword = '';
+      filterOptions.specialtyName = '';
+    }
     showNormal(true);
     emptySpeciality('');
     manageFilter(true);

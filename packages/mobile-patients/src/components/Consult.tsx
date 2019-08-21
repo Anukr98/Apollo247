@@ -473,7 +473,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   bounces={false}
                   showsHorizontalScrollIndicator={false}
                   renderItem={({ item }) => {
-                    const appointmentDateTime = getDateFormat(item.appointmentDateTime);
+                    const appointmentDateTime = moment
+                      .utc(item.appointmentDateTime)
+                      .local()
+                      .format('YYYY-MM-DD HH:mm:ss');
                     const minutes = moment
                       .duration(moment(appointmentDateTime).diff(new Date()))
                       .asMinutes();

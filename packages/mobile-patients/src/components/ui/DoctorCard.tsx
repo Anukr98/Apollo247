@@ -107,7 +107,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const todayDate = new Date().toISOString().slice(0, 10);
   const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
-    // fetchPolicy: 'no-cache',
+    fetchPolicy: 'no-cache',
     variables: {
       DoctorNextAvailableSlotInput: {
         doctorIds: props.rowData ? [props.rowData.id] : [],
@@ -165,6 +165,21 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       ...params,
     });
   };
+  const availabilityText = () => {
+    if (availableInMin) {
+      if (availableInMin === 0) {
+        return 'AVAILABLE NOW';
+      } else if (availableInMin > 0 && availableInMin <= 15) {
+        return ` AVAILABLE IN ${availableInMin} MINS`;
+      } else if (availableInMin > 15 && availableInMin <= 45) {
+        return `AVAILABLE IN ${availableInMin} MINS`;
+      } else if (availableInMin > 45 && availableInMin <= 60) {
+        return `AVAILABLE IN 1 HOUR`;
+      } else if (availableInMin > 60) {
+        return `TODAY ${Moment(new Date(), 'h:mm a').format('h:mm a')}`;
+      }
+    }
+  };
 
   const rowData = props.rowData;
   if (rowData) {
@@ -180,29 +195,20 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <View style={{ flexDirection: 'row' }}>
             {props.displayButton && availableInMin !== undefined ? (
               <CapsuleView
-                title={
-                  availableInMin < 0
-                    ? `${availableTime}`
-                    : `AVAILABLE IN ${
-                        availableInMin >= 60
-                          ? `${availabilityInHrs.toString()} ${
-                              availabilityInHrs > 1 ? 'HOURS' : 'HOUR'
-                            }`
-                          : `${availableInMin} MINS`
-                      }`
-                }
+                title={availabilityText()}
                 style={styles.availableView}
                 isActive={Number(availableInMin) >= 60 || availableInMin < 0 ? false : true}
               />
             ) : null}
             <View style={styles.imageView}>
               {/* {rowData.image} */}
-              {rowData.photoUrl && (
-                <Image
-                  style={{ width: 80, height: 80, borderRadius: 40 }}
-                  source={{ uri: rowData.photoUrl }}
-                />
-              )}
+              {rowData.photoUrl &&
+                rowData.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && (
+                  <Image
+                    style={{ width: 80, height: 80, borderRadius: 40 }}
+                    source={{ uri: rowData.photoUrl }}
+                  />
+                )}
 
               {/* {rowData.isStarDoctor ? (
               <Star style={{ height: 28, width: 28, position: 'absolute', top: 66, left: 30 }} />
@@ -224,13 +230,15 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <TouchableOpacity
                 style={styles.buttonView}
                 onPress={() =>
-                  availableInMin! > 60
+                  availableInMin && availableInMin < 60
                     ? navigateToDetails(rowData.id ? rowData.id : '', { showBookAppointment: true })
                     : navigateToDetails(rowData.id ? rowData.id : '')
                 }
               >
                 <Text style={styles.buttonText}>
-                  {availableInMin! > 60 ? string.common.book_apointment : string.common.consult_now}
+                  {availableInMin && availableInMin < 60
+                    ? string.common.consult_now
+                    : string.common.book_apointment}
                 </Text>
               </TouchableOpacity>
             </View>

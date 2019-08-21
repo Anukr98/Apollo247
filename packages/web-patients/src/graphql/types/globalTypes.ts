@@ -98,6 +98,12 @@ export interface DoctorNextAvailableSlotInput {
   doctorIds: string[];
 }
 
+export interface DoctorPhysicalAvailabilityInput {
+  availableDate: any;
+  doctorId: string;
+  facilityId: string;
+}
+
 export interface FilterDoctorInput {
   specialty: string;
   city?: (string | null)[] | null;

@@ -364,7 +364,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             {rowData.duration === '00 : 00' ? (
               <span className={classes.missCall}>
                 <img src={require('images/ic_missedcall.svg')} />
-                You missed a call
+                {rowData.message.toLocaleLowerCase() === 'Video call ended'
+                  ? 'You missed a video call'
+                  : 'You missed a voice call'}
               </span>
             ) : rowData.duration ? (
               <div>
@@ -403,7 +405,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             {rowData.duration === '00 : 00' ? (
               <span className={classes.missCall}>
                 <img src={require('images/ic_missedcall.svg')} />
-                You missed a call
+                {rowData.message.toLocaleLowerCase() === 'Video call ended'
+                  ? 'You missed a call'
+                  : 'You missed a call'}
               </span>
             ) : rowData.duration ? (
               <div>
@@ -480,6 +484,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
     //setIsVideoCall(false);
   };
+  const stopAudioVideoCallpatient = () => {
+    setIsCallAccepted(false);
+    setShowVideo(false);
+    setShowVideoChat(false);
+    const cookieStr = `action=`;
+    document.cookie = cookieStr + ';path=/;';
+    const text = {
+      id: doctorId,
+      message: stopcallMsg,
+      isTyping: true,
+    };
+    pubnub.publish(
+      {
+        channel: channel,
+        message: text,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        setMessageText('');
+      }
+    );
+  };
   return (
     <div className={classes.consultRoom}>
       <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
@@ -487,6 +514,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <Consult
             toggelChatVideo={() => toggelChatVideo()}
             stopAudioVideoCall={() => stopAudioVideoCall()}
+            stopAudioVideoCallpatient={() => stopAudioVideoCallpatient()}
             showVideoChat={showVideoChat}
             isVideoCall={isVideoCall}
             sessionId={props.sessionId}

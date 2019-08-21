@@ -180,23 +180,28 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
             </div>
             <Grid className={classes.gridContainer} container spacing={2}>
               {previousAppointments.map((appointment) => {
-                const aptArray = appointment.appointmentDateTime.split('T');
+                // const aptArray = appointment.appointmentDateTime.split('T');
+                // const appointmentDate = format(
+                //   getTimestamp(
+                //     new Date(appointment.appointmentDateTime),
+                //     aptArray[1].substring(0, 5)
+                //   ),
+                //   'MMMM dd, yyyy'
+                // );
+                // const appointmentTime = format(
+                //   new Date(
+                //     getTimestamp(
+                //       new Date(appointment.appointmentDateTime),
+                //       aptArray[1].substring(0, 5)
+                //     )
+                //   ),
+                //   'h:mm a'
+                // );
                 const appointmentDate = format(
-                  getTimestamp(
-                    new Date(appointment.appointmentDateTime),
-                    aptArray[1].substring(0, 5)
-                  ),
+                  new Date(appointment.appointmentDateTime),
                   'MMMM dd, yyyy'
                 );
-                const appointmentTime = format(
-                  new Date(
-                    getTimestamp(
-                      new Date(appointment.appointmentDateTime),
-                      aptArray[1].substring(0, 5)
-                    )
-                  ),
-                  'h:mm a'
-                );
+                const appointmentTime = format(new Date(appointment.appointmentDateTime), 'h:mm a');
                 return (
                   <Grid item sm={3} key={_uniqueId('avagr_')}>
                     <div className={classes.root} key={_uniqueId('aphistory_')}>

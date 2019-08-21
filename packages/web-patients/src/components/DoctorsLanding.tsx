@@ -223,6 +223,7 @@ export const DoctorsLanding: React.FC = (props) => {
 
   let derivedSpecialites = [];
   let derivedSpecialityId = '';
+  let otherDoctorsFound = 0;
 
   useEffect(() => {
     if (specialitySelected.length > 0) {
@@ -243,10 +244,14 @@ export const DoctorsLanding: React.FC = (props) => {
 
   const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME, {
     variables: { searchText: filterOptions.searchKeyword },
+    fetchPolicy: 'no-cache',
   });
 
-  if (data && data.SearchDoctorAndSpecialtyByName && !loading) {
+  if (data && data.SearchDoctorAndSpecialtyByName) {
     matchingDoctorsFound = data.SearchDoctorAndSpecialtyByName.doctors.length;
+    otherDoctorsFound = data.SearchDoctorAndSpecialtyByName.otherDoctors
+      ? data.SearchDoctorAndSpecialtyByName.otherDoctors.length
+      : 0;
     matchingSpecialitesFound = data.SearchDoctorAndSpecialtyByName.specialties.length;
     derivedSpecialites = data.SearchDoctorAndSpecialtyByName.specialties;
     derivedSpecialityId = derivedSpecialites.length > 0 ? derivedSpecialites[0].id : '';
@@ -357,23 +362,59 @@ export const DoctorsLanding: React.FC = (props) => {
                                 </div>
                               </>
                             ) : null}
-                            <Specialities
-                              keyword={filterOptions.searchKeyword}
-                              matched={(matchingSpecialities) =>
-                                setMatchingSpecialities(matchingSpecialities)
-                              }
-                              speciality={(specialitySelected) =>
-                                setSpecialitySelected(specialitySelected)
-                              }
-                              disableFilter={(disableFilters) => {
-                                setDisableFilters(disableFilters);
-                              }}
-                              subHeading={
-                                filterOptions.searchKeyword !== '' && showSearchAndPastSearch
-                                  ? 'Matching Specialities'
-                                  : 'Specialities'
-                              }
-                            />
+
+                            {/* show suggested doctors if only one doctor is returned.*/}
+                            {matchingDoctorsFound === 1 ? (
+                              <>
+                                <div className={classes.sectionHeader}>
+                                  <span>Other Suggested Doctors</span>
+                                  <span className={classes.count}>
+                                    {otherDoctorsFound > 0
+                                      ? otherDoctorsFound.toString().padStart(2, '0')
+                                      : otherDoctorsFound}
+                                  </span>
+                                </div>
+                                <div className={classes.searchList}>
+                                  <Grid spacing={2} container>
+                                    {_map(
+                                      data.SearchDoctorAndSpecialtyByName.otherDoctors,
+                                      (doctorDetails) => {
+                                        return (
+                                          <Grid
+                                            item
+                                            xs={12}
+                                            sm={12}
+                                            md={12}
+                                            lg={6}
+                                            key={_uniqueId('doctor_')}
+                                          >
+                                            <DoctorCard doctorDetails={doctorDetails} />
+                                          </Grid>
+                                        );
+                                      }
+                                    )}
+                                  </Grid>
+                                </div>
+                              </>
+                            ) : (
+                              <Specialities
+                                keyword={filterOptions.searchKeyword}
+                                matched={(matchingSpecialities) =>
+                                  setMatchingSpecialities(matchingSpecialities)
+                                }
+                                speciality={(specialitySelected) =>
+                                  setSpecialitySelected(specialitySelected)
+                                }
+                                disableFilter={(disableFilters) => {
+                                  setDisableFilters(disableFilters);
+                                }}
+                                subHeading={
+                                  filterOptions.searchKeyword !== '' && showSearchAndPastSearch
+                                    ? 'Matching Specialities'
+                                    : 'Specialities'
+                                }
+                              />
+                            )}
                           </>
                         ) : (
                           <>

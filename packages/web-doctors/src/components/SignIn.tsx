@@ -162,7 +162,7 @@ interface PopupProps {
   setStickyPopupValue: () => void;
 }
 export const SignIn: React.FC<PopupProps> = (props) => {
-  const { popup, setStickyPopupValue } = props;
+  const { setStickyPopupValue } = props;
   const classes = useStyles();
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
