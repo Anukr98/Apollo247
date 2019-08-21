@@ -111,6 +111,9 @@ const useStyles = makeStyles((theme: Theme) =>
     divider: {
       height: theme.spacing(2),
     },
+    mainContainer: {
+      width: '100%',
+    },
   })
 );
 
@@ -143,7 +146,9 @@ export const Diagnosis: React.FC = () => {
       [name]: newValue,
     });
   };
-  const handleDelete = () => {};
+  const handleDelete = (label: string) => {
+    setSelectedValues(selectedValues.filter((item) => item.label !== label));
+  };
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
   const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
 
@@ -157,13 +162,18 @@ export const Diagnosis: React.FC = () => {
   };
 
   return (
-    <Typography component="div">
+    <Typography component="div" className={classes.mainContainer}>
       <Typography component="h3" variant="h4">
         Diagnosed Medical Condition
       </Typography>
       <Typography component="div">
         {selectedValues.map((item: { label: string }, idx) => (
-          <Chip key={idx} label={item.label} onDelete={handleDelete} color="primary" />
+          <Chip
+            key={idx}
+            label={item.label}
+            onDelete={() => handleDelete(item.label)}
+            color="primary"
+          />
         ))}
       </Typography>
       {!showAddCondition && (
