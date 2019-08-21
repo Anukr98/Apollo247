@@ -197,7 +197,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             ) : null}
             <View style={styles.imageView}>
               {/* {rowData.image} */}
-              {rowData.photoUrl && (
+              {rowData.photoUrl && rowData.photoUrl.includes('https') && (
                 <Image
                   style={{ width: 80, height: 80, borderRadius: 40 }}
                   source={{ uri: rowData.photoUrl }}

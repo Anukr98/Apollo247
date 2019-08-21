@@ -206,6 +206,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
   console.log(inputData, 'inputData');
   const { data, error } = useQuery<getPatinetAppointments>(GET_PATIENT_APPOINTMENTS, {
+    fetchPolicy: 'no-cache',
     variables: {
       patientAppointmentsInput: inputData,
     },
@@ -473,13 +474,22 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   bounces={false}
                   showsHorizontalScrollIndicator={false}
                   renderItem={({ item }) => {
-                    const appointmentDateTime = getDateFormat(item.appointmentDateTime);
+                    // const appointmentDateTime = getDateFormat(item.appointmentDateTime);
+                    // const appointmentDateTime = moment
+                    //   .utc(item.appointmentDateTime)
+                    //   .format('YYYY-MM-DD HH:mm:ss');
+
+                    const appointmentDateTime = moment
+                      .utc(item.appointmentDateTime)
+                      .local()
+                      .format('YYYY-MM-DD HH:mm:ss');
+
                     const minutes = moment
                       .duration(moment(appointmentDateTime).diff(new Date()))
                       .asMinutes();
                     const title =
                       minutes > 0 && minutes <= 15
-                        ? `${minutes} MINS`
+                        ? `${Math.ceil(minutes)} MINS`
                         : moment(appointmentDateTime).format('h:mm A');
                     const isActive = minutes > 0 && minutes <= 15 ? true : false;
 
