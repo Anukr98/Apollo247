@@ -10,7 +10,7 @@ import {
   Paper,
 } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
-import Autosuggest, { OnSuggestionSelected } from 'react-autosuggest';
+import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import deburr from 'lodash/deburr';
