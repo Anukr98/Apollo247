@@ -6,7 +6,7 @@ services:
     tty: true
     env_file: .env
     command: ash -c "
-      envsubst '$$NODE_ENV $$API_GATEWAY_HOST $$API_GATEWAY_PORT' < /etc/nginx/conf.d/development.conf.template > /etc/nginx/conf.d/development.conf &&
+      envsubst '$$NODE_ENV $$API_GATEWAY_HOST $$API_GATEWAY_PORT' < /etc/nginx/conf.d/staging.conf.template > /etc/nginx/conf.d/staging.conf &&
       nginx -t &&
       nginx -g 'daemon off;'"
     ports:
