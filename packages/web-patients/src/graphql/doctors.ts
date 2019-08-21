@@ -19,6 +19,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       onlineConsultationFees
       physicalConsultationFees
       qualification
+      doctorType
       starTeam {
         associatedDoctor {
           firstName
