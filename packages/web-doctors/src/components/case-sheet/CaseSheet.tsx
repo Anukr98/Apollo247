@@ -29,6 +29,9 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       flexFlow: 'row',
       flexWrap: 'wrap',
+      '& div': {
+        color: 'black',
+      },
     },
     column: {
       display: 'flex',
