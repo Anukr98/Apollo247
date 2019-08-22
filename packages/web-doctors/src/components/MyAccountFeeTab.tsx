@@ -71,14 +71,18 @@ const useStyles = makeStyles((theme: Theme) => {
       height: '100%',
       boxShadow: 'none',
       [theme.breakpoints.down('xs')]: {
-        display: 'flex',
+        // display: 'flex',
       },
-      '& h6': {
+      '& h3': {
         color: '#658f9b !important',
-        fontSize: '16px !important',
-        paddingBottom: '0 !important',
-        fontWeight: 500,
+        marginLeft: '20px !important',
       },
+    },
+    subtitle1: {
+      fontWeight: 500,
+      color: '#658f9b',
+      fontSize: '16px',
+      paddingBottom: '0',
     },
     avatarBlock: {
       overflow: 'hidden',
@@ -269,11 +273,17 @@ export const MyAccountFeeTab: React.FC<FeesProps> = (props) => {
         <Grid item lg={12} sm={12} xs={12}>
           <div className={classes.tabContent}>
             <Paper className={classes.serviceItem}>
-              <Typography variant="subtitle1">What are your online consultation fees?</Typography>
+              <Typography className={classes.subtitle1} variant="h3">
+                What are your online consultation fees?
+              </Typography>
               <Typography className={classes.bold}>Rs. {data.onlineConsultationFees}</Typography>
-              <Typography variant="subtitle1">What are your physical consultation fees?</Typography>
+              <Typography className={classes.subtitle1} variant="h3">
+                What are your physical consultation fees?
+              </Typography>
               <Typography className={classes.bold}>Rs. {data.physicalConsultationFees}</Typography>
-              <Typography variant="subtitle1">What packages do you offer your patients?</Typography>
+              <Typography className={classes.subtitle1} variant="h3">
+                What packages do you offer your patients?
+              </Typography>
               <Typography className={classes.bold}>
                 {data.packages &&
                 data.packages.length > 0 &&
