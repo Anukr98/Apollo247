@@ -42,6 +42,11 @@ module.exports = {
     filename: '[name].bundle.js',
   },
 
+  // Don't minify our code because typeorm relies on module names
+  optimization: {
+    minimize: false,
+  },
+
   module: {
     rules: [
       {
