@@ -7,6 +7,7 @@ export const getPastSearchesTypeDefs = gql`
   enum SEARCH_TYPE {
     DOCTOR
     SPECIALTY
+    MEDICINE
   }
   type SearchData {
     searchType: SEARCH_TYPE
