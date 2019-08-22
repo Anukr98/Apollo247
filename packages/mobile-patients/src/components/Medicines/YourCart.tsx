@@ -1,22 +1,18 @@
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ArrowRight, CouponIcon, MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import {
-  getProductsBasedOnCategory,
-  MedicineProductsResponse,
-  quoteId,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
+import { MedicineProductsResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import Axios from 'axios';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -61,6 +57,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [selectedHomeDelivery, setselectedHomeDelivery] = useState<number>(0);
 
   const [medicineList, setMedicineList] = useState<MedicineProductsResponse['products']>([]);
+  const [addressList, setaddressList] = useState<
+    getPatientAddressList_getPatientAddressList_addressList[] | null
+  >([]);
+
   const { currentPatient } = useAllCurrentPatients();
 
   const renderHeader = () => {
@@ -270,6 +270,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   style={{
                     ...styles.yellowTextStyle,
                   }}
+                  onPress={() => props.navigation.navigate(AppRoutes.AddAddress)}
                 >
                   ADD NEW ADDRESS
                 </Text>
@@ -277,6 +278,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   style={{
                     ...styles.yellowTextStyle,
                   }}
+                  onPress={() => props.navigation.navigate(AppRoutes.SelectDeliveryAddress)}
                 >
                   VIEW ALL
                 </Text>

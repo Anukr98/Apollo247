@@ -3,49 +3,27 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
-const styles = StyleSheet.create({
-  labelView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingBottom: 4,
-    borderBottomWidth: 0.5,
-    borderColor: 'rgba(2,71,91, 0.3)',
-    marginHorizontal: 20,
-  },
-  labelTextStyle: {
-    color: theme.colors.FILTER_CARD_LABEL,
-    ...theme.fonts.IBMPlexSansBold(13),
-  },
-  yellowTextStyle: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    lineHeight: 24,
-    color: theme.colors.APP_YELLOW,
-    padding: 16,
-  },
-  blueTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(16),
-    color: theme.colors.SHERPA_BLUE,
-    lineHeight: 24,
-  },
-  separatorStyle: {
-    borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
-  },
-  medicineCostStyle: {
-    ...theme.fonts.IBMPlexSansBold(11),
-    lineHeight: 20,
-    color: theme.colors.SHERPA_BLUE,
-  },
-});
+const styles = StyleSheet.create({});
 
 export interface AddAddressProps extends NavigationScreenProps {}
 
 export const AddAddress: React.FC<AddAddressProps> = (props) => {
-  const [selectedTab, setselectedTab] = useState<string>('');
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const [userName, setuserName] = useState<string>('');
+  const [phoneNumber, setphoneNumber] = useState<string>('');
+  const [addressLine1, setaddressLine1] = useState<string>('');
+  const [pincode, setpincode] = useState<string>('');
+  const [address, setaddress] = useState<string>('');
+
+  useEffect(() => {
+    setuserName(currentPatient && currentPatient.firstName ? currentPatient.firstName : '');
+    console.log('currentPatient', currentPatient);
+  }, [currentPatient]);
 
   const renderHeader = () => {
     return (
@@ -70,10 +48,27 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           padding: 16,
         }}
       >
-        <TextInputComponent />
-        <TextInputComponent />
-        <TextInputComponent />
-        <TextInputComponent />
+        <TextInputComponent value={userName} placeholder={'User Name'} />
+        <TextInputComponent
+          value={phoneNumber}
+          onChangeText={(phoneNumber) => setphoneNumber(phoneNumber)}
+          placeholder={'Phone Number'}
+        />
+        <TextInputComponent
+          value={addressLine1}
+          onChangeText={(addressLine1) => setaddressLine1(addressLine1)}
+          placeholder={'Address Line 1'}
+        />
+        <TextInputComponent
+          value={pincode}
+          onChangeText={(pincode) => setpincode(pincode)}
+          placeholder={'Pincode'}
+        />
+        <TextInputComponent
+          value={address}
+          onChangeText={(address) => setaddress(address)}
+          placeholder={'Address'}
+        />
       </View>
     );
   };

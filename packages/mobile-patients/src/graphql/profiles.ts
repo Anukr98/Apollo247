@@ -519,3 +519,39 @@ export const GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS = gql`
     }
   }
 `;
+
+export const UPDATE_PATIENT_ADDRESS = gql`
+  mutation updatePatientAddress($UpdatePatientAddressInput: UpdatePatientAddressInput!) {
+    updatePatientAddress(UpdatePatientAddressInput: $UpdatePatientAddressInput) {
+      patientAddress {
+        id
+        addressLine1
+        addressLine2
+        city
+        state
+        zipcode
+        landmark
+        createdDate
+        updatedDate
+      }
+    }
+  }
+`;
+
+export const GET_PATIENT_ADDRESS_LIST = gql`
+  query getPatientAddressList($patientId: String) {
+    getPatientAddressList(patientId: $patientId) {
+      addressList {
+        id
+        addressLine1
+        addressLine2
+        city
+        state
+        zipcode
+        landmark
+        createdDate
+        updatedDate
+      }
+    }
+  }
+`;
