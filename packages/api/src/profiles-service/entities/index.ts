@@ -7,6 +7,7 @@ import {
   ManyToOne,
   BeforeInsert,
   BeforeUpdate,
+  Double,
 } from 'typeorm';
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
@@ -34,9 +35,183 @@ export enum SEARCH_TYPE {
   SPECIALTY = 'SPECIALTY',
 }
 
+export enum MEDICINE_ORDER_STATUS {
+  QUOTE = 'QUOTE',
+  ORDERED = 'ORDERED',
+  DELIVERED = 'DELIVERED',
+  CANCELLED = 'CANCELLED',
+  ON_THE_WAY = 'ON_THE_WAY',
+  PICKEDUP = 'PICKEDUP',
+}
+
+export enum MEDICINE_DELIVERY_TYPE {
+  HOME_DELIVERY = 'HOME_DELIVERY',
+  STORE_PCIK_UP = 'STORE_PICK_UP',
+}
+
+export enum MEDICINE_ORDER_TYPE {
+  UPLOAD_PRESCRIPTION = 'UPLOAD_PRESCRIPTION',
+  CART_ORDER = 'CART_ORDER',
+}
+
+export enum MEDICINE_ORDER_PAYMENT_TYPE {
+  COD = 'COD',
+  ONLINE = 'ONLINE',
+}
+
+//medicine orders starts
+@Entity()
+export class MedicineOrders extends BaseEntity {
+  @Column()
+  createdDate: Date;
+
+  @Column()
+  deliveryType: MEDICINE_DELIVERY_TYPE;
+
+  @Column()
+  estimatedAmount: number;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  orderType: MEDICINE_ORDER_TYPE;
+
+  @Column()
+  orderDateTime: Date;
+
+  @Column()
+  quoteDateTime: Date;
+
+  @Column()
+  quoteId: string;
+
+  @Column()
+  shopId: string;
+
+  @Column()
+  status: MEDICINE_ORDER_STATUS;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+
+  @ManyToOne((type) => Patient, (patient) => patient.medicineOrders)
+  patient: Patient;
+
+  @OneToMany(
+    (type) => MedicineOrderLineItems,
+    (medicineOrderLineItems) => medicineOrderLineItems.medicineOrders
+  )
+  medicineOrderLineItems: MedicineOrderLineItems[];
+
+  @OneToMany(
+    (type) => MedicineOrderPayments,
+    (medicineOrderPayments) => medicineOrderPayments.medicineOrders
+  )
+  medicineOrderPayments: MedicineOrderPayments[];
+}
+//medicine orders ends
+
+//medicine orders  line items start
+@Entity()
+export class MedicineOrderLineItems extends BaseEntity {
+  @Column()
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  medicineSKU: string;
+
+  @Column()
+  medicineName: string;
+
+  @Column()
+  mrp: number;
+
+  @Column()
+  price: number;
+
+  @Column()
+  quantity: number;
+
+  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderLineItems)
+  medicineOrders: MedicineOrders;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//medicine orders line items ends
+
+//medicine orders  payments start
+@Entity()
+export class MedicineOrderPayments extends BaseEntity {
+  @Column()
+  amountPaid: number;
+
+  @Column()
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+
+  @Column()
+  paymentRefId: string;
+
+  @Column()
+  paymentDateTime: Date;
+
+  @Column()
+  paymentStatus: String;
+
+  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderLineItems)
+  medicineOrders: MedicineOrders;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//medicine orders payments ends
+
 //patient Starts
 @Entity()
 export class Patient extends BaseEntity {
+  @OneToMany((type) => MedicineOrders, (medicineOrders) => medicineOrders.patient)
+  medicineOrders: MedicineOrders[];
+
   @Column({ nullable: true })
   dateOfBirth: Date;
 

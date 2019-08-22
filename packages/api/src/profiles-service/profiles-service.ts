@@ -13,6 +13,9 @@ import {
   PatientHealthVault,
   Allergies,
   PatientAllergies,
+  MedicineOrders,
+  MedicineOrderLineItems,
+  MedicineOrderPayments,
 } from 'profiles-service/entities';
 import {
   Doctor,
@@ -66,6 +69,9 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
         PatientHealthVault,
         Allergies,
         PatientAllergies,
+        MedicineOrders,
+        MedicineOrderLineItems,
+        MedicineOrderPayments,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
