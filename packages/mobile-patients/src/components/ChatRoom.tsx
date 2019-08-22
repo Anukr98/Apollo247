@@ -68,7 +68,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(
-    isIphoneX ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 185
+    isIphoneX() ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 185
   );
 
   const [sessionId, setsessionId] = useState<string>('');
@@ -98,7 +98,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   });
   const [publisherStyles, setPublisherStyles] = useState<object>({
     position: 'absolute',
-    top: isIphoneX ? 74 : 44,
+    top: isIphoneX() ? 74 : 44,
     right: 20,
     width: 112,
     height: 148,
@@ -122,7 +122,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [timerStyles, setTimerStyles] = useState<object>({
     position: 'absolute',
     marginHorizontal: 20,
-    marginTop: isIphoneX ? 91 : 81,
+    marginTop: isIphoneX() ? 91 : 81,
     width: width - 40,
     color: 'white',
     ...theme.fonts.IBMPlexSansSemiBold(12),
@@ -295,7 +295,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setTimerStyles({
         position: 'absolute',
         marginHorizontal: 20,
-        marginTop: isIphoneX ? 91 : 81,
+        marginTop: isIphoneX() ? 91 : 81,
         width: width - 40,
         color: 'white',
         ...theme.fonts.IBMPlexSansSemiBold(12),
@@ -351,6 +351,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   useEffect(() => {
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
     console.disableYellowBox = true;
+    console.log('isIphoneX', isIphoneX());
 
     pubnub.subscribe({
       channels: [channel],
@@ -516,7 +517,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const keyboardDidShow = (e: KeyboardEvent) => {
     setHeightList(
-      isIphoneX
+      isIphoneX()
         ? height - e.endCoordinates.height - 210
         : Platform.OS === 'ios'
         ? height - e.endCoordinates.height - 185
@@ -528,7 +529,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const keyboardDidHide = () => {
-    setHeightList(isIphoneX ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 185);
+    setHeightList(isIphoneX() ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 185);
   };
 
   const send = () => {
@@ -917,7 +918,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <View
                   style={{
                     position: 'absolute',
-                    top: isIphoneX ? 24 : 0,
+                    top: isIphoneX() ? 24 : 0,
                     left: 0,
                     width: width,
                     height: 24,
@@ -937,7 +938,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{
                     position: 'absolute',
                     marginHorizontal: 20,
-                    marginTop: isIphoneX ? 64 : 44,
+                    marginTop: isIphoneX() ? 64 : 44,
                     width: width - 40,
                     color: 'white',
                     ...theme.fonts.IBMPlexSansSemiBold(20),
@@ -985,7 +986,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <View
             style={{
               position: 'absolute',
-              top: isIphoneX ? 24 : 0,
+              top: isIphoneX() ? 24 : 0,
               left: 0,
               width: width,
               height: 24,
@@ -1078,7 +1079,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setTimerStyles({
               position: 'absolute',
               marginHorizontal: 20,
-              marginTop: isIphoneX ? 91 : 81,
+              marginTop: isIphoneX() ? 91 : 81,
               width: width - 40,
               color: 'white',
               ...theme.fonts.IBMPlexSansSemiBold(12),
@@ -1108,7 +1109,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           style={{
             position: 'absolute',
             marginHorizontal: 20,
-            marginTop: isIphoneX ? 64 : 44,
+            marginTop: isIphoneX() ? 64 : 44,
             width: width - 40,
             color: 'white',
             ...theme.fonts.IBMPlexSansSemiBold(20),
@@ -1120,7 +1121,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <View
           style={{
             position: 'absolute',
-            top: isIphoneX ? 64 : 44,
+            top: isIphoneX() ? 64 : 44,
             left: 20,
           }}
         >
@@ -1255,7 +1256,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             });
             setPublisherStyles({
               position: 'absolute',
-              top: isIphoneX ? 74 : 44,
+              top: isIphoneX() ? 74 : 44,
               right: 20,
               width: 112,
               height: 148,
@@ -1266,7 +1267,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setTimerStyles({
               position: 'absolute',
               marginHorizontal: 20,
-              marginTop: isIphoneX ? 91 : 81,
+              marginTop: isIphoneX() ? 91 : 81,
               width: width - 40,
               color: 'white',
               ...theme.fonts.IBMPlexSansSemiBold(12),
@@ -1322,7 +1323,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <View
         style={{
           position: 'absolute',
-          top: isIphoneX ? 64 : 44,
+          top: isIphoneX() ? 64 : 44,
           left: 20,
           right: 0,
           zIndex: 1000,
@@ -1557,21 +1558,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             InCallManager.stopRingtone();
             InCallManager.stop();
 
-            pubnub.publish(
-              {
-                message: {
-                  isTyping: true,
-                  message: acceptedCallMsg,
-                },
-                channel: channel,
-                storeInHistory: false,
-              },
-              (status, response) => {}
-            );
-            if (isAudio) {
-              setIsAudioCall(true);
+            if (token) {
+              PublishAudioVideo();
             } else {
-              setIsCall(true);
+              APICallAgain();
             }
           }}
         >
@@ -1587,6 +1577,54 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         </TouchableOpacity>
       </View>
     );
+  };
+
+  const APICallAgain = () => {
+    const input = {
+      appointmentId: appointmentData.id,
+      requestRole: 'PATIENT',
+    };
+
+    console.log('input', input);
+
+    client
+      .mutate<updateAppointmentSession, updateAppointmentSessionVariables>({
+        mutation: UPDATE_APPOINTMENT_SESSION,
+        variables: {
+          UpdateAppointmentSessionInput: input,
+        },
+      })
+      .then((sessionInfo: any) => {
+        console.log('createsession', sessionInfo);
+        setsessionId(sessionInfo.data.updateAppointmentSession.sessionId);
+        settoken(sessionInfo.data.updateAppointmentSession.appointmentToken);
+
+        PublishAudioVideo();
+      })
+      .catch((e: string) => {
+        console.log('Error occured while adding Doctor', e);
+      });
+  };
+
+  const PublishAudioVideo = () => {
+    console.log('PublishAudioVideo');
+
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: acceptedCallMsg,
+        },
+        channel: channel,
+        storeInHistory: false,
+      },
+      (status, response) => {}
+    );
+    if (isAudio) {
+      setIsAudioCall(true);
+    } else {
+      setIsCall(true);
+    }
   };
 
   const minutes = Math.floor(remainingTime / 60);
