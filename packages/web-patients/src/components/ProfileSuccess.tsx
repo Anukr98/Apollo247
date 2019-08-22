@@ -45,6 +45,11 @@ const useStyles = makeStyles((theme: Theme) => {
     actions: {
       padding: '0 20px 20px 20px',
       display: 'flex',
+      '& button': {
+        fontWeight: 'bold',
+        padding: 0,
+        color: '#fc9916',
+      },
     },
 
     bottomPopover: {
@@ -100,7 +105,8 @@ export const ProfileSuccess: React.FC<ProfileSuccessProps> = (props) => {
         <div className={classes.signinGroup}>
           <Typography variant="h2">congratulations!</Typography>
           <p>
-            Welcome to the Apollo family. You can add more family members any time from 'My Account'
+            Welcome to the Apollo family. You can add more family members any time from 'My
+            Account'.
           </p>
         </div>
         <div className={classes.actions}>
