@@ -43,7 +43,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const Navigation: React.FC = (props) => {
   const classes = useStyles();
-  const currentPath = window.location.pathname;
   return (
     <div className={classes.appNavigation} data-cypress="Navigation">
       <Link
