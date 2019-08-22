@@ -294,7 +294,6 @@ export const UPDATE_DELEGATE_NUMBER = gql`
       emailAddress
       experience
       firstName
-      gender
       id
       lastName
       mobileNumber

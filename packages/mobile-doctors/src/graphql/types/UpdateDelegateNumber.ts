@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, Gender, Salutation } from "./globalTypes";
+import { DoctorType, Salutation } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: UpdateDelegateNumber
@@ -25,7 +25,6 @@ export interface UpdateDelegateNumber_updateDelegateNumber {
   emailAddress: string | null;
   experience: string | null;
   firstName: string | null;
-  gender: Gender | null;
   id: string;
   lastName: string | null;
   mobileNumber: string;

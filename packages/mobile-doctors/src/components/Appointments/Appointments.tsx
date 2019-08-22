@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
     width: '100%',
     // height: 'auto',
   },
+
   menuDropdown: {
     position: 'absolute',
     top: 184,
@@ -288,7 +289,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             marginLeft: 20,
             marginBottom: 2,
           }}
-        >{`hello Dr. ${(doctorName || '').toLowerCase()} :)`}</Text>
+        >{`hello dr. ${(doctorName || '').toLowerCase()} :)`}</Text>
         <Text
           style={{
             ...theme.fonts.IBMPlexSansMedium(16),

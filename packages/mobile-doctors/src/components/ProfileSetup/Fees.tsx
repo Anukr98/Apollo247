@@ -184,6 +184,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
               <View style={{ flex: 1 }}>
                 {feeprofileRowbankname(
                   Feedata.bankAccount![0]!.accountNumber,
+
                   Feedata.bankAccount![0]!.bankName
                 )}
 

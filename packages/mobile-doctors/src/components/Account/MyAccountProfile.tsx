@@ -218,7 +218,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const { doctorDetails, setDoctorDetails } = useAuth();
 
-  console.log(doctorDetails);
+  console.log('doctorDetailsmy', doctorDetails);
 
   const delegateNumberUpdate = (phoneNumber: string) => {
     console.log('delegateNumberUpdate', phoneNumber);
@@ -238,11 +238,19 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           setDoctorDetails && setDoctorDetails(newDoctorDetails);
           console.log('updatedelegatenumber', result);
           if (result) {
-            props.navigation.push(AppRoutes.MyAccountProfile);
+            const newDoctorDetails = {
+              ...doctorDetails,
+              ...{ delegateNumber: phoneNumber },
+            } as GetDoctorDetails_getDoctorDetails;
+            setDoctorDetails && setDoctorDetails(newDoctorDetails);
+            props.navigation.push(AppRoutes.TabBar);
           }
         })
         .catch((e) => {
-          console.log('Error occured while updatedelegatenumber ', e);
+          const error = JSON.parse(JSON.stringify(e));
+          const errorMessage = error && error.message;
+          console.log('Error occured while adding Delegate Number', errorMessage, error);
+          Alert.alert('Error', errorMessage);
         });
     } else {
       client
@@ -260,11 +268,19 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           setDoctorDetails && setDoctorDetails(newDoctorDetails);
           console.log('updatedelegatenumber', result);
           if (result) {
-            props.navigation.push(AppRoutes.MyAccountProfile);
+            const newDoctorDetails = {
+              ...doctorDetails,
+              ...{ delegateNumber: phoneNumber },
+            } as GetDoctorDetails_getDoctorDetails;
+            setDoctorDetails && setDoctorDetails(newDoctorDetails);
+            props.navigation.push(AppRoutes.TabBar);
           }
         })
         .catch((e) => {
-          console.log('Error occured while updatedelegatenumber ', e);
+          const error = JSON.parse(JSON.stringify(e));
+          const errorMessage = error && error.message;
+          console.log('Error occured while adding Delegate Number', errorMessage, error);
+          Alert.alert('Error', errorMessage);
         });
     }
   };

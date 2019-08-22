@@ -612,3 +612,49 @@ export const ChatCallIcon: React.FC<IconProps> = (props) => (
 export const MissedCallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('../../images/icons/MissedCall.png')} />
 );
+export const ToogleOn: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 40 }}
+    {...props}
+    source={require('../../images/icons/toggle_on.png')}
+  />
+);
+
+export const ToogleOff: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 40 }}
+    {...props}
+    source={require('../../images/icons/toggle_off.png')}
+  />
+);
+
+export const ArrowLeft: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/ic_arrow_left.png')}
+  />
+);
+
+export const ArrowRight: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/ic_arrow_right.png')}
+  />
+);
+
+export const DropdownBlueDown: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/down.png')}
+  />
+);
+export const DropdownBlueUp: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/up.png')}
+  />
+);

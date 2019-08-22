@@ -38,6 +38,7 @@ import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
 import Pubnub from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
+import { DeviceHelper } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import {
   Alert,
   Dimensions,
@@ -56,7 +57,6 @@ import {
 } from 'react-native';
 import MaterialTabs from 'react-native-material-tabs';
 import { NavigationScreenProps } from 'react-navigation';
-//import ImagePicker from 'react-native-image-picker';
 
 const { height, width } = Dimensions.get('window');
 
@@ -90,7 +90,7 @@ const acceptedCallMsg = '^^callme`accept^^';
 const startConsultMsg = '^^#startconsult';
 const stopConsultMsg = '^^#stopconsult';
 const typingMsg = '^^#typing';
-const endCallMsg = '^^#endCall';
+const endCallMsg = '^^callme`stop^^';
 const patientId = 'Sai';
 // const channel = 'Channel7';
 
@@ -101,7 +101,7 @@ export interface ConsultRoomScreenProps
     PatientConsultTime: string;
     PatientInfoAll: PatientInfoData;
     AppId: string;
-    Appintmentdatetime: Date;
+    Appintmentdatetime: string; //Date;
     // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   }> {
   // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
@@ -114,19 +114,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const client = useApolloClient();
   const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
   const AppId = props.navigation.getParam('AppId');
-  const Appintmentdatetime: Date = props.navigation.getParam('Appintmentdatetime');
-  // console.log('hihihi', props.navigation.getParam('PatientInfoAll'));
-  const Appintmentdatetimeconsultpage = props.navigation.getParam('Appintmentdatetime');
-  // console.log('Appintmentdatetimeconsultpage', props.navigation.getParam('Appintmentdatetime'));
-  const channel = props.navigation.getParam('AppId');
-  // console.log('channel', channel);
-  // const details = {
-  //   appointmentId: AppId, //'6b323478-3afc-4e67-95d9-97ddf51dba83',
-  //   requestRole: 'DOCTOR',
-  // };
+  const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
 
-  // console.log('createsession', details);
-  // console.log('AppId', AppId);
+  const channel = props.navigation.getParam('AppId');
 
   const doctorId = props.navigation.getParam('DoctorId');
 
@@ -434,8 +424,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   }, []);
 
   const keyboardDidShow = (e: KeyboardEvent) => {
-    //xsssconst { keyboardHeight } = e.endCoordinates;
-    //  console.log('Keyboard Shown', keyboardHeight);
+    // const { keyboardHeight } = e.endCoordinates;
+    // console.log('Keyboard Shown', keyboardHeight);
     console.log('Keyboard Shown', e.endCoordinates.height);
 
     setHeightList(height - e.endCoordinates.height - 185);
@@ -1837,14 +1827,24 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
 
-  const [timeToConsultTimer, setTimeToConsultTimer] = useState();
   const getTimerText = () => {
     const now = new Date();
     const diff = moment.duration(moment(Appintmentdatetime).diff(now));
+
     const diffInHours = diff.asHours();
-    console.log(now, Appintmentdatetime, diffInHours);
-    console.log(diff.days(), diff.hours(), diff.minutes());
-    if (diffInHours > 0 && diffInHours < 12)
+    console.log('now', now, Appintmentdatetime, diffInHours);
+    console.log('check', diff.days(), diff.hours(), diff.minutes());
+
+    console.log(
+      'nowdate',
+      moment
+        .utc(new Date())
+        .local()
+        .format('YYYY-MM-DD HH:mm:ss')
+    );
+
+    console.log('diffInHours', diffInHours);
+    if (diff.hours() > 0 && diff.hours() < 12)
       return `Time to consult ${moment(new Date(0, 0, 0, diff.hours(), diff.minutes())).format(
         'hh: mm'
       )}`;

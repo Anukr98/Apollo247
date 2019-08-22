@@ -27,6 +27,8 @@ import { ProfileSetup } from '@aph/mobile-doctors/src/components/ProfileSetup/Pr
 import { SplashScreen } from '@aph/mobile-doctors/src/components/SplashScreen';
 import { TabBar } from '@aph/mobile-doctors/src/components/TabBar';
 import { TransitionPage } from '@aph/mobile-doctors/src/components/TransitionPage';
+import { BasicAccount } from '@aph/mobile-doctors/src/components/Account/BasicAccount';
+import { MyFees } from '@aph/mobile-doctors/src/components/Account/MyFees';
 import {
   createAppContainer,
   createStackNavigator,
@@ -65,6 +67,8 @@ export enum AppRoutes {
   AddDiagnostics = 'AddDiagnostics',
   AddMedicine = 'AddMedicine',
   MedicineUpdate = 'MedicineUpdate',
+  BasicAccount = 'BasicAccount',
+  MyFees = 'MyFees',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -164,6 +168,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MedicineUpdate]: {
     screen: MedicineUpdate,
+  },
+  [AppRoutes.BasicAccount]: {
+    screen: BasicAccount,
+  },
+  [AppRoutes.MyFees]: {
+    screen: MyFees,
   },
 };
 

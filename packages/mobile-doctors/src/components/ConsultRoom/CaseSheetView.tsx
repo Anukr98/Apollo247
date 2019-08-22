@@ -1,37 +1,39 @@
-import { Diagnosis } from '@aph/mobile-doctors/src/components/ConsultRoom/Diagnosis';
-import { PatientHealthVault } from '@aph/mobile-doctors/src/components/ConsultRoom/PatientHealthVault';
+import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
+import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
+import { HealthCard } from '@aph/mobile-doctors/src/components/ConsultRoom/HealthCard';
+import { MedicalCard } from '@aph/mobile-doctors/src/components/ConsultRoom/MedicalCard';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { ChipViewCard } from '@aph/mobile-doctors/src/components/ui/ChipViewCard';
+import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-doctors/src/components/ui/CalendarView';
 import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
 import {
-  SampleImage,
   AddPlus,
+  CalendarIcon,
   DiagonisisRemove,
   End,
-  Start,
   PatientPlaceHolderImage,
+  SampleImage,
+  Start,
+  ToogleOff,
+  ToogleOn,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
+import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState, useEffect } from 'react';
-import { ConsultRoomScreen } from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen';
 import moment from 'moment';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { Slider } from 'react-native-elements';
-import { NavigationScreenProps, NavigationParams } from 'react-navigation';
-import { NavigationScreenProp } from 'react-navigation';
-import { NavigationRoute } from 'react-navigation';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-
-import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
-import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
-import { Switch } from 'react-native-switch';
-import { MedicalCard } from '@aph/mobile-doctors/src/components/ConsultRoom/MedicalCard';
-import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
-import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
-import { HealthCard } from '@aph/mobile-doctors/src/components/ConsultRoom/HealthCard';
+import { ifIphoneX } from 'react-native-iphone-x-helper';
+import {
+  NavigationParams,
+  NavigationRoute,
+  NavigationScreenProp,
+  NavigationScreenProps,
+} from 'react-navigation';
+import console = require('console');
 
 const styles = StyleSheet.create({
   casesheetView: {
@@ -58,7 +60,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(2, 71, 91, 0.4)',
     ...ifIphoneX(
       {
-        height: 2,
+        height: 1,
       },
       {
         height: 1,
@@ -100,7 +102,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
     ...ifIphoneX(
       {
-        height: 2,
+        height: 1,
       },
       {
         height: 1,
@@ -193,6 +195,7 @@ const styles = StyleSheet.create({
     marginRight: 20,
     marginBottom: 10,
   },
+
   inputBorderView: {
     borderRadius: 10,
     backgroundColor: theme.colors.CARD_BG,
@@ -269,48 +272,15 @@ const styles = StyleSheet.create({
   medicineText: {
     color: 'rgba(2, 71, 91, 0.6)',
     ...theme.fonts.IBMPlexSansMedium(14),
-    marginBottom: 7,
+    marginBottom: 0,
   },
-  medicineTextInputView: {
-    borderWidth: 1,
-    borderColor: '#30c1a3',
-    marginRight: 16,
-    borderRightColor: 'transparent',
-    borderLeftColor: 'transparent',
-    borderTopColor: 'transparent',
-    paddingBottom: 4,
-  },
+
   medicineunderline: {
     height: 2,
     borderWidth: 1,
     borderColor: '#e2e2e2',
     opacity: 0.2,
     marginBottom: 13,
-  },
-  dosage: {
-    color: 'rgba(2, 71, 91, 0.6)',
-    ...theme.fonts.IBMPlexSansMedium(14),
-    marginBottom: 10,
-  },
-  countText: { marginLeft: 10, ...theme.fonts.IBMPlexSansMedium(16), color: '#02475b' },
-  timeofthedayText: {
-    color: 'rgba(2, 71, 91, 0.6)',
-    ...theme.fonts.IBMPlexSansMedium(14),
-    marginBottom: 10,
-  },
-  foodmedicineview: {
-    flexDirection: 'row',
-    marginBottom: 24,
-    flex: 1,
-    marginRight: 16,
-  },
-  daysview: {
-    flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginRight: 16,
-    marginBottom: 16,
   },
   addDoctorText: {
     ...theme.fonts.IBMPlexSansSemiBold(14),
@@ -328,6 +298,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#02475b',
     ...theme.fonts.IBMPlexSansMedium(12),
+    opacity: 0.6,
+  },
+  calenderView: {
+    position: 'absolute',
+    zIndex: 2,
+    top: 0,
+    width: '90%',
+    marginLeft: 16,
+    marginRight: 16,
+    borderRadius: 20,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowRadius: 10,
+    shadowOpacity: 0.2,
+    elevation: 5,
   },
 });
 
@@ -422,6 +410,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const AppId = props.navigation.getParam('AppId');
 
   const [value, setValue] = useState<string>('');
+  const [instrcutionsvalue, setInstrcutionsvalue] = useState<string>('');
   const [symptonsValue, setSymptonsValue] = useState<string>('Fever, Cough and Cold, Nausea');
 
   const [familyValues, setFamilyValues] = useState<string>(
@@ -435,25 +424,26 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [juniordoctornotes, setJuniorDoctorNotes] = useState<string>(
     'Fever, Cough and Cold, Nausea'
   );
-
-  const [medinceName, setMedinceName] = useState<string>('Ibuprofen, 200mg');
+  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
   const [showButtons, setShowButtons] = useState(false);
   const [show, setShow] = useState(false);
   const [juniorshow, setJuniorShow] = useState(false);
   const [patientHistoryshow, setpatientHistoryshow] = useState(false);
   const [otherInstructions, setOtherInstructions] = useState(false);
+  const [patientHealthWallet, setPatientHealthWallet] = useState(false);
   const [diagonisticPrescription, setdiagonisticPrescription] = useState(false);
   const [medicinePrescription, setMedicinePrescription] = useState(false);
   const [followup, setFollowUp] = useState(false);
-  const [count, setCount] = useState(0);
-
-  const [diagnosisvalues, setDiagnosisvalues] = useState<string>('');
-  const [otherinstrutionsValue, setOtherinstrutionsValue] = useState<string>('');
+  const [otherInstructionsadd, setOtherInstructionsAdd] = useState(false);
   const [switchValue, setSwitchValue] = useState(false);
   const [sliderValue, setSliderValue] = useState(2);
   const [stepValue, setStepValue] = useState(3);
   const [diagnosisView, setDiagnosisView] = useState(false);
   const [date, setDate] = useState<Date>(new Date());
+  const [selectDate, setSelectDate] = useState<string>('dd/mm/yyyy');
+  const [calenderShow, setCalenderShow] = useState(false);
+  const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
+
   const startDate = moment(date).format('YYYY-MM-DD');
   console.log(
     'Appintmentdatetimeconsultpagecase',
@@ -736,7 +726,25 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </CollapseCard>
     );
   };
-
+  const renderCalenderView = () => {
+    return (
+      <View style={styles.calenderView}>
+        <CalendarView
+          date={date}
+          onPressDate={(date) => {
+            console.log(moment(date).format('DD/MM/YYYY'), 'DD/MM/YYYY');
+            setSelectDate(moment(date).format('DD/MM/YYYY'));
+            setCalenderShow(!calenderShow);
+          }}
+          calendarType={type}
+          onCalendarTypeChanged={(type) => {
+            setType(type);
+          }}
+          minDate={new Date()}
+        />
+      </View>
+    );
+  };
   const renderFollowUpView = () => {
     return (
       <View>
@@ -754,52 +762,29 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             }}
           >
             <Text style={styles.medicineText}>Do you recommend a follow up?</Text>
-            <View style={{ marginRight: 20 }}>
-              {/* <Switch onValueChange={() => setSwitchValue(!switchValue)} value={switchValue} /> */}
-              <Switch
-                value={switchValue}
-                onValueChange={(switchValue: boolean) => setSwitchValue(switchValue)}
-                // disabled={false}
-                activeText={'On'}
-                inActiveText={'Off'}
-                circleSize={20}
-                barHeight={18}
-                circleBorderWidth={3}
-                backgroundActive={'#00b38e'}
-                backgroundInactive={'rgba(2, 71, 91, 0.2)'}
-                circleActiveColor={'#ffffff'}
-                circleInActiveColor={'#ffffff'}
-                changeValueImmediately={true}
-                //renderInsideCircle={() => <CustomComponent />} // custom component to render inside the Switch circle (Text, Image, etc.)
-                //changeValueImmediately={true} // if rendering inside circle, change state immediately or wait for animation to complete
-                innerCircleStyle={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderColor: 'rgba(2, 71, 91, 0.2)',
-                  shadowColor: '#000000',
-                  borderWidth: 0.5,
-                  shadowOffset: {
-                    width: 0,
-                    height: 5,
-                  },
-                  shadowRadius: 10,
-                  shadowOpacity: 0.2,
-                  elevation: 5,
-                }} // style for inner animated circle for what you (may) be rendering inside the circle
-                outerCircleStyle={{}} // style for outer animated circle
-                renderActiveText={false}
-                renderInActiveText={false}
-                switchLeftPx={2} // denominator for logic when sliding to TRUE position. Higher number = more space from RIGHT of the circle to END of the slider
-                switchRightPx={2} // denominator for logic when sliding to FALSE position. Higher number = more space from LEFT of the circle to BEGINNING of the slider
-                switchWidthMultiplier={2} // multipled by the `circleSize` prop to calculate total width of the Switch
-              />
-            </View>
+            {!switchValue ? (
+              <View style={{ marginRight: 20 }}>
+                <TouchableOpacity onPress={() => setSwitchValue(!switchValue)}>
+                  <View>
+                    <ToogleOff />
+                  </View>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={{ marginRight: 20 }}>
+                <TouchableOpacity onPress={() => setSwitchValue(!switchValue)}>
+                  <View>
+                    <ToogleOn />
+                  </View>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
           {switchValue ? (
             <View>
               <View style={styles.medicineunderline}></View>
               <View style={{ marginLeft: 16, marginBottom: 20, marginRight: 25 }}>
-                <Text style={styles.medicineText}>Follow Up After:</Text>
+                <Text style={[styles.medicineText, { marginBottom: 7 }]}>Follow Up After:</Text>
                 <View style={{ flex: 1, justifyContent: 'center' }}>
                   <Slider
                     value={sliderValue}
@@ -832,8 +817,58 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   </View>
                 </View>
               </View>
-              <View style={styles.medicineunderline}></View>
-              <View style={{ marginLeft: 16, marginBottom: 20 }}>
+              {sliderValue > 10 ? (
+                <View>
+                  <View
+                    style={{
+                      marginLeft: 16,
+                      marginRight: 20,
+                      ...theme.fonts.IBMPlexSansMedium(18),
+                      width: '90%',
+                      borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+                      borderBottomWidth: 2,
+                      marginBottom: 32,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: 'rgba(2, 71, 91, 0.6)',
+                        ...theme.fonts.IBMPlexSansMedium(14),
+                        marginBottom: 12,
+                      }}
+                    >
+                      Follow Up on
+                    </Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                      {selectDate == 'dd/mm/yyyy' ? (
+                        <Text
+                          style={{
+                            color: 'rgba(2, 71, 91, 0.6)',
+                            ...theme.fonts.IBMPlexSansMedium(18),
+                          }}
+                        >
+                          {selectDate}
+                        </Text>
+                      ) : (
+                        <Text
+                          style={{
+                            color: '#01475b',
+                            ...theme.fonts.IBMPlexSansMedium(18),
+                          }}
+                        >
+                          {selectDate}
+                        </Text>
+                      )}
+                      <TouchableOpacity onPress={() => setCalenderShow(!calenderShow)}>
+                        <View style={{ marginTop: 4 }}>
+                          <CalendarIcon />
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              ) : null}
+              <View style={{ marginLeft: 16, marginBottom: 20, zIndex: -1 }}>
                 <Text
                   style={{
                     color: 'rgba(2, 71, 91, 0.6)',
@@ -902,15 +937,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             }}
           >
             {appointments.map((showdata, i) => {
-              console.log('DiagnosisCard', showdata);
               return (
-                // <ChipViewCard
-                //   onChange={() => {}}
-                //   isChecked={true}
-                //   title={showdata.firstName}
-                //   icon={<DiagonisisRemove />}
-                //   textSelectedStyle={{ marginTop: 3, marginBottom: 2, marginLeft: 3 }}
-                // />
                 <View>
                   <DiagnosisCard diseaseName={showdata.firstName} icon={<DiagonisisRemove />} />
                 </View>
@@ -943,13 +970,51 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               </View>
             );
           })}
-
-          <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
-            <AddPlus />
-            <TouchableOpacity>
-              <Text style={styles.addDoctorText}>ADD INSTRUCTIONS</Text>
-            </TouchableOpacity>
-          </View>
+          {otherInstructionsadd ? (
+            <View>
+              <Text style={[styles.familyText, { marginBottom: 12 }]}>Add Instruction</Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  backgroundColor: '#fff',
+                  borderWidth: 1,
+                  borderColor: '#30c1a3',
+                  borderRadius: 10,
+                  marginBottom: 16,
+                  marginLeft: 20,
+                  marginRight: 20,
+                }}
+              >
+                <TextInput
+                  style={{
+                    flex: 1,
+                    ...theme.fonts.IBMPlexSansMedium(14),
+                    paddingLeft: 12,
+                    marginTop: 12,
+                    marginLeft: 0,
+                    color: '#01475b',
+                    marginBottom: 16,
+                  }}
+                  placeholder="Enter instruction here.."
+                  underlineColorAndroid="transparent"
+                  multiline={true}
+                  placeholderTextColor="rgba(2, 71, 91, 0.4)"
+                />
+                <View style={{ alignItems: 'flex-end', margin: 8 }}>
+                  <AddPlus />
+                </View>
+              </View>
+            </View>
+          ) : (
+            <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
+              <AddPlus />
+              <TouchableOpacity onPress={() => setOtherInstructionsAdd(!otherInstructionsadd)}>
+                <Text style={styles.addDoctorText}>ADD INSTRUCTIONS</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </CollapseCard>
       </View>
     );
@@ -959,14 +1024,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       <View>
         <CollapseCard
           heading="Patient Health Vault"
-          collapse={otherInstructions}
-          onPress={() => setOtherInstructions(!otherInstructions)}
+          collapse={patientHealthWallet}
+          onPress={() => setPatientHealthWallet(!patientHealthWallet)}
         >
           <Text style={[styles.familyText, { marginBottom: 12 }]}>
             Photos uploaded by the Patient
           </Text>
           {patientlist.map((showdata, i) => {
-            console.log('showsara', showdata);
             return (
               <View style={{ marginLeft: 16, marginRight: 20, marginBottom: 0 }}>
                 <HealthCard
@@ -983,7 +1047,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           })}
           <Text style={[styles.familyText, { marginBottom: 12 }]}>Reports</Text>
           {patientlist.map((showdata, i) => {
-            console.log('showsara', showdata);
             return (
               <View style={{ marginLeft: 16, marginRight: 20, marginBottom: 0 }}>
                 <HealthCard
@@ -1007,7 +1070,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     <View style={styles.casesheetView}>
       <ScrollView bounces={false} contentContainerStyle={styles.contentContainer}>
         {renderPatientImage()}
-        {renderBasicProfileDetails(PatientInfoData, AppId, Appintmentdatetimeconsultpage)}
+        {/* {renderBasicProfileDetails(PatientInfoData, AppId, Appintmentdatetimeconsultpage)} */}
         {renderSymptonsView()}
         {renderPatientHistoryLifestyle()}
         {renderPatientHealthWallet()}
@@ -1016,22 +1079,46 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         {renderMedicinePrescription()}
         {renderDiagonisticPrescription()}
         {renderFollowUpView()}
-        {renderOtherInstructionsView()}
-        <View style={styles.underlineend} />
-        <View style={styles.inputBorderView}>
-          <Text style={styles.notes}>Personal Notes</Text>
-          <TextInputComponent
-            placeholder={string.LocalStrings.placeholder_message}
-            inputStyle={styles.inputView}
-            multiline={true}
-            value={value}
-            onChangeText={(value) => setValue(value)}
-            autoCorrect={true}
-          />
+        {calenderShow ? (
+          <View
+            style={{
+              borderColor: 'red',
+              marginLeft: 20,
+              marginRight: 20,
+              marginTop: -130,
+              borderRadius: 10,
+              shadowColor: '#000000',
+              shadowOffset: {
+                width: 0,
+                height: 5,
+              },
+              shadowRadius: 10,
+              shadowOpacity: 0.2,
+              elevation: 5,
+            }}
+          >
+            {renderCalenderView()}
+          </View>
+        ) : null}
+
+        <View style={{ zIndex: -1 }}>
+          {renderOtherInstructionsView()}
+          <View style={styles.underlineend} />
+          <View style={styles.inputBorderView}>
+            <Text style={styles.notes}>Personal Notes</Text>
+            <TextInputComponent
+              placeholder={string.LocalStrings.placeholder_message}
+              inputStyle={styles.inputView}
+              multiline={true}
+              value={value}
+              onChangeText={(value) => setValue(value)}
+              autoCorrect={true}
+            />
+          </View>
+          {moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate
+            ? renderButtonsView()
+            : null}
         </View>
-        {moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate
-          ? renderButtonsView()
-          : null}
       </ScrollView>
     </View>
   );
