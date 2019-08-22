@@ -14,6 +14,10 @@ export interface MedicineProduct {
   status: string; //1, 2
   thumbnail: string;
   type_id: string;
+  // the below property only comes in Cart Itemm
+  extension_attributes?: {
+    image_url: string;
+  };
 }
 
 export interface MedicineProductsResponse {
@@ -65,7 +69,7 @@ export interface CartInfoResponse {
   updated_at: string;
   is_active: boolean;
   is_virtual: boolean;
-  items: unknown[];
+  items: MedicineProduct[];
   items_count: number;
   items_qty: number;
   customer: Customer;
@@ -92,27 +96,49 @@ export interface IncDecOrAddProductToCartResponse {
 }
 
 const AUTH_TOKEN = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
-const getQuoteId = async () =>
-  AsyncStorage.getItem('QUOTE_ID') || (await generateQuoteIdApi()).data.quote_id; // in-progress
-const getCartId = async () => AsyncStorage.getItem('CART_ID') || (await getCartInfoApi()).data.id; // in-progress
 
-// This API is not being used, verify and remove it later
-export const getProductsBasedOnCategory = (
-  CATEGORY_ID = '239',
-  PAGE_INDEX = 0
-): Promise<AxiosResponse<MedicineProductsResponse>> => {
-  return Axios.get(
-    `http://api.apollopharmacy.in/apollo_api.php?category_id=${CATEGORY_ID}&page_id=${PAGE_INDEX}&type=category`
-  );
+const getQuoteId = async () =>
+  (await AsyncStorage.getItem('QUOTE_ID')) || (await generateAndSaveQuoteId()); // in-progress, need to optimize
+
+const getCartId = async () =>
+  (await AsyncStorage.getItem('CART_ID')) || (await generateAndSaveCartId()); // in-progress, need to optimize
+
+let CART_INFO: CartInfoResponse | null = null;
+
+export const setLocalCartInfo = (cartInfo: CartInfoResponse | null) => {
+  CART_INFO = cartInfo;
+};
+
+export const getCartInfo = async () => {
+  if (CART_INFO) {
+    return CART_INFO;
+  } else {
+    const cartInfo = (await getCartInfoApi()).data;
+    await AsyncStorage.setItem('CART_ID', cartInfo.id.toString()); //optimize the flow later
+    CART_INFO = cartInfo;
+    return CART_INFO;
+  }
+};
+
+export const generateAndSaveQuoteId = async (): Promise<string> => {
+  const quoteId = (await generateQuoteIdApi()).data.quote_id;
+  await AsyncStorage.setItem('QUOTE_ID', quoteId);
+  return quoteId;
+};
+
+export const generateAndSaveCartId = async (): Promise<number> => {
+  const cartId = (await getCartInfoApi()).data.id;
+  await AsyncStorage.setItem('CART_ID', cartId.toString());
+  return cartId;
 };
 
 export const generateQuoteIdApi = (): Promise<AxiosResponse<{ quote_id: string }>> => {
   return Axios.get(`http://api.apollopharmacy.in/apollo_api.php?type=guest_quote`);
 };
 
-export const getMedicineDetailsApi = (PRODUCT_SKU: string) => {
+export const getMedicineDetailsApi = (productSku: string) => {
   return Axios.get(
-    `http://api.apollopharmacy.in/apollo_api.php?sku=${PRODUCT_SKU}&type=product_desc`
+    `http://api.apollopharmacy.in/apollo_api.php?sku=${productSku}&type=product_desc`
   );
 };
 
@@ -140,23 +166,28 @@ export const addProductToCartApi = async (
   productSku: string,
   quantity: number = 1
 ): Promise<AxiosResponse<IncDecOrAddProductToCartResponse>> => {
-  return Axios.post(`http://api.apollopharmacy.in/rest/V1/guest-carts/${await getCartId()}/items`, {
-    cartItem: { quote_id: await getQuoteId(), sku: productSku, qty: quantity },
+  const cartId = await getCartId();
+  const quoteId = await getQuoteId();
+
+  console.log({ cartId, quoteId });
+
+  return Axios.post(`http://api.apollopharmacy.in/rest/V1/guest-carts/${cartId}/items`, {
+    cartItem: { quote_id: quoteId, sku: productSku, qty: quantity },
   });
 };
 
 export const incOrDecProductCountToCartApi = async (
   productSku: string,
-  itemId: number,
+  cartItemId: number,
   newQuantity: number
 ): Promise<AxiosResponse<IncDecOrAddProductToCartResponse>> => {
   return Axios.post(
-    `http://api.apollopharmacy.in/rest/V1/guest-carts/${await getCartId()}/items/${itemId}`,
+    `http://api.apollopharmacy.in/rest/V1/guest-carts/${await getCartId()}/items/${cartItemId}`,
     {
       cartItem: {
         quote_id: await getQuoteId(),
         sku: productSku,
-        item_id: itemId,
+        item_id: cartItemId,
         qty: newQuantity,
       },
     }
@@ -164,10 +195,14 @@ export const incOrDecProductCountToCartApi = async (
 };
 
 export const removeProductFromCartApi = async (
-  itemId: number
+  cartItemId: number
 ): Promise<AxiosResponse<{ status: number }>> => {
   return Axios.post(
-    `http://api.apollopharmacy.in/apollo_api.php?type=guest_delete_item&quote_id=${await getCartId()}&item_id=${itemId}`,
-    { item_id: itemId }
+    `http://api.apollopharmacy.in/apollo_api.php?type=guest_delete_item&quote_id=${await getQuoteId()}&item_id=${cartItemId}`,
+    {
+      cartItem: {
+        item_id: cartItemId,
+      },
+    }
   );
 };
