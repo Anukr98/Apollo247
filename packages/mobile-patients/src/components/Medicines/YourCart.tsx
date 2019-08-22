@@ -4,15 +4,30 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ArrowRight, CouponIcon, MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
-import { MedicineProductsResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { GET_PATIENT_ADDRESS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getPatientAddressList,
+  getPatientAddressList_getPatientAddressList_addressList,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
+import {
+  CartInfoResponse,
+  MedicineProductsResponse,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  FlatList,
+  NavigationEventSubscription,
+  NavigationScreenProps,
+  ScrollView,
+} from 'react-navigation';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -49,6 +64,12 @@ const styles = StyleSheet.create({
   },
 });
 
+let didFocusSubscription: NavigationEventSubscription;
+const addresses = [
+  'Apollo Pharmacy\nPlot No B / 88, Opposite Andhra Bank\nJubilee Hills',
+  'Apollo Pharmacy\nPlot No B / 88, Opposite Andhra Bank\nJubilee Hills',
+  'Apollo Pharmacy\nPlot No B / 88, Opposite Andhra Bank\nJubilee Hills',
+];
 export interface YourCartProps extends NavigationScreenProps {}
 
 export const YourCart: React.FC<YourCartProps> = (props) => {
@@ -60,8 +81,38 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [addressList, setaddressList] = useState<
     getPatientAddressList_getPatientAddressList_addressList[] | null
   >([]);
+  const [cartDetails, setcartDetails] = useState<CartInfoResponse>();
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
   const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
+
+  const fetchAddress = useCallback(() => {
+    client
+      .query<getPatientAddressList>({ query: GET_PATIENT_ADDRESS_LIST, fetchPolicy: 'no-cache' })
+      .then(({ data: { getPatientAddressList } }) => {
+        // set to context
+        console.log('getPatientAddressList qqq', getPatientAddressList);
+      })
+      .catch((e) => {
+        const error = JSON.parse(JSON.stringify(e));
+        console.log(e, error);
+      });
+  }, [client]);
+
+  useEffect(() => {
+    fetchAddress();
+    didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      console.log('didFocus', payload);
+      fetchAddress();
+    });
+  }, [fetchAddress, props.navigation]);
+
+  useEffect(() => {
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+    };
+  }, []);
 
   const renderHeader = () => {
     return (
@@ -211,10 +262,94 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
-  const homeDeliveryAddresses = [
-    '27/A, Kalpataru Enclave Jubilee Hills Hyderabad, Telangana — 500033',
-    '27/A, Kalpataru Enclave Jubilee Hills Hyderabad, Telangana — 500033',
-  ];
+  const renderHomeDelivery = () => {
+    return (
+      <View
+        style={{
+          marginTop: 8,
+          marginHorizontal: 16,
+        }}
+      >
+        {addressList &&
+          [...addressList].slice(0, 2).map((item, index: number) => (
+            <RadioSelectionItem
+              title={`${item.addressLine1} ${item.addressLine2}\n ${item.city} ${item.state} ${item.landmark}`}
+              isSelected={selectedHomeDelivery === index}
+              onPress={() => setselectedHomeDelivery(index)}
+              containerStyle={{
+                marginTop: 16,
+              }}
+              hideSeparator={index + 1 === addressList.length}
+            />
+          ))}
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Text
+            style={{
+              ...styles.yellowTextStyle,
+            }}
+            onPress={() => props.navigation.navigate(AppRoutes.AddAddress)}
+          >
+            ADD NEW ADDRESS
+          </Text>
+          <View>
+            {addressList && addressList.length > 2 && (
+              <Text
+                style={{
+                  ...styles.yellowTextStyle,
+                }}
+                onPress={() => props.navigation.navigate(AppRoutes.SelectDeliveryAddress)}
+              >
+                VIEW ALL
+              </Text>
+            )}
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  const renderStorePickup = () => {
+    return (
+      <View
+        style={{
+          margin: 16,
+          marginTop: 20,
+        }}
+      >
+        <TextInputComponent />
+        {addresses &&
+          [...addresses].slice(0, 2).map((item, index: number) => (
+            <RadioSelectionItem
+              title={item}
+              isSelected={selectedHomeDelivery === index}
+              onPress={() => setselectedHomeDelivery(index)}
+              containerStyle={{
+                marginTop: 16,
+              }}
+              hideSeparator={index + 1 === addresses.length}
+            />
+          ))}
+        <View>
+          {addresses && addresses.length > 2 && (
+            <Text
+              style={{
+                ...styles.yellowTextStyle,
+                textAlign: 'right',
+              }}
+              onPress={() => props.navigation.navigate(AppRoutes.StorPickupScene)}
+            >
+              VIEW ALL
+            </Text>
+          )}
+        </View>
+      </View>
+    );
+  };
 
   const renderDelivery = () => {
     return (
@@ -242,49 +377,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             }}
             selectedTab={selectedTab}
           />
-          {selectedTab === tabs[0].title ? (
-            <View
-              style={{
-                marginTop: 8,
-                marginHorizontal: 16,
-              }}
-            >
-              {homeDeliveryAddresses.map((item: string, index: number) => (
-                <RadioSelectionItem
-                  title={item}
-                  isSelected={selectedHomeDelivery === index}
-                  onPress={() => setselectedHomeDelivery(index)}
-                  containerStyle={{
-                    marginTop: 16,
-                  }}
-                  hideSeparator={index + 1 === homeDeliveryAddresses.length}
-                />
-              ))}
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Text
-                  style={{
-                    ...styles.yellowTextStyle,
-                  }}
-                  onPress={() => props.navigation.navigate(AppRoutes.AddAddress)}
-                >
-                  ADD NEW ADDRESS
-                </Text>
-                <Text
-                  style={{
-                    ...styles.yellowTextStyle,
-                  }}
-                  onPress={() => props.navigation.navigate(AppRoutes.SelectDeliveryAddress)}
-                >
-                  VIEW ALL
-                </Text>
-              </View>
-            </View>
-          ) : null}
+          {selectedTab === tabs[0].title ? renderHomeDelivery() : renderStorePickup()}
         </View>
       </View>
     );
@@ -294,7 +387,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     return (
       <View>
         {renderLabel('TOTAL CHARGES')}
-        <View
+        <TouchableOpacity
           style={{
             ...theme.viewStyles.cardViewStyle,
             marginHorizontal: 20,
@@ -305,6 +398,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             paddingHorizontal: 16,
             alignItems: 'center',
           }}
+          onPress={() => props.navigation.navigate(AppRoutes.ApplyCouponScene)}
         >
           <CouponIcon />
           <Text
@@ -325,7 +419,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           >
             <ArrowRight />
           </View>
-        </View>
+        </TouchableOpacity>
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,
@@ -342,17 +436,21 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             }}
           >
             <Text style={styles.blueTextStyle}>Subtotal</Text>
-            <Text style={styles.blueTextStyle}>Rs. 300</Text>
+            <Text style={styles.blueTextStyle}>
+              Rs. {cartDetails ? cartDetails.grand_total : 0}
+            </Text>
           </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}
-          >
-            <Text style={styles.blueTextStyle}>Delivery Charges</Text>
-            <Text style={styles.blueTextStyle}>+ Rs. 60</Text>
-          </View>
+          {false && (
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Text style={styles.blueTextStyle}>Delivery Charges</Text>
+              <Text style={styles.blueTextStyle}>+ Rs. 60</Text>
+            </View>
+          )}
           <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />
           <View
             style={{
@@ -361,7 +459,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             }}
           >
             <Text style={styles.blueTextStyle}>To Pay </Text>
-            <Text style={[styles.blueTextStyle, { ...theme.fonts.IBMPlexSansBold }]}>Rs. 360 </Text>
+            <Text style={[styles.blueTextStyle, { ...theme.fonts.IBMPlexSansBold }]}>
+              {' '}
+              Rs. {cartDetails ? cartDetails.grand_total : 0}{' '}
+            </Text>
           </View>
         </View>
       </View>
@@ -456,9 +557,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           <View style={{ height: 70 }} />
         </ScrollView>
         <StickyBottomComponent defaultBG>
-          <Button title={'PROCEED TO PAY — RS. 360'} style={{ flex: 1, marginHorizontal: 40 }} />
+          <Button
+            title={`PROCEED TO PAY — RS. ${cartDetails ? cartDetails.grand_total : 0}`}
+            style={{ flex: 1, marginHorizontal: 40 }}
+          />
         </StickyBottomComponent>
       </SafeAreaView>
+      {showSpinner && <Spinner />}
     </View>
   );
 };

@@ -121,7 +121,12 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
 
   return (
     <SafeAreaView style={theme.viewStyles.container}>
-      <Header leftIcon="backArrow" title={'STORE PICK UP'} container={{ borderBottomWidth: 0 }} />
+      <Header
+        leftIcon="backArrow"
+        title={'STORE PICK UP'}
+        container={{ borderBottomWidth: 0 }}
+        onPressLeftIcon={() => props.navigation.goBack()}
+      />
       <ScrollView bounces={false}>{renderCouponCard()}</ScrollView>
       {renderBottomButton()}
     </SafeAreaView>

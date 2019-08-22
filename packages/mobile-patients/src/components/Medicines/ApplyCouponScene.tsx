@@ -169,7 +169,12 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
 
   return (
     <SafeAreaView style={theme.viewStyles.container}>
-      <Header leftIcon="backArrow" title={'APPLY COUPON'} container={{ borderBottomWidth: 0 }} />
+      <Header
+        leftIcon="backArrow"
+        title={'APPLY COUPON'}
+        container={{ borderBottomWidth: 0 }}
+        onPressLeftIcon={() => props.navigation.goBack()}
+      />
       <ScrollView bounces={false}>{renderCouponCard()}</ScrollView>
       {renderBottomButtons()}
     </SafeAreaView>

@@ -2,18 +2,21 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { SAVE_PATIENT_ADDRESS } from '@aph/mobile-patients/src/graphql/profiles';
+import { savePatientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Mutation } from 'react-apollo';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const styles = StyleSheet.create({});
 
 export interface AddAddressProps extends NavigationScreenProps {}
 
 export const AddAddress: React.FC<AddAddressProps> = (props) => {
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { currentPatient } = useAllCurrentPatients();
   const [userName, setuserName] = useState<string>('');
   const [phoneNumber, setphoneNumber] = useState<string>('');
   const [addressLine1, setaddressLine1] = useState<string>('');
@@ -78,7 +81,34 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         {renderHeader()}
         {renderAddress()}
         <StickyBottomComponent defaultBG>
-          <Button title={'SAVE & USE'} style={{ flex: 1, marginHorizontal: 40 }} />
+          <Mutation<savePatientAddress> mutation={SAVE_PATIENT_ADDRESS}>
+            {(mutate, { loading, data, error }) => (
+              <Button
+                title={'SAVE & USE'}
+                style={{ flex: 1, marginHorizontal: 40 }}
+                onPress={() => {
+                  const addressInput = {
+                    patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+                    addressLine1: addressLine1,
+                    addressLine2: '',
+                    city: '',
+                    state: '',
+                    zipcode: pincode,
+                    landmark: address,
+                  };
+                  console.log(addressInput, 'addressInput');
+                  mutate({
+                    variables: {
+                      PatientAddressInput: addressInput,
+                    },
+                  });
+                }}
+              >
+                {data ? props.navigation.goBack() : null}
+                {error ? console.log('bookAppointment error', error) : null}
+              </Button>
+            )}
+          </Mutation>
         </StickyBottomComponent>
       </SafeAreaView>
     </View>

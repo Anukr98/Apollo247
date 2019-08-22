@@ -538,6 +538,24 @@ export const UPDATE_PATIENT_ADDRESS = gql`
   }
 `;
 
+export const SAVE_PATIENT_ADDRESS = gql`
+  mutation savePatientAddress($PatientAddressInput: PatientAddressInput!) {
+    savePatientAddress(PatientAddressInput: $PatientAddressInput) {
+      patientAddress {
+        id
+        addressLine1
+        addressLine2
+        city
+        state
+        zipcode
+        landmark
+        createdDate
+        updatedDate
+      }
+    }
+  }
+`;
+
 export const GET_PATIENT_ADDRESS_LIST = gql`
   query getPatientAddressList($patientId: String) {
     getPatientAddressList(patientId: $patientId) {
