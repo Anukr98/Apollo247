@@ -6,7 +6,7 @@ import * as firebaseAdmin from 'firebase-admin';
 import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { webPatientsBaseUrl, webDoctorsBaseUrl, protocol } from '@aph/universal/dist/aphRoutes';
+import { webPatientsBaseUrl, webDoctorsBaseUrl } from '@aph/universal/dist/aphRoutes';
 //import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 
 export interface GatewayContext {
@@ -28,9 +28,9 @@ export type Resolver<Parent, Args, Context, Result> = (
 (async () => {
   const gateway = new ApolloGateway({
     serviceList: [
-      { name: 'profiles', url: `${protocol}://${process.env.PROFILES_SERVICE_HOST}/graphql` },
-      { name: 'doctors', url: `${protocol}://${process.env.DOCTORS_SERVICE_HOST}/graphql` },
-      { name: 'consults', url: `${protocol}://${process.env.CONSULTS_SERVICE_HOST}/graphql` },
+      { name: 'profiles', url: `http://${process.env.PROFILES_SERVICE_HOST}/graphql` },
+      { name: 'doctors', url: `http://${process.env.DOCTORS_SERVICE_HOST}/graphql` },
+      { name: 'consults', url: `http://${process.env.CONSULTS_SERVICE_HOST}/graphql` },
     ],
     buildService({ name, url }) {
       return new RemoteGraphQLDataSource({
@@ -59,12 +59,7 @@ export type Resolver<Parent, Args, Context, Result> = (
 
   const server = new ApolloServer({
     cors: {
-      origin: [
-        webDoctorsBaseUrl(),
-        webPatientsBaseUrl(),
-        'http://localhost:3001',
-        'http://localhost:3000',
-      ],
+      origin: [webDoctorsBaseUrl(), webPatientsBaseUrl()],
     },
     schema,
     executor,

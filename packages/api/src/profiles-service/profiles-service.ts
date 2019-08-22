@@ -159,7 +159,7 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
     ]),
   });
 
-  server.listen({ port: 80 }).then(({ url }) => {
-    console.log(`🚀 profiles-service ready`);
+  server.listen({ port: process.env.PROFILES_SERVICE_PORT }).then(({ url }) => {
+    console.log(`🚀 profiles-service ready (internal url: ${url})`);
   });
 })();
