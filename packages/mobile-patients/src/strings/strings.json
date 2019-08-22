@@ -208,5 +208,10 @@
         "name": "Insulin"
       }
     ]
+  },
+  "orders": {
+    "urOrders": "YOUR ORDERS",
+    "trackOrder": "Track Order",
+    "viewBill": "View Bill"
   }
 }

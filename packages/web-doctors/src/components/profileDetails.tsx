@@ -118,10 +118,8 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
       },
       '& h4': {
-        padding: '5px 5px 5px 0',
-        marginLeft: 22,
+        padding: '5px 5px 0 0',
         fontSize: 20,
-        borderBottom: 'solid 2px rgba(101,143,155,0.05)',
         fontWeight: 600,
       },
       '& h5': {
@@ -130,15 +128,25 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 'normal',
       },
       '& h6': {
-        padding: '5px 5px 5px 0',
+        padding: '0 5px 10px 0',
         letterSpacing: '0.3px',
-        marginLeft: 20,
-        fontSize: 15,
+        fontSize: 12,
         fontWeight: 600,
         color: '#0087ba',
         '& span': {
           padding: '0 2px',
         },
+      },
+    },
+    outerContainer: {
+      backgroundColor: 'rgba(216, 216, 216, 0.08)',
+      padding: 16,
+      border: '1px solid rgba(2,71,91,0.1)',
+      borderRadius: 5,
+      '& h2': {
+        lineHeight: '18px',
+        fontWeight: 600,
+        margin: '0 0 15px 0',
       },
     },
     leftNav: {
@@ -156,11 +164,27 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       top: 5,
       height: 20,
-      marginRight: 10,
+      marginRight: 19,
+      marginLeft: 9,
     },
     tabActive: {
       backgroundColor: '#0087ba',
       color: '#fff',
+    },
+    doctorSectionLeft: {
+      marginLeft: 20,
+      '& h6': {
+        fontSize: 15,
+      },
+    },
+    doctorPanelLeft: {
+      marginBottom: 20,
+    },
+    tabLeftcontent: {
+      paddingLeft: 20,
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 0,
+      },
     },
   };
 });
@@ -186,7 +210,9 @@ export const MyAccount: React.FC = (props) => {
           <div>
             <Grid container alignItems="flex-start" spacing={0}>
               <Grid item lg={3} sm={6} xs={12} className={classes.tabRightcontent}>
-                <Paper className={`${classes.serviceItemLeft} ${classes.tabContent}`}>
+                <Paper
+                  className={`${classes.doctorPanelLeft} ${classes.serviceItemLeft} ${classes.tabContent}`}
+                >
                   <div className={classes.avatarBlock}>
                     <img
                       alt=""
@@ -195,21 +221,28 @@ export const MyAccount: React.FC = (props) => {
                     />
                     <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
                   </div>
-                  <Typography variant="h4">{`${doctorProfile!.salutation &&
-                    doctorProfile!
-                      .salutation!.charAt(0)
-                      .toUpperCase()}${doctorProfile.salutation!.slice(1).toLowerCase() + '.'} ${
-                    doctorProfile.firstName
-                  } ${doctorProfile.lastName}`}</Typography>
-                  <Typography variant="h6">
-                    <span>{`MCI Number : ${doctorProfile.registrationNumber}`} </span>
-                  </Typography>
+                  <div className={classes.doctorSectionLeft}>
+                    <Typography variant="h4">
+                      {doctorProfile!.salutation &&
+                        doctorProfile!.salutation!.charAt(0).toUpperCase()}
+                      {doctorProfile!.salutation!.slice(1).toLowerCase() + '.'}{' '}
+                      {`${doctorProfile!.firstName!.split(' ')[0]} ${doctorProfile!.lastName!}`
+                        .length < 18
+                        ? `${doctorProfile!.firstName!.split(' ')[0]} ${doctorProfile!.lastName}`
+                        : `${
+                            doctorProfile!.firstName!.split(' ')[0]
+                          } ${doctorProfile!.lastName!.charAt(0)}.`}
+                    </Typography>
+                    <Typography variant="h6">
+                      <span>{`MCI Number : ${doctorProfile.registrationNumber}`} </span>
+                    </Typography>
+                  </div>
                 </Paper>
                 <Paper className={`${classes.serviceItemLeft} ${classes.tabContent}`}>
                   <div className={classes.leftNav}>
                     <img
                       alt=""
-                      src={require('images/ic_fees.svg')}
+                      src={require('images/ic_stats.svg')}
                       className={classes.navLeftIcon}
                     />
                     My Stats
@@ -305,23 +338,27 @@ export const MyAccount: React.FC = (props) => {
                   </div>
                 </Paper>
               </Grid>
-              {selectedNavTab === 1 ? (
-                <MyProfile doctor={doctorProfile} clinics={clinics} />
-              ) : selectedNavTab === 3 ? (
-                <MyAccountFeeTab
-                  values={doctorProfile}
-                  onNext={() => onNext()}
-                  onBack={() => onBack()}
-                  key={3}
-                />
-              ) : (
-                <MyAccountAvailabilityTab
-                  values={doctorProfile}
-                  onNext={() => onNext()}
-                  onBack={() => onBack()}
-                  key={3}
-                />
-              )}
+              <Grid item lg={9} sm={6} xs={12} className={classes.tabLeftcontent}>
+                <div className={classes.outerContainer}>
+                  {selectedNavTab === 1 ? (
+                    <MyProfile doctor={doctorProfile} clinics={clinics} />
+                  ) : selectedNavTab === 3 ? (
+                    <MyAccountFeeTab
+                      values={doctorProfile}
+                      onNext={() => onNext()}
+                      onBack={() => onBack()}
+                      key={3}
+                    />
+                  ) : (
+                    <MyAccountAvailabilityTab
+                      values={doctorProfile}
+                      onNext={() => onNext()}
+                      onBack={() => onBack()}
+                      key={3}
+                    />
+                  )}
+                </div>
+              </Grid>
             </Grid>
           </div>
         </div>
