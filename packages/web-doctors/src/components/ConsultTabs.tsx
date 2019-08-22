@@ -12,7 +12,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
-} from 'graphql/types/createAppointmentSession';
+} from 'graphql/types/CreateAppointmentSession';
 import { CREATE_APPOINTMENT_SESSION } from 'graphql/profiles';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
