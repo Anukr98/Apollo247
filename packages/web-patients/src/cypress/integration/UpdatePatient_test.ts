@@ -42,7 +42,7 @@ describe('UpdatePatient (multiple, with uhids)', () => {
       .should('exist');
   });
 
-  it('Upon clicking submit, show an error if there is more than 1 Me, and disable submit', () => {
+  it.only('Upon clicking submit, show an error if there is more than 1 Me, and disable submit', () => {
     cy.get('[data-cypress="ExistingProfile"]')
       .contains('Please tell us who is who')
       .should('exist');
@@ -95,7 +95,7 @@ describe('UpdatePatient (multiple, with uhids)', () => {
       .should('exist');
   });
 
-  it('Relations dropdown goes in order Me (Default), Mother, Father, Sister, Brother, Cousin, Wife, Husband', () => {
+  it.only('Relations dropdown goes in order Me (Default), Mother, Father, Sister, Brother, Cousin, Wife, Husband', () => {
     cy.get('[data-cypress="ExistingProfile"]')
       .find('div[class*="MuiInputBase-inputSelect"]')
       .first()

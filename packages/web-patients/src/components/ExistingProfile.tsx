@@ -12,6 +12,8 @@ import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/Ge
 import _capitalize from 'lodash/capitalize';
 import _sortBy from 'lodash/sortBy';
 import FormHelperText from '@material-ui/core/FormHelperText';
+import InputLabel from '@material-ui/core/InputLabel';
+import FormControl from '@material-ui/core/FormControl';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -107,6 +109,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: theme.palette.secondary.light,
     },
+    selectEmpty: {
+      marginTop: theme.spacing(2),
+    },
     menuSelected: {
       backgroundColor: 'transparent !important',
       color: '#00b38e !important',
@@ -144,6 +149,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
 
   const classes = useStyles();
   const { patient, number } = props;
+  const inputLabel = React.useRef(null);
 
   const [selectedRelation, setSelectedRelation] = React.useState<Relation | ''>(
     patient.relation || ''
@@ -160,7 +166,9 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
           {_capitalize(patient.gender || '')}
           {(patient.dateOfBirth || '').toString()}
         </div>
+        {/* <FormControl> */}
         <AphSelect
+          // className={classes.selectEmpty}
           value={selectedRelation}
           onChange={(e) => {
             const updatedRelation = e.target.value as Relation;
@@ -169,8 +177,8 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
             props.onUpdatePatient(updatedPatient);
           }}
         >
-          <MenuItem className={classes.menuItemHide} disabled>
-            Relation
+          <MenuItem value="" disabled>
+            {/* Relation? // just goes into menu*/}
           </MenuItem>
           {orderedRelations.map((relationOption) => (
             <MenuItem
@@ -183,6 +191,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
             </MenuItem>
           ))}
         </AphSelect>
+        {/* </FormControl> */}
       </div>
     </div>
   );
