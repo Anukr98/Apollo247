@@ -154,6 +154,7 @@ export const ConsultRoom: React.FC = (props) => {
         appointmentDate: currentDate,
       },
     },
+    fetchPolicy: 'no-cache',
   });
   if (loading) {
     return <LinearProgress />;

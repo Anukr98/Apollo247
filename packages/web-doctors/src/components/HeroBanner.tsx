@@ -75,6 +75,10 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '75%',
         marginLeft: 'auto',
       },
+      [theme.breakpoints.down('xs')]: {
+        top: 'auto',
+        bottom: 90,
+      },
       [theme.breakpoints.between('sm', 'md')]: {
         width: 585,
         position: 'absolute',
@@ -90,7 +94,7 @@ const useStyles = makeStyles((theme: Theme) => {
         },
         [theme.breakpoints.down('xs')]: {
           maxWidth: 281,
-          marginTop: -50,
+          marginTop: 0,
         },
       },
     },

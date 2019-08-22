@@ -152,7 +152,9 @@ export const Header: React.FC = (props) => {
                         }
                         src={require('images/ic_help.svg')}
                       />
-                      <img src={require('images/ic_profile.svg')} />
+                      <Link to="/myaccount">
+                        <img src={require('images/ic_profile.svg')} />
+                      </Link>
                     </div>
                   )
                 ) : (
