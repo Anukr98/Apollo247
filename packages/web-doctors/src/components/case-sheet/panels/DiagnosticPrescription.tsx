@@ -13,7 +13,7 @@ interface OptionType {
   label: string;
 }
 
-const suggestions: OptionType[] = [{ label: 'Sore Throat' }, { label: 'Sorosis' }];
+const suggestions: OptionType[] = [{ label: 'Ultrasound' }, { label: 'Ultra-something else' }];
 
 function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -162,9 +162,6 @@ export const DiagnosticPrescription: React.FC = () => {
       ...state,
       [name]: newValue,
     });
-  };
-  const handleDelete = (label: string) => {
-    setSelectedValues(selectedValues.filter((item) => item.label !== label));
   };
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
   const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
