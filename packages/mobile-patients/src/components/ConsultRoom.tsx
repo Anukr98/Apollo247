@@ -2,7 +2,15 @@ import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { DoctorImage, DropdownGreen, Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  DoctorImage,
+  DropdownGreen,
+  Mascot,
+  ConsultationRoom,
+  MyHealth,
+  ShoppingCart,
+  Person,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -24,6 +32,7 @@ import { NavigationScreenProps } from 'react-navigation';
 const { width, height } = Dimensions.get('window');
 import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   viewName: {
@@ -145,8 +154,39 @@ const arrayTest: ArrayTest[] = [
   },
 ];
 
+type TabBarOptions = {
+  id: number;
+  title: string;
+  image: React.ReactNode;
+};
+
+const tabBarOptions: TabBarOptions[] = [
+  {
+    id: 1,
+    title: 'CONSULT ROOM',
+    image: <ConsultationRoom style={{ marginTop: -4 }} />,
+  },
+  {
+    id: 2,
+    title: 'HEALTH RECORDS',
+    image: <MyHealth style={{ marginTop: -4 }} />,
+  },
+  {
+    id: 3,
+    title: 'TESTS & MEDICINES',
+    image: <ShoppingCart style={{ marginTop: -4 }} />,
+  },
+  {
+    id: 4,
+    title: 'MY ACCOUNT',
+    image: <Person style={{ marginTop: -4 }} />,
+  },
+];
+
 export interface ConsultRoomProps extends NavigationScreenProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
+  const { isIphoneX } = DeviceHelper();
+
   const startDoctor = string.home.startDoctor;
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
   const [showPopUp, setshowPopUp] = useState<boolean>(true);
@@ -398,6 +438,57 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderBottomTabBar = () => {
+    return (
+      <View
+        style={{
+          backgroundColor: 'transparent',
+          flexDirection: 'row',
+          width: width,
+          height: isIphoneX() ? 80 : 50,
+        }}
+      >
+        {tabBarOptions.map((tabBarOptions, i) => (
+          <View key={i}>
+            <TouchableOpacity
+              key={i}
+              onPress={() => {
+                if (i === 0) {
+                  props.navigation.replace(AppRoutes.TabBar);
+                } else if (i == 1) {
+                }
+              }}
+            >
+              <View
+                style={{
+                  width: width / 4,
+                  height: 50,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                key={i}
+              >
+                {tabBarOptions.image}
+                <Text
+                  style={{
+                    fontFamily: 'IBMPlexSans-SemiBold',
+                    fontSize: 7,
+                    letterSpacing: 0.5,
+                    textAlign: 'center',
+                    marginTop: 5,
+                    color: '#02475b',
+                  }}
+                >
+                  {tabBarOptions.title}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        ))}
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -520,6 +611,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </View>
         </ScrollView>
       </SafeAreaView>
+      {renderBottomTabBar()}
       {showPopUp && (
         <BottomPopUp
           title={string.home.welcome_popup.title}
