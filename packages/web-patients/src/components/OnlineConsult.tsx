@@ -232,7 +232,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       variables: {
         DoctorAvailabilityInput: { doctorId: doctorId, availableDate: apiDateFormat },
       },
-      fetchPolicy: 'network-only',
+      fetchPolicy: 'no-cache',
     }
   );
 
@@ -249,7 +249,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         availableDate: format(new Date(), 'yyyy-MM-dd'),
       },
     },
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'no-cache',
   });
 
   if (availableSlotsLoading || nextAvailableSlotLoading) {
