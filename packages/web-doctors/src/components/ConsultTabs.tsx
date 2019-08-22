@@ -83,7 +83,7 @@ const useStyles = makeStyles((theme: Theme) => {
 type Params = { id: string };
 export const ConsultTabs: React.FC = (props) => {
   const classes = useStyles();
-  const [tabValue, setTabValue] = useState<number>(1);
+  const [tabValue, setTabValue] = useState<number>(0);
   const [startConsult, setStartConsult] = useState<string>('');
   const [appointmentId, setAppointmentId] = useState<string>('');
   const [sessionId, setsessionId] = useState<string>('');
