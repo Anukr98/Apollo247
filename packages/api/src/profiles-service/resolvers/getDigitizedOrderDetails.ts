@@ -63,16 +63,19 @@ const getDigitizedPrescription: Resolver<
 > = async (parent, { MedicineOrderInput }, { profilesDb }) => {
   console.log(MedicineOrderInput, 'input');
   let errorCode = 0,
-    errorMessage = '';
+    errorMessage = '',
+    status = 'Accepted';
   if (MedicineOrderInput.patientId === '' || MedicineOrderInput.patientId == null) {
     errorCode = -1;
     errorMessage = 'Missing patient Id';
+    status = 'Rejected';
   }
   if (!MedicineOrderInput.items || MedicineOrderInput.items.length == 0) {
     errorCode = -1;
     errorMessage = 'Missing medicine line items';
+    status = 'Rejected';
   }
-  return { status: 'Accepted', errorCode, errorMessage };
+  return { status, errorCode, errorMessage };
 };
 
 export const getDigitizedOrderResolvers = {
