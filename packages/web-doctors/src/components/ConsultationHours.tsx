@@ -75,7 +75,7 @@ const useStyles = makeStyles((theme: Theme) => {
       height: '100%',
       boxShadow: 'none',
       [theme.breakpoints.down('xs')]: {
-        display: 'flex',
+        // display: 'flex',
       },
     },
     availabletabContent: {
@@ -238,6 +238,11 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       fontSize: 14,
       textAlign: 'right',
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        top: 12,
+        right: 20,
+      },
     },
     helper: {
       borderLeft: `2px solid ${theme.palette.divider}`,
@@ -289,6 +294,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightMedium,
       padding: theme.spacing(2, 0, 2, 0),
     },
+    feesTabResponsive: {
+      '& div': {
+        display: 'block',
+      },
+    },
   };
 });
 interface ConsultationHoursProps {
@@ -309,7 +319,7 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
             return (
               <div key={index.toString()} className={classes.tabContent}>
                 <ExpansionPanel className={`${classes.serviceItem} ${classes.pointerNone}`}>
-                  <ExpansionPanelSummary>
+                  <ExpansionPanelSummary className={classes.feesTabResponsive}>
                     <div className={classes.columnTime}>
                       <Typography className={classes.primaryHeading}>{`${convertTime(
                         item.startTime

@@ -155,7 +155,7 @@ import { GatewayHeaders } from 'api-gateway';
     ]),
   });
 
-  server.listen({ port: 80 }).then(({ url }) => {
-    console.log(`🚀 consults-service ready`);
+  server.listen({ port: process.env.CONSULTS_SERVICE_PORT }).then(({ url }) => {
+    console.log(`🚀 consults-service ready (internal url: ${url})`);
   });
 })();

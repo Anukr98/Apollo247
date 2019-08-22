@@ -14,7 +14,7 @@ import { NEXT_AVAILABLE_SLOT } from '@aph/mobile-patients/src/graphql/profiles';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import Moment from 'moment';
 import { StyleSheet, Text, View } from 'react-native';
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   buttonTextStyle: {
     paddingHorizontal: 12,
     color: theme.colors.APP_GREEN,
-    ...theme.fonts.IBMPlexSansMedium(16),
+    ...theme.fonts.IBMPlexSansMedium(15),
   },
   placeholderTextStyle: {
     color: '#01475b',
@@ -113,10 +113,16 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const [selectedCTA, setselectedCTA] = useState<string>(onlineCTA[0]);
   const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
 
-  const [date, setDate] = useState<Date>(new Date());
+  const [date, setDate] = useState<Date>(props.date);
   const [availableInMin, setavailableInMin] = useState<Number>(0);
 
   //   const [availableSlot, setavailableSlot] = useState<string>('');
+
+  useEffect(() => {
+    if (date !== props.date) {
+      setDate(props.date);
+    }
+  }, [props.date]);
 
   const todayDate = new Date().toISOString().slice(0, 10);
   const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
@@ -218,6 +224,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
                   if (value.time.length > 0) {
                     return value.time.map((name: string, index: number) => (
                       <Button
+                        key={index}
                         title={timeTo12HrFormat(name)}
                         style={[
                           styles.buttonStyle,
@@ -260,7 +267,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       <CalendarView
         date={date}
         onPressDate={(date) => {
-          setDate(date);
+          // setDate(date);
           props.setDate(date);
           props.setselectedTimeSlot('');
         }}

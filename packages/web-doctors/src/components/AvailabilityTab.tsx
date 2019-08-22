@@ -9,6 +9,7 @@ import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetail
 import { GetDoctorDetails_getDoctorDetails_consultHours } from 'graphql/types/GetDoctorDetails';
 
 import { ConsultMode } from 'graphql/types/globalTypes';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
@@ -64,6 +65,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     availabletabContent: {
       padding: 20,
+      [theme.breakpoints.down('xs')]: {
+        padding: '20px 0',
+      },
     },
     avatarBlock: {
       overflow: 'hidden',
@@ -99,6 +103,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#e28913',
       },
+      [theme.breakpoints.down('xs')]: {
+        minWidth: 140,
+      },
     },
     backButton: {
       minWidth: 120,
@@ -109,6 +116,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       margin: theme.spacing(1, 1, 0, 1),
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      [theme.breakpoints.down('xs')]: {
+        minWidth: 100,
+      },
       '&:hover': {
         backgroundColor: '#fff',
       },

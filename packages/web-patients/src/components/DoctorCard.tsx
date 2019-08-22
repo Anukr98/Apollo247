@@ -125,7 +125,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const doctorId = doctorDetails.id;
 
-  const { data, loading } = useQueryWithSkip<
+  const { data, loading, error } = useQueryWithSkip<
     GetDoctorNextAvailableSlot,
     GetDoctorNextAvailableSlotVariables
   >(GET_DOCTOR_NEXT_AVAILABILITY, {
@@ -135,8 +135,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         availableDate: format(new Date(), 'yyyy-MM-dd'),
       },
     },
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'no-cache',
   });
+
+  if (error) {
+    alert(error);
+  }
 
   // console.log('doctor details.....', data);
 
@@ -249,7 +253,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               </div>
               <div className={classes.doctorType}>
                 {doctorDetails.specialty.name}
-                <span className={classes.doctorExp}>{doctorDetails.experience} YRS</span>
+                <span className={classes.doctorExp}>
+                  {doctorDetails.experience}{' '}
+                  {doctorDetails && parseInt(doctorDetails.experience || '1', 10) > 1
+                    ? 'YRS'
+                    : 'YEAR'}
+                </span>
               </div>
               <div className={classes.doctorDetails}>
                 <p>{doctorDetails.qualification}</p>

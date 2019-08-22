@@ -193,6 +193,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#e28913',
       },
+      [theme.breakpoints.down('xs')]: {
+        minWidth: 140,
+      },
     },
     backButton: {
       minWidth: 120,
@@ -605,7 +608,7 @@ interface DoctorDetailsProps {
   doctor: GetDoctorDetails_getDoctorDetails;
   clinics: GetDoctorDetails_getDoctorDetails_doctorHospital[];
 }
-const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
+export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { doctor, clinics } = props;
   const classes = useStyles();
 
@@ -657,7 +660,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   </Paper>
                 </Grid>
               )}
-              {doctor.specialty.name && doctor.specialty.name!.length > 0 && (
+              {doctor.specialty && doctor.specialty.name && doctor.specialty.name!.length > 0 && (
                 <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">Speciality</Typography>

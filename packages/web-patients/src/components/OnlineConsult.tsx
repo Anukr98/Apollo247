@@ -212,9 +212,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const apiDateFormat =
     dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
 
-  const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:00');
-  const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:00');
-  const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:00');
+  const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:01');
+  const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
+  const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:01');
   const prevDateSelected = usePrevious(dateSelected);
 
   useEffect(() => {
@@ -232,9 +232,11 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       variables: {
         DoctorAvailabilityInput: { doctorId: doctorId, availableDate: apiDateFormat },
       },
-      fetchPolicy: 'network-only',
+      fetchPolicy: 'no-cache',
     }
   );
+
+  // console.log(availableSlotsData);
 
   // get doctor next availability.
   const { data: nextAvailableSlot, loading: nextAvailableSlotLoading } = useQueryWithSkip<
@@ -247,7 +249,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         availableDate: format(new Date(), 'yyyy-MM-dd'),
       },
     },
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'no-cache',
   });
 
   if (availableSlotsLoading || nextAvailableSlotLoading) {
@@ -272,12 +274,14 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   ) {
     nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
       if (availability && availability.availableSlot !== '') {
-        const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
-        const slotTimeStamp =
-          getIstTimestamp(new Date(), availability.availableSlot) + milliSeconds;
-        const currentTime = new Date().getTime();
-        if (slotTimeStamp > currentTime) {
-          const difference = slotTimeStamp - currentTime;
+        const slotTimeUtc = new Date(
+          new Date(`${apiDateFormat} ${availability.availableSlot}:00`).toISOString()
+        ).getTime();
+        const localTimeOffset = new Date().getTimezoneOffset() * 60000;
+        const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
+        const currentTime = new Date(new Date().toISOString()).getTime();
+        if (slotTime > currentTime) {
+          const difference = slotTime - currentTime;
           differenceInMinutes = Math.round(difference / 60000);
         }
       } else {
@@ -286,11 +290,16 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     });
   }
 
+  // console.log('diff in minutes.....', differenceInMinutes);
+
   const availableSlots =
     (availableSlotsData && availableSlotsData.getDoctorAvailableSlots.availableSlots) || [];
 
   availableSlots.map((slot) => {
-    const slotTime = getIstTimestamp(new Date(apiDateFormat), slot);
+    const slotTimeUtc = new Date(new Date(`${apiDateFormat} ${slot}:00`).toISOString()).getTime();
+    const localTimeOffset = new Date().getTimezoneOffset() * 60000;
+    const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
+    const currentTime = new Date(new Date().toISOString()).getTime();
     if (slotTime > currentTime) {
       if (slot === autoSlot) {
         slotAvailableNext = autoSlot;
@@ -309,16 +318,16 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       afternoonSlots.length === 0 &&
       eveningSlots.length === 0 &&
       lateNightSlots.length === 0) ||
-    timeSelected === '';
+    (timeSelected === '' && slotAvailableNext === '');
 
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'50vh'}>
         <div className={classes.customScrollBar}>
           <div className={classes.consultGroup}>
-            {consultNowAvailable ? (
+            {differenceInMinutes > 0 ? (
               <p>
-                Dr. {doctorName} is available in 15mins!
+                Dr. {doctorName} is available in {differenceInMinutes} mins!
                 <br /> Would you like to consult now or schedule for later?
               </p>
             ) : null}
@@ -398,11 +407,13 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             bookAppointment: {
               patientId: currentPatient ? currentPatient.id : '',
               doctorId: doctorId,
-              appointmentDateTime: `${apiDateFormat}T${
-                timeSelected !== ''
-                  ? timeSelected.padStart(5, '0')
-                  : slotAvailableNext.padStart(5, '0')
-              }:00Z`,
+              appointmentDateTime: new Date(
+                `${apiDateFormat} ${
+                  timeSelected !== ''
+                    ? timeSelected.padStart(5, '0')
+                    : slotAvailableNext.padStart(5, '0')
+                }:00`
+              ).toISOString(),
               appointmentType: APPOINTMENT_TYPE.ONLINE,
               hospitalId: '',
             },
@@ -412,8 +423,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             setMutationLoading(false);
             setIsDialogOpen(true);
           }}
-          onError={(error) => {
-            alert(error);
+          onError={(errorResponse) => {
+            alert(errorResponse);
+            disableSubmit = false;
+            setMutationLoading(false);
           }}
         >
           {(mutate) => (
@@ -424,6 +437,15 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               onClick={() => {
                 setMutationLoading(true);
                 mutate();
+                // console.log(
+                //   new Date(
+                //     `${apiDateFormat} ${
+                //       timeSelected !== ''
+                //         ? timeSelected.padStart(5, '0')
+                //         : slotAvailableNext.padStart(5, '0')
+                //     }:00`
+                //   ).toISOString()
+                // );
               }}
               className={
                 disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''
