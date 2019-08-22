@@ -260,13 +260,21 @@ export const MyAccount: React.FC = (props) => {
                   <div onClick={() => setselectedNavTab(1)} className={classes.leftNav}>
                     <img
                       alt=""
-                      src={require('images/ic_profilenav.svg')}
+                      src={
+                        selectedNavTab === 1
+                          ? require('images/ic_profilenav_white.svg')
+                          : require('images/ic_profilenav.svg')
+                      }
                       className={classes.navLeftIcon}
                     />
                     My Profile
                     <img
                       alt=""
-                      src={require('images/ic_rightarrow.svg')}
+                      src={
+                        selectedNavTab === 1
+                          ? require('images/ic_rightarrowwhite.svg')
+                          : require('images/ic_rightarrow.svg')
+                      }
                       className={classes.navRightIcon}
                     />
                   </div>
@@ -278,13 +286,21 @@ export const MyAccount: React.FC = (props) => {
                   <div onClick={() => setselectedNavTab(2)} className={classes.leftNav}>
                     <img
                       alt=""
-                      src={require('images/ic_availibility.svg')}
+                      src={
+                        selectedNavTab === 2
+                          ? require('images/ic_availibility_white.svg')
+                          : require('images/ic_availibility.svg')
+                      }
                       className={classes.navLeftIcon}
                     />
                     Availibility
                     <img
                       alt=""
-                      src={require('images/ic_rightarrow.svg')}
+                      src={
+                        selectedNavTab === 2
+                          ? require('images/ic_rightarrowwhite.svg')
+                          : require('images/ic_rightarrow.svg')
+                      }
                       className={classes.navRightIcon}
                     />
                   </div>
@@ -296,13 +312,21 @@ export const MyAccount: React.FC = (props) => {
                   <div onClick={() => setselectedNavTab(3)} className={classes.leftNav}>
                     <img
                       alt=""
-                      src={require('images/ic_fees.svg')}
+                      src={
+                        selectedNavTab === 3
+                          ? require('images/ic_fees_white.svg')
+                          : require('images/ic_fees.svg')
+                      }
                       className={classes.navLeftIcon}
                     />
                     Fees
                     <img
                       alt=""
-                      src={require('images/ic_rightarrow.svg')}
+                      src={
+                        selectedNavTab === 3
+                          ? require('images/ic_rightarrowwhite.svg')
+                          : require('images/ic_rightarrow.svg')
+                      }
                       className={classes.navRightIcon}
                     />
                   </div>
