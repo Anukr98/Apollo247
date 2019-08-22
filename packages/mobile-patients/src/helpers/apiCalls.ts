@@ -92,8 +92,9 @@ export interface IncDecOrAddProductToCartResponse {
 }
 
 const AUTH_TOKEN = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
-const QUOTE_ID = '8bef604822be33bf12c97c312d95e74c'; // TODO: to fetch later
-let CART_ID = ''; // TODO: to fetch later
+const getQuoteId = async () =>
+  AsyncStorage.getItem('QUOTE_ID') || (await generateQuoteIdApi()).data.quote_id; // in-progress
+const getCartId = async () => AsyncStorage.getItem('CART_ID') || (await getCartInfoApi()).data.id; // in-progress
 
 // This API is not being used, verify and remove it later
 export const getProductsBasedOnCategory = (
@@ -103,6 +104,10 @@ export const getProductsBasedOnCategory = (
   return Axios.get(
     `http://api.apollopharmacy.in/apollo_api.php?category_id=${CATEGORY_ID}&page_id=${PAGE_INDEX}&type=category`
   );
+};
+
+export const generateQuoteIdApi = (): Promise<AxiosResponse<{ quote_id: string }>> => {
+  return Axios.get(`http://api.apollopharmacy.in/apollo_api.php?type=guest_quote`);
 };
 
 export const getMedicineDetailsApi = (PRODUCT_SKU: string) => {
@@ -125,40 +130,44 @@ export const searchMedicineApi = (
   );
 };
 
-export const getQuoteIdApi = (): Promise<AxiosResponse<{ quote_id: string }>> => {
-  return Axios.get(`http://api.apollopharmacy.in/apollo_api.php?type=guest_quote`);
-};
-
-export const getCartInfoApi = (): Promise<AxiosResponse<CartInfoResponse>> => {
+export const getCartInfoApi = async (): Promise<AxiosResponse<CartInfoResponse>> => {
   return Axios.get(
-    `http://api.apollopharmacy.in/apollo_api.php?type=guest_quote_info&quote_id=${QUOTE_ID}`
+    `http://api.apollopharmacy.in/apollo_api.php?type=guest_quote_info&quote_id=${await getQuoteId()}`
   );
 };
 
-export const addProductToCartApi = (
+export const addProductToCartApi = async (
   productSku: string,
   quantity: number = 1
 ): Promise<AxiosResponse<IncDecOrAddProductToCartResponse>> => {
-  return Axios.post(`http://api.apollopharmacy.in/rest/V1/guest-carts/${QUOTE_ID}/items`, {
-    cartItem: { quote_id: CART_ID, sku: productSku, qty: quantity },
+  return Axios.post(`http://api.apollopharmacy.in/rest/V1/guest-carts/${await getCartId()}/items`, {
+    cartItem: { quote_id: await getQuoteId(), sku: productSku, qty: quantity },
   });
 };
 
-export const incOrDecProductCountToCartApi = (
+export const incOrDecProductCountToCartApi = async (
   productSku: string,
   itemId: number,
   newQuantity: number
 ): Promise<AxiosResponse<IncDecOrAddProductToCartResponse>> => {
-  return Axios.post(`http://api.apollopharmacy.in/rest/V1/guest-carts/${CART_ID}/items/${itemId}`, {
-    cartItem: { quote_id: CART_ID, sku: productSku, item_id: itemId, qty: newQuantity },
-  });
+  return Axios.post(
+    `http://api.apollopharmacy.in/rest/V1/guest-carts/${await getCartId()}/items/${itemId}`,
+    {
+      cartItem: {
+        quote_id: await getQuoteId(),
+        sku: productSku,
+        item_id: itemId,
+        qty: newQuantity,
+      },
+    }
+  );
 };
 
-export const removeProductFromCartApi = (
+export const removeProductFromCartApi = async (
   itemId: number
 ): Promise<AxiosResponse<{ status: number }>> => {
   return Axios.post(
-    `http://api.apollopharmacy.in/apollo_api.php?type=guest_delete_item&quote_id=${CART_ID}&item_id=${itemId}`,
+    `http://api.apollopharmacy.in/apollo_api.php?type=guest_delete_item&quote_id=${await getCartId()}&item_id=${itemId}`,
     { item_id: itemId }
   );
 };
