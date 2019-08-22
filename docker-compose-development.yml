@@ -6,14 +6,13 @@ services:
     tty: true
     env_file: .env
     command: ash -c "
-      envsubst '$$NODE_ENV $$API_GATEWAY_PORT $$WEB_PATIENTS_PORT $$WEB_DOCTORS_PORT' < /etc/nginx/conf.d/development.conf.template > /etc/nginx/conf.d/development.conf &&
+      envsubst '$$NODE_ENV $$API_GATEWAY_HOST $$API_GATEWAY_PORT' < /etc/nginx/conf.d/development.conf.template > /etc/nginx/conf.d/development.conf &&
       nginx -t &&
       nginx -g 'daemon off;'"
     ports:
       - 80:80
     volumes:
-      # Docker runs as root and so these files cannot be deleted by our deployment user, just disable mounting logs for now
-      # - ./nginx/log/:/var/log/nginx
+      - ./nginx/log/:/var/log/nginx
       - ./nginx/conf.d/development.conf.template:/etc/nginx/conf.d/development.conf.template:ro
       - ./packages/web-patients/:/usr/share/nginx/html/web-patients:ro
       - ./packages/web-doctors/:/usr/share/nginx/html/web-doctors:ro
@@ -28,7 +27,11 @@ services:
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
     command: bash -c "
-      while ((! curl -s http://${PROFILES_SERVICE_HOST}/graphql) || (! curl -s http://${DOCTORS_SERVICE_HOST}/graphql) || (! curl -s http://${CONSULTS_SERVICE_HOST}/graphql)) > /dev/null;
+      while (
+      (! curl -s http://${PROFILES_SERVICE_HOST}:${PROFILES_SERVICE_PORT}) ||
+      (! curl -s http://${DOCTORS_SERVICE_HOST}:${DOCTORS_SERVICE_PORT}) ||
+      (! curl -s http://${CONSULTS_SERVICE_HOST}:${CONSULTS_SERVICE_PORT})
+      ) > /dev/null;
       do echo waiting for services to start...; sleep 5;
       done;
       node api-gateway.bundle.js"

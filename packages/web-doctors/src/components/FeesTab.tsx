@@ -15,6 +15,9 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
       paddingLeft: 15,
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 0,
+      },
       '& h2': {
         fontSize: 16,
         color: theme.palette.secondary.dark,
@@ -71,9 +74,6 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       height: '100%',
       boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        display: 'flex',
-      },
     },
     avatarBlock: {
       overflow: 'hidden',
@@ -109,6 +109,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#e28913',
       },
+      [theme.breakpoints.down('xs')]: {
+        minWidth: 140,
+      },
     },
     backButton: {
       minWidth: 120,
@@ -121,6 +124,9 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
         backgroundColor: '#fff',
+      },
+      [theme.breakpoints.down('xs')]: {
+        minWidth: 100,
       },
     },
     addDocter: {
@@ -210,6 +216,9 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       width: '80%',
       fontSize: 14,
+      [theme.breakpoints.down('xs')]: {
+        padding: '0px 5px 10px 0 !important',
+      },
     },
     accountDetailsHeading: {
       color: '#658F9B',
@@ -217,6 +226,9 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       width: '20%',
       fontWeight: 'normal',
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
     },
     topBorder: {
       borderTop: 'solid 1px rgba(101,143,155,0.2)',

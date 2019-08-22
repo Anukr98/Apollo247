@@ -46,6 +46,10 @@ import {
   addPatientAddressTypeDefs,
   addPatientAddressResolvers,
 } from 'profiles-service/resolvers/patientAddress';
+import {
+  getDigitizedOrderTypeDefs,
+  getDigitizedOrderResolvers,
+} from 'profiles-service/resolvers/getDigitizedOrderDetails';
 import gql from 'graphql-tag';
 import { GatewayHeaders } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
@@ -156,10 +160,14 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
         typeDefs: addPatientAddressTypeDefs,
         resolvers: addPatientAddressResolvers,
       },
+      {
+        typeDefs: getDigitizedOrderTypeDefs,
+        resolvers: getDigitizedOrderResolvers,
+      },
     ]),
   });
 
-  server.listen({ port: 80 }).then(({ url }) => {
-    console.log(`🚀 profiles-service ready`);
+  server.listen({ port: process.env.PROFILES_SERVICE_PORT }).then(({ url }) => {
+    console.log(`🚀 profiles-service ready (internal url: ${url})`);
   });
 })();

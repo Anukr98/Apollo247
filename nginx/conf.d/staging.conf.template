@@ -1,22 +1,22 @@
 server {
-    listen $API_GATEWAY_PORT;
-    server_name aph.$NODE_ENV.api.popcornapps.com;
-    
-    location / {
-        # 127.0.0.11 is the default docker network's built in DNS
-        resolver 127.0.0.11 ipv6=off valid=30s;
-        set $upstream http://api-gateway:$API_GATEWAY_PORT;
-        proxy_pass $upstream;
-        proxy_http_version 1.1;
-        proxy_redirect off;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
+        listen 80;
+        server_name aph.$NODE_ENV.api.popcornapps.com;
+
+        location / {
+                # 127.0.0.11 is the default docker network's built in DNS
+                resolver 127.0.0.11 ipv6=off valid=30s;
+                set $upstream http://$API_GATEWAY_HOST:$API_GATEWAY__PORT;
+                proxy_pass $upstream;
+                proxy_http_version 1.1;
+                proxy_redirect off;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header Host $http_host;
+                proxy_set_header X-Real-IP $remote_addr;
+        }
 }
 
 server {
-        listen $WEB_PATIENTS_PORT;
+        listen 80;
         server_name aph.$NODE_ENV.web-patients.popcornapps.com;
 
         access_log /var/log/nginx/web-patients-access.log;
@@ -58,7 +58,7 @@ server {
 }
 
 server {
-        listen $WEB_DOCTORS_PORT;
+        listen 80;
         server_name aph.$NODE_ENV.web-doctors.popcornapps.com;
 
         access_log /var/log/nginx/web-doctors-access.log;
