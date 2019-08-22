@@ -39,8 +39,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         color: theme.palette.secondary.dark,
         fontSize: 16,
-        fontWeight: 600,
+        fontWeight: 500,
         marginBottom: 3,
+        marginTop: 4,
       },
     },
     helpText: {
