@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import Scrollbars from 'react-custom-scrollbars';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { AphLinearProgress } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -129,8 +130,27 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 5,
     },
     pointsSlider: {
+      paddingTop: 8,
+      paddingBottom: 5,
+      position: 'relative',
+    },
+    sliderArrow: {
+      position: 'absolute',
+      left: '65%',
+      top: -10,
+    },
+    readMore: {
+      textAlign: 'right',
       paddingTop: 10,
-      paddingBottom: 10,
+      '& a': {
+        color: '#fc9916',
+        fontSize: 10,
+        fontWeight: 600,
+        lineHeight: 2,
+      },
+    },
+    lastGroup: {
+      marginBottom: 0,
     },
   };
 });
@@ -153,7 +173,7 @@ export const MyProfile: React.FC = (props) => {
           <div className={classes.userContact}>+91 9769435788</div>
         </div>
         <div className={classes.profileServices}>
-          <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
+          <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 496px'}>
             <div className={classes.servicesSection}>
               <div className={classes.sectionGroup}>
                 <div className={classes.serviceType}>
@@ -165,7 +185,15 @@ export const MyProfile: React.FC = (props) => {
                       <span className={classes.apolloPoints}>400 HC</span>
                       <span className={classes.planType}>Silver</span>
                     </div>
-                    <div className={classes.pointsSlider}></div>
+                    <div className={classes.pointsSlider}>
+                      <div className={classes.sliderArrow}>
+                        <img src={require('images/ic_dropdown_blue_down.svg')} alt="" />
+                      </div>
+                      <AphLinearProgress color="primary" />
+                    </div>
+                    <div className={classes.readMore}>
+                      <Link to="#">Read More</Link>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -194,7 +222,7 @@ export const MyProfile: React.FC = (props) => {
                   </span>
                 </Link>
               </div>
-              <div className={classes.sectionGroup}>
+              <div className={`${classes.sectionGroup} ${classes.lastGroup}`}>
                 <Link
                   className={`${classes.serviceType} ${classes.textVCenter}`}
                   to={clientRoutes.myAccount()}
