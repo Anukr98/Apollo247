@@ -3,8 +3,12 @@ import { Doctor, ConsultMode } from 'doctors-service/entities';
 import {
   Range,
   FilterDoctorInput,
+  DoctorAvailability,
+  DateAvailability,
+  ConsultModeAvailability,
+  AppointmentDateTime,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
-import { format, differenceInMinutes } from 'date-fns';
+import { format, differenceInMinutes, differenceInHours, addMinutes } from 'date-fns';
 
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
@@ -120,8 +124,8 @@ export class DoctorRepository extends Repository<Doctor> {
       .getMany();
   }
 
-  async filterDoctors(filterInput: FilterDoctorInput) {
-    const { specialty, city, experience, gender, fees, language, availability } = filterInput;
+  filterDoctors(filterInput: FilterDoctorInput) {
+    const { specialty, city, experience, gender, fees, language } = filterInput;
 
     const queryBuilder = this.createQueryBuilder('doctor')
       .leftJoinAndSelect('doctor.specialty', 'specialty')
@@ -187,69 +191,156 @@ export class DoctorRepository extends Repository<Doctor> {
       );
     }
 
-    let doctorsResult = await queryBuilder.getMany();
-
-    // const doctorIds = doctorsResult.map((doctor) => {
-    //   return doctor.id;
-    // });
-
-    //filtering doctors by date
-    if (availability && availability.length > 0) {
-      const selectedDays: string[] = [];
-
-      availability.forEach((date: string) => {
-        const weekDay = format(new Date(date), 'EEEE').toUpperCase();
-        selectedDays.push(weekDay);
-      });
-
-      type AvailabilityData = {
-        slotsCount: number;
-      };
-      type DoctorConsultModes = {
-        online: AvailabilityData;
-        physical: AvailabilityData;
-      };
-      type DoctorDateData = { [index: string]: DoctorConsultModes };
-      type DoctorData = { [index: string]: DoctorDateData };
-      const doctorData: DoctorData = {};
-      doctorsResult = doctorsResult.filter((doctor) => {
-        return (
-          doctor.consultHours.filter((day) => {
-            if (selectedDays.includes(day.weekDay)) {
-              const doctorDateData: DoctorDateData = {};
-              const slotsCount = this.getNumberOfIntervalSlots(day.startTime, day.endTime, 15);
-              const availableDate = availability[selectedDays.indexOf(day.weekDay)];
-              doctorDateData[availableDate] = {
-                online: { slotsCount: 0 },
-                physical: { slotsCount: 0 },
-              };
-              if (day.consultMode == ConsultMode.ONLINE) {
-                doctorDateData[availableDate].online.slotsCount = slotsCount;
-              } else if (day.consultMode == ConsultMode.PHYSICAL) {
-                doctorDateData[availableDate].physical.slotsCount = slotsCount;
-              } else {
-                doctorDateData[availableDate].physical.slotsCount = slotsCount;
-                doctorDateData[availableDate].online.slotsCount = slotsCount;
-              }
-              doctorData[doctor.id] = doctorDateData;
-            }
-            return selectedDays.includes(day.weekDay);
-          }).length > 0
-        );
-      });
-      console.log(doctorData);
-    }
-    return doctorsResult;
+    return queryBuilder.getMany();
   }
 
-  //returns number of time interval slots between the start and end times
-  getNumberOfIntervalSlots(startTime: string, endTime: string, interval: number) {
+  getDoctorsAvailability(doctors: Doctor[], selectedDates: string[], now?: AppointmentDateTime) {
+    const doctorAvailability: DoctorAvailability = {};
+    //filtering doctors by consultHours of selected dates
+    const selectedDays: string[] = [];
+    selectedDates.forEach((date: string) => {
+      const weekDay = format(new Date(date), 'EEEE').toUpperCase();
+      selectedDays.push(weekDay);
+    });
+
+    doctors.forEach((doctor) => {
+      const dateAvailability: DateAvailability = {};
+
+      doctor.consultHours.forEach((day) => {
+        //logic when availableNow filter is selected
+        if (now) {
+          const nowDate = format(now.startDateTime, 'yyyy-MM-dd');
+          const nowDay = format(new Date(nowDate), 'EEEE').toUpperCase();
+          if (day.weekDay == nowDay) {
+            const alignedStartTime = this.getNextAlignedSlot(now.startDateTime);
+            const alignedEndTime = this.getNextAlignedSlot(now.endDateTime);
+            const nowSlots = this.getSlotsInBetween(alignedStartTime, alignedEndTime);
+
+            //getting consult hours that are available in now slot(1 hour)
+            const consultHourSlots = this.getSlotsInBetween(day.startTime, day.endTime);
+            const consultHoursFilteredSlots = nowSlots.filter((value) =>
+              consultHourSlots.includes(value)
+            );
+
+            if (dateAvailability[nowDate] == null) {
+              dateAvailability[nowDate] = { onlineSlots: 0, physicalSlots: 0, bothSlots: 0 };
+            }
+
+            if (day.consultMode == ConsultMode.ONLINE) {
+              dateAvailability[nowDate].onlineSlots += consultHoursFilteredSlots.length;
+            } else if (day.consultMode == ConsultMode.PHYSICAL) {
+              dateAvailability[nowDate].physicalSlots += consultHoursFilteredSlots.length;
+            } else {
+              dateAvailability[nowDate].bothSlots += consultHoursFilteredSlots.length;
+            }
+          }
+        }
+
+        //logic when dates are selected
+        const slotsCount = this.getNumberOfIntervalSlots(day.startTime, day.endTime);
+        if (selectedDays.length > 0) {
+          if (selectedDays.includes(day.weekDay)) {
+            const availabilityDate = selectedDates[selectedDays.indexOf(day.weekDay)];
+            const defaultConsultModeSlotsCount: ConsultModeAvailability = {
+              onlineSlots: 0,
+              physicalSlots: 0,
+              bothSlots: 0,
+            };
+            if (dateAvailability[availabilityDate] == null) {
+              dateAvailability[availabilityDate] = defaultConsultModeSlotsCount;
+            }
+            if (day.consultMode == ConsultMode.ONLINE) {
+              dateAvailability[availabilityDate].onlineSlots += slotsCount;
+            } else if (day.consultMode == ConsultMode.PHYSICAL) {
+              dateAvailability[availabilityDate].physicalSlots += slotsCount;
+            } else {
+              dateAvailability[availabilityDate].bothSlots += slotsCount;
+            }
+          }
+        }
+
+        //logic when no availabileNow filter and dates are selected
+        if (now == null && selectedDates.length === 0) {
+          const defaultConsultModeSlotsCount: ConsultModeAvailability = {
+            onlineSlots: 0,
+            physicalSlots: 0,
+            bothSlots: 0,
+          };
+          if (dateAvailability[day.weekDay] == null) {
+            dateAvailability[day.weekDay] = defaultConsultModeSlotsCount;
+          }
+          if (day.consultMode == ConsultMode.ONLINE) {
+            dateAvailability[day.weekDay].onlineSlots += slotsCount;
+          } else if (day.consultMode == ConsultMode.PHYSICAL) {
+            dateAvailability[day.weekDay].physicalSlots += slotsCount;
+          } else {
+            dateAvailability[day.weekDay].bothSlots += slotsCount;
+          }
+        }
+      });
+
+      doctorAvailability[doctor.id] = dateAvailability;
+    });
+
+    return doctorAvailability;
+  }
+
+  //returns number of time slots between any two times in a day
+  getNumberOfIntervalSlots(startTime: string, endTime: string) {
     const dayStartTime = `${format(new Date(), 'yyyy-MM-dd')} ${startTime.toString()}`;
     const dayEndTime = `${format(new Date(), 'yyyy-MM-dd')} ${endTime.toString()}`;
     const startDateTime = new Date(dayStartTime);
     const endDateTime = new Date(dayEndTime);
     const slotsCount = Math.ceil(differenceInMinutes(endDateTime, startDateTime) / 15);
-    console.log(slotsCount);
     return slotsCount;
+  }
+
+  //return all time slots between any two times in a day
+  getSlotsInBetween(startTime: string, endTime: string) {
+    const startDateTimeString = `${format(new Date(), 'yyyy-MM-dd')} ${startTime.toString()}`;
+    const endDateTimeString = `${format(new Date(), 'yyyy-MM-dd')} ${endTime.toString()}`;
+    const startDateTime = new Date(startDateTimeString);
+    const endDateTime = new Date(endDateTimeString);
+
+    const slotsCount = Math.ceil(differenceInHours(endDateTime, startDateTime)) * 4;
+
+    const slotTime = startDateTime.getHours() + ':' + startDateTime.getMinutes();
+    let slotDateTime = new Date(format(startDateTime, 'yyyy-MM-dd') + ' ' + slotTime);
+    const availableSlots = Array(slotsCount)
+      .fill(0)
+      .map(() => {
+        const tempSlotTime = slotDateTime;
+        slotDateTime = addMinutes(slotDateTime, 15);
+        const stTimeHours = tempSlotTime
+          .getHours()
+          .toString()
+          .padStart(2, '0');
+        const stTimeMins = tempSlotTime
+          .getMinutes()
+          .toString()
+          .padStart(2, '0');
+        return `${stTimeHours}:${stTimeMins}`;
+      });
+    return availableSlots;
+  }
+
+  //get time with minutes aligned to next 15 multiple
+  getNextAlignedSlot(curDate: Date) {
+    let nextHour = curDate.getHours();
+    let nextMin = this.getNextMins(curDate.getMinutes());
+    if (nextMin === 60) {
+      nextHour++;
+      nextMin = 0;
+    }
+    return `${nextHour.toString().padStart(2, '0')}:${nextMin.toString().padStart(2, '0')}`;
+  }
+
+  //returns next 15 multiple number(max limited to 60)
+  getNextMins(min: number) {
+    if (min == 0) return 0;
+    if (min > 0 && min <= 15) return 15;
+    else if (min > 15 && min <= 30) return 30;
+    else if (min > 30 && min <= 45) return 45;
+    else return 60;
   }
 }

@@ -1,5 +1,6 @@
-import { EntityRepository, Repository, Between, MoreThan, LessThan } from 'typeorm';
+import { EntityRepository, Repository, Between, MoreThan, LessThan, Brackets } from 'typeorm';
 import { Appointment, AppointmentSessions } from 'consults-service/entities';
+import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addMinutes, differenceInMinutes } from 'date-fns';
@@ -55,6 +56,38 @@ export class AppointmentRepository extends Repository<Appointment> {
       where: { doctorId, appointmentDateTime: Between(startDate, endDate) },
       order: { appointmentDateTime: 'DESC' },
     });
+  }
+
+  async findByDoctorIdsAndDateTimes(
+    doctorIds: string[],
+    appointmentDateTimes: AppointmentDateTime[]
+  ) {
+    const queryBuilder = this.createQueryBuilder('appointment').where(
+      'appointment.doctorId IN (:...doctorIds)',
+      { doctorIds }
+    );
+
+    if (appointmentDateTimes && appointmentDateTimes.length > 0) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          appointmentDateTimes.forEach((apptDateTime: AppointmentDateTime) => {
+            qb.orWhere(
+              new Brackets((qb) => {
+                qb.where(
+                  `appointment.appointmentDateTime Between '${format(
+                    apptDateTime.startDateTime,
+                    'yyyy-MM-dd HH:mm'
+                  )}' AND '${format(apptDateTime.endDateTime, 'yyyy-MM-dd HH:mm')}'`,
+                  apptDateTime
+                );
+              })
+            );
+          });
+        })
+      );
+    }
+
+    return queryBuilder.orderBy('appointment.appointmentDateTime', 'DESC').getMany();
   }
 
   async getDoctorPatientVisitCount(doctorId: string, patientId: string[]) {
