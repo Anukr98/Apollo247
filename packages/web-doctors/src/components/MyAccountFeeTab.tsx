@@ -4,7 +4,6 @@ import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import { AphButton } from '@aph/web-ui-components';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -15,9 +14,6 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
       paddingLeft: 15,
-      [theme.breakpoints.down('xs')]: {
-        paddingLeft: 0,
-      },
       '& h2': {
         fontSize: 16,
         color: theme.palette.secondary.dark,
@@ -74,6 +70,9 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       height: '100%',
       boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'flex',
+      },
     },
     avatarBlock: {
       overflow: 'hidden',
@@ -109,9 +108,6 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#e28913',
       },
-      [theme.breakpoints.down('xs')]: {
-        minWidth: 140,
-      },
     },
     backButton: {
       minWidth: 120,
@@ -124,9 +120,6 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
         backgroundColor: '#fff',
-      },
-      [theme.breakpoints.down('xs')]: {
-        minWidth: 100,
       },
     },
     addDocter: {
@@ -216,9 +209,6 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       width: '80%',
       fontSize: 14,
-      [theme.breakpoints.down('xs')]: {
-        padding: '0px 5px 10px 0 !important',
-      },
     },
     accountDetailsHeading: {
       color: '#658F9B',
@@ -226,9 +216,6 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       width: '20%',
       fontWeight: 'normal',
-      [theme.breakpoints.down('xs')]: {
-        width: '100%',
-      },
     },
     topBorder: {
       borderTop: 'solid 1px rgba(101,143,155,0.2)',
@@ -246,13 +233,13 @@ interface FeesProps {
   onNext: () => void;
   onBack: () => void;
 }
-export const FeesTab: React.FC<FeesProps> = (props) => {
+export const MyAccountFeeTab: React.FC<FeesProps> = (props) => {
   const classes = useStyles();
   const data = props.values;
 
   return (
     <div className={classes.ProfileContainer}>
-      <Grid container alignItems="flex-start" spacing={0}>
+      <Grid container spacing={0}>
         <Grid item lg={2} sm={6} xs={12}>
           <Typography variant="h2">Consultation Fees</Typography>
         </Grid>
@@ -278,7 +265,7 @@ export const FeesTab: React.FC<FeesProps> = (props) => {
         </Grid>
       </Grid>
       {data.bankAccount && data.bankAccount.length > 0 && (
-        <Grid container alignItems="flex-start" spacing={0}>
+        <Grid container spacing={0}>
           <Grid item lg={2} sm={6} xs={12}>
             <Typography variant="h2">Payment Method</Typography>
           </Grid>
@@ -335,27 +322,6 @@ export const FeesTab: React.FC<FeesProps> = (props) => {
           </Grid>
         </Grid>
       )}
-
-      <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
-        <Grid item lg={12} sm={12} xs={12}>
-          <AphButton
-            variant="contained"
-            color="primary"
-            classes={{ root: classes.backButton }}
-            onClick={() => props.onBack()}
-          >
-            BACK
-          </AphButton>
-          <AphButton
-            variant="contained"
-            color="primary"
-            classes={{ root: classes.saveButton }}
-            onClick={() => props.onNext()}
-          >
-            SAVE AND PROCEED
-          </AphButton>
-        </Grid>
-      </Grid>
     </div>
   );
 };

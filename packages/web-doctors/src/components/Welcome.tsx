@@ -1,5 +1,4 @@
-import { BottomNavigation, Theme } from '@material-ui/core';
-import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
+import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { HeroBanner } from 'components/HeroBanner';
@@ -69,44 +68,6 @@ export const Welcome: React.FC = (props) => {
         <HeroBanner />
         <ServiceList />
       </div>
-      <BottomNavigation showLabels className={classes.bottomMenuRoot}>
-        <BottomNavigationAction
-          label="Consult Room"
-          icon={<img src={require('images/ic_consultroom.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-        <BottomNavigationAction
-          label="Health Records"
-          icon={<img src={require('images/ic_myhealth.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-        <BottomNavigationAction
-          label="Tests & Medicines"
-          icon={<img src={require('images/ic_orders.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-        <BottomNavigationAction
-          label="My Account"
-          icon={<img src={require('images/ic_account_dark.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-      </BottomNavigation>
     </div>
   );
 };
