@@ -1,9 +1,10 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { AddressCard } from 'components/MyAccount/AddressCard';
 import Scrollbars from 'react-custom-scrollbars';
+import { AddNewAddress } from 'components/Locations/AddNewAddress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -51,11 +52,33 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: 10,
       },
     },
+    dialogContent: {
+      paddingTop: 10,
+    },
+    dialogActions: {
+      padding: 20,
+      paddingTop: 10,
+      boxShadow: '0 -5px 20px 0 #ffffff',
+      position: 'relative',
+      textAlign: 'center',
+      '& button': {
+        borderRadius: 10,
+        width: 288,
+      },
+    },
+    customScrollBar: {
+      paddingLeft: 20,
+      paddingRight: 20,
+    },
+    shadowHide: {
+      overflow: 'hidden',
+    },
   };
 });
 
 export const AddressBook: React.FC = (props) => {
   const classes = useStyles();
+  const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
 
   return (
     <div className={classes.root}>
@@ -69,8 +92,25 @@ export const AddressBook: React.FC = (props) => {
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
-        <AphButton color="primary">Add a new Address</AphButton>
+        <AphButton onClick={() => setIsAddAddressDialogOpen(true)} color="primary">
+          Add a new Address
+        </AphButton>
       </div>
+      <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
+        <AphDialogTitle>Schedule Confirmation Call</AphDialogTitle>
+        <div className={classes.shadowHide}>
+          <div className={classes.dialogContent}>
+            <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
+              <div className={classes.customScrollBar}>
+                <AddNewAddress />
+              </div>
+            </Scrollbars>
+          </div>
+          <div className={classes.dialogActions}>
+            <AphButton color="primary">Done</AphButton>
+          </div>
+        </div>
+      </AphDialog>
     </div>
   );
 };
