@@ -26,6 +26,6 @@ export const webPatientsBaseUrl = () => {
 
 export const webDoctorsBaseUrl = () => {
   const application = 'web-doctors';
-  const port = environment === 'local' ? process.env.WEB_DOCTORS_PORT : ' 80';
+  const port = environment === 'local' ? process.env.WEB_DOCTORS_PORT : '80';
   return buildUrl({ application, port });
 };
