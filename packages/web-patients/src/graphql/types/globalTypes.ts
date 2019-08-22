@@ -109,6 +109,7 @@ export interface FilterDoctorInput {
   city?: (string | null)[] | null;
   experience?: (Range | null)[] | null;
   availability?: (string | null)[] | null;
+  availableNow?: string | null;
   fees?: (Range | null)[] | null;
   gender?: (Gender | null)[] | null;
   language?: (string | null)[] | null;
@@ -153,6 +154,7 @@ export interface filterInput {
   city?: (string | null)[] | null;
   experience?: (string | null)[] | null;
   availability?: (string | null)[] | null;
+  availableNow?: string | null;
   fees?: (string | null)[] | null;
   gender?: (string | null)[] | null;
   language?: (string | null)[] | null;

@@ -5,7 +5,6 @@ import { AphInput } from '@aph/web-ui-components';
 import { Consult } from 'components/Consult';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
-import { red } from '@material-ui/core/colors';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -205,16 +204,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       timer = timer + 1;
       stoppedConsulTimer = timer;
       setStartingTime(timer);
-      // if (timer == 900) {
-      //   setStartingTime(900);
-      //   clearInterval(timerIntervalId);
-      // }
     }, 1000);
   };
-  const stopIntervalTimer = () => {
-    setStartingTime(0);
-    timerIntervalId && clearInterval(timerIntervalId);
-  };
+  // const stopIntervalTimer = () => {
+  //   setStartingTime(0);
+  //   timerIntervalId && clearInterval(timerIntervalId);
+  // };
+  const srollToBottomAction = () => {
+    setTimeout(() => {
+      const scrollDiv = document.getElementById('scrollDiv');
+      if(scrollDiv){
+        scrollDiv!.scrollIntoView();
+      }
+    }, 200);
+  }
+  const resetMessagesAction = () => {
+    if(messageText === ''){
+      setMessageText(' ');
+      setMessageText('');
+    }
+  } 
   useEffect(() => {
     if (isCallAccepted) {
       startIntervalTimer(0);
@@ -230,29 +239,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
-        console.log(message.message.message);
         insertText[insertText.length] = message.message;
         setMessages(insertText);
-        setMessageText(' ');
-        setMessageText('');
+        resetMessagesAction();
         if (
           !showVideoChat &&
           message.message.message !== videoCallMsg &&
           message.message.message !== audioCallMsg &&
           message.message.message !== stopcallMsg &&
-          message.message.message !== acceptcallMsg
+          message.message.message !== acceptcallMsg &&
+          message.message.message !== startConsult &&
+          message.message.message !== stopConsult 
         ) {
           setIsNewMsg(true);
         }
         if (message.message && message.message.message === acceptcallMsg) {
           setIsCallAccepted(true);
         }
-        setTimeout(() => {
-          const scrollDiv = document.getElementById('scrollDiv');
-          scrollDiv!.scrollIntoView();
-        }, 200);
-        setMessageText(' ');
-        setMessageText('');
+        srollToBottomAction();
+        resetMessagesAction()
         getHistory();
       },
     });
@@ -293,10 +298,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       if (messages.length !== newmessage.length) {
         setMessages(newmessage);
       }
-      setTimeout(() => {
-        const scrollDiv = document.getElementById('scrollDiv');
-        scrollDiv!.scrollIntoView();
-      }, 200);
+      srollToBottomAction();
     });
   };
 
@@ -314,12 +316,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         sendByPost: true,
       },
       (status, response) => {
-        setMessageText(' ');
-        setTimeout(() => {
-          setMessageText('');
-          const scrollDiv = document.getElementById('scrollDiv');
-          scrollDiv!.scrollIntoView();
-        }, 100);
+        resetMessagesAction()
+        srollToBottomAction();
+        // setTimeout(() => {
+        //   setMessageText('');
+        //   const scrollDiv = document.getElementById('scrollDiv');
+        //   if(scrollDiv){
+        //     scrollDiv!.scrollIntoView();
+        //   }
+        // }, 100);
       }
     );
   };
@@ -340,8 +345,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setMessageText('');
       }
     );
-    //setIsVideoCall(true);
-    //setIsCalled(true);
     actionBtn();
   };
 
@@ -364,7 +367,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             {rowData.duration === '00 : 00' ? (
               <span className={classes.missCall}>
                 <img src={require('images/ic_missedcall.svg')} />
-                {rowData.message.toLocaleLowerCase() === 'Video call ended'
+                {rowData.message.toLocaleLowerCase() === 'video call ended'
                   ? 'You missed a video call'
                   : 'You missed a voice call'}
               </span>
@@ -405,9 +408,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             {rowData.duration === '00 : 00' ? (
               <span className={classes.missCall}>
                 <img src={require('images/ic_missedcall.svg')} />
-                {rowData.message.toLocaleLowerCase() === 'Video call ended'
-                  ? 'You missed a call'
-                  : 'You missed a call'}
+                {rowData.message.toLocaleLowerCase() === 'video call ended'
+                  ? 'You missed a video call'
+                  : 'You missed a voice call'}
               </span>
             ) : rowData.duration ? (
               <div>
@@ -437,6 +440,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const toggelChatVideo = () => {
     setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
+    srollToBottomAction();
   };
   const actionBtn = () => {
     setShowVideo(true);
