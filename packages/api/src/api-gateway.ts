@@ -73,7 +73,7 @@ export type Resolver<Parent, Args, Context, Result> = (
       }
 
       const jwt = req.headers.authorization || '';
-      if (jwt.indexOf('Bearer 3d1833da7020e0602165529446587434') == 0) {
+      if (jwt.includes('Bearer 3d1833da7020e0602165529446587434', 0)) {
         const gatewayContext: GatewayContext = {
           firebaseUid: '',
           mobileNumber: '',
