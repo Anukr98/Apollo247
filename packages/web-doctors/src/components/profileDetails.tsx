@@ -12,7 +12,6 @@ import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 
 import { MyAccountFeeTab } from 'components/MyAccountFeeTab';
 import { MyAccountAvailabilityTab } from 'components/MyAccountAvailabilityTab';
-import { fontSize } from '@material-ui/system';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
