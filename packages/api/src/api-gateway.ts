@@ -73,7 +73,6 @@ export type Resolver<Parent, Args, Context, Result> = (
       }
 
       const jwt = req.headers.authorization || '';
-      console.log(jwt.indexOf('Bearer 3d1833da7020e0602165529446587434'), 'index of');
       if (jwt.indexOf('Bearer 3d1833da7020e0602165529446587434') == 0) {
         const gatewayContext: GatewayContext = {
           firebaseUid: '',
