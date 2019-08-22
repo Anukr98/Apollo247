@@ -269,7 +269,10 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
 
   const availableSlots = (data && data.getDoctorPhysicalAvailableSlots.availableSlots) || [];
   availableSlots.map((slot) => {
-    const slotTime = getIstTimestamp(new Date(apiDateFormat), slot);
+    const slotTimeUtc = new Date(new Date(`${apiDateFormat} ${slot}:00`).toISOString()).getTime();
+    const localTimeOffset = new Date().getTimezoneOffset() * 60000;
+    const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
+    const currentTime = new Date(new Date().toISOString()).getTime();
     if (slotTime > currentTime) {
       if (slotTime < morningTime) morningSlots.push(slotTime);
       else if (slotTime >= morningTime && slotTime < afternoonTime) afternoonSlots.push(slotTime);
