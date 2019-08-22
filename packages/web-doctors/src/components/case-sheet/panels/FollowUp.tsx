@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Typography, Switch, Divider, makeStyles, Slider, withStyles } from '@material-ui/core';
 import { debounce } from 'lodash';
 import ToggleButton from '@material-ui/lab/ToggleButton';
@@ -82,6 +82,14 @@ export const FollowUp: React.FC = () => {
   const [followUpDays, setFollowUpDays] = useState<number>(2);
   const [consultType, setConsultType] = useState<string>('');
   const [selectedDate, handleDateChange] = useState<Date>(new Date());
+
+  useEffect(() => {
+    if (!shouldFollowUp) {
+      handleDateChange(new Date());
+      setFollowUpDays(2);
+      setConsultType('');
+    }
+  }, [shouldFollowUp]);
 
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
