@@ -89,6 +89,41 @@
             "deprecationReason": null
           },
           {
+            "name": "getPatientPastMedicineSearches",
+            "description": null,
+            "args": [
+              {
+                "name": "patientId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "ID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "SearchData",
+                  "ofType": null
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "getPatientAddressList",
             "description": null,
             "args": [
@@ -973,6 +1008,12 @@
           },
           {
             "name": "SPECIALTY",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "MEDICINE",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -2007,16 +2048,6 @@
             "defaultValue": null
           },
           {
-            "name": "availableNow",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
             "name": "fees",
             "description": null,
             "type": {
@@ -2088,22 +2119,6 @@
               "ofType": {
                 "kind": "OBJECT",
                 "name": "Doctor",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "doctorsAvailability",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "LIST",
-              "name": null,
-              "ofType": {
-                "kind": "OBJECT",
-                "name": "DoctorConsultModeAvailability",
                 "ofType": null
               }
             },
@@ -5770,6 +5785,16 @@
                 "name": "ID",
                 "ofType": null
               }
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "typeName",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
             },
             "defaultValue": null
           },
