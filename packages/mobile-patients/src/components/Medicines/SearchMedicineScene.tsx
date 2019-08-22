@@ -1,18 +1,22 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Filter, ShoppingCart, CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CartIcon, Filter } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import {
-  getProductsBasedOnCategory,
-  MedicineProductsResponse,
-  quoteId,
+  addProductToCartApi,
+  MedicineProduct,
+  removeProductFromCartApi,
+  searchMedicineApi,
+  incOrDecProductCountToCartApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import { AxiosResponse } from 'axios';
+import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Platform,
   SafeAreaView,
@@ -24,9 +28,8 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
-import Axios from 'axios';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -112,80 +115,75 @@ export interface SearchMedicineSceneProps extends NavigationScreenProps {}
 export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) => {
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>('');
-  const [medicineList, setMedicineList] = useState<MedicineProductsResponse['products']>([]);
+  const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
   const [pinCode, setPinCode] = useState<string>('500033');
   const [medicineCardStatus, setMedicineCardStatus] = useState<{
     [id: string]: MedicineCardState;
   }>({});
-  const [CartId, setCartId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    // getProductsBasedOnCategory()
-    //   .then(({ data: { products } }) => {
-    //     console.log(products, 'products');
+  const showGenericALert = (e: { response: AxiosResponse }) => {
+    const error = e && e.response && e.response.data.message;
+    console.log({ errorResponse: e.response, error }); //remove this line later
+    Alert.alert('Error', error || 'Unknown error occurred.');
+  };
 
-    //   })
-    //   .catch((e) => {
-    //     Alert.alert('Error occurred', e);
-    //   });
-    setMedicineList([
-      {
-        description:
-          'Pampers Disposable Diapers Medium 6-11kg, 10 pads: Pampers Disposable diapers provides up to 10 hours superior dryness. Lotion with Aloe to help protect skin, Absorbs up to 6 wettings, helps keep baby dry &amp; Tape Sticks many times.',
-        id: 99,
-        image: '/p/a/pam0002.jpg',
-        is_in_stock: true,
-        is_prescription_required: '0',
-        name: 'Pamper baby dry Diapers Medium 10s',
-        price: 149,
-        sku: 'PAM0002',
-        small_image: '/p/a/pam0002.jpg',
-        status: 2,
-        thumbnail: '/p/a/pam0002.jpg',
-        type_id: 'simple',
-      },
-    ]);
-
-    // api call to get cart details
-    Axios.get(
-      `http://api.apollopharmacy.in/apollo_api.php?type=guest_quote_info&quote_id=${quoteId}`,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
-        },
-      }
-    )
-      .then((res) => {
-        console.log(res, 'YourCartProps dt');
-        if (res.data.id) setCartId(res.data.id);
+  const onSearchMedicine = (searchText: string) => {
+    setSearchText(searchText);
+    if (!(searchText && searchText.length > 2)) {
+      setMedicineList([]);
+      return;
+    }
+    setIsLoading(true);
+    searchMedicineApi(searchText)
+      .then(({ data }) => {
+        setIsLoading(false);
+        setMedicineList(data.products || []);
       })
-      .catch((err) => {
-        console.log(err, 'YourCartProps err');
+      .catch((e) => {
+        setIsLoading(false);
+        showGenericALert(e);
       });
-  }, []);
+  };
 
-  const addToCart = (sku: string) => {
-    const cartItem = {
-      cartItem: {
-        quote_id: quoteId,
-        sku: sku,
-        qty: 1,
-      },
-    };
-    console.log(cartItem, 'cartItem', CartId, 'CartId');
-    Axios.post(`http://api.apollopharmacy.in/rest/V1/guest-carts/${CartId}/items`, {
-      cartItem,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
-      },
-    })
-      .then((res) => {
-        console.log(res, 'addToCart dt');
+  const onPressAddToCart = (id: number, productSku: string) => {
+    addProductToCartApi(productSku)
+      .then(({ data }) => {
+        setMedicineCardStatus({
+          ...medicineCardStatus,
+          [id]: { isAddedToCart: true, isCardExpanded: true, unit: data.qty },
+        });
       })
-      .catch((err) => {
-        console.log(err, 'addToCart err');
+      .catch((e) => {
+        showGenericALert(e);
+      });
+  };
+
+  const onPressRemoveFromCart = (id: number) => {
+    removeProductFromCartApi(id)
+      .then(({ data }) => {
+        console.log('onPressRemoveFromCar', data);
+        setMedicineCardStatus({
+          ...medicineCardStatus,
+          [id]: { isAddedToCart: false, isCardExpanded: false, unit: 0 },
+        });
+      })
+      .catch((e) => {
+        showGenericALert(e);
+      });
+  };
+
+  const onChangeUnitFromCart = (id: number, sku: string, unit: number) => {
+    incOrDecProductCountToCartApi(sku, id, unit)
+      .then(({ data }) => {
+        console.log('onChangeUnitFromCart', data);
+        setMedicineCardStatus({
+          ...medicineCardStatus,
+          [id]: { ...medicineCardStatus[id], unit: data.qty },
+        });
+      })
+      .catch((e) => {
+        showGenericALert(e);
       });
   };
 
@@ -228,7 +226,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     );
   };
 
-  const isNoMedicinesFound = searchText.length > 2 && medicineList.length == 0;
+  const isNoMedicinesFound = !isLoading && searchText.length > 2 && medicineList.length == 0;
 
   const renderSorryMessage = isNoMedicinesFound ? (
     <Text style={styles.sorryTextStyle}>Sorry, we couldn’t find what you are looking for :(</Text>
@@ -238,30 +236,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   const performTextInputEvent = (event: 'focus' | 'blur') => {
     searchText.length < 3 && setShowMatchingMedicines(event == 'focus' ? true : false);
-  };
-
-  const fetchSearchData = (searchText: string) => {
-    console.log('fetchSearchData');
-    Axios.post(
-      'http://uat.apollopharmacy.in/searchprd_api.php',
-      { params: searchText },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
-        },
-      }
-    )
-      .then((res) => {
-        //do something
-        console.log(res, 'res');
-        if (res.data.products) setMedicineList(res.data.products);
-      })
-      .catch((err) => {
-        console.log(err, 'err');
-
-        //do something
-      });
   };
 
   const renderSearchInput = () => {
@@ -279,10 +253,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           placeholder="Enter name of the medicine"
           underlineColorAndroid="transparent"
           onChangeText={(value) => {
-            setSearchText(value);
-            console.log(value, 'value');
-            fetchSearchData(value);
-            // value.length > 2 ? setShowMatchingMedicines(true) : setShowMatchingMedicines(false);
+            onSearchMedicine(value);
           }}
           onFocus={() => performTextInputEvent('focus')}
           onBlur={() => {} /*performTextInputEvent('blur')*/}
@@ -350,6 +321,62 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     );
   };
 
+  const renderMedicineCard = (
+    medicine: MedicineProduct,
+    index: number,
+    array: MedicineProduct[]
+  ) => {
+    const medicineCardContainerStyle = [
+      { marginBottom: 8, marginHorizontal: 20 },
+      index == 0 ? { marginTop: 20 } : {},
+      index == array.length - 1 ? { marginBottom: 20 } : {},
+    ];
+    return (
+      <MedicineCard
+        containerStyle={medicineCardContainerStyle}
+        onPress={(_, sku) => {
+          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+            sku: sku,
+            title: medicine.name,
+          });
+        }}
+        id={medicine.id}
+        sku={medicine.sku}
+        medicineName={medicine.name}
+        price={medicine.price}
+        unit={(medicineCardStatus[medicine.id] && medicineCardStatus[medicine.id].unit) || 1}
+        onPressAdd={(id, sku) => {
+          onPressAddToCart(id, sku);
+        }}
+        onPressRemove={(id) => {
+          onPressRemoveFromCart(id);
+        }}
+        onChangeUnit={(id, unit, sku) => {
+          console.log('onChangeUnitFromCart', { id, unit, sku });
+
+          onChangeUnitFromCart(id, sku, unit);
+        }}
+        isCardExpanded={
+          medicineCardStatus[medicine.id] && medicineCardStatus[medicine.id].isCardExpanded
+        }
+        isInStock={medicine.is_in_stock}
+        isPrescriptionRequired={medicine.is_prescription_required == '1'}
+        subscriptionStatus={
+          (medicineCardStatus[medicine.id] && medicineCardStatus[medicine.id].subscriptionStatus) ||
+          'unsubscribed'
+        }
+        onChangeSubscription={(id, status) => {
+          setMedicineCardStatus({
+            ...medicineCardStatus,
+            [id]: { ...medicineCardStatus[id], subscriptionStatus: status },
+          });
+        }}
+        onEditPress={() => {}}
+        onAddSubscriptionPress={() => {}}
+      />
+    );
+  };
+
   const renderMatchingMedicines = () => {
     return (
       <>
@@ -357,71 +384,16 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           sectionTitle={`Matching Medicines — ${medicineList.length}`}
           style={{ marginBottom: 0 }}
         />
-        {medicineList.map((medicine, index, array) => {
-          const medicineCardContainerStyle = [
-            { marginBottom: 8, marginHorizontal: 20 },
-            index == 0 ? { marginTop: 20 } : {},
-            index == array.length - 1 ? { marginBottom: 20 } : {},
-          ];
-          return (
-            <MedicineCard
-              containerStyle={medicineCardContainerStyle}
-              key={medicine.id}
-              onPress={(_, sku) => {
-                props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-                  sku: sku,
-                  title: medicine.name,
-                });
-              }}
-              id={medicine.id}
-              sku={medicine.sku}
-              medicineName={medicine.name}
-              price={medicine.price}
-              unit={(medicineCardStatus[medicine.id] && medicineCardStatus[medicine.id].unit) || 1}
-              isAddedToCart={true}
-              onPressAdd={(id) => {
-                setMedicineCardStatus({
-                  ...medicineCardStatus,
-                  [id]: { isAddedToCart: true, isCardExpanded: true },
-                });
-                addToCart(medicine.sku);
-                // Call Add to cart API
-              }}
-              onPressRemove={(id) => {
-                setMedicineCardStatus({
-                  ...medicineCardStatus,
-                  [id]: { isAddedToCart: false, isCardExpanded: false },
-                });
-                // Call Remove from cart API
-              }}
-              onChangeUnit={(id, unit) => {
-                setMedicineCardStatus({
-                  ...medicineCardStatus,
-                  [id]: { ...medicineCardStatus[id], unit },
-                });
-                // Update no. of units to cart for this item via API
-              }}
-              isCardExpanded={
-                medicineCardStatus[medicine.id] && medicineCardStatus[medicine.id].isCardExpanded
-              }
-              isInStock={!!medicine.is_in_stock}
-              isPrescriptionRequired={!!!medicine.is_prescription_required}
-              subscriptionStatus={
-                (medicineCardStatus[medicine.id] &&
-                  medicineCardStatus[medicine.id].subscriptionStatus) ||
-                'unsubscribed'
-              }
-              onChangeSubscription={(id, status) => {
-                setMedicineCardStatus({
-                  ...medicineCardStatus,
-                  [id]: { ...medicineCardStatus[id], subscriptionStatus: status },
-                });
-              }}
-              onEditPress={() => {}}
-              onAddSubscriptionPress={() => {}}
-            />
-          );
-        })}
+        {isLoading ? (
+          <ActivityIndicator />
+        ) : (
+          <FlatList
+            data={medicineList}
+            renderItem={({ item, index }) => renderMedicineCard(item, index, medicineList)}
+            keyExtractor={(_, index) => `${index}`}
+            bounces={false}
+          />
+        )}
       </>
     );
   };

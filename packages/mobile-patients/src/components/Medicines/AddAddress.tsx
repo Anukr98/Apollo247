@@ -1,21 +1,11 @@
-import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ArrowRight, CouponIcon, MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
-import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import {
-  getProductsBasedOnCategory,
-  MedicineProductsResponse,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import React, { useState } from 'react';
+import { SafeAreaView, StyleSheet, View } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   labelView: {

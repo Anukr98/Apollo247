@@ -8,12 +8,10 @@ import {
   RemoveIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React from 'react';
-import { StyleProp, StyleSheet, Text, View, ViewStyle, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { DropDown, Option } from './DropDown';
-
-const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -23,13 +21,16 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
   },
   rowSpaceBetweenView: {
+    flex: 1,
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
   flexStyle: {
     flex: 1,
   },
   medicineTitle: {
+    flex: 1,
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(16),
     lineHeight: 24,
@@ -122,6 +123,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
+  outOfStockStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 20,
+    letterSpacing: 0.04,
+    color: theme.colors.INPUT_FAILURE_TEXT,
+    marginTop: 4,
+  },
 });
 
 export interface MedicineCardProps {
@@ -136,18 +144,18 @@ export interface MedicineCardProps {
   isInStock: boolean;
   isPrescriptionRequired: boolean;
   isCardExpanded: boolean;
-  isAddedToCart: boolean;
   onPress: (id: number, sku: string) => void;
-  onChangeUnit: (id: number, unit: number) => void;
+  onChangeUnit: (id: number, unit: number, sku: string) => void;
   onChangeSubscription: (id: number, status: MedicineCardProps['subscriptionStatus']) => void;
   onPressRemove: (id: number) => void;
-  onPressAdd: (id: number) => void;
+  onPressAdd: (id: number, sku: string) => void;
   onEditPress: (id: number) => void;
   onAddSubscriptionPress: (id: number) => void;
   containerStyle?: StyleProp<ViewStyle>;
 }
 
 export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
+  const [dropDownVisible, setDropDownVisible] = useState(false);
   const {
     id,
     sku,
@@ -157,7 +165,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     personName,
     price,
     unit,
-    isAddedToCart,
+    isInStock,
     containerStyle,
     subscriptionStatus,
     isPrescriptionRequired,
@@ -173,22 +181,14 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   const renderTitleAndIcon = () => {
     return (
       <View style={styles.rowSpaceBetweenView}>
-        {renderMedicineIcon()}
-        <View
-          style={{
-            // flex: 1,
-            width: width - 152,
-          }}
-        >
-          <Text numberOfLines={1} style={styles.medicineTitle}>
-            {medicineName}
-          </Text>
-        </View>
-        <View style={{ flex: 1, alignItems: 'flex-end' }}>
-          {isCardExpanded
+        <Text numberOfLines={1} style={styles.medicineTitle}>
+          {medicineName}
+        </Text>
+        {isInStock
+          ? isCardExpanded
             ? renderTouchable(<RemoveIcon />, () => onPressRemove(id))
-            : renderTouchable(<AddIcon />, () => onPressAdd(id))}
-        </View>
+            : renderTouchable(<AddIcon />, () => onPressAdd(id, sku))
+          : null}
       </View>
     );
   };
@@ -236,10 +236,14 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
       (_, i) =>
         ({
           optionText: `${i + 1} UNIT`,
-          onPress: () => onChangeUnit(id, i + 1),
+          onPress: () => onChangeUnit(id, i + 1, sku),
         } as Option)
     );
-    return <DropDown options={options} />;
+    return (
+      <View style={{ zIndex: 100 }}>
+        <DropDown options={options} />
+      </View>
+    );
   };
 
   const renderUnitDropdownAndPrice = () => {
@@ -248,12 +252,12 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         <View style={styles.flexStyle}>
           <TouchableOpacity
             style={styles.unitDropdownContainer}
-            onPress={() => onChangeUnit(id, 1)}
+            onPress={() => setDropDownVisible(!dropDownVisible)}
           >
             <Text style={styles.unitAndRupeeText}>{`${unit} UNIT`}</Text>
             <DropdownGreen style={{ marginRight: 7 }} />
           </TouchableOpacity>
-          {/* {renderUnitDropdownOptions()} */}
+          {dropDownVisible && renderUnitDropdownOptions()}
         </View>
         <View style={styles.verticalSeparator} />
         <View style={[styles.flexStyle, { alignItems: 'flex-end' }]}>
@@ -282,27 +286,32 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     );
   };
 
+  const renderOutOfStock = () => {
+    return !isInStock && <Text style={styles.outOfStockStyle}>Out Of Stock</Text>;
+  };
+
   return (
     <TouchableOpacity
       style={[styles.containerStyle, containerStyle]}
       onPress={() => onPress(id, sku)}
     >
       {renderPersonSelectionView()}
-      {/* <View> */}
-      {/* {renderMedicineIcon()} */}
-      {/* <View style={styles.flexStyle}> */}
-      {renderTitleAndIcon()}
-      {isCardExpanded ? (
-        <>
-          {(packOfCount || 10) && (
-            <Text style={styles.packOfTextStyle}>{`Pack of ${packOfCount || 10}`}</Text>
-          )}
-          <View style={[styles.separator, { marginTop: 0 }]} />
-          {renderUnitDropdownAndPrice()}
-        </>
-      ) : null}
-      {/* </View> */}
-      {/* </View> */}
+      <View style={{ flexDirection: 'row' }}>
+        {renderMedicineIcon()}
+        <View style={styles.flexStyle}>
+          {renderTitleAndIcon()}
+          {renderOutOfStock()}
+          {isCardExpanded ? (
+            <>
+              {!!packOfCount && (
+                <Text style={styles.packOfTextStyle}>{`Pack of ${packOfCount}`}</Text>
+              )}
+              <View style={[styles.separator, { marginTop: 0 }]} />
+              {renderUnitDropdownAndPrice()}
+            </>
+          ) : null}
+        </View>
+      </View>
       {isCardExpanded ? (
         <>
           <View style={[styles.separator, { marginBottom: 8 }]} />
