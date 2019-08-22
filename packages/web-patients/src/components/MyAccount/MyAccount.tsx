@@ -4,6 +4,7 @@ import { Header } from 'components/Header';
 import React from 'react';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { MyProfile } from 'components/MyAccount/MyProfile';
+import { AddressBook } from 'components/MyAccount/AddressBook';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -75,6 +76,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 20,
       display: 'flex',
       alignItems: 'center',
+      marginRight: 15,
       [theme.breakpoints.down('xs')]: {
         borderBottom: 'none',
         paddingBottom: 16,
@@ -124,6 +126,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     rightSection: {
       width: 'calc(100% - 328px)',
+      paddingLeft: 10,
+      paddingRight: 5,
     },
   };
 });
@@ -153,7 +157,9 @@ export const MyAccount: React.FC = (props) => {
             <div className={classes.leftSection}>
               <MyProfile />
             </div>
-            <div className={classes.rightSection}></div>
+            <div className={classes.rightSection}>
+              <AddressBook />
+            </div>
           </div>
         </div>
       </div>

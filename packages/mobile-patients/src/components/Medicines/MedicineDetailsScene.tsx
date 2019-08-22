@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { getProductDetails, quoteId } from '../../helpers/apiCalls';
+import { getProductDetails } from '../../helpers/apiCalls';
 import Axios from 'axios';
 
 const styles = StyleSheet.create({
