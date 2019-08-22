@@ -1,11 +1,12 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
+import { STATUS } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { ConsultMode } from 'doctors-service/entities';
 
 export const getAppointmentHistoryTypeDefs = gql`
   extend type Patient @key(fields: "id") {
@@ -64,7 +65,7 @@ type AppointmentHistory = {
   patientId: string;
   doctorId: string;
   appointmentDateTime: Date;
-  appointmentType: APPOINTMENT_TYPE;
+  appointmentType: ConsultMode;
   hospitalId?: string;
   status: STATUS;
   bookingDate: Date;

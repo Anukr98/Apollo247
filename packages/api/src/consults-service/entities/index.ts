@@ -11,7 +11,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { IsDate } from 'class-validator';
-import { ConsultType } from 'doctors-service/entities';
+import { ConsultMode } from 'doctors-service/entities';
 
 export enum STATUS {
   PENDING = 'PENDING',
@@ -27,11 +27,6 @@ export enum APPOINTMENT_STATE {
   FOLLOW_UP = 'FOLLOW_UP',
   TRANSFER = 'TRANSFER',
   RESCHEDULE = 'RESCHEDULE',
-}
-
-export enum APPOINTMENT_TYPE {
-  ONLINE = 'ONLINE',
-  PHYSICAL = 'PHYSICAL',
 }
 
 export enum MEDICINE_TIMINGS {
@@ -59,7 +54,7 @@ export class Appointment extends BaseEntity {
   appointmentDateTime: Date;
 
   @Column()
-  appointmentType: APPOINTMENT_TYPE;
+  appointmentType: ConsultMode;
 
   @Column({ nullable: true })
   appointmentState: APPOINTMENT_STATE;
@@ -193,10 +188,13 @@ export class CaseSheet extends BaseEntity {
   appointment: Appointment;
 
   @Column()
-  consultType: ConsultType;
+  consultType: ConsultMode;
 
   @Column()
   createdDate: Date;
+
+  @Column({ nullable: true })
+  createdDoctorId: string;
 
   @Column({ nullable: true, type: 'json' })
   diagnosis: string;
@@ -225,11 +223,14 @@ export class CaseSheet extends BaseEntity {
   )
   medicinePrescription: MedicinePrescription[];
 
-  @Column({ type: 'text' })
+  @Column({ nullable: true, type: 'text' })
   notes: string;
 
   @Column({ nullable: true, type: 'json' })
   otherInstructions: string;
+
+  @Column({ nullable: true })
+  patientId: string;
 
   @Column({ nullable: true, type: 'json' })
   symptoms: string;

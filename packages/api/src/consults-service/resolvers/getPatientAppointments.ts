@@ -1,8 +1,9 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
+import { STATUS } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { ConsultMode } from 'doctors-service/entities';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -51,7 +52,7 @@ type PatinetAppointments = {
   patientId: string;
   doctorId: string;
   appointmentDateTime: Date;
-  appointmentType: APPOINTMENT_TYPE;
+  appointmentType: ConsultMode;
   hospitalId?: string;
   status: STATUS;
   bookingDate: Date;
