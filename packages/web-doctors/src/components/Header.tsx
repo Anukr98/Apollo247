@@ -88,6 +88,21 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       marginTop: '63px',
     },
+    menuItemActive: {
+      backgroundColor: '#f7f8f5',
+      position: 'relative',
+      display: 'inline-block',
+
+      '&:after': {
+        position: 'absolute',
+        content: '""',
+        bottom: 0,
+        left: 0,
+        height: 5,
+        width: '100%',
+        backgroundColor: '#00b38e',
+      },
+    },
     container: {
       maxWidth: 1024,
       margin: 'auto',
@@ -116,6 +131,7 @@ export const Header: React.FC = (props) => {
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [isHelpPopupOpen, setIsHelpPopupOpen] = React.useState(false);
   const [stickyPopup, setStickyPopup] = React.useState(true);
+  const [selectedTab, setSelectedTab] = React.useState(0);
   return (
     <header className={classes.header}>
       <div className={classes.container}>
@@ -135,26 +151,48 @@ export const Header: React.FC = (props) => {
                   window.location.href.includes('/profile') ? (
                     <div>
                       <img
-                        className={classes.accountIc}
-                        onClick={() =>
-                          isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true)
-                        }
+                        className={`${classes.accountIc} ${selectedTab === 5 &&
+                          classes.menuItemActive}`}
+                        onClick={() => {
+                          isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
+                          setSelectedTab(5);
+                        }}
                         src={require('images/ic_help.svg')}
                       />
                     </div>
                   ) : (
                     <div>
-                      <img src={require('images/ic_inbox.svg')} />
-                      <img src={require('images/ic_notifications.svg')} />
                       <img
-                        onClick={() =>
-                          isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true)
-                        }
+                        className={`${selectedTab === 3 && classes.menuItemActive}`}
+                        onClick={() => setSelectedTab(3)}
+                        src={require('images/ic_inbox.svg')}
+                      />
+                      <img
+                        className={`${selectedTab === 4 && classes.menuItemActive}`}
+                        onClick={() => setSelectedTab(4)}
+                        src={require('images/ic_notifications.svg')}
+                      />
+
+                      <img
+                        className={`${selectedTab === 5 && classes.menuItemActive}`}
+                        onClick={() => {
+                          isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
+                          setSelectedTab(5);
+                        }}
                         src={require('images/ic_help.svg')}
                       />
-                      <Link to="/myaccount">
-                        <img src={require('images/ic_profile.svg')} />
-                      </Link>
+                      <span>
+                        <Link
+                          to="/myaccount"
+                          className={`${window.location.href.includes('/myaccount') &&
+                            classes.menuItemActive}`}
+                        >
+                          <img
+                            onClick={() => setSelectedTab(6)}
+                            src={require('images/ic_profile.svg')}
+                          />
+                        </Link>
+                      </span>
                     </div>
                   )
                 ) : (
@@ -187,7 +225,13 @@ export const Header: React.FC = (props) => {
             >
               {isSignedIn ? (
                 <Paper className={classes.afterloginForm}>
-                  <Button onClick={() => setIsHelpPopupOpen(false)} className={classes.cross}>
+                  <Button
+                    onClick={() => {
+                      setIsHelpPopupOpen(false);
+                      setSelectedTab(1);
+                    }}
+                    className={classes.cross}
+                  >
                     <img src={require('images/ic_cross.svg')} alt="" />
                   </Button>
                   <HelpPopup setBackArrow={() => setIsHelpPopupOpen(true)} />

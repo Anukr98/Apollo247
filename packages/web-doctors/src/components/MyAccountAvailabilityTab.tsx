@@ -80,7 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '10px 5px 10px 5px',
     },
     availabletabContent: {
-      padding: 20,
+      padding: 0,
     },
     avatarBlock: {
       overflow: 'hidden',
