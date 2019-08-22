@@ -253,7 +253,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               </div>
               <div className={classes.doctorType}>
                 {doctorDetails.specialty.name}
-                <span className={classes.doctorExp}>{doctorDetails.experience} YRS</span>
+                <span className={classes.doctorExp}>
+                  {doctorDetails.experience}{' '}
+                  {doctorDetails && parseInt(doctorDetails.experience || '1', 10) > 1
+                    ? 'YRS'
+                    : 'YEAR'}
+                </span>
               </div>
               <div className={classes.doctorDetails}>
                 <p>{doctorDetails.qualification}</p>
