@@ -35,9 +35,230 @@ export enum SEARCH_TYPE {
   MEDICINE = 'MEDICINE',
 }
 
+export enum MEDICINE_ORDER_STATUS {
+  QUOTE = 'QUOTE',
+  ORDERED = 'ORDERED',
+  DELIVERED = 'DELIVERED',
+  CANCELLED = 'CANCELLED',
+  ON_THE_WAY = 'ON_THE_WAY',
+  PICKEDUP = 'PICKEDUP',
+}
+
+export enum MEDICINE_DELIVERY_TYPE {
+  HOME_DELIVERY = 'HOME_DELIVERY',
+  STORE_PICK_UP = 'STORE_PICK_UP',
+}
+
+export enum MEDICINE_ORDER_TYPE {
+  UPLOAD_PRESCRIPTION = 'UPLOAD_PRESCRIPTION',
+  CART_ORDER = 'CART_ORDER',
+}
+
+export enum MEDICINE_ORDER_PAYMENT_TYPE {
+  COD = 'COD',
+  ONLINE = 'ONLINE',
+}
+
+export enum DEVICE_TYPE {
+  IOS = 'IOS',
+  ANDROID = 'ANDROID',
+}
+
+//medicine orders starts
+@Entity()
+export class MedicineOrders extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column()
+  deliveryType: MEDICINE_DELIVERY_TYPE;
+
+  @Column('decimal', { precision: 5, scale: 2 })
+  estimatedAmount: number;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  orderType: MEDICINE_ORDER_TYPE;
+
+  @Column({ nullable: true, type: 'timestamp' })
+  orderDateTime: Date;
+
+  @Column({ type: 'timestamp' })
+  quoteDateTime: Date;
+
+  @Column()
+  quoteId: string;
+
+  @Column({ nullable: true })
+  shopId: string;
+
+  @Column()
+  status: MEDICINE_ORDER_STATUS;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+
+  @ManyToOne((type) => Patient, (patient) => patient.medicineOrders)
+  patient: Patient;
+
+  @OneToMany(
+    (type) => MedicineOrderLineItems,
+    (medicineOrderLineItems) => medicineOrderLineItems.medicineOrders
+  )
+  medicineOrderLineItems: MedicineOrderLineItems[];
+
+  @OneToMany(
+    (type) => MedicineOrderPayments,
+    (medicineOrderPayments) => medicineOrderPayments.medicineOrders
+  )
+  medicineOrderPayments: MedicineOrderPayments[];
+}
+//medicine orders ends
+
+//medicine orders  line items start
+@Entity()
+export class MedicineOrderLineItems extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  medicineSKU: string;
+
+  @Column()
+  medicineName: string;
+
+  @Column('decimal', { precision: 5, scale: 2 })
+  mrp: number;
+
+  @Column('decimal', { precision: 5, scale: 2 })
+  price: number;
+
+  @Column()
+  quantity: number;
+
+  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderLineItems)
+  medicineOrders: MedicineOrders;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//medicine orders line items ends
+
+//medicine orders  payments start
+@Entity()
+export class MedicineOrderPayments extends BaseEntity {
+  @Column('decimal', { precision: 5, scale: 2 })
+  amountPaid: number;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+
+  @Column()
+  paymentRefId: string;
+
+  @Column()
+  paymentDateTime: Date;
+
+  @Column()
+  paymentStatus: String;
+
+  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderLineItems)
+  medicineOrders: MedicineOrders;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//medicine orders payments ends
+
+//patient device tokens starts
+@Entity()
+export class PatientDeviceTokens extends BaseEntity {
+  @ManyToOne((type) => Patient, (patient) => patient.patientDeviceTokens)
+  patient: Patient;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ type: 'text' })
+  deviceToken: string;
+
+  @Column()
+  deviceOS: string;
+
+  @Column()
+  deviceType: DEVICE_TYPE;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//patient device token ends
+
 //patient Starts
 @Entity()
 export class Patient extends BaseEntity {
+  @OneToMany((type) => PatientDeviceTokens, (patientDeviceTokens) => patientDeviceTokens.patient)
+  patientDeviceTokens: PatientDeviceTokens[];
+
+  @OneToMany((type) => MedicineOrders, (medicineOrders) => medicineOrders.patient)
+  medicineOrders: MedicineOrders[];
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
   @Column({ nullable: true })
   dateOfBirth: Date;
 
@@ -85,6 +306,19 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true })
   relation: Relation;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 
   @OneToMany((type) => SearchHistory, (searchHistory) => searchHistory.patient)
   searchHistory: SearchHistory[];
@@ -134,6 +368,9 @@ export class PatientAddress extends BaseEntity {
 
   @Column({ nullable: true })
   city: string;
+
+  @Column({ nullable: true })
+  mobileNumber: string;
 
   @Column({ nullable: true })
   state: string;

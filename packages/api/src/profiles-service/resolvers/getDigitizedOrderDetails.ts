@@ -1,7 +1,15 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
+import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import {
+  MedicineOrders,
+  MEDICINE_DELIVERY_TYPE,
+  MEDICINE_ORDER_TYPE,
+  MEDICINE_ORDER_STATUS,
+  MedicineOrderLineItems,
+} from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
-import { Double } from 'typeorm';
 
 export const getDigitizedOrderTypeDefs = gql`
   input MedicineOrderInput {
@@ -34,7 +42,7 @@ export const getDigitizedOrderTypeDefs = gql`
 type MedicineOrderInput = {
   quoteId: string;
   shopId: string;
-  estimatedAmount: Double;
+  estimatedAmount: number;
   patientId: string;
   items: MedicineItem[];
 };
@@ -42,9 +50,9 @@ type MedicineOrderInput = {
 type MedicineItem = {
   medicineSku: string;
   medicineName: string;
-  price: Double;
+  price: number;
   quantity: number;
-  mrp: Double;
+  mrp: number;
 };
 
 type MedicineOrderResult = {
@@ -75,6 +83,33 @@ const getDigitizedPrescription: Resolver<
     errorMessage = 'Missing medicine line items';
     status = 'Rejected';
   }
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findById(MedicineOrderInput.patientId);
+  const medicineOrderattrs: Partial<MedicineOrders> = {
+    patient: patientDetails,
+    quoteId: MedicineOrderInput.quoteId,
+    deliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
+    estimatedAmount: MedicineOrderInput.estimatedAmount,
+    orderType: MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION,
+    shopId: MedicineOrderInput.shopId,
+    quoteDateTime: new Date(),
+    status: MEDICINE_ORDER_STATUS.QUOTE,
+  };
+  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+  const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
+  if (saveOrder) {
+    MedicineOrderInput.items.map((item) => {
+      const orderItemAttrs: Partial<MedicineOrderLineItems> = {
+        medicineOrders: saveOrder,
+        medicineSKU: item.medicineSku,
+        ...item,
+      };
+      const lineItemOrder = medicineOrdersRepo.saveMedicineOrderLineItem(orderItemAttrs);
+      console.log(lineItemOrder);
+    });
+  }
+  console.log(saveOrder, 'save order');
+
   return { status, errorCode, errorMessage };
 };
 

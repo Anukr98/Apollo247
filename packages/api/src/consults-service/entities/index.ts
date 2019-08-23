@@ -110,6 +110,12 @@ export class AppointmentSessions extends BaseEntity {
   @JoinColumn()
   appointment: Appointment;
 
+  @Column({ type: 'timestamp', nullable: true })
+  consultStartDateTime: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  consultEndDateTime: Date;
+
   @Column()
   sessionId: string;
 
