@@ -1,5 +1,5 @@
 import { EntityRepository, Repository, Brackets } from 'typeorm';
-import { Doctor, ConsultMode } from 'doctors-service/entities';
+import { Doctor, ConsultMode, DoctorType } from 'doctors-service/entities';
 import {
   Range,
   FilterDoctorInput,
@@ -96,6 +96,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .orWhere("LOWER(doctor.firstName || ' ' || doctor.lastName) LIKE :searchString", {
         searchString: `${searchString}%`,
       })
+      .orderBy('doctor.experience', 'DESC')
       .getMany();
   }
 
@@ -108,6 +109,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .where('doctor.specialty = :specialtyId', {
         specialtyId,
       })
+      .orderBy('doctor.experience', 'DESC')
       .getMany();
   }
 
@@ -121,7 +123,28 @@ export class DoctorRepository extends Repository<Doctor> {
         specialtyId,
       })
       .andWhere('doctor.id NOT IN (:doctorId)', { doctorId })
+      .orderBy('doctor.experience', 'DESC')
       .getMany();
+  }
+
+  sortByRankingAlgorithm(a: Doctor, b: Doctor, docIds: string[]) {
+    //STAR_APOLLO doctor on top
+    if (a.doctorType == DoctorType.STAR_APOLLO && b.doctorType != DoctorType.STAR_APOLLO) return -1;
+    if (a.doctorType != DoctorType.STAR_APOLLO && b.doctorType == DoctorType.STAR_APOLLO) return 1;
+
+    //Previously consulted non-payroll doctors on next
+    if (docIds.includes(a.id) && a.doctorType != DoctorType.PAYROLL && !docIds.includes(b.id))
+      return -1;
+    if (!docIds.includes(a.id) && docIds.includes(b.id) && b.doctorType != DoctorType.PAYROLL)
+      return 1;
+
+    //same city doctors on next (location logic is not yet finalized)
+
+    //payroll doctors at last
+    if (a.doctorType != DoctorType.PAYROLL && b.doctorType == DoctorType.PAYROLL) return -1;
+    if (a.doctorType == DoctorType.PAYROLL && b.doctorType != DoctorType.PAYROLL) return 1;
+
+    return 0;
   }
 
   filterDoctors(filterInput: FilterDoctorInput) {
@@ -191,7 +214,7 @@ export class DoctorRepository extends Repository<Doctor> {
       );
     }
 
-    return queryBuilder.getMany();
+    return queryBuilder.orderBy('doctor.experience', 'DESC').getMany();
   }
 
   getDoctorsAvailability(doctors: Doctor[], selectedDates: string[], now?: AppointmentDateTime) {
