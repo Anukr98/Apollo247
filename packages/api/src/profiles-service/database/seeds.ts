@@ -1,9 +1,9 @@
-import { getConnection } from 'typeorm';
-import { connect } from 'doctors-service/database/connect';
+import { connect } from 'profiles-service/database/connect';
+import { buildPatient } from 'profiles-service/database/factories/patientFactory';
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { SearchHistoryRepository } from 'profiles-service/repositories/searchHistoryRepository';
-import { buildPatient } from 'profiles-service/database/factories/patientFactory';
+import { getConnection } from 'typeorm';
 
 (async () => {
   console.log('Seeding consults-db...');

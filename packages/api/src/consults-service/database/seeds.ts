@@ -1,8 +1,8 @@
-import { getConnection } from 'typeorm';
-import { connect } from 'doctors-service/database/connect';
+import { connect } from 'consults-service/database/connect';
+import { buildAppointment } from 'consults-service/database/factories/appointmentFactory';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
-import { buildAppointment } from 'consults-service/database/factories/appointmentFactory';
+import { getConnection } from 'typeorm';
 
 (async () => {
   console.log('Seeding consults-db...');

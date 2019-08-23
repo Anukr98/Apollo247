@@ -1,11 +1,11 @@
-import { getConnection } from 'typeorm';
-import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { connect } from 'doctors-service/database/connect';
 import { buildDoctor } from 'doctors-service/database/factories/doctorFactory';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { StarTeamRepository } from 'doctors-service/repositories/starTeamRepository';
-import { connect } from 'doctors-service/database/connect';
+import { getConnection } from 'typeorm';
 
 (async () => {
   console.log('Seeding doctors-db...');
