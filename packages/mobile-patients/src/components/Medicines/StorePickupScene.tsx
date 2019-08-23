@@ -5,7 +5,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { RadioSelectionItem } from '@aph/mobile-patients/src/components/ui/RadioSelectionItem';
+import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -121,7 +121,12 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
 
   return (
     <SafeAreaView style={theme.viewStyles.container}>
-      <Header leftIcon="backArrow" title={'STORE PICK UP'} container={{ borderBottomWidth: 0 }} />
+      <Header
+        leftIcon="backArrow"
+        title={'STORE PICK UP'}
+        container={{ borderBottomWidth: 0 }}
+        onPressLeftIcon={() => props.navigation.goBack()}
+      />
       <ScrollView bounces={false}>{renderCouponCard()}</ScrollView>
       {renderBottomButton()}
     </SafeAreaView>

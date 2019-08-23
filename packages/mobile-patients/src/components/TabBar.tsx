@@ -2,7 +2,7 @@ import { AppRoute, AppRoutes } from '@aph/mobile-patients/src/components/Navigat
 import { ConsultRoom } from '@aph/mobile-patients/src/components/ConsultRoom';
 import { HealthRecords } from '@aph/mobile-patients/src/components/HealthRecords';
 import { MyAccount } from '@aph/mobile-patients/src/components/MyAccount';
-import { Medicine } from '@aph/mobile-patients/src/components/Medicine';
+import { Medicine } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 
 import {
   ConsultationRoom,
