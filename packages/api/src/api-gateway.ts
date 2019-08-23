@@ -57,15 +57,15 @@ export type Resolver<Parent, Args, Context, Result> = (
     databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
   });
 
+  const corsOrigins = [
+    webDoctorsBaseUrl(),
+    webPatientsBaseUrl(),
+    'http://localhost:3000',
+    'http://localhost:3001',
+  ];
+
   const server = new ApolloServer({
-    cors: {
-      origin: [
-        webDoctorsBaseUrl(),
-        webPatientsBaseUrl(),
-        'http://localhost:3000',
-        'http://localhost:3001',
-      ],
-    },
+    cors: { origin: corsOrigins },
     schema,
     executor,
     context: async ({ req }) => {
@@ -110,6 +110,7 @@ export type Resolver<Parent, Args, Context, Result> = (
 
   server.listen(process.env.API_GATEWAY_PORT).then(({ url }) => {
     console.log(`🚀 api gateway ready at ${url}`);
+    console.log('allowed cors origins:', corsOrigins.join(','));
   });
 
   /*console.log('------------------------MESSAGE QUEUE TEST----------------------------');

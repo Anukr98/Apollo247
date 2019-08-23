@@ -50,6 +50,8 @@ import {
   getPhysicalAvailableSlotsTypeDefs,
   getPhysicalAvailableSlotsResolvers,
 } from 'consults-service/resolvers/getDoctorPhysicalAvailability';
+import { caseSheetTypeDefs, caseSheetResolvers } from 'consults-service/resolvers/caseSheet';
+
 import { GatewayHeaders } from 'api-gateway';
 
 (async () => {
@@ -145,6 +147,10 @@ import { GatewayHeaders } from 'api-gateway';
       {
         typeDefs: getPhysicalAvailableSlotsTypeDefs,
         resolvers: getPhysicalAvailableSlotsResolvers,
+      },
+      {
+        typeDefs: caseSheetTypeDefs,
+        resolvers: caseSheetResolvers,
       },
     ]),
   });

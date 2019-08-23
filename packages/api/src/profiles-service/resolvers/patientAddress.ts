@@ -15,6 +15,7 @@ export const addPatientAddressTypeDefs = gql`
     city: String
     state: String
     zipcode: String!
+    mobileNumber: String
     landmark: String
   }
 
@@ -25,6 +26,7 @@ export const addPatientAddressTypeDefs = gql`
     city: String
     state: String
     zipcode: String!
+    mobileNumber: String
     landmark: String
   }
 
@@ -33,6 +35,7 @@ export const addPatientAddressTypeDefs = gql`
     addressLine1: String
     addressLine2: String
     city: String
+    mobileNumber: String
     state: String
     zipcode: String
     landmark: String
@@ -65,6 +68,7 @@ type PatientAddressInput = {
   addressLine1: string;
   addressLine2: string;
   city: string;
+  mobileNumber: string;
   state: string;
   zipcode: string;
   landmark: string;
@@ -75,6 +79,7 @@ type UpdatePatientAddressInput = {
   addressLine1: string;
   addressLine2: string;
   city: string;
+  mobileNumber: string;
   state: string;
   zipcode: string;
   landmark: string;

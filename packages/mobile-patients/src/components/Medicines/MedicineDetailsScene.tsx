@@ -1,5 +1,7 @@
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -19,19 +21,6 @@ const styles = StyleSheet.create({
     color: theme.colors.LIGHT_BLUE,
     opacity: 0.6,
     letterSpacing: 0.04,
-  },
-  heading: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.LIGHT_BLUE,
-    lineHeight: 20,
-    marginBottom: 8,
-  },
-  description: {
-    ...theme.fonts.IBMPlexSansMedium(16),
-    color: theme.colors.SKY_BLUE,
-    letterSpacing: 0.04,
-    lineHeight: 24,
-    marginBottom: 16,
   },
   bottonButtonContainer: {
     marginHorizontal: 20,
