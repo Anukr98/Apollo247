@@ -58,8 +58,8 @@ export type Resolver<Parent, Args, Context, Result> = (
   });
 
   const corsOrigins = [
-    webDoctorsBaseUrl(),
     webPatientsBaseUrl(),
+    webDoctorsBaseUrl(),
     'http://localhost:3000',
     'http://localhost:3001',
   ];

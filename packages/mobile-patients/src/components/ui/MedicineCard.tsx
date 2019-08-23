@@ -8,7 +8,7 @@ import {
   RemoveIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { DropDown, Option } from './DropDown';
@@ -21,6 +21,7 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
   },
   rowSpaceBetweenView: {
+    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -29,6 +30,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   medicineTitle: {
+    flex: 1,
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(16),
     lineHeight: 24,
@@ -121,11 +123,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
+  outOfStockStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 20,
+    letterSpacing: 0.04,
+    color: theme.colors.INPUT_FAILURE_TEXT,
+    marginTop: 4,
+  },
 });
 
 export interface MedicineCardProps {
-  id: number;
-  sku: string;
   medicineName: string;
   personName?: string;
   price: number;
@@ -135,28 +142,26 @@ export interface MedicineCardProps {
   isInStock: boolean;
   isPrescriptionRequired: boolean;
   isCardExpanded: boolean;
-  isAddedToCart: boolean;
-  onPress: (id: number, sku: string) => void;
-  onChangeUnit: (id: number, unit: number) => void;
-  onChangeSubscription: (id: number, status: MedicineCardProps['subscriptionStatus']) => void;
-  onPressRemove: (id: number) => void;
-  onPressAdd: (id: number) => void;
-  onEditPress: (id: number) => void;
-  onAddSubscriptionPress: (id: number) => void;
+  onPress: () => void;
+  onChangeUnit: (unit: number) => void;
+  onChangeSubscription: (status: MedicineCardProps['subscriptionStatus']) => void;
+  onPressRemove: () => void;
+  onPressAdd: () => void;
+  onEditPress: () => void;
+  onAddSubscriptionPress: () => void;
   containerStyle?: StyleProp<ViewStyle>;
 }
 
 export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
+  const [dropDownVisible, setDropDownVisible] = useState(false);
   const {
-    id,
-    sku,
     isCardExpanded,
     packOfCount,
     medicineName,
     personName,
     price,
     unit,
-    isAddedToCart,
+    isInStock,
     containerStyle,
     subscriptionStatus,
     isPrescriptionRequired,
@@ -175,9 +180,11 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         <Text numberOfLines={1} style={styles.medicineTitle}>
           {medicineName}
         </Text>
-        {isCardExpanded
-          ? renderTouchable(<RemoveIcon />, () => onPressRemove(id))
-          : renderTouchable(<AddIcon />, () => onPressAdd(id))}
+        {isInStock
+          ? isCardExpanded
+            ? renderTouchable(<RemoveIcon />, () => onPressRemove())
+            : renderTouchable(<AddIcon />, () => onPressAdd())
+          : null}
       </View>
     );
   };
@@ -190,11 +197,11 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           <View style={styles.editAndSubscriptionViewStyle}>
             {renderTouchable(
               <Text style={styles.editAndAddSubscriptionTextStyle}>{'EDIT'}</Text>,
-              () => onEditPress(id)
+              () => onEditPress()
             )}
             {renderTouchable(
               <Text style={styles.editAndAddSubscriptionTextStyle}>{'ADD NEW SUBSCRIPTION'}</Text>,
-              () => onAddSubscriptionPress(id)
+              () => onAddSubscriptionPress()
             )}
           </View>
         </View>
@@ -207,7 +214,6 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           subscriptionStatus == 'subscribed-now' ? <CheckedIcon /> : <CheckUnselectedIcon />,
           () =>
             onChangeSubscription(
-              id,
               subscriptionStatus == 'subscribed-now' ? 'unsubscribed' : 'subscribed-now'
             )
         )}
@@ -225,10 +231,14 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
       (_, i) =>
         ({
           optionText: `${i + 1} UNIT`,
-          onPress: () => onChangeUnit(id, i + 1),
+          onPress: () => onChangeUnit(i + 1),
         } as Option)
     );
-    return <DropDown options={options} />;
+    return (
+      <View style={{ zIndex: 1000, position: 'absolute' }}>
+        <DropDown options={options} />
+      </View>
+    );
   };
 
   const renderUnitDropdownAndPrice = () => {
@@ -237,12 +247,12 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         <View style={styles.flexStyle}>
           <TouchableOpacity
             style={styles.unitDropdownContainer}
-            onPress={() => onChangeUnit(id, 1)}
+            onPress={() => setDropDownVisible(!dropDownVisible)}
           >
             <Text style={styles.unitAndRupeeText}>{`${unit} UNIT`}</Text>
             <DropdownGreen style={{ marginRight: 7 }} />
           </TouchableOpacity>
-          {/* {renderUnitDropdownOptions()} */}
+          {dropDownVisible && renderUnitDropdownOptions()}
         </View>
         <View style={styles.verticalSeparator} />
         <View style={[styles.flexStyle, { alignItems: 'flex-end' }]}>
@@ -262,7 +272,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
 
   const renderPersonSelectionView = () => {
     return (
-      personName && (
+      !!personName && (
         <View style={styles.personSelectionView}>
           <Text style={styles.personNameTextStyle}>{`For ${personName}`}</Text>
           <DropdownGreen />
@@ -271,20 +281,25 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     );
   };
 
+  const renderOutOfStock = () => {
+    return !isInStock && <Text style={styles.outOfStockStyle}>Out Of Stock</Text>;
+  };
+
   return (
     <TouchableOpacity
-      style={[styles.containerStyle, containerStyle]}
-      onPress={() => onPress(id, sku)}
+      style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
+      onPress={() => onPress()}
     >
       {renderPersonSelectionView()}
       <View style={{ flexDirection: 'row' }}>
         {renderMedicineIcon()}
         <View style={styles.flexStyle}>
           {renderTitleAndIcon()}
+          {renderOutOfStock()}
           {isCardExpanded ? (
             <>
-              {(packOfCount || 10) && (
-                <Text style={styles.packOfTextStyle}>{`Pack of ${packOfCount || 10}`}</Text>
+              {!!packOfCount && (
+                <Text style={styles.packOfTextStyle}>{`Pack of ${packOfCount}`}</Text>
               )}
               <View style={[styles.separator, { marginTop: 0 }]} />
               {renderUnitDropdownAndPrice()}
@@ -292,13 +307,15 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           ) : null}
         </View>
       </View>
-      {isCardExpanded ? (
+      {/* Don't show subscription functionality for now */}
+      {/* {isCardExpanded ? (
         <>
           <View style={[styles.separator, { marginBottom: 8 }]} />
           {renderSubscription()}
         </>
-      ) : null}
-      {!isCardExpanded && <View style={{ height: 13 }} />}
+      ) : null} */}
+      {/* {!isCardExpanded && <View style={{ height: 13 }} />} */}
+      <View style={{ height: 13 }} />
     </TouchableOpacity>
   );
 };

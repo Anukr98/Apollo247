@@ -13,6 +13,7 @@ export const clientRoutes = {
   cartPoc: () => '/cart-poc',
   chatRoom: (appointmentId: string, doctorId: string) => `/chat-room/${appointmentId}/${doctorId}`,
   myAccount: () => '/profile',
+  notificationSettings: () => '/settings',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

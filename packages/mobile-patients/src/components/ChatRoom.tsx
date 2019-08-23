@@ -403,7 +403,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         // start: 15663634751393502,
       },
       (status, res) => {
-        const newmessage: object[] = [];
+        const newmessage: { message: string }[] = [];
 
         res.messages.forEach((element, index) => {
           newmessage[index] = element.entry;
