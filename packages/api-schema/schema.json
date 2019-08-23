@@ -2194,6 +2194,16 @@
             "defaultValue": null
           },
           {
+            "name": "availableNow",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
             "name": "fees",
             "description": null,
             "type": {
@@ -2306,6 +2316,22 @@
               "ofType": {
                 "kind": "OBJECT",
                 "name": "DoctorDetails",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "doctorsAvailability",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "DoctorConsultModeAvailability",
                 "ofType": null
               }
             },
