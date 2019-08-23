@@ -46,7 +46,7 @@ export enum MEDICINE_ORDER_STATUS {
 
 export enum MEDICINE_DELIVERY_TYPE {
   HOME_DELIVERY = 'HOME_DELIVERY',
-  STORE_PCIK_UP = 'STORE_PICK_UP',
+  STORE_PICK_UP = 'STORE_PICK_UP',
 }
 
 export enum MEDICINE_ORDER_TYPE {
@@ -82,10 +82,10 @@ export class MedicineOrders extends BaseEntity {
   @Column()
   orderType: MEDICINE_ORDER_TYPE;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp' })
   orderDateTime: Date;
 
-  @Column()
+  @Column({ type: 'timestamp' })
   quoteDateTime: Date;
 
   @Column()
@@ -220,7 +220,7 @@ export class PatientDeviceTokens extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @Column()
+  @Column({ type: 'text' })
   deviceToken: string;
 
   @Column()

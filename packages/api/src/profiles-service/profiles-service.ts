@@ -57,7 +57,7 @@ import {
 import {
   saveDeviceTokenTypeDefs,
   saveDeviceTokenResolvers,
-} from 'profiles-service/resolvers/addDeviceToken';
+} from 'profiles-service/resolvers/savePatientDeviceToken';
 import gql from 'graphql-tag';
 import { GatewayHeaders } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
