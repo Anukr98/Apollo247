@@ -50,7 +50,6 @@ export const connect = async () => {
       password: process.env.CONSULTS_DB_PASSWORD,
       database: `consults_${process.env.NODE_ENV}`,
       logging: true,
-      synchronize: true,
     },
   ]).catch((error) => {
     throw new Error(error);

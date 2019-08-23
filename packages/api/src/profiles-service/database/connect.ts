@@ -71,7 +71,6 @@ export const connect = async () => {
       password: process.env.DOCTORS_DB_PASSWORD,
       database: `doctors_${process.env.NODE_ENV}`,
       logging: true,
-      synchronize: true,
     },
   ]).catch((error) => {
     throw new Error(error);
