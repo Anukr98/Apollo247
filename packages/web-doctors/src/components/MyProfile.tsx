@@ -32,10 +32,17 @@ import {
   RemoveTeamDoctorFromStarTeam,
   RemoveTeamDoctorFromStarTeamVariables,
 } from 'graphql/types/RemoveTeamDoctorFromStarTeam';
+
+import {
+  UpdateDelegateNumber,
+  UpdateDelegateNumberVariables,
+} from 'graphql/types/UpdateDelegateNumber';
 import {
   REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
   GET_DOCTOR_DETAILS,
   MAKE_TEAM_DOCTOR_ACTIVE,
+  UPDATE_DELEGATE_NUMBER,
+  REMOVE_DELEGATE_NUMBER,
 } from 'graphql/profiles';
 import {
   MakeTeamDoctorActive,
@@ -810,7 +817,6 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
         <h3>Enter the mobile number you’d like to assign access of your account to</h3>
         <FormControl fullWidth>
           <AphInput
-            autoFocus
             className={classes.inputWidth}
             inputProps={{ type: 'tel', maxLength: 10 }}
             value={mobileNumber}
@@ -841,7 +847,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
             startAdornment={<InputAdornment position="start"></InputAdornment>}
           />
           <FormHelperText component="div" className={classes.helpText} error={showErrorMessage}>
-            {phoneMessage.length > 0 ? phoneMessage : ''}
+            {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0 ? phoneMessage : ''}
           </FormHelperText>
         </FormControl>
       </div>
@@ -851,12 +857,55 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
       </div>
       <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
         <Grid item lg={12} sm={12} xs={12}>
-          <AphButton variant="contained" color="primary" classes={{ root: classes.backButton }}>
+          <AphButton
+            variant="contained"
+            color="primary"
+            classes={{ root: classes.backButton }}
+            onClick={() => setMobileNumber('')}
+          >
             CANCEL
           </AphButton>
-          <AphButton variant="contained" color="primary" classes={{ root: classes.saveButton }}>
-            SAVE
-          </AphButton>
+          {mobileNumber === '' ? (
+            <Mutation<UpdateDelegateNumber, UpdateDelegateNumberVariables>
+              mutation={REMOVE_DELEGATE_NUMBER}
+            >
+              {(mutate, { loading }) => (
+                <AphButton
+                  variant="contained"
+                  color="primary"
+                  disabled={mobileNumber !== '' && phoneMessage.length > 0}
+                  classes={{ root: classes.saveButton }}
+                  onClick={(e) => {
+                    mutate({});
+                  }}
+                >
+                  SAVE
+                </AphButton>
+              )}
+            </Mutation>
+          ) : (
+            <Mutation<UpdateDelegateNumber, UpdateDelegateNumberVariables>
+              mutation={UPDATE_DELEGATE_NUMBER}
+            >
+              {(mutate, { loading }) => (
+                <AphButton
+                  variant="contained"
+                  color="primary"
+                  disabled={mobileNumber !== '' && phoneMessage.length > 0}
+                  classes={{ root: classes.saveButton }}
+                  onClick={(e) => {
+                    mutate({
+                      variables: {
+                        delegateNumber: mobileNumber,
+                      },
+                    });
+                  }}
+                >
+                  SAVE
+                </AphButton>
+              )}
+            </Mutation>
+          )}
         </Grid>
       </Grid>
     </div>
