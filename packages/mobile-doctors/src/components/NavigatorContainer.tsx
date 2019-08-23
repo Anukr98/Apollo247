@@ -29,12 +29,16 @@ import { TabBar } from '@aph/mobile-doctors/src/components/TabBar';
 import { TransitionPage } from '@aph/mobile-doctors/src/components/TransitionPage';
 import { BasicAccount } from '@aph/mobile-doctors/src/components/Account/BasicAccount';
 import { MyFees } from '@aph/mobile-doctors/src/components/Account/MyFees';
+import { AddSymptons } from '@aph/mobile-doctors/src/components/ConsultRoom/AddSymptons';
+import { TransferConsult } from '@aph/mobile-doctors/src/components/ConsultRoom/TransferConsult';
+import { ReschduleConsult } from '@aph/mobile-doctors/src/components/ConsultRoom/ReschduleConsult';
 import {
   createAppContainer,
   createStackNavigator,
   NavigationRouteConfig,
   StackNavigatorConfig,
 } from 'react-navigation';
+import { ShareConsult } from '@aph/mobile-doctors/src/components/ConsultRoom/ShareConsult';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -69,6 +73,10 @@ export enum AppRoutes {
   MedicineUpdate = 'MedicineUpdate',
   BasicAccount = 'BasicAccount',
   MyFees = 'MyFees',
+  AddSymptons = 'AddSymptons',
+  TransferConsult = 'TransferConsult',
+  ReschduleConsult = 'ReschduleConsult',
+  ShareConsult = 'ShareConsult',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -174,6 +182,18 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MyFees]: {
     screen: MyFees,
+  },
+  [AppRoutes.AddSymptons]: {
+    screen: AddSymptons,
+  },
+  [AppRoutes.TransferConsult]: {
+    screen: TransferConsult,
+  },
+  [AppRoutes.ReschduleConsult]: {
+    screen: ReschduleConsult,
+  },
+  [AppRoutes.ShareConsult]: {
+    screen: ShareConsult,
   },
 };
 

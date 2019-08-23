@@ -523,7 +523,7 @@ export const DiagonisisRemove: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 20, width: 20 }}
     {...props}
-    source={require('../../images/icons/ic_cross_popup.png')}
+    source={require('../../images/icons/ic_cross_orange.png')}
   />
 );
 
@@ -656,5 +656,19 @@ export const DropdownBlueUp: React.FC<IconProps> = (props) => (
     style={{ height: 24, width: 24 }}
     {...props}
     source={require('../../images/icons/up.png')}
+  />
+);
+export const Selected: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/selected.png')}
+  />
+);
+export const UnSelected: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/unselected.png')}
   />
 );

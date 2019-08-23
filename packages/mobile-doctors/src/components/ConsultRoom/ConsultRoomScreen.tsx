@@ -57,6 +57,8 @@ import {
 } from 'react-native';
 import MaterialTabs from 'react-native-material-tabs';
 import { NavigationScreenProps } from 'react-navigation';
+import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 
 const { height, width } = Dimensions.get('window');
 
@@ -109,6 +111,7 @@ export interface ConsultRoomScreenProps
 
 export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [isDropdownVisible, setDropdownVisible] = useState(false);
+  const [dropdownShow, setDropdownShow] = useState(false);
   const [hideView, setHideView] = useState(false);
   const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
@@ -1896,10 +1899,59 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 <DotIcon />
               </View>
             ),
-            onPress: () => Alert.alert('Call'),
+            onPress: () => setDropdownShow(!dropdownShow),
           },
         ]}
       />
+    );
+  };
+  const renderDropdown = () => {
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          top: 50,
+          width: '100%',
+          alignItems: 'flex-end',
+          overflow: 'hidden',
+          ...Platform.select({
+            ios: {
+              zIndex: 1,
+            },
+            android: {
+              elevation: 12,
+              zIndex: 2,
+            },
+          }),
+        }}
+      >
+        <DropDown
+          containerStyle={{ marginRight: 20 }}
+          options={[
+            {
+              optionText: 'Share Case Sheet',
+              onPress: () => {
+                setDropdownShow(false);
+                props.navigation.push(AppRoutes.ShareConsult);
+              },
+            },
+            {
+              optionText: 'Transfer Consult',
+              onPress: () => {
+                setDropdownShow(false);
+                props.navigation.push(AppRoutes.TransferConsult);
+              },
+            },
+            {
+              optionText: 'Reschedule Consult',
+              onPress: () => {
+                setDropdownShow(false);
+                props.navigation.push(AppRoutes.ReschduleConsult);
+              },
+            },
+          ]}
+        />
+      </View>
     );
   };
 
@@ -1907,6 +1959,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     <SafeAreaView style={{ flex: 1 }}>
       <StatusBar hidden={hideStatusBar} />
       {showHeaderView()}
+      {dropdownShow ? renderDropdown() : null}
       {renderTabPage()}
       {showPopUp && CallPopUp()}
       {isAudioCall && AudioCall()}

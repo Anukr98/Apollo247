@@ -33,7 +33,8 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
-import console = require('console');
+
+import { SymptonsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/SymptonsCard';
 
 const styles = StyleSheet.create({
   casesheetView: {
@@ -410,8 +411,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const AppId = props.navigation.getParam('AppId');
 
   const [value, setValue] = useState<string>('');
-  const [instrcutionsvalue, setInstrcutionsvalue] = useState<string>('');
-  const [symptonsValue, setSymptonsValue] = useState<string>('Fever, Cough and Cold, Nausea');
 
   const [familyValues, setFamilyValues] = useState<string>(
     'Father: Cardiac patient\nMother: Severe diabetes\nMarried, No kids'
@@ -503,6 +502,23 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       id: '2',
       firstName: 'image003.jpg ',
       secondName: '5 MB  |  5 Aug 2019, 11.05 AM ',
+    },
+  ];
+
+  const sysmptonsList = [
+    {
+      id: '1',
+      firstName: 'FEVER ',
+      secondName: '2days ',
+      thirdName: 'Night',
+      fourthName: 'High',
+    },
+    {
+      id: '1',
+      firstName: 'COLD ',
+      secondName: '2days ',
+      thirdName: 'Night',
+      fourthName: 'High',
     },
   ];
   useEffect(() => {
@@ -602,14 +618,30 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View>
         <CollapseCard heading="Symptoms" collapse={show} onPress={() => setShow(!show)}>
-          <View style={styles.symptomsInputView}>
-            <TextInput
-              style={styles.symptomsText}
-              multiline={true}
-              onChangeText={(symptonsValue) => setSymptonsValue(symptonsValue)}
-            >
-              {symptonsValue}
-            </TextInput>
+          {sysmptonsList.map((showdata, i) => {
+            return (
+              <View>
+                <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
+                  <SymptonsCard
+                    diseaseName={showdata.firstName}
+                    icon={<DiagonisisRemove />}
+                    days={showdata.secondName}
+                    howoften={showdata.thirdName}
+                    seviarity={showdata.fourthName}
+
+                    // onPress={() => {
+                    //   props.navigation.push(AppRoutes.MedicineUpdate);
+                    // }}
+                  />
+                </View>
+              </View>
+            );
+          })}
+          <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
+            <AddPlus />
+            <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddSymptons)}>
+              <Text style={styles.addDoctorText}>ADD SYMPTONS</Text>
+            </TouchableOpacity>
           </View>
         </CollapseCard>
       </View>
@@ -1070,7 +1102,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     <View style={styles.casesheetView}>
       <ScrollView bounces={false} contentContainerStyle={styles.contentContainer}>
         {renderPatientImage()}
-        {/* {renderBasicProfileDetails(PatientInfoData, AppId, Appintmentdatetimeconsultpage)} */}
+        {renderBasicProfileDetails(PatientInfoData, AppId, Appintmentdatetimeconsultpage)}
         {renderSymptonsView()}
         {renderPatientHistoryLifestyle()}
         {renderPatientHealthWallet()}
