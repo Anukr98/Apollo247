@@ -587,10 +587,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     color: theme.colors.SEARCH_DOCTOR_NAME,
                   }}
                 >
-                  {/* {Moment.utc(item.appointmentDateTime).format('DD MMMM, hh:mm a')} */}
-                  {Moment(item.appointmentDateTime).format('DD MMMM')}
-                  {' , '}
-                  {formatTime(item.appointmentDateTime)} */}
+                  {Moment.utc(item.appointmentDateTime)
+                    .local()
+                    .format('DD MMMM, hh:mm a')}
                 </Text>
                 <View style={styles.separatorStyle} />
                 <View style={{ flexDirection: 'row' }}>
