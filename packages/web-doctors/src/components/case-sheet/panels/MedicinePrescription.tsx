@@ -173,7 +173,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-interface DaySlotsObject {
+interface SlotsObject {
   id: string;
   value: string;
   selected: boolean;
@@ -182,7 +182,7 @@ export const MedicinePrescription: React.FC = () => {
   const classes = useStyles();
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
-  const [daySlots, setDaySlots] = React.useState<DaySlotsObject[]>([
+  const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
       id: 'morning',
       value: 'Morning',
@@ -204,16 +204,56 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
   ]);
-  const daySlotsToggleAction = (slotId: string) =>{
-    const slots = daySlots.map(function(slot:DaySlotsObject) {
-      if(slotId === slot.id){
+  const [toBeTakenSlots, setToBeTakenSlots] = React.useState<SlotsObject[]>([
+    {
+      id: 'afterfood',
+      value: 'After Food',
+      selected: false,
+    },
+    {
+      id: 'beforefood',
+      value: 'Before Food',
+      selected: false,
+    },
+  ]);
+  const daySlotsToggleAction = (slotId: string) => {
+    const slots = daySlots.map(function(slot: SlotsObject) {
+      if (slotId === slot.id) {
         slot.selected = !slot.selected;
       }
       return slot;
     });
     setDaySlots(slots);
-  }
+  };
   daySlotsToggleAction('evening');
+  
+  const toBeTakenSlotsToggleAction = (slotId: string) => {
+    const slots = daySlots.map(function(slot: SlotsObject) {
+      if (slotId === slot.id) {
+        slot.selected = !slot.selected;
+      }
+      return slot;
+    });
+    setDaySlots(slots);
+  };
+  toBeTakenSlotsToggleAction('beforefood');
+
+  const daySlotsHtml = daySlots.map((_item: SlotsObject | null, index: number) => {
+    const item = _item!;
+    return (
+      <button key={item.id} className={item.selected ? classes.activeBtn : ''}>
+        {item.value}
+      </button>
+    );
+  });
+  const tobeTakenHtml = toBeTakenSlots.map((_item: SlotsObject | null, index: number) => {
+    const item = _item!;
+    return (
+      <button key={item.id} className={item.selected ? classes.activeBtn : ''}>
+        {item.value}
+      </button>
+    );
+  });
   return (
     <div className={classes.root}>
       <div className={classes.medicineHeading}>Medicines</div>
@@ -275,17 +315,19 @@ export const MedicinePrescription: React.FC = () => {
                 <div>
                   <h6>Time of the Day</h6>
                   <div className={classes.numberTablets}>
-                    <button className={classes.activeBtn}>Morning</button>
+                    {daySlotsHtml}
+                    {/* <button className={classes.activeBtn}>Morning</button>
                     <button>Noon</button>
                     <button>Evening</button>
-                    <button>Night</button>
+                    <button>Night</button> */}
                   </div>
                 </div>
                 <div>
                   <h6>To be taken</h6>
                   <div className={classes.numberTablets}>
-                    <button>After food</button>
-                    <button>Before food</button>
+                    {tobeTakenHtml}
+                    {/* <button>After food</button>
+                    <button>Before food</button> */}
                   </div>
                 </div>
                 <div>
@@ -302,16 +344,10 @@ export const MedicinePrescription: React.FC = () => {
                 </div>
               </div>
               <div className={classes.dialogActions}>
-                <AphButton
-                  className={classes.cancelBtn}
-                  color="primary"
-                  onClick={() => setShowDosage(true)}
-                >
+                <AphButton className={classes.cancelBtn} color="primary">
                   Cancel
                 </AphButton>
-                <AphButton color="primary" onClick={() => setShowDosage(true)}>
-                  Select Medicine
-                </AphButton>
+                <AphButton color="primary">Select Medicine</AphButton>
               </div>
             </div>
           )}
