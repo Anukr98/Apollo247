@@ -1,5 +1,5 @@
 import React from 'react';
-import { Theme, makeStyles, Paper, Grid, FormHelperText } from '@material-ui/core';
+import { Theme, makeStyles, Paper, Grid, FormHelperText, Modal, Button } from '@material-ui/core';
 import { AphTextField, AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -27,6 +27,11 @@ const useStyles = makeStyles((theme: Theme) => ({
       margin: 0,
       fontWeight: 'normal',
     },
+  },
+  medicinePopup: {
+    width: 480,
+    margin: '30px auto 0 auto',
+    boxShadow: 'none',
   },
   activeCard: {
     border: '1px solid #00b38e',
@@ -64,9 +69,13 @@ const useStyles = makeStyles((theme: Theme) => ({
       verticalAlign: 'middle',
     },
   },
-  // dialogBoxClose:{
-  //   display: 'none !important',
-  // },
+  cross: {
+    position: 'absolute',
+    right: 0,
+    top: -9,
+    fontSize: 18,
+    color: '#02475b',
+  },
   dialogActions: {
     padding: 20,
     paddingTop: 10,
@@ -163,6 +172,11 @@ const useStyles = makeStyles((theme: Theme) => ({
   helpText: {
     paddingLeft: 20,
     paddingRight: 20,
+  },
+  medicineDilog: {
+    '& .dialogBoxClose': {
+      display: 'none !important',
+    },
   },
 }));
 
@@ -355,132 +369,149 @@ export const MedicinePrescription: React.FC = () => {
         </Grid>
         <Grid item xs={4}></Grid>
       </Grid>
-      <AphDialog open={isDialogOpen} maxWidth="md">
-        <AphDialogTitle className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}>
-          {showDosage && (
-            <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
-              <img src={require('images/ic_back.svg')} alt="" />
-            </div>
-          )}
-          {showDosage ? 'IBUGESIC PLUS, 1.5% WWA' : 'ADD MEDICINE'}
-        </AphDialogTitle>
-        <div className={classes.shadowHide}>
-          {!showDosage ? (
-            <div>
-              <div className={classes.dialogContent}>
-                <AphTextField placeholder="search" />
-                <div>
-                  <AphButton color="primary" onClick={() => setShowDosage(true)}>
+      <Modal
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={classes.medicinePopup}>
+          <AphDialogTitle
+            className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}
+          >
+            {showDosage && (
+              <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
+                <img src={require('images/ic_back.svg')} alt="" />
+              </div>
+            )}
+            {showDosage ? 'IBUGESIC PLUS, 1.5% WWA' : 'ADD MEDICINE'}
+            <Button className={classes.cross}>
+              <img
+                src={require('images/ic_cross.svg')}
+                alt=""
+                onClick={() => setIsDialogOpen(false)}
+              />
+            </Button>
+          </AphDialogTitle>
+
+          <div className={classes.shadowHide}>
+            {!showDosage ? (
+              <div>
+                <div className={classes.dialogContent}>
+                  <AphTextField placeholder="search" />
+                  <div>
+                    <AphButton color="primary" onClick={() => setShowDosage(true)}>
+                      Select Medicine
+                    </AphButton>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className={classes.dialogContent}>
+                  <div>
+                    <h6>Dosage</h6>
+                    <div className={classes.numberTablets}>
+                      <img
+                        src={require('images/ic_minus.svg')}
+                        alt="removeBtn"
+                        onClick={() => {
+                          if (tabletsCount > 1) {
+                            setTabletsCount(tabletsCount - 1);
+                          }
+                        }}
+                      />
+                      <span className={classes.tabletcontent}>{tabletsCount} tablets</span>
+                      <img
+                        src={require('images/ic_plus.svg')}
+                        alt="addbtn"
+                        onClick={() => {
+                          if (tabletsCount > 0 && tabletsCount < 5) {
+                            setTabletsCount(tabletsCount + 1);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <h6>Time of the Day</h6>
+                    <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                    {errorState.daySlotErr && (
+                      <FormHelperText
+                        className={classes.helpText}
+                        component="div"
+                        error={errorState.daySlotErr}
+                      >
+                        Please select to be day slot.
+                      </FormHelperText>
+                    )}
+                  </div>
+                  <div>
+                    <h6>To be taken</h6>
+                    <div className={classes.numberTablets}>{tobeTakenHtml}</div>
+                    {errorState.tobeTakenErr && (
+                      <FormHelperText
+                        className={classes.helpText}
+                        component="div"
+                        error={errorState.tobeTakenErr}
+                      >
+                        Please select to be taken.
+                      </FormHelperText>
+                    )}
+                  </div>
+                  <div>
+                    <h6>Duration of Consumption</h6>
+                    <div className={classes.numberTablets}>
+                      <AphTextField
+                        placeholder=""
+                        value={consumptionDuration}
+                        onChange={(event) => {
+                          setConsumptionDuration(event.target.value);
+                        }}
+                        error={errorState.durationErr}
+                      />
+                      {errorState.durationErr && (
+                        <FormHelperText
+                          className={classes.helpText}
+                          component="div"
+                          error={errorState.durationErr}
+                        >
+                          Please Enter something
+                        </FormHelperText>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <h6>Instructions (if any)</h6>
+                    <div className={classes.numberTablets}>
+                      <AphTextField placeholder="search" />
+                    </div>
+                  </div>
+                </div>
+                <div className={classes.dialogActions}>
+                  <AphButton
+                    className={classes.cancelBtn}
+                    color="primary"
+                    onClick={() => {
+                      setIsDialogOpen(false);
+                    }}
+                  >
+                    Cancel
+                  </AphButton>
+                  <AphButton
+                    color="primary"
+                    onClick={() => {
+                      addUpdateMedicines();
+                    }}
+                  >
                     Select Medicine
                   </AphButton>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div>
-              <div className={classes.dialogContent}>
-                <div>
-                  <h6>Dosage</h6>
-                  <div className={classes.numberTablets}>
-                    <img
-                      src={require('images/ic_minus.svg')}
-                      alt="removeBtn"
-                      onClick={() => {
-                        if (tabletsCount > 1) {
-                          setTabletsCount(tabletsCount - 1);
-                        }
-                      }}
-                    />
-                    <span className={classes.tabletcontent}>{tabletsCount} tablets</span>
-                    <img
-                      src={require('images/ic_plus.svg')}
-                      alt="addbtn"
-                      onClick={() => {
-                        if (tabletsCount > 0 && tabletsCount < 5) {
-                          setTabletsCount(tabletsCount + 1);
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <h6>Time of the Day</h6>
-                  <div className={classes.numberTablets}>{daySlotsHtml}</div>
-                  {errorState.daySlotErr && (
-                    <FormHelperText
-                      className={classes.helpText}
-                      component="div"
-                      error={errorState.daySlotErr}
-                    >
-                      Please select to be day slot.
-                    </FormHelperText>
-                  )}
-                </div>
-                <div>
-                  <h6>To be taken</h6>
-                  <div className={classes.numberTablets}>{tobeTakenHtml}</div>
-                  {errorState.tobeTakenErr && (
-                    <FormHelperText
-                      className={classes.helpText}
-                      component="div"
-                      error={errorState.tobeTakenErr}
-                    >
-                      Please select to be taken.
-                    </FormHelperText>
-                  )}
-                </div>
-                <div>
-                  <h6>Duration of Consumption</h6>
-                  <div className={classes.numberTablets}>
-                    <AphTextField
-                      placeholder=""
-                      value={consumptionDuration}
-                      onChange={(event) => {
-                        setConsumptionDuration(event.target.value);
-                      }}
-                      error={errorState.durationErr}
-                    />
-                    {errorState.durationErr && (
-                      <FormHelperText
-                        className={classes.helpText}
-                        component="div"
-                        error={errorState.durationErr}
-                      >
-                        Please Enter something
-                      </FormHelperText>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <h6>Instructions (if any)</h6>
-                  <div className={classes.numberTablets}>
-                    <AphTextField placeholder="search" />
-                  </div>
-                </div>
-              </div>
-              <div className={classes.dialogActions}>
-                <AphButton
-                  className={classes.cancelBtn}
-                  color="primary"
-                  onClick={() => {
-                    setIsDialogOpen(false);
-                  }}
-                >
-                  Cancel
-                </AphButton>
-                <AphButton
-                  color="primary"
-                  onClick={() => {
-                    addUpdateMedicines();
-                  }}
-                >
-                  Select Medicine
-                </AphButton>
-              </div>
-            </div>
-          )}
-        </div>
-      </AphDialog>
+            )}
+          </div>
+        </Paper>
+      </Modal>
     </div>
   );
 };
