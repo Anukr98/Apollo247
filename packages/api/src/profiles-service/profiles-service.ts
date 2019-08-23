@@ -13,6 +13,10 @@ import {
   PatientHealthVault,
   Allergies,
   PatientAllergies,
+  MedicineOrders,
+  MedicineOrderLineItems,
+  MedicineOrderPayments,
+  PatientDeviceTokens,
 } from 'profiles-service/entities';
 import {
   Doctor,
@@ -46,6 +50,14 @@ import {
   addPatientAddressTypeDefs,
   addPatientAddressResolvers,
 } from 'profiles-service/resolvers/patientAddress';
+import {
+  getDigitizedOrderTypeDefs,
+  getDigitizedOrderResolvers,
+} from 'profiles-service/resolvers/getDigitizedOrderDetails';
+import {
+  saveDeviceTokenTypeDefs,
+  saveDeviceTokenResolvers,
+} from 'profiles-service/resolvers/savePatientDeviceToken';
 import gql from 'graphql-tag';
 import { GatewayHeaders } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
@@ -62,6 +74,10 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
         PatientHealthVault,
         Allergies,
         PatientAllergies,
+        MedicineOrders,
+        MedicineOrderLineItems,
+        MedicineOrderPayments,
+        PatientDeviceTokens,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
@@ -155,6 +171,14 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
       {
         typeDefs: addPatientAddressTypeDefs,
         resolvers: addPatientAddressResolvers,
+      },
+      {
+        typeDefs: getDigitizedOrderTypeDefs,
+        resolvers: getDigitizedOrderResolvers,
+      },
+      {
+        typeDefs: saveDeviceTokenTypeDefs,
+        resolvers: saveDeviceTokenResolvers,
       },
     ]),
   });

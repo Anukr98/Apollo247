@@ -35,11 +35,29 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    helpTxt: {
+      color: '#0087ba',
+      fontSize: 16,
+      lineHeight: 1.38,
+      fontWeight: 500,
+    },
+    orange: {
+      color: '#fc9916',
+      fontWeight: 700,
+    },
+    navLeftIcon: {
+      position: 'relative',
+      top: 5,
+      height: 20,
+      marginRight: 10,
+    },
     tabContent: {
       borderRadius: 10,
       backgroundColor: theme.palette.primary.contrastText,
       padding: 0,
       position: 'relative',
+      paddingLeft: 16,
+      paddingTop: 16,
       flexGrow: 1,
       boxShadow: '0 3px 15px 0 rgba(128, 128, 128, 0.3)',
       marginBottom: 15,
@@ -62,7 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '10px 5px 10px 5px',
     },
     availabletabContent: {
-      padding: 20,
+      padding: 0,
     },
     avatarBlock: {
       overflow: 'hidden',
@@ -135,6 +153,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.secondary.dark,
       fontSize: 16,
       fontWeight: theme.typography.fontWeightMedium,
+      paddingBottom: 18,
     },
     btnInactive: {
       backgroundColor: '#fff',
@@ -265,12 +284,12 @@ export const MyAccountAvailabilityTab: React.FC<AvailabilityTabProps> = ({
   return (
     <div className={classes.ProfileContainer}>
       <Grid container className={classes.availabletabContent} alignItems="flex-start">
-        <Grid item lg={2} sm={6} xs={12}>
+        <Grid item lg={12} sm={12} xs={12}>
           <Typography variant="h2">Consultation Type</Typography>
         </Grid>
-        <Grid item lg={6} sm={6} xs={12}>
+        <Grid item lg={12} sm={12} xs={12}>
           <div>
-            <div>
+            <div className={classes.tabContent}>
               <Typography variant="h5" className={classes.consultForm}>
                 What type of consults will you be available for?
               </Typography>
@@ -294,15 +313,19 @@ export const MyAccountAvailabilityTab: React.FC<AvailabilityTabProps> = ({
         </Grid>
       </Grid>
       <Grid container className={classes.availabletabContent} alignItems="flex-start">
-        <Grid item lg={2} sm={6} xs={12}>
+        <Grid item lg={12} sm={12} xs={12}>
           <Typography variant="h2">Consultation Hours</Typography>
         </Grid>
-        <Grid item lg={6} sm={6} xs={12}>
+        <Grid item lg={12} sm={12} xs={12}>
           {data && data.consultHours && data.consultHours.length && (
             <ConsultationHours values={data} />
           )}
         </Grid>
       </Grid>
+      <div className={classes.helpTxt}>
+        <img alt="" src={require('images/ic_info.svg')} className={classes.navLeftIcon} />
+        Call <span className={classes.orange}>1800 - 3455 - 3455 </span>to make any changes
+      </div>
     </div>
   );
 };

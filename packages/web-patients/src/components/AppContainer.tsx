@@ -22,6 +22,7 @@ import { MedicineLanding } from 'components/Medicine/MedicineLanding';
 import { ConsultRoom } from 'components/ConsultRoom/ConsultRoom';
 import { ChatRoom } from 'components/ChatRoom/ChatRoom';
 import { PrescriptionsLanding } from 'components/Prescriptions/PrescriptionsLanding';
+import { MyAccount } from 'components/MyAccount/MyAccount';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -63,6 +64,7 @@ const App: React.FC = () => {
           path={clientRoutes.chatRoom(':appointmentId', ':doctorId')}
           component={ChatRoom}
         />
+        <AuthRouted exact path={clientRoutes.myAccount()} component={MyAccount} />
       </Switch>
     </div>
   );

@@ -200,6 +200,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   console.log(props.navigation.state.params!.doctorId, 'doctorIddoctorIddoctorId');
   const { data, error } = useQuery<getDoctorDetailsById>(GET_DOCTOR_DETAILS_BY_ID, {
     // variables: { id: 'a6ef960c-fc1f-4a12-878a-12063788d625' },
+    fetchPolicy: 'no-cache',
     variables: { id: doctorId },
   });
   if (error) {
@@ -215,7 +216,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const todayDate = new Date().toISOString().slice(0, 10);
   const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
-    // fetchPolicy: 'no-cache',
+    fetchPolicy: 'no-cache',
     variables: {
       DoctorNextAvailableSlotInput: {
         doctorIds: doctorDetails ? [doctorDetails.id] : [],
@@ -586,9 +587,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     color: theme.colors.SEARCH_DOCTOR_NAME,
                   }}
                 >
-                  {Moment(item.appointmentDateTime).format('DD MMMM')}
-                  {' , '}
-                  {formatDateTime(item.appointmentDateTime)}
+                  {Moment.utc(item.appointmentDateTime)
+                    .local()
+                    .format('DD MMMM, hh:mm a')}
                 </Text>
                 <View style={styles.separatorStyle} />
                 <View style={{ flexDirection: 'row' }}>
@@ -713,12 +714,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             justifyContent: 'center',
           }}
         >
-          {doctorDetails && doctorDetails && doctorDetails.photoUrl && (
-            <Animated.Image
-              source={{ uri: doctorDetails.photoUrl }}
-              style={{ top: 10, height: 140, width: 140, opacity: imgOp }}
-            />
-          )}
+          {doctorDetails &&
+            doctorDetails &&
+            doctorDetails.photoUrl &&
+            doctorDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && (
+              <Animated.Image
+                source={{ uri: doctorDetails.photoUrl }}
+                style={{ top: 10, height: 140, width: 140, opacity: imgOp }}
+              />
+            )}
         </View>
       </Animated.View>
       <Header

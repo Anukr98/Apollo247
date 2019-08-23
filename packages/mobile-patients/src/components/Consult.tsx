@@ -206,6 +206,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
   console.log(inputData, 'inputData');
   const { data, error } = useQuery<getPatinetAppointments>(GET_PATIENT_APPOINTMENTS, {
+    fetchPolicy: 'no-cache',
     variables: {
       patientAppointmentsInput: inputData,
     },
@@ -482,7 +483,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       .asMinutes();
                     const title =
                       minutes > 0 && minutes <= 15
-                        ? `${minutes} MINS`
+                        ? `${Math.ceil(minutes)} MINS`
                         : moment(appointmentDateTime).format('h:mm A');
                     const isActive = minutes > 0 && minutes <= 15 ? true : false;
 
