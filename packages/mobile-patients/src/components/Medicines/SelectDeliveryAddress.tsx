@@ -101,7 +101,10 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
         }}
         onPressLeftIcon={() => props.navigation.goBack()}
       />
-      <ScrollView bounces={false}>{renderAddresses()}</ScrollView>
+      <ScrollView bounces={false}>
+        {renderAddresses()}
+        <View style={{ height: 80 }} />
+      </ScrollView>
       {renderBottomButtons()}
     </SafeAreaView>
   );
