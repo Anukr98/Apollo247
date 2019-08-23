@@ -3,7 +3,10 @@ import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { CaseSheet, Appointment } from 'consults-service/entities';
-import { ConsultMode } from 'doctors-service/entities';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { AphError } from 'AphError';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
 export const caseSheetTypeDefs = gql`
   enum ConsultMode {
@@ -13,11 +16,8 @@ export const caseSheetTypeDefs = gql`
   }
 
   input CaseSheetInput {
-    patientId: String
-    consultType: ConsultMode
     appointmentId: String
     createdDoctorId: String
-    doctorId: String
   }
 
   type AppointmentId {
@@ -46,11 +46,8 @@ export const caseSheetTypeDefs = gql`
 `;
 
 type CaseSheetInput = {
-  patientId: string;
-  consultType: ConsultMode;
   appointmentId: string;
   createdDoctorId: string;
-  doctorId: string;
 };
 
 type caseSheetInputArgs = { CaseSheetInput: CaseSheetInput };
@@ -59,14 +56,29 @@ const createCaseSheet: Resolver<
   caseSheetInputArgs,
   ConsultServiceContext,
   CaseSheet
-> = async (parent, { CaseSheetInput }, { consultsDb }) => {
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+> = async (parent, { CaseSheetInput }, { consultsDb, doctorsDb }) => {
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
+  //check appointmnet id
+  const appointmentData = await appointmentRepo.findById(CaseSheetInput.appointmentId);
+  if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  //check createdByDoctor id
+  if (CaseSheetInput.createdDoctorId.length > 0) {
+    const doctordata = await doctorRepository.getDoctorProfileData(CaseSheetInput.createdDoctorId);
+    if (doctordata == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+  }
+
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const appointment: Partial<Appointment> = {
     id: CaseSheetInput.appointmentId,
   };
   const caseSheetAttrs: Partial<CaseSheet> = {
     ...CaseSheetInput,
+    consultType: appointmentData.appointmentType,
+    doctorId: appointmentData.doctorId,
+    patientId: appointmentData.patientId,
     appointment: <Appointment>appointment,
   };
   return await caseSheetRepo.savecaseSheet(caseSheetAttrs);

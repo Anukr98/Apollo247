@@ -6702,26 +6702,6 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "patientId",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "consultType",
-            "description": null,
-            "type": {
-              "kind": "ENUM",
-              "name": "ConsultMode",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
             "name": "appointmentId",
             "description": null,
             "type": {
@@ -6733,16 +6713,6 @@
           },
           {
             "name": "createdDoctorId",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "doctorId",
             "description": null,
             "type": {
               "kind": "SCALAR",
