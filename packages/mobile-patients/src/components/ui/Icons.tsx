@@ -407,6 +407,60 @@ export const ChatWithNotification: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ChatWithNotification.png')} />
 );
 
+export const NotificationIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_notification.png')} />
+);
+
+export const CartIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_cart.png')} />
+);
+
+export const CameraIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_camera.png')} />
+);
+
+export const GalleryIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_gallery.png')} />
+);
+
+export const PrescriptionIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_prescription.png')} />
+);
+
+export const Check: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_check.png')} />
+);
+
+export const UnCheck: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_check_unselected.png')} />
+);
+
+export const CrossYellow: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_cross_onorange_small.png')} />
+);
+
+export const PrescriptionThumbnail: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    style={{
+      height: 40,
+      width: 30,
+    }}
+    source={require('./icons/ic_prescription_thumbnail.png')}
+  />
+);
+
+export const Path: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    style={{
+      height: 10,
+      width: 12,
+    }}
+    source={require('./icons/path.png')}
+  />
+);
+
 export const ChatCallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ChatCall.png')} />
 );
@@ -429,4 +483,8 @@ export const OrderDelayedIcon: React.FC<IconProps> = (props) => (
 
 export const OrderTrackerSmallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ic_tracker_small.png')} />
+);
+
+export const CouponIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_coupon.png')} />
 );
