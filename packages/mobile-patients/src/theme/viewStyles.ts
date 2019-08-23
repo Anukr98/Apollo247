@@ -50,4 +50,16 @@ export const viewStyles = {
     shadowRadius: 10,
     elevation: 16,
   },
+  lightSeparatorStyle: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+  },
+  mediumSeparatorStyle: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(2, 71, 91, 0.3)',
+  },
+  darkSeparatorStyle: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(2, 71, 91, 0.6)',
+  },
 };

@@ -24,6 +24,7 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { width } = Dimensions.get('window');
 
@@ -177,6 +178,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 style={{
                   height: 109,
                 }}
+                description={string.home.description}
               >
                 <View
                   style={{
@@ -198,21 +200,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 </View>
               </UserIntro>
             </View>
-            <View
+            <TabsComponent
               style={{
+                marginTop: 192,
+                backgroundColor: colors.CARD_BG,
                 ...viewStyles.shadowStyle,
               }}
-            >
-              <TabsComponent
-                style={{
-                  marginTop: 192,
-                  backgroundColor: colors.CARD_BG,
-                }}
-                data={tabs}
-                onChange={(selectedTab: string) => setselectedTab(selectedTab)}
-                selectedTab={selectedTab}
-              />
-            </View>
+              data={tabs}
+              onChange={(selectedTab: string) => setselectedTab(selectedTab)}
+              selectedTab={selectedTab}
+            />
           </View>
 
           {tabs[0].title === selectedTab ? (

@@ -3,17 +3,7 @@ import { ConsultPhysical } from '@aph/mobile-patients/src/components/ConsultPhys
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import {
-  Afternoon,
-  AfternoonUnselected,
-  CrossPopup,
-  Evening,
-  EveningUnselected,
-  Morning,
-  MorningUnselected,
-  Night,
-  NightUnselected,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -41,48 +31,6 @@ import { NavigationScreenProps } from 'react-navigation';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
-  selectedButtonView: {
-    backgroundColor: theme.colors.APP_GREEN,
-  },
-  selectedButtonText: {
-    color: theme.colors.WHITE,
-  },
-  optionsView: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingBottom: 16,
-  },
-  buttonStyle: {
-    width: 'auto',
-    marginRight: 8,
-    marginTop: 12,
-    backgroundColor: theme.colors.WHITE,
-  },
-  buttonTextStyle: {
-    paddingHorizontal: 12,
-    color: theme.colors.APP_GREEN,
-    ...theme.fonts.IBMPlexSansMedium(16),
-  },
-  placeholderTextStyle: {
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
-  },
-  placeholderViewStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    borderBottomWidth: 2,
-    paddingTop: 7,
-    paddingBottom: 3,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
-  horizontalSeparatorStyle: {
-    borderRightWidth: 0.5,
-    borderRightColor: 'rgba(2, 71, 91, 0.3)',
-    marginHorizontal: 16,
-    marginBottom: 5,
-  },
   gotItStyles: {
     height: 60,
     paddingRight: 25,
@@ -101,20 +49,6 @@ type TimeArray = {
   time: string[];
 }[];
 
-const monthsArray = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'June',
-  'July',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
 export interface ConsultOverlayProps extends NavigationScreenProps {
   // dispalyoverlay: boolean;
   setdisplayoverlay: (arg0: boolean) => void;
@@ -130,36 +64,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     props.doctor!.doctorType !== DoctorType.PAYROLL
       ? [{ title: 'Consult Online' }, { title: 'Visit Clinic' }]
       : [{ title: 'Consult Online' }];
-  const today = new Date().toISOString().slice(0, 10);
-
-  // const timeArray = {
-  //   Morning: ['7:00 am', '7:40 am', '8:20 am', '9:00 am', '9:40 am'],
-  //   Afternoon: ['10:00 am', '10:40 am', '11:20 am', '9:00 am', '11:40 am'],
-  //   Evening: ['1:00 pm', '1:30 pm', '3:00 pm', '3:40 pm'],
-  //   Night: ['5:00 pm', '5:30 pm', '6:00 pm', '7:00 pm'],
-  // };
-  const timings = [
-    {
-      title: 'Morning',
-      selectedIcon: <Morning />,
-      unselectedIcon: <MorningUnselected />,
-    },
-    {
-      title: 'Afternoon',
-      selectedIcon: <Afternoon />,
-      unselectedIcon: <AfternoonUnselected />,
-    },
-    {
-      title: 'Evening',
-      selectedIcon: <Evening />,
-      unselectedIcon: <EveningUnselected />,
-    },
-    {
-      title: 'Night',
-      selectedIcon: <Night />,
-      unselectedIcon: <NightUnselected />,
-    },
-  ];
 
   const [timeArray, settimeArray] = useState<TimeArray>([
     { label: 'Morning', time: [] },
@@ -167,32 +71,20 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     { label: 'Evening', time: [] },
     { label: 'Night', time: [] },
   ]);
-  const [allTimeSlots, setallTimeSlots] = useState<string[] | null>([]);
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
 
-  // const [descriptionText, setdescriptionText] = useState<string>(onlineCTA[0]);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const [selectedtiming, setselectedtiming] = useState<string>(timings[0].title);
   const [nextAvailableSlot, setNextAvailableSlot] = useState<string>('');
   const [isConsultOnline, setisConsultOnline] = useState<boolean>(true);
   const [availableInMin, setavailableInMin] = useState<Number>(0);
   const [showSuccessPopUp, setshowSuccessPopUp] = useState<boolean>(false);
-
-  const [dateSelected, setdateSelected] = useState<object>({
-    [today]: {
-      selected: true,
-      selectedColor: theme.colors.APP_GREEN,
-    },
-  });
-
   const [date, setDate] = useState<Date>(new Date());
-  // const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
   const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
 
   const setTimeArrayData = (availableSlots: string[]) => {
-    let array: TimeArray = [
+    const array: TimeArray = [
       { label: 'Morning', time: [] },
       { label: 'Afternoon', time: [] },
       { label: 'Evening', time: [] },
@@ -280,25 +172,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     }
   }
 
-  const timeTo12HrFormat = (time: string) => {
-    var time_array = time.split(':');
-    var ampm = 'am';
-    if (Number(time_array[0]) >= 12) {
-      ampm = 'pm';
-    }
-    if (Number(time_array[0]) > 12) {
-      time_array[0] = (Number(time_array[0]) - 12).toString();
-    }
-    return time_array[0].replace(/^0+/, '') + ':' + time_array[1] + ' ' + ampm;
-  };
-
   const renderBottomButton = () => {
-    // const firstTimeSlot = allTimeSlots && allTimeSlots.length > 0 ? allTimeSlots[0] : null;
-    // let timeDiff: Number;
-    // if (isConsultOnline && nextAvailableSlot) {
-    //   timeDiff = availableInMin;
-    // }
-    // console.log(timeDiff, 'timeDiff', firstTimeSlot, 'firstTimeSlot');
     return (
       <StickyBottomComponent
         defaultBG
@@ -328,13 +202,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               }
               onPress={() => {
                 setshowSpinner(true);
-                // props.setdisplayoverlay(false);
-                // const formatDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
                 const formatDate = date.toISOString().split('T')[0];
-                // Object.keys(dateSelected).length > 0
-                //   ? Object.keys(dateSelected)[0]
-                //   : moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-                console.log(formatDate, 'formatDate');
                 const timeSlot =
                   tabs[0].title === selectedTab &&
                   isConsultOnline &&

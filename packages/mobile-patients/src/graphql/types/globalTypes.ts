@@ -7,6 +7,7 @@
 //==============================================================
 
 export enum APPOINTMENT_TYPE {
+  BOTH = "BOTH",
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
 }
@@ -43,6 +44,7 @@ export enum Relation {
 
 export enum SEARCH_TYPE {
   DOCTOR = "DOCTOR",
+  MEDICINE = "MEDICINE",
   SPECIALTY = "SPECIALTY",
 }
 
@@ -93,15 +95,34 @@ export interface DoctorNextAvailableSlotInput {
   doctorIds: string[];
 }
 
+export interface DoctorPhysicalAvailabilityInput {
+  availableDate: any;
+  doctorId: string;
+  facilityId: string;
+}
+
 export interface FilterDoctorInput {
+  patientId?: string | null;
   specialty: string;
   city?: (string | null)[] | null;
   experience?: (Range | null)[] | null;
   availability?: (string | null)[] | null;
+  availableNow?: string | null;
   fees?: (Range | null)[] | null;
   gender?: (Gender | null)[] | null;
   language?: (string | null)[] | null;
   location?: string | null;
+}
+
+export interface PatientAddressInput {
+  patientId: string;
+  addressLine1: string;
+  addressLine2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipcode: string;
+  mobileNumber?: string | null;
+  landmark?: string | null;
 }
 
 export interface PatientAppointmentsInput {
@@ -117,12 +138,24 @@ export interface Range {
 export interface SaveSearchInput {
   type?: SEARCH_TYPE | null;
   typeId: string;
+  typeName?: string | null;
   patient: string;
 }
 
 export interface UpdateAppointmentSessionInput {
   appointmentId: string;
   requestRole: string;
+}
+
+export interface UpdatePatientAddressInput {
+  id: string;
+  addressLine1: string;
+  addressLine2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipcode: string;
+  mobileNumber?: string | null;
+  landmark?: string | null;
 }
 
 export interface UpdatePatientInput {

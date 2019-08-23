@@ -18,6 +18,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigation';
 import { Consult } from '@aph/mobile-patients/src/components/Consult';
+import { HealthRecordsHome } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordsHome';
 
 const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
   'CONSULT ROOM': <ConsultationRoom />,
@@ -35,7 +36,7 @@ const routeToFocusedIcon: Partial<Record<string, NavigationRouteConfig>> = {
 
 const routeConfigMap: Partial<Record<string, NavigationRouteConfig>> = {
   'CONSULT ROOM': Consult,
-  'HEALTH RECORDS': HealthRecords,
+  'HEALTH RECORDS': HealthRecordsHome,
   'TESTS & MEDICINES': Medicine,
   'MY ACCOUNT': MyAccount,
 };

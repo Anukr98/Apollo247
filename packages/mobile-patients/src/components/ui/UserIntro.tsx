@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   descriptionTextStyle: {
-    paddingLeft: 20,
+    paddingHorizontal: 20,
     paddingTop: 12,
     color: theme.colors.SKY_BLUE,
     ...theme.fonts.IBMPlexSansMedium(17),
@@ -69,6 +69,7 @@ const styles = StyleSheet.create({
 
 export interface UserIntroProps {
   style?: StyleProp<ViewStyle>;
+  description?: string;
 }
 
 export const UserIntro: React.FC<UserIntroProps> = (props) => {
@@ -192,7 +193,7 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
             </View>
           </View>
         </TouchableOpacity>
-        <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
+        <Text style={styles.descriptionTextStyle}>{props.description}</Text>
       </View>
       {showMenu && Popup()}
     </View>

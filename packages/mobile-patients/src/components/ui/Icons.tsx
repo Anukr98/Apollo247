@@ -488,3 +488,35 @@ export const OrderTrackerSmallIcon: React.FC<IconProps> = (props) => (
 export const CouponIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_coupon.png')} />
 );
+
+export const TrackerBig: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('./icons/ic_tracker_big.png')}
+  />
+);
+
+export const OnlineConsult: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('./icons/ic_onlineconsult.png')}
+  />
+);
+
+export const PrescriptionSkyBlue: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('./icons/ic_prescription_sky_blue.png')}
+  />
+);
+
+export const Down: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_accordion_down.png')} />
+);
+
+export const Up: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_accordion_up.png')} />
+);
