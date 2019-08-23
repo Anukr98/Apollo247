@@ -4,11 +4,11 @@ import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCar
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { addProductToCartApi, incOrDecProductCountToCartApi, MedicineProduct, removeProductFromCartApi, searchMedicineApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { addProductToCartApi, CartInfoResponse, getCartInfo, incOrDecProductCountToCartApi, MedicineProduct, removeProductFromCartApi, searchMedicineApi, setLocalCartInfo } from '@aph/mobile-patients/src/helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AxiosResponse } from 'axios';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, SafeAreaView, StyleProp, StyleSheet, Text, TextInput, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
@@ -17,6 +17,7 @@ import { AppRoutes } from '../NavigatorContainer';
   searchMedicineApi,
   incOrDecProductCountToCartApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
+import console = require('console');
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
 });
 
 type MedicineCardState = {
-  subscriptionStatus: 'already-subscribed' | 'subscribed-now' | 'unsubscribed';
+  // subscriptionStatus: 'already-subscribed' | 'subscribed-now' | 'unsubscribed';
   isCardExpanded: boolean;
   isAddedToCart: boolean;
   unit: number;
@@ -105,9 +106,25 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
   const [pinCode, setPinCode] = useState<string>('500033');
   const [medicineCardStatus, setMedicineCardStatus] = useState<{
-    [id: string]: MedicineCardState;
+    [sku: string]: MedicineCardState;
   }>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    getCartInfo()
+      .then((cartInfo) => {
+        let cartStatus = {} as { [sku: string]: MedicineCardState };
+        cartInfo &&
+          cartInfo.items.forEach((item) => {
+            cartStatus[item.sku] = { isAddedToCart: true, isCardExpanded: true, unit: item.qty };
+          });
+        setMedicineCardStatus({
+          ...medicineCardStatus,
+          ...cartStatus,
+        });
+      })
+      .catch(() => {});
+  }, []);
 
   const showGenericALert = (e: { response: AxiosResponse }) => {
     const error = e && e.response && e.response.data.message;
@@ -123,9 +140,27 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     }
     setIsLoading(true);
     searchMedicineApi(searchText)
-      .then(({ data }) => {
+      .then(async ({ data }) => {
+        // let cartInfo: CartInfoResponse | null = null;
+        // try {
+        //   cartInfo = await getCartInfo();
+        // } catch (error) {
+        //   console.log(error);
+        // }
+
+        const products = data.products || [];
+        // products.forEach((medicine) => {
+        // const cartItem =
+        //   cartInfo && cartInfo.items.find((cartItem) => cartItem.sku == medicine.sku);
+        // if (cartItem) {
+        //   setMedicineCardStatus({
+        //     ...medicineCardStatus,
+        //     [medicine.sku]: { isAddedToCart: true, isCardExpanded: true, unit: cartItem.qty },
+        //   });
+        // }
+        // });
+        setMedicineList(products);
         setIsLoading(false);
-        setMedicineList(data.products || []);
       })
       .catch((e) => {
         setIsLoading(false);
@@ -133,12 +168,44 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       });
   };
 
-  const onPressAddToCart = (id: number, productSku: string) => {
-    addProductToCartApi(productSku)
-      .then(({ data }) => {
+  const onPressAddToCart = (medicine: MedicineProduct) => {
+    addProductToCartApi(medicine.sku)
+      .then(async ({ data }) => {
+        let cartInfo: CartInfoResponse | null = null;
+        // let cartItemId = 0;
+        try {
+          cartInfo = await getCartInfo();
+          console.log({ cartInfo });
+          // const cartItem = cartInfo.items.find((cartItem) => cartItem.sku == medicine.sku);
+          // cartItemId = (cartItem && cartItem.item_id) || 0;
+        } catch (error) {
+          console.log(error);
+        }
+        // add to local cart
+        console.log('cartInfo before', { cartInfo });
+        const cartItemIndex = cartInfo!.items.findIndex((cartItem) => cartItem.sku == medicine.sku);
+        if (cartItemIndex == -1) {
+          setLocalCartInfo({ ...cartInfo!, items: [...cartInfo!.items, data] });
+        } else {
+          const items = cartInfo!.items.map((m, i) => {
+            return i == cartItemIndex ? { ...m, ...{ qty: data.qty } } : m;
+          });
+
+          const updatedCart = { ...cartInfo!, items: [...items] };
+          console.log({ updatedCart });
+          setLocalCartInfo(updatedCart);
+        }
+
+        // console.log('cartItems', { cartItems });
+        // setLocalCartInfo({ ...cartInfo!, items: [...cartInfo!.items, ...cartItems] });
+
         setMedicineCardStatus({
           ...medicineCardStatus,
-          [id]: { isAddedToCart: true, isCardExpanded: true, unit: data.qty },
+          [medicine.sku]: {
+            isAddedToCart: true,
+            isCardExpanded: true,
+            unit: data.qty,
+          },
         });
       })
       .catch((e) => {
@@ -146,28 +213,61 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       });
   };
 
-  const onPressRemoveFromCart = (id: number) => {
-    removeProductFromCartApi(id)
+  const onPressRemoveFromCart = async (medicine: MedicineProduct) => {
+    console.log({ id: medicine.id });
+    let cartItemId = 0;
+    let cartInfo: CartInfoResponse | null = null;
+    try {
+      cartInfo = await getCartInfo();
+      const cartItem = cartInfo.items.find((cartItem) => cartItem.sku == medicine.sku);
+      cartItemId = (cartItem && cartItem.item_id) || 0;
+    } catch (error) {
+      console.log(error);
+    }
+    if (!cartItemId) {
+      Alert.alert('Error', 'Item does not exist in cart');
+      return;
+    }
+    removeProductFromCartApi(cartItemId)
       .then(({ data }) => {
         console.log('onPressRemoveFromCar', data);
-        setMedicineCardStatus({
-          ...medicineCardStatus,
-          [id]: { isAddedToCart: false, isCardExpanded: false, unit: 0 },
-        });
+        const cloneOfMedicineCardStatus = { ...medicineCardStatus };
+        delete cloneOfMedicineCardStatus[medicine.sku];
+        setMedicineCardStatus(cloneOfMedicineCardStatus);
+        // remove from local cart
+        const cartItems = cartInfo!.items.filter((item) => item.item_id != cartItemId);
+        setLocalCartInfo({ ...cartInfo!, items: cartItems });
       })
       .catch((e) => {
         showGenericALert(e);
       });
   };
 
-  const onChangeUnitFromCart = (id: number, sku: string, unit: number) => {
-    incOrDecProductCountToCartApi(sku, id, unit)
+  const onChangeUnitFromCart = async (medicine: MedicineProduct, unit: number) => {
+    console.log({ id: medicine.id });
+    let cartItemId = 0;
+    let cartInfo: CartInfoResponse | null = null;
+    try {
+      cartInfo = await getCartInfo();
+      const cartItem = cartInfo.items.find((cartItem) => cartItem.sku == medicine.sku);
+      cartItemId = (cartItem && cartItem.item_id) || 0;
+    } catch (error) {
+      console.log(error);
+    }
+    if (!cartItemId) {
+      Alert.alert('Error', 'Item does not exist in cart');
+      return;
+    }
+
+    incOrDecProductCountToCartApi(medicine.sku, cartItemId, unit)
       .then(({ data }) => {
         console.log('onChangeUnitFromCart', data);
         setMedicineCardStatus({
           ...medicineCardStatus,
-          [id]: { ...medicineCardStatus[id], unit: data.qty },
+          [medicine.sku]: { ...medicineCardStatus[medicine.sku], unit: data.qty },
         });
+        const cartItems = cartInfo!.items.map((item) => (item.item_id != cartItemId ? item : data));
+        setLocalCartInfo({ ...cartInfo!, items: cartItems });
       })
       .catch((e) => {
         showGenericALert(e);
@@ -183,6 +283,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   };
 
   const renderHeader = () => {
+    console.log({ medicineCardStatus });
     const cartItems = Object.keys(medicineCardStatus).filter(
       (m) => medicineCardStatus[m].isAddedToCart
     ).length;
@@ -321,41 +422,38 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     return (
       <MedicineCard
         containerStyle={medicineCardContainerStyle}
-        onPress={(_, sku) => {
+        onPress={() => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-            sku: sku,
+            sku: medicine.sku,
             title: medicine.name,
           });
         }}
-        id={medicine.id}
-        sku={medicine.sku}
         medicineName={medicine.name}
         price={medicine.price}
-        unit={(medicineCardStatus[medicine.id] && medicineCardStatus[medicine.id].unit) || 1}
-        onPressAdd={(id, sku) => {
-          onPressAddToCart(id, sku);
+        unit={(medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].unit) || 1}
+        onPressAdd={() => {
+          onPressAddToCart(medicine);
         }}
-        onPressRemove={(id) => {
-          onPressRemoveFromCart(id);
+        onPressRemove={() => {
+          onPressRemoveFromCart(medicine);
         }}
-        onChangeUnit={(id, unit, sku) => {
-          console.log('onChangeUnitFromCart', { id, unit, sku });
-
-          onChangeUnitFromCart(id, sku, unit);
+        onChangeUnit={(unit) => {
+          console.log('onChangeUnitFromCart', { id: medicine.id, unit, sku: medicine.sku });
+          onChangeUnitFromCart(medicine, unit);
         }}
         isCardExpanded={
-          medicineCardStatus[medicine.id] && medicineCardStatus[medicine.id].isCardExpanded
+          medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].isCardExpanded
         }
-        isInStock={medicine.is_in_stock}
+        isInStock={medicine.status == 1}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
         subscriptionStatus={
-          (medicineCardStatus[medicine.id] && medicineCardStatus[medicine.id].subscriptionStatus) ||
+          // (medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].subscriptionStatus) ||
           'unsubscribed'
         }
-        onChangeSubscription={(id, status) => {
+        onChangeSubscription={(status) => {
           setMedicineCardStatus({
             ...medicineCardStatus,
-            [id]: { ...medicineCardStatus[id], subscriptionStatus: status },
+            // [medicine.sku]: { ...medicineCardStatus[medicine.sku], subscriptionStatus: status },
           });
         }}
         onEditPress={() => {}}

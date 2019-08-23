@@ -13,14 +13,11 @@ import {
   getPatientAddressList,
   getPatientAddressList_getPatientAddressList_addressList,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
-import {
-  CartInfoResponse,
-  MedicineProductsResponse,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { CartInfoResponse, CartItem, getCartInfo } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import {
   FlatList,
@@ -70,6 +67,14 @@ const addresses = [
   'Apollo Pharmacy\nPlot No B / 88, Opposite Andhra Bank\nJubilee Hills',
   'Apollo Pharmacy\nPlot No B / 88, Opposite Andhra Bank\nJubilee Hills',
 ];
+
+type MedicineCardState = {
+  // subscriptionStatus: 'already-subscribed' | 'subscribed-now' | 'unsubscribed';
+  isCardExpanded: boolean;
+  isAddedToCart: boolean;
+  unit: number;
+};
+
 export interface YourCartProps extends NavigationScreenProps {}
 
 export const YourCart: React.FC<YourCartProps> = (props) => {
@@ -77,15 +82,39 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedHomeDelivery, setselectedHomeDelivery] = useState<number>(0);
 
-  const [medicineList, setMedicineList] = useState<MedicineProductsResponse['products']>([]);
+  const [medicineList, setMedicineList] = useState<CartItem[]>([]);
   const [addressList, setaddressList] = useState<
     getPatientAddressList_getPatientAddressList_addressList[] | null
   >([]);
   const [cartDetails, setcartDetails] = useState<CartInfoResponse>();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [medicineCardStatus, setMedicineCardStatus] = useState<{
+    [sku: string]: MedicineCardState;
+  }>({});
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
+
+  useEffect(() => {
+    getCartInfo()
+      .then((cartInfo) => {
+        setcartDetails(cartInfo);
+        let cartStatus = {} as { [sku: string]: MedicineCardState };
+        cartInfo &&
+          cartInfo.items.forEach((item) => {
+            cartStatus[item.sku] = { isAddedToCart: true, isCardExpanded: true, unit: item.qty };
+          });
+        setMedicineCardStatus({
+          ...medicineCardStatus,
+          ...cartStatus,
+        });
+        setMedicineList(cartInfo.items);
+        setshowSpinner(false);
+      })
+      .catch(() => {
+        setshowSpinner(false);
+      });
+  }, []);
 
   const fetchAddress = useCallback(() => {
     client
@@ -114,6 +143,26 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     };
   }, []);
 
+  console.log(currentPatient);
+  const { data, error } = useQuery<getPatientAddressList>(GET_PATIENT_ADDRESS_LIST, {
+    variables: {
+      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+    },
+  });
+  if (error) {
+    console.log('error', error);
+  } else {
+    console.log('getPatientAddressList', data);
+    if (
+      data &&
+      data.getPatientAddressList &&
+      addressList !== data.getPatientAddressList.addressList
+    ) {
+      console.log('data', data.getPatientAddressList);
+      setaddressList(data.getPatientAddressList.addressList);
+    }
+  }
+
   const renderHeader = () => {
     return (
       <Header
@@ -125,7 +174,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         title={'YOUR CART'}
         rightComponent={
           <View>
-            <TouchableOpacity onPress={() => {}}>
+            <TouchableOpacity onPress={() => props.navigation.pop()}>
               <Text
                 style={{
                   ...theme.fonts.IBMPlexSansSemiBold(13),
@@ -152,9 +201,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderItemsInCart = () => {
+    const cartItemsCount = (cartDetails && cartDetails.items.length) || 0;
+    const _cartItemsCount = cartItemsCount < 10 ? `0${cartItemsCount}` : cartItemsCount.toString();
     return (
       <View>
-        {renderLabel('ITEMS IN YOUR CART', '02')}
+        {renderLabel('ITEMS IN YOUR CART', _cartItemsCount)}
         {medicineList.map((medicine, index, array) => {
           const medicineCardContainerStyle = [
             { marginBottom: 8, marginHorizontal: 20 },
@@ -167,58 +218,42 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 currentPatient && currentPatient.firstName ? currentPatient.firstName : ''
               }
               containerStyle={medicineCardContainerStyle}
-              key={medicine.id}
-              onPress={(_, sku) => {
+              key={medicine.sku}
+              onPress={() => {
                 props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-                  sku: sku,
+                  sku: medicine.sku,
                   title: medicine.name,
                 });
               }}
-              id={medicine.id}
-              sku={medicine.sku}
               medicineName={medicine.name}
               price={medicine.price}
-              //   unit={(medicineCardStatus[medicine.id] && medicineCardStatus[medicine.id].unit) || 1}
-              isAddedToCart={true}
-              onPressAdd={(id) => {
-                // setMedicineCardStatus({
-                //   ...medicineCardStatus,
-                //   [id]: { isAddedToCart: true, isCardExpanded: true },
-                // });
-                // Call Add to cart API
-              }}
-              onPressRemove={(id) => {
-                // setMedicineCardStatus({
-                //   ...medicineCardStatus,
-                //   [id]: { isAddedToCart: false, isCardExpanded: false },
-                // });
-                // Call Remove from cart API
-              }}
-              onChangeUnit={(id, unit) => {
-                // setMedicineCardStatus({
-                //   ...medicineCardStatus,
-                //   [id]: { ...medicineCardStatus[id], unit },
-                // });
-                // Update no. of units to cart for this item via API
-              }}
-              unit={1}
-              isCardExpanded={
-                true
-                // medicineCardStatus[medicine.id] && medicineCardStatus[medicine.id].isCardExpanded
+              unit={
+                (medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].unit) || 1
               }
-              isInStock={!!medicine.is_in_stock}
-              isPrescriptionRequired={!!!medicine.is_prescription_required}
-              //   subscriptionStatus={
-              //     (medicineCardStatus[medicine.id] &&
-              //       medicineCardStatus[medicine.id].subscriptionStatus) ||
-              //     'unsubscribed'
-              //   }
-              //   onChangeSubscription={(id, status) => {
-              //     setMedicineCardStatus({
-              //       ...medicineCardStatus,
-              //       [id]: { ...medicineCardStatus[id], subscriptionStatus: status },
-              //     });
-              //   }}
+              onPressAdd={() => {
+                // onPressAddToCart(medicine);
+              }}
+              onPressRemove={() => {
+                // onPressRemoveFromCart(medicine);
+              }}
+              onChangeUnit={(unit) => {
+                // onChangeUnitFromCart(medicine, unit);
+              }}
+              isCardExpanded={
+                medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].isCardExpanded
+              }
+              isInStock={true}
+              isPrescriptionRequired={/*medicine.is_prescription_required == '1'*/ false} //solve this problem by maintaing a state in cart
+              subscriptionStatus={
+                // (medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].subscriptionStatus) ||
+                'unsubscribed'
+              }
+              onChangeSubscription={(status) => {
+                setMedicineCardStatus({
+                  ...medicineCardStatus,
+                  // [medicine.sku]: { ...medicineCardStatus[medicine.sku], subscriptionStatus: status },
+                });
+              }}
               onEditPress={() => {}}
               onAddSubscriptionPress={() => {}}
             />
@@ -440,17 +475,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               Rs. {cartDetails ? cartDetails.grand_total : 0}
             </Text>
           </View>
-          {false && (
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Text style={styles.blueTextStyle}>Delivery Charges</Text>
-              <Text style={styles.blueTextStyle}>+ Rs. 60</Text>
-            </View>
-          )}
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Text style={styles.blueTextStyle}>Delivery Charges</Text>
+            <Text style={styles.blueTextStyle}>+ Rs. {0}</Text>
+          </View>
           <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />
           <View
             style={{
@@ -486,7 +519,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     },
   ];
 
-  const renderMedicineItem = (item, index, length) => {
+  const renderMedicineItem = (
+    item: { name: string; cost: string },
+    index: number,
+    length: number
+  ) => {
     return (
       <View
         style={{

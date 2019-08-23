@@ -1,11 +1,10 @@
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { getProductDetails, quoteId } from '../../helpers/apiCalls';
-import Axios from 'axios';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -85,7 +84,7 @@ export interface MedicineDetailsSceneProps
   }> {}
 
 export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props) => {
-  const [medicineDetails, setmedicineDetails] = useState<{}>();
+  const [medicineDetails, setmedicineDetails] = useState<{ description: string }>();
 
   useEffect(() => {
     const id = props.navigation.getParam('sku');

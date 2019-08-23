@@ -133,8 +133,6 @@ const styles = StyleSheet.create({
 });
 
 export interface MedicineCardProps {
-  id: number;
-  sku: string;
   medicineName: string;
   personName?: string;
   price: number;
@@ -144,21 +142,19 @@ export interface MedicineCardProps {
   isInStock: boolean;
   isPrescriptionRequired: boolean;
   isCardExpanded: boolean;
-  onPress: (id: number, sku: string) => void;
-  onChangeUnit: (id: number, unit: number, sku: string) => void;
-  onChangeSubscription: (id: number, status: MedicineCardProps['subscriptionStatus']) => void;
-  onPressRemove: (id: number) => void;
-  onPressAdd: (id: number, sku: string) => void;
-  onEditPress: (id: number) => void;
-  onAddSubscriptionPress: (id: number) => void;
+  onPress: () => void;
+  onChangeUnit: (unit: number) => void;
+  onChangeSubscription: (status: MedicineCardProps['subscriptionStatus']) => void;
+  onPressRemove: () => void;
+  onPressAdd: () => void;
+  onEditPress: () => void;
+  onAddSubscriptionPress: () => void;
   containerStyle?: StyleProp<ViewStyle>;
 }
 
 export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   const [dropDownVisible, setDropDownVisible] = useState(false);
   const {
-    id,
-    sku,
     isCardExpanded,
     packOfCount,
     medicineName,
@@ -186,8 +182,8 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         </Text>
         {isInStock
           ? isCardExpanded
-            ? renderTouchable(<RemoveIcon />, () => onPressRemove(id))
-            : renderTouchable(<AddIcon />, () => onPressAdd(id, sku))
+            ? renderTouchable(<RemoveIcon />, () => onPressRemove())
+            : renderTouchable(<AddIcon />, () => onPressAdd())
           : null}
       </View>
     );
@@ -201,11 +197,11 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           <View style={styles.editAndSubscriptionViewStyle}>
             {renderTouchable(
               <Text style={styles.editAndAddSubscriptionTextStyle}>{'EDIT'}</Text>,
-              () => onEditPress(id)
+              () => onEditPress()
             )}
             {renderTouchable(
               <Text style={styles.editAndAddSubscriptionTextStyle}>{'ADD NEW SUBSCRIPTION'}</Text>,
-              () => onAddSubscriptionPress(id)
+              () => onAddSubscriptionPress()
             )}
           </View>
         </View>
@@ -218,7 +214,6 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           subscriptionStatus == 'subscribed-now' ? <CheckedIcon /> : <CheckUnselectedIcon />,
           () =>
             onChangeSubscription(
-              id,
               subscriptionStatus == 'subscribed-now' ? 'unsubscribed' : 'subscribed-now'
             )
         )}
@@ -236,11 +231,11 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
       (_, i) =>
         ({
           optionText: `${i + 1} UNIT`,
-          onPress: () => onChangeUnit(id, i + 1, sku),
+          onPress: () => onChangeUnit(i + 1),
         } as Option)
     );
     return (
-      <View style={{ zIndex: 100 }}>
+      <View style={{ zIndex: 1000, position: 'absolute' }}>
         <DropDown options={options} />
       </View>
     );
@@ -277,7 +272,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
 
   const renderPersonSelectionView = () => {
     return (
-      personName && (
+      !!personName && (
         <View style={styles.personSelectionView}>
           <Text style={styles.personNameTextStyle}>{`For ${personName}`}</Text>
           <DropdownGreen />
@@ -292,8 +287,8 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
 
   return (
     <TouchableOpacity
-      style={[styles.containerStyle, containerStyle]}
-      onPress={() => onPress(id, sku)}
+      style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
+      onPress={() => onPress()}
     >
       {renderPersonSelectionView()}
       <View style={{ flexDirection: 'row' }}>
@@ -312,13 +307,15 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           ) : null}
         </View>
       </View>
-      {isCardExpanded ? (
+      {/* Don't show subscription functionality for now */}
+      {/* {isCardExpanded ? (
         <>
           <View style={[styles.separator, { marginBottom: 8 }]} />
           {renderSubscription()}
         </>
-      ) : null}
-      {!isCardExpanded && <View style={{ height: 13 }} />}
+      ) : null} */}
+      {/* {!isCardExpanded && <View style={{ height: 13 }} />} */}
+      <View style={{ height: 13 }} />
     </TouchableOpacity>
   );
 };

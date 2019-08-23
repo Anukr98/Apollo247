@@ -5,17 +5,26 @@ export interface MedicineProduct {
   description: string;
   id: number;
   image: string;
-  is_in_stock: boolean; //1 for in stock (confirm this)
-  is_prescription_required: string; //1 for not required (confirm this)
+  is_in_stock: boolean; // always returning true
+  is_prescription_required: string; //1 for required
   name: string;
   price: number;
   sku: string;
   small_image: string;
-  status: string; //1, 2
+  status: number; // 1, 2 (1 = in-stock, 2= out-of-stock)
   thumbnail: string;
   type_id: string;
-  // the below property only comes in Cart Itemm
-  extension_attributes?: {
+}
+
+export interface CartItem {
+  item_id: number;
+  sku: string;
+  qty: number;
+  name: string;
+  price: number;
+  product_type: string;
+  quote_id: string;
+  extension_attributes: {
     image_url: string;
   };
 }
@@ -69,7 +78,7 @@ export interface CartInfoResponse {
   updated_at: string;
   is_active: boolean;
   is_virtual: boolean;
-  items: MedicineProduct[];
+  items: CartItem[];
   items_count: number;
   items_qty: number;
   customer: Customer;
@@ -82,17 +91,6 @@ export interface CartInfoResponse {
   store_id: number;
   extension_attributes: ExtensionAttributes;
   grand_total: number;
-}
-
-export interface IncDecOrAddProductToCartResponse {
-  item_id: number;
-  name: string;
-  price: number;
-  product_type: string;
-  qty: number;
-  quote_id: string;
-  sku: string;
-  extension_attributes: { image_url: string };
 }
 
 const AUTH_TOKEN = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
@@ -165,7 +163,7 @@ export const getCartInfoApi = async (): Promise<AxiosResponse<CartInfoResponse>>
 export const addProductToCartApi = async (
   productSku: string,
   quantity: number = 1
-): Promise<AxiosResponse<IncDecOrAddProductToCartResponse>> => {
+): Promise<AxiosResponse<CartItem>> => {
   const cartId = await getCartId();
   const quoteId = await getQuoteId();
 
@@ -180,8 +178,8 @@ export const incOrDecProductCountToCartApi = async (
   productSku: string,
   cartItemId: number,
   newQuantity: number
-): Promise<AxiosResponse<IncDecOrAddProductToCartResponse>> => {
-  return Axios.post(
+): Promise<AxiosResponse<CartItem>> => {
+  return Axios.put(
     `http://api.apollopharmacy.in/rest/V1/guest-carts/${await getCartId()}/items/${cartItemId}`,
     {
       cartItem: {
