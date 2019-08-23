@@ -1,96 +1,45 @@
 import '@aph/universal/dist/global';
-import 'reflect-metadata';
-import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
-import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
-import gql from 'graphql-tag';
+import { GatewayHeaders } from 'api-gateway';
+import { ApolloServer } from 'apollo-server';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
-import { createConnections, getConnection } from 'typeorm';
+import { connect } from 'consults-service/database/connect';
 import {
-  Appointment,
-  AppointmentSessions,
-  MedicinePrescription,
-  CaseSheet,
-} from 'consults-service/entities';
-import {
-  Doctor,
-  DoctorSpecialty,
-  StarTeam,
-  DoctorAndHospital,
-  Facility,
-  ConsultHours,
-  DoctorBankAccounts,
-  Packages,
-} from 'doctors-service/entities';
-import {
-  getAvailableSlotsTypeDefs,
-  getAvailableSlotsResolvers,
-} from 'consults-service/resolvers/getDoctorAvailability';
-import {
-  bookAppointmentTypeDefs,
-  bookAppointmentResolvers,
-} from 'consults-service/resolvers/bookAppointment';
-import {
-  getAppointmentHistoryTypeDefs,
-  getAppointmentHistoryResolvers,
-} from 'consults-service/resolvers/getAppointmentHistory';
-import {
-  getPatinetAppointmentsTypeDefs,
-  getPatinetAppointmentsResolvers,
-} from 'consults-service/resolvers/getPatientAppointments';
-import {
-  createAppointmentSessionTypeDefs,
   createAppointmentSessionResolvers,
+  createAppointmentSessionTypeDefs,
 } from 'consults-service/resolvers/appointmentSession';
 import {
-  getNextAvailableSlotTypeDefs,
+  bookAppointmentResolvers,
+  bookAppointmentTypeDefs,
+} from 'consults-service/resolvers/bookAppointment';
+import { caseSheetResolvers, caseSheetTypeDefs } from 'consults-service/resolvers/caseSheet';
+import {
+  getAppointmentHistoryResolvers,
+  getAppointmentHistoryTypeDefs,
+} from 'consults-service/resolvers/getAppointmentHistory';
+import {
+  getAvailableSlotsResolvers,
+  getAvailableSlotsTypeDefs,
+} from 'consults-service/resolvers/getDoctorAvailability';
+import {
   getNextAvailableSlotResolvers,
+  getNextAvailableSlotTypeDefs,
 } from 'consults-service/resolvers/getDoctorNextSlot';
 import {
-  getPhysicalAvailableSlotsTypeDefs,
   getPhysicalAvailableSlotsResolvers,
+  getPhysicalAvailableSlotsTypeDefs,
 } from 'consults-service/resolvers/getDoctorPhysicalAvailability';
-import { caseSheetTypeDefs, caseSheetResolvers } from 'consults-service/resolvers/caseSheet';
-
-import { GatewayHeaders } from 'api-gateway';
+import {
+  getPatinetAppointmentsResolvers,
+  getPatinetAppointmentsTypeDefs,
+} from 'consults-service/resolvers/getPatientAppointments';
+import { GraphQLDate, GraphQLDateTime, GraphQLTime } from 'graphql-iso-date';
+import gql from 'graphql-tag';
+import 'reflect-metadata';
+import { getConnection } from 'typeorm';
 
 (async () => {
-  await createConnections([
-    {
-      entities: [Appointment, AppointmentSessions, MedicinePrescription, CaseSheet],
-      type: 'postgres',
-      host: process.env.CONSULTS_DB_HOST,
-      port: parseInt(process.env.CONSULTS_DB_PORT, 10),
-      username: process.env.CONSULTS_DB_USER,
-      password: process.env.CONSULTS_DB_PASSWORD,
-      database: `consults_${process.env.NODE_ENV}`,
-      logging: true,
-      synchronize: true,
-    },
-    {
-      name: 'doctors-db',
-      entities: [
-        Doctor,
-        DoctorSpecialty,
-        StarTeam,
-        DoctorAndHospital,
-        Facility,
-        ConsultHours,
-        DoctorBankAccounts,
-        Packages,
-      ],
-      type: 'postgres',
-      host: process.env.DOCTORS_DB_HOST,
-      port: parseInt(process.env.DOCTORS_DB_PORT, 10),
-      username: process.env.DOCTORS_DB_USER,
-      password: process.env.DOCTORS_DB_PASSWORD,
-      database: `doctors_${process.env.NODE_ENV}`,
-      logging: true,
-      synchronize: true,
-    },
-  ]).catch((error) => {
-    throw new Error(error);
-  });
+  await connect();
 
   const server = new ApolloServer({
     context: async ({ req }) => {
