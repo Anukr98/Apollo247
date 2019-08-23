@@ -43,10 +43,12 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const Navigation: React.FC = (props) => {
   const classes = useStyles();
-  const currentPath = window.location.pathname;
   return (
     <div className={classes.appNavigation} data-cypress="Navigation">
-      <Link to={clientRoutes.welcome()} className={classes.menuItemActive}>
+      <Link
+        to={clientRoutes.welcome()}
+        className={`${!window.location.href.includes('/myaccount') && classes.menuItemActive}`}
+      >
         Home
       </Link>
       <Link to={clientRoutes.testsAndMedicine()}>Patients</Link>

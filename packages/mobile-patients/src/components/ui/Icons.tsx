@@ -414,3 +414,19 @@ export const ChatCallIcon: React.FC<IconProps> = (props) => (
 export const MissedCallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/MissedCall.png')} />
 );
+
+export const OrderPlacedIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/ic_tracker_done.png')} />
+);
+
+export const OrderOnHoldIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/ic_hold.png')} />
+);
+
+export const OrderDelayedIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/ic_tracker_hold.png')} />
+);
+
+export const OrderTrackerSmallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/ic_tracker_small.png')} />
+);
