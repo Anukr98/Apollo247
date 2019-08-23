@@ -4,6 +4,7 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import openTok, { TokenOptions } from 'opentok';
 import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { STATUS } from 'consults-service/entities';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -34,6 +35,11 @@ export const createAppointmentSessionTypeDefs = gql`
     requestRole: String!
   }
 
+  input EndAppointmentSessionInput {
+    appointmentId: ID!
+    status: STATUS!
+  }
+
   extend type Mutation {
     createAppointmentSession(
       createAppointmentSessionInput: CreateAppointmentSessionInput
@@ -41,6 +47,7 @@ export const createAppointmentSessionTypeDefs = gql`
     updateAppointmentSession(
       updateAppointmentSessionInput: UpdateAppointmentSessionInput
     ): AppointmentSession!
+    endAppointmentSession(endAppointmentSessionInput: EndAppointmentSessionInput): Boolean!
   }
 `;
 
@@ -75,6 +82,15 @@ type updateAppointmentSessionInputArgs = {
   updateAppointmentSessionInput: UpdateAppointmentSessionInput;
 };
 
+type endAppointmentSessionInputArgs = {
+  endAppointmentSessionInput: EndAppointmentSessionInput;
+};
+
+type EndAppointmentSessionInput = {
+  appointmentId: string;
+  status: STATUS;
+};
+
 const createAppointmentSession: Resolver<
   null,
   createAppointmentSessionInputArgs,
@@ -90,10 +106,12 @@ const createAppointmentSession: Resolver<
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
-  if (apptDetails) {
+  if (
+    apptDetails &&
+    (apptDetails.status === STATUS.PENDING || apptDetails.status === STATUS.CONFIRMED)
+  ) {
     patientId = apptDetails.patientId;
     doctorId = apptDetails.doctorId;
-    //appointmentDateTime = format(apptDetails.appointmentDateTime, 'yyyy-MM-ddTHH:mm:ss.000Z');
     appointmentDateTime = apptDetails.appointmentDateTime;
   }
   const apptSessionRepo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
@@ -130,8 +148,13 @@ const createAppointmentSession: Resolver<
     sessionId,
     doctorToken: token,
     appointment: apptDetails,
+    consultStartDateTime: new Date(),
   };
   const repo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
+  await apptRepo.updateAppointmentStatus(
+    createAppointmentSessionInput.appointmentId,
+    STATUS.IN_PROGRESS
+  );
   await repo.saveAppointmentSession(appointmentSessionAttrs);
   return {
     sessionId: sessionId,
@@ -164,9 +187,32 @@ const updateAppointmentSession: Resolver<
   return { sessionId: sessionId, appointmentToken: token };
 };
 
+const endAppointmentSession: Resolver<
+  null,
+  endAppointmentSessionInputArgs,
+  ConsultServiceContext,
+  Boolean
+> = async (parent, { endAppointmentSessionInput }, { consultsDb }) => {
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  await apptRepo.updateAppointmentStatus(
+    endAppointmentSessionInput.appointmentId,
+    STATUS.COMPLETED
+  );
+  const apptSessionRepo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
+  const apptSession = await apptSessionRepo.getAppointmentSession(
+    endAppointmentSessionInput.appointmentId
+  );
+  if (apptSession) {
+    await apptSessionRepo.endAppointmentSession(apptSession.id, new Date());
+  }
+
+  return true;
+};
+
 export const createAppointmentSessionResolvers = {
   Mutation: {
     createAppointmentSession,
     updateAppointmentSession,
+    endAppointmentSession,
   },
 };
