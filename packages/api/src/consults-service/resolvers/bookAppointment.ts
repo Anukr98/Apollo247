@@ -15,6 +15,7 @@ export const bookAppointmentTypeDefs = gql`
     CANCELLED
     COMPLETED
     MISSED
+    PENDING
   }
 
   enum APPOINTMENT_TYPE {
@@ -119,6 +120,9 @@ const bookAppointment: Resolver<
     throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
   }
   const appointment = await appts.saveAppointment(appointmentAttrs);
+
+  await appts.updateAppointmentStatus(appointment.id, STATUS.IN_PROGRESS);
+
   return { appointment };
 };
 
