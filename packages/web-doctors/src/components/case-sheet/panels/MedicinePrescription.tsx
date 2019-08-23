@@ -172,13 +172,48 @@ const useStyles = makeStyles((theme: Theme) => ({
     color: '#fff !important',
   },
 }));
+
+interface DaySlotsObject {
+  id: string;
+  value: string;
+  selected: boolean;
+}
 export const MedicinePrescription: React.FC = () => {
+  const classes = useStyles();
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
-  const classes = useStyles();
-  // const showDosage = () =>{
-
-  // }
+  const [daySlots, setDaySlots] = React.useState<DaySlotsObject[]>([
+    {
+      id: 'morning',
+      value: 'Morning',
+      selected: false,
+    },
+    {
+      id: 'noon',
+      value: 'Noon',
+      selected: false,
+    },
+    {
+      id: 'evening',
+      value: 'Evening',
+      selected: false,
+    },
+    {
+      id: 'night',
+      value: 'Night',
+      selected: false,
+    },
+  ]);
+  const daySlotsToggleAction = (slotId: string) =>{
+    const slots = daySlots.map(function(slot:DaySlotsObject) {
+      if(slotId === slot.id){
+        slot.selected = !slot.selected;
+      }
+      return slot;
+    });
+    setDaySlots(slots);
+  }
+  daySlotsToggleAction('evening');
   return (
     <div className={classes.root}>
       <div className={classes.medicineHeading}>Medicines</div>
