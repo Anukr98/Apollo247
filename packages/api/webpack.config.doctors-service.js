@@ -1,6 +1,13 @@
-const baseWebpackConfig = require('./webpack.config._base');
+const makeWebpackConfig = require('./webpack-make-config');
 
-module.exports = {
-  ...baseWebpackConfig,
-  entry: { 'doctors-service': 'doctors-service/doctors-service.ts' },
-};
+module.exports = makeWebpackConfig({
+  nodemonPluginArgs: {
+    script: 'dist/doctors-service.bundle.js',
+  },
+  webpackConfigOptions: {
+    entry: {
+      'doctors-service': 'doctors-service/doctors-service.ts',
+      'doctors-db-seeds': 'doctors-service/database/seeds.ts',
+    },
+  },
+});

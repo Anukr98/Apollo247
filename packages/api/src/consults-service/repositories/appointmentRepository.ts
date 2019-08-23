@@ -1,5 +1,5 @@
 import { EntityRepository, Repository, Between, MoreThan, LessThan, Brackets } from 'typeorm';
-import { Appointment, AppointmentSessions } from 'consults-service/entities';
+import { Appointment, AppointmentSessions, STATUS } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -220,5 +220,9 @@ export class AppointmentRepository extends Repository<Appointment> {
     else if (min > 15 && min <= 30) return 30;
     else if (min > 30 && min <= 45) return 45;
     else return 0;
+  }
+
+  updateAppointmentStatus(id: string, status: STATUS) {
+    this.update(id, { status });
   }
 }

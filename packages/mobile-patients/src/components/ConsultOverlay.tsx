@@ -335,11 +335,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 //   ? Object.keys(dateSelected)[0]
                 //   : moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
                 console.log(formatDate, 'formatDate');
-                var today = new Date();
-                var time =
-                  ('0' + today.getHours()).slice(-2) +
-                  ':' +
-                  ('0' + (today.getMinutes() + 1)).slice(-2);
                 const timeSlot =
                   tabs[0].title === selectedTab &&
                   isConsultOnline &&

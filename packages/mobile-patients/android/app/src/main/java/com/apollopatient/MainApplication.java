@@ -6,6 +6,7 @@ import com.facebook.react.ReactApplication;
 import com.zxcpoiu.incallmanager.InCallManagerPackage;
 import io.github.elyx0.reactnativedocumentpicker.DocumentPickerPackage;
 import com.opentokreactnative.OTPackage;
+import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import org.devio.rn.splashscreen.SplashScreenReactPackage;
 import io.invertase.firebase.RNFirebasePackage;
 import com.oblador.vectoricons.VectorIconsPackage;
@@ -36,6 +37,7 @@ public class MainApplication extends Application implements ReactApplication {
             new InCallManagerPackage(),
             new DocumentPickerPackage(),
             new OTPackage(),
+            new PickerPackage(),
             new SplashScreenReactPackage(),
             new RNFirebasePackage(),
             new VectorIconsPackage(),

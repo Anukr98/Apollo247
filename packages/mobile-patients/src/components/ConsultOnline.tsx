@@ -151,7 +151,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     ) {
       const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
         .availableSlot;
-      const IOSFormat = `${todayDate}T${nextSlot}:48.000Z`;
+      const IOSFormat = `${todayDate}T${nextSlot}:00.000Z`;
       console.log(IOSFormat, new Date(IOSFormat));
       const formatedTime = Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
       console.log(formatedTime, 'formatedTime');

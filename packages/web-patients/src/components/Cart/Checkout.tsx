@@ -1,18 +1,13 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, FormControlLabel } from '@material-ui/core';
 import React from 'react';
-import { AphRadio } from '@aph/web-ui-components';
+import { AphRadio, AphSlider } from '@aph/web-ui-components';
+import { AphCheckbox } from 'components/AphCheckbox';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      borderRadius: 5,
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      backgroundColor: '#f7f8f5',
-      padding: 10,
       paddingBottom: 5,
-      marginTop: 14,
-      marginBottom: 10,
     },
     sectionHeader: {
       borderBottom: '0.5px solid rgba(1,71,91,0.4)',
@@ -20,22 +15,26 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#02475b',
       paddingBottom: 5,
+      paddingTop: 20,
     },
     checkoutType: {
-      paddingTop: 20,
+      padding: '10px 18px',
+      borderRadius: 5,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      backgroundColor: '#f7f8f5',
+      marginTop: 20,
       '& ul': {
         padding: 0,
         margin: 0,
       },
       '& li': {
         listStyleType: 'none',
-        paddingBottom: 10,
         fontSize: 14,
         fontWeight: 500,
         color: '#01475b',
-        '&:first-child': {
+        paddingBottom: 10,
+        '&:last-child': {
           paddingBottom: 0,
-          marginBottom: 20,
         },
       },
     },
@@ -54,8 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
     apolloOne: {
       display: 'flex',
       alignItems: 'center',
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      paddingBottom: 5,
+      paddingLeft: 15,
       '& img': {
         maxWidth: 50,
       },
@@ -74,22 +72,65 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#01475b',
     },
+    balanceSection: {
+      borderTop: '0.5px solid rgba(2,71,92,0.3)',
+      padding: '10px 20px 0 20px',
+      marginLeft: -18,
+      marginRight: -18,
+    },
+    balanceAmount: {
+      borderRadius: 5,
+      backgroundColor: theme.palette.common.white,
+      padding: '10px 20px',
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#02475b',
+      display: 'flex',
+      alignItems: 'center',
+    },
+    totalAmount: {
+      fontWeight: 600,
+      marginLeft: 'auto',
+    },
+    slider: {
+      width: '100%',
+    },
+    paymentsDisabled: {
+      opacity: 0.3,
+    },
   };
 });
+
+const apolloPoints = [
+  {
+    value: 0,
+    label: '0',
+  },
+  {
+    value: 360,
+    label: '360',
+  },
+];
+
+function valuetext(value: number) {
+  return `${value}`;
+}
 
 export const Checkout: React.FC = (props) => {
   const classes = useStyles();
 
   return (
     <div className={classes.root}>
-      <div className={classes.sectionHeader}>How would you prefer to pay?</div>
+      <div className={classes.sectionHeader}>
+        Would you like to use Apollo Health Credits for this payment?
+      </div>
       <div className={classes.checkoutType}>
         <ul>
           <li>
             <FormControlLabel
               className={classes.radioLabel}
               value="a"
-              control={<AphRadio color="primary" />}
+              control={<AphCheckbox color="primary" />}
               checked
               label={
                 <div className={classes.apolloOne}>
@@ -102,41 +143,47 @@ export const Checkout: React.FC = (props) => {
                 </div>
               }
             />
-          </li>
-          <li>
-            <FormControlLabel
-              className={classes.radioLabel}
-              value="a"
-              control={<AphRadio color="primary" />}
-              checked
-              label="Debit / Credit Card"
-            />
-          </li>
-          <li>
-            <FormControlLabel
-              className={classes.radioLabel}
-              value="b"
-              control={<AphRadio color="primary" />}
-              label="Net Banking"
-            />
-          </li>
-          <li>
-            <FormControlLabel
-              className={classes.radioLabel}
-              value="b"
-              control={<AphRadio color="primary" />}
-              label="Wallets"
-            />
-          </li>
-          <li>
-            <FormControlLabel
-              className={classes.radioLabel}
-              value="b"
-              control={<AphRadio color="primary" />}
-              label="Cash On Delivery"
-            />
+            <div className={classes.slider}>
+              <AphSlider
+                defaultValue={20}
+                getAriaValueText={valuetext}
+                marks={apolloPoints}
+                min={0}
+                max={360}
+                valueLabelDisplay="on"
+              />
+            </div>
+            <div className={classes.balanceSection}>
+              <div className={classes.balanceAmount}>
+                <span>Balance amount to pay</span>
+                <span className={classes.totalAmount}>Rs. 160</span>
+              </div>
+            </div>
           </li>
         </ul>
+      </div>
+      <div className={classes.paymentsDisabled}>
+        <div className={classes.sectionHeader}>Pick a payment mode</div>
+        <div className={classes.checkoutType}>
+          <ul>
+            <li>
+              <FormControlLabel
+                className={classes.radioLabel}
+                value="b"
+                control={<AphRadio color="primary" />}
+                label="Pay Using Paytm"
+              />
+            </li>
+            <li>
+              <FormControlLabel
+                className={classes.radioLabel}
+                value="b"
+                control={<AphRadio color="primary" />}
+                label="Cash On Delivery"
+              />
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   );

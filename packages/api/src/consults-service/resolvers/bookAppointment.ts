@@ -14,7 +14,8 @@ export const bookAppointmentTypeDefs = gql`
     CONFIRMED
     CANCELLED
     COMPLETED
-    MISSED
+    PENDING
+    NO_SHOW
   }
 
   enum APPOINTMENT_TYPE {
@@ -82,7 +83,7 @@ const bookAppointment: Resolver<
 > = async (parent, { appointmentInput }, { consultsDb, doctorsDb }) => {
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
     ...appointmentInput,
-    status: STATUS.IN_PROGRESS,
+    status: STATUS.PENDING,
   };
 
   //check if docotr id is valid
