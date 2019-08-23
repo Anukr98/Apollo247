@@ -1,12 +1,13 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { SearchHistory } from 'profiles-service/entities';
+import { SearchHistory, SEARCH_TYPE } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 @EntityRepository(SearchHistory)
 export class SearchHistoryRepository extends Repository<SearchHistory> {
   findByPatientAndType(searchAttrs: Partial<SearchHistory>) {
-    return this.find({ where: searchAttrs }).catch((searchError) => {
+    const { type, typeId, patient } = searchAttrs;
+    return this.find({ where: { type, typeId, patient } }).catch((searchError) => {
       throw new AphError(AphErrorMessages.GET_PAST_SEARCHES_ERROR, undefined, {
         searchError,
       });
@@ -24,16 +25,24 @@ export class SearchHistoryRepository extends Repository<SearchHistory> {
   }
 
   updatePastSearch(saveSearchAttrs: Partial<SearchHistory>) {
-    return this.update(saveSearchAttrs, { updatedDate: new Date() }).catch((saveSearchError) => {
+    const { type, typeId, patient } = saveSearchAttrs;
+    return this.update(
+      { type, typeId, patient },
+      {
+        updatedDate: new Date(),
+        typeName: saveSearchAttrs.typeName,
+      }
+    ).catch((saveSearchError) => {
       throw new AphError(AphErrorMessages.SAVE_SEARCH_ERROR, undefined, {
         saveSearchError,
       });
     });
   }
 
-  getPatientRecentSearchHistory(patientId: string) {
+  getPatientRecentSearchHistory(patientId: string, searchTypes: SEARCH_TYPE[]) {
     return this.createQueryBuilder('searchHistory')
       .where('searchHistory.patient = :patientId', { patientId })
+      .where('searchHistory.type IN (:...searchTypes)', { searchTypes })
       .orderBy('searchHistory.updatedDate', 'DESC')
       .limit(10)
       .getMany()

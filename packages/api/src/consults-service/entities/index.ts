@@ -11,7 +11,11 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { IsDate } from 'class-validator';
-import { ConsultType } from 'doctors-service/entities';
+
+export enum APPOINTMENT_TYPE {
+  ONLINE = 'ONLINE',
+  PHYSICAL = 'PHYSICAL',
+}
 
 export enum STATUS {
   PENDING = 'PENDING',
@@ -27,11 +31,6 @@ export enum APPOINTMENT_STATE {
   FOLLOW_UP = 'FOLLOW_UP',
   TRANSFER = 'TRANSFER',
   RESCHEDULE = 'RESCHEDULE',
-}
-
-export enum APPOINTMENT_TYPE {
-  ONLINE = 'ONLINE',
-  PHYSICAL = 'PHYSICAL',
 }
 
 export enum MEDICINE_TIMINGS {
@@ -110,6 +109,12 @@ export class AppointmentSessions extends BaseEntity {
   @OneToOne((type) => Appointment)
   @JoinColumn()
   appointment: Appointment;
+
+  @Column({ type: 'timestamp', nullable: true })
+  consultStartDateTime: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  consultEndDateTime: Date;
 
   @Column()
   sessionId: string;
@@ -193,10 +198,13 @@ export class CaseSheet extends BaseEntity {
   appointment: Appointment;
 
   @Column()
-  consultType: ConsultType;
+  consultType: APPOINTMENT_TYPE;
 
   @Column()
   createdDate: Date;
+
+  @Column({ nullable: true })
+  createdDoctorId: string;
 
   @Column({ nullable: true, type: 'json' })
   diagnosis: string;
@@ -213,6 +221,9 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   followUpAfterInDays: number;
 
+  @Column({ nullable: true })
+  followUpDate: Date;
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -222,11 +233,14 @@ export class CaseSheet extends BaseEntity {
   )
   medicinePrescription: MedicinePrescription[];
 
-  @Column({ type: 'text' })
+  @Column({ nullable: true, type: 'text' })
   notes: string;
 
   @Column({ nullable: true, type: 'json' })
   otherInstructions: string;
+
+  @Column({ nullable: true })
+  patientId: string;
 
   @Column({ nullable: true, type: 'json' })
   symptoms: string;

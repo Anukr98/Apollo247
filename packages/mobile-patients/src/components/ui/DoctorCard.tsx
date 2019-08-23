@@ -186,6 +186,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     const availabilityInHrs: number = availableInMin ? Math.round(availableInMin / 60) : 0;
     return (
       <TouchableOpacity
+        activeOpacity={1}
         style={[styles.doctorView, props.style]}
         onPress={() => {
           props.onPress ? props.onPress(rowData.id!) : navigateToDetails(rowData.id!);
@@ -228,6 +229,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           {props.displayButton && (
             <View style={{ overflow: 'hidden' }}>
               <TouchableOpacity
+                activeOpacity={1}
                 style={styles.buttonView}
                 onPress={() =>
                   availableInMin && availableInMin < 60

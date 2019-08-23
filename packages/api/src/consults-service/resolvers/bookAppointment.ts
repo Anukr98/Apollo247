@@ -20,6 +20,7 @@ export const bookAppointmentTypeDefs = gql`
   enum APPOINTMENT_TYPE {
     ONLINE
     PHYSICAL
+    BOTH
   }
 
   type AppointmentBooking {

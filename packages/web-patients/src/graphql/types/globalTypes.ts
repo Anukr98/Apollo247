@@ -7,6 +7,7 @@
 //==============================================================
 
 export enum APPOINTMENT_TYPE {
+  BOTH = "BOTH",
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
 }
@@ -48,6 +49,7 @@ export enum Relation {
 
 export enum SEARCH_TYPE {
   DOCTOR = "DOCTOR",
+  MEDICINE = "MEDICINE",
   SPECIALTY = "SPECIALTY",
 }
 
@@ -105,10 +107,12 @@ export interface DoctorPhysicalAvailabilityInput {
 }
 
 export interface FilterDoctorInput {
+  patientId?: string | null;
   specialty: string;
   city?: (string | null)[] | null;
   experience?: (Range | null)[] | null;
   availability?: (string | null)[] | null;
+  availableNow?: string | null;
   fees?: (Range | null)[] | null;
   gender?: (Gender | null)[] | null;
   language?: (string | null)[] | null;
@@ -128,6 +132,7 @@ export interface Range {
 export interface SaveSearchInput {
   type?: SEARCH_TYPE | null;
   typeId: string;
+  typeName?: string | null;
   patient: string;
 }
 
