@@ -5,9 +5,6 @@ import Axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { getProductDetails } from '../../helpers/apiCalls';
-import Axios from 'axios';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -21,6 +18,19 @@ const styles = StyleSheet.create({
     color: theme.colors.LIGHT_BLUE,
     opacity: 0.6,
     letterSpacing: 0.04,
+  },
+  heading: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.LIGHT_BLUE,
+    lineHeight: 20,
+    marginBottom: 8,
+  },
+  description: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: theme.colors.SKY_BLUE,
+    letterSpacing: 0.04,
+    lineHeight: 24,
+    marginBottom: 16,
   },
   bottonButtonContainer: {
     marginHorizontal: 20,
@@ -74,7 +84,7 @@ export interface MedicineDetailsSceneProps
   }> {}
 
 export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props) => {
-  const [medicineDetails, setmedicineDetails] = useState<{}>();
+  const [medicineDetails, setmedicineDetails] = useState<{ description: string }>();
 
   useEffect(() => {
     const id = props.navigation.getParam('sku');
@@ -126,6 +136,19 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     );
   };
 
+  const renderTitleAndDescriptionList = () => {
+    // return array.map((i, index, array) => {
+    return (
+      <View>
+        <Text style={styles.heading}>{array[0].title}</Text>
+        <Text style={[styles.description]}>
+          {medicineDetails ? medicineDetails.description : ''}
+        </Text>
+      </View>
+    );
+    // });
+  };
+
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       <Header
@@ -135,7 +158,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         container={{ borderBottomWidth: 0 }}
       />
       <ScrollView bounces={false}>
-        <View style={styles.cardStyle}>{renderNote()}</View>
+        <View style={styles.cardStyle}>
+          {renderNote()}
+          {renderTitleAndDescriptionList()}
+        </View>
         {renderBottomButtons()}
       </ScrollView>
     </SafeAreaView>

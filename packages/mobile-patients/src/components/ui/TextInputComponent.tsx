@@ -55,6 +55,7 @@ export interface TextInputComponentProps {
   autoCorrect?: boolean;
   width?: number;
   textInputprops?: TextInputProps;
+  maxLength?: TextInputProps['maxLength'];
 }
 
 export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => {
