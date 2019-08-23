@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: theme.palette.common.white,
-      padding: '5px 20px 0 20px',
+      padding: '5px 20px',
       [theme.breakpoints.down('xs')]: {
         padding: '15px 20px 5px 20px',
       },
@@ -26,7 +26,6 @@ const useStyles = makeStyles((theme: Theme) => {
     logo: {
       lineHeight: 0,
       paddingTop: 5,
-      paddingBottom: 6,
       '& a': {
         display: 'block',
       },
@@ -40,17 +39,12 @@ const useStyles = makeStyles((theme: Theme) => {
     userAccount: {
       marginBottom: 0,
       marginLeft: 20,
-      marginTop: -5,
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
-      '& span': {
-        padding: '20px 0 11px 0',
-        width: 55,
-        display: 'inline-block',
-        textAlign: 'center',
-      },
       '& img': {
+        marginTop: 15,
+        marginRight: 25,
         width: 28,
       },
     },
@@ -168,35 +162,31 @@ export const Header: React.FC = (props) => {
                     </div>
                   ) : (
                     <div>
+                      <img
+                        className={`${selectedTab === 3 && classes.menuItemActive}`}
+                        onClick={() => setSelectedTab(3)}
+                        src={require('images/ic_inbox.svg')}
+                      />
+                      <img
+                        className={`${selectedTab === 4 && classes.menuItemActive}`}
+                        onClick={() => setSelectedTab(4)}
+                        src={require('images/ic_notifications.svg')}
+                      />
+
+                      <img
+                        className={`${selectedTab === 5 && classes.menuItemActive}`}
+                        onClick={() => {
+                          isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
+                          setSelectedTab(5);
+                        }}
+                        src={require('images/ic_help.svg')}
+                      />
                       <span>
-                        <img
-                          className={`${selectedTab === 3 && classes.menuItemActive}`}
-                          onClick={() => setSelectedTab(3)}
-                          src={require('images/ic_inbox.svg')}
-                        />
-                      </span>
-                      <span>
-                        <img
-                          className={`${selectedTab === 4 && classes.menuItemActive}`}
-                          onClick={() => setSelectedTab(4)}
-                          src={require('images/ic_notifications.svg')}
-                        />
-                      </span>
-                      <span>
-                        <img
-                          className={`${selectedTab === 5 && classes.menuItemActive}`}
-                          onClick={() => {
-                            isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
-                            setSelectedTab(5);
-                          }}
-                          src={require('images/ic_help.svg')}
-                        />
-                      </span>
-                      <span
-                        className={`${window.location.href.includes('/myaccount') &&
-                          classes.menuItemActive}`}
-                      >
-                        <Link to="/myaccount">
+                        <Link
+                          to="/myaccount"
+                          className={`${window.location.href.includes('/myaccount') &&
+                            classes.menuItemActive}`}
+                        >
                           <img
                             onClick={() => setSelectedTab(6)}
                             src={require('images/ic_profile.svg')}

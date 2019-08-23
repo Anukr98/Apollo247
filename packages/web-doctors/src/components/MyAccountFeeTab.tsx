@@ -13,7 +13,7 @@ import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetail
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
-      paddingLeft: 0,
+      paddingLeft: 15,
       '& h2': {
         fontSize: 16,
         color: theme.palette.secondary.dark,
@@ -215,13 +215,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     accountDetails: {
       fontWeight: theme.typography.fontWeightMedium,
-      color: '#02475b !important',
+      color: '#02475b',
       display: 'inline-block',
       width: '70%',
       fontSize: 14,
-      '& h5': {
-        fontWeight: 500,
-      },
     },
     accountDetailsHeading: {
       color: '#658F9B',

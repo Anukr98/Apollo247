@@ -153,7 +153,6 @@ const useStyles = makeStyles((theme: Theme) => {
       'column-count': 2,
       'column-fill': 'initial',
       display: 'block',
-      paddingTop: 20,
       [theme.breakpoints.down('xs')]: {
         'column-count': 1,
       },
@@ -165,9 +164,6 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       [theme.breakpoints.down('xs')]: {
         // display: 'flex',
-      },
-      '& h5': {
-        fontSize: 12,
       },
     },
     serviceItemLeft: {
@@ -384,7 +380,7 @@ const useStyles = makeStyles((theme: Theme) => {
     navLeftIcon: {
       position: 'relative',
       top: 5,
-      width: 24,
+      height: 20,
       marginRight: 10,
     },
     tabActive: {
