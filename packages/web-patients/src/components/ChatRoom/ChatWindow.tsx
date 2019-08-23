@@ -244,6 +244,29 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const timerSeconds = startingTime - timerMinuts * 60;
   const timerLastMinuts = Math.floor(startingTime / 60);
   const timerLastSeconds = startingTime - timerMinuts * 60;
+  const [audio] = useState(new Audio('http://streaming.tdiradio.com:8000/house.mp3'));
+  const [playing, setPlaying] = useState(false);
+  const toggle = () => setPlaying(!playing);
+
+  // useEffect(() => {
+  //   playing ? audio.play() : audio.pause();
+  // }, [playing, audio]);
+
+  useEffect(() => {
+    if ((!isCalled || showVideo) && playing) {
+      setPlaying(!playing);
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    if (isCalled && !showVideo && !playing) {
+      audio.play();
+      setTimeout(() => {
+        setPlaying(!playing);
+        const sound = document.getElementById('soundButton');
+        sound!.click();
+      }, 100);
+    }
+  }, [isCalled, playing, audio, showVideo]);
   const startIntervalTimer = (timer: number) => {
     setstartTimerAppoinmentt(true);
     timerIntervalId = setInterval(() => {
@@ -298,7 +321,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
   useEffect(() => {
     if (isStartConsult) {
-      // console.log(isStartConsult, '...................');
       mutationResponse()
         .then((data) => {
           const appointmentToken =
@@ -317,7 +339,21 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         });
     }
   }, [isStartConsult]);
-
+  const srollToBottomAction = () => {
+    setTimeout(() => {
+      const scrollDiv = document.getElementById('scrollDiv');
+      if (scrollDiv) {
+        scrollDiv!.scrollIntoView();
+      }
+    }, 200);
+  };
+  const resetMessagesAction = () => {
+    console.log(messageText.length);
+    if (messageText === '' || messageText === ' ') {
+      setMessageText(' ');
+      setMessageText('');
+    }
+  };
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
@@ -327,16 +363,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
+        console.log(messageText);
         insertText[insertText.length] = message.message;
+        resetMessagesAction();
+        srollToBottomAction();
         setMessages(insertText);
-        setMessageText(' ');
-        setMessageText('');
-
-        setTimeout(() => {
-          const scrollDiv = document.getElementById('scrollDiv');
-          scrollDiv!.scrollIntoView();
-        }, 200);
-
         if (
           !showVideoChat &&
           message.message.message !== autoMessageStrings.videoCallMsg &&
@@ -418,13 +449,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         sendByPost: true,
       },
       (status, response) => {
-        setMessageText(' ');
+        resetMessagesAction();
+        srollToBottomAction();
 
-        setTimeout(() => {
-          setMessageText('');
-          const scrollDiv = document.getElementById('scrollDiv');
-          scrollDiv!.scrollIntoView();
-        }, 100);
+        // setMessageText(' ');
+
+        // setTimeout(() => {
+        //   setMessageText('');
+        //   const scrollDiv = document.getElementById('scrollDiv');
+        //   scrollDiv!.scrollIntoView();
+        // }, 100);
       }
     );
   };
@@ -465,7 +499,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             {rowData.duration === '00 : 00' ? (
               <span className={classes.missCall}>
                 <img src={require('images/ic_missedcall.svg')} />
-                {rowData.message.toLocaleLowerCase() === 'Video call ended'
+                {rowData.message.toLocaleLowerCase() === 'video call ended'
                   ? 'You missed a video call'
                   : 'You missed a voice call'}
               </span>
@@ -510,9 +544,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             {rowData.duration === '00 : 00' ? (
               <span className={classes.missCall}>
                 <img src={require('images/ic_missedcall.svg')} />
-                {rowData.message.toLocaleLowerCase() === 'Video call ended'
-                  ? 'You missed a call'
-                  : 'You missed a call'}
+                {rowData.message.toLocaleLowerCase() === 'video call ended'
+                  ? 'You missed a video call'
+                  : 'You missed a voice call'}
               </span>
             ) : rowData.duration ? (
               <div className={classes.callEnded}>
@@ -546,6 +580,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const toggelChatVideo = () => {
     setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
+    srollToBottomAction();
   };
   const actionBtn = () => {
     const text = {
@@ -566,6 +601,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     );
     setShowVideo(true);
     startIntervalTimer(0);
+
+    setPlaying(!playing);
+    audio.pause();
   };
   const stopAudioVideoCall = () => {
     const stoptext = {
@@ -602,6 +640,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
   return (
     <div className={classes.consultRoom}>
+      <button onClick={toggle} id="soundButton" style={{ display: 'none' }}>
+        {playing ? 'Pause' : 'Play'}
+      </button>
       <div
         className={`${classes.chatSection} ${
           !showVideo ? classes.chatWindowContainer : classes.audioVideoContainer
