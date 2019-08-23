@@ -244,6 +244,29 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const timerSeconds = startingTime - timerMinuts * 60;
   const timerLastMinuts = Math.floor(startingTime / 60);
   const timerLastSeconds = startingTime - timerMinuts * 60;
+  const [audio] = useState(new Audio('http://streaming.tdiradio.com:8000/house.mp3'));
+  const [playing, setPlaying] = useState(false);
+  const toggle = () => setPlaying(!playing);
+
+  // useEffect(() => {
+  //   playing ? audio.play() : audio.pause();
+  // }, [playing, audio]);
+
+  useEffect(() => {
+    if ((!isCalled || showVideo) && playing) {
+      setPlaying(!playing);
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    if (isCalled && !showVideo && !playing) {
+      audio.play();
+      setTimeout(() => {
+        setPlaying(!playing);
+        const sound = document.getElementById('soundButton');
+        sound!.click();
+      }, 100);
+    }
+  }, [isCalled, playing, audio, showVideo]);
   const startIntervalTimer = (timer: number) => {
     setstartTimerAppoinmentt(true);
     timerIntervalId = setInterval(() => {
@@ -319,18 +342,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const srollToBottomAction = () => {
     setTimeout(() => {
       const scrollDiv = document.getElementById('scrollDiv');
-      if(scrollDiv){
+      if (scrollDiv) {
         scrollDiv!.scrollIntoView();
       }
     }, 200);
-  }
+  };
   const resetMessagesAction = () => {
-    console.log(messageText.length)
-    if(messageText === '' || messageText === ' '){
+    console.log(messageText.length);
+    if (messageText === '' || messageText === ' ') {
       setMessageText(' ');
       setMessageText('');
     }
-  }
+  };
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
@@ -428,7 +451,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       (status, response) => {
         resetMessagesAction();
         srollToBottomAction();
-        
+
         // setMessageText(' ');
 
         // setTimeout(() => {
@@ -578,6 +601,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     );
     setShowVideo(true);
     startIntervalTimer(0);
+
+    setPlaying(!playing);
+    audio.pause();
   };
   const stopAudioVideoCall = () => {
     const stoptext = {
@@ -614,6 +640,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
   return (
     <div className={classes.consultRoom}>
+      <button onClick={toggle} id="soundButton" style={{ display: 'none' }}>
+        {playing ? 'Pause' : 'Play'}
+      </button>
       <div
         className={`${classes.chatSection} ${
           !showVideo ? classes.chatWindowContainer : classes.audioVideoContainer
