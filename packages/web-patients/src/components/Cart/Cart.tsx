@@ -206,7 +206,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 0,
     },
     dialogContent: {
-      paddingTop: 10,
+      paddingTop: 6,
     },
     dialogActions: {
       padding: 20,
@@ -408,7 +408,7 @@ export const Cart: React.FC = (props) => {
           </div>
         </Scrollbars>
         <div className={classes.checkoutBtn}>
-          <AphButton onClick={() => setIsPopoverOpen(true)} color="primary" fullWidth>
+          <AphButton onClick={() => setIsDialogOpen(true)} color="primary" fullWidth>
             Proceed to pay — RS. 480
           </AphButton>
         </div>
@@ -424,8 +424,8 @@ export const Cart: React.FC = (props) => {
             </Scrollbars>
           </div>
           <div className={classes.dialogActions}>
-            <AphButton onClick={() => setIsDialogOpen(true)} color="primary" fullWidth>
-              Done
+            <AphButton onClick={() => setIsPopoverOpen(true)} color="primary" fullWidth>
+              Pay - RS. 360
             </AphButton>
           </div>
         </div>
