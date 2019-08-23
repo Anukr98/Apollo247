@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { AppointmentSessions, STATUS } from 'consults-service/entities';
+import { AppointmentSessions } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
