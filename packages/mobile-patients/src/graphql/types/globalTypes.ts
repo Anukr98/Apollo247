@@ -18,6 +18,11 @@ export enum ConsultMode {
   PHYSICAL = 'PHYSICAL',
 }
 
+export enum DEVICE_TYPE {
+  ANDROID = 'ANDROID',
+  IOS = 'IOS',
+}
+
 export enum DoctorType {
   APOLLO = 'APOLLO',
   PAYROLL = 'PAYROLL',
@@ -146,6 +151,13 @@ export interface PatientAppointmentsInput {
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;
+}
+
+export interface SaveDeviceTokenInput {
+  deviceType: DEVICE_TYPE;
+  deviceToken: string;
+  deviceOS: string;
+  patientId: string;
 }
 
 export interface SaveSearchInput {

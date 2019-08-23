@@ -32,6 +32,14 @@ import { NavigationScreenProps } from 'react-navigation';
 import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  saveDeviceToken,
+  saveDeviceTokenVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
+import { SAVE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
+import firebase from 'react-native-firebase';
+import DeviceInfo from 'react-native-device-info';
 
 const { width, height } = Dimensions.get('window');
 
@@ -204,6 +212,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     currentPatient && setshowSpinner(false);
     console.log('consult room', currentPatient);
     analytics.setCurrentScreen(AppRoutes.ConsultRoom);
+    callDeviceTokenAPI();
   }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
   useEffect(() => {
@@ -215,6 +224,77 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     fetchData();
   }, []);
+
+  const client = useApolloClient();
+
+  const callDeviceTokenAPI = () => {
+    firebase
+      .messaging()
+      .getToken()
+      .then((token) => {
+        // stores the token in the user's document
+        console.log('token', token);
+
+        const input = {
+          deviceType: Platform.OS === 'ios' ? 'IOS' : 'ANDROID',
+          deviceToken: token,
+          deviceOS: DeviceInfo.getBaseOS(),
+          patientId: currentPatient && currentPatient.id,
+        };
+
+        // console.log('input', input);
+
+        // if (currentPatient) {
+        //   client
+        //     .mutate<saveDeviceToken, saveDeviceTokenVariables>({
+        //       mutation: SAVE_DEVICE_TOKEN,
+        //       variables: {
+        //         SaveDeviceTokenInput: input,
+        //       },
+        //     })
+        //     .then((data: any) => {
+        //       console.log('createsession', data);
+        //     })
+        //     .catch((e: string) => {
+        //       console.log('Error occured while adding Doctor', e);
+        //     });
+        // }
+      });
+  };
+
+  exports.sendPushNotification = functions.firestore
+    .document("some_collection/{some_document}")
+    .onCreate(event => {
+      // gets standard JavaScript object from the new write
+      const writeData = event.data.data();
+      // access data necessary for push notification 
+      const sender = writeData.uid;
+      const senderName = writeData.name;
+      const recipient = writeData.recipient;
+      // the payload is what will be delivered to the device(s)
+      let payload = {
+        notification: {
+          title:
+            body:
+          sound:
+            badge:
+        }
+      }
+      // either store the recepient tokens in the document write
+      const tokens = writeData.tokens;
+
+      // or collect them by accessing your database
+      var pushToken = "";
+      return functions
+        .firestore
+        .collection("user_data_collection/recipient")
+        .get()
+        .then(doc => {
+          pushToken = doc.data().token;
+          // sendToDevice can also accept an array of push tokens
+          return admin.messaging().sendToDevice(pushToken, payload);
+        });
+    });
 
   const Popup = () => (
     <TouchableOpacity

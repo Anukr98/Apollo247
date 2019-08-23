@@ -633,3 +633,19 @@ export const GET_CASESHEET_DETAILS = gql`
     }
   }
 `;
+
+export const SAVE_DEVICE_TOKEN = gql`
+  mutation saveDeviceToken($SaveDeviceTokenInput: SaveDeviceTokenInput!) {
+    saveDeviceToken(SaveDeviceTokenInput: $SaveDeviceTokenInput) {
+      deviceToken {
+        id
+        patientId
+        deviceType
+        deviceOS
+        deviceToken
+        createdDate
+        updatedDate
+      }
+    }
+  }
+`;
