@@ -13,9 +13,15 @@ import {
   getPatientAddressList,
   getPatientAddressList_getPatientAddressList_addressList,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
-import { CartInfoResponse, CartItem, getCartInfo } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  CartInfoResponse,
+  MedicineProductsResponse,
+  getCartInfo,
+  CartItem,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';

@@ -4,20 +4,35 @@ import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCar
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { addProductToCartApi, CartInfoResponse, getCartInfo, incOrDecProductCountToCartApi, MedicineProduct, removeProductFromCartApi, searchMedicineApi, setLocalCartInfo } from '@aph/mobile-patients/src/helpers/apiCalls';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { AxiosResponse } from 'axios';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, SafeAreaView, StyleProp, StyleSheet, Text, TextInput, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { AppRoutes } from '../NavigatorContainer';
+import {
+  addProductToCartApi,
   MedicineProduct,
   removeProductFromCartApi,
   searchMedicineApi,
   incOrDecProductCountToCartApi,
+  getCartInfo,
+  setLocalCartInfo,
+  CartInfoResponse,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import console = require('console');
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { AxiosResponse } from 'axios';
+import React, { useState, useEffect } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  SafeAreaView,
+  StyleProp,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native';
+import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
