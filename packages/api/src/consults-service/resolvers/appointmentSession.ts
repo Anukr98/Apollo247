@@ -106,7 +106,10 @@ const createAppointmentSession: Resolver<
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
-  if (apptDetails && (apptDetails.status === 'PENDING' || apptDetails.status === 'CONFIRMED')) {
+  if (
+    apptDetails &&
+    (apptDetails.status === STATUS.PENDING || apptDetails.status === STATUS.CONFIRMED)
+  ) {
     patientId = apptDetails.patientId;
     doctorId = apptDetails.doctorId;
     appointmentDateTime = apptDetails.appointmentDateTime;
