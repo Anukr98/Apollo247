@@ -16,6 +16,7 @@ import {
   MedicineOrders,
   MedicineOrderLineItems,
   MedicineOrderPayments,
+  PatientDeviceTokens,
 } from 'profiles-service/entities';
 import {
   Doctor,
@@ -53,6 +54,10 @@ import {
   getDigitizedOrderTypeDefs,
   getDigitizedOrderResolvers,
 } from 'profiles-service/resolvers/getDigitizedOrderDetails';
+import {
+  saveDeviceTokenTypeDefs,
+  saveDeviceTokenResolvers,
+} from 'profiles-service/resolvers/addDeviceToken';
 import gql from 'graphql-tag';
 import { GatewayHeaders } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
@@ -72,6 +77,7 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
         MedicineOrders,
         MedicineOrderLineItems,
         MedicineOrderPayments,
+        PatientDeviceTokens,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
@@ -169,6 +175,10 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
       {
         typeDefs: getDigitizedOrderTypeDefs,
         resolvers: getDigitizedOrderResolvers,
+      },
+      {
+        typeDefs: saveDeviceTokenTypeDefs,
+        resolvers: saveDeviceTokenResolvers,
       },
     ]),
   });
