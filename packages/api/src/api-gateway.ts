@@ -110,7 +110,7 @@ export type Resolver<Parent, Args, Context, Result> = (
 
   server.listen(process.env.API_GATEWAY_PORT).then(({ url }) => {
     console.log(`🚀 api gateway ready at ${url}`);
-    console.log('the following cors origins will be whitelisted:', corsOrigins.join(','));
+    console.log('allowed cors origins:', corsOrigins.join(','));
   });
 
   /*console.log('------------------------MESSAGE QUEUE TEST----------------------------');
