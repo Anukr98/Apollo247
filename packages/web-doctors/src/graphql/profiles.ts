@@ -33,8 +33,8 @@ export const UPDATE_DELEGATE_NUMBER = gql`
 export const REMOVE_DELEGATE_NUMBER = gql`
   mutation RemoveDelegateNumber {
     removeDelegateNumber {
-    delegateNumber
-  }
+      delegateNumber
+    }
   }
 `;
 
