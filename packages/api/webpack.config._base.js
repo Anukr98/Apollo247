@@ -32,7 +32,7 @@ module.exports = {
   target: 'node',
 
   // Whitelist our local @aph modules so that they _are_ included in our bundles (not external)
-  // This allows to use process.env vars inside @aph modules (as they will be bundled with the app via webpack)
+  // This allows us to use process.env vars inside @aph modules (as they will be bundled with the app via webpack)
   externals: nodeExternals({ whitelist: [/@aph/] }),
 
   mode: isProduction || isStaging ? 'production' : 'development',
