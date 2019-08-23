@@ -692,7 +692,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     return null;
   };
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {doctorsList && renderSearch()}
         {showSpinner ? null : (

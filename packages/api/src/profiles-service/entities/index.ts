@@ -32,6 +32,7 @@ export enum Relation {
 export enum SEARCH_TYPE {
   DOCTOR = 'DOCTOR',
   SPECIALTY = 'SPECIALTY',
+  MEDICINE = 'MEDICINE',
 }
 
 //patient Starts
@@ -102,8 +103,11 @@ export class SearchHistory extends BaseEntity {
   @Column()
   type: SEARCH_TYPE;
 
-  @Column('uuid')
+  @Column()
   typeId: string;
+
+  @Column({ nullable: true })
+  typeName: string;
 
   @ManyToOne((type) => Patient, (patient) => patient.searchHistory)
   patient: Patient;

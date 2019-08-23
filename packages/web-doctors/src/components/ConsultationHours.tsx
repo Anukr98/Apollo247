@@ -296,7 +296,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     feesTabResponsive: {
       '& div': {
-        display: 'block',
+        [theme.breakpoints.down('xs')]: {
+          display: 'block',
+        },
       },
     },
   };

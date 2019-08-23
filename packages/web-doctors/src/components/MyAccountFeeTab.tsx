@@ -71,8 +71,18 @@ const useStyles = makeStyles((theme: Theme) => {
       height: '100%',
       boxShadow: 'none',
       [theme.breakpoints.down('xs')]: {
-        display: 'flex',
+        // display: 'flex',
       },
+      '& h3': {
+        color: '#658f9b !important',
+        marginLeft: '20px !important',
+      },
+    },
+    subtitle1: {
+      fontWeight: 500,
+      color: '#658f9b',
+      fontSize: '16px',
+      paddingBottom: '0',
     },
     avatarBlock: {
       overflow: 'hidden',
@@ -171,7 +181,7 @@ const useStyles = makeStyles((theme: Theme) => {
       flexBank: '60%',
     },
     columnAC: {
-      flexBasis: '50%',
+      flexBasis: '60%',
     },
     columnType: {
       flexBasis: '10%',
@@ -201,21 +211,21 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       marginLeft: 20,
       fontSize: 16,
-      marginBottom: 10,
+      marginBottom: 18,
     },
     accountDetails: {
       fontWeight: theme.typography.fontWeightMedium,
       color: '#02475b',
       display: 'inline-block',
-      width: '80%',
+      width: '70%',
       fontSize: 14,
     },
     accountDetailsHeading: {
       color: '#658F9B',
       fontSize: 12,
       display: 'inline-block',
-      width: '20%',
-      fontWeight: 'normal',
+      width: '25%',
+      fontWeight: 500,
     },
     topBorder: {
       borderTop: 'solid 1px rgba(101,143,155,0.2)',
@@ -225,6 +235,22 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     pointerNone: {
       pointerEvents: 'none',
+    },
+    helpTxt: {
+      color: '#0087ba',
+      fontSize: 16,
+      lineHeight: 1.38,
+      fontWeight: 500,
+    },
+    orange: {
+      color: '#fc9916',
+      fontWeight: 700,
+    },
+    navLeftIcon: {
+      position: 'relative',
+      top: 5,
+      height: 20,
+      marginRight: 10,
     },
   };
 });
@@ -240,18 +266,24 @@ export const MyAccountFeeTab: React.FC<FeesProps> = (props) => {
   return (
     <div className={classes.ProfileContainer}>
       <Grid container spacing={0}>
-        <Grid item lg={2} sm={6} xs={12}>
+        <Grid item lg={12} sm={12} xs={12}>
           <Typography variant="h2">Consultation Fees</Typography>
         </Grid>
 
-        <Grid item lg={10} sm={6} xs={12}>
+        <Grid item lg={12} sm={12} xs={12}>
           <div className={classes.tabContent}>
             <Paper className={classes.serviceItem}>
-              <Typography variant="subtitle1">What are your online consultation fees?</Typography>
+              <Typography className={classes.subtitle1} variant="h3">
+                What are your online consultation fees?
+              </Typography>
               <Typography className={classes.bold}>Rs. {data.onlineConsultationFees}</Typography>
-              <Typography variant="subtitle1">What are your physical consultation fees?</Typography>
+              <Typography className={classes.subtitle1} variant="h3">
+                What are your physical consultation fees?
+              </Typography>
               <Typography className={classes.bold}>Rs. {data.physicalConsultationFees}</Typography>
-              <Typography variant="subtitle1">What packages do you offer your patients?</Typography>
+              <Typography className={classes.subtitle1} variant="h3">
+                What packages do you offer your patients?
+              </Typography>
               <Typography className={classes.bold}>
                 {data.packages &&
                 data.packages.length > 0 &&
@@ -266,11 +298,11 @@ export const MyAccountFeeTab: React.FC<FeesProps> = (props) => {
       </Grid>
       {data.bankAccount && data.bankAccount.length > 0 && (
         <Grid container spacing={0}>
-          <Grid item lg={2} sm={6} xs={12}>
-            <Typography variant="h2">Payment Method</Typography>
+          <Grid item lg={12} sm={12} xs={12}>
+            <Typography variant="h2">Payment Details</Typography>
           </Grid>
 
-          <Grid item lg={10} sm={6} xs={12}>
+          <Grid item lg={12} sm={12} xs={12}>
             <div className={classes.tabContent}>
               <ExpansionPanel className={`${classes.serviceItem}`}>
                 <ExpansionPanelSummary
@@ -322,6 +354,10 @@ export const MyAccountFeeTab: React.FC<FeesProps> = (props) => {
           </Grid>
         </Grid>
       )}
+      <div className={classes.helpTxt}>
+        <img alt="" src={require('images/ic_info.svg')} className={classes.navLeftIcon} />
+        Call <span className={classes.orange}>1800 - 3455 - 3455 </span>to make any changes
+      </div>
     </div>
   );
 };
