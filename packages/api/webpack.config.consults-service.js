@@ -7,6 +7,7 @@ module.exports = makeWebpackConfig({
   webpackConfigOptions: {
     entry: {
       'consults-service': 'consults-service/consults-service.ts',
+      'consults-db-seeds': 'consults-service/database/seeds.ts',
     },
   },
 });
