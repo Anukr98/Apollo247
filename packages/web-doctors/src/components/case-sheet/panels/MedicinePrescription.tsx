@@ -1,13 +1,6 @@
 import React from 'react';
-import { Theme, Typography, makeStyles, Paper, Grid } from '@material-ui/core';
-import {
-  AphTextField,
-  AphButton,
-  AphDialog,
-  AphDialogTitle,
-  AphInput,
-} from '@aph/web-ui-components';
-
+import { Theme, makeStyles, Paper, Grid, FormHelperText } from '@material-ui/core';
+import { AphTextField, AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     flexGrow: 1,
@@ -44,16 +37,12 @@ const useStyles = makeStyles((theme: Theme) => ({
     right: 16,
     top: 16,
   },
-  // inActiveCard:{
-  //   //border: '1px solid black',
-  // },
   btnAddDoctor: {
     backgroundColor: 'transparent',
     boxShadow: 'none',
     color: theme.palette.action.selected,
     fontSize: 14,
     fontWeight: theme.typography.fontWeightBold,
-    // pointerEvents: 'none',
     paddingLeft: 4,
     '&:hover': {
       backgroundColor: 'transparent',
@@ -171,6 +160,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     backgroundColor: '#00b38e !important',
     color: '#fff !important',
   },
+  helpText: {
+    paddingLeft: 20,
+    paddingRight: 20,
+  },
 }));
 
 interface SlotsObject {
@@ -178,10 +171,31 @@ interface SlotsObject {
   value: string;
   selected: boolean;
 }
+interface MedicineObject {
+  id: string;
+  value: string;
+  name: string;
+  times: number;
+  daySlots: string;
+  duration: string;
+  selected: boolean;
+}
+interface errorObject {
+  daySlotErr: boolean;
+  tobeTakenErr: boolean;
+  durationErr: boolean;
+}
 export const MedicinePrescription: React.FC = () => {
   const classes = useStyles();
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
+  const [errorState, setErrorState] = React.useState<errorObject>({
+    daySlotErr: false,
+    tobeTakenErr: false,
+    durationErr: false,
+  });
+  const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
+  const [tabletsCount, setTabletsCount] = React.useState<number>(1);
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
       id: 'morning',
@@ -216,6 +230,26 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
   ]);
+  const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([
+    {
+      id: '1',
+      value: 'Acetamenophen 1.5% w/w',
+      name: 'Acetamenophen 1.5% w/w',
+      times: 2,
+      daySlots: 'morning, night',
+      duration: '1 week',
+      selected: false,
+    },
+    {
+      id: '2',
+      value: 'Dextromethorphan (generic)',
+      name: 'Dextromethorphan (generic)',
+      times: 4,
+      daySlots: 'morning, afternoon, evening, night',
+      duration: '5 days after food',
+      selected: true,
+    },
+  ]);
   const daySlotsToggleAction = (slotId: string) => {
     const slots = daySlots.map(function(slot: SlotsObject) {
       if (slotId === slot.id) {
@@ -225,32 +259,82 @@ export const MedicinePrescription: React.FC = () => {
     });
     setDaySlots(slots);
   };
-  daySlotsToggleAction('evening');
-  
+
   const toBeTakenSlotsToggleAction = (slotId: string) => {
-    const slots = daySlots.map(function(slot: SlotsObject) {
+    const slots = toBeTakenSlots.map(function(slot: SlotsObject) {
       if (slotId === slot.id) {
         slot.selected = !slot.selected;
       }
       return slot;
     });
-    setDaySlots(slots);
+    setToBeTakenSlots(slots);
   };
-  toBeTakenSlotsToggleAction('beforefood');
-
-  const daySlotsHtml = daySlots.map((_item: SlotsObject | null, index: number) => {
-    const item = _item!;
+  const selectedMedicinesHtml = selectedMedicines.map(
+    (_medicine: MedicineObject | null, index: number) => {
+      const medicine = _medicine!;
+      return (
+        <Paper className={`${classes.paper} ${classes.activeCard}`}>
+          <h5>{medicine.name}</h5>
+          <h6>
+            {medicine.times} times a day ({medicine.daySlots}) for {medicine.duration}
+          </h6>
+          <img
+            className={classes.checkImg}
+            src={
+              medicine.selected
+                ? require('images/ic_selected.svg')
+                : require('images/ic_unselected.svg')
+            }
+            alt="chkUncheck"
+          />
+        </Paper>
+      );
+    }
+  );
+  const daySlotsHtml = daySlots.map((_daySlotitem: SlotsObject | null, index: number) => {
+    const daySlotitem = _daySlotitem!;
     return (
-      <button key={item.id} className={item.selected ? classes.activeBtn : ''}>
-        {item.value}
+      <button
+        key={daySlotitem.id}
+        className={daySlotitem.selected ? classes.activeBtn : ''}
+        onClick={() => {
+          daySlotsToggleAction(daySlotitem.id);
+        }}
+      >
+        {daySlotitem.value}
       </button>
     );
   });
-  const tobeTakenHtml = toBeTakenSlots.map((_item: SlotsObject | null, index: number) => {
-    const item = _item!;
+  const addUpdateMedicines = () => {
+    const isTobeTakenSelected = toBeTakenSlots.filter(function(slot: SlotsObject) {
+      return slot.selected !== false;
+    });
+    const daySlotsSelected = daySlots.filter(function(slot: SlotsObject) {
+      return slot.selected !== false;
+    });
+    if (daySlotsSelected.length === 0) {
+      setErrorState({ ...errorState, daySlotErr: true, tobeTakenErr: false, durationErr: false });
+    } else if (isTobeTakenSelected.length === 0) {
+      setErrorState({ ...errorState, tobeTakenErr: true, daySlotErr: false, durationErr: false });
+    } else if (consumptionDuration === '') {
+      setErrorState({ ...errorState, durationErr: true, daySlotErr: false, tobeTakenErr: false });
+    } else {
+      setErrorState({ ...errorState, durationErr: false, daySlotErr: false, tobeTakenErr: false });
+      alert('Api Call to submit action');
+      setIsDialogOpen(false);
+    }
+  };
+  const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
+    const tobeTakenitem = _tobeTakenitem!;
     return (
-      <button key={item.id} className={item.selected ? classes.activeBtn : ''}>
-        {item.value}
+      <button
+        key={tobeTakenitem.id}
+        className={tobeTakenitem.selected ? classes.activeBtn : ''}
+        onClick={() => {
+          toBeTakenSlotsToggleAction(tobeTakenitem.id);
+        }}
+      >
+        {tobeTakenitem.value}
       </button>
     );
   });
@@ -259,16 +343,7 @@ export const MedicinePrescription: React.FC = () => {
       <div className={classes.medicineHeading}>Medicines</div>
       <Grid container spacing={1}>
         <Grid item xs={6}>
-          <Paper className={`${classes.paper} ${classes.activeCard}`}>
-            <h5>Acetamenophen 1.5% w/w</h5>
-            <h6>2 times a day (morning, night) for 1 week</h6>
-            <img className={classes.checkImg} src={require('images/ic_selected.svg')} alt="" />
-          </Paper>
-          <Paper className={`${classes.paper}`}>
-            <h5>Dextromethorphan (generic)</h5>
-            <h6>4 times a day (morning, afternoon, evening, night) for 5 days after food</h6>
-            <img className={classes.checkImg} src={require('images/ic_unselected.svg')} alt="" />
-          </Paper>
+          {selectedMedicinesHtml}
           <AphButton
             variant="contained"
             color="primary"
@@ -307,33 +382,73 @@ export const MedicinePrescription: React.FC = () => {
                 <div>
                   <h6>Dosage</h6>
                   <div className={classes.numberTablets}>
-                    <img src={require('images/ic_minus.svg')} alt="" />
-                    <span className={classes.tabletcontent}>2 tablets</span>
-                    <img src={require('images/ic_plus.svg')} alt="" />
+                    <img
+                      src={require('images/ic_minus.svg')}
+                      alt="removeBtn"
+                      onClick={() => {
+                        if (tabletsCount > 1) {
+                          setTabletsCount(tabletsCount - 1);
+                        }
+                      }}
+                    />
+                    <span className={classes.tabletcontent}>{tabletsCount} tablets</span>
+                    <img
+                      src={require('images/ic_plus.svg')}
+                      alt="addbtn"
+                      onClick={() => {
+                        if (tabletsCount > 0 && tabletsCount < 5) {
+                          setTabletsCount(tabletsCount + 1);
+                        }
+                      }}
+                    />
                   </div>
                 </div>
                 <div>
                   <h6>Time of the Day</h6>
-                  <div className={classes.numberTablets}>
-                    {daySlotsHtml}
-                    {/* <button className={classes.activeBtn}>Morning</button>
-                    <button>Noon</button>
-                    <button>Evening</button>
-                    <button>Night</button> */}
-                  </div>
+                  <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                  {errorState.daySlotErr && (
+                    <FormHelperText
+                      className={classes.helpText}
+                      component="div"
+                      error={errorState.daySlotErr}
+                    >
+                      Please select to be day slot.
+                    </FormHelperText>
+                  )}
                 </div>
                 <div>
                   <h6>To be taken</h6>
-                  <div className={classes.numberTablets}>
-                    {tobeTakenHtml}
-                    {/* <button>After food</button>
-                    <button>Before food</button> */}
-                  </div>
+                  <div className={classes.numberTablets}>{tobeTakenHtml}</div>
+                  {errorState.tobeTakenErr && (
+                    <FormHelperText
+                      className={classes.helpText}
+                      component="div"
+                      error={errorState.tobeTakenErr}
+                    >
+                      Please select to be taken.
+                    </FormHelperText>
+                  )}
                 </div>
                 <div>
                   <h6>Duration of Consumption</h6>
                   <div className={classes.numberTablets}>
-                    <AphTextField placeholder="" />
+                    <AphTextField
+                      placeholder=""
+                      value={consumptionDuration}
+                      onChange={(event) => {
+                        setConsumptionDuration(event.target.value);
+                      }}
+                      error={errorState.durationErr}
+                    />
+                    {errorState.durationErr && (
+                      <FormHelperText
+                        className={classes.helpText}
+                        component="div"
+                        error={errorState.durationErr}
+                      >
+                        Please Enter something
+                      </FormHelperText>
+                    )}
                   </div>
                 </div>
                 <div>
@@ -344,10 +459,23 @@ export const MedicinePrescription: React.FC = () => {
                 </div>
               </div>
               <div className={classes.dialogActions}>
-                <AphButton className={classes.cancelBtn} color="primary">
+                <AphButton
+                  className={classes.cancelBtn}
+                  color="primary"
+                  onClick={() => {
+                    setIsDialogOpen(false);
+                  }}
+                >
                   Cancel
                 </AphButton>
-                <AphButton color="primary">Select Medicine</AphButton>
+                <AphButton
+                  color="primary"
+                  onClick={() => {
+                    addUpdateMedicines();
+                  }}
+                >
+                  Select Medicine
+                </AphButton>
               </div>
             </div>
           )}
