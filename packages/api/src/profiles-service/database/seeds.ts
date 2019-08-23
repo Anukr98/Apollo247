@@ -6,7 +6,7 @@ import { SearchHistoryRepository } from 'profiles-service/repositories/searchHis
 import { getConnection } from 'typeorm';
 
 (async () => {
-  console.log('Seeding consults-db...');
+  console.log('Seeding profiles-db...');
 
   console.log('Establishing connection...');
   await connect();
