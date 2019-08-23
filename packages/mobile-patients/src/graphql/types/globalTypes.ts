@@ -11,6 +11,18 @@ export enum APPOINTMENT_TYPE {
   PHYSICAL = "PHYSICAL",
 }
 
+export enum ConsultMode {
+  BOTH = "BOTH",
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+}
+
+export enum DoctorType {
+  APOLLO = "APOLLO",
+  PAYROLL = "PAYROLL",
+  STAR_APOLLO = "STAR_APOLLO",
+}
+
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
@@ -36,8 +48,26 @@ export enum SEARCH_TYPE {
 
 export enum STATUS {
   CANCELLED = "CANCELLED",
+  COMPLETED = "COMPLETED",
   CONFIRMED = "CONFIRMED",
   IN_PROGRESS = "IN_PROGRESS",
+  MISSED = "MISSED",
+}
+
+export enum Salutation {
+  DR = "DR",
+  MR = "MR",
+  MRS = "MRS",
+}
+
+export enum WeekDay {
+  FRIDAY = "FRIDAY",
+  MONDAY = "MONDAY",
+  SATURDAY = "SATURDAY",
+  SUNDAY = "SUNDAY",
+  THURSDAY = "THURSDAY",
+  TUESDAY = "TUESDAY",
+  WEDNESDAY = "WEDNESDAY",
 }
 
 export interface AppointmentHistoryInput {
@@ -56,6 +86,43 @@ export interface BookAppointmentInput {
 export interface DoctorAvailabilityInput {
   availableDate: any;
   doctorId: string;
+}
+
+export interface DoctorNextAvailableSlotInput {
+  availableDate: any;
+  doctorIds: string[];
+}
+
+export interface FilterDoctorInput {
+  specialty: string;
+  city?: (string | null)[] | null;
+  experience?: (Range | null)[] | null;
+  availability?: (string | null)[] | null;
+  fees?: (Range | null)[] | null;
+  gender?: (Gender | null)[] | null;
+  language?: (string | null)[] | null;
+  location?: string | null;
+}
+
+export interface PatientAppointmentsInput {
+  patientId: string;
+  appointmentDate: any;
+}
+
+export interface Range {
+  minimum?: number | null;
+  maximum?: number | null;
+}
+
+export interface SaveSearchInput {
+  type?: SEARCH_TYPE | null;
+  typeId: string;
+  patient: string;
+}
+
+export interface UpdateAppointmentSessionInput {
+  appointmentId: string;
+  requestRole: string;
 }
 
 export interface UpdatePatientInput {
