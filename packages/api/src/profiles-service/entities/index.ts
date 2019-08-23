@@ -366,6 +366,9 @@ export class PatientAddress extends BaseEntity {
   city: string;
 
   @Column({ nullable: true })
+  mobileNumber: string;
+
+  @Column({ nullable: true })
   state: string;
 
   @Column()
