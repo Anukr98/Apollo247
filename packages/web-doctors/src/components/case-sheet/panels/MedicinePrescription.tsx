@@ -1,6 +1,12 @@
 import React from 'react';
 import { Theme, Typography, makeStyles, Paper, Grid } from '@material-ui/core';
-import { AphTextField, AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
+import {
+  AphTextField,
+  AphButton,
+  AphDialog,
+  AphDialogTitle,
+  AphInput,
+} from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -75,12 +81,26 @@ const useStyles = makeStyles((theme: Theme) => ({
   dialogActions: {
     padding: 20,
     paddingTop: 10,
-    boxShadow: '0 -5px 20px 0 #ffffff',
+    boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
     position: 'relative',
-    textAlign: 'center',
+    textAlign: 'right',
     '& button': {
       borderRadius: 10,
-      width: 288,
+      minwidth: 130,
+      padding: '8px 20px',
+    },
+  },
+  cancelBtn: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: '#fc9916',
+    backgroundColor: 'transparent',
+    boxShadow: '0 2px 5px 0 rgba(0,0,0,0.2)',
+    border: 'none',
+    marginRight: 10,
+    '&:hover': {
+      backgroundColor: 'transparent',
+      color: '#fc9916',
     },
   },
   shadowHide: {
@@ -89,6 +109,13 @@ const useStyles = makeStyles((theme: Theme) => ({
   dialogContent: {
     padding: 20,
     minHeight: 450,
+    '& h6': {
+      fontSize: 14,
+      fontWeight: 500,
+      color: 'rgba(2, 71, 91, 0.6)',
+      marginBottom: 10,
+      marginTop: 0,
+    },
   },
   popupHeading: {
     '& h6': {
@@ -104,7 +131,45 @@ const useStyles = makeStyles((theme: Theme) => ({
       color: '#01475b',
       fontWeight: 600,
       textAlign: 'center',
+      marginTop: 5,
     },
+  },
+  numberTablets: {
+    fontSize: 16,
+    color: '#02475b',
+    fontWeight: 500,
+    marginBottom: 20,
+    '& button': {
+      border: '1px solid #00b38e',
+      padding: '5px 10px',
+      fontSize: 12,
+      fontWeight: 'normal',
+      borderRadius: 14,
+      marginRight: 15,
+      color: '#00b38e',
+      backgroundColor: '#fff',
+    },
+  },
+  tabletcontent: {
+    margin: '0 10px',
+    position: 'relative',
+    top: -5,
+  },
+  textField: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    width: 140,
+    '& input': {
+      fontSize: 20,
+      color: '#02475b',
+      fontWeight: theme.typography.fontWeightMedium,
+      paddingTop: 0,
+      borderBottom: '2px solid #00b38e',
+    },
+  },
+  activeBtn: {
+    backgroundColor: '#00b38e !important',
+    color: '#fff !important',
   },
 }));
 export const MedicinePrescription: React.FC = () => {
@@ -154,7 +219,7 @@ export const MedicinePrescription: React.FC = () => {
             <div>
               <div className={classes.dialogContent}>
                 <AphTextField placeholder="search" />
-                <div className={classes.dialogActions}>
+                <div>
                   <AphButton color="primary" onClick={() => setShowDosage(true)}>
                     Select Medicine
                   </AphButton>
@@ -164,7 +229,54 @@ export const MedicinePrescription: React.FC = () => {
           ) : (
             <div>
               <div className={classes.dialogContent}>
-                <span style={{ color: '#ff0000' }}>Second popup</span>
+                <div>
+                  <h6>Dosage</h6>
+                  <div className={classes.numberTablets}>
+                    <img src={require('images/ic_minus.svg')} alt="" />
+                    <span className={classes.tabletcontent}>2 tablets</span>
+                    <img src={require('images/ic_plus.svg')} alt="" />
+                  </div>
+                </div>
+                <div>
+                  <h6>Time of the Day</h6>
+                  <div className={classes.numberTablets}>
+                    <button className={classes.activeBtn}>Morning</button>
+                    <button>Noon</button>
+                    <button>Evening</button>
+                    <button>Night</button>
+                  </div>
+                </div>
+                <div>
+                  <h6>To be taken</h6>
+                  <div className={classes.numberTablets}>
+                    <button>After food</button>
+                    <button>Before food</button>
+                  </div>
+                </div>
+                <div>
+                  <h6>Duration of Consumption</h6>
+                  <div className={classes.numberTablets}>
+                    <AphTextField placeholder="" />
+                  </div>
+                </div>
+                <div>
+                  <h6>Instructions (if any)</h6>
+                  <div className={classes.numberTablets}>
+                    <AphTextField placeholder="search" />
+                  </div>
+                </div>
+              </div>
+              <div className={classes.dialogActions}>
+                <AphButton
+                  className={classes.cancelBtn}
+                  color="primary"
+                  onClick={() => setShowDosage(true)}
+                >
+                  Cancel
+                </AphButton>
+                <AphButton color="primary" onClick={() => setShowDosage(true)}>
+                  Select Medicine
+                </AphButton>
               </div>
             </div>
           )}
