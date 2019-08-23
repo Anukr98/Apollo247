@@ -12,6 +12,7 @@ import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/Ge
 import _capitalize from 'lodash/capitalize';
 import _sortBy from 'lodash/sortBy';
 import FormHelperText from '@material-ui/core/FormHelperText';
+import { format, parseISO } from 'date-fns';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -108,9 +109,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.secondary.light,
     },
     placeholder: {
-      // fontSize: 12,
-      // fontWeight: 500,
-      // color: theme.palette.secondary.light,
       opacity: 0.3,
     },
     selectEmpty: {
@@ -157,6 +155,9 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   const [selectedRelation, setSelectedRelation] = React.useState<Relation | ''>(
     patient.relation || ''
   );
+
+  const placeholderClass = selectedRelation ? 'classes.placeholder' : '';
+
   return (
     <div className={classes.profileBox} data-cypress="PatientProfile">
       <div className={classes.boxHeader}>
@@ -166,8 +167,8 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
       <div className={classes.boxContent}>
         <div className={classes.userName}>{_capitalize(patient.firstName || '')}</div>
         <div className={classes.userInfo}>
-          {_capitalize(patient.gender || '')}
-          {(patient.dateOfBirth || '').toString()}
+          {_capitalize(patient.gender + ' | ')}
+          {patient.dateOfBirth && format(parseISO(patient.dateOfBirth), 'dd MMMM yyyy')}
         </div>
         <AphSelect
           value={selectedRelation ? _capitalize(selectedRelation) : 'Relation'}
@@ -180,7 +181,6 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
           native={false}
           displayEmpty={true}
           renderValue={(value) => `${value}`}
-          className={!selectedRelation ? classes.placeholder : classes.userInfo}
         >
           <MenuItem value={selectedRelation} disabled></MenuItem>
           {orderedRelations.map((relationOption) => (
@@ -209,6 +209,8 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const classes = useStyles();
   const [patients, setPatients] = useState(props.patients);
   const [loading, setLoading] = useState(false);
+  const loneUser = patients.length === 1 && patients[0].relation !== 'ME';
+  if (loneUser) patients[0].relation = Relation.ME;
   const onePrimaryUser = patients.filter((x) => x.relation === Relation.ME).length === 1;
   const multiplePrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length > 1;
   const noPrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length < 1;

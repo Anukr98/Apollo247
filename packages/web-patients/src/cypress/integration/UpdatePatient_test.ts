@@ -4,10 +4,28 @@ import {
   johnBrother,
   jimmyCousin,
   julieNoRelation,
+  quentinQuotes,
 } from 'cypress/fixtures/patientsFixtures';
 import { Relation, Gender } from 'graphql/types/globalTypes';
 
-describe('UpdatePatient (multiple, with uhids)', () => {
+describe('UpdatePatient (single, with uhid)', () => {
+  const patient = [janeNoRelation].map((pat) => ({
+    ...pat,
+    uhid: 'uhid-1234',
+  }));
+
+  beforeEach(() => {
+    cy.signIn(patient);
+    cy.visitAph(clientRoutes.welcome()).wait(500);
+  });
+  it('upon clicking submit with only one patient, default to Relation.ME if no relation selected', () => {
+    cy.get('[data-cypress="ExistingProfile"]').should('exist');
+
+    cy.get('button[type="submit"]').should('be.enabled');
+  });
+});
+
+describe('UpdatePatient (multiple, with uhids, invalid primary user)', () => {
   const patients = [janeNoRelation, johnBrother, jimmyCousin].map((pat) => ({
     ...pat,
     uhid: 'uhid-1234',
@@ -42,7 +60,7 @@ describe('UpdatePatient (multiple, with uhids)', () => {
       .should('exist');
   });
 
-  it.only('Upon clicking submit, show an error if there is more than 1 Me, and disable submit', () => {
+  it('Upon clicking submit, show an error if there is more than 1 Me, and disable submit', () => {
     cy.get('[data-cypress="ExistingProfile"]')
       .contains('Please tell us who is who')
       .should('exist');
@@ -89,13 +107,21 @@ describe('UpdatePatient (multiple, with uhids)', () => {
     cy.get('button[type="submit"]').should('be.enabled');
   });
 
+  it('If there is no relation selected, display "Relation" as placeholder', () => {
+    cy.get('[data-cypress="ExistingProfile"]')
+      .contains('Please tell us who is who')
+      .should('exist');
+
+    cy.get('div[class*="MuiInputBase-inputSelect"]').should('contain', 'Relation');
+  });
+
   it('Welcomes you by prompting for complete family data', () => {
     cy.get('[data-cypress="ExistingProfile"]')
       .contains('Please tell us who is who')
       .should('exist');
   });
 
-  it.only('Relations dropdown goes in order Me (Default), Mother, Father, Sister, Brother, Cousin, Wife, Husband', () => {
+  it('Relations dropdown goes in order Me (Default), Mother, Father, Sister, Brother, Cousin, Wife, Husband', () => {
     cy.get('[data-cypress="ExistingProfile"]')
       .find('div[class*="MuiInputBase-inputSelect"]')
       .first()
