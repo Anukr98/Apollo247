@@ -1,108 +1,56 @@
 import '@aph/universal/dist/global';
-import 'reflect-metadata';
-import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
-import { doctorTypeDefs, doctorResolvers } from 'doctors-service/resolvers/getDoctors';
+import { GatewayHeaders } from 'api-gateway';
+import { ApolloServer } from 'apollo-server';
+import { connect } from 'doctors-service/database/connect';
+import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
+import { Doctor } from 'doctors-service/entities';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import {
-  starDoctorTypeDefs,
-  starDoctorProgramResolvers,
-} from 'doctors-service/resolvers/starDoctorProgram';
+  delegateFunctionsResolvers,
+  delegateFunctionsTypeDefs,
+} from 'doctors-service/resolvers/delegateFunctions';
 import {
-  getSpecialtyTypeDefs,
-  getSpecialtyResolvers,
-} from 'doctors-service/resolvers/getSpecialties';
-import {
-  getAllSpecialtiesTypeDefs,
   getAllSpecialtiesResolvers,
+  getAllSpecialtiesTypeDefs,
 } from 'doctors-service/resolvers/getAllSpecialties';
 import {
-  searchDoctorAndSpecialtyTypeDefs,
-  searchDoctorAndSpecialtyResolvers,
-} from 'doctors-service/resolvers/searchDoctorAndSpecialty';
-import {
-  searchDoctorAndSpecialtyByNameTypeDefs,
-  searchDoctorAndSpecialtyByNameResolvers,
-} from 'doctors-service/resolvers/searchDoctorAndSpecialtyByName';
-import {
-  getSpecialtyDoctorsTypeDefs,
-  getSpecialtyDoctorsResolvers,
-} from 'doctors-service/resolvers/getSpecialtyDoctorsWithFilters';
+  getDoctorDetailsResolvers,
+  getDoctorDetailsTypeDefs,
+} from 'doctors-service/resolvers/getDoctorDetails';
+import { doctorResolvers, doctorTypeDefs } from 'doctors-service/resolvers/getDoctors';
 import {
   getDoctorsBySpecialtyAndFiltersTypeDefs,
   getDoctorsBySpecialtyAndFiltersTypeDefsResolvers,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import {
-  getDoctorDetailsTypeDefs,
-  getDoctorDetailsResolvers,
-} from 'doctors-service/resolvers/getDoctorDetails';
+  getSpecialtyResolvers,
+  getSpecialtyTypeDefs,
+} from 'doctors-service/resolvers/getSpecialties';
 import {
-  delegateFunctionsTypeDefs,
-  delegateFunctionsResolvers,
-} from 'doctors-service/resolvers/delegateFunctions';
-
-import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-
-import { starTeamTypeDefs, starTeamResolvers } from 'doctors-service/resolvers/starTeam';
-
-import gql from 'graphql-tag';
+  getSpecialtyDoctorsResolvers,
+  getSpecialtyDoctorsTypeDefs,
+} from 'doctors-service/resolvers/getSpecialtyDoctorsWithFilters';
+import {
+  searchDoctorAndSpecialtyResolvers,
+  searchDoctorAndSpecialtyTypeDefs,
+} from 'doctors-service/resolvers/searchDoctorAndSpecialty';
+import {
+  searchDoctorAndSpecialtyByNameResolvers,
+  searchDoctorAndSpecialtyByNameTypeDefs,
+} from 'doctors-service/resolvers/searchDoctorAndSpecialtyByName';
+import {
+  starDoctorProgramResolvers,
+  starDoctorTypeDefs,
+} from 'doctors-service/resolvers/starDoctorProgram';
+import { starTeamResolvers, starTeamTypeDefs } from 'doctors-service/resolvers/starTeam';
 import { GraphQLTime } from 'graphql-iso-date';
-import { createConnections, getConnection } from 'typeorm';
-import {
-  Doctor,
-  DoctorSpecialty,
-  StarTeam,
-  DoctorAndHospital,
-  Facility,
-  ConsultHours,
-  DoctorBankAccounts,
-  Packages,
-} from 'doctors-service/entities';
-import {
-  Appointment,
-  AppointmentSessions,
-  MedicinePrescription,
-  CaseSheet,
-} from 'consults-service/entities/';
-import { GatewayHeaders } from 'api-gateway';
-import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
+import gql from 'graphql-tag';
+import 'reflect-metadata';
+import { getConnection } from 'typeorm';
 
 (async () => {
-  await createConnections([
-    {
-      entities: [
-        Doctor,
-        DoctorSpecialty,
-        StarTeam,
-        DoctorAndHospital,
-        Facility,
-        ConsultHours,
-        DoctorBankAccounts,
-        Packages,
-      ],
-      type: 'postgres',
-      host: process.env.DOCTORS_DB_HOST,
-      port: parseInt(process.env.DOCTORS_DB_PORT, 10),
-      username: process.env.DOCTORS_DB_USER,
-      password: process.env.DOCTORS_DB_PASSWORD,
-      database: `doctors_${process.env.NODE_ENV}`,
-      logging: true,
-      synchronize: true,
-    },
-    {
-      name: 'consults-db',
-      entities: [Appointment, AppointmentSessions, MedicinePrescription, CaseSheet],
-      type: 'postgres',
-      host: process.env.CONSULTS_DB_HOST,
-      port: parseInt(process.env.CONSULTS_DB_PORT, 10),
-      username: process.env.CONSULTS_DB_USER,
-      password: process.env.CONSULTS_DB_PASSWORD,
-      database: `consults_${process.env.NODE_ENV}`,
-      logging: true,
-      synchronize: true,
-    },
-  ]).catch((error) => {
-    throw new Error(error);
-  });
+  await connect();
 
   const server = new ApolloServer({
     context: async ({ req }) => {
