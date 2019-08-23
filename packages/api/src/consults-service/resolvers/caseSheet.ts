@@ -12,7 +12,6 @@ export const caseSheetTypeDefs = gql`
   enum ConsultMode {
     ONLINE
     PHYSICAL
-    BOTH
   }
 
   input CaseSheetInput {

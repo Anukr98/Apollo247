@@ -11,7 +11,11 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { IsDate } from 'class-validator';
-import { ConsultMode } from 'doctors-service/entities';
+
+export enum APPOINTMENT_TYPE {
+  ONLINE = 'ONLINE',
+  PHYSICAL = 'PHYSICAL',
+}
 
 export enum STATUS {
   PENDING = 'PENDING',
@@ -54,7 +58,7 @@ export class Appointment extends BaseEntity {
   appointmentDateTime: Date;
 
   @Column()
-  appointmentType: ConsultMode;
+  appointmentType: APPOINTMENT_TYPE;
 
   @Column({ nullable: true })
   appointmentState: APPOINTMENT_STATE;
@@ -188,7 +192,7 @@ export class CaseSheet extends BaseEntity {
   appointment: Appointment;
 
   @Column()
-  consultType: ConsultMode;
+  consultType: APPOINTMENT_TYPE;
 
   @Column()
   createdDate: Date;

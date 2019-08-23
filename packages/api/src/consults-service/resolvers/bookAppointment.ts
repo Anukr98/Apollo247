@@ -1,13 +1,12 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { Appointment, STATUS } from 'consults-service/entities';
+import { Appointment, STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
-import { ConsultMode } from 'doctors-service/entities';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -59,7 +58,7 @@ type BookAppointmentInput = {
   patientId: string;
   doctorId: string;
   appointmentDateTime: Date;
-  appointmentType: ConsultMode;
+  appointmentType: APPOINTMENT_TYPE;
   hospitalId?: string;
 };
 
@@ -68,7 +67,7 @@ type AppointmentBooking = {
   patientId: string;
   doctorId: string;
   appointmentDateTime: Date;
-  appointmentType: ConsultMode;
+  appointmentType: APPOINTMENT_TYPE;
   hospitalId?: string;
   status: STATUS;
 };
