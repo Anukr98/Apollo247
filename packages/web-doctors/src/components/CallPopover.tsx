@@ -194,6 +194,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
+  const [startAppointmentButton, setStartAppointmentButton] = React.useState<boolean>(true);
   //logic for before start counsult timer start
   const dt1 = new Date(new Date().toISOString().substring(0, 16)); //today time
   const dt2 = new Date(props.appointmentDateTime); // apointment time
@@ -239,7 +240,43 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     }, 1000);
   };
-
+  const startConstultCheck = () => {
+    const disablecurrent = new Date();
+    const disableconsult = new Date(props.appointmentDateTime);
+    const disableyear = disableconsult.getFullYear();
+    const disablemonth = disableconsult.getMonth() + 1;
+    const disableday = disableconsult.getDate();
+    let disablehour = disableconsult.getHours();
+    let disableminute = disableconsult.getMinutes() + 15;
+    const disablesecond = disableconsult.getSeconds();
+    if (disableminute > 59) {
+      const disablediff = disableminute - 60;
+      disablehour = disablehour + 1;
+      if (disablehour === 24) {
+        disablehour = 0;
+      }
+      disableminute = disablediff;
+    }
+    const disableaddedMinutes =
+      disableyear +
+      '-' +
+      disablemonth +
+      '-' +
+      disableday +
+      ' ' +
+      disablehour +
+      ':' +
+      disableminute +
+      ':' +
+      disablesecond;
+    const disableaddedTime = new Date(disableaddedMinutes);
+    if (disablecurrent >= disableconsult && disableaddedTime >= disablecurrent) {
+      setStartAppointmentButton(false);
+    } else {
+      setStartAppointmentButton(true);
+    }
+  };
+  setInterval(startConstultCheck, 1000);
   const stopInterval = () => {
     setRemainingTime(900);
     intervalId && clearInterval(intervalId);
@@ -374,6 +411,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           ) : (
             <Button
               className={classes.consultButton}
+              disabled={startAppointmentButton}
               onClick={() => {
                 !startAppointment ? onStartConsult() : onStopConsult();
                 !startAppointment ? startInterval(900) : stopInterval();

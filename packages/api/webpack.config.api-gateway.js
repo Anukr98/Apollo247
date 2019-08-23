@@ -1,6 +1,12 @@
-const baseWebpackConfig = require('./webpack.config._base');
+const makeWebpackConfig = require('./webpack-make-config');
 
-module.exports = {
-  ...baseWebpackConfig,
-  entry: { 'api-gateway': 'api-gateway.ts' },
-};
+module.exports = makeWebpackConfig({
+  nodemonPluginArgs: {
+    script: 'dist/api-gateway.bundle.js',
+  },
+  webpackConfigOptions: {
+    entry: {
+      'api-gateway': 'api-gateway.ts',
+    },
+  },
+});
