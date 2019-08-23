@@ -10,6 +10,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '17px 0',
       borderLeft: '1px solid rgba(2,71,91,0.1)',
       marginLeft: 20,
+      marginBottom: 5,
       [theme.breakpoints.down('xs')]: {
         display: 'none',
       },

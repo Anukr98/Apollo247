@@ -14,8 +14,8 @@ export const bookAppointmentTypeDefs = gql`
     CONFIRMED
     CANCELLED
     COMPLETED
-    MISSED
     PENDING
+    NO_SHOW
   }
 
   enum APPOINTMENT_TYPE {

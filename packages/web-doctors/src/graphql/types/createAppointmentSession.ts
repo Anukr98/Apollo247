@@ -14,7 +14,7 @@ export interface CreateAppointmentSession_createAppointmentSession {
   appointmentToken: string;
   patientId: string;
   doctorId: string;
-  appointmentDateTime: string;
+  appointmentDateTime: any;
 }
 
 export interface CreateAppointmentSession {
