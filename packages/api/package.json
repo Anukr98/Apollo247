@@ -13,6 +13,7 @@
     "start:api-gateway": "webpack --config webpack.config.api-gateway.js",
     "start:profiles-service": "webpack --config webpack.config.profiles-service.js",
     "start:doctors-service": "webpack --config webpack.config.doctors-service.js",
+    "seed:doctors-db": "node dist/doctors-db-seeds.bundle.js",
     "start:consults-service": "webpack --config webpack.config.consults-service.js",
     "typecheck": "tsc --project . --noEmit"
   },
