@@ -42,7 +42,7 @@ export class SearchHistoryRepository extends Repository<SearchHistory> {
   getPatientRecentSearchHistory(patientId: string, searchTypes: SEARCH_TYPE[]) {
     return this.createQueryBuilder('searchHistory')
       .where('searchHistory.patient = :patientId', { patientId })
-      .where('searchHistory.type IN (:...searchTypes)', { searchTypes })
+      .andWhere('searchHistory.type IN (:...searchTypes)', { searchTypes })
       .orderBy('searchHistory.updatedDate', 'DESC')
       .limit(10)
       .getMany()
