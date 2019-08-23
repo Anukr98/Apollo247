@@ -12,8 +12,6 @@ import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/Ge
 import _capitalize from 'lodash/capitalize';
 import _sortBy from 'lodash/sortBy';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import InputLabel from '@material-ui/core/InputLabel';
-import FormControl from '@material-ui/core/FormControl';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -109,6 +107,12 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: theme.palette.secondary.light,
     },
+    placeholder: {
+      // fontSize: 12,
+      // fontWeight: 500,
+      // color: theme.palette.secondary.light,
+      opacity: 0.3,
+    },
     selectEmpty: {
       marginTop: theme.spacing(2),
     },
@@ -149,7 +153,6 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
 
   const classes = useStyles();
   const { patient, number } = props;
-  const inputLabel = React.useRef(null);
 
   const [selectedRelation, setSelectedRelation] = React.useState<Relation | ''>(
     patient.relation || ''
@@ -166,20 +169,20 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
           {_capitalize(patient.gender || '')}
           {(patient.dateOfBirth || '').toString()}
         </div>
-        {/* <FormControl> */}
         <AphSelect
-          // className={classes.selectEmpty}
-          value={selectedRelation}
+          value={selectedRelation ? _capitalize(selectedRelation) : 'Relation'}
           onChange={(e) => {
             const updatedRelation = e.target.value as Relation;
             setSelectedRelation(updatedRelation);
             const updatedPatient = { ...patient, relation: updatedRelation };
             props.onUpdatePatient(updatedPatient);
           }}
+          native={false}
+          displayEmpty={true}
+          renderValue={(value) => `${value}`}
+          className={!selectedRelation ? classes.placeholder : classes.userInfo}
         >
-          <MenuItem value="" disabled>
-            {/* Relation? // just goes into menu*/}
-          </MenuItem>
+          <MenuItem value={selectedRelation} disabled></MenuItem>
           {orderedRelations.map((relationOption) => (
             <MenuItem
               selected={relationOption === selectedRelation}
@@ -191,7 +194,6 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
             </MenuItem>
           ))}
         </AphSelect>
-        {/* </FormControl> */}
       </div>
     </div>
   );
