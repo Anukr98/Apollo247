@@ -12,6 +12,7 @@ export const saveSearchTypeDefs = gql`
   input SaveSearchInput {
     type: SEARCH_TYPE
     typeId: ID!
+    typeName: String
     patient: ID!
   }
 
@@ -34,6 +35,7 @@ export const saveSearchTypeDefs = gql`
 type SaveSearchInput = {
   type: SEARCH_TYPE;
   typeId: string;
+  typeName: string;
   patient: Patient;
 };
 
@@ -61,12 +63,14 @@ const saveSearch: Resolver<
     if (doctorData == null) {
       throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
     }
-  } else {
+  } else if (saveSearchAttrs.type == 'SPECIALTY') {
     const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
     const specialtyData = await specialtiesRepo.findById(saveSearchAttrs.typeId);
     if (specialtyData == null) {
       throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
     }
+  } else if (saveSearchAttrs.type == 'MEDICINE') {
+    //Medicine TypeId(SKUID) validation logic here
   }
 
   const searchHistoryRepository = profilesDb.getCustomRepository(SearchHistoryRepository);

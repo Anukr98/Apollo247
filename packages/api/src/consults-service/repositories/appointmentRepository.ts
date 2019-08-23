@@ -112,6 +112,15 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.find({ where: { patientId, appointmentDateTime: MoreThan(startDate) } });
   }
 
+  getPatientAndDoctorsAppointments(patientId: string, doctorIds: string[]) {
+    return this.createQueryBuilder('appointment')
+      .where('appointment.patientId = :patientId', { patientId })
+      .andWhere('appointment.doctorId IN (:...doctorIds)', {
+        doctorIds,
+      })
+      .getMany();
+  }
+
   async findNextOpenAppointment(doctorId: string, consultHours: ConsultHours[]) {
     return {
       [ConsultMode.ONLINE]: new Date(),
