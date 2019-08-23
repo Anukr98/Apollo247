@@ -7,72 +7,74 @@
 //==============================================================
 
 export enum APPOINTMENT_TYPE {
-  ONLINE = "ONLINE",
-  PHYSICAL = "PHYSICAL",
+  BOTH = 'BOTH',
+  ONLINE = 'ONLINE',
+  PHYSICAL = 'PHYSICAL',
 }
 
 export enum ConsultMode {
-  BOTH = "BOTH",
-  ONLINE = "ONLINE",
-  PHYSICAL = "PHYSICAL",
+  BOTH = 'BOTH',
+  ONLINE = 'ONLINE',
+  PHYSICAL = 'PHYSICAL',
 }
 
 export enum ConsultType {
-  FIXED = "FIXED",
-  PREFERRED = "PREFERRED",
+  FIXED = 'FIXED',
+  PREFERRED = 'PREFERRED',
 }
 
 export enum DoctorType {
-  APOLLO = "APOLLO",
-  PAYROLL = "PAYROLL",
-  STAR_APOLLO = "STAR_APOLLO",
+  APOLLO = 'APOLLO',
+  PAYROLL = 'PAYROLL',
+  STAR_APOLLO = 'STAR_APOLLO',
 }
 
 export enum Gender {
-  FEMALE = "FEMALE",
-  MALE = "MALE",
-  OTHER = "OTHER",
+  FEMALE = 'FEMALE',
+  MALE = 'MALE',
+  OTHER = 'OTHER',
 }
 
 export enum Relation {
-  BROTHER = "BROTHER",
-  COUSIN = "COUSIN",
-  FATHER = "FATHER",
-  HUSBAND = "HUSBAND",
-  ME = "ME",
-  MOTHER = "MOTHER",
-  OTHER = "OTHER",
-  SISTER = "SISTER",
-  WIFE = "WIFE",
+  BROTHER = 'BROTHER',
+  COUSIN = 'COUSIN',
+  FATHER = 'FATHER',
+  HUSBAND = 'HUSBAND',
+  ME = 'ME',
+  MOTHER = 'MOTHER',
+  OTHER = 'OTHER',
+  SISTER = 'SISTER',
+  WIFE = 'WIFE',
 }
 
 export enum SEARCH_TYPE {
-  DOCTOR = "DOCTOR",
-  SPECIALTY = "SPECIALTY",
+  DOCTOR = 'DOCTOR',
+  MEDICINE = 'MEDICINE',
+  SPECIALTY = 'SPECIALTY',
 }
 
 export enum STATUS {
-  CANCELLED = "CANCELLED",
-  COMPLETED = "COMPLETED",
-  CONFIRMED = "CONFIRMED",
-  IN_PROGRESS = "IN_PROGRESS",
-  MISSED = "MISSED",
+  CANCELLED = 'CANCELLED',
+  COMPLETED = 'COMPLETED',
+  CONFIRMED = 'CONFIRMED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  MISSED = 'MISSED',
 }
 
 export enum Salutation {
-  DR = "DR",
-  MR = "MR",
-  MRS = "MRS",
+  DR = 'DR',
+  MR = 'MR',
+  MRS = 'MRS',
 }
 
 export enum WeekDay {
-  FRIDAY = "FRIDAY",
-  MONDAY = "MONDAY",
-  SATURDAY = "SATURDAY",
-  SUNDAY = "SUNDAY",
-  THURSDAY = "THURSDAY",
-  TUESDAY = "TUESDAY",
-  WEDNESDAY = "WEDNESDAY",
+  FRIDAY = 'FRIDAY',
+  MONDAY = 'MONDAY',
+  SATURDAY = 'SATURDAY',
+  SUNDAY = 'SUNDAY',
+  THURSDAY = 'THURSDAY',
+  TUESDAY = 'TUESDAY',
+  WEDNESDAY = 'WEDNESDAY',
 }
 
 export interface AppointmentHistoryInput {
@@ -105,6 +107,7 @@ export interface DoctorPhysicalAvailabilityInput {
 }
 
 export interface FilterDoctorInput {
+  patientId?: string | null;
   specialty: string;
   city?: (string | null)[] | null;
   experience?: (Range | null)[] | null;
@@ -129,6 +132,7 @@ export interface Range {
 export interface SaveSearchInput {
   type?: SEARCH_TYPE | null;
   typeId: string;
+  typeName?: string | null;
   patient: string;
 }
 
@@ -154,7 +158,6 @@ export interface filterInput {
   city?: (string | null)[] | null;
   experience?: (string | null)[] | null;
   availability?: (string | null)[] | null;
-  availableNow?: string | null;
   fees?: (string | null)[] | null;
   gender?: (string | null)[] | null;
   language?: (string | null)[] | null;
