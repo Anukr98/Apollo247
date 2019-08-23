@@ -213,17 +213,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const srollToBottomAction = () => {
     setTimeout(() => {
       const scrollDiv = document.getElementById('scrollDiv');
-      if(scrollDiv){
+      if (scrollDiv) {
         scrollDiv!.scrollIntoView();
       }
     }, 200);
-  }
+  };
   const resetMessagesAction = () => {
-    if(messageText === ''){
+    if (messageText === '') {
       setMessageText(' ');
       setMessageText('');
     }
-  } 
+  };
   useEffect(() => {
     if (isCallAccepted) {
       startIntervalTimer(0);
@@ -249,7 +249,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== stopcallMsg &&
           message.message.message !== acceptcallMsg &&
           message.message.message !== startConsult &&
-          message.message.message !== stopConsult 
+          message.message.message !== stopConsult
         ) {
           setIsNewMsg(true);
         }
@@ -257,7 +257,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           setIsCallAccepted(true);
         }
         srollToBottomAction();
-        resetMessagesAction()
+        resetMessagesAction();
         getHistory();
       },
     });
@@ -316,7 +316,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         sendByPost: true,
       },
       (status, response) => {
-        resetMessagesAction()
+        resetMessagesAction();
         srollToBottomAction();
         // setTimeout(() => {
         //   setMessageText('');
