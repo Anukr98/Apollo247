@@ -1,6 +1,12 @@
-const baseWebpackConfig = require('./webpack.config._base');
+const makeWebpackConfig = require('./webpack-make-config');
 
-module.exports = {
-  ...baseWebpackConfig,
-  entry: { 'consults-service': 'consults-service/consults-service.ts' },
-};
+module.exports = makeWebpackConfig({
+  nodemonPluginArgs: {
+    script: 'dist/consults-service.bundle.js',
+  },
+  webpackConfigOptions: {
+    entry: {
+      'consults-service': 'consults-service/consults-service.ts',
+    },
+  },
+});
