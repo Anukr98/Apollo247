@@ -98,7 +98,7 @@ const Prescriptions: prescriptions[] = [
 export interface UploadPrescriptionProps extends NavigationScreenProps {}
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const [Images, setImages] = useState<[]>(
+  const [Images, setImages] = useState<PickerImage[]>(
     props.navigation.state.params ? props.navigation.state.params!.images : []
   );
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
@@ -144,9 +144,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 inputStyle={{
                   marginTop: 3,
                 }}
-                value={data.path
-                  .split('\\')
-                  .pop()
+                value={data!
+                  .path!.split('\\')!
+                  .pop()!
                   .split('/')
                   .pop()}
               />
@@ -345,14 +345,15 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       {ShowPopop && (
         <UploadPrescriprionPopup
           onClickClose={() => setShowPopop(false)}
-          getData={(images: []) => {
+          getData={(images) => {
             console.log(images);
             setShowPopop(false);
             console.log(Images, images);
-            const imageCopy = [...Images].concat(images);
+            const imageCopy = [...Images].concat(images as PickerImage[]);
             console.log(imageCopy, 'imageCopy');
             setImages(imageCopy);
           }}
+          navigation={props.navigation}
         />
       )}
     </View>

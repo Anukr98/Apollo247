@@ -305,7 +305,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       {ShowPopop && (
         <UploadPrescriprionPopup
           onClickClose={() => setShowPopop(false)}
-          getData={(images: []) => {
+          getData={(images) => {
             console.log(images);
             setShowPopop(false);
             props.navigation.navigate(AppRoutes.UploadPrescription, { images });

@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
 
 export interface UploadPrescriprionPopupProps extends NavigationScreenProps {
   onClickClose: () => void;
-  getData: (arg0: PickerImage | PickerImage[]) => void;
+  getData: (arg0: (PickerImage | PickerImage[])[]) => void;
 }
 export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
@@ -96,7 +96,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       multiple: true,
     }).then((image) => {
       console.log(image, typeof image);
-      props.getData(image);
+      props.getData(image as PickerImage[]);
     });
   };
 
