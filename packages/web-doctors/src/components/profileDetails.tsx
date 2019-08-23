@@ -154,6 +154,7 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: 1.6,
       fontWeight: 500,
       padding: '10px 10px 0 10px',
+      cursor: 'pointer',
     },
     navRightIcon: {
       position: 'absolute',
