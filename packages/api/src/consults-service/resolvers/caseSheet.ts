@@ -84,8 +84,17 @@ const createCaseSheet: Resolver<
   return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
 };
 
+const getJuniorDoctorCaseSheet: Resolver<
+  null,
+  { appointmentId: string },
+  ConsultServiceContext,
+  CaseSheet
+> = async (parent, { appointmentId }, { consultsDb, doctorsDb }) => {};
+
 export const caseSheetResolvers = {
   Mutation: {
     createCaseSheet,
   },
+
+  Query: { getJuniorDoctorCaseSheet },
 };

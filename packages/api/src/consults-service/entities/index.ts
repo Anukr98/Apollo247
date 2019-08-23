@@ -96,6 +96,16 @@ export class Appointment extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+
+    if (this.status === STATUS.CONFIRMED) {
+      //TODO after junior doctor flow.. casesheet creation should be changed.
+      const caseSheet = new CaseSheet();
+      caseSheet.consultType = this.appointmentType;
+      caseSheet.doctorId = this.doctorId;
+      caseSheet.patientId = this.patientId;
+      caseSheet.appointment = this;
+      CaseSheet.save(caseSheet);
+    }
   }
 }
 //Appointment ends
