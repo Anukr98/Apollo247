@@ -119,16 +119,20 @@ export const FollowUp: React.FC = () => {
                 onChange={debounce((e, value) => setFollowUpDays(value), 200)}
               />
               {followUpDays === 9 && (
-                <KeyboardDatePicker
-                  autoOk
-                  variant="inline"
-                  inputVariant="outlined"
-                  label="With keyboard"
-                  format="MM/dd/yyyy"
-                  value={selectedDate}
-                  InputAdornmentProps={{ position: 'end' }}
-                  onChange={(date) => handleDateChange((date as unknown) as Date)}
-                />
+                <div>
+                  <Typography component="h5" variant="h5">
+                    Follow Up On
+                  </Typography>
+                  <KeyboardDatePicker
+                    autoOk
+                    placeholder="dd/mm/yyyy"
+                    variant="inline"
+                    format="dd/MM/yyyy"
+                    value={selectedDate}
+                    InputAdornmentProps={{ position: 'end' }}
+                    onChange={(date) => handleDateChange((date as unknown) as Date)}
+                  />
+                </div>
               )}
             </Typography>
             <Typography component="div">
