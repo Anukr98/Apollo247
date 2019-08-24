@@ -295,8 +295,8 @@ export class Patient extends BaseEntity {
   @Validate(MobileNumberValidator)
   mobileNumber: string;
 
-  @OneToMany((type) => PatientAllergies, (patientAllergies) => patientAllergies.patient)
-  patientAllergies: PatientAllergies[];
+  @Column({ nullable: true, type: 'text' })
+  allergies: string;
 
   @Column({ nullable: true, type: 'text' })
   photoUrl: string;
@@ -497,63 +497,3 @@ export class PatientHealthVault extends BaseEntity {
   }
 }
 //patientHealthVault ends
-
-//allergies starts
-@Entity()
-export class Allergies extends BaseEntity {
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdDate: Date;
-
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column()
-  name: string;
-
-  @OneToMany((type) => PatientAllergies, (patientAllergies) => patientAllergies.allergies)
-  patientAllergies: PatientAllergies[];
-
-  @Column({ type: 'timestamp', nullable: true })
-  updatedDate: Date;
-
-  @BeforeInsert()
-  updateDateCreation() {
-    this.createdDate = new Date();
-  }
-
-  @BeforeUpdate()
-  updateDateUpdate() {
-    this.updatedDate = new Date();
-  }
-}
-//allergies ends
-
-//patientAllergies starts
-@Entity()
-export class PatientAllergies extends BaseEntity {
-  @ManyToOne((type) => Allergies, (allergies) => allergies.patientAllergies, { primary: true })
-  allergies: Allergies;
-
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdDate: Date;
-
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @ManyToOne((type) => Patient, (patient) => patient.patientAllergies, { primary: true })
-  patient: Patient;
-
-  @Column({ type: 'timestamp', nullable: true })
-  updatedDate: Date;
-
-  @BeforeInsert()
-  updateDateCreation() {
-    this.createdDate = new Date();
-  }
-
-  @BeforeUpdate()
-  updateDateUpdate() {
-    this.updatedDate = new Date();
-  }
-}
-//patientAllergies ends

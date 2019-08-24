@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { Appointment, STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
+import { Appointment, STATUS, APPOINTMENT_TYPE, CaseSheet } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
@@ -10,6 +10,7 @@ import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHos
 import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 import { AppointmentPayload } from 'types/appointmentTypes';
 import { addMinutes, format } from 'date-fns';
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -24,7 +25,6 @@ export const bookAppointmentTypeDefs = gql`
   enum APPOINTMENT_TYPE {
     ONLINE
     PHYSICAL
-    BOTH
   }
 
   type AppointmentBooking {
@@ -169,6 +169,18 @@ const bookAppointment: Resolver<
   console.log('sending message', testMessage);
   AphMqClient.send(testMessage);
   //message queue ends
+
+  //TODO after junior doctor flow.. casesheet creation should be changed.
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const caseSheetAttrs: Partial<CaseSheet> = {
+    consultType: appointment.appointmentType,
+    doctorId: appointment.doctorId,
+    patientId: appointment.patientId,
+    appointment: appointment,
+  };
+  await caseSheetRepo.savecaseSheet(caseSheetAttrs);
+  ///////////
+
   return { appointment };
 };
 
