@@ -6,4 +6,11 @@ export class PatientRepository extends Repository<Patient> {
   findById(id: string) {
     return this.findOne({ where: { id } });
   }
+
+  getPatientDetails(id: string) {
+    return this.findOne({
+      where: { id },
+      relations: ['lifeStyle', 'healthVault', 'familyHistory'],
+    });
+  }
 }
