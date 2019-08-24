@@ -116,6 +116,8 @@ const createAppointmentSession: Resolver<
 
   // senior doctor case sheet creation starts
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const juniorDoctorcaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(apptDetails.id);
+  if (juniorDoctorcaseSheet == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
   //check whether if senior doctors casesheet already exists
   let caseSheetDetails;
@@ -125,6 +127,7 @@ const createAppointmentSession: Resolver<
   );
   if (caseSheetDetails == null) {
     const caseSheetAttrs: Partial<CaseSheet> = {
+      ...juniorDoctorcaseSheet,
       consultType: apptDetails.appointmentType,
       doctorId: apptDetails.doctorId,
       patientId: apptDetails.patientId,
