@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
       padding: '5px 20px 0 20px',
       [theme.breakpoints.down('xs')]: {
-        padding: '15px 20px 5px 20px',
+        padding: '5px 15px 4px 15px',
       },
     },
     logo: {
@@ -65,6 +65,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '50%',
       textAlign: 'center',
       cursor: 'pointer',
+      marginTop: 8,
     },
     userActive: {},
     loginForm: {

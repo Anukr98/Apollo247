@@ -28,15 +28,24 @@ import { UserCard } from 'components/case-sheet/UserCard';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     container: {
-      padding: '20px',
+      padding: 20,
     },
     caseSheet: {
       minHeight: 'calc(100vh - 360px)',
       display: 'flex',
       flexFlow: 'row',
       flexWrap: 'wrap',
+      marginTop: 10,
+      '& .Mui-expanded': {
+        margin: '5px 0 0 0 !important',
+        minHeight: 20,
+        paddingBottom: 0,
+      },
       '& div': {
-        color: 'black',
+        color: '#000',
+      },
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
       },
     },
     column: {
@@ -47,9 +56,30 @@ const useStyles = makeStyles((theme: Theme) => {
     right: {
       flex: 'initial',
       margin: '0 15px 0 0',
+      minWidth: 300,
+      [theme.breakpoints.down('xs')]: {
+        margin: '0 0 15px 0',
+      },
     },
     expandIcon: {
       color: '#02475b',
+      margin: '5px 0',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      borderRadius: 10,
+      backgroundColor: '#fff',
+      '&:before': {
+        backgroundColor: 'transparent',
+      },
+      '&:first-child': {
+        marginTop: 0,
+      },
+      '& h3': {
+        fontSize: 17,
+        fontWeight: theme.typography.fontWeightMedium,
+        color: '#01475b',
+        lineHeight: '24px',
+        padding: '4px 0',
+      },
     },
     divider: {
       margin: '20px 0',
@@ -59,7 +89,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#0087ba',
     },
     notesContainer: {
-      padding: '20px',
+      padding: 20,
     },
     textFieldColor: {
       '& input': {
@@ -71,8 +101,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     textFieldWrapper: {
       border: 'solid 1px #30c1a3',
-      borderRadius: '10px',
-      padding: '20px',
+      borderRadius: 10,
+      padding: 20,
     },
   };
 });
@@ -97,9 +127,10 @@ export const CaseSheet: React.FC = () => {
           <ExpansionPanel
             expanded={expanded === 'symptoms'}
             onChange={handlePanelExpansion('symptoms')}
+            className={classes.expandIcon}
           >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
-              <Typography>Symptoms</Typography>
+            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h3">Symptoms</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
               <Symptoms />
@@ -110,9 +141,10 @@ export const CaseSheet: React.FC = () => {
           <ExpansionPanel
             expanded={expanded === 'lifestyle'}
             onChange={handlePanelExpansion('lifestyle')}
+            className={classes.expandIcon}
           >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
-              <Typography>Patient History &amp; Lifestyle</Typography>
+            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h3">Patient History &amp; Lifestyle</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
               <LifeStyle />
@@ -123,9 +155,10 @@ export const CaseSheet: React.FC = () => {
           <ExpansionPanel
             expanded={expanded === 'healthVault'}
             onChange={handlePanelExpansion('healthVault')}
+            className={classes.expandIcon}
           >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
-              <Typography>Patient Health Vault</Typography>
+            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h3">Patient Health Vault</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
               <HealthVault />
@@ -133,9 +166,13 @@ export const CaseSheet: React.FC = () => {
           </ExpansionPanel>
 
           {/* Juniour Doctor's Notes Panel */}
-          <ExpansionPanel expanded={expanded === 'notes'} onChange={handlePanelExpansion('notes')}>
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
-              <Typography>Juniour Doctor's Notes</Typography>
+          <ExpansionPanel
+            expanded={expanded === 'notes'}
+            onChange={handlePanelExpansion('notes')}
+            className={classes.expandIcon}
+          >
+            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h3">Juniour Doctor's Notes</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
               <DoctorsNotes />
@@ -146,9 +183,10 @@ export const CaseSheet: React.FC = () => {
           <ExpansionPanel
             expanded={expanded === 'diagnosis'}
             onChange={handlePanelExpansion('diagnosis')}
+            className={classes.expandIcon}
           >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
-              <Typography>Diagnosis</Typography>
+            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h3">Diagnosis</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
               <Diagnosis />
@@ -159,9 +197,10 @@ export const CaseSheet: React.FC = () => {
           <ExpansionPanel
             expanded={expanded === 'medicinePrescription'}
             onChange={handlePanelExpansion('medicinePrescription')}
+            className={classes.expandIcon}
           >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
-              <Typography>Medicine Prescription</Typography>
+            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h3">Medicine Prescription</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
               <MedicinePrescription />
@@ -172,9 +211,10 @@ export const CaseSheet: React.FC = () => {
           <ExpansionPanel
             expanded={expanded === 'diagnosticPrescription'}
             onChange={handlePanelExpansion('diagnosticPrescription')}
+            className={classes.expandIcon}
           >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
-              <Typography>Diagnostic Prescription</Typography>
+            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h3">Diagnostic Prescription</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
               <DiagnosticPrescription />
@@ -185,9 +225,10 @@ export const CaseSheet: React.FC = () => {
           <ExpansionPanel
             expanded={expanded === 'followup'}
             onChange={handlePanelExpansion('followup')}
+            className={classes.expandIcon}
           >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
-              <Typography>Follow up</Typography>
+            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h3">Follow up</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
               <FollowUp />
@@ -198,9 +239,10 @@ export const CaseSheet: React.FC = () => {
           <ExpansionPanel
             expanded={expanded === 'otherInstructions'}
             onChange={handlePanelExpansion('otherInstructions')}
+            className={classes.expandIcon}
           >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}>
-              <Typography>Other Instructions</Typography>
+            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h3">Other Instructions</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
               <OtherInstructions />
@@ -210,7 +252,7 @@ export const CaseSheet: React.FC = () => {
       </div>
       <Divider className={classes.divider} />
       <Box boxShadow={5} borderRadius={10} className={classes.notesContainer}>
-        <Typography component="h3" variant="h4" className={classes.notesHeader}>
+        <Typography component="h4" variant="h4" className={classes.notesHeader}>
           Personal Notes
         </Typography>
         <Typography component="div" className={classes.textFieldWrapper}>
