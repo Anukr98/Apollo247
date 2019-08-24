@@ -7,6 +7,7 @@
 //==============================================================
 
 export enum APPOINTMENT_TYPE {
+  BOTH = "BOTH",
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
 }
@@ -68,7 +69,7 @@ export enum STATUS {
   COMPLETED = "COMPLETED",
   CONFIRMED = "CONFIRMED",
   IN_PROGRESS = "IN_PROGRESS",
-  NO_SHOW = "NO_SHOW",
+  MISSED = "MISSED",
   PENDING = "PENDING",
 }
 
