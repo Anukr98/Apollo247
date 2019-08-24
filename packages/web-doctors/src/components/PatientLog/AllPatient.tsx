@@ -92,7 +92,7 @@ interface PatientObject {
 }
 export const AllPatient: React.FC<HelpProps> = (props) => {
   const classes = useStyles();
-  const [patientsList, setPatientsList] = React.useState<PatientObject[]>([
+  const patientsList: PatientObject[] = [
     {
       id: '1',
       name: 'Seema singh',
@@ -107,7 +107,7 @@ export const AllPatient: React.FC<HelpProps> = (props) => {
       numberOfConsult: 5,
       lastConsultDate: '21/7/2019',
     },
-  ]);
+  ];
   const patientsHtml = patientsList.map((_patient: PatientObject | null, index: number) => {
     const patient = _patient!;
     return (

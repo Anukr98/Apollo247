@@ -25,9 +25,7 @@ export const RegularPatients: React.FC<HelpProps> = (props) => {
   return (
     <div className={classes.loginFormWrap}>
       <Typography variant="h2">need help3?</Typography>
-      <p>
-        Don’t worry. We are here for you :)
-      </p>
+      <p>Don’t worry. We are here for you :)</p>
     </div>
   );
 };
