@@ -130,7 +130,7 @@ interface PastAppointmentProps {
 
 const PastAppointment: React.FC<PastAppointmentProps> = ({ data }) => {
   return (
-    <List style={{ display: 'flex', flexFlow: 'column', alignItems: 'start' }}>
+    <List style={{ display: 'flex', flexFlow: 'column', alignItems: 'start', width: '100%' }}>
       {data.map((item, idx) => (
         <ListItem key={idx} style={{ display: 'flex', flexFlow: 'column', alignItems: 'start' }}>
           <AppointmentCard data={item} />
@@ -147,7 +147,7 @@ interface AppointmentCardProps {
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
   return (
-    <Grid item>
+    <Grid item xs={12} style={{ width: '100%' }}>
       <Grid item container spacing={2}>
         <Grid item lg={5} sm={5} xs={4} key={1} container>
           <Grid sm={9} xs={10} key={6} item>
