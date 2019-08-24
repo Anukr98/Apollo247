@@ -9,6 +9,8 @@ import {
   createMuiTheme,
   Grid,
   IconButton,
+  Card,
+  CardContent,
 } from '@material-ui/core';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
@@ -147,40 +149,46 @@ interface AppointmentCardProps {
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
   return (
-    <Grid item xs={12} style={{ width: '100%' }}>
-      <Grid item container spacing={2}>
-        <Grid item lg={5} sm={5} xs={4} key={1} container>
-          <Grid sm={9} xs={10} key={6} item>
-            <div>
-              <Typography gutterBottom variant="body1">
-                {`${format(new Date(data.timestamp), 'dd  MMMMMMMMMMMM yyyy, h:mm a')} ${
-                  data.isFollowup ? `| Follow Up(${data.isFree ? 'Free' : 'Paid'})` : ''
-                }`}
-              </Typography>
-            </div>
+    <Card style={{ width: '100%' }}>
+      <CardContent>
+        <Grid item xs={12} style={{ width: '100%' }}>
+          <Grid item container spacing={2}>
+            <Grid item lg={5} sm={5} xs={4} key={1} container>
+              <Grid sm={9} xs={10} key={6} item>
+                <div>
+                  <Typography gutterBottom variant="body1">
+                    {`${format(new Date(data.timestamp), 'dd  MMMMMMMMMMMM yyyy, h:mm a')} ${
+                      data.isFollowup ? `| Follow Up(${data.isFree ? 'Free' : 'Paid'})` : ''
+                    }`}
+                  </Typography>
+                </div>
+              </Grid>
+            </Grid>
+            {!!data.symptoms && !!data.symptoms.length && (
+              <Grid lg={5} sm={5} xs={5} key={2} item>
+                <div>
+                  {(data.symptoms.length > 3 ? data.symptoms.slice(0, 2) : data.symptoms).join(
+                    ', '
+                  )}
+                  {data.symptoms.length > 3 && (
+                    <Typography gutterBottom variant="caption">
+                      {`, +${data.symptoms.length - 2}`}
+                    </Typography>
+                  )}
+                </div>
+              </Grid>
+            )}
+            <Grid lg={2} sm={2} xs={3} key={3} item>
+              <div>
+                <IconButton aria-label="Video call">
+                  <img src={require('images/ic_video.svg')} alt="" />
+                </IconButton>
+              </div>
+            </Grid>
           </Grid>
         </Grid>
-        {!!data.symptoms && !!data.symptoms.length && (
-          <Grid lg={5} sm={5} xs={5} key={2} item>
-            <div>
-              {(data.symptoms.length > 3 ? data.symptoms.slice(0, 2) : data.symptoms).join(', ')}
-              {data.symptoms.length > 3 && (
-                <Typography gutterBottom variant="caption">
-                  {`, +${data.symptoms.length - 2}`}
-                </Typography>
-              )}
-            </div>
-          </Grid>
-        )}
-        <Grid lg={2} sm={2} xs={3} key={3} item>
-          <div>
-            <IconButton aria-label="Video call">
-              <img src={require('images/ic_video.svg')} alt="" />
-            </IconButton>
-          </div>
-        </Grid>
-      </Grid>
-    </Grid>
+      </CardContent>
+    </Card>
   );
 };
 
