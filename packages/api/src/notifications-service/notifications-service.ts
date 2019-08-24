@@ -1,8 +1,8 @@
 import '@aph/universal/dist/global';
 import { buildFederatedSchema } from '@apollo/federation';
-import { GatewayHeaders } from 'api-gateway';
+//import { GatewayHeaders } from 'api-gateway';
 import { ApolloServer } from 'apollo-server';
-import gql from 'graphql-tag';
+//import gql from 'graphql-tag';
 import 'reflect-metadata';
 import {
   getSearchesTypeDefs,

@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { searchData, SEARCH_TYPE } from 'profiles-service/mockData/searchData';
+import { searchData } from 'profiles-service/mockData/searchData';
 
 export const getSearchesTypeDefs = gql`
   type SearchData1 {
