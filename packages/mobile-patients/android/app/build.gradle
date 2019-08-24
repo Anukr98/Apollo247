@@ -170,6 +170,11 @@ dependencies {
   implementation "com.google.firebase:firebase-core:16.0.9"
   implementation "com.google.firebase:firebase-auth:17.0.0"
 
+    implementation "com.google.firebase:firebase-messaging:18.0.0"
+    implementation 'me.leolin:ShortcutBadger:1.1.21@aar' // <-- Add this line if you wish to use badge on Android
+
+
+
 //  compile "com.google.firebase:firebase-analytics:11.8.0"
     //multidex support
     implementation 'com.android.support:multidex:1.0.3'

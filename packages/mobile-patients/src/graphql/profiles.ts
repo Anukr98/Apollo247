@@ -639,7 +639,6 @@ export const SAVE_DEVICE_TOKEN = gql`
     saveDeviceToken(SaveDeviceTokenInput: $SaveDeviceTokenInput) {
       deviceToken {
         id
-        patientId
         deviceType
         deviceOS
         deviceToken

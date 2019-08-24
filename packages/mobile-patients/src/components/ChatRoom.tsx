@@ -42,6 +42,7 @@ import {
   Platform,
   KeyboardAvoidingView,
   KeyboardEvent,
+  AsyncStorage,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import DocumentPicker from 'react-native-document-picker';
@@ -327,27 +328,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
   const pubnub = new Pubnub(config);
 
-  // const checkingAppointmentDates = () => {
-  //   const currentTime = moment(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(
-  //     'YYYY-MM-DD HH:mm:ss'
-  //   );
-
-  //   const appointmentTime = moment
-  //     .utc(appointmentData.appointmentDateTime)
-  //     .format('YYYY-MM-DD HH:mm:ss');
-
-  //   const diff = moment.duration(moment(appointmentTime).diff(currentTime));
-  //   diffInHours = diff.asMinutes();
-
-  //   if (diffInHours > 0) {
-  //     console.log('diff', diff);
-  //     console.log('duration', diffInHours);
-  //     setDoctorJoinsIn(true);
-  //   } else {
-  //     setDoctorJoinsIn(false);
-  //   }
-  // };
-
   useEffect(() => {
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
     console.disableYellowBox = true;
@@ -359,7 +339,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
 
     getHistory();
-    // checkingAppointmentDates();
+    registerForPushNotification();
 
     pubnub.addListener({
       status: (statusEvent) => {
@@ -389,6 +369,46 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       keyboardDidHideListener.remove();
     };
   }, []);
+
+  const registerForPushNotification = async () => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
+
+    if (Platform.OS == 'ios') {
+      pubnub.push.addChannels(
+        {
+          channels: [channel],
+          device: deviceToken2.deviceToken,
+          pushGateway: 'apns',
+        },
+        (status) => {
+          if (status.error) {
+            console.log('operation failed w/ error:', status);
+          } else {
+            console.log('operation done!');
+          }
+        }
+      );
+      console.log('ios:', token);
+      // Send iOS Notification from debug console: {"pn_apns":{"aps":{"alert":"Hello World."}}}
+    } else {
+      pubnub.push.addChannels(
+        {
+          channels: [channel],
+          device: deviceToken2.deviceToken,
+          pushGateway: 'gcm', // apns, gcm, mpns
+        },
+        (status) => {
+          if (status.error) {
+            console.log('operation failed w/ error:', status);
+          } else {
+            console.log('operation done!');
+          }
+        }
+      );
+      // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
+    }
+  };
 
   let insertText: object[] = [];
 
