@@ -157,7 +157,7 @@ const getJuniorDoctorCaseSheet: Resolver<
 
   //get casesheet data
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const caseSheetDetails = await caseSheetRepo.getJuniorDcotorCaseSheet(args.appointmentId);
+  const caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
   //get patient info

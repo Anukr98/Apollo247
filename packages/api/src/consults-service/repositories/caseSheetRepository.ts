@@ -13,7 +13,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       });
   }
 
-  getJuniorDcotorCaseSheet(appointmentId: string) {
+  getJuniorDoctorCaseSheet(appointmentId: string) {
     return this.findOne({
       where: [{ appointmentId, createdDoctorId: IsNull() }],
       relations: ['appointment'],
