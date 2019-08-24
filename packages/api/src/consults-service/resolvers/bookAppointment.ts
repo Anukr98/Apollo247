@@ -7,6 +7,9 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
+import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
+import { AppointmentPayload } from 'types/appointmentTypes';
+import { addMinutes, format } from 'date-fns';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -120,6 +123,52 @@ const bookAppointment: Resolver<
     throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
   }
   const appointment = await appts.saveAppointment(appointmentAttrs);
+  //message queue starts
+  const doctorName = docDetails.salutation + ' ' + docDetails.firstName + '' + docDetails.lastName;
+  const speciality = docDetails.specialty.name;
+  const aptEndTime = addMinutes(appointmentInput.appointmentDateTime, 15);
+  const slotTime =
+    format(appointmentInput.appointmentDateTime, 'hh:mm') + '-' + format(aptEndTime, 'hh:mm');
+  const patientDob: string = '01/08/1996';
+
+  const payload: AppointmentPayload = {
+    appointmentDate: format(appointmentInput.appointmentDateTime, 'dd/MM/yyyy'),
+    appointmentTypeId: 1,
+    askApolloReferenceIdForRelation: '52478bae-fab8-49ba-8f75-fce0e1a9f3ae',
+    askApolloReferenceIdForSelf: '52478bae-fab8-49ba-8f75-fce0e1a9f3ae',
+    cityId: 1,
+    cityName: 'Chennai',
+    dateOfBirth: patientDob,
+    doctorId: 100,
+    doctorName,
+    gender: '1',
+    hospitalId: '2',
+    hospitalName: 'Apollo Hospitals Greams Road Chennai',
+    leadSource: 'One Apollo-IOS',
+    patientEmailId: 'sriram.kanchan@popcornapps.com', //patientDetails.emailAddress,
+    patientFirstName: 'sriram', //patientDetails.firstName,
+    patientLastName: 'kumar', //patientDetails.lastName,
+    patientMobileNo: '8019677178', //patientDetails.mobileNumber,
+    patientUHID: '',
+    relationTypeId: 1,
+    salutation: 1,
+    slotId: '-1',
+    slotTime,
+    speciality,
+    specialityId: '1898',
+    userFirstName: 'sriram', //patientDetails.firstName,patientDetails.firstName,
+    userLastName: 'sriram', //patientDetails.firstName,patientDetails.lastName,
+  };
+  AphMqClient.connect();
+  type TestMessage = AphMqMessage<AphMqMessageTypes.BOOKAPPOINTMENT, AppointmentPayload>;
+  const testMessage: TestMessage = {
+    type: AphMqMessageTypes.BOOKAPPOINTMENT,
+    payload,
+  };
+
+  console.log('sending message', testMessage);
+  AphMqClient.send(testMessage);
+  //message queue ends
   return { appointment };
 };
 

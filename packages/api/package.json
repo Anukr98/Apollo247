@@ -17,6 +17,7 @@
     "start:consults-service": "webpack --config webpack.config.consults-service.js",
     "start:doctors-service": "webpack --config webpack.config.doctors-service.js",
     "start:profiles-service": "webpack --config webpack.config.profiles-service.js",
+    "start:notifications-service": "webpack --config webpack.config.notifications-service.js",
     "typecheck": "tsc --project . --noEmit"
   },
   "devDependencies": {
