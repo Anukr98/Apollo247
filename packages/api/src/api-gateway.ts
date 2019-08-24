@@ -31,6 +31,7 @@ export type Resolver<Parent, Args, Context, Result> = (
       { name: 'profiles', url: `http://${process.env.PROFILES_SERVICE_HOST}/graphql` },
       { name: 'doctors', url: `http://${process.env.DOCTORS_SERVICE_HOST}/graphql` },
       { name: 'consults', url: `http://${process.env.CONSULTS_SERVICE_HOST}/graphql` },
+      { name: 'notifications', url: `http://${process.env.NOTIFICATIONS_SERVICE_HOST}/graphql` },
     ],
     buildService({ name, url }) {
       return new RemoteGraphQLDataSource({

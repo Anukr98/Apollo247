@@ -27,6 +27,44 @@ const useStyles = makeStyles(() => ({
   listItem: {
     display: 'flex',
     flexFlow: 'column',
+    padding: '4px 0 0 12px',
+    '& h6': {
+      fontSize: 12,
+      color: '#01475b',
+      fontWeight: 'normal',
+    },
+    '& h3': {
+      fontSize: 14,
+      color: '#01475b',
+      fontWeight: 500,
+    },
+  },
+  symtomHeading: {
+    margin: '5px 0 0 0',
+    '& span': {
+      fontSize: 14,
+      color: '#01475b',
+      fontWeight: 500,
+    },
+  },
+  symtomContent: {
+    padding: '0 0 0 10px',
+    '& div': {
+      margin: 0,
+    },
+    '& p': {
+      '& span': {
+        fontSize: 12,
+        color: '#01475b',
+        fontWeight: 'normal',
+      },
+    },
+  },
+  symtomList: {
+    padding: '0 0 10px 0',
+    '& ul': {
+      padding: 0,
+    },
   },
 }));
 
@@ -35,16 +73,16 @@ export const Symptoms: React.FC = () => {
 
   return (
     <Typography className={classes.container} component="div">
-      <List>
+      <List className={classes.symtomList}>
         {data.map((item, idx) => (
           <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
-            <ListItemText primary={Object.keys(item)[0]} />
+            <ListItemText className={classes.symtomHeading} primary={Object.keys(item)[0]} />
             <Fragment>
               <List>
                 {!!item &&
                   !!Object.values(item).length &&
                   Object.values(item)[0]!.map((text, iidx) => (
-                    <ListItem key={iidx} alignItems="flex-start">
+                    <ListItem key={iidx} alignItems="flex-start" className={classes.symtomContent}>
                       <ListItemText
                         secondary={
                           <Fragment>

@@ -20,9 +20,9 @@ import { CaseSheet } from 'components/case-sheet/CaseSheet';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     consultRoom: {
-      paddingTop: 68,
+      paddingTop: 64,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 68,
+        paddingTop: 64,
       },
     },
     chatContainer: {
