@@ -53,9 +53,6 @@ export enum REQUEST_ROLES {
 //Appointment starts
 @Entity()
 export class Appointment extends BaseEntity {
-  static beforeUpdate() {
-    throw new Error('Method not implemented.');
-  }
   @Column({ type: 'timestamp' })
   @IsDate()
   appointmentDateTime: Date;
