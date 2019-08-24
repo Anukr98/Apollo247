@@ -222,7 +222,16 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     throw new AphError(AphErrorMessages.FILTER_DOCTORS_ERROR, undefined, { filterDoctorsError });
   }
 
-  return { doctors: filteredDoctors, doctorsAvailability: doctorsConsultModeAvailability };
+  //filtering the doctors list based on their availability
+  const finalDoctorsList = filteredDoctors.filter((doctor) => {
+    return doctorsConsultModeAvailability.some((availabilityObject) => {
+      return (
+        availabilityObject.doctorId == doctor.id && availabilityObject.availableModes.length > 0
+      );
+    });
+  });
+
+  return { doctors: finalDoctorsList, doctorsAvailability: doctorsConsultModeAvailability };
 };
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefsResolvers = {
