@@ -1,6 +1,6 @@
 import React from 'react';
 import { Theme, makeStyles, Paper, Grid, FormHelperText, Modal, Button } from '@material-ui/core';
-import { AphTextField, AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
+import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components';
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     flexGrow: 1,
@@ -287,7 +287,7 @@ export const MedicinePrescription: React.FC = () => {
     (_medicine: MedicineObject | null, index: number) => {
       const medicine = _medicine!;
       return (
-        <Paper className={`${classes.paper} ${classes.activeCard}`}>
+        <Paper key={index} className={`${classes.paper} ${classes.activeCard}`}>
           <h5>{medicine.name}</h5>
           <h6>
             {medicine.times} times a day ({medicine.daySlots}) for {medicine.duration}
