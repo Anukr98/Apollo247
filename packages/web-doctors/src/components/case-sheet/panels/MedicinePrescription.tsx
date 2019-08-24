@@ -1,184 +1,286 @@
-import React from 'react';
-import { Theme, makeStyles, Paper, Grid, FormHelperText, Modal, Button } from '@material-ui/core';
+import React, { useState } from 'react';
+import {
+  Theme,
+  makeStyles,
+  Paper,
+  Grid,
+  FormHelperText,
+  Modal,
+  Button,
+  MenuItem,
+  createStyles,
+} from '@material-ui/core';
 import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components';
-const useStyles = makeStyles((theme: Theme) => ({
-  root: {
-    flexGrow: 1,
-  },
-  paper: {
-    textAlign: 'left',
-    color: theme.palette.text.secondary,
-    marginBottom: 12,
-    backgroundColor: '#f7f7f7',
-    border: '1px solid rgba(2,71,91,0.1)',
-    padding: '12px 40px 12px 12px',
-    maxWidth: 288,
-    borderRadius: 5,
-    position: 'relative',
-    '& h5': {
-      fontSize: 14,
-      color: '#02475b',
+import deburr from 'lodash/deburr';
+import match from 'autosuggest-highlight/match';
+import parse from 'autosuggest-highlight/parse';
+import Autosuggest from 'react-autosuggest';
+
+interface OptionType {
+  label: string;
+}
+
+const suggestions: OptionType[] = [
+  { label: 'Ibuprofen, 200 mg' },
+  { label: 'Ibugesic plus, 1.5% wwa' },
+  { label: 'Ibuenatal' },
+  { label: 'Ibuenatal' },
+];
+
+function renderInputComponent(inputProps: any) {
+  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
+
+  return (
+    <AphTextField
+      placeholder="Search"
+      fullWidth
+      InputProps={{
+        inputRef: (node) => {
+          ref(node);
+          inputRef(node);
+        },
+        classes: {
+          input: classes.input,
+        },
+      }}
+      {...other}
+    />
+  );
+}
+
+function renderSuggestion(
+  suggestion: OptionType,
+  { query, isHighlighted }: Autosuggest.RenderSuggestionParams
+) {
+  const matches = match(suggestion.label, query);
+  const parts = parse(suggestion.label, matches);
+
+  return (
+    <MenuItem selected={isHighlighted} component="div">
+      <div>
+        {parts.map((part) => (
+          <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400 }}>
+            {part.text}
+          </span>
+        ))}
+      </div>
+    </MenuItem>
+  );
+}
+
+function getSuggestions(value: string) {
+  const inputValue = deburr(value.trim()).toLowerCase();
+  const inputLength = inputValue.length;
+  let count = 0;
+
+  return inputLength === 0
+    ? []
+    : suggestions.filter((suggestion) => {
+        const keep =
+          count < 5 && suggestion.label.slice(0, inputLength).toLowerCase() === inputValue;
+
+        if (keep) {
+          count += 1;
+        }
+
+        return keep;
+      });
+}
+
+function getSuggestionValue(suggestion: OptionType) {
+  return suggestion.label;
+}
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    container: {
+      position: 'relative',
+    },
+    input: {
+      color: 'black',
+    },
+    suggestionsContainerOpen: {
+      position: 'absolute',
+      zIndex: 1,
+      marginTop: theme.spacing(1),
+      left: 0,
+      right: 0,
+      color: 'black',
+    },
+    suggestion: {
+      display: 'block',
+    },
+    suggestionsList: {
       margin: 0,
-      fontWeight: 600,
+      padding: 0,
+      listStyleType: 'none',
     },
-    '& h6': {
-      fontSize: 12,
-      color: '#02475b',
-      margin: 0,
-      fontWeight: 'normal',
+    root: {
+      flexGrow: 1,
     },
-  },
-  medicinePopup: {
-    width: 480,
-    margin: '30px auto 0 auto',
-    boxShadow: 'none',
-  },
-  activeCard: {
-    border: '1px solid #00b38e',
-    backgroundColor: '#fff',
-  },
-  checkImg: {
-    position: 'absolute',
-    right: 16,
-    top: 16,
-  },
-  btnAddDoctor: {
-    backgroundColor: 'transparent',
-    boxShadow: 'none',
-    color: theme.palette.action.selected,
-    fontSize: 14,
-    fontWeight: theme.typography.fontWeightBold,
-    paddingLeft: 4,
-    '&:hover': {
-      backgroundColor: 'transparent',
-    },
-  },
-  medicineHeading: {
-    fontSize: 14,
-    fontWeight: 500,
-    lineHeight: 'normal',
-    color: 'rgba(2, 71, 91, 0.6)',
-    marginBottom: 12,
-  },
-  backArrow: {
-    cursor: 'pointer',
-    position: 'absolute',
-    left: 0,
-    top: -2,
-    '& img': {
-      verticalAlign: 'middle',
-    },
-  },
-  cross: {
-    position: 'absolute',
-    right: 0,
-    top: -9,
-    fontSize: 18,
-    color: '#02475b',
-  },
-  dialogActions: {
-    padding: 20,
-    paddingTop: 10,
-    boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
-    position: 'relative',
-    textAlign: 'right',
-    '& button': {
-      borderRadius: 10,
-      minwidth: 130,
-      padding: '8px 20px',
-    },
-  },
-  cancelBtn: {
-    fontSize: 14,
-    fontWeight: 600,
-    color: '#fc9916',
-    backgroundColor: 'transparent',
-    boxShadow: '0 2px 5px 0 rgba(0,0,0,0.2)',
-    border: 'none',
-    marginRight: 10,
-    '&:hover': {
-      backgroundColor: 'transparent',
-      color: '#fc9916',
-    },
-  },
-  shadowHide: {
-    overflow: 'hidden',
-  },
-  dialogContent: {
-    padding: 20,
-    minHeight: 450,
-    '& h6': {
-      fontSize: 14,
-      fontWeight: 500,
-      color: 'rgba(2, 71, 91, 0.6)',
-      marginBottom: 10,
-      marginTop: 0,
-    },
-  },
-  popupHeading: {
-    '& h6': {
-      fontSize: 13,
-      color: '#01475b',
-      fontWeight: 600,
+    paper: {
       textAlign: 'left',
+      color: theme.palette.text.secondary,
+      marginBottom: 12,
+      backgroundColor: '#f7f7f7',
+      border: '1px solid rgba(2,71,91,0.1)',
+      padding: '12px 40px 12px 12px',
+      maxWidth: 288,
+      borderRadius: 5,
+      position: 'relative',
+      '& h5': {
+        fontSize: 14,
+        color: '#02475b',
+        margin: 0,
+        fontWeight: 600,
+      },
+      '& h6': {
+        fontSize: 12,
+        color: '#02475b',
+        margin: 0,
+        fontWeight: 'normal',
+      },
     },
-  },
-  popupHeadingCenter: {
-    '& h6': {
-      fontSize: 13,
-      color: '#01475b',
-      fontWeight: 600,
-      textAlign: 'center',
-      marginTop: 5,
+    medicinePopup: {
+      width: 480,
+      margin: '30px auto 0 auto',
+      boxShadow: 'none',
     },
-  },
-  numberTablets: {
-    fontSize: 16,
-    color: '#02475b',
-    fontWeight: 500,
-    marginBottom: 20,
-    '& button': {
+    activeCard: {
       border: '1px solid #00b38e',
-      padding: '5px 10px',
-      fontSize: 12,
-      fontWeight: 'normal',
-      borderRadius: 14,
-      marginRight: 15,
-      color: '#00b38e',
       backgroundColor: '#fff',
     },
-  },
-  tabletcontent: {
-    margin: '0 10px',
-    position: 'relative',
-    top: -5,
-  },
-  textField: {
-    marginLeft: theme.spacing(1),
-    marginRight: theme.spacing(1),
-    width: 140,
-    '& input': {
-      fontSize: 20,
+    checkImg: {
+      position: 'absolute',
+      right: 16,
+      top: 16,
+    },
+    btnAddDoctor: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: theme.typography.fontWeightBold,
+      paddingLeft: 4,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    medicineHeading: {
+      fontSize: 14,
+      fontWeight: 500,
+      lineHeight: 'normal',
+      color: 'rgba(2, 71, 91, 0.6)',
+      marginBottom: 12,
+    },
+    backArrow: {
+      cursor: 'pointer',
+      position: 'absolute',
+      left: 0,
+      top: -2,
+      '& img': {
+        verticalAlign: 'middle',
+      },
+    },
+    cross: {
+      position: 'absolute',
+      right: 0,
+      top: -9,
+      fontSize: 18,
       color: '#02475b',
-      fontWeight: theme.typography.fontWeightMedium,
-      paddingTop: 0,
-      borderBottom: '2px solid #00b38e',
     },
-  },
-  activeBtn: {
-    backgroundColor: '#00b38e !important',
-    color: '#fff !important',
-  },
-  helpText: {
-    paddingLeft: 20,
-    paddingRight: 20,
-  },
-  medicineDilog: {
-    '& .dialogBoxClose': {
-      display: 'none !important',
+    dialogActions: {
+      padding: 20,
+      paddingTop: 10,
+      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
+      position: 'relative',
+      textAlign: 'right',
+      '& button': {
+        borderRadius: 10,
+        minwidth: 130,
+        padding: '8px 20px',
+      },
     },
-  },
-}));
+    cancelBtn: {
+      fontSize: 14,
+      fontWeight: 600,
+      color: '#fc9916',
+      backgroundColor: 'transparent',
+      boxShadow: '0 2px 5px 0 rgba(0,0,0,0.2)',
+      border: 'none',
+      marginRight: 10,
+      '&:hover': {
+        backgroundColor: 'transparent',
+        color: '#fc9916',
+      },
+    },
+    shadowHide: {
+      overflow: 'hidden',
+    },
+    dialogContent: {
+      padding: 20,
+      minHeight: 450,
+      '& h6': {
+        fontSize: 14,
+        fontWeight: 500,
+        color: 'rgba(2, 71, 91, 0.6)',
+        marginBottom: 10,
+        marginTop: 0,
+      },
+    },
+    popupHeading: {
+      '& h6': {
+        fontSize: 13,
+        color: '#01475b',
+        fontWeight: 600,
+        textAlign: 'left',
+      },
+    },
+    popupHeadingCenter: {
+      '& h6': {
+        fontSize: 13,
+        color: '#01475b',
+        fontWeight: 600,
+        textAlign: 'center',
+        marginTop: 5,
+      },
+    },
+    numberTablets: {
+      fontSize: 16,
+      color: '#02475b',
+      fontWeight: 500,
+      marginBottom: 20,
+      '& button': {
+        border: '1px solid #00b38e',
+        padding: '5px 10px',
+        fontSize: 12,
+        fontWeight: 'normal',
+        borderRadius: 14,
+        marginRight: 15,
+        color: '#00b38e',
+        backgroundColor: '#fff',
+      },
+    },
+    tabletcontent: {
+      margin: '0 10px',
+      position: 'relative',
+      top: -5,
+    },
+    activeBtn: {
+      backgroundColor: '#00b38e !important',
+      color: '#fff !important',
+    },
+    helpText: {
+      paddingLeft: 20,
+      paddingRight: 20,
+    },
+    medicineDilog: {
+      '& .dialogBoxClose': {
+        display: 'none !important',
+      },
+    },
+  })
+);
 
 interface SlotsObject {
   id: string;
@@ -352,6 +454,41 @@ export const MedicinePrescription: React.FC = () => {
       </button>
     );
   });
+
+  const [state, setState] = React.useState({
+    single: '',
+    popper: '',
+  });
+  const [stateSuggestions, setSuggestions] = React.useState<OptionType[]>([]);
+  const [selectedValue, setSelectedValue] = useState<string>('');
+
+  const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {
+    setSuggestions(getSuggestions(value));
+  };
+
+  const handleSuggestionsClearRequested = () => {
+    setSuggestions([]);
+  };
+
+  const handleChange = (name: keyof typeof state) => (
+    event: React.ChangeEvent<{}>,
+    { newValue }: Autosuggest.ChangeEvent
+  ) => {
+    setState({
+      ...state,
+      [name]: newValue,
+    });
+  };
+
+  const autosuggestProps = {
+    renderInputComponent,
+    suggestions: stateSuggestions,
+    onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
+    onSuggestionsClearRequested: handleSuggestionsClearRequested,
+    getSuggestionValue,
+    renderSuggestion,
+  };
+
   return (
     <div className={classes.root}>
       <div className={classes.medicineHeading}>Medicines</div>
@@ -384,7 +521,7 @@ export const MedicinePrescription: React.FC = () => {
                 <img src={require('images/ic_back.svg')} alt="" />
               </div>
             )}
-            {showDosage ? 'IBUGESIC PLUS, 1.5% WWA' : 'ADD MEDICINE'}
+            {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
             <Button className={classes.cross}>
               <img
                 src={require('images/ic_cross.svg')}
@@ -398,12 +535,41 @@ export const MedicinePrescription: React.FC = () => {
             {!showDosage ? (
               <div>
                 <div className={classes.dialogContent}>
-                  <AphTextField placeholder="search" />
-                  <div>
+                  <Autosuggest
+                    onSuggestionSelected={(e, { suggestion }) => {
+                      setState({
+                        single: '',
+                        popper: '',
+                      });
+                      setShowDosage(true);
+                      setSelectedValue(suggestion.label);
+                    }}
+                    {...autosuggestProps}
+                    inputProps={{
+                      classes,
+                      color: 'primary',
+                      id: 'react-autosuggest-simple',
+                      placeholder: 'Search Instructions',
+                      value: state.single,
+                      onChange: handleChange('single'),
+                    }}
+                    theme={{
+                      container: classes.container,
+                      suggestionsContainerOpen: classes.suggestionsContainerOpen,
+                      suggestionsList: classes.suggestionsList,
+                      suggestion: classes.suggestion,
+                    }}
+                    renderSuggestionsContainer={(options) => (
+                      <Paper {...options.containerProps} square>
+                        {options.children}
+                      </Paper>
+                    )}
+                  />
+                  {/* <div>
                     <AphButton color="primary" onClick={() => setShowDosage(true)}>
                       Select Medicine
                     </AphButton>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             ) : (

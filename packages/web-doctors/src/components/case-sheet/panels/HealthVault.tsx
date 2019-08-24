@@ -139,6 +139,36 @@ export const HealthVault: React.FC = () => {
             ))}
           </List>
         </Typography>
+        <Typography component="div">
+          <Typography component="h5" variant="h5">
+            Past Consultations
+          </Typography>
+          <List className={classes.listContainer}>
+            {reportData.map((item, idx) => (
+              <ListItem key={idx} className={classes.listItem}>
+                <ListItemAvatar>
+                  <Avatar alt={item.fileName} src={item.thumbnail} className={classes.bigAvatar} />
+                </ListItemAvatar>
+                <ListItemText
+                  primary={
+                    <Fragment>
+                      <Typography component="h5" variant="h5" color="primary">
+                        {item.fileName}
+                      </Typography>
+                    </Fragment>
+                  }
+                  secondary={
+                    <Fragment>
+                      <Typography component="span" variant="body2">
+                        {item.size} | {format(new Date(item.timestamp), 'd MMM yyyy, h:mm a')}
+                      </Typography>
+                    </Fragment>
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Typography>
       </Typography>
     </ThemeProvider>
   );
