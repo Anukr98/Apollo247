@@ -128,7 +128,7 @@ const bookAppointment: Resolver<
     consultType: appointment.appointmentType,
     doctorId: appointment.doctorId,
     patientId: appointment.patientId,
-    appointment: <Appointment>appointment,
+    appointment: appointment,
   };
   await caseSheetRepo.savecaseSheet(caseSheetAttrs);
   ///////////
