@@ -21,10 +21,14 @@ const useStyles = makeStyles(() => ({
   },
   textContent: {
     color: '#01475b',
+    fontSize: 14,
+    fontWeight: 500,
+    lineHeight: 1.43,
   },
   header: {
-    color: '#02475b',
-    opacity: 0.6,
+    color: 'rgba(2,71,91,0.6)',
+    marginBottom: 8,
+    fontWeight: 500,
   },
 }));
 
