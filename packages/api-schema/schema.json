@@ -5486,7 +5486,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "otherInstructions",
+                "name": "OtherInstructions",
                 "ofType": null
               }
             },
@@ -5552,7 +5552,7 @@
         "description": null,
         "fields": [
           {
-            "name": "durationInDays",
+            "name": "medicineConsumptionDurationInDays",
             "description": null,
             "args": [],
             "type": {
@@ -5564,7 +5564,7 @@
             "deprecationReason": null
           },
           {
-            "name": "dosage",
+            "name": "medicineDosage",
             "description": null,
             "args": [],
             "type": {
@@ -5576,7 +5576,7 @@
             "deprecationReason": null
           },
           {
-            "name": "instructions",
+            "name": "medicineInstructions",
             "description": null,
             "args": [],
             "type": {
@@ -5612,7 +5612,7 @@
             "deprecationReason": null
           },
           {
-            "name": "name",
+            "name": "medicineName",
             "description": null,
             "args": [],
             "type": {
@@ -5701,7 +5701,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "otherInstructions",
+        "name": "OtherInstructions",
         "description": null,
         "fields": [
           {

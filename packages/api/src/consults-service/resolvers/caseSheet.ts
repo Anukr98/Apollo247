@@ -74,12 +74,12 @@ export const caseSheetTypeDefs = gql`
   }
 
   type MedicinePrescription {
-    durationInDays: String
-    dosage: String
-    instructions: String
+    medicineConsumptionDurationInDays: String
+    medicineDosage: String
+    medicineInstructions: String
     medicineTimings: MEDICINE_TIMINGS
     medicineToBeTaken: MEDICINE_TO_BE_TAKEN
-    name: String
+    medicineName: String
     id: String
   }
 

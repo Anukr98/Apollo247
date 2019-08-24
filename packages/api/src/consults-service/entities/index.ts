@@ -149,26 +149,26 @@ export class MedicinePrescription extends BaseEntity {
   @ManyToOne((type) => CaseSheet, (caseSheet) => caseSheet.medicinePrescription)
   caseSheet: CaseSheet;
 
-  @Column({ nullable: true })
-  consumptionDurationInDays: number;
-
   @Column()
   createdDate: Date;
 
   @Column({ nullable: true })
-  externalId: string;
+  medicineConsumptionDurationInDays: number;
+
+  @Column()
+  medicineDosage: string;
+
+  @Column({ nullable: true })
+  medicineExternalId: string;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'text' })
-  instructions: string;
+  medicineInstructions: string;
 
   @Column()
-  name: string;
-
-  @Column()
-  dosage: string;
+  medicineName: string;
 
   @Column()
   medicineTimings: MEDICINE_TIMINGS;
