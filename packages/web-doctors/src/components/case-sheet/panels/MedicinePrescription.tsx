@@ -526,7 +526,10 @@ export const MedicinePrescription: React.FC = () => {
               <img
                 src={require('images/ic_cross.svg')}
                 alt=""
-                onClick={() => setIsDialogOpen(false)}
+                onClick={() => {
+                  setIsDialogOpen(false);
+                  setShowDosage(false);
+                }}
               />
             </Button>
           </AphDialogTitle>
@@ -565,11 +568,6 @@ export const MedicinePrescription: React.FC = () => {
                       </Paper>
                     )}
                   />
-                  {/* <div>
-                    <AphButton color="primary" onClick={() => setShowDosage(true)}>
-                      Select Medicine
-                    </AphButton>
-                  </div> */}
                 </div>
               </div>
             ) : (
@@ -660,6 +658,7 @@ export const MedicinePrescription: React.FC = () => {
                     color="primary"
                     onClick={() => {
                       setIsDialogOpen(false);
+                      setShowDosage(false);
                     }}
                   >
                     Cancel
