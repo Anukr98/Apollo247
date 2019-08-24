@@ -46,13 +46,15 @@ import { getConnection } from 'typeorm';
       const headers = req.headers as GatewayHeaders;
       const firebaseUid = headers.firebaseuid;
       const mobileNumber = headers.mobilenumber;
-      const doctorsDb = getConnection('doctors-db');
       const consultsDb = getConnection();
+      const doctorsDb = getConnection('doctors-db');
+      const patientsDb = getConnection('patients-db');
       const context: ConsultServiceContext = {
         firebaseUid,
         mobileNumber,
         doctorsDb,
         consultsDb,
+        patientsDb,
       };
       return context;
     },
