@@ -48,11 +48,16 @@ export const Navigation: React.FC = (props) => {
     <div className={classes.appNavigation} data-cypress="Navigation">
       <Link
         to={clientRoutes.welcome()}
-        className={`${!window.location.href.includes('/myaccount') && classes.menuItemActive}`}
+        className={`${window.location.href.includes('/myaccount') && classes.menuItemActive}`}
       >
         Home
       </Link>
-      <Link to={clientRoutes.testsAndMedicine()}>Patients</Link>
+      <Link
+        className={`${window.location.href.includes('/patientlog') && classes.menuItemActive}`}
+        to={clientRoutes.PatientLog()}
+      >
+        Patients
+      </Link>
     </div>
   );
 };
