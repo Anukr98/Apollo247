@@ -1,5 +1,5 @@
 import React from 'react';
-import { Theme } from '@material-ui/core';
+import { Theme, MenuItem } from '@material-ui/core';
 import { makeStyles, withStyles } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
@@ -12,6 +12,7 @@ import { RegularPatients } from './RegularPatients';
 import { Header } from 'components/Header';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { useAuth } from 'hooks/authHooks';
+import { AphSelect } from '@aph/web-ui-components';
 
 const AntTabs = withStyles({
   root: {
@@ -139,12 +140,57 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'inset 0px 5px 6px -6px rgba(128,128,128,0.3)',
       backgroundColor: theme.palette.secondary.contrastText,
     },
-    sortBy: {
-      width: '20%',
+    sortByTitle: {
+      width: 100,
+      height: 63,
+      padding: 20,
+      position: 'absolute',
+      right: '25%',
+      fontWeight: 700,
+      fontSize: 16,
+    },
+    sortByDropdown: {
+      width: '16%',
       height: 63,
       padding: 20,
       position: 'absolute',
       right: '11%',
+      fontWeight: 700,
+      fontSize: 16,
+      paddingTop: 5,
+    },
+    menuPopover: {
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      marginLeft: -2,
+      marginTop: 45,
+      borderRadius: 10,
+      left: '270px',
+      width: 180,
+      color: '#00b38e !important',
+      '& ul': {
+        padding: '10px 0px',
+        '& li': {
+          fontSize: 16,
+          width: 180,
+          fontWeight: 500,
+          color: '#02475b',
+          minHeight: 'auto',
+          paddingLeft: 10,
+          paddingRight: 10,
+          // borderBottom: '1px solid rgba(1,71,91,0.2)',
+          textTransform: 'capitalize',
+          '&:last-child': {
+            borderBottom: 'none',
+          },
+          '&:hover': {
+            backgroundColor: '#f0f4f5',
+          },
+        },
+      },
+    },
+    menuSelected: {
+      backgroundColor: 'transparent !important',
+      color: '#00b38e !important',
     },
   };
 });
@@ -154,6 +200,7 @@ export interface DoctorsProfileProps {}
 export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) => {
   const classes = useStyles();
   const [selectedTabIndex, setselectedTabIndex] = React.useState(0);
+  const [sortBY, setSortBy] = React.useState(1);
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
@@ -193,7 +240,40 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
               >
                 {tabsHtml}
               </AntTabs>
-              <span className={classes.sortBy}>Sort BY</span>
+              <span className={classes.sortByTitle}>Sort by:</span>
+              <span className={classes.sortByDropdown}>
+                <AphSelect
+                  value={sortBY}
+                  fullWidth
+                  MenuProps={{
+                    classes: { paper: classes.menuPopover },
+                    anchorOrigin: {
+                      vertical: 'top',
+                      horizontal: 'right',
+                    },
+                    transformOrigin: {
+                      vertical: 'top',
+                      horizontal: 'right',
+                    },
+                  }}
+                  onChange={(e) => {
+                    setSortBy(e.target.value as number);
+                  }}
+                >
+                  <MenuItem value={1} classes={{ selected: classes.menuSelected }}>
+                    Reason 01
+                  </MenuItem>
+                  <MenuItem value={2} classes={{ selected: classes.menuSelected }}>
+                    Reason 02
+                  </MenuItem>
+                  <MenuItem value={3} classes={{ selected: classes.menuSelected }}>
+                    Reason 03
+                  </MenuItem>
+                  <MenuItem value={4} classes={{ selected: classes.menuSelected }}>
+                    Other
+                  </MenuItem>
+                </AphSelect>
+              </span>
             </AppBar>
           )}
           {selectedTabIndex === 0 && (
