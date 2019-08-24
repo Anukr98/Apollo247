@@ -23,6 +23,18 @@ export const caseSheetTypeDefs = gql`
     OTHER
   }
 
+  enum MEDICINE_TIMINGS {
+    EVENING
+    MORNING
+    NIGHT
+    NOON
+  }
+
+  enum MEDICINE_TO_BE_TAKEN {
+    AFTER_FOOD
+    BEFORE_FOOD
+  }
+
   enum Relation {
     ME
     MOTHER
@@ -65,8 +77,8 @@ export const caseSheetTypeDefs = gql`
     durationInDays: String
     dosage: String
     instructions: String
-    medicineTimings: String
-    medicineToBeTaken: String
+    medicineTimings: MEDICINE_TIMINGS
+    medicineToBeTaken: MEDICINE_TO_BE_TAKEN
     name: String
     id: String
   }
