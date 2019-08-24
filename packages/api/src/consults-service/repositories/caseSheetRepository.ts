@@ -19,4 +19,11 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       relations: ['appointment', 'medicinePrescription'],
     });
   }
+
+  getSeniorDoctorCaseSheet(appointmentId: string, createdDoctorId: string) {
+    return this.findOne({
+      where: [{ appointmentId, createdDoctorId }],
+      relations: ['appointment', 'medicinePrescription'],
+    });
+  }
 }

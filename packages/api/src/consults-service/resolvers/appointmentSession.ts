@@ -4,7 +4,10 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import openTok, { TokenOptions } from 'opentok';
 import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { STATUS } from 'consults-service/entities';
+import { STATUS, CaseSheet } from 'consults-service/entities';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -23,6 +26,7 @@ export const createAppointmentSessionTypeDefs = gql`
     doctorId: ID!
     patientId: ID!
     appointmentDateTime: DateTime!
+    caseSheetId: String
   }
 
   input CreateAppointmentSessionInput {
@@ -62,6 +66,7 @@ type CreateAppointmentSession = {
   doctorId: string;
   patientId: string;
   appointmentDateTime: Date;
+  caseSheetId: string;
 };
 
 type CreateAppointmentSessionInput = {
@@ -103,9 +108,35 @@ const createAppointmentSession: Resolver<
     patientId = '',
     doctorId = '';
   let appointmentDateTime: Date = new Date();
+  let caseSheetId = '';
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
+  if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  // senior doctor case sheet creation starts
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+
+  //check whether if senior doctors casesheet already exists
+  let caseSheetDetails;
+  caseSheetDetails = await caseSheetRepo.getSeniorDoctorCaseSheet(
+    apptDetails.id,
+    apptDetails.doctorId
+  );
+  if (caseSheetDetails == null) {
+    const caseSheetAttrs: Partial<CaseSheet> = {
+      consultType: apptDetails.appointmentType,
+      doctorId: apptDetails.doctorId,
+      patientId: apptDetails.patientId,
+      appointment: apptDetails,
+      createdDoctorId: apptDetails.doctorId,
+    };
+    caseSheetDetails = await caseSheetRepo.savecaseSheet(caseSheetAttrs);
+    if (caseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
+  }
+  caseSheetId = caseSheetDetails.id;
+  // senior doctor case sheet creation ends
+
   if (
     apptDetails &&
     (apptDetails.status === STATUS.PENDING || apptDetails.status === STATUS.CONFIRMED)
@@ -126,6 +157,7 @@ const createAppointmentSession: Resolver<
       patientId,
       doctorId,
       appointmentDateTime,
+      caseSheetId,
     };
   }
   function getSessionToken() {
@@ -162,6 +194,7 @@ const createAppointmentSession: Resolver<
     patientId,
     doctorId,
     appointmentDateTime,
+    caseSheetId,
   };
 };
 
