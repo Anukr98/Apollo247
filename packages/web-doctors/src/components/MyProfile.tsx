@@ -82,6 +82,13 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 10,
       lineHeight: 2,
     },
+    statusText: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#00b38e',
+      marginTop: 10,
+      lineHeight: 2,
+    },
     labelRoot: {
       width: '100%',
     },
@@ -709,7 +716,9 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
   const { doctor, clinics } = props;
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const [phoneMessage, setPhoneMessage] = useState<string>('');
+  const [delegateNumberStatus, setDelegateNumberStatus] = useState<string>('');
   const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
+
   const classes = useStyles();
   const doctorProfile = doctor;
 
@@ -829,6 +838,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
               if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
             }}
             onChange={(event) => {
+              setDelegateNumberStatus('');
               setMobileNumber(event.currentTarget.value);
               if (event.currentTarget.value !== '') {
                 if (parseInt(event.currentTarget.value[0], 10) > 5) {
@@ -850,9 +860,15 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
             }}
             startAdornment={<InputAdornment position="start"></InputAdornment>}
           />
-          <FormHelperText component="div" className={classes.helpText} error={showErrorMessage}>
-            {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0 ? phoneMessage : ''}
-          </FormHelperText>
+          {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0 ? (
+            <FormHelperText component="div" className={classes.helpText} error={showErrorMessage}>
+              {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0 ? phoneMessage : ''}
+            </FormHelperText>
+          ) : (
+            <FormHelperText component="div" className={classes.statusText}>
+              {delegateNumberStatus.length > 0 ? delegateNumberStatus : ''}
+            </FormHelperText>
+          )}
         </FormControl>
       </div>
       <div className={classes.helpTxt}>
@@ -881,6 +897,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                   classes={{ root: classes.saveButton }}
                   onClick={(e) => {
                     mutate({});
+                    setDelegateNumberStatus('Secretary Number has deleted successfully');
                   }}
                 >
                   SAVE
@@ -903,6 +920,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                         delegateNumber: mobileNumber,
                       },
                     });
+                    setDelegateNumberStatus('Secretary Number has updated successfully');
                   }}
                 >
                   SAVE
