@@ -35,3 +35,15 @@ export const searchMedicineApi = (
     }
   );
 };
+
+let sysmptonsList: unknown[] = [];
+
+export const getSysmptonsList = () => sysmptonsList;
+
+export const addSysmptonsList = (item: any) => {
+  sysmptonsList = [...sysmptonsList, item];
+};
+
+export const setSysmptonsList = (lsit: any[]) => {
+  sysmptonsList = [...lsit];
+};

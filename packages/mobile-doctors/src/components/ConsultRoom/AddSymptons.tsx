@@ -5,6 +5,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { addSysmptonsList } from '@aph/mobile-doctors/src/components/ApiCall';
 
 const styles = StyleSheet.create({
   container: {
@@ -197,7 +198,20 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
           variant="white"
           style={[styles.buttonsaveStyle, { marginRight: 16 }]}
         />
-        <Button title="ADD SYMPTOM" style={styles.buttonendStyle} />
+        <Button
+          title="ADD SYMPTOM"
+          style={styles.buttonendStyle}
+          onPress={() => {
+            addSysmptonsList({
+              id: '3',
+              firstName: 'ABCD ',
+              secondName: '7days ',
+              thirdName: 'Night',
+              fourthName: 'High',
+            });
+            props.navigation.pop();
+          }}
+        />
       </View>
     </SafeAreaView>
   );

@@ -1,7 +1,9 @@
+import { getSysmptonsList, setSysmptonsList } from '@aph/mobile-doctors/src/components/ApiCall';
 import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
 import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
 import { HealthCard } from '@aph/mobile-doctors/src/components/ConsultRoom/HealthCard';
 import { MedicalCard } from '@aph/mobile-doctors/src/components/ConsultRoom/MedicalCard';
+import { SymptonsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/SymptonsCard';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-doctors/src/components/ui/CalendarView';
@@ -33,8 +35,6 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
-
-import { SymptonsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/SymptonsCard';
 
 const styles = StyleSheet.create({
   casesheetView: {
@@ -442,6 +442,35 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [selectDate, setSelectDate] = useState<string>('dd/mm/yyyy');
   const [calenderShow, setCalenderShow] = useState(false);
   const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
+  const [symptonsData, setSymptonsData] = useState<any>([]);
+
+  useEffect(() => {
+    const didBlurSubscription = props.navigation.addListener('didFocus', (payload) => {
+      console.debug('didFocus', payload);
+      setSymptonsData(getSysmptonsList());
+    });
+    () => didBlurSubscription.remove();
+  }, []);
+  useEffect(() => {
+    const data = [
+      {
+        id: '1',
+        firstName: 'FEVER ',
+        secondName: '2days ',
+        thirdName: 'Night',
+        fourthName: 'High',
+      },
+      {
+        id: '2',
+        firstName: 'COLD ',
+        secondName: '2days ',
+        thirdName: 'Night',
+        fourthName: 'High',
+      },
+    ];
+    setSymptonsData(data);
+    setSysmptonsList(data);
+  }, []);
 
   const startDate = moment(date).format('YYYY-MM-DD');
   console.log(
@@ -505,22 +534,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     },
   ];
 
-  const sysmptonsList = [
-    {
-      id: '1',
-      firstName: 'FEVER ',
-      secondName: '2days ',
-      thirdName: 'Night',
-      fourthName: 'High',
-    },
-    {
-      id: '1',
-      firstName: 'COLD ',
-      secondName: '2days ',
-      thirdName: 'Night',
-      fourthName: 'High',
-    },
-  ];
   useEffect(() => {
     setShowButtons(props.startConsult);
   }, []);
@@ -618,7 +631,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View>
         <CollapseCard heading="Symptoms" collapse={show} onPress={() => setShow(!show)}>
-          {sysmptonsList.map((showdata, i) => {
+          {symptonsData.map((showdata: any) => {
             return (
               <View>
                 <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
@@ -628,10 +641,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     days={showdata.secondName}
                     howoften={showdata.thirdName}
                     seviarity={showdata.fourthName}
-
-                    // onPress={() => {
-                    //   props.navigation.push(AppRoutes.MedicineUpdate);
-                    // }}
                   />
                 </View>
               </View>

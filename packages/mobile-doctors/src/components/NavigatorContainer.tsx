@@ -39,6 +39,8 @@ import {
   StackNavigatorConfig,
 } from 'react-navigation';
 import { ShareConsult } from '@aph/mobile-doctors/src/components/ConsultRoom/ShareConsult';
+import { ChatDoctor } from '@aph/mobile-doctors/src/components/ChatDoctor';
+import { Sample } from '@aph/mobile-doctors/src/components/Sample';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -77,6 +79,8 @@ export enum AppRoutes {
   TransferConsult = 'TransferConsult',
   ReschduleConsult = 'ReschduleConsult',
   ShareConsult = 'ShareConsult',
+  ChatDoctor = 'ChatDoctor',
+  Sample = 'Sample',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -194,6 +198,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ShareConsult]: {
     screen: ShareConsult,
+  },
+  [AppRoutes.ChatDoctor]: {
+    screen: ChatDoctor,
+  },
+  [AppRoutes.Sample]: {
+    screen: Sample,
   },
 };
 

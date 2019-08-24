@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 5,
     backgroundColor: '#fed6a2',
-    width: 200,
+    // width: 200,
     alignItems: 'center',
     alignSelf: 'center',
     justifyContent: 'center',
@@ -55,13 +55,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 2,
-    marginTop: 32,
+    //marginTop: 32,
+    marginLeft: 20,
+    marginRight: 20,
   },
   buttonViewfull: {
     height: 40,
     borderRadius: 5,
     backgroundColor: '#fc9916',
-    width: 200,
+    // width: 200,
     alignItems: 'center',
     alignSelf: 'center',
     justifyContent: 'center',
@@ -70,7 +72,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 2,
-    marginTop: 32,
+    marginLeft: 20,
+    marginRight: 20,
+    //marginTop: 32,
   },
 
   titleTextStyle: {
@@ -98,6 +102,8 @@ export const ShareConsult: React.FC<ProfileProps> = (props) => {
   const [data, setData] = useState(_data);
   // const [pickData, setPickData] = useState<{ [id: string]: boolean }>({});
   const [selectedId, setSelectedId] = useState<number>(0);
+  const isEnabled = selectedId != 0;
+
   const showHeaderView = () => {
     return (
       <Header
@@ -139,7 +145,7 @@ export const ShareConsult: React.FC<ProfileProps> = (props) => {
     setData(newData);
   };
   const renderDoctorsData = () => {
-    const [heightList, setHeightList] = useState<number>(height - 185);
+    const [heightList, setHeightList] = useState<number>(height - 250);
     return (
       <ScrollView bounces={false} style={{ height: heightList }}>
         {data!.map((_doctor, i, array) => {
@@ -238,14 +244,29 @@ export const ShareConsult: React.FC<ProfileProps> = (props) => {
 
       <View style={{ backgroundColor: '#f7f7f7' }}>
         {renderDoctorsData()}
-        <View style={{ justifyContent: 'flex-end', zIndex: 1 }}>
-          <Button
-            title="Send"
-            titleTextStyle={styles.titleTextStyle}
-            // style={selectreason != 'Select a reason' ? styles.buttonViewfull : styles.buttonView}
-            //onPress={() => props.navigation.push(AppRoutes.NeedHelpDonePage)}
-            //disabled={!isEnabled}
-          />
+        <View style={{ backgroundColor: '#ffffff', marginBottom: 14 }}>
+          <View
+            style={{
+              justifyContent: 'flex-end',
+              zIndex: 1,
+              marginLeft: 20,
+              marginRight: 20,
+            }}
+          >
+            <TextInput
+              placeholder="write message"
+              placeholderTextColor="rgba(2, 71, 91, 0.6)"
+              editable={selectedId != 0}
+              style={{ marginTop: 16, marginBottom: 16, ...theme.fonts.IBMPlexSansMedium(13) }}
+            />
+            <Button
+              title="Send"
+              titleTextStyle={styles.titleTextStyle}
+              style={selectedId != 0 ? styles.buttonViewfull : styles.buttonView}
+              //onPress={() => props.navigation.push(AppRoutes.NeedHelpDonePage)}
+              disabled={!isEnabled}
+            />
+          </View>
         </View>
       </View>
     </SafeAreaView>

@@ -672,3 +672,18 @@ export const UnSelected: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/unselected.png')}
   />
 );
+
+export const Chat: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 78 }}
+    {...props}
+    source={require('../../images/icons/chat_cta.png')}
+  />
+);
+export const Search: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/search.png')}
+  />
+);
