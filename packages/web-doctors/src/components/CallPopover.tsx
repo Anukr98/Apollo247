@@ -1,4 +1,4 @@
-import { Theme, Button } from '@material-ui/core';
+import { Theme, Button, Modal, Select, MenuItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { useState, useEffect } from 'react';
 import Popover from '@material-ui/core/Popover';
@@ -6,6 +6,7 @@ import Paper from '@material-ui/core/Paper';
 import { Link } from 'react-router-dom';
 import Pubnub from 'pubnub';
 import moment from 'moment';
+import { AphSelect, AphButton, AphTextField } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -81,6 +82,32 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& svg': {
         marginRight: 5,
+      },
+    },
+    ResheduleCosultButton: {
+      fontSize: 13,
+      fontWeight: theme.typography.fontWeightBold,
+      color: '#fff',
+      padding: '8px 16px',
+      backgroundColor: '#fc9916',
+      minWidth: 168,
+      borderRadius: 10,
+      boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
+      '&:hover': {
+        backgroundColor: '#fc9916',
+      },
+    },
+    cancelConsult: {
+      minWidth: 120,
+      fontSize: 13,
+      padding: '8px 16px',
+      fontWeight: theme.typography.fontWeightBold,
+      color: '#fc9916',
+      backgroundColor: '#fff',
+      margin: theme.spacing(0, 1, 0, 1),
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      '&:hover': {
+        backgroundColor: '#fff',
       },
     },
     timeLeft: {
@@ -175,6 +202,157 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fff',
       },
     },
+    popOverUL: {
+      listStyleType: 'none',
+      textAlign: 'center',
+      display: 'inline',
+      '& li': {
+        fontSize: '15px',
+        fontWeight: 500,
+        paddingLeft: '20px',
+        fontStyle: 'normal',
+        fontStretch: 'normal',
+        lineHeight: 'normal',
+        letterSpacing: 'normal',
+        color: '#02475b',
+        paddingBottom: '10px',
+        paddingTop: '10px',
+        textAlign: 'left',
+        '&:hover': {
+          background: '#eeeeee',
+        },
+      },
+    },
+
+    dotPaper: {
+      width: 180,
+      minHeight: 165,
+      padding: '0px',
+      borderRadius: 10,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    modalBox: {
+      maxWidth: 480,
+      height: 340,
+      margin: 'auto',
+      marginTop: 88,
+      backgroundColor: '#eeeeee',
+      position: 'relative',
+    },
+    modalBoxTransfer: {
+      maxWidth: 480,
+      height: 390,
+      margin: 'auto',
+      marginTop: 88,
+      backgroundColor: '#eeeeee',
+      position: 'relative',
+    },
+    modalBoxClose: {
+      position: 'absolute',
+      right: -48,
+      top: 0,
+      width: 28,
+      height: 28,
+      borderRadius: '50%',
+      backgroundColor: theme.palette.common.white,
+      cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        right: 0,
+        top: -48,
+      },
+    },
+    tabHeader: {
+      background: 'white',
+      height: 50,
+      borderTopLeftRadius: '10px',
+      borderTopRightRadius: '10px',
+      '& h4': {
+        fontSize: '13px',
+        fontWeight: 600,
+        letterSpacing: '0.5px',
+        color: '#01475b',
+        padding: '15px',
+      },
+    },
+    tabFooter: {
+      background: 'white',
+      position: 'absolute',
+      height: 60,
+      paddingTop: '10px',
+      borderBottomLeftRadius: '10px',
+      borderBottomRightRadius: '10px',
+      width: '480px',
+      bottom: '0px',
+      textAlign: 'right',
+      paddingRight: '20px',
+    },
+    tabBody: {
+      background: 'white',
+      height: 80,
+      marginTop: '10px',
+      paddingLeft: '15px',
+      paddingTop: '10px',
+      paddingRight: '15px',
+      /* padding: 15px; */
+
+      '& p': {
+        margin: 0,
+        fontSize: '15px',
+        fontWeight: 500,
+        lineHeight: 1.2,
+        color: '#01475b',
+      },
+    },
+    menuPopover: {
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      marginLeft: -2,
+      marginTop: 45,
+      borderRadius: 10,
+      left: '270px',
+      width: '450px',
+      '& ul': {
+        padding: '10px 0px',
+        '& li': {
+          fontSize: 16,
+          width: 480,
+          fontWeight: 500,
+          color: '#02475b',
+          minHeight: 'auto',
+          paddingLeft: 10,
+          paddingRight: 10,
+          // borderBottom: '1px solid rgba(1,71,91,0.2)',
+          textTransform: 'capitalize',
+          '&:last-child': {
+            borderBottom: 'none',
+          },
+          '&:hover': {
+            backgroundColor: '#f0f4f5',
+          },
+        },
+      },
+    },
+    menuSelected: {
+      backgroundColor: 'transparent !important',
+      color: '#00b38e !important',
+    },
+    cancelBtn: {
+      minWidth: 30,
+      margin: theme.spacing(1),
+      fontSize: 15,
+      fontWeight: 500,
+      color: '#02575b',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      border: 'none',
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    searchInput: {
+      paddingLeft: 0,
+      paddingRight: 0,
+    },
   };
 });
 
@@ -195,6 +373,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
   const [startAppointmentButton, setStartAppointmentButton] = React.useState<boolean>(true);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [isTransferPopoverOpen, setIsTransferPopoverOpen] = useState<boolean>(false);
+  const [reason, setReason] = React.useState(1);
+  const [searchKeyWord, setSearchKeyword] = React.useState('');
+  const [noteKeyword, setNoteKeyword] = React.useState('');
+
+  const [anchorElThreeDots, setAnchorElThreeDots] = React.useState(null);
   //logic for before start counsult timer start
   const dt1 = new Date(new Date().toISOString().substring(0, 16)); //today time
   const dt2 = new Date(props.appointmentDateTime); // apointment time
@@ -291,6 +476,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   }
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popover' : undefined;
+
+  function handleClickThreeDots(event: any) {
+    setAnchorElThreeDots(event.currentTarget);
+  }
+  function handleCloseThreeDots() {
+    setAnchorElThreeDots(null);
+  }
+  const openThreeDots = Boolean(anchorElThreeDots);
+  const idThreeDots = openThreeDots ? 'simple-three-dots' : undefined;
+  const resheduleCosult = () => {};
+
   const startConsult = '^^#startconsult';
   const stopConsult = '^^#stopconsult';
   const channel = props.appointmentId;
@@ -479,11 +675,215 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </div>
             </Paper>
           </Popover>
-          <Button className={classes.consultIcon}>
+          <Button
+            className={classes.consultIcon}
+            aria-describedby={idThreeDots}
+            onClick={(e) => handleClickThreeDots(e)}
+          >
             <img src={require('images/ic_more.svg')} />
           </Button>
+
+          <Popover
+            id={idThreeDots}
+            open={openThreeDots}
+            anchorEl={anchorElThreeDots}
+            onClose={handleCloseThreeDots}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+          >
+            <Paper className={classes.dotPaper}>
+              <ul className={classes.popOverUL}>
+                <li>Share Case Sheet</li>
+                <li
+                  onClick={() => {
+                    handleCloseThreeDots();
+                    setIsTransferPopoverOpen(true);
+                  }}
+                >
+                  TransferConsult
+                </li>
+                <li
+                  onClick={() => {
+                    handleCloseThreeDots();
+                    setIsPopoverOpen(true);
+                  }}
+                >
+                  Reshedule Consult
+                </li>
+              </ul>
+            </Paper>
+          </Popover>
         </span>
       </div>
+      <Modal
+        open={isPopoverOpen}
+        onClose={() => setIsPopoverOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={classes.modalBox}>
+          <div className={classes.tabHeader}>
+            <h4>RESHEDULE CONSULT</h4>
+            <Button className={classes.cross}>
+              <img
+                src={require('images/ic_cross.svg')}
+                alt=""
+                onClick={() => setIsPopoverOpen(false)}
+              />
+            </Button>
+          </div>
+          <div className={classes.tabBody}>
+            <p>Why do you want to resshedule this consult?</p>
+
+            <AphSelect
+              value={reason}
+              MenuProps={{
+                classes: { paper: classes.menuPopover },
+                anchorOrigin: {
+                  vertical: 'top',
+                  horizontal: 'right',
+                },
+                transformOrigin: {
+                  vertical: 'top',
+                  horizontal: 'right',
+                },
+              }}
+              onChange={(e) => {
+                setReason(e.target.value as number);
+              }}
+            >
+              <MenuItem value={1} classes={{ selected: classes.menuSelected }}>
+                Reason 01
+              </MenuItem>
+              <MenuItem value={2} classes={{ selected: classes.menuSelected }}>
+                Reason 02
+              </MenuItem>
+              <MenuItem value={3} classes={{ selected: classes.menuSelected }}>
+                Reason 03
+              </MenuItem>
+              <MenuItem value={4} classes={{ selected: classes.menuSelected }}>
+                Other
+              </MenuItem>
+            </AphSelect>
+          </div>
+          <div
+            className={classes.tabFooter}
+            onClick={() => {
+              setIsPopoverOpen(false);
+            }}
+          >
+            <Button className={classes.cancelConsult}>Cancel</Button>
+            <Button
+              className={classes.ResheduleCosultButton}
+              onClick={() => {
+                setIsPopoverOpen(false);
+                resheduleCosult();
+              }}
+            >
+              Reshedule Consult
+            </Button>
+          </div>
+        </Paper>
+      </Modal>
+      <Modal
+        open={isTransferPopoverOpen}
+        onClose={() => setIsTransferPopoverOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={classes.modalBoxTransfer}>
+          <div className={classes.tabHeader}>
+            <h4>TRANSFER CONSULT</h4>
+            <Button className={classes.cross}>
+              <img
+                src={require('images/ic_cross.svg')}
+                alt=""
+                onClick={() => setIsTransferPopoverOpen(false)}
+              />
+            </Button>
+          </div>
+          <div className={classes.tabBody}>
+            <p>Why do you want to transfer this consult?</p>
+
+            <AphSelect
+              value={reason}
+              MenuProps={{
+                classes: { paper: classes.menuPopover },
+                anchorOrigin: {
+                  vertical: 'top',
+                  horizontal: 'right',
+                },
+                transformOrigin: {
+                  vertical: 'top',
+                  horizontal: 'right',
+                },
+              }}
+              onChange={(e) => {
+                setReason(e.target.value as number);
+              }}
+            >
+              <MenuItem value={1} classes={{ selected: classes.menuSelected }}>
+                Reason 01
+              </MenuItem>
+              <MenuItem value={2} classes={{ selected: classes.menuSelected }}>
+                Reason 02
+              </MenuItem>
+              <MenuItem value={3} classes={{ selected: classes.menuSelected }}>
+                Reason 03
+              </MenuItem>
+              <MenuItem value={4} classes={{ selected: classes.menuSelected }}>
+                Other
+              </MenuItem>
+            </AphSelect>
+          </div>
+          <div className={classes.tabBody}>
+            <p>Whom do you want to transfer this consult to?</p>
+            <AphTextField
+              classes={{ root: classes.searchInput }}
+              placeholder="Search doctors or specialities"
+              onChange={(e) => {
+                setSearchKeyword(e.target.value);
+              }}
+              value={searchKeyWord}
+            />
+          </div>
+
+          <div className={classes.tabBody}>
+            <p>Add a Note (Optional)</p>
+            <AphTextField
+              classes={{ root: classes.searchInput }}
+              placeholder="Enter here...."
+              onChange={(e) => {
+                setNoteKeyword(e.target.value);
+              }}
+              value={noteKeyword}
+            />
+          </div>
+          <div
+            className={classes.tabFooter}
+            onClick={() => {
+              setIsTransferPopoverOpen(false);
+            }}
+          >
+            <Button className={classes.cancelConsult}>Cancel</Button>
+            <Button
+              className={classes.ResheduleCosultButton}
+              onClick={() => {
+                setIsTransferPopoverOpen(false);
+                resheduleCosult();
+              }}
+            >
+              Transfer Consult
+            </Button>
+          </div>
+        </Paper>
+      </Modal>
     </div>
   );
 };
