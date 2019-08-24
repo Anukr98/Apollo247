@@ -7,8 +7,6 @@ import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { AllPatient } from './AllPatient';
-import { FollowupPatients } from './FollowupPatients';
-import { RegularPatients } from './RegularPatients';
 import { Header } from 'components/Header';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { useAuth } from 'hooks/authHooks';
@@ -294,12 +292,12 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
           )}
           {selectedTabIndex === 1 && (
             <TabContainer>
-              <FollowupPatients />
+              <AllPatient />
             </TabContainer>
           )}
           {selectedTabIndex === 2 && (
             <TabContainer>
-              <RegularPatients />
+              <AllPatient />
             </TabContainer>
           )}
         </div>

@@ -15,6 +15,7 @@ import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
+import _isEmpty from 'lodash/isEmpty';
 
 interface OptionType {
   label: string;
@@ -305,6 +306,7 @@ export const MedicinePrescription: React.FC = () => {
   const classes = useStyles();
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
+  const [medicineInstruction, setMedicineInstruction] = React.useState<string>('');
   const [errorState, setErrorState] = React.useState<errorObject>({
     daySlotErr: false,
     tobeTakenErr: false,
@@ -389,7 +391,7 @@ export const MedicinePrescription: React.FC = () => {
     (_medicine: MedicineObject | null, index: number) => {
       const medicine = _medicine!;
       return (
-        <Paper key={index} className={`${classes.paper} ${classes.activeCard}`}>
+        <Paper key={medicine.id} className={`${classes.paper} ${classes.activeCard}`}>
           <h5>{medicine.name}</h5>
           <h6>
             {medicine.times} times a day ({medicine.daySlots}) for {medicine.duration}
@@ -432,11 +434,18 @@ export const MedicinePrescription: React.FC = () => {
       setErrorState({ ...errorState, daySlotErr: true, tobeTakenErr: false, durationErr: false });
     } else if (isTobeTakenSelected.length === 0) {
       setErrorState({ ...errorState, tobeTakenErr: true, daySlotErr: false, durationErr: false });
-    } else if (consumptionDuration === '') {
+    } else if (_isEmpty(consumptionDuration)) {
       setErrorState({ ...errorState, durationErr: true, daySlotErr: false, tobeTakenErr: false });
     } else {
       setErrorState({ ...errorState, durationErr: false, daySlotErr: false, tobeTakenErr: false });
       alert('Api Call to submit action');
+      // const inputParams = {
+      //   caseSheetId: '1234',
+      //   tablets: tabletsCount,
+      //   daySlots: daySlots,
+      //   toBeTakenSlots: toBeTakenSlots,
+      //   medicineInstruction: medicineInstruction
+      // }
       setIsDialogOpen(false);
     }
   };
@@ -648,7 +657,13 @@ export const MedicinePrescription: React.FC = () => {
                     <div>
                       <h6>Instructions (if any)</h6>
                       <div className={classes.numberTablets}>
-                        <AphTextField placeholder="search" />
+                        <AphTextField
+                          placeholder="search"
+                          value={medicineInstruction}
+                          onChange={(event) => {
+                            setMedicineInstruction(event.target.value);
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
@@ -670,7 +685,7 @@ export const MedicinePrescription: React.FC = () => {
                       addUpdateMedicines();
                     }}
                   >
-                    Select Medicine
+                    Add Medicine
                   </AphButton>
                 </div>
               </div>
