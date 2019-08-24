@@ -1,4 +1,6 @@
-import { Theme, Button, Modal, Select, MenuItem } from '@material-ui/core';
+import { Theme, Button, Modal, Select, MenuItem, InputBase } from '@material-ui/core';
+import TextareaAutosize from '@material-ui/core/TextareaAutosize';
+
 import { makeStyles } from '@material-ui/styles';
 import React, { useState, useEffect } from 'react';
 import Popover from '@material-ui/core/Popover';
@@ -352,6 +354,18 @@ const useStyles = makeStyles((theme: Theme) => {
     searchInput: {
       paddingLeft: 0,
       paddingRight: 0,
+    },
+    textFieldColor: {
+      '& input': {
+        marginTop: 5,
+        color: 'initial',
+        border: '2px solid #00b38e ',
+        borderRadius: 10,
+        paddingLeft: 10,
+        '& :before': {
+          border: 0,
+        },
+      },
     },
   };
 });
@@ -856,14 +870,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
           <div className={classes.tabBody}>
             <p>Add a Note (Optional)</p>
-            <AphTextField
+            {/* <AphTextField placeholder="search" /> */}
+            <InputBase fullWidth className={classes.textFieldColor} placeholder="Enter here.." />
+            {/* <AphTextField
               classes={{ root: classes.searchInput }}
               placeholder="Enter here...."
               onChange={(e) => {
                 setNoteKeyword(e.target.value);
               }}
               value={noteKeyword}
-            />
+            /> */}
           </div>
           <div
             className={classes.tabFooter}
