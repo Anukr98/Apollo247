@@ -165,9 +165,6 @@ const getJuniorDoctorCaseSheet: Resolver<
   const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
-  console.log(caseSheetDetails);
-  console.log(patientDetails);
-
   return { caseSheetDetails, patientDetails };
 };
 
