@@ -11,6 +11,7 @@ import { PatientsList } from 'components/PatientsList';
 import { DoctorsProfile } from 'components/DoctorsProfile';
 import { MyAccount } from 'components/profileDetails';
 import { Calendar } from 'components/Calendar';
+import { PatientLog } from 'components/PatientLog/PatientLog';
 import { ConsultTabs } from 'components/ConsultTabs';
 import { AuthProvider } from 'components/AuthProvider';
 import { useAuth } from 'hooks/authHooks';
@@ -36,6 +37,7 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
       <AuthRouted exact path={clientRoutes.MyAccount()} component={MyAccount} />
       <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
+      <AuthRouted exact path={clientRoutes.PatientLog()} component={PatientLog} />
       <AuthRouted exact path={clientRoutes.ConsultTabs(':id')} component={ConsultTabs} />
     </div>
   ) : (

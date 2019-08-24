@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, IsNull } from 'typeorm';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { CaseSheet } from 'consults-service/entities';
@@ -11,5 +11,19 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .catch((createErrors) => {
         throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
       });
+  }
+
+  getJuniorDoctorCaseSheet(appointmentId: string) {
+    return this.findOne({
+      where: [{ appointmentId, createdDoctorId: IsNull() }],
+      relations: ['appointment', 'medicinePrescription'],
+    });
+  }
+
+  getSeniorDoctorCaseSheet(appointmentId: string, createdDoctorId: string) {
+    return this.findOne({
+      where: [{ appointmentId, createdDoctorId }],
+      relations: ['appointment', 'medicinePrescription'],
+    });
   }
 }

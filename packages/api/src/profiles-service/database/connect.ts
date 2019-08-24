@@ -10,10 +10,8 @@ import {
   StarTeam,
 } from 'doctors-service/entities';
 import {
-  Allergies,
   Patient,
   PatientAddress,
-  PatientAllergies,
   PatientFamilyHistory,
   PatientHealthVault,
   PatientLifeStyle,
@@ -36,8 +34,6 @@ export const connect = async () => {
         PatientFamilyHistory,
         PatientLifeStyle,
         PatientHealthVault,
-        Allergies,
-        PatientAllergies,
         MedicineOrders,
         MedicineOrderLineItems,
         MedicineOrderPayments,
