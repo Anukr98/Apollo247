@@ -192,6 +192,11 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'transparent !important',
       color: '#00b38e !important',
     },
+    checkImg: {
+      position: 'absolute',
+      right: 16,
+      top: 16,
+    },
   };
 });
 
@@ -230,6 +235,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                 {currentPatient && `hello dr. ${currentPatient.lastName.toLowerCase()} :)`}
               </span>
             </Typography>
+            <p>here are all your patients</p>
           </div>
           {selectedTabIndex < 3 && (
             <AppBar position="static" color="default" className={classes.tabBarHeading}>
@@ -261,16 +267,21 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                   }}
                 >
                   <MenuItem value={1} classes={{ selected: classes.menuSelected }}>
-                    Reason 01
+                    {/* <img
+                      className={classes.checkImg}
+                      src={require('images/ic_unselected.svg')}
+                      alt="chkUncheck"
+                    /> */}
+                    Most Recent
                   </MenuItem>
                   <MenuItem value={2} classes={{ selected: classes.menuSelected }}>
-                    Reason 02
+                    Number of Consults
                   </MenuItem>
                   <MenuItem value={3} classes={{ selected: classes.menuSelected }}>
-                    Reason 03
+                    Patient Name: A to Z
                   </MenuItem>
                   <MenuItem value={4} classes={{ selected: classes.menuSelected }}>
-                    Other
+                    Patient Name: Z to A
                   </MenuItem>
                 </AphSelect>
               </span>

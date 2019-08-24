@@ -6,10 +6,10 @@ import {
   Card,
   CardContent,
   IconButton,
-  Avatar,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
+import MessageIcon from '@material-ui/icons/Message';
 import React from 'react';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -20,8 +20,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     card: {
       width: '100%',
-      border: 'solid 1px rgba(2, 71, 91, 0.3)',
-      backgroundColor: '#f0f4f5',
+      margin: 10,
+      height: 90,
+      backgroundColor: '#fff',
       boxShadow: 'none',
     },
     cardContent: {
@@ -63,7 +64,21 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     bold: {
       fontWeight: 700,
-    }
+    },
+    chatSpan: {
+      width: 102,
+      height: 35,
+      paddingTop: 5,
+      borderRadius: 16,
+      backgroundColor: '#fc9916',
+      textAlign: 'center',
+    },
+    chatIcon: {
+      height: 10,
+      width: 10,
+      marginTop: -20,
+      paddingRight: 20,
+    },
   })
 );
 
@@ -108,7 +123,6 @@ export const AllPatient: React.FC<HelpProps> = (props) => {
               <Grid item container spacing={2}>
                 <Grid item lg={3} sm={3} xs={3} key={1} container>
                   <Grid sm={3} xs={2} key={5} item>
-                   
                     <img
                       alt={patient.name}
                       src={require('images/ic_patientchat.png')}
@@ -118,26 +132,30 @@ export const AllPatient: React.FC<HelpProps> = (props) => {
                   <Grid sm={9} xs={10} key={6} item className={classes.valign}>
                     <div className={classes.section2}>
                       <Typography gutterBottom variant="body1" className={classes.mainHeading}>
-                       {patient.name}
+                        {patient.name}
                       </Typography>
                     </div>
                   </Grid>
                 </Grid>
                 <Grid lg={3} sm={3} xs={3} key={2} item className={classes.valign}>
                   <Typography gutterBottom variant="body1" className={classes.mainHeading}>
-                  Last Consult: {patient.lastConsultDate}
+                    Last Consult: {patient.lastConsultDate}
                   </Typography>
                 </Grid>
                 <Grid lg={3} sm={3} xs={3} key={3} item className={classes.valign}>
                   <Typography gutterBottom variant="body1" className={classes.mainHeading}>
-                  {patient.numberOfConsult} Consult
+                    {patient.numberOfConsult} Consult
                   </Typography>
                 </Grid>
                 <Grid lg={3} sm={3} xs={3} key={4} className={classes.valign} item>
-                  <div className={classes.section2}>
-                    <IconButton aria-label="Video call">
-                      <img src={require('images/ic_video.svg')} alt="" />
+                  <span className={classes.chatSpan}>
+                    <IconButton aria-label="Navigate next" className={classes.chatIcon}>
+                      <MessageIcon />
                     </IconButton>
+                    {/* <img src={require('images/ic_chat_circle.svg')} alt="msgicon" /> */}
+                    Chat
+                  </span>
+                  <div className={classes.section2}>
                     <IconButton aria-label="Navigate next">
                       <NavigateNextIcon />
                     </IconButton>
