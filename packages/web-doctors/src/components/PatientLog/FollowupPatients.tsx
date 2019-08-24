@@ -27,10 +27,6 @@ export const FollowupPatients: React.FC<HelpProps> = (props) => {
       <Typography variant="h2">need help2?</Typography>
       <p>
         Don’t worry. We are here for you :)
-        <p>
-          Call <span>1800 - 3455 - 3455</span> to reach an expert from our team who will resolve
-          your issue.
-        </p>
       </p>
     </div>
   );
