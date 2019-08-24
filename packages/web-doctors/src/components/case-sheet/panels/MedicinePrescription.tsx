@@ -367,7 +367,7 @@ export const MedicinePrescription: React.FC = () => {
     },
   ]);
   const daySlotsToggleAction = (slotId: string) => {
-    const slots = daySlots.map(function (slot: SlotsObject) {
+    const slots = daySlots.map(function(slot: SlotsObject) {
       if (slotId === slot.id) {
         slot.selected = !slot.selected;
       }
@@ -377,7 +377,7 @@ export const MedicinePrescription: React.FC = () => {
   };
 
   const toBeTakenSlotsToggleAction = (slotId: string) => {
-    const slots = toBeTakenSlots.map(function (slot: SlotsObject) {
+    const slots = toBeTakenSlots.map(function(slot: SlotsObject) {
       if (slotId === slot.id) {
         slot.selected = !slot.selected;
       }
@@ -422,10 +422,10 @@ export const MedicinePrescription: React.FC = () => {
     );
   });
   const addUpdateMedicines = () => {
-    const isTobeTakenSelected = toBeTakenSlots.filter(function (slot: SlotsObject) {
+    const isTobeTakenSelected = toBeTakenSlots.filter(function(slot: SlotsObject) {
       return slot.selected !== false;
     });
-    const daySlotsSelected = daySlots.filter(function (slot: SlotsObject) {
+    const daySlotsSelected = daySlots.filter(function(slot: SlotsObject) {
       return slot.selected !== false;
     });
     if (daySlotsSelected.length === 0) {
@@ -607,7 +607,7 @@ export const MedicinePrescription: React.FC = () => {
                           error={errorState.daySlotErr}
                         >
                           Please select to be day slot.
-                      </FormHelperText>
+                        </FormHelperText>
                       )}
                     </div>
                     <div>
@@ -620,7 +620,7 @@ export const MedicinePrescription: React.FC = () => {
                           error={errorState.tobeTakenErr}
                         >
                           Please select to be taken.
-                      </FormHelperText>
+                        </FormHelperText>
                       )}
                     </div>
                     <div>
@@ -641,7 +641,7 @@ export const MedicinePrescription: React.FC = () => {
                             error={errorState.durationErr}
                           >
                             Please Enter something
-                        </FormHelperText>
+                          </FormHelperText>
                         )}
                       </div>
                     </div>
@@ -671,10 +671,10 @@ export const MedicinePrescription: React.FC = () => {
                     }}
                   >
                     Select Medicine
-                </AphButton>
+                  </AphButton>
                 </div>
-              </div>)
-            }
+              </div>
+            )}
           </div>
         </Paper>
       </Modal>
