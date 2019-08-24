@@ -68,7 +68,7 @@ export const caseSheetTypeDefs = gql`
     id: String
     medicinePrescription: [MedicinePrescription]
     notes: String
-    otherInstructions: [otherInstructions]
+    otherInstructions: [OtherInstructions]
     patientId: String
     symptoms: String
   }
@@ -83,7 +83,7 @@ export const caseSheetTypeDefs = gql`
     id: String
   }
 
-  type otherInstructions {
+  type OtherInstructions {
     instruction: String
   }
 
