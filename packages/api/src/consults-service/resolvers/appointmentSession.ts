@@ -125,9 +125,16 @@ const createAppointmentSession: Resolver<
     apptDetails.id,
     apptDetails.doctorId
   );
+
   if (caseSheetDetails == null) {
     const caseSheetAttrs: Partial<CaseSheet> = {
-      ...juniorDoctorcaseSheet,
+      diagnosis: juniorDoctorcaseSheet.diagnosis,
+      diagnosticPrescription: juniorDoctorcaseSheet.diagnosticPrescription,
+      followUp: juniorDoctorcaseSheet.followUp,
+      followUpAfterInDays: juniorDoctorcaseSheet.followUpAfterInDays,
+      followUpDate: juniorDoctorcaseSheet.followUpDate,
+      otherInstructions: juniorDoctorcaseSheet.otherInstructions,
+      symptoms: juniorDoctorcaseSheet.symptoms,
       consultType: apptDetails.appointmentType,
       doctorId: apptDetails.doctorId,
       patientId: apptDetails.patientId,
