@@ -54,10 +54,25 @@ export const caseSheetTypeDefs = gql`
     followUpAfterInDays: String
     followUpDate: String
     id: String
+    medicinePrescription: [MedicinePrescription]
     notes: String
-    otherInstructions: String
+    otherInstructions: [otherInstructions]
     patientId: String
     symptoms: String
+  }
+
+  type MedicinePrescription {
+    durationInDays: String
+    dosage: String
+    instructions: String
+    medicineTimings: String
+    medicineToBeTaken: String
+    name: String
+    id: String
+  }
+
+  type otherInstructions {
+    instruction: String
   }
 
   type PatientDetails {

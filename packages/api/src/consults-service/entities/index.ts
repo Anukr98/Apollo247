@@ -210,7 +210,7 @@ export class CaseSheet extends BaseEntity {
   diagnosis: string;
 
   @Column({ nullable: true, type: 'json' })
-  diagnosisPrescription: string;
+  diagnosticPrescription: string;
 
   @Column({ nullable: true })
   doctorId: string;
