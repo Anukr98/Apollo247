@@ -284,8 +284,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             paddingBottom: 4,
             paddingRight: 16,
             textAlign: 'right',
-            ...theme.fonts.IBMPlexSansBold(13),
-            color: theme.colors.APP_YELLOW,
+            ...theme.viewStyles.yellowTextStyle,
           }}
         >
           ADD MEMBER
@@ -335,9 +334,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 <Text
                   style={{
                     marginTop: 8,
-                    color: '#fc9916',
                     textAlign: 'left',
-                    ...theme.fonts.IBMPlexSansBold(13),
+                    ...theme.viewStyles.yellowTextStyle,
                   }}
                 >
                   {serviceTitle.description}

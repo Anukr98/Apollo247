@@ -35,6 +35,7 @@ import {
 } from 'react-navigation';
 import { HealthRecordsHome } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordsHome';
 import { ConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/ConsultDetails';
+import { RecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/RecordDetails';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -69,6 +70,7 @@ export enum AppRoutes {
   SelectDeliveryAddress = 'SelectDeliveryAddress',
   HealthRecordsHome = 'HealthRecordsHome',
   ConsultDetails = 'ConsultDetails',
+  RecordDetails = 'RecordDetails',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -186,10 +188,13 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.ConsultDetails]: {
     screen: ConsultDetails,
   },
+  [AppRoutes.RecordDetails]: {
+    screen: RecordDetails,
+  },
 };
 
 const stackConfig: StackNavigatorConfig = {
-  initialRouteName: AppRoutes.HealthRecordsHome,
+  initialRouteName: AppRoutes.SplashScreen,
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   transitionConfig: () => {

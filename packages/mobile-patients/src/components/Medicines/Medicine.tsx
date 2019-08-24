@@ -25,6 +25,7 @@ import {
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 const { width } = Dimensions.get('window');
 
@@ -218,7 +219,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               <Text
                 style={{
                   ...fonts.IBMPlexSansMedium(12),
-                  color: 'rgba(2, 71, 91, 0.6)',
+                  color: theme.colors.TEXT_LIGHT_BLUE,
                   paddingTop: 8,
                   paddingBottom: 20,
                   paddingHorizontal: 20,

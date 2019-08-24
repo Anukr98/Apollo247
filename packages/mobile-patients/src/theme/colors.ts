@@ -11,6 +11,7 @@ const app_light_blue = '#02475b';
 const sky_blue = '#0087ba';
 const tangerine_yellow = '#fc9916';
 const shadowGray = '#808080';
+const text_light_blue = 'rgba(2,71,91,0.6)';
 
 const TabBar = {
   TAB_BAR_ACTIVE_TINT_COLOR: white,
@@ -45,6 +46,7 @@ const Common = {
   SKY_BLUE: sky_blue,
   SEPARATOR_LINE: 'rgba(2, 71, 91, 0.2)',
   CLEAR: clear,
+  TEXT_LIGHT_BLUE: text_light_blue,
 };
 
 const Header = {

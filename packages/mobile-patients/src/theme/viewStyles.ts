@@ -1,5 +1,5 @@
 import { colors } from './colors';
-
+import { fonts } from './fonts';
 export const viewStyles = {
   container: {
     flex: 1,
@@ -47,6 +47,7 @@ export const viewStyles = {
   shadowStyle: {
     shadowColor: colors.SHADOW_GRAY,
     shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
     shadowRadius: 10,
     elevation: 16,
   },
@@ -60,6 +61,11 @@ export const viewStyles = {
   },
   darkSeparatorStyle: {
     borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(2, 71, 91, 0.6)',
+    borderBottomColor: colors.TEXT_LIGHT_BLUE,
+  },
+  yellowTextStyle: {
+    ...fonts.IBMPlexSansBold(13),
+    color: colors.APP_YELLOW,
+    lineHeight: 24,
   },
 };

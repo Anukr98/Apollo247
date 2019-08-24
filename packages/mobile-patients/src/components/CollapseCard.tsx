@@ -13,34 +13,25 @@ import {
 
 const styles = StyleSheet.create({
   headingText: {
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansMedium(17),
-    margin: 16,
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansBold(13),
     textAlign: 'left',
     justifyContent: 'center',
+    textTransform: 'uppercase',
   },
 
-  container: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    margin: 5,
-    marginLeft: 20,
-    marginRight: 20,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowRadius: 10,
-    shadowOpacity: 0.2,
-    elevation: 5,
-  },
+  container: {},
 
   arrowview: {
-    marginTop: 16,
     alignSelf: 'flex-end',
     justifyContent: 'flex-end',
     marginRight: 16,
+  },
+  labelView: {
+    marginHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    ...theme.viewStyles.lightSeparatorStyle,
   },
 });
 
@@ -54,9 +45,10 @@ export interface CollapseCardProps {
 }
 
 export const CollapseCard: React.FC<CollapseCardProps> = (props) => {
+  console.log(props, 'props');
   return (
     <View style={[styles.container, props.containerStyle]}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      <View style={styles.labelView}>
         <View>
           <Text style={styles.headingText}>{props.heading}</Text>
         </View>
@@ -66,11 +58,7 @@ export const CollapseCard: React.FC<CollapseCardProps> = (props) => {
           </TouchableOpacity>
         </View>
       </View>
-      {props.collapse ? (
-        <>
-          <View style={{ width: '100%', flex: 1, marginRight: 16 }}>{props.children}</View>
-        </>
-      ) : null}
+      {props.collapse ? props.children : null}
     </View>
   );
 };

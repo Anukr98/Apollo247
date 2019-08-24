@@ -153,8 +153,7 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
             paddingBottom: 4,
             paddingRight: 16,
             textAlign: 'right',
-            ...theme.fonts.IBMPlexSansBold(13),
-            color: theme.colors.APP_YELLOW,
+            ...theme.viewStyles.yellowTextStyle,
           }}
         >
           ADD MEMBER

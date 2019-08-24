@@ -38,9 +38,7 @@ const styles = StyleSheet.create({
   },
   gotItTextStyles: {
     paddingTop: 16,
-    ...theme.fonts.IBMPlexSansBold(13),
-    lineHeight: 24,
-    color: '#fc9916',
+    ...theme.viewStyles.yellowTextStyle,
   },
 });
 

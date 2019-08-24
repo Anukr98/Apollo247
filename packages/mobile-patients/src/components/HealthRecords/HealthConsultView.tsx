@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   descriptionTextStyles: {
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
-    color: 'rgba(2, 71, 91, 0.6)',
+    color: theme.colors.TEXT_LIGHT_BLUE,
   },
   profileImageStyle: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'red' },
   yellowTextStyle: {

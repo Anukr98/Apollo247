@@ -44,10 +44,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  invoiceStyle: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    color: theme.colors.APP_YELLOW,
-  },
 });
 
 export interface AppointmentDetailsProps extends NavigationScreenProps {}
@@ -95,7 +91,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 <Text
                   style={{
                     ...theme.fonts.IBMPlexSansMedium(12),
-                    color: '#658f9b',
+                    color: theme.colors.SEARCH_EDUCATION_COLOR,
                     paddingBottom: 4,
                   }}
                 >
@@ -124,7 +120,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 <Text style={styles.descriptionStyle}>40 mins</Text>
                 <View style={styles.labelViewStyle}>
                   <Text style={styles.labelStyle}>Payment</Text>
-                  <Text style={styles.invoiceStyle}>INVOICE</Text>
+                  <Text style={theme.viewStyles.yellowTextStyle}>INVOICE</Text>
                 </View>
                 <View style={styles.separatorStyle} />
                 <View
