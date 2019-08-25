@@ -3,6 +3,7 @@ import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
 import React, { useState } from 'react';
 import { Header } from 'components/Header';
 import { Consultations } from 'components/HealthRecords/Consultations';
+import { MedicalRecords } from 'components/HealthRecords/MedicalRecords';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -42,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 13,
       fontWeight: 600,
       textAlign: 'center',
-      padding: '11px 10px',
+      padding: '11px 32px',
       color: '#02475b',
       opacity: 1,
     },
@@ -96,7 +97,11 @@ export const PHRLanding: React.FC = (props) => {
               <Consultations />
             </TabContainer>
           )}
-          {tabValue === 1 && <TabContainer>Test</TabContainer>}
+          {tabValue === 1 && (
+            <TabContainer>
+              <MedicalRecords />
+            </TabContainer>
+          )}
         </div>
       </div>
     </div>
