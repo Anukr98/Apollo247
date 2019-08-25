@@ -179,14 +179,13 @@ export const SearchMedicines: React.FC = (props) => {
   const debouncedFunction = (medicineName: string) =>
     _debounce(() => {
       setMedicineName(medicineName);
-    }, 1500);
+    }, 1800);
 
   const pastSearches: string[] = [];
 
   useEffect(() => {
-    const fetchMedicines = () => {
-      setLoading(true);
-      axios
+    const fetchMedicines = async () => {
+      await axios
         .post(
           apiDetails.url,
           { params: medicineName },
@@ -199,7 +198,7 @@ export const SearchMedicines: React.FC = (props) => {
         .then((result) => {
           const medicines = result.data.products ? result.data.products : [];
           const medicineCount = result.data.product_count ? result.data.product_count : 0;
-          if (medicineCount === 0 && medicines.length > 0) {
+          if (medicineCount === 0 && medicines.length === 0) {
             setShowError(true);
           } else {
             setShowError(false);
@@ -208,19 +207,16 @@ export const SearchMedicines: React.FC = (props) => {
           setMedicineCount(medicineCount);
           setLoading(false);
         })
-        .catch((thrown) => {
-          if (axios.isCancel(thrown)) {
-            console.log('request 1 cancelled');
-          } else {
-            console.log('some other reason');
-          }
-        });
+        .catch();
     };
-    setShowError(false);
-    setMedicines([]);
-    setMedicineCount(0);
+
     if (medicineName.length > 2) {
+      setLoading(true);
       fetchMedicines();
+    } else {
+      setShowError(false);
+      setMedicines([]);
+      setMedicineCount(0);
     }
   }, [medicineName]);
 
@@ -298,9 +294,9 @@ export const SearchMedicines: React.FC = (props) => {
               autoFocus
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 const medicineName = e.target.value;
+                setMedicineCount(0);
                 debouncedFunction(medicineName)();
               }}
-              onKeyUp={() => setLoading(true)}
               error={showError}
             />
             {showError ? (
@@ -313,7 +309,16 @@ export const SearchMedicines: React.FC = (props) => {
             </div> */}
           </div>
           <div className={classes.pinCode}>
-            <AphTextField placeholder="Enter Pincode" />
+            <AphTextField
+              placeholder="Enter Pincode"
+              inputProps={{
+                maxLength: 6,
+                type: 'text',
+              }}
+              onKeyPress={(e) => {
+                if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+              }}
+            />
           </div>
         </div>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 262px)'}>
@@ -329,20 +334,14 @@ export const SearchMedicines: React.FC = (props) => {
                 </div>
               </>
             ) : null}
-
+            {loading ? <CircularProgress /> : null}
             {medicineCount > 0 ? (
               <>
-                {loading ? (
-                  <CircularProgress />
-                ) : (
-                  <>
-                    <div className={classes.sectionHeader}>
-                      <span>Matching Medicines</span>
-                      <span className={classes.count}>{medicineCount}</span>
-                    </div>
-                    <MedicineStripCard medicines={medicines} />
-                  </>
-                )}
+                <div className={classes.sectionHeader}>
+                  <span>Matching Medicines</span>
+                  <span className={classes.count}>{medicineCount}</span>
+                </div>
+                <MedicineStripCard medicines={medicines} />
               </>
             ) : null}
           </div>

@@ -301,6 +301,10 @@ const useStyles = makeStyles((theme: Theme) => {
     hideElement: {
       display: 'none',
     },
+    errorColor: {
+      color: '#890000',
+      fontWeight: 'bold',
+    },
   };
 });
 
@@ -328,6 +332,7 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
       const medicinePrice = medicineDetails.price.toFixed(2);
       const isPrescriptionRequired = parseInt(medicineDetails.is_prescription_required, 10);
       const medicineDescription = medicineDetails.description;
+      const isInStock = medicineDetails.is_in_stock;
 
       if (!selectedPackedQty[index]) {
         selectedPackedQty[index] = 1;
@@ -348,7 +353,10 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                 />
               </div>
               <div className={classes.medicineName}>
-                {medicineName} <div className={classes.tabInfo}>Pack Of 10</div>
+                {medicineName}{' '}
+                <div className={`${classes.tabInfo} ${!isInStock ? classes.errorColor : ''}`}>
+                  {isInStock ? 'Pack Of 10' : 'Out Of Stock'}
+                </div>
               </div>
             </div>
             <div className={classes.cartRight}>
@@ -396,20 +404,22 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                   ))}
                 </AphCustomDropdown>
               </div>
-              <div className={classes.addToCart}>
-                <AphButton
-                  onClick={(e) => {
-                    const existingSelectedPackedValues = selectedPackedContainer;
-                    existingSelectedPackedValues[index] = true;
-                    setSelectedPackedContainer((previousValues) => [
-                      ...previousValues,
-                      ...existingSelectedPackedValues,
-                    ]);
-                  }}
-                >
-                  <img src={require('images/ic_plus.svg')} alt="Add to Cart" />
-                </AphButton>
-              </div>
+              {isInStock ? (
+                <div className={classes.addToCart}>
+                  <AphButton
+                    onClick={(e) => {
+                      const existingSelectedPackedValues = selectedPackedContainer;
+                      existingSelectedPackedValues[index] = true;
+                      setSelectedPackedContainer((previousValues) => [
+                        ...previousValues,
+                        ...existingSelectedPackedValues,
+                      ]);
+                    }}
+                  >
+                    <img src={require('images/ic_plus.svg')} alt="Add to Cart" />
+                  </AphButton>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
