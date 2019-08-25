@@ -1,11 +1,19 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphTextField } from '@aph/web-ui-components';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
 import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
+import axios from 'axios';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import _debounce from 'lodash/debounce';
+
+const apiDetails = {
+  url: 'http://uat.apollopharmacy.in/searchprd_api.php',
+  authToken: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+}; // this must goes into environment later.
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -138,11 +146,84 @@ const useStyles = makeStyles((theme: Theme) => {
     pastSearches: {
       paddingBottom: 10,
     },
+    helpText: {
+      paddingLeft: 20,
+      paddingRight: 20,
+    },
   };
 });
 
+export interface MedicineInterface {
+  description: string;
+  id: number;
+  image: string;
+  is_in_stock: boolean;
+  is_prescription_required: string;
+  name: string;
+  price: number;
+  sku: string;
+  small_image: string;
+  status: number;
+  thumbnail: string;
+  type_id: string;
+}
+
 export const SearchMedicines: React.FC = (props) => {
   const classes = useStyles();
+  const [medicineName, setMedicineName] = useState<string>('');
+  const [medicines, setMedicines] = useState<MedicineInterface[]>([]);
+  const [medicineCount, setMedicineCount] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [showError, setShowError] = useState<boolean>(false);
+
+  const debouncedFunction = (medicineName: string) =>
+    _debounce(() => {
+      setMedicineName(medicineName);
+    }, 1500);
+
+  const pastSearches: string[] = [];
+
+  useEffect(() => {
+    const fetchMedicines = () => {
+      setLoading(true);
+      axios
+        .post(
+          apiDetails.url,
+          { params: medicineName },
+          {
+            headers: {
+              Authorization: apiDetails.authToken,
+            },
+          }
+        )
+        .then((result) => {
+          const medicines = result.data.products ? result.data.products : [];
+          const medicineCount = result.data.product_count ? result.data.product_count : 0;
+          if (medicineCount === 0 && medicines.length > 0) {
+            setShowError(true);
+          } else {
+            setShowError(false);
+          }
+          setMedicines(medicines);
+          setMedicineCount(medicineCount);
+          setLoading(false);
+        })
+        .catch((thrown) => {
+          if (axios.isCancel(thrown)) {
+            console.log('request 1 cancelled');
+          } else {
+            console.log('some other reason');
+          }
+        });
+    };
+    setShowError(false);
+    setMedicines([]);
+    setMedicineCount(0);
+    if (medicineName.length > 2) {
+      fetchMedicines();
+    }
+  }, [medicineName]);
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -212,10 +293,24 @@ export const SearchMedicines: React.FC = (props) => {
       <div className={classes.rightSection}>
         <div className={classes.searchFormGroup}>
           <div className={classes.searchMedicine}>
-            <AphTextField placeholder="Enter name of the medicine" disabled />
-            <div className={classes.uploadPrescriptionBtn}>
+            <AphTextField
+              placeholder="Enter name of the medicine"
+              autoFocus
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const medicineName = e.target.value;
+                debouncedFunction(medicineName)();
+              }}
+              onKeyUp={() => setLoading(true)}
+              error={showError}
+            />
+            {showError ? (
+              <FormHelperText component="div" error={showError}>
+                Sorry, we couldn't find what you are looking for :(
+              </FormHelperText>
+            ) : null}
+            {/* <div className={classes.uploadPrescriptionBtn}>
               <img src={require('images/ic_prescription.svg')} alt="" />
-            </div>
+            </div> */}
           </div>
           <div className={classes.pinCode}>
             <AphTextField placeholder="Enter Pincode" />
@@ -223,18 +318,33 @@ export const SearchMedicines: React.FC = (props) => {
         </div>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 262px)'}>
           <div className={classes.medicineListGroup}>
-            <div className={classes.sectionHeader}>
-              <span>Past Searches</span>
-              <span className={classes.count}>04</span>
-            </div>
-            <div className={classes.pastSearches}>
-              <MedicineCard />
-            </div>
-            <div className={classes.sectionHeader}>
-              <span>Matching Medicines</span>
-              <span className={classes.count}>03</span>
-            </div>
-            <MedicineStripCard />
+            {pastSearches.length > 0 ? (
+              <>
+                <div className={classes.sectionHeader}>
+                  <span>Past Searches</span>
+                  <span className={classes.count}>04</span>
+                </div>
+                <div className={classes.pastSearches}>
+                  <MedicineCard />
+                </div>
+              </>
+            ) : null}
+
+            {medicineCount > 0 ? (
+              <>
+                {loading ? (
+                  <CircularProgress />
+                ) : (
+                  <>
+                    <div className={classes.sectionHeader}>
+                      <span>Matching Medicines</span>
+                      <span className={classes.count}>{medicineCount}</span>
+                    </div>
+                    <MedicineStripCard medicines={medicines} />
+                  </>
+                )}
+              </>
+            ) : null}
           </div>
         </Scrollbars>
       </div>
