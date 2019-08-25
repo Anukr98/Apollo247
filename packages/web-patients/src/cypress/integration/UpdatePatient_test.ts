@@ -4,10 +4,28 @@ import {
   johnBrother,
   jimmyCousin,
   julieNoRelation,
+  quentinQuotes,
 } from 'cypress/fixtures/patientsFixtures';
 import { Relation, Gender } from 'graphql/types/globalTypes';
 
-describe('UpdatePatient (multiple, with uhids)', () => {
+describe('UpdatePatient (single, with uhid)', () => {
+  const patient = [janeNoRelation].map((pat) => ({
+    ...pat,
+    uhid: 'uhid-1234',
+  }));
+
+  beforeEach(() => {
+    cy.signIn(patient);
+    cy.visitAph(clientRoutes.welcome()).wait(500);
+  });
+  it('upon clicking submit with only one patient, default to Relation.ME if no relation selected', () => {
+    cy.get('[data-cypress="ExistingProfile"]').should('exist');
+
+    cy.get('button[type="submit"]').should('be.enabled');
+  });
+});
+
+describe('UpdatePatient (multiple, with uhids, invalid primary user)', () => {
   const patients = [janeNoRelation, johnBrother, jimmyCousin].map((pat) => ({
     ...pat,
     uhid: 'uhid-1234',
@@ -89,13 +107,21 @@ describe('UpdatePatient (multiple, with uhids)', () => {
     cy.get('button[type="submit"]').should('be.enabled');
   });
 
+  it('If there is no relation selected, display "Relation" as placeholder', () => {
+    cy.get('[data-cypress="ExistingProfile"]')
+      .contains('Please tell us who is who')
+      .should('exist');
+
+    cy.get('div[class*="MuiInputBase-inputSelect"]').should('contain', 'Relation');
+  });
+
   it('Welcomes you by prompting for complete family data', () => {
     cy.get('[data-cypress="ExistingProfile"]')
       .contains('Please tell us who is who')
       .should('exist');
   });
 
-  it('Relations dropdown goes in order Me (Default), Mother, Father, Sister, Brother, Wife, Husband, Others', () => {
+  it('Relations dropdown goes in order Me (Default), Mother, Father, Sister, Brother, Cousin, Wife, Husband', () => {
     cy.get('[data-cypress="ExistingProfile"]')
       .find('div[class*="MuiInputBase-inputSelect"]')
       .first()
@@ -129,22 +155,17 @@ describe('UpdatePatient (multiple, with uhids)', () => {
     cy.get('ul[role*="listbox"]')
       .find('li')
       .eq(6)
-      .should('have.attr', 'data-value', 'WIFE');
-
-    cy.get('ul[role*="listbox"]')
-      .find('li')
-      .eq(7)
-      .should('have.attr', 'data-value', 'HUSBAND');
-
-    cy.get('ul[role*="listbox"]')
-      .find('li')
-      .eq(8)
       .should('have.attr', 'data-value', 'COUSIN');
 
     cy.get('ul[role*="listbox"]')
       .find('li')
-      .eq(9)
-      .should('have.attr', 'data-value', 'OTHER');
+      .eq(7)
+      .should('have.attr', 'data-value', 'WIFE');
+
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(8)
+      .should('have.attr', 'data-value', 'HUSBAND');
   });
 
   it('Does not show name in HeroBanner until Relation.ME is established', () => {
@@ -247,6 +268,46 @@ describe('UpdatePatient (multiple, without uhids)', () => {
       .find('button[type="submit"]')
       .should('be.enabled');
     cy.contains('Invalid date of birth').should('not.exist');
+  });
+
+  it('Should allow single quotation marks to be added within first and last names', () => {
+    const validNames = ["Sumeet'h", "D'Souza", "D'Souza", "D'S'ouza"];
+
+    validNames.forEach((name) => {
+      cy.get('[data-cypress="NewProfile"]')
+        .find('input[name*="firstName"]')
+        .clear()
+        .type(name);
+
+      cy.get('[data-cypress="NewProfile"]')
+        .find('button[type="submit"]')
+        .should('not.be.disabled');
+    });
+  });
+
+  it('Should forbid quotation marks to be added consecutively, or at the beginning or end of a name', () => {
+    const invalidNames = [
+      "'",
+      "''",
+      "'Sumeeth",
+      "Sumeeth'",
+      "D''souza",
+      "Sumeeth '",
+      "Sumeeth ''",
+      "Kumar'",
+      "K''umar",
+    ];
+
+    invalidNames.forEach((name) => {
+      cy.get('[data-cypress="NewProfile"]')
+        .find('input[name*="firstName"]')
+        .clear()
+        .type(name);
+
+      cy.get('[data-cypress="NewProfile"]')
+        .find('button[type="submit"]')
+        .should('be.disabled');
+    });
   });
 
   it('Should update the patient', () => {
