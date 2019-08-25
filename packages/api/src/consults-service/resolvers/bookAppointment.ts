@@ -11,6 +11,7 @@ import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 import { AppointmentPayload } from 'types/appointmentTypes';
 import { addMinutes, format } from 'date-fns';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -83,11 +84,27 @@ const bookAppointment: Resolver<
   AppointmentInputArgs,
   ConsultServiceContext,
   BookAppointmentResult
-> = async (parent, { appointmentInput }, { consultsDb, doctorsDb }) => {
+> = async (parent, { appointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
     ...appointmentInput,
     status: STATUS.PENDING,
+    appointmentDateTime: appointmentInput.appointmentDateTime,
   };
+
+  //check if patient id is valid
+  const patient = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patient.findById(appointmentInput.patientId);
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+
+  if (patientDetails.dateOfBirth == null || !patientDetails.dateOfBirth) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  }
+
+  if (patientDetails.lastName == null || !patientDetails.lastName) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  }
 
   //check if docotr id is valid
   const doctor = doctorsDb.getCustomRepository(DoctorRepository);
@@ -129,7 +146,13 @@ const bookAppointment: Resolver<
   const aptEndTime = addMinutes(appointmentInput.appointmentDateTime, 15);
   const slotTime =
     format(appointmentInput.appointmentDateTime, 'hh:mm') + '-' + format(aptEndTime, 'hh:mm');
-  const patientDob: string = '01/08/1996';
+  let patientDob: string = '01/08/1996';
+  if (patientDetails.dateOfBirth !== null) {
+    console.log(patientDetails.dateOfBirth.toString(), 'dob');
+    patientDob = patientDetails.dateOfBirth.toString();
+  }
+
+  console.log('mobile number', patientDetails.mobileNumber.substr(3));
 
   const payload: AppointmentPayload = {
     appointmentDate: format(appointmentInput.appointmentDateTime, 'dd/MM/yyyy'),
@@ -145,10 +168,10 @@ const bookAppointment: Resolver<
     hospitalId: '2',
     hospitalName: 'Apollo Hospitals Greams Road Chennai',
     leadSource: 'One Apollo-IOS',
-    patientEmailId: 'sriram.kanchan@popcornapps.com', //patientDetails.emailAddress,
-    patientFirstName: 'sriram', //patientDetails.firstName,
-    patientLastName: 'kumar', //patientDetails.lastName,
-    patientMobileNo: '8019677178', //patientDetails.mobileNumber,
+    patientEmailId: patientDetails.emailAddress,
+    patientFirstName: patientDetails.firstName,
+    patientLastName: patientDetails.lastName,
+    patientMobileNo: patientDetails.mobileNumber.substr(3),
     patientUHID: '',
     relationTypeId: 1,
     salutation: 1,
@@ -156,8 +179,9 @@ const bookAppointment: Resolver<
     slotTime,
     speciality,
     specialityId: '1898',
-    userFirstName: 'sriram', //patientDetails.firstName,patientDetails.firstName,
-    userLastName: 'sriram', //patientDetails.firstName,patientDetails.lastName,
+    userFirstName: patientDetails.firstName,
+    userLastName: patientDetails.lastName,
+    apptIdPg: appointment.id,
   };
   AphMqClient.connect();
   type TestMessage = AphMqMessage<AphMqMessageTypes.BOOKAPPOINTMENT, AppointmentPayload>;

@@ -10,8 +10,11 @@ import {
 } from 'notifications-service/resolvers/getSearches';
 import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 import { AppointmentPayload } from 'types/appointmentTypes';
+import { bookAppointmentApollo } from 'notifications-service/bookAppointmentApollo';
+import { connect } from 'consults-service/database/connect';
 
 (async () => {
+  await connect();
   const server = new ApolloServer({
     schema: buildFederatedSchema([
       {
@@ -33,7 +36,7 @@ import { AppointmentPayload } from 'types/appointmentTypes';
     console.log('received message!', receivedMessage.message);
     console.log('accepting message');
     //SendMail.send(receivedMessage.message);
-    //bookAppointmentApollo.book(receivedMessage.message);
+    bookAppointmentApollo.book(receivedMessage.message);
     receivedMessage.accept();
   });
 })();
