@@ -141,15 +141,15 @@ const bookAppointment: Resolver<
   }
   const appointment = await appts.saveAppointment(appointmentAttrs);
   //message queue starts
-  const doctorName = docDetails.salutation + ' ' + docDetails.firstName + '' + docDetails.lastName;
+  const doctorName = docDetails.firstName + '' + docDetails.lastName;
   const speciality = docDetails.specialty.name;
   const aptEndTime = addMinutes(appointmentInput.appointmentDateTime, 15);
   const slotTime =
-    format(appointmentInput.appointmentDateTime, 'hh:mm') + '-' + format(aptEndTime, 'hh:mm');
+    format(appointmentInput.appointmentDateTime, 'HH:mm') + '-' + format(aptEndTime, 'HH:mm');
   let patientDob: string = '01/08/1996';
   if (patientDetails.dateOfBirth !== null) {
     console.log(patientDetails.dateOfBirth.toString(), 'dob');
-    patientDob = patientDetails.dateOfBirth.toString();
+    patientDob = format(patientDetails.dateOfBirth, 'dd/MM/yyyy');
   }
 
   console.log('mobile number', patientDetails.mobileNumber.substr(3));
