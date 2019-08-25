@@ -1,6 +1,4 @@
-import { Theme, Button, Modal, Select, MenuItem, InputBase } from '@material-ui/core';
-import TextareaAutosize from '@material-ui/core/TextareaAutosize';
-
+import { Theme, Button, Modal, MenuItem, InputBase } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { useState, useEffect } from 'react';
 import Popover from '@material-ui/core/Popover';
@@ -8,7 +6,7 @@ import Paper from '@material-ui/core/Paper';
 import { Link } from 'react-router-dom';
 import Pubnub from 'pubnub';
 import moment from 'moment';
-import { AphSelect, AphButton, AphTextField } from '@aph/web-ui-components';
+import { AphSelect, AphTextField } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -372,6 +370,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
+  createSessionAction: () => void;
   appointmentId: string;
   appointmentDateTime: string;
   doctorId: string;
@@ -626,6 +625,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 !startAppointment ? onStartConsult() : onStopConsult();
                 !startAppointment ? startInterval(900) : stopInterval();
                 setStartAppointment(!startAppointment);
+                props.createSessionAction();
               }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">

@@ -133,6 +133,7 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
 
       return {
         id,
+        patientId,
         startTime,
         endTime,
         type,

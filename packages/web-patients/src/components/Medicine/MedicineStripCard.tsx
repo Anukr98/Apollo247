@@ -1,8 +1,14 @@
 import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, FormControlLabel, Paper, Popover, Typography, MenuItem } from '@material-ui/core';
+import { Theme, Paper, Popover, Typography, FormControlLabel, MenuItem } from '@material-ui/core';
 import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
-import { AphCheckbox } from 'components/AphCheckbox';
+import { MedicineInterface } from 'components/Medicine/SearchMedicines';
+import _uniqueId from 'lodash/uniqueId';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
+import _unescape from 'lodash/unescape';
+
+// import { AphCheckbox } from 'components/AphCheckbox';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -289,300 +295,141 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
       },
     },
+    showElement: {
+      display: 'block',
+    },
+    hideElement: {
+      display: 'none',
+    },
+    errorColor: {
+      color: '#890000',
+      fontWeight: 'bold',
+    },
   };
 });
 
-export const MedicineStripCard: React.FC = (props) => {
+interface MedicineStripCardProps {
+  medicines: MedicineInterface[];
+}
+
+export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
   const classes = useStyles();
   const medicineRef = useRef(null);
+
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-  const [selectedPackQty] = React.useState<number>(1);
-  const [selectedPackQty1] = React.useState<number>(1);
-  const [selectedPackQty2] = React.useState<number>(1);
-  const [selectedForName] = React.useState<number>(1);
+  const [selectedPackedQty, setSelectedPackedQty] = React.useState<number[]>([]);
+  const [selectedPackedContainer, setSelectedPackedContainer] = React.useState<boolean[]>([]);
+
+  const [popoverContent, setPopoverContent] = React.useState<string>('');
+  const [popoverPrescriptionIcon, setpopoverPrescriptionIcon] = React.useState<boolean>(false);
+  const [popoverItemName, setpopoverItemName] = React.useState<string>('');
+
+  const { medicines } = props;
+
+  const medicinesMarkup = () => {
+    return medicines.map((medicineDetails, index) => {
+      const medicineName = _startCase(_toLower(medicineDetails.name));
+      const medicinePrice = medicineDetails.price.toFixed(2);
+      const isPrescriptionRequired = parseInt(medicineDetails.is_prescription_required, 10);
+      const medicineDescription = medicineDetails.description;
+      const isInStock = medicineDetails.is_in_stock;
+
+      if (!selectedPackedQty[index]) {
+        selectedPackedQty[index] = 1;
+        selectedPackedContainer[index] = false;
+      }
+      return (
+        <div className={classes.medicineStrip} key={index}>
+          <div className={classes.medicineStripWrap}>
+            <div className={classes.medicineInformation}>
+              <div className={classes.medicineIcon}>
+                <img
+                  src={
+                    isPrescriptionRequired
+                      ? require('images/ic_tablets_rx.svg')
+                      : require('images/ic_tablets.svg')
+                  }
+                  alt="Medicine Type"
+                />
+              </div>
+              <div className={classes.medicineName}>
+                {medicineName}{' '}
+                <div className={`${classes.tabInfo} ${!isInStock ? classes.errorColor : ''}`}>
+                  {isInStock ? 'Pack Of 10' : 'Out Of Stock'}
+                </div>
+              </div>
+            </div>
+            <div className={classes.cartRight}>
+              {medicineDescription !== '&amp;nbsp;' ? (
+                <div
+                  className={classes.helpText}
+                  ref={medicineRef}
+                  onClick={() => {
+                    setIsPopoverOpen(true);
+                    if (isPrescriptionRequired) setpopoverPrescriptionIcon(true);
+                    setpopoverItemName(medicineName);
+                    setPopoverContent(medicineDescription);
+                  }}
+                >
+                  <img src={require('images/ic_info.svg')} alt="Medicine information" />
+                </div>
+              ) : null}
+              <div className={classes.medicinePrice}>Rs. {medicinePrice}</div>
+              <div
+                className={`${classes.medicinePack} ${
+                  selectedPackedContainer[index] ? classes.showElement : classes.hideElement
+                }`}
+              >
+                <AphCustomDropdown
+                  classes={{ selectMenu: classes.selectMenuItem }}
+                  value={selectedPackedQty[index]}
+                  onChange={(e) => {
+                    const existingValues = selectedPackedQty;
+                    existingValues[index] = e.target.value as number;
+                    setSelectedPackedQty((previousValues) => [
+                      ...previousValues,
+                      ...existingValues,
+                    ]);
+                  }}
+                  key={_uniqueId('dropdown_')}
+                >
+                  {Array.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], (itemIndex) => (
+                    <MenuItem
+                      classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+                      value={itemIndex}
+                      key={_uniqueId('menuItem_')}
+                    >
+                      {itemIndex} Pack
+                    </MenuItem>
+                  ))}
+                </AphCustomDropdown>
+              </div>
+              {isInStock ? (
+                <div className={classes.addToCart}>
+                  <AphButton
+                    onClick={(e) => {
+                      const existingSelectedPackedValues = selectedPackedContainer;
+                      existingSelectedPackedValues[index] = true;
+                      setSelectedPackedContainer((previousValues) => [
+                        ...previousValues,
+                        ...existingSelectedPackedValues,
+                      ]);
+                    }}
+                  >
+                    <img src={require('images/ic_plus.svg')} alt="Add to Cart" />
+                  </AphButton>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      );
+    });
+  };
 
   return (
     <div className={classes.root}>
-      {/** medice card section start */}
-      <div className={classes.medicineStrip}>
-        <div className={classes.medicineStripWrap}>
-          <div className={classes.medicineInformation}>
-            <div className={classes.medicineIcon}>
-              <img src={require('images/ic_tablets.svg')} alt="" />
-            </div>
-            <div className={classes.medicineName}>
-              Metformin 500mg <div className={classes.tabInfo}>Pack Of 10</div>
-            </div>
-          </div>
-          <div className={classes.cartRight}>
-            <div
-              className={classes.helpText}
-              ref={medicineRef}
-              onClick={() => setIsPopoverOpen(true)}
-            >
-              <img src={require('images/ic_info.svg')} alt="" />
-            </div>
-            <div className={classes.medicinePrice}>Rs. 120</div>
-            <div className={classes.addToCart}>
-              <AphButton>
-                <img src={require('images/ic_plus.svg')} alt="" />
-              </AphButton>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/** medice card section end */}
-      {/** medice card section start */}
-      <div className={classes.medicineStrip}>
-        <div className={classes.medicineStripWrap}>
-          <div className={classes.medicineInformation}>
-            <div className={classes.medicineIcon}>
-              <img src={require('images/ic_tablets.svg')} alt="" />
-            </div>
-            <div className={classes.medicineName}>
-              Metformin 500mg <div className={classes.tabInfo}>Pack Of 10</div>
-            </div>
-          </div>
-          <div className={classes.cartRight}>
-            <div
-              className={classes.helpText}
-              ref={medicineRef}
-              onClick={() => setIsPopoverOpen(true)}
-            >
-              <img src={require('images/ic_info.svg')} alt="" />
-            </div>
-            <div className={classes.medicinePrice}>Rs. 120</div>
-            <div className={classes.addToCart}>
-              <AphButton>
-                <img src={require('images/ic_plus.svg')} alt="" />
-              </AphButton>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/** medice card section end */}
-      {/** medice card section start */}
-      <div className={classes.medicineStrip}>
-        <div className={classes.medicineStripWrap}>
-          <div className={classes.medicineInformation}>
-            <div className={classes.medicineIcon}>
-              <img src={require('images/ic_tablets.svg')} alt="" />
-            </div>
-            <div className={classes.medicineName}>
-              Metformin 500mg <div className={classes.noStock}>Out Of Stock</div>
-            </div>
-          </div>
-          <div className={classes.cartRight}>
-            <div
-              className={classes.helpText}
-              ref={medicineRef}
-              onClick={() => setIsPopoverOpen(true)}
-            >
-              <img src={require('images/ic_info.svg')} alt="" />
-            </div>
-            <div className={classes.medicinePrice}>Rs. 120</div>
-            <div className={classes.addToCart}>
-              <AphButton disabled className={classes.buttonDisabled}>
-                <img src={require('images/ic_plus.svg')} alt="" />
-              </AphButton>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/** medice card section end */}
-      {/** medice card section start */}
-      <div className={classes.medicineStrip}>
-        <div className={classes.medicineStripWrap}>
-          <div className={classes.medicineInformation}>
-            <div className={classes.medicineIcon}>
-              <img src={require('images/ic_tablets.svg')} alt="" />
-            </div>
-            <div className={classes.medicineName}>
-              Metformin 500mg <div className={classes.tabInfo}>Pack Of 10</div>
-            </div>
-          </div>
-          <div className={classes.cartRight}>
-            <div
-              className={classes.helpText}
-              ref={medicineRef}
-              onClick={() => setIsPopoverOpen(true)}
-            >
-              <img src={require('images/ic_info.svg')} alt="" />
-            </div>
-            <div className={classes.medicinePack}>
-              <AphCustomDropdown
-                classes={{ selectMenu: classes.selectMenuItem }}
-                value={selectedPackQty}
-              >
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={1}
-                >
-                  1 Pack
-                </MenuItem>
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={2}
-                >
-                  2 Pack
-                </MenuItem>
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={3}
-                >
-                  3 Pack
-                </MenuItem>
-              </AphCustomDropdown>
-            </div>
-            <div className={classes.medicinePrice}>Rs. 120</div>
-            <div className={classes.addToCart}>
-              <AphButton>
-                <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
-              </AphButton>
-            </div>
-          </div>
-        </div>
-        <div className={classes.subscriptionLink}>
-          <FormControlLabel
-            control={<AphCheckbox color="primary" />}
-            label="Need to take this regularly?"
-            labelPlacement="start"
-          />
-        </div>
-      </div>
-      {/** medice card section end */}
-      {/** medice card section start */}
-      <div className={classes.medicineStrip}>
-        <div className={classes.medicineStripWrap}>
-          <div className={classes.medicineInformation}>
-            <div className={classes.medicineIcon}>
-              <img src={require('images/ic_tablets.svg')} alt="" />
-            </div>
-            <div className={classes.medicineName}>
-              Metformin 500mg <div className={classes.tabInfo}>Pack Of 10</div>
-            </div>
-          </div>
-          <div className={classes.cartRight}>
-            <div
-              className={classes.helpText}
-              ref={medicineRef}
-              onClick={() => setIsPopoverOpen(true)}
-            >
-              <img src={require('images/ic_info.svg')} alt="" />
-            </div>
-            <div className={classes.medicinePack}>
-              <AphCustomDropdown
-                classes={{ selectMenu: classes.selectMenuItem }}
-                value={selectedPackQty1}
-              >
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={1}
-                >
-                  1 Pack
-                </MenuItem>
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={2}
-                >
-                  2 Pack
-                </MenuItem>
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={3}
-                >
-                  3 Pack
-                </MenuItem>
-              </AphCustomDropdown>
-            </div>
-            <div className={classes.medicinePrice}>Rs. 120</div>
-            <div className={classes.addToCart}>
-              <AphButton>
-                <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
-              </AphButton>
-            </div>
-          </div>
-        </div>
-        <div className={classes.subscriptionAdded}>
-          <span>You have subscribed to this already</span>
-          <AphButton>Edit</AphButton>
-          <AphButton>Add New Subscription</AphButton>
-        </div>
-      </div>
-      {/** medice card section end */}
-      {/** medice card section start */}
-      <div className={classes.medicineStrip}>
-        <div className={classes.medicineStripWrap}>
-          <div className={classes.medicineInformation}>
-            <div className={classes.medicineIcon}>
-              <img src={require('images/ic_tablets.svg')} alt="" />
-            </div>
-            <div className={classes.medicineName}>
-              Metformin 500mg <div className={classes.tabInfo}>Pack Of 10</div>
-            </div>
-          </div>
-          <div className={classes.cartRight}>
-            <div className={classes.medicineFor}>
-              For
-              <AphCustomDropdown
-                classes={{ selectMenu: classes.selectMenuItemFor }}
-                value={selectedForName}
-              >
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={1}
-                >
-                  Surj
-                </MenuItem>
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={2}
-                >
-                  Surj
-                </MenuItem>
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={3}
-                >
-                  Surj
-                </MenuItem>
-              </AphCustomDropdown>
-            </div>
-            <div className={classes.medicinePack}>
-              <AphCustomDropdown
-                classes={{ selectMenu: classes.selectMenuItem }}
-                value={selectedPackQty2}
-              >
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={1}
-                >
-                  1 Pack
-                </MenuItem>
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={2}
-                >
-                  2 Pack
-                </MenuItem>
-                <MenuItem
-                  classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
-                  value={3}
-                >
-                  3 Pack
-                </MenuItem>
-              </AphCustomDropdown>
-            </div>
-            <div className={classes.medicinePrice}>Rs. 120</div>
-            <div className={classes.addToCart}>
-              <AphButton>
-                <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
-              </AphButton>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/** medice card section end */}
+      {medicinesMarkup()}
       <Popover
         open={isPopoverOpen}
         anchorEl={medicineRef.current}
@@ -597,18 +444,17 @@ export const MedicineStripCard: React.FC = (props) => {
         }}
       >
         <Paper className={classes.medicineInformationPopup}>
-          <div className={classes.popHeader}>
-            <span>This medicine requires doctor’s prescription</span>
-            <span>
-              <img src={require('images/ic_tablets_rx.svg')} alt="" />
-            </span>
-          </div>
-          <Typography variant="h4">How Metformin 500mg Works</Typography>
-          <p>
-            Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus
-            id quod maxime placeat facere possimus.
-          </p>
-          <Typography variant="h4">Important Information</Typography>
+          {popoverPrescriptionIcon ? (
+            <div className={classes.popHeader}>
+              <span>This medicine requires doctor's prescription</span>
+              <span>
+                <img src={require('images/ic_tablets_rx.svg')} alt="" />
+              </span>
+            </div>
+          ) : null}
+          <Typography variant="h4">How {popoverItemName} Works</Typography>
+          <p>{_unescape(popoverContent).replace(/<\/?[^>]+(>|$)/g, '')}</p>
+          {/* <Typography variant="h4">Important Information</Typography>
           <p>
             Any warnings related to medicine intake if there’s alcohol usage / pregnancy / breast
             feeding
@@ -626,9 +472,266 @@ export const MedicineStripCard: React.FC = (props) => {
             <li>Salt c</li>
           </ol>
           <Typography variant="h4">Side Effects / Warnings</Typography>
-          <p>quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est.</p>
+          <p>quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est.</p> */}
         </Paper>
       </Popover>
     </div>
   );
 };
+
+// {/** medice card section end */}
+// {/** medice card section start */}
+// <div className={classes.medicineStrip}>
+//   <div className={classes.medicineStripWrap}>
+//     <div className={classes.medicineInformation}>
+//       <div className={classes.medicineIcon}>
+//         <img src={require('images/ic_tablets.svg')} alt="" />
+//       </div>
+//       <div className={classes.medicineName}>
+//         Metformin 500mg <div className={classes.noStock}>Out Of Stock</div>
+//       </div>
+//     </div>
+//     <div className={classes.cartRight}>
+//       <div
+//         className={classes.helpText}
+//         ref={medicineRef}
+//         onClick={() => setIsPopoverOpen(true)}
+//       >
+//         <img src={require('images/ic_info.svg')} alt="" />
+//       </div>
+//       <div className={classes.medicinePrice}>Rs. 120</div>
+//       <div className={classes.addToCart}>
+//         <AphButton disabled className={classes.buttonDisabled}>
+//           <img src={require('images/ic_plus.svg')} alt="" />
+//         </AphButton>
+//       </div>
+//     </div>
+//   </div>
+// </div>
+// {/** medice card section end */}
+// {/** medice card section start */}
+{
+  /* <div className={classes.medicineStrip}>
+  <div className={classes.medicineStripWrap}>
+    <div className={classes.medicineInformation}>
+      <div className={classes.medicineIcon}>
+        <img src={require('images/ic_tablets.svg')} alt="" />
+      </div>
+      <div className={classes.medicineName}>
+        Metformin 500mg <div className={classes.tabInfo}>Pack Of 10</div>
+      </div>
+    </div>
+    <div className={classes.cartRight}>
+      <div
+        className={classes.helpText}
+        ref={medicineRef}
+        onClick={() => setIsPopoverOpen(true)}
+      >
+        <img src={require('images/ic_info.svg')} alt="" />
+      </div>
+      <div className={classes.medicinePack}>
+        <AphCustomDropdown
+          classes={{ selectMenu: classes.selectMenuItem }}
+          value={selectedPackQty}
+        >
+          <MenuItem
+            classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+            value={1}
+          >
+            1 Pack
+          </MenuItem>
+          <MenuItem
+            classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+            value={2}
+          >
+            2 Pack
+          </MenuItem>
+          <MenuItem
+            classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+            value={3}
+          >
+            3 Pack
+          </MenuItem>
+        </AphCustomDropdown>
+      </div>
+      <div className={classes.medicinePrice}>Rs. 120</div>
+      <div className={classes.addToCart}>
+        <AphButton>
+          <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
+        </AphButton>
+      </div>
+    </div>
+  </div> */
+}
+//   <div className={classes.subscriptionLink}>
+//     <FormControlLabel
+//       control={<AphCheckbox color="primary" />}
+//       label="Need to take this regularly?"
+//       labelPlacement="start"
+//     />
+//   </div>
+// </div>
+// {/** medice card section end */}
+// {/** medice card section start */}
+// <div className={classes.medicineStrip}>
+//   <div className={classes.medicineStripWrap}>
+//     <div className={classes.medicineInformation}>
+//       <div className={classes.medicineIcon}>
+//         <img src={require('images/ic_tablets.svg')} alt="" />
+//       </div>
+//       <div className={classes.medicineName}>
+//         Metformin 500mg <div className={classes.tabInfo}>Pack Of 10</div>
+//       </div>
+//     </div>
+//     <div className={classes.cartRight}>
+//       <div
+//         className={classes.helpText}
+//         ref={medicineRef}
+//         onClick={() => setIsPopoverOpen(true)}
+//       >
+//         <img src={require('images/ic_info.svg')} alt="" />
+//       </div>
+//       <div className={classes.medicinePack}>
+//         <AphCustomDropdown
+//           classes={{ selectMenu: classes.selectMenuItem }}
+//           value={selectedPackQty1}
+//         >
+//           <MenuItem
+//             classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+//             value={1}
+//           >
+//             1 Pack
+//           </MenuItem>
+//           <MenuItem
+//             classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+//             value={2}
+//           >
+//             2 Pack
+//           </MenuItem>
+//           <MenuItem
+//             classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+//             value={3}
+//           >
+//             3 Pack
+//           </MenuItem>
+//         </AphCustomDropdown>
+//       </div>
+//       <div className={classes.medicinePrice}>Rs. 120</div>
+//       <div className={classes.addToCart}>
+//         <AphButton>
+//           <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
+//         </AphButton>
+//       </div>
+//     </div>
+//   </div>
+//   <div className={classes.subscriptionAdded}>
+//     <span>You have subscribed to this already</span>
+//     <AphButton>Edit</AphButton>
+//     <AphButton>Add New Subscription</AphButton>
+//   </div>
+// </div>
+// {/** medice card section end */}
+// {/** medice card section start */}
+// <div className={classes.medicineStrip}>
+//   <div className={classes.medicineStripWrap}>
+//     <div className={classes.medicineInformation}>
+//       <div className={classes.medicineIcon}>
+//         <img src={require('images/ic_tablets.svg')} alt="" />
+//       </div>
+//       <div className={classes.medicineName}>
+//         Metformin 500mg <div className={classes.tabInfo}>Pack Of 10</div>
+//       </div>
+//     </div>
+//     <div className={classes.cartRight}>
+//       <div className={classes.medicineFor}>
+//         For
+//         <AphCustomDropdown
+//           classes={{ selectMenu: classes.selectMenuItemFor }}
+//           value={selectedForName}
+//         >
+//           <MenuItem
+//             classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+//             value={1}
+//           >
+//             Surj
+//           </MenuItem>
+//           <MenuItem
+//             classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+//             value={2}
+//           >
+//             Surj
+//           </MenuItem>
+//           <MenuItem
+//             classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+//             value={3}
+//           >
+//             Surj
+//           </MenuItem>
+//         </AphCustomDropdown>
+//       </div>
+//       <div className={classes.medicinePack}>
+//         <AphCustomDropdown
+//           classes={{ selectMenu: classes.selectMenuItem }}
+//           value={selectedPackQty2}
+//         >
+//           <MenuItem
+//             classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+//             value={1}
+//           >
+//             1 Pack
+//           </MenuItem>
+//           <MenuItem
+//             classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+//             value={2}
+//           >
+//             2 Pack
+//           </MenuItem>
+//           <MenuItem
+//             classes={{ root: classes.menuRoot, selected: classes.menuSelected }}
+//             value={3}
+//           >
+//             3 Pack
+//           </MenuItem>
+//         </AphCustomDropdown>
+//       </div>
+//       <div className={classes.medicinePrice}>Rs. 120</div>
+//       <div className={classes.addToCart}>
+//         <AphButton>
+//           <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
+//         </AphButton>
+//       </div>
+//     </div>
+//   </div>
+// </div>
+// {/** medice card section end */}
+
+{
+  /** medice card section start */
+}
+// <div className={classes.medicineStrip}>
+//   <div className={classes.medicineStripWrap}>
+//     <div className={classes.medicineInformation}>
+//       <div className={classes.medicineIcon}>
+//         <img src={require('images/ic_tablets.svg')} alt="" />
+//       </div>
+//       <div className={classes.medicineName}>
+//         Metformin 500mg <div className={classes.tabInfo}>Pack Of 10</div>
+//       </div>
+//     </div>
+//     <div className={classes.cartRight}>
+//       <div
+//         className={classes.helpText}
+//         ref={medicineRef}
+//         onClick={() => setIsPopoverOpen(true)}
+//       >
+//         <img src={require('images/ic_info.svg')} alt="" />
+//       </div>
+//       <div className={classes.medicinePrice}>Rs. 120</div>
+//       <div className={classes.addToCart}>
+//         <AphButton>
+//           <img src={require('images/ic_plus.svg')} alt="" />
+//         </AphButton>
+//       </div>
+//     </div>
+//   </div>
+// </div>

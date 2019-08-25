@@ -22,6 +22,7 @@ import { CircularProgress } from '@material-ui/core';
 
 export interface Appointment {
   id: string;
+  patientId: string;
   startTime: number;
   endTime: number;
   isNew: boolean;
@@ -251,6 +252,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
 }) => {
   const classes = useStyles();
   const [appointments, setAppointments] = useState<Appointment[]>(values);
+  console.log(appointments);
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
   const [loading, isLoading] = useState<boolean>(loadingData);
@@ -418,7 +420,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                               <IconButton aria-label="Video call">
                                 <img src={require('images/ic_video.svg')} alt="" />
                               </IconButton>
-                              <Link to={`/consultTabs/${appointment.id}`}>
+                              <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}`}>
                                 <IconButton aria-label="Navigate next">
                                   <NavigateNextIcon />
                                 </IconButton>
