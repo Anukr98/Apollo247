@@ -7,11 +7,13 @@ export const getLocalData = async () => {
     AsyncStorage.getItem('isOnboardingDone'),
     AsyncStorage.getItem('isProfileFlowDone'),
     AsyncStorage.getItem('doctorDetails'),
+    AsyncStorage.getItem('isLoggedIn'),
   ]);
   return {
     isOnboardingDone: !!data[0],
     isProfileFlowDone: !!data[1],
     doctorDetails: JSON.parse(data[2] || 'null'),
+    isLoggedIn: !!data[3],
   } as LocalStorage;
 };
 
@@ -27,9 +29,14 @@ export const setDoctorDetails = async (doctorDetails: GetDoctorDetails_getDoctor
   await AsyncStorage.setItem('doctorDetails', JSON.stringify(doctorDetails));
 };
 
+export const setLoggedIn = async (flag: boolean) => {
+  await AsyncStorage.setItem('isLoggedIn', flag.toString());
+};
+
 export const clearUserData = async () => {
   await Promise.all([
     AsyncStorage.setItem('isProfileFlowDone', ''),
     AsyncStorage.setItem('doctorDetails', ''),
+    AsyncStorage.setItem('isLoggedIn', ''),
   ]);
 };

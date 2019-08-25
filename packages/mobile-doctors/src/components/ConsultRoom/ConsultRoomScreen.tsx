@@ -1,76 +1,66 @@
 import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView';
 import {
+  AddIcon,
   BackArrow,
+  BackCameraIcon,
   Call,
-  DotIcon,
+  ChatCallIcon,
+  ChatIcon,
+  ChatWithNotification,
   ClosePopup,
-  VideoOnIcon,
+  DoctorImage,
+  DotIcon,
+  EndCallIcon,
+  FrontCameraIcon,
+  FullScreenIcon,
+  MissedCallIcon,
+  MuteIcon,
+  PatientPlaceHolderImage,
+  RoundCallIcon,
+  RoundChatIcon,
+  RoundVideoIcon,
   SpeakerOn,
   UnMuteIcon,
-  BackCameraIcon,
-  RoundCallIcon,
-  RoundVideoIcon,
-  PatientPlaceHolderImage,
-  Notification,
-  RoundChatIcon,
-  ChatWithNotification,
+  VideoOffIcon,
+  VideoOnIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
-import { doctorProfile } from '@aph/mobile-doctors/src/helpers/APIDummyData';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState, useEffect, useRef } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
-import {
-  Alert,
-  SafeAreaView,
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  Text,
-  Dimensions,
-  TextInput,
-  FlatList,
-  Keyboard,
-  StatusBar,
-  Platform,
-  KeyboardAvoidingView,
-  KeyboardEvent,
-} from 'react-native';
-import MaterialTabs from 'react-native-material-tabs';
-//import ImagePicker from 'react-native-image-picker';
-
-const { height, width } = Dimensions.get('window');
-import Pubnub from 'pubnub';
-import {
-  DoctorImage,
-  DoctorCall,
-  PickCallIcon,
-  ChatIcon,
-  FullScreenIcon,
-  AddIcon,
-} from '@aph/mobile-doctors/src/components/ui/Icons';
-import { OTSession, OTPublisher, OTSubscriber } from 'opentok-react-native';
-import {
-  FrontCameraIcon,
-  VideoOffIcon,
-  AttachmentIcon,
-  MuteIcon,
-  EndCallIcon,
-} from '@aph/mobile-doctors/src/components/ui/Icons';
-import DocumentPicker from 'react-native-document-picker';
-import { NavigationScreenProps, NavigationRoute } from 'react-navigation';
-import { NavigationScreenProp } from 'react-navigation';
-import { NavigationParams } from 'react-navigation';
-
+import { CREATEAPPOINTMENTSESSION } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
 } from '@aph/mobile-doctors/src/graphql/types/CreateAppointmentSession';
-
-import { CREATEAPPOINTMENTSESSION } from '@aph/mobile-doctors/src/graphql/profiles';
 import { REQUEST_ROLES } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import moment from 'moment';
 import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import moment, { duration } from 'moment';
+import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
+import Pubnub from 'pubnub';
+import React, { useEffect, useRef, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { DeviceHelper } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import {
+  Alert,
+  Dimensions,
+  FlatList,
+  Keyboard,
+  KeyboardEvent,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import MaterialTabs from 'react-native-material-tabs';
+import { NavigationScreenProps } from 'react-navigation';
+import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+
+const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   mainview: {
@@ -98,10 +88,13 @@ let timerId: any;
 
 const videoCallMsg = '^^callme`video^^';
 const audioCallMsg = '^^callme`audio^^';
-const doctorId = 'Ravi';
+const acceptedCallMsg = '^^callme`accept^^';
+const startConsultMsg = '^^#startconsult';
+const stopConsultMsg = '^^#stopconsult';
+const typingMsg = '^^#typing';
+const endCallMsg = '^^callme`stop^^';
 const patientId = 'Sai';
 // const channel = 'Channel7';
-let insertText: object[] = [];
 
 export interface ConsultRoomScreenProps
   extends NavigationScreenProps<{
@@ -110,7 +103,7 @@ export interface ConsultRoomScreenProps
     PatientConsultTime: string;
     PatientInfoAll: PatientInfoData;
     AppId: string;
-    Appintmentdatetime: Date;
+    Appintmentdatetime: string; //Date;
     // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   }> {
   // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
@@ -118,27 +111,19 @@ export interface ConsultRoomScreenProps
 
 export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [isDropdownVisible, setDropdownVisible] = useState(false);
+  const [dropdownShow, setDropdownShow] = useState(false);
   const [hideView, setHideView] = useState(false);
   const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
   const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
   const AppId = props.navigation.getParam('AppId');
-  const Appintmentdatetime: Date = props.navigation.getParam('Appintmentdatetime');
-  // console.log('hihihi', props.navigation.getParam('PatientInfoAll'));
-  const Appintmentdatetimeconsultpage = props.navigation.getParam('Appintmentdatetime');
-  // console.log('Appintmentdatetimeconsultpage', props.navigation.getParam('Appintmentdatetime'));
-  const channel = props.navigation.getParam('AppId');
-  // console.log('channel', channel);
-  // const details = {
-  //   appointmentId: AppId, //'6b323478-3afc-4e67-95d9-97ddf51dba83',
-  //   requestRole: 'DOCTOR',
-  // };
+  const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
 
-  // console.log('createsession', details);
-  // console.log('AppId', AppId);
+  const channel = props.navigation.getParam('AppId');
+
+  const doctorId = props.navigation.getParam('DoctorId');
 
   useEffect(() => {
-    console.log('AppointmentId', AppId);
     client
       .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
         mutation: CREATEAPPOINTMENTSESSION,
@@ -150,27 +135,20 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         },
       })
       .then((_data: any) => {
-        console.log('createsession', _data);
-        console.log('sessionid', _data.data.createAppointmentSession.sessionId);
-        console.log('appointmentToken', _data.data.createAppointmentSession.appointmentToken);
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
       })
       .catch((e: any) => {
-        console.log('Error occured while adding Doctor', e);
+        console.log('Error occured while create session', e);
       });
   }, []);
-
-  //console.log('Doctoid', props.navigation.getParam('DoctorId'));
-  // console.log('PatientId', props.navigation.getParam('PatientId'));
-  // console.log('PatientConsultTime', props.navigation.getParam('PatientConsultTime'));
 
   const PatientConsultTime = props.navigation.getParam('PatientConsultTime');
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const flatListRef = useRef<FlatList<never> | undefined | null>();
-  const otSessionRef = React.createRef();
 
+  const otSessionRef = React.useRef<any>(null);
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(height - 185);
@@ -194,12 +172,19 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     top: 0,
     // bottom: -20,
   });
+  const [linestyles, setLinestyles] = useState<Object>({
+    marginLeft: 20,
+    marginRight: 64,
+    marginTop: 0,
+    height: 2,
+    backgroundColor: '#00b38e',
+    zIndex: -1,
+  });
 
   useEffect(() => {
-    console.log('PatientConsultTime'), PatientConsultTime;
-    setTimeout(() => {
-      flatListRef.current && flatListRef.current!.scrollToEnd();
-    }, 1000);
+    // setTimeout(() => {
+    //   flatListRef.current && flatListRef.current!.scrollToEnd();
+    // }, 1000);
   }, []);
 
   const [talkStyles, setTalkStyles] = useState<object>({
@@ -249,10 +234,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       timer = timer - 1;
       stoppedTimer = timer;
       setRemainingTime(timer);
-      // console.log('descriptionTextStyle remainingTime', timer);
 
       if (timer == 0) {
-        // console.log('descriptionTextStyles remainingTime', timer);
         setRemainingTime(0);
         clearInterval(intervalId);
       }
@@ -265,10 +248,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       timer = timer + 1;
       stoppedTimer = timer;
       setCallTimer(timer);
-      // console.log('uptimer', timer);
-
       if (timer == 0) {
-        // console.log('uptimer', timer);
         setCallTimer(0);
         clearInterval(timerId);
       }
@@ -332,6 +312,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     },
     sessionConnected: (event: string) => {
       console.log('session stream sessionConnected!', event);
+      console.log('otSessionRef', otSessionRef);
     },
     sessionDisconnected: (event: string) => {
       console.log('session stream sessionDisconnected!', event);
@@ -353,7 +334,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     ssl: true,
   };
   const pubnub = new Pubnub(config);
-  // console.log('pubnub', pubnub);
 
   useEffect(() => {
     pubnub.subscribe({
@@ -374,10 +354,27 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       message: (message) => {
         console.log('addListener', message.message.message);
         if (message.message.isTyping) {
-          if (message.message.message === '^^#callAccepted') {
+          if (message.message.message === acceptedCallMsg) {
             startTimer(0);
             setCallAccepted(true);
-          } else if (message.message.message === '^^#endCall') {
+          } else if (message.message.message === endCallMsg) {
+            setIsCall(false);
+            setIsAudioCall(false);
+            setHideStatusBar(false);
+            stopTimer();
+            setCallAccepted(false);
+            setReturnToCall(false);
+          } else if (
+            message.message.message === 'Audio call ended' ||
+            message.message.message === 'Video call ended'
+          ) {
+            console.log('aftercal');
+            // setIsCall(false);
+            // setIsAudioCall(false);
+            addMessages(message);
+            // setCallAccepted(false);
+            // setReturnToCall(false);
+
             setIsCall(false);
             setIsAudioCall(false);
             setHideStatusBar(false);
@@ -386,29 +383,36 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             setReturnToCall(false);
           }
         } else {
-          console.log('messages', messages);
-
-          console.log('before insertText', insertText);
-
-          insertText[insertText.length] = message.message;
-          setMessages(insertText as []);
-
-          console.log('after insertText', insertText);
-          console.log('messages', messages);
-
-          if (!isCall || !isAudioCall) {
-            setChatReceived(true);
-            console.log('true chat icon');
-          }
+          addMessages(message);
           setTimeout(() => {
-            flatListRef.current && flatListRef.current.scrollToEnd();
-          }, 200);
+            flatListRef.current! && flatListRef.current!.scrollToEnd();
+          }, 500);
         }
       },
       presence: (presenceEvent) => {
         console.log('presenceEvent', presenceEvent);
       },
     });
+
+    const addMessages = (message: Pubnub.MessageEvent) => {
+      console.log('messages', messages);
+
+      console.log('before insertText', insertText);
+
+      insertText[insertText.length] = message.message;
+      setMessages(insertText as []);
+
+      console.log('after insertText', insertText);
+      console.log('messages', messages);
+
+      if (!isCall || !isAudioCall) {
+        setChatReceived(true);
+        console.log('true chat icon');
+      }
+      setTimeout(() => {
+        flatListRef.current! && flatListRef.current!.scrollToEnd();
+      }, 200);
+    };
 
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', keyboardDidShow);
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', keyboardDidHide);
@@ -421,22 +425,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   }, []);
 
   const keyboardDidShow = (e: KeyboardEvent) => {
-    // const { keyboardHeight } = e.endCoordinates;
-    // console.log('Keyboard Shown', keyboardHeight);
-    // console.log('Keyboard Shown', e.endCoordinates.height);
-
-    // setHeightList(height - e.endCoordinates.height - 185);
-
+    setHeightList(height - e.endCoordinates.height - 185);
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 200);
   };
 
   const keyboardDidHide = () => {
-    console.log('Keyboard hide');
     setHeightList(height - 185);
   };
-
+  let insertText: object[] = [];
   const getHistory = () => {
     pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
       const newmessage: object[] = [];
@@ -460,20 +458,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const send = () => {
-    // console.log('on send clicked', messages);
-
-    if (messageText.length == 0) {
-      console.log('on send clicked empty');
-      setMessageText('');
-      //Alert.alert('Please enter message');
-      return;
-    }
-
     const text = {
-      id: props.navigation.getParam('DoctorId'), //'Ravi',
+      id: doctorId,
       message: messageText,
     };
-    console.log('on send clicked', text);
 
     pubnub.publish(
       {
@@ -483,12 +471,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         sendByPost: true,
       },
       (status, response) => {
-        /*
-         * Do something
-         */
         setMessageText('');
-        console.log('response', response);
-        console.log('status', status);
       }
     );
   };
@@ -496,79 +479,229 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   let leftComponent = 0;
   let rightComponent = 0;
 
-  const renderChatRow = (rowData: { id: string; message: string }, index: number) => {
+  const renderChatRow = (
+    rowData: { id: string; message: string; duration: string },
+    index: number
+  ) => {
+    if (
+      rowData.message === typingMsg ||
+      rowData.message === startConsultMsg ||
+      rowData.message === stopConsultMsg ||
+      rowData.message === endCallMsg ||
+      rowData.message === audioCallMsg ||
+      rowData.message === videoCallMsg ||
+      rowData.message === acceptedCallMsg
+    ) {
+      return null;
+    }
     if (rowData.id !== props.navigation.getParam('DoctorId')) {
       leftComponent++;
-      // console.log('leftComponent', leftComponent);
-
       rightComponent = 0;
       return (
         <View>
           {leftComponent === 1 ? (
             <View
               style={{
-                backgroundColor: 'green',
+                backgroundColor: 'transparent',
                 width: width,
                 marginVertical: 8,
               }}
             />
           ) : null}
-          <View
-            style={{
-              backgroundColor: 'transparent',
-              width: 282,
-              borderRadius: 10,
-              marginVertical: 2,
-              alignSelf: 'flex-start',
-            }}
-          >
-            {leftComponent == 1 ? (
-              <DoctorImage
-                style={{
-                  width: 32,
-                  height: 32,
-                  bottom: 0,
-                  position: 'absolute',
-                  left: 0,
-                }}
-              />
-            ) : null}
+          {rowData.message === 'Audio call ended' || rowData.message === 'Video call ended' ? (
+            <>
+              {rowData.duration === '00 : 00' ? (
+                <View
+                  style={{
+                    backgroundColor: 'transparent',
+                    width: 282,
+                    borderRadius: 10,
+                    marginVertical: 2,
+                    alignSelf: 'flex-start',
+                    paddingVertical: 17,
+                  }}
+                >
+                  {leftComponent === 1 ? (
+                    <DoctorImage
+                      style={{
+                        width: 32,
+                        height: 32,
+                        bottom: 0,
+                        position: 'absolute',
+                        left: 0,
+                      }}
+                    />
+                  ) : null}
+                  <View
+                    style={{
+                      marginLeft: 40,
+                      borderRadius: 10,
+                      height: 29,
+                      width: 244,
+                    }}
+                  >
+                    <View
+                      style={{
+                        backgroundColor: '#e50000',
+                        opacity: 0.04,
+                        width: 244,
+                        borderRadius: 10,
+                        height: 29,
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                      }}
+                    />
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        backgroundColor: 'transparent',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <MissedCallIcon
+                        style={{ width: 16, height: 16, marginLeft: 16, marginTop: 3 }}
+                      />
+                      {rowData.message === 'Audio call ended' ? (
+                        <Text
+                          style={{
+                            color: '#890000',
+                            marginLeft: 27,
+                            textAlign: 'left',
+                            ...theme.fonts.IBMPlexSansMedium(12),
+                            lineHeight: 24,
+                            letterSpacing: 0.04,
+                            marginTop: 2,
+                          }}
+                        >
+                          You missed a voice call
+                        </Text>
+                      ) : (
+                        <Text
+                          style={{
+                            color: '#890000',
+                            marginLeft: 27,
+                            textAlign: 'left',
+                            ...theme.fonts.IBMPlexSansMedium(12),
+                            lineHeight: 24,
+                            letterSpacing: 0.04,
+                            marginTop: 2,
+                          }}
+                        >
+                          You missed a video call
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                </View>
+              ) : (
+                <View
+                  style={{
+                    backgroundColor: 'transparent',
+                    width: 282,
+                    borderRadius: 10,
+                    marginVertical: 2,
+                    alignSelf: 'flex-end',
+                  }}
+                >
+                  {leftComponent === 1 ? (
+                    <DoctorImage
+                      style={{
+                        width: 32,
+                        height: 32,
+                        bottom: 0,
+                        position: 'absolute',
+                        left: 0,
+                      }}
+                    />
+                  ) : null}
+                  <View
+                    style={{
+                      borderRadius: 10,
+                      marginVertical: 2,
+                      alignSelf: 'flex-end',
+                      flexDirection: 'row',
+                      marginLeft: 40,
+                    }}
+                  >
+                    <ChatCallIcon style={{ width: 20, height: 20 }} />
+                    <View style={{ marginLeft: 12 }}>
+                      <Text
+                        style={{
+                          color: '#01475b',
+                          marginLeft: 0,
+                          textAlign: 'left',
+                          ...theme.fonts.IBMPlexSansMedium(14),
+                        }}
+                      >
+                        {rowData.message}
+                      </Text>
+                      <Text
+                        style={{
+                          color: '#01475b',
+                          marginTop: 2,
+                          marginLeft: 0,
+                          textAlign: 'left',
+                          ...theme.fonts.IBMPlexSansMedium(10),
+                        }}
+                      >
+                        Duration - {rowData.duration}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+            </>
+          ) : (
             <View
               style={{
-                backgroundColor: 'white',
-                marginLeft: 38,
+                backgroundColor: 'transparent',
+                width: 282,
                 borderRadius: 10,
-                // width: 244,
-                shadowOffset: {
-                  height: 1,
-                  width: 0,
-                },
-                shadowColor: '#000000',
-                shadowRadius: 2,
-                shadowOpacity: 0.2,
-                elevation: 2,
+                marginVertical: 2,
+                alignSelf: 'flex-start',
               }}
             >
-              <Text
+              {leftComponent === 1 ? (
+                <DoctorImage
+                  style={{
+                    width: 32,
+                    height: 32,
+                    bottom: 0,
+                    position: 'absolute',
+                    left: 0,
+                  }}
+                />
+              ) : null}
+              <View
                 style={{
-                  color: '#0087ba',
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  ...theme.fonts.IBMPlexSansMedium(16),
-                  textAlign: 'left',
+                  backgroundColor: 'white',
+                  marginLeft: 38,
+                  borderRadius: 10,
+                  // width: 244,
                 }}
               >
-                {rowData.message}
-              </Text>
+                <Text
+                  style={{
+                    color: '#0087ba',
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                    textAlign: 'left',
+                  }}
+                >
+                  {rowData.message}
+                </Text>
+              </View>
             </View>
-          </View>
+          )}
         </View>
       );
     } else {
       leftComponent = 0;
       rightComponent++;
-      // console.log('rightComponent', rightComponent);
-
       return (
         <View>
           {rightComponent == 1 ? (
@@ -580,35 +713,62 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               }}
             />
           ) : null}
-          <View
-            style={{
-              backgroundColor: 'white',
-              // width: 244,
-              borderRadius: 10,
-              marginVertical: 2,
-              alignSelf: 'flex-end',
-              shadowOffset: {
-                height: 1,
-                width: 0,
-              },
-              shadowColor: '#000000',
-              shadowRadius: 2,
-              shadowOpacity: 0.2,
-              elevation: 2,
-            }}
-          >
-            <Text
+          {rowData.message === 'Audio call ended' || rowData.message === 'Video call ended' ? (
+            <View
               style={{
-                color: '#01475b',
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                textAlign: 'right',
-                ...theme.fonts.IBMPlexSansMedium(16),
+                borderRadius: 10,
+                marginVertical: 2,
+                alignSelf: 'flex-end',
+                flexDirection: 'row',
               }}
             >
-              {rowData.message}
-            </Text>
-          </View>
+              <ChatCallIcon style={{ width: 20, height: 20 }} />
+              <View>
+                <Text
+                  style={{
+                    color: '#01475b',
+                    marginLeft: 12,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(14),
+                  }}
+                >
+                  {rowData.message}
+                </Text>
+                <Text
+                  style={{
+                    color: '#01475b',
+                    marginTop: 2,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  Duration - {rowData.duration}
+                </Text>
+              </View>
+            </View>
+          ) : (
+            <View
+              style={{
+                backgroundColor: 'white',
+                // width: 244,
+                borderRadius: 10,
+                marginVertical: 2,
+                alignSelf: 'flex-end',
+              }}
+            >
+              <Text
+                style={{
+                  color: '#01475b',
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  textAlign: 'right',
+                  ...theme.fonts.IBMPlexSansMedium(16),
+                }}
+              >
+                {rowData.message}
+              </Text>
+            </View>
+          )}
         </View>
       );
     }
@@ -621,6 +781,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           width: width,
           height: returnToCall == false ? heightList : heightList + 20,
           marginTop: 0,
+          backgroundColor: '#f0f4f5',
         }}
       >
         {messages.length != 0 ? (
@@ -630,12 +791,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               marginHorizontal: 20,
               marginTop: 0,
             }}
+            removeClippedSubviews={false}
             bounces={false}
             data={messages}
             onEndReachedThreshold={0.5}
             renderItem={({ item, index }) => renderChatRow(item, index)}
             keyExtractor={(_, index) => index.toString()}
             numColumns={1}
+            keyboardShouldPersistTaps="always"
+            keyboardDismissMode="on-drag"
           />
         ) : (
           <View style={{ flexDirection: 'row', margin: 20 }}>
@@ -663,7 +827,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const callMinutes = Math.floor(callTimer / 60);
   const callSeconds = callTimer - callMinutes * 60;
-
+  const callTimerStarted = `${
+    callMinutes.toString().length < 2 ? '0' + callMinutes : callMinutes
+  } : ${callSeconds.toString().length < 2 ? '0' + callSeconds : callSeconds}`;
   const AudioCall = () => {
     return (
       <View style={audioCallStyles}>
@@ -718,13 +884,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         />
 
         <OTSession
-          apiKey={'46393582'}
-          sessionId={sessionId}
-          token={token}
-          // sessionId={'2_MX40NjM5MzU4Mn5-MTU2NTQzNzkyNTgwMX40Qm0rbEtFb3VVQytGZHVQdmR0NHAveG1-fg'}
-          // token={
-          //   'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9YmM2MzFhZTEwYWNlODBhZmNhNjMwNDIwOGRkNmZhYzkyMGU3ZjcyMDpzZXNzaW9uX2lkPTJfTVg0ME5qTTVNelU0TW41LU1UVTJOVFF6TnpreU5UZ3dNWDQwUW0wcmJFdEZiM1ZWUXl0R1pIVlFkbVIwTkhBdmVHMS1mZyZjcmVhdGVfdGltZT0xNTY1NDM3OTczJm5vbmNlPTAuNDc1MTYzNTI2Njc3MTIwMzYmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2ODAyOTk3MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
-          // }
+          apiKey={'46409832'}
+          // sessionId={sessionId}
+          // token={token}
+          sessionId={'1_MX40NjQwOTgzMn5-MTU2NjYyNzM0NTIyMn5aUmtTY1Rzb0xzQkI4K2Y2Ni9zb3AvdUF-UH4'}
+          token={
+            'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9ZDk2NGRlNGQwYTNjYThmOWEzYzY1MjM2M2M3ZWEzZTM2M2YzZTY0YjpzZXNzaW9uX2lkPTFfTVg0ME5qUXdPVGd6TW41LU1UVTJOall5TnpNME5USXlNbjVhVW10VFkxUnpiMHh6UWtJNEsyWTJOaTl6YjNBdmRVRi1VSDQmY3JlYXRlX3RpbWU9MTU2NjYyNzM2NCZub25jZT0wLjk1NDE1MDA4NDk3Mzg3MTEmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2NjcxMzc2MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
+          }
           eventHandlers={sessionEventHandlers}
           ref={otSessionRef}
         >
@@ -773,11 +939,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             letterSpacing: 0.46,
           }}
         >
-          {callAccepted
-            ? `${callMinutes.toString().length < 2 ? '0' + callMinutes : callMinutes} : ${
-                callSeconds.toString().length < 2 ? '0' + callSeconds : callSeconds
-              }`
-            : 'RINGING'}
+          {callAccepted ? callTimerStarted : 'RINGING'}
         </Text>
         <View
           style={{
@@ -820,9 +982,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             width: width - 116,
           }}
         >
-          <TouchableOpacity onPress={() => {}}>
+          {/* <TouchableOpacity onPress={() => {}}>
             <SpeakerOn style={{ width: 60, height: 60 }} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity
             onPress={() => {
               mute === true ? setMute(false) : setMute(true);
@@ -840,14 +1002,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               setHideStatusBar(false);
               stopTimer();
               setChatReceived(false);
+
               pubnub.publish(
                 {
                   message: {
                     isTyping: true,
-                    message: '^^#endCall',
+                    message: 'Audio call ended',
+                    duration: callTimerStarted,
+                    id: props.navigation.getParam('DoctorId'),
                   },
                   channel: channel,
-                  storeInHistory: false,
+                  storeInHistory: true,
                 },
                 (status, response) => {}
               );
@@ -866,13 +1031,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         {isCall && (
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <OTSession
-              apiKey={'46393582'}
-              // sessionId={'2_MX40NjM5MzU4Mn5-MTU2NTQzNzkyNTgwMX40Qm0rbEtFb3VVQytGZHVQdmR0NHAveG1-fg'}
-              // token={
-              //   'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9YmM2MzFhZTEwYWNlODBhZmNhNjMwNDIwOGRkNmZhYzkyMGU3ZjcyMDpzZXNzaW9uX2lkPTJfTVg0ME5qTTVNelU0TW41LU1UVTJOVFF6TnpreU5UZ3dNWDQwUW0wcmJFdEZiM1ZWUXl0R1pIVlFkbVIwTkhBdmVHMS1mZyZjcmVhdGVfdGltZT0xNTY1NDM3OTczJm5vbmNlPTAuNDc1MTYzNTI2Njc3MTIwMzYmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2ODAyOTk3MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
-              // }
-              sessionId={sessionId}
-              token={token}
+              apiKey={'46409832'}
+              sessionId={
+                '1_MX40NjQwOTgzMn5-MTU2NjYyNzM0NTIyMn5aUmtTY1Rzb0xzQkI4K2Y2Ni9zb3AvdUF-UH4'
+              }
+              token={
+                'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9ZDk2NGRlNGQwYTNjYThmOWEzYzY1MjM2M2M3ZWEzZTM2M2YzZTY0YjpzZXNzaW9uX2lkPTFfTVg0ME5qUXdPVGd6TW41LU1UVTJOall5TnpNME5USXlNbjVhVW10VFkxUnpiMHh6UWtJNEsyWTJOaTl6YjNBdmRVRi1VSDQmY3JlYXRlX3RpbWU9MTU2NjYyNzM2NCZub25jZT0wLjk1NDE1MDA4NDk3Mzg3MTEmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2NjcxMzc2MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
+              }
+              // sessionId={sessionId}
+              // token={token}
               eventHandlers={sessionEventHandlers}
               ref={otSessionRef}
               options={{
@@ -1023,6 +1190,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               borderRadius: 30,
             });
             setPipView(false);
+            setChatReceived(false);
           }}
         >
           <FullScreenIcon style={{ width: 40, height: 40 }} />
@@ -1031,14 +1199,30 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           onPress={() => {
             setIsCall(false);
             setChatReceived(false);
+            setTextInputStyles({
+              width: width,
+              height: 66,
+              backgroundColor: 'white',
+              top: 20,
+              // bottom: -20,
+            });
+            setLinestyles({
+              marginLeft: 20,
+              marginRight: 64,
+              marginTop: 0,
+              height: 2,
+              backgroundColor: '#00b38e',
+            });
             pubnub.publish(
               {
                 message: {
                   isTyping: true,
-                  message: '^^#endCall',
+                  message: 'Video call ended',
+                  duration: callTimerStarted,
+                  id: props.navigation.getParam('DoctorId'),
                 },
                 channel: channel,
-                storeInHistory: false,
+                storeInHistory: true,
               },
               (status, response) => {}
             );
@@ -1097,6 +1281,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               top: 20,
               // bottom: -20,
             });
+            setLinestyles({
+              marginLeft: 20,
+              marginRight: 64,
+              marginTop: -10,
+              height: 2,
+              backgroundColor: '#00b38e',
+            });
           }}
         >
           {chatReceived ? (
@@ -1150,32 +1341,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               <VideoOffIcon style={{ height: 60, width: 60 }} />
             )}
           </TouchableOpacity>
-          {/* <TouchableOpacity
-            onPress={async () => {
-              // Pick multiple files
-              try {
-                const results = await DocumentPicker.pickMultiple({
-                  type: [DocumentPicker.types.images],
-                });
-                for (const res of results) {
-                  console.log(
-                    res.uri,
-                    res.type, // mime type
-                    res.name,
-                    res.size
-                  );
-                }
-              } catch (err) {
-                if (DocumentPicker.isCancel(err)) {
-                  // User cancelled the picker, exit any dialogs or menus and move on
-                } else {
-                  throw err;
-                }
-              }
-            }}
-          >
-            <AttachmentIcon style={{ height: 60, width: 60 }} />
-          </TouchableOpacity> */}
+
           <TouchableOpacity
             onPress={() => {
               mute === true ? setMute(false) : setMute(true);
@@ -1193,14 +1359,30 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               stopTimer();
               setHideStatusBar(false);
               setChatReceived(false);
+              setTextInputStyles({
+                width: width,
+                height: 66,
+                backgroundColor: 'white',
+                top: 5,
+                bottom: -10,
+              });
+              setLinestyles({
+                marginLeft: 20,
+                marginRight: 64,
+                marginTop: -10,
+                height: 2,
+                backgroundColor: '#00b38e',
+              });
               pubnub.publish(
                 {
                   message: {
                     isTyping: true,
-                    message: '^^#endCall',
+                    message: 'Video call ended',
+                    duration: callTimerStarted,
+                    id: props.navigation.getParam('DoctorId'),
                   },
                   channel: channel,
-                  storeInHistory: false,
+                  storeInHistory: true,
                 },
                 (status, response) => {}
               );
@@ -1268,14 +1450,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           <TouchableOpacity
             onPress={() => {
               if (!startConsult) {
-                console.log('consult not started');
                 Alert.alert('Apollo', 'Please start the consultation');
+                return;
+              }
+
+              if (isAudioCall) {
                 return;
               }
               setIsAudioCall(true);
               setShowPopUp(false);
               setHideStatusBar(true);
               setChatReceived(false);
+              Keyboard.dismiss();
               pubnub.publish(
                 {
                   message: {
@@ -1283,7 +1469,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     message: audioCallMsg, //'^^#audiocall',
                   },
                   channel: channel,
-                  storeInHistory: false,
+                  storeInHistory: true,
                 },
                 (status, response) => {}
               );
@@ -1318,14 +1504,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           <TouchableOpacity
             onPress={() => {
               if (!startConsult) {
-                console.log('consult not started');
                 Alert.alert('Apollo', 'Please start the consultation');
+                return;
+              }
+              if (isAudioCall) {
                 return;
               }
               setIsCall(true);
               setShowPopUp(false);
               setHideStatusBar(true);
               setChatReceived(false);
+              Keyboard.dismiss();
               pubnub.publish(
                 {
                   message: {
@@ -1333,7 +1522,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     message: videoCallMsg, //'^^#videocall',
                   },
                   channel: channel,
-                  storeInHistory: false,
+                  storeInHistory: true,
                 },
                 (status, response) => {}
               );
@@ -1385,6 +1574,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         <TouchableOpacity
           onPress={() => {
             setReturnToCall(false);
+            setChatReceived(false);
+            Keyboard.dismiss();
             setAudioCallStyles({
               flex: 1,
               position: 'absolute',
@@ -1421,9 +1612,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const ChatRoom = () => {
-    // setTimeout(() => {
-    //   flatListRef.current && flatListRef.current!.scrollToEnd();
-    // }, 1000);
+    setTimeout(() => {
+      flatListRef.current && flatListRef.current!.scrollToEnd();
+    }, 1000);
     return (
       <View
         style={{
@@ -1432,7 +1623,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         }}
       >
         {renderChatView()}
-        <KeyboardAvoidingView behavior="padding" enabled>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+          enabled
+        >
           <View style={textinputStyles}>
             <View
               style={{
@@ -1447,6 +1642,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               <TextInput
                 autoCorrect={false}
                 placeholder="Type here…"
+                blurOnSubmit={false}
                 style={{
                   marginLeft: 20,
                   marginTop: 0,
@@ -1456,6 +1652,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 }}
                 placeholderTextColor="rgba(2, 71, 91, 0.3)"
                 value={messageText}
+                returnKeyType="send"
                 onChangeText={(value) => {
                   setMessageText(value);
                   pubnub.publish(
@@ -1472,90 +1669,22 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   );
                 }}
                 onSubmitEditing={() => {
-                  console.log('on submit');
                   const textMessage = messageText.trim();
-
                   if (textMessage.length == 0) {
                     Alert.alert('Apollo', 'Please write something to send message.');
                     return;
                   }
                   send();
                 }}
-                // onKeyPress={(event) => {
-                //   console.log('event', event.nativeEvent.key);
-                //   if (event.nativeEvent.key == 'Enter') {
-                //   } else {
-                //     console.log('Something else Pressed');
-                //   }
-                // }}
               />
-              <View>
-                {/* {isDropdownVisible == true ? (
-                <View
-                  style={{
-                    width: 200,
-                    bottom: -15,
-                    // top: 10,
-                    position: 'absolute',
-                    right: -15,
-                    //left: 0,
-                    shadowColor: '#808080',
-                    shadowOffset: { width: 0, height: 5 },
-                    shadowOpacity: 0.4,
-                    shadowRadius: 20,
-                    elevation: 16,
-                    zIndex: 2,
-                  }}
-                >
-                  <DropDown
-                    options={[
-                      {
-                        optionText: 'Camera',
-                        onPress: () => {
-                          setDropdownVisible(isDropdownVisible);
-                          console.log('Camera', 'Camera');
-                        },
-                      },
-                      {
-                        optionText: 'Document',
 
-                        onPress: () => {
-                          try {
-                            const results = DocumentPicker.pickMultiple({
-                              type: [DocumentPicker.types.allFiles],
-                            });
-                            console.log('results', results);
-                            setDropdownVisible(false);
-                          } catch (err) {
-                            if (DocumentPicker.isCancel(err)) {
-                              // User cancelled the picker, exit any dialogs or menus and move on
-                            } else {
-                              throw err;
-                            }
-                          }
-                        },
-                      },
-                      {
-                        optionText: 'Gallery',
-                        onPress: () => {
-                          setDropdownVisible(false);
-                          console.log('Gallery', 'Gallery');
-                        },
-                      },
-                    ]}
-                  />
-                </View>
-              ) : null} */}
-              </View>
               <TouchableOpacity
                 onPress={async () => {
                   if (messageText.length == 0) {
-                    //Alert.alert('Apollo', 'Please write something to send');
                     setDropdownVisible(!isDropdownVisible);
                     return;
                   }
                   if (!startConsult) {
-                    console.log('consult not started');
                     Alert.alert('Apollo', 'Please start the consultation');
                     return;
                   }
@@ -1567,16 +1696,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 />
               </TouchableOpacity>
             </View>
-            <View
-              style={{
-                marginLeft: 20,
-                marginRight: 64,
-                marginTop: 0,
-                height: 2,
-                backgroundColor: '#00b38e',
-                zIndex: -1,
-              }}
-            />
+            <View style={linestyles} />
           </View>
         </KeyboardAvoidingView>
         {returnToCall && ReturnCallView()}
@@ -1634,7 +1754,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           message: '^^#startconsult',
         },
         channel: channel,
-        storeInHistory: false,
+        storeInHistory: true,
       },
       (status, response) => {
         setActiveTabIndex(1);
@@ -1654,7 +1774,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           message: '^^#stopconsult',
         },
         channel: channel,
-        storeInHistory: false,
+        storeInHistory: true,
       },
       (status, response) => {
         setStartConsult(false);
@@ -1667,14 +1787,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
 
-  const [timeToConsultTimer, setTimeToConsultTimer] = useState();
   const getTimerText = () => {
     const now = new Date();
     const diff = moment.duration(moment(Appintmentdatetime).diff(now));
+
     const diffInHours = diff.asHours();
-    console.log(now, Appintmentdatetime, diffInHours);
-    console.log(diff.days(), diff.hours(), diff.minutes());
-    if (diffInHours > 0 && diffInHours < 12)
+
+    if (diff.hours() > 0 && diff.hours() < 12)
       return `Time to consult ${moment(new Date(0, 0, 0, diff.hours(), diff.minutes())).format(
         'hh: mm'
       )}`;
@@ -1715,7 +1834,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             onPress: () => {
               setHideView(!hideView);
               setActiveTabIndex(1);
-              setShowPopUp(true);
+              {
+                startConsult ? setShowPopUp(true) : null;
+              }
             },
           },
           {
@@ -1724,10 +1845,59 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 <DotIcon />
               </View>
             ),
-            onPress: () => Alert.alert('Call'),
+            onPress: () => setDropdownShow(!dropdownShow),
           },
         ]}
       />
+    );
+  };
+  const renderDropdown = () => {
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          top: 50,
+          width: '100%',
+          alignItems: 'flex-end',
+          overflow: 'hidden',
+          ...Platform.select({
+            ios: {
+              zIndex: 1,
+            },
+            android: {
+              elevation: 12,
+              zIndex: 2,
+            },
+          }),
+        }}
+      >
+        <DropDown
+          containerStyle={{ marginRight: 20 }}
+          options={[
+            {
+              optionText: 'Share Case Sheet',
+              onPress: () => {
+                setDropdownShow(false);
+                props.navigation.push(AppRoutes.ShareConsult);
+              },
+            },
+            {
+              optionText: 'Transfer Consult',
+              onPress: () => {
+                setDropdownShow(false);
+                props.navigation.push(AppRoutes.TransferConsult);
+              },
+            },
+            {
+              optionText: 'Reschedule Consult',
+              onPress: () => {
+                setDropdownShow(false);
+                props.navigation.push(AppRoutes.ReschduleConsult);
+              },
+            },
+          ]}
+        />
+      </View>
     );
   };
 
@@ -1735,6 +1905,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     <SafeAreaView style={{ flex: 1 }}>
       <StatusBar hidden={hideStatusBar} />
       {showHeaderView()}
+      {dropdownShow ? renderDropdown() : null}
       {renderTabPage()}
       {showPopUp && CallPopUp()}
       {isAudioCall && AudioCall()}

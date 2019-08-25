@@ -19,7 +19,6 @@ import {
   NavigationScreenProps,
   ScrollView,
 } from 'react-navigation';
-import { colors } from '@aph/mobile-doctors/src/theme/colors';
 
 const styles = StyleSheet.create({
   leftTimeLineContainer: {
@@ -86,6 +85,13 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
   };
 
   const getDateFormat = (_date: string /*"2019-08-08T20:30:00.000Z"*/) => {
+    console.log(
+      'getDateFormat',
+      moment
+        .utc(_date)
+        .local()
+        .format('HH:mm:ss')
+    );
     const dateTime = _date.split('T');
     const date = dateTime[0].split('-');
     const time = dateTime[1].substring(0, 4).split(':');
@@ -106,14 +112,20 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     } else if (appointment.status == STATUS.CANCELLED) {
       return 'missed';
     } else {
-      const appointemntTime = getDateFormat(appointment.appointmentDateTime);
+      const appointemntTime = moment
+        .utc(appointment.appointmentDateTime)
+        .local()
+        .format('YYYY-MM-DD HH:mm:ss'); //getDateFormat(appointment.appointmentDateTime);
       if (moment(appointemntTime).isBefore()) return 'past';
       else return 'next';
     }
   };
 
   const formatTiming = (appointmentDateTime: string) => {
-    const aptmtDate = getDateFormat(appointmentDateTime);
+    const aptmtDate = moment
+      .utc(appointmentDateTime)
+      .local()
+      .format('YYYY-MM-DD HH:mm:ss'); //getDateFormat(appointmentDateTime);
     const slotStartTime = moment(aptmtDate).format('h:mm') || '';
     const slotEndTime =
       moment(aptmtDate)
@@ -157,7 +169,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                       PatientConsultTime: null,
                       PatientInfoAll: PatientInfo,
                       AppId: appId,
-                      Appintmentdatetime: getDateFormat(i.appointmentDateTime),
+                      Appintmentdatetime: i.appointmentDateTime, //getDateFormat(i.appointmentDateTime),
                     });
                   }}
                   doctorname={i.patientInfo!.firstName || ''}

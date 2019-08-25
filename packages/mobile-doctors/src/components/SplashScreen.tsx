@@ -105,9 +105,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   useEffect(() => {
     firebase.analytics().setCurrentScreen('SplashScreen');
     setTimeout(() => {
+      console.log(firebaseUser, doctorDetails);
       getLocalData()
         .then((localData) => {
-          if (firebaseUser && doctorDetails) {
+          if (localData.isLoggedIn) {
             if (localData.isProfileFlowDone) {
               props.navigation.replace(AppRoutes.TabBar);
             } else {
