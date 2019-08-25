@@ -38,14 +38,14 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.MyAccount()} component={MyAccount} />
       <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
       <AuthRouted exact path={clientRoutes.PatientLog()} component={PatientLog} />
-      <AuthRouted exact path={clientRoutes.ConsultTabs(':id')} component={ConsultTabs} />
+      <AuthRouted exact path={clientRoutes.ConsultTabs(':id',':patientId')} component={ConsultTabs} />
     </div>
   ) : (
     <div className={classes.app}>
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
       <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
       <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
-      <AuthRouted exact path={clientRoutes.ConsultTabs(':id')} component={ConsultTabs} />
+      <AuthRouted exact path={clientRoutes.ConsultTabs(':id',':patientId')} component={ConsultTabs} />
     </div>
   );
 };
