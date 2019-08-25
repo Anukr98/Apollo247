@@ -57,6 +57,11 @@ export const caseSheetTypeDefs = gql`
     id: String
   }
 
+  type CaseSheetFullDetails {
+    caseSheetDetails: CaseSheet
+    patientDetails: PatientDetails
+  }
+
   type CaseSheet {
     appointment: AppointmentId
     consultType: String
@@ -71,7 +76,7 @@ export const caseSheetTypeDefs = gql`
     notes: String
     otherInstructions: [OtherInstructions]
     patientId: String
-    symptoms: String
+    symptoms: [SymptomList]
   }
 
   type MedicinePrescription {
@@ -119,9 +124,11 @@ export const caseSheetTypeDefs = gql`
     relation: String
   }
 
-  type CaseSheetFullDetails {
-    caseSheetDetails: CaseSheet
-    patientDetails: PatientDetails
+  type SymptomList {
+    symptom: String
+    since: String
+    howOften: String
+    severity: String
   }
 
   extend type Mutation {
@@ -176,7 +183,10 @@ const getJuniorDoctorCaseSheet: Resolver<
   null,
   { appointmentId: string },
   ConsultServiceContext,
-  { caseSheetDetails: CaseSheet; patientDetails: Patient }
+  {
+    caseSheetDetails: CaseSheet;
+    patientDetails: Patient;
+  }
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   //check appointmnet id
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);

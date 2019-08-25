@@ -33,18 +33,6 @@ export enum APPOINTMENT_STATE {
   RESCHEDULE = 'RESCHEDULE',
 }
 
-export enum MEDICINE_TIMINGS {
-  EVENING = 'EVENING',
-  MORNING = 'MORNING',
-  NIGHT = 'NIGHT',
-  NOON = 'NOON',
-}
-
-export enum MEDICINE_TO_BE_TAKEN {
-  AFTER_FOOD = 'AFTER_FOOD',
-  BEFORE_FOOD = 'BEFORE_FOOD',
-}
-
 export enum REQUEST_ROLES {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
@@ -143,53 +131,6 @@ export class AppointmentSessions extends BaseEntity {
 }
 //AppointmentSessions ends
 
-//MedicinePrescription starts
-@Entity()
-export class MedicinePrescription extends BaseEntity {
-  @ManyToOne((type) => CaseSheet, (caseSheet) => caseSheet.medicinePrescription)
-  caseSheet: CaseSheet;
-
-  @Column()
-  createdDate: Date;
-
-  @Column({ nullable: true })
-  medicineConsumptionDurationInDays: number;
-
-  @Column()
-  medicineDosage: string;
-
-  @Column({ nullable: true })
-  medicineExternalId: string;
-
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column({ type: 'text' })
-  medicineInstructions: string;
-
-  @Column()
-  medicineName: string;
-
-  @Column()
-  medicineTimings: MEDICINE_TIMINGS;
-
-  @Column()
-  medicineToBeTaken: MEDICINE_TO_BE_TAKEN;
-
-  @Column({ nullable: true })
-  updatedDate: Date;
-
-  @BeforeInsert()
-  updateDateCreation() {
-    this.createdDate = new Date();
-  }
-
-  @BeforeUpdate()
-  updateDateUpdate() {
-    this.updatedDate = new Date();
-  }
-}
-
 //case sheet starts
 @Entity()
 export class CaseSheet extends BaseEntity {
@@ -226,7 +167,7 @@ export class CaseSheet extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: true, type: 'text' })
+  @Column({ nullable: true, type: 'json' })
   medicinePrescription: string;
 
   @Column({ nullable: true, type: 'text' })
