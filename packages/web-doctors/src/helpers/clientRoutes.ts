@@ -9,7 +9,8 @@ export const clientRoutes = {
   testsAndMedicine: () => '#',
   healthRecords: () => '#',
   calendar: () => '/calendar',
-  ConsultTabs: (appointmentId: string, patientId: string) => `/Consulttabs/${appointmentId}/${patientId}`,
+  ConsultTabs: (appointmentId: string, patientId: string) =>
+    `/Consulttabs/${appointmentId}/${patientId}`,
 };
 
 export const clientBaseUrl = () => webDoctorsBaseUrl();
