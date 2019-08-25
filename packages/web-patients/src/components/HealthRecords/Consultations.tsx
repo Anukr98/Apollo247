@@ -4,6 +4,9 @@ import { Theme } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
 import { DoctorConsultCard } from 'components/HealthRecords/DoctorConsultCard';
+import { Symptoms } from 'components/HealthRecords/Symptoms';
+import { Prescription } from 'components/HealthRecords/Prescription';
+import { Diagnosis } from 'components/HealthRecords/Diagnosis';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -31,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       paddingBottom: 10,
       paddingTop: 10,
-      marginBottom: 20,
+      marginBottom: 10,
       display: 'flex',
       alignItems: 'center',
       textTransform: 'uppercase',
@@ -125,6 +128,11 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '50%',
       marginRight: 10,
     },
+    consultationDetails: {
+      paddingLeft: 20,
+      paddingRight: 15,
+      paddingTop: 10,
+    },
   };
 });
 
@@ -177,7 +185,11 @@ export const Consultations: React.FC = (props) => {
           </div>
         </div>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 262px)'}>
-          Mallesh
+          <div className={classes.consultationDetails}>
+            <Symptoms />
+            <Prescription />
+            <Diagnosis />
+          </div>
         </Scrollbars>
       </div>
     </div>
