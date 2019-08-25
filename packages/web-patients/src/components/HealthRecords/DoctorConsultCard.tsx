@@ -71,13 +71,16 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: 'auto',
       },
     },
+    activeCard: {
+      border: '1px solid #00b38e',
+    },
   };
 });
 
 export const DoctorConsultCard: React.FC = (props) => {
   const classes = useStyles();
   return (
-    <div className={classes.root}>
+    <div className={`${classes.root} ${classes.activeCard}`}>
       <div className={classes.doctorInfoGroup}>
         <div className={classes.doctorImg}>
           <Avatar
@@ -91,13 +94,13 @@ export const DoctorConsultCard: React.FC = (props) => {
           <div className={classes.doctorService}>
             <span>Follow-up to 20 Apr 2019</span>
             <span>
-              <img src={require('images/ic_prescription.svg')} alt="" />
+              <img src={require('images/ic_onlineconsult.svg')} alt="" />
             </span>
           </div>
           <div className={classes.doctorService}>
             <span>Cold, Cough, Fever, Nausea</span>
             <span>
-              <img src={require('images/ic_prescription.svg')} alt="" />
+              <img src={require('images/ic_prescription_blue.svg')} alt="" />
             </span>
           </div>
         </div>

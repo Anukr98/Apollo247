@@ -38,8 +38,32 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 20,
       marginRight: 15,
     },
-    count: {
+    headerActions: {
       marginLeft: 'auto',
+      display: 'flex',
+      alignItems: 'center',
+      '& button': {
+        boxShadow: 'none',
+        border: 'none',
+        backgroundColor: 'transparent',
+        color: '#fc9916',
+        fontSize: 12,
+        padding: 0,
+      },
+    },
+    shareIcon: {
+      marginLeft: 40,
+      cursor: 'pointer',
+      '& img': {
+        verticalAlign: 'middle',
+      },
+    },
+    downloadIcon: {
+      marginLeft: 40,
+      cursor: 'pointer',
+      '& img': {
+        verticalAlign: 'middle',
+      },
     },
     topFilters: {
       textAlign: 'right',
@@ -114,7 +138,7 @@ export const Consultations: React.FC = (props) => {
           <AphButton>Online</AphButton>
           <AphButton>Physical</AphButton>
         </div>
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 237px)'}>
+        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 276px)'}>
           <div className={classes.consultationsList}>
             <div className={classes.consultGroupHeader}>
               <div className={classes.circle}></div>
@@ -142,7 +166,15 @@ export const Consultations: React.FC = (props) => {
       <div className={classes.rightSection}>
         <div className={classes.sectionHeader}>
           <span>Online Follow up consultation - case #362079</span>
-          <span className={classes.count}>04</span>
+          <div className={classes.headerActions}>
+            <AphButton>View Consult</AphButton>
+            <div className={classes.shareIcon}>
+              <img src={require('images/ic_round-share.svg')} alt="" />
+            </div>
+            <div className={classes.downloadIcon}>
+              <img src={require('images/ic_download.svg')} alt="" />
+            </div>
+          </div>
         </div>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 262px)'}>
           Mallesh
