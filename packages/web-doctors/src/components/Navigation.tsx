@@ -10,6 +10,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '17px 0',
       borderLeft: '1px solid rgba(2,71,91,0.1)',
       marginLeft: 20,
+      marginBottom: 5,
       [theme.breakpoints.down('xs')]: {
         display: 'none',
       },
@@ -43,13 +44,20 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const Navigation: React.FC = (props) => {
   const classes = useStyles();
-  const currentPath = window.location.pathname;
   return (
     <div className={classes.appNavigation} data-cypress="Navigation">
-      <Link to={clientRoutes.welcome()} className={classes.menuItemActive}>
+      <Link
+        to={clientRoutes.welcome()}
+        className={`${window.location.href.includes('/myaccount') && classes.menuItemActive}`}
+      >
         Home
       </Link>
-      <Link to={clientRoutes.testsAndMedicine()}>Patients</Link>
+      <Link
+        className={`${window.location.href.includes('/patientlog') && classes.menuItemActive}`}
+        to={clientRoutes.PatientLog()}
+      >
+        Patients
+      </Link>
     </div>
   );
 };

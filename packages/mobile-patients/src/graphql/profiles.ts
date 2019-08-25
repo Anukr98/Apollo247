@@ -310,6 +310,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
           doctorType
           doctorHospital {
             facility {
+              id
               name
               streetLine1
               streetLine2
@@ -515,6 +516,60 @@ export const GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS = gql`
       DoctorPhysicalAvailabilityInput: $DoctorPhysicalAvailabilityInput
     ) {
       availableSlots
+    }
+  }
+`;
+
+export const UPDATE_PATIENT_ADDRESS = gql`
+  mutation updatePatientAddress($UpdatePatientAddressInput: UpdatePatientAddressInput!) {
+    updatePatientAddress(UpdatePatientAddressInput: $UpdatePatientAddressInput) {
+      patientAddress {
+        id
+        addressLine1
+        addressLine2
+        city
+        state
+        zipcode
+        landmark
+        createdDate
+        updatedDate
+      }
+    }
+  }
+`;
+
+export const SAVE_PATIENT_ADDRESS = gql`
+  mutation savePatientAddress($PatientAddressInput: PatientAddressInput!) {
+    savePatientAddress(PatientAddressInput: $PatientAddressInput) {
+      patientAddress {
+        id
+        addressLine1
+        addressLine2
+        city
+        state
+        zipcode
+        landmark
+        createdDate
+        updatedDate
+      }
+    }
+  }
+`;
+
+export const GET_PATIENT_ADDRESS_LIST = gql`
+  query getPatientAddressList($patientId: String) {
+    getPatientAddressList(patientId: $patientId) {
+      addressList {
+        id
+        addressLine1
+        addressLine2
+        city
+        state
+        zipcode
+        landmark
+        createdDate
+        updatedDate
+      }
     }
   }
 `;

@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
     paddingRight: 14,
   },
   titleTextStyle: {
+    textAlign: 'center',
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansSemiBold(13),
     letterSpacing: 0.5,
@@ -76,7 +77,13 @@ export const Header: React.FC<HeaderProps> = (props) => {
           {leftIcon === 'backArrowWhite' && <BackArrowWhite />}
         </TouchableOpacity>
       </View>
-      <View>{title && <Text style={styles.titleTextStyle}>{title}</Text>}</View>
+      <View>
+        {title && (
+          <Text style={styles.titleTextStyle} numberOfLines={1}>
+            {title}
+          </Text>
+        )}
+      </View>
       <View style={{ flex: 1, alignItems: 'flex-end' }}>
         {rightText && (
           <Text style={styles.rightTextStyle} onPress={rightText.onPress}>

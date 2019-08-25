@@ -23,10 +23,10 @@ import {
   SearchDoctorAndSpecialtyByName,
   SearchDoctorAndSpecialtyByNameVariables,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors,
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches,
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties,
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties,
 } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialtyByName';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 
@@ -41,7 +41,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { theme } from '../theme/theme';
 import { Button } from './ui/Button';
@@ -692,7 +691,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     return null;
   };
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {doctorsList && renderSearch()}
         {showSpinner ? null : (

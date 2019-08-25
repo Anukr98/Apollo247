@@ -20,4 +20,8 @@ export class AppointmentsSessionRepository extends Repository<AppointmentSession
   getAppointmentSession(appointment: string) {
     return this.findOne({ where: { appointment } });
   }
+
+  endAppointmentSession(id: string, consultEndDateTime: Date) {
+    return this.update(id, { consultEndDateTime });
+  }
 }

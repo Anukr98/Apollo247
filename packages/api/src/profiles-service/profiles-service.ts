@@ -1,101 +1,46 @@
 import '@aph/universal/dist/global';
-import 'reflect-metadata';
-import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
-import { ApolloServer } from 'apollo-server';
 import { buildFederatedSchema } from '@apollo/federation';
-import { createConnections, getConnection } from 'typeorm';
+import { GatewayHeaders } from 'api-gateway';
+import { ApolloServer } from 'apollo-server';
+import { GraphQLDate, GraphQLDateTime, GraphQLTime } from 'graphql-iso-date';
+import gql from 'graphql-tag';
+import { connect } from 'profiles-service/database/connect';
+import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import {
-  Patient,
-  SearchHistory,
-  PatientAddress,
-  PatientFamilyHistory,
-  PatientLifeStyle,
-  PatientHealthVault,
-  Allergies,
-  PatientAllergies,
-} from 'profiles-service/entities';
-import {
-  Doctor,
-  DoctorSpecialty,
-  StarTeam,
-  DoctorAndHospital,
-  Facility,
-  ConsultHours,
-  DoctorBankAccounts,
-  Packages,
-} from 'doctors-service/entities';
-import {
-  getCurrentPatientsTypeDefs,
   getCurrentPatientsResolvers,
+  getCurrentPatientsTypeDefs,
 } from 'profiles-service/resolvers/getCurrentPatients';
 import {
-  updatePatientTypeDefs,
-  updatePatientResolvers,
-} from 'profiles-service/resolvers/updatePatient';
-import { getPatientTypeDefs, getPatientResolvers } from 'profiles-service/resolvers/getPatients';
-import { saveSearchTypeDefs, saveSearchResolvers } from 'profiles-service/resolvers/saveSearch';
+  getDigitizedOrderResolvers,
+  getDigitizedOrderTypeDefs,
+} from 'profiles-service/resolvers/getDigitizedOrderDetails';
 import {
-  getPastSearchesTypeDefs,
   getPastSearchesResolvers,
+  getPastSearchesTypeDefs,
 } from 'profiles-service/resolvers/getPastSearches';
 import {
-  getPatientPastSearchesTypeDefs,
   getPatientPastSearchesResolvers,
+  getPatientPastSearchesTypeDefs,
 } from 'profiles-service/resolvers/getPatientPastSearches';
+import { getPatientResolvers, getPatientTypeDefs } from 'profiles-service/resolvers/getPatients';
 import {
-  addPatientAddressTypeDefs,
   addPatientAddressResolvers,
+  addPatientAddressTypeDefs,
 } from 'profiles-service/resolvers/patientAddress';
-import gql from 'graphql-tag';
-import { GatewayHeaders } from 'api-gateway';
-import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
+import {
+  saveDeviceTokenResolvers,
+  saveDeviceTokenTypeDefs,
+} from 'profiles-service/resolvers/savePatientDeviceToken';
+import { saveSearchResolvers, saveSearchTypeDefs } from 'profiles-service/resolvers/saveSearch';
+import {
+  updatePatientResolvers,
+  updatePatientTypeDefs,
+} from 'profiles-service/resolvers/updatePatient';
+import 'reflect-metadata';
+import { getConnection } from 'typeorm';
 
 (async () => {
-  await createConnections([
-    {
-      entities: [
-        Patient,
-        SearchHistory,
-        PatientAddress,
-        PatientFamilyHistory,
-        PatientLifeStyle,
-        PatientHealthVault,
-        Allergies,
-        PatientAllergies,
-      ],
-      type: 'postgres',
-      host: process.env.PROFILES_DB_HOST,
-      port: parseInt(process.env.PROFILES_DB_PORT, 10),
-      username: process.env.PROFILES_DB_USER,
-      password: process.env.PROFILES_DB_PASSWORD,
-      database: `profiles_${process.env.NODE_ENV}`,
-      logging: true,
-      synchronize: true,
-    },
-    {
-      name: 'doctors-db',
-      entities: [
-        Doctor,
-        DoctorSpecialty,
-        StarTeam,
-        DoctorAndHospital,
-        Facility,
-        ConsultHours,
-        DoctorBankAccounts,
-        Packages,
-      ],
-      type: 'postgres',
-      host: process.env.DOCTORS_DB_HOST,
-      port: parseInt(process.env.DOCTORS_DB_PORT, 10),
-      username: process.env.DOCTORS_DB_USER,
-      password: process.env.DOCTORS_DB_PASSWORD,
-      database: `doctors_${process.env.NODE_ENV}`,
-      logging: true,
-      synchronize: true,
-    },
-  ]).catch((error) => {
-    throw new Error(error);
-  });
+  await connect();
 
   const server = new ApolloServer({
     context: async ({ req }) => {
@@ -155,6 +100,14 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
       {
         typeDefs: addPatientAddressTypeDefs,
         resolvers: addPatientAddressResolvers,
+      },
+      {
+        typeDefs: getDigitizedOrderTypeDefs,
+        resolvers: getDigitizedOrderResolvers,
+      },
+      {
+        typeDefs: saveDeviceTokenTypeDefs,
+        resolvers: saveDeviceTokenResolvers,
       },
     ]),
   });

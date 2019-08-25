@@ -1,11 +1,10 @@
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { getProductDetails, quoteId } from '../../helpers/apiCalls';
-import Axios from 'axios';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -85,7 +84,7 @@ export interface MedicineDetailsSceneProps
   }> {}
 
 export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props) => {
-  const [medicineDetails, setmedicineDetails] = useState<{}>();
+  const [medicineDetails, setmedicineDetails] = useState<{ description: string }>();
 
   useEffect(() => {
     const id = props.navigation.getParam('sku');
@@ -137,6 +136,19 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     );
   };
 
+  const renderTitleAndDescriptionList = () => {
+    // return array.map((i, index, array) => {
+    return (
+      <View>
+        <Text style={styles.heading}>{array[0].title}</Text>
+        <Text style={[styles.description]}>
+          {medicineDetails ? medicineDetails.description : ''}
+        </Text>
+      </View>
+    );
+    // });
+  };
+
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       <Header
@@ -146,7 +158,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         container={{ borderBottomWidth: 0 }}
       />
       <ScrollView bounces={false}>
-        <View style={styles.cardStyle}>{renderNote()}</View>
+        <View style={styles.cardStyle}>
+          {renderNote()}
+          {renderTitleAndDescriptionList()}
+        </View>
         {renderBottomButtons()}
       </ScrollView>
     </SafeAreaView>

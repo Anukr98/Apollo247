@@ -18,14 +18,15 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: theme.palette.common.white,
-      padding: '5px 20px',
+      padding: '5px 20px 0 20px',
       [theme.breakpoints.down('xs')]: {
-        padding: '15px 20px 5px 20px',
+        padding: '5px 15px 4px 15px',
       },
     },
     logo: {
       lineHeight: 0,
       paddingTop: 5,
+      paddingBottom: 6,
       '& a': {
         display: 'block',
       },
@@ -39,12 +40,17 @@ const useStyles = makeStyles((theme: Theme) => {
     userAccount: {
       marginBottom: 0,
       marginLeft: 20,
+      marginTop: -5,
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
+      '& span': {
+        padding: '20px 0 11px 0',
+        width: 55,
+        display: 'inline-block',
+        textAlign: 'center',
+      },
       '& img': {
-        marginTop: 15,
-        marginRight: 25,
         width: 28,
       },
     },
@@ -59,6 +65,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '50%',
       textAlign: 'center',
       cursor: 'pointer',
+      marginTop: 8,
     },
     userActive: {},
     loginForm: {
@@ -88,6 +95,21 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       marginTop: '63px',
     },
+    menuItemActive: {
+      backgroundColor: '#f7f8f5',
+      position: 'relative',
+      display: 'inline-block',
+
+      '&:after': {
+        position: 'absolute',
+        content: '""',
+        bottom: 0,
+        left: 0,
+        height: 5,
+        width: '100%',
+        backgroundColor: '#00b38e',
+      },
+    },
     container: {
       maxWidth: 1024,
       margin: 'auto',
@@ -116,6 +138,7 @@ export const Header: React.FC = (props) => {
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [isHelpPopupOpen, setIsHelpPopupOpen] = React.useState(false);
   const [stickyPopup, setStickyPopup] = React.useState(true);
+  const [selectedTab, setSelectedTab] = React.useState(0);
   return (
     <header className={classes.header}>
       <div className={classes.container}>
@@ -135,26 +158,52 @@ export const Header: React.FC = (props) => {
                   window.location.href.includes('/profile') ? (
                     <div>
                       <img
-                        className={classes.accountIc}
-                        onClick={() =>
-                          isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true)
-                        }
+                        className={`${classes.accountIc} ${selectedTab === 5 &&
+                          classes.menuItemActive}`}
+                        onClick={() => {
+                          isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
+                          setSelectedTab(5);
+                        }}
                         src={require('images/ic_help.svg')}
                       />
                     </div>
                   ) : (
                     <div>
-                      <img src={require('images/ic_inbox.svg')} />
-                      <img src={require('images/ic_notifications.svg')} />
-                      <img
-                        onClick={() =>
-                          isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true)
-                        }
-                        src={require('images/ic_help.svg')}
-                      />
-                      <Link to="/myaccount">
-                        <img src={require('images/ic_profile.svg')} />
-                      </Link>
+                      <span>
+                        <img
+                          className={`${selectedTab === 3 && classes.menuItemActive}`}
+                          onClick={() => setSelectedTab(3)}
+                          src={require('images/ic_inbox.svg')}
+                        />
+                      </span>
+                      <span>
+                        <img
+                          className={`${selectedTab === 4 && classes.menuItemActive}`}
+                          onClick={() => setSelectedTab(4)}
+                          src={require('images/ic_notifications.svg')}
+                        />
+                      </span>
+                      <span>
+                        <img
+                          className={`${selectedTab === 5 && classes.menuItemActive}`}
+                          onClick={() => {
+                            isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
+                            setSelectedTab(5);
+                          }}
+                          src={require('images/ic_help.svg')}
+                        />
+                      </span>
+                      <span
+                        className={`${window.location.href.includes('/myaccount') &&
+                          classes.menuItemActive}`}
+                      >
+                        <Link to="/myaccount">
+                          <img
+                            onClick={() => setSelectedTab(6)}
+                            src={require('images/ic_profile.svg')}
+                          />
+                        </Link>
+                      </span>
                     </div>
                   )
                 ) : (
@@ -187,7 +236,13 @@ export const Header: React.FC = (props) => {
             >
               {isSignedIn ? (
                 <Paper className={classes.afterloginForm}>
-                  <Button onClick={() => setIsHelpPopupOpen(false)} className={classes.cross}>
+                  <Button
+                    onClick={() => {
+                      setIsHelpPopupOpen(false);
+                      setSelectedTab(1);
+                    }}
+                    className={classes.cross}
+                  >
                     <img src={require('images/ic_cross.svg')} alt="" />
                   </Button>
                   <HelpPopup setBackArrow={() => setIsHelpPopupOpen(true)} />

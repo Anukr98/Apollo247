@@ -32,10 +32,17 @@ import {
   RemoveTeamDoctorFromStarTeam,
   RemoveTeamDoctorFromStarTeamVariables,
 } from 'graphql/types/RemoveTeamDoctorFromStarTeam';
+
+import {
+  UpdateDelegateNumber,
+  UpdateDelegateNumberVariables,
+} from 'graphql/types/UpdateDelegateNumber';
 import {
   REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
   GET_DOCTOR_DETAILS,
   MAKE_TEAM_DOCTOR_ACTIVE,
+  UPDATE_DELEGATE_NUMBER,
+  REMOVE_DELEGATE_NUMBER,
 } from 'graphql/profiles';
 import {
   MakeTeamDoctorActive,
@@ -72,6 +79,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       fontWeight: 500,
       color: 'rgba(2,71,91,0.5)',
+      marginTop: 10,
+      lineHeight: 2,
+    },
+    statusText: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#00b38e',
       marginTop: 10,
       lineHeight: 2,
     },
@@ -128,12 +142,6 @@ const useStyles = makeStyles((theme: Theme) => {
         borderBottom: 'none',
       },
     },
-    tabLeftcontent: {
-      paddingLeft: 20,
-      [theme.breakpoints.down('xs')]: {
-        paddingLeft: 0,
-      },
-    },
     awardsSection: {
       padding: '10px 20px 10px 20px',
       marginBottom: 20,
@@ -148,9 +156,11 @@ const useStyles = makeStyles((theme: Theme) => {
       'max-width': 'initial',
     },
     gridContainer: {
+      borderTop: 'solid 1px rgba(2, 71, 91, 0.1)',
       'column-count': 2,
       'column-fill': 'initial',
       display: 'block',
+      paddingTop: 20,
       [theme.breakpoints.down('xs')]: {
         'column-count': 1,
       },
@@ -162,6 +172,9 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       [theme.breakpoints.down('xs')]: {
         // display: 'flex',
+      },
+      '& h5': {
+        fontSize: 12,
       },
     },
     serviceItemLeft: {
@@ -265,14 +278,18 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightBold,
       // pointerEvents: 'none',
       paddingLeft: 4,
+      marginBottom: 20,
+      '& img': {
+        marginRight: 8,
+      },
       '&:hover': {
         backgroundColor: 'transparent',
       },
     },
     btnContainer: {
       borderTop: 'solid 2px rgba(101,143,155,0.2)',
-      marginTop: 30,
-      paddingTop: 10,
+      marginTop: 20,
+      paddingTop: 20,
       textAlign: 'right',
     },
     invited: {
@@ -360,45 +377,6 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '16px 20px',
       cursor: 'pointer',
     },
-    ProfileContainer: {
-      padding: '90px 20px 20px 20px',
-      '& h2': {
-        fontSize: 16,
-        color: theme.palette.secondary.dark,
-        marginBottom: 15,
-      },
-      '& h3': {
-        lineHeight: '22px',
-        padding: '3px 5px 5px 0',
-        fontSize: 16,
-        fontWeight: theme.typography.fontWeightMedium,
-        color: '#02475b',
-        margin: 0,
-      },
-      '& h4': {
-        padding: '5px 5px 5px 0',
-        marginLeft: 22,
-        fontSize: 20,
-        borderBottom: 'solid 2px rgba(101,143,155,0.05)',
-        fontWeight: 600,
-      },
-      '& h5': {
-        padding: '5px 5px 3px 0',
-        color: '#658f9b',
-        fontWeight: 'normal',
-      },
-      '& h6': {
-        padding: '5px 5px 5px 0',
-        letterSpacing: '0.3px',
-        marginLeft: 20,
-        fontSize: 15,
-        fontWeight: 600,
-        color: '#0087ba',
-        '& span': {
-          padding: '0 2px',
-        },
-      },
-    },
     leftNav: {
       fontSize: 15,
       lineHeight: 1.6,
@@ -413,7 +391,7 @@ const useStyles = makeStyles((theme: Theme) => {
     navLeftIcon: {
       position: 'relative',
       top: 5,
-      height: 20,
+      width: 24,
       marginRight: 10,
     },
     tabActive: {
@@ -424,7 +402,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '40%',
       align: 'left',
       paddingRight: 26,
-      marginBottom: 10,
+      marginBottom: 0,
       [theme.breakpoints.down('xs')]: {
         width: '100%',
       },
@@ -670,7 +648,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
             );
           })}
           {showAddDoc && (
-            <Grid item lg={4} sm={6} xs={12}>
+            <Grid item lg={6} sm={6} xs={12}>
               <div className={classes.addStarDoctor}>
                 <Typography variant="h5">
                   Add a doctor to your team
@@ -720,7 +698,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
                 classes={{ root: classes.btnAddDoctor }}
                 onClick={() => setShowAddDoc(true)}
               >
-                <img src={require('images/ic_add.svg')} alt="" /> ADD DOCTOR
+                <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD DOCTOR
               </AphButton>
             </Grid>
           )}
@@ -738,153 +716,220 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
   const { doctor, clinics } = props;
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const [phoneMessage, setPhoneMessage] = useState<string>('');
+  const [delegateNumberStatus, setDelegateNumberStatus] = useState<string>('');
   const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
+
   const classes = useStyles();
   const doctorProfile = doctor;
 
   return (
-    <Grid item lg={9} sm={6} xs={12} className={classes.tabLeftcontent}>
-      <div className={classes.outerContainer}>
-        <h2>Your Profile</h2>
-        <div className={`${classes.tabContent} ${classes.awardsSection}`}>
-          <Grid container spacing={0} className={classes.gridContainer}>
-            {doctorProfile.qualification && doctorProfile.qualification.length > 0 && (
-              <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">Education</Typography>
-                  <Typography variant="h3">{doctorProfile.qualification}</Typography>
-                </Paper>
-              </Grid>
-            )}
-            {doctorProfile.awards && doctorProfile.awards.length > 0 && (
-              <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">Awards</Typography>
-                  <Typography variant="h3">
-                    {doctorProfile.awards
-                      .replace('&amp;', '&')
-                      .replace(/<\/?[^>]+>/gi, '')
-                      .trim()}
-                    }
-                  </Typography>
-                </Paper>
-              </Grid>
-            )}
-
-            {doctorProfile.specialty &&
-              doctorProfile.specialty.name &&
-              doctorProfile.specialty.name.length > 0 && (
-                <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
-                  <Paper className={classes.serviceItem}>
-                    <Typography variant="h5">Speciality</Typography>
-                    <Typography variant="h3">{doctorProfile.specialty.name}</Typography>
-                  </Paper>
-                </Grid>
-              )}
-
-            {doctorProfile.languages && doctorProfile.languages.length > 0 && (
-              <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">Speaks</Typography>
-                  <Typography variant="h3">{doctorProfile.languages}</Typography>
-                </Paper>
-              </Grid>
-            )}
-
-            {doctorProfile.specialization && doctorProfile.specialization.length > 0 && (
-              <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">Services</Typography>
-                  <Typography variant="h3">{doctorProfile.specialization}</Typography>
-                </Paper>
-              </Grid>
-            )}
-
-            {doctorProfile.registrationNumber && doctorProfile.registrationNumber.length > 0 && (
-              <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
-                <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">MCI Number</Typography>
-                  <Typography variant="h3">{doctorProfile.registrationNumber}</Typography>
-                </Paper>
-              </Grid>
-            )}
-
+    <div>
+      <h2>Your Profile</h2>
+      <div className={`${classes.tabContent} ${classes.awardsSection}`}>
+        <Typography variant="h4">
+          {`${doctorProfile!.salutation &&
+            doctorProfile!.salutation!.charAt(0).toUpperCase()}${doctorProfile
+            .salutation!.slice(1)
+            .toLowerCase() + '.'} ${doctorProfile.firstName} ${doctorProfile.lastName}`}{' '}
+        </Typography>
+        <Typography variant="h6">
+          <span>
+            {doctorProfile!.specialty!.name.toUpperCase()} | {doctorProfile!.experience} YRS
+          </span>
+        </Typography>
+        <Grid container spacing={0} className={classes.gridContainer}>
+          {doctorProfile.qualification && doctorProfile.qualification.length > 0 && (
             <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
               <Paper className={classes.serviceItem}>
-                <Typography variant="h5">In-person Consult Location</Typography>
-                {clinics.map((clinic, index) => (
-                  <Typography variant="h3" key={index} className={index > 0 ? classes.none : ''}>
-                    {clinic.facility.name}, {clinic.facility.streetLine1}
-                    {clinic.facility.streetLine2}
-                    {clinic.facility.streetLine3}, {clinic.facility.city}
-                  </Typography>
-                ))}
+                <Typography variant="h5">Education</Typography>
+                <Typography variant="h3">{doctorProfile.qualification}</Typography>
               </Paper>
             </Grid>
-          </Grid>
-        </div>
-        <div>
-          <Typography className={classes.starDoctorHeading}>Your Star Doctors Team (2)</Typography>
-          <StarDoctorsList currentDocId={doctorProfile.id} starDoctors={doctorProfile!.starTeam!} />
-        </div>
-        <h2>Secretary Login</h2>
-        <div className={`${classes.tabContent} ${classes.awardsSection}`}>
-          <h3>Enter the mobile number you’d like to assign access of your account to</h3>
-          <FormControl fullWidth>
-            <AphInput
-              autoFocus
-              inputProps={{ type: 'tel', maxLength: 10 }}
-              value={mobileNumber}
-              onPaste={(e) => {
-                if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
-              }}
-              onChange={(event) => {
-                setMobileNumber(event.currentTarget.value);
-                if (event.currentTarget.value !== '') {
-                  if (parseInt(event.currentTarget.value[0], 10) > 5) {
-                    setPhoneMessage('');
-                    setShowErrorMessage(false);
-                  } else {
-                    setPhoneMessage(invalidPhoneMessage);
-                    setShowErrorMessage(true);
+          )}
+          {doctorProfile.awards && doctorProfile.awards.length > 0 && (
+            <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
+              <Paper className={classes.serviceItem}>
+                <Typography variant="h5">Awards</Typography>
+                <Typography variant="h3">
+                  {doctorProfile.awards
+                    .replace('&amp;', '&')
+                    .replace(/<\/?[^>]+>/gi, '')
+                    .trim()}
                   }
-                }
-              }}
-              error={
-                mobileNumber.trim() !== '' && showErrorMessage && !isMobileNumberValid(mobileNumber)
-              }
-              onKeyPress={(e) => {
-                if (isNaN(parseInt(e.key, 10))) {
-                  e.preventDefault();
-                }
-              }}
-              startAdornment={
-                <InputAdornment
-                  className={classes.inputAdornment}
-                  position="start"
-                ></InputAdornment>
-              }
-            />
-            <FormHelperText component="div" className={classes.helpText} error={showErrorMessage}>
-              {phoneMessage.length > 0 ? phoneMessage : ''}
-            </FormHelperText>
-          </FormControl>
-        </div>
-        <div className={classes.helpTxt}>
-          <img alt="" src={require('images/ic_info.svg')} className={classes.navLeftIcon} />
-          Call <span className={classes.orange}>1800 - 3455 - 3455 </span>to make any changes
-        </div>
-        <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
-          <Grid item lg={12} sm={12} xs={12}>
-            <AphButton variant="contained" color="primary" classes={{ root: classes.backButton }}>
-              BACK
-            </AphButton>
-            <AphButton variant="contained" color="primary" classes={{ root: classes.saveButton }}>
-              SAVE
-            </AphButton>
+                </Typography>
+              </Paper>
+            </Grid>
+          )}
+
+          {doctorProfile.specialty &&
+            doctorProfile.specialty.name &&
+            doctorProfile.specialty.name.length > 0 && (
+              <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
+                <Paper className={classes.serviceItem}>
+                  <Typography variant="h5">Speciality</Typography>
+                  <Typography variant="h3">{doctorProfile.specialty.name}</Typography>
+                </Paper>
+              </Grid>
+            )}
+
+          {doctorProfile.languages && doctorProfile.languages.length > 0 && (
+            <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
+              <Paper className={classes.serviceItem}>
+                <Typography variant="h5">Speaks</Typography>
+                <Typography variant="h3">{doctorProfile.languages}</Typography>
+              </Paper>
+            </Grid>
+          )}
+
+          {doctorProfile.specialization && doctorProfile.specialization.length > 0 && (
+            <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
+              <Paper className={classes.serviceItem}>
+                <Typography variant="h5">Services</Typography>
+                <Typography variant="h3">{doctorProfile.specialization}</Typography>
+              </Paper>
+            </Grid>
+          )}
+
+          {doctorProfile.registrationNumber && doctorProfile.registrationNumber.length > 0 && (
+            <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
+              <Paper className={classes.serviceItem}>
+                <Typography variant="h5">MCI Number</Typography>
+                <Typography variant="h3">{doctorProfile.registrationNumber}</Typography>
+              </Paper>
+            </Grid>
+          )}
+
+          <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
+            <Paper className={classes.serviceItem}>
+              <Typography variant="h5">In-person Consult Location</Typography>
+              {clinics.map((clinic, index) => (
+                <Typography variant="h3" key={index} className={index > 0 ? classes.none : ''}>
+                  {clinic.facility.name}, {clinic.facility.streetLine1}
+                  {clinic.facility.streetLine2}
+                  {clinic.facility.streetLine3}, {clinic.facility.city}
+                </Typography>
+              ))}
+            </Paper>
           </Grid>
         </Grid>
       </div>
-    </Grid>
+
+      <div>
+        <Typography className={classes.starDoctorHeading}>
+          {`Your Star Doctors Team (${
+            doctorProfile!.starTeam!.filter(
+              (existingDoc: GetDoctorDetails_getDoctorDetails_starTeam | null) =>
+                existingDoc!.isActive === true
+            ).length
+          })`}
+        </Typography>
+        <StarDoctorsList currentDocId={doctorProfile.id} starDoctors={doctorProfile!.starTeam!} />
+      </div>
+      <h2>Secretary Login</h2>
+      <div className={`${classes.tabContent} ${classes.awardsSection}`}>
+        <h3>Enter the mobile number you’d like to assign access of your account to</h3>
+        <FormControl fullWidth>
+          <AphInput
+            className={classes.inputWidth}
+            inputProps={{ type: 'tel', maxLength: 10 }}
+            value={mobileNumber}
+            placeholder="Enter Here"
+            onPaste={(e) => {
+              if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
+            }}
+            onChange={(event) => {
+              setDelegateNumberStatus('');
+              setMobileNumber(event.currentTarget.value);
+              if (event.currentTarget.value !== '') {
+                if (parseInt(event.currentTarget.value[0], 10) > 5) {
+                  setPhoneMessage('');
+                  setShowErrorMessage(false);
+                } else {
+                  setPhoneMessage(invalidPhoneMessage);
+                  setShowErrorMessage(true);
+                }
+              }
+            }}
+            error={
+              mobileNumber.trim() !== '' && showErrorMessage && !isMobileNumberValid(mobileNumber)
+            }
+            onKeyPress={(e) => {
+              if (isNaN(parseInt(e.key, 10))) {
+                e.preventDefault();
+              }
+            }}
+            startAdornment={<InputAdornment position="start"></InputAdornment>}
+          />
+          {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0 ? (
+            <FormHelperText component="div" className={classes.helpText} error={showErrorMessage}>
+              {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0 ? phoneMessage : ''}
+            </FormHelperText>
+          ) : (
+            <FormHelperText component="div" className={classes.statusText}>
+              {delegateNumberStatus.length > 0 ? delegateNumberStatus : ''}
+            </FormHelperText>
+          )}
+        </FormControl>
+      </div>
+      <div className={classes.helpTxt}>
+        <img alt="" src={require('images/ic_info.svg')} className={classes.navLeftIcon} />
+        Call <span className={classes.orange}>1800 - 3455 - 3455 </span>to make any changes
+      </div>
+      <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
+        <Grid item lg={12} sm={12} xs={12}>
+          <AphButton
+            variant="contained"
+            color="primary"
+            classes={{ root: classes.backButton }}
+            onClick={() => setMobileNumber('')}
+          >
+            CANCEL
+          </AphButton>
+          {mobileNumber === '' ? (
+            <Mutation<UpdateDelegateNumber, UpdateDelegateNumberVariables>
+              mutation={REMOVE_DELEGATE_NUMBER}
+            >
+              {(mutate, { loading }) => (
+                <AphButton
+                  variant="contained"
+                  color="primary"
+                  disabled={mobileNumber !== '' && phoneMessage.length > 0}
+                  classes={{ root: classes.saveButton }}
+                  onClick={(e) => {
+                    mutate({});
+                    setDelegateNumberStatus('Secretary Number has deleted successfully');
+                  }}
+                >
+                  SAVE
+                </AphButton>
+              )}
+            </Mutation>
+          ) : (
+            <Mutation<UpdateDelegateNumber, UpdateDelegateNumberVariables>
+              mutation={UPDATE_DELEGATE_NUMBER}
+            >
+              {(mutate, { loading }) => (
+                <AphButton
+                  variant="contained"
+                  color="primary"
+                  disabled={mobileNumber !== '' && phoneMessage.length > 0}
+                  classes={{ root: classes.saveButton }}
+                  onClick={(e) => {
+                    mutate({
+                      variables: {
+                        delegateNumber: mobileNumber,
+                      },
+                    });
+                    setDelegateNumberStatus('Secretary Number has updated successfully');
+                  }}
+                >
+                  SAVE
+                </AphButton>
+              )}
+            </Mutation>
+          )}
+        </Grid>
+      </Grid>
+    </div>
   );
 };

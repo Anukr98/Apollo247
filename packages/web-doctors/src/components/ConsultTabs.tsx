@@ -15,17 +15,15 @@ import {
 } from 'graphql/types/createAppointmentSession';
 import { CREATE_APPOINTMENT_SESSION } from 'graphql/profiles';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
+import { CaseSheet } from 'components/case-sheet/CaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     consultRoom: {
-      paddingTop: 68,
+      paddingTop: 64,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 68,
+        paddingTop: 64,
       },
-    },
-    caseSheet: {
-      minHeight: 'calc(100vh - 360px)',
     },
     chatContainer: {
       minHeight: 'calc(100vh - 360px)',
@@ -85,7 +83,7 @@ const useStyles = makeStyles((theme: Theme) => {
 type Params = { id: string };
 export const ConsultTabs: React.FC = (props) => {
   const classes = useStyles();
-  const [tabValue, setTabValue] = useState<number>(1);
+  const [tabValue, setTabValue] = useState<number>(0);
   const [startConsult, setStartConsult] = useState<string>('');
   const [appointmentId, setAppointmentId] = useState<string>('');
   const [sessionId, setsessionId] = useState<string>('');
@@ -118,16 +116,11 @@ export const ConsultTabs: React.FC = (props) => {
           setsessionId(_data.data.createAppointmentSession.sessionId);
           settoken(_data.data.createAppointmentSession.appointmentToken);
           setappointmentDateTime(_data.data.createAppointmentSession.appointmentDateTime);
-          //setappointmentDateTime('2019-08-21T11:10:00.000Z');
           setdoctorId(_data.data.createAppointmentSession.doctorId);
           setpatientId(_data.data.createAppointmentSession.patientId);
-          // setsessionId('1_MX40NjM5MzU4Mn5-MTU2NTA3MTUwNDk4MX56bVd3ZW96MFNuS2Vua2dDMnZ5VTZNNlJ-UH4');
-          // settoken(
-          //   'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9Y2UxMDhkODEzNTU3MmE4M2ExZTZkNmVlYjVkZDE0ODA3NGZhM2QyZTpzZXNzaW9uX2lkPTFfTVg0ME5qTTVNelU0TW41LU1UVTJOVEEzTVRVd05EazRNWDU2YlZkM1pXOTZNRk51UzJWdWEyZERNblo1VlRaTk5sSi1VSDQmY3JlYXRlX3RpbWU9MTU2NTA3MTYxMCZub25jZT0wLjExNjA5MzQ3Njk5NjI3MzM3JnJvbGU9cHVibGlzaGVyJmV4cGlyZV90aW1lPTE1Njc2NjM2MDcmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
-          // );
         })
         .catch((e: any) => {
-          console.log('Error occured while adding Doctor', e);
+          console.log('Error occured creating session', e);
         });
     }
     return () => {
@@ -173,7 +166,6 @@ export const ConsultTabs: React.FC = (props) => {
                 <Tab
                   classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
                   label="Case Sheet"
-                  className={classes.pointerNone}
                 />
                 <Tab
                   classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
@@ -183,7 +175,7 @@ export const ConsultTabs: React.FC = (props) => {
             </div>
             {tabValue === 0 && (
               <TabContainer>
-                <div className={classes.caseSheet}>Case sheet</div>
+                <CaseSheet />
               </TabContainer>
             )}
             {tabValue === 1 && (

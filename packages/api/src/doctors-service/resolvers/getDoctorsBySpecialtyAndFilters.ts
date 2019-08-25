@@ -23,6 +23,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     maximum: Int
   }
   input FilterDoctorInput {
+    patientId: ID
     specialty: ID!
     city: [String]
     experience: [Range]
@@ -53,6 +54,7 @@ export type Range = {
 };
 
 export type FilterDoctorInput = {
+  patientId: string;
   specialty: string;
   city: string[];
   experience: Range[];
@@ -84,8 +86,28 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   try {
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+    const consultsRepo = consultsDb.getCustomRepository(AppointmentRepository);
     filteredDoctors = await doctorRepository.filterDoctors(args.filterInput);
     // console.log('basic filtered doctors: ',filteredDoctors)
+    //apply sort algorithm
+    if (filteredDoctors.length > 1) {
+      //get patient and matched doctors previous appointments starts here
+      const filteredDoctorIds = filteredDoctors.map((doctor) => {
+        return doctor.id;
+      });
+      const previousAppointments = await consultsRepo.getPatientAndDoctorsAppointments(
+        args.filterInput.patientId,
+        filteredDoctorIds
+      );
+      const consultedDoctorIds = previousAppointments.map((appt) => {
+        return appt.doctorId;
+      });
+      //get patient and matched doctors previous appointments ends here
+
+      filteredDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
+        return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
+      });
+    }
 
     //get filtered doctor ids
     const doctorIds = filteredDoctors.map((doctor) => {
@@ -126,7 +148,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     );
 
     //get filtered doctors appointments
-    const consultsRepo = consultsDb.getCustomRepository(AppointmentRepository);
+
     if (doctorIds.length > 0) {
       const doctorsAppointments = await consultsRepo.findByDoctorIdsAndDateTimes(
         doctorIds,
@@ -200,7 +222,16 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     throw new AphError(AphErrorMessages.FILTER_DOCTORS_ERROR, undefined, { filterDoctorsError });
   }
 
-  return { doctors: filteredDoctors, doctorsAvailability: doctorsConsultModeAvailability };
+  //filtering the doctors list based on their availability
+  const finalDoctorsList = filteredDoctors.filter((doctor) => {
+    return doctorsConsultModeAvailability.some((availabilityObject) => {
+      return (
+        availabilityObject.doctorId == doctor.id && availabilityObject.availableModes.length > 0
+      );
+    });
+  });
+
+  return { doctors: finalDoctorsList, doctorsAvailability: doctorsConsultModeAvailability };
 };
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefsResolvers = {

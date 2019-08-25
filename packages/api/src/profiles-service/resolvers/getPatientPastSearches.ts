@@ -9,6 +9,7 @@ import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSp
 export const getPatientPastSearchesTypeDefs = gql`
   extend type Query {
     getPatientPastSearches(patientId: ID!): [SearchData]!
+    getPatientPastMedicineSearches(patientId: ID!): [SearchData]!
   }
 `;
 
@@ -27,7 +28,8 @@ const getPatientPastSearches: Resolver<
 > = async (parent, args, { profilesDb, doctorsDb }) => {
   const searchHistoryRepository = profilesDb.getCustomRepository(SearchHistoryRepository);
   const recentSearches = await searchHistoryRepository.getPatientRecentSearchHistory(
-    args.patientId
+    args.patientId,
+    [SEARCH_TYPE.DOCTOR, SEARCH_TYPE.SPECIALTY]
   );
   const pastSearches: SearchData[] = [];
   if (recentSearches.length > 0) {
@@ -70,8 +72,35 @@ const getPatientPastSearches: Resolver<
   return pastSearches;
 };
 
+const getPatientPastMedicineSearches: Resolver<
+  null,
+  { patientId: string },
+  ProfilesServiceContext,
+  SearchData[]
+> = async (parent, args, { profilesDb, doctorsDb }) => {
+  const searchHistoryRepository = profilesDb.getCustomRepository(SearchHistoryRepository);
+  const recentMedicineSearches = await searchHistoryRepository.getPatientRecentSearchHistory(
+    args.patientId,
+    [SEARCH_TYPE.MEDICINE]
+  );
+  const pastSearches: SearchData[] = [];
+  if (recentMedicineSearches.length > 0) {
+    recentMedicineSearches.forEach((search) => {
+      const searchItem = {
+        searchType: SEARCH_TYPE.MEDICINE,
+        typeId: search.typeId,
+        name: search.typeName,
+        image: 'http://dev.popcornapps.com/apolloImages/medicine.png',
+      };
+      pastSearches.push(searchItem);
+    });
+  }
+  return pastSearches;
+};
+
 export const getPatientPastSearchesResolvers = {
   Query: {
     getPatientPastSearches,
+    getPatientPastMedicineSearches,
   },
 };
