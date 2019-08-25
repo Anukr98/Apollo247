@@ -9,6 +9,7 @@ import { AphError } from 'AphError';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { Patient } from 'profiles-service/entities';
+import { Timestamp } from 'typeorm';
 
 export const caseSheetTypeDefs = gql`
   enum ConsultMode {
@@ -56,6 +57,11 @@ export const caseSheetTypeDefs = gql`
     id: String
   }
 
+  type CaseSheetFullDetails {
+    caseSheetDetails: CaseSheet
+    patientDetails: PatientDetails
+  }
+
   type CaseSheet {
     appointment: AppointmentId
     consultType: String
@@ -70,7 +76,7 @@ export const caseSheetTypeDefs = gql`
     notes: String
     otherInstructions: [OtherInstructions]
     patientId: String
-    symptoms: String
+    symptoms: [SymptomList]
   }
 
   type MedicinePrescription {
@@ -118,9 +124,11 @@ export const caseSheetTypeDefs = gql`
     relation: String
   }
 
-  type CaseSheetFullDetails {
-    caseSheetDetails: CaseSheet
-    patientDetails: PatientDetails
+  type SymptomList {
+    symptom: String
+    since: String
+    howOften: String
+    severity: String
   }
 
   extend type Mutation {
@@ -175,7 +183,10 @@ const getJuniorDoctorCaseSheet: Resolver<
   null,
   { appointmentId: string },
   ConsultServiceContext,
-  { caseSheetDetails: CaseSheet; patientDetails: Patient }
+  {
+    caseSheetDetails: CaseSheet;
+    patientDetails: Patient;
+  }
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   //check appointmnet id
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
@@ -195,9 +206,30 @@ const getJuniorDoctorCaseSheet: Resolver<
   return { caseSheetDetails, patientDetails };
 };
 
+type UpdateCaseSheetInput = {
+  symptoms: JSON;
+  notes: string;
+  diagnosis: JSON;
+  diagnosticPrescription: JSON;
+  followUp: string;
+  followUpDate: Timestamp;
+  followUpAfterInDays: number;
+  otherInstructions: JSON;
+  medicinePrescription: JSON;
+  id: string;
+};
+const updateCaseSheet: Resolver<null, {}, ConsultServiceContext, string> = async (
+  parent,
+  args,
+  { consultsDb }
+) => {
+  return '';
+};
+
 export const caseSheetResolvers = {
   Mutation: {
     createCaseSheet,
+    updateCaseSheet,
   },
 
   Query: { getJuniorDoctorCaseSheet },
