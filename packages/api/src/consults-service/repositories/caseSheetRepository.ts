@@ -28,4 +28,17 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .andWhere('case_sheet.createdDoctorId = :createdDoctorId', { createdDoctorId })
       .getOne();
   }
+
+  updateCaseSheet(id: string, caseSheetAttrs: Partial<CaseSheet>) {
+    return this.update(id, caseSheetAttrs).catch((createErrors) => {
+      throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { createErrors });
+    });
+  }
+
+  getCaseSheetById(id: string) {
+    return this.findOne({
+      where: [{ id }],
+      relations: ['appointment'],
+    });
+  }
 }
