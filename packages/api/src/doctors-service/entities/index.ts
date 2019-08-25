@@ -62,6 +62,11 @@ export enum WeekDay {
   SATURDAY = 'SATURDAY',
 }
 
+export enum DOCTOR_DEVICE_TYPE {
+  IOS = 'IOS',
+  ANDROID = 'ANDROID',
+}
+
 //consult Hours starts
 @Entity()
 export class ConsultHours extends BaseEntity {
@@ -127,6 +132,9 @@ export class Doctor extends BaseEntity {
 
   @OneToMany((type) => ConsultHours, (consultHours) => consultHours.doctor)
   consultHours: ConsultHours[];
+
+  @OneToMany((type) => DoctorDeviceTokens, (doctorDeviceTokens) => doctorDeviceTokens.doctor)
+  doctorDeviceTokens: DoctorDeviceTokens[];
 
   @Column({ nullable: true })
   country: string;
@@ -485,3 +493,39 @@ export class StarTeam extends BaseEntity {
   }
 }
 //startteam Ends
+
+//doctor device tokens starts
+@Entity()
+export class DoctorDeviceTokens extends BaseEntity {
+  @ManyToOne((type) => Doctor, (doctor) => doctor.doctorDeviceTokens)
+  doctor: Doctor;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ type: 'text' })
+  deviceToken: string;
+
+  @Column()
+  deviceOS: string;
+
+  @Column()
+  deviceType: DOCTOR_DEVICE_TYPE;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//doctor device token ends
