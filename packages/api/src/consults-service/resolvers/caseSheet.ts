@@ -9,6 +9,7 @@ import { AphError } from 'AphError';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { Patient } from 'profiles-service/entities';
+import { isDate } from 'date-fns';
 
 export const caseSheetTypeDefs = gql`
   enum ConsultMode {
@@ -250,8 +251,17 @@ const updateCaseSheet: Resolver<
   const inputArguments = JSON.parse(JSON.stringify(UpdateCaseSheetInput));
   const followUpAfterInDays =
     inputArguments.followUpAfterInDays == '' ? 0 : <Number>inputArguments.followUpAfterInDays;
-
   const followUpDate = inputArguments.followUpDate == '' ? null : <Date>inputArguments.followUpDate;
+
+  //validate date
+  if (followUpDate != null && !isDate(followUpDate))
+    throw new AphError(AphErrorMessages.INVALID_ENTITY);
+
+  //validate casesheetid
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const getCaseSheetData = await caseSheetRepo.getCaseSheetById(inputArguments.id);
+  if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
+
   const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = {
     ...inputArguments,
     symptoms: JSON.parse(inputArguments.symptoms),
@@ -263,7 +273,6 @@ const updateCaseSheet: Resolver<
     followUpAfterInDays: followUpAfterInDays,
   };
 
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
 
   const getUpdatedCaseSheet = await caseSheetRepo.getCaseSheetById(inputArguments.id);
