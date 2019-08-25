@@ -24,6 +24,7 @@ import { ChatRoom } from 'components/ChatRoom/ChatRoom';
 import { PrescriptionsLanding } from 'components/Prescriptions/PrescriptionsLanding';
 import { MyAccount } from 'components/MyAccount/MyAccount';
 import { NotificationSettings } from 'components/Notifications/NotificationSettings';
+import { PHRLanding } from 'components/HealthRecords/PHRLanding';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -71,6 +72,7 @@ const App: React.FC = () => {
           path={clientRoutes.notificationSettings()}
           component={NotificationSettings}
         />
+        <AuthRouted exact path={clientRoutes.healthRecords()} component={PHRLanding} />
       </Switch>
     </div>
   );
