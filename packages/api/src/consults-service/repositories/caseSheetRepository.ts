@@ -9,7 +9,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     return this.create(caseSheetAttrs)
       .save()
       .catch((createErrors) => {
-        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
+        throw new AphError(AphErrorMessages.CREATE_CASESHEET_ERROR, undefined, { createErrors });
       });
   }
 

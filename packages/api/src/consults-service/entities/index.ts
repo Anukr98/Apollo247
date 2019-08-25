@@ -189,7 +189,6 @@ export class MedicinePrescription extends BaseEntity {
     this.updatedDate = new Date();
   }
 }
-//MedicinePrescription ends
 
 //case sheet starts
 @Entity()
@@ -227,11 +226,8 @@ export class CaseSheet extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @OneToMany(
-    (type) => MedicinePrescription,
-    (medicinePrescription) => medicinePrescription.caseSheet
-  )
-  medicinePrescription: MedicinePrescription[];
+  @Column({ nullable: true, type: 'text' })
+  medicinePrescription: string;
 
   @Column({ nullable: true, type: 'text' })
   notes: string;

@@ -9,6 +9,7 @@ import { AphError } from 'AphError';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { Patient } from 'profiles-service/entities';
+import { Timestamp } from 'typeorm';
 
 export const caseSheetTypeDefs = gql`
   enum ConsultMode {
@@ -195,9 +196,30 @@ const getJuniorDoctorCaseSheet: Resolver<
   return { caseSheetDetails, patientDetails };
 };
 
+type UpdateCaseSheetInput = {
+  symptoms: JSON;
+  notes: string;
+  diagnosis: JSON;
+  diagnosticPrescription: JSON;
+  followUp: string;
+  followUpDate: Timestamp;
+  followUpAfterInDays: number;
+  otherInstructions: JSON;
+  medicinePrescription: JSON;
+  id: string;
+};
+const updateCaseSheet: Resolver<null, {}, ConsultServiceContext, string> = async (
+  parent,
+  args,
+  { consultsDb }
+) => {
+  return '';
+};
+
 export const caseSheetResolvers = {
   Mutation: {
     createCaseSheet,
+    updateCaseSheet,
   },
 
   Query: { getJuniorDoctorCaseSheet },
