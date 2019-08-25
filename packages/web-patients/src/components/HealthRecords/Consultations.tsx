@@ -7,6 +7,9 @@ import { DoctorConsultCard } from 'components/HealthRecords/DoctorConsultCard';
 import { Symptoms } from 'components/HealthRecords/Symptoms';
 import { Prescription } from 'components/HealthRecords/Prescription';
 import { Diagnosis } from 'components/HealthRecords/Diagnosis';
+import { GeneralAdvice } from 'components/HealthRecords/GeneralAdvice';
+import { FollowUp } from 'components/HealthRecords/FollowUp';
+import { PaymentInvoice } from 'components/HealthRecords/PaymentInvoice';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -189,6 +192,9 @@ export const Consultations: React.FC = (props) => {
             <Symptoms />
             <Prescription />
             <Diagnosis />
+            <GeneralAdvice />
+            <FollowUp />
+            <PaymentInvoice />
           </div>
         </Scrollbars>
       </div>

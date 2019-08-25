@@ -55,6 +55,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#0087ba',
       lineHeight: 1.43,
+      minHeight: 84,
     },
     bottomActions: {
       paddingTop: 20,

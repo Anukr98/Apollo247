@@ -75,7 +75,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Prescription: React.FC = (props) => {
+export const PaymentInvoice: React.FC = (props) => {
   const classes = useStyles();
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
@@ -83,27 +83,20 @@ export const Prescription: React.FC = (props) => {
         expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
         classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
       >
-        Prescription
+        Payment & Invoice
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
           <Grid item sm={6}>
-            <div className={classes.cardTitle}>Sompraz-D Cap</div>
+            <div className={classes.cardTitle}>Paid Rs. 299</div>
             <div className={classes.cardSection}>
-              1 Tab
-              <br />1 times a day (morning) for 7 days Before food
-            </div>
-          </Grid>
-          <Grid item sm={6}>
-            <div className={classes.cardTitle}>Redixin Plus Mouthwash</div>
-            <div className={classes.cardSection}>
-              Throat Gargles
-              <br />3 times a day (morning) for 5 days
+              Debit Card
+              <br /> 5546 **** **** ***1
             </div>
           </Grid>
         </Grid>
         <div className={classes.bottomActions}>
-          <AphButton>Order Medicines</AphButton>
+          <AphButton>Download Bill</AphButton>
         </div>
       </ExpansionPanelDetails>
     </ExpansionPanel>
