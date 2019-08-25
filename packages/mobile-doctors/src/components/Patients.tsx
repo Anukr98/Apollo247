@@ -10,13 +10,13 @@ import {
 import { PatientCard } from '@aph/mobile-doctors/src/components/ui/PatientCard';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import MaterialTabs from 'react-native-material-tabs';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { _doctors } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 
 const styles = StyleSheet.create({
   shadowview: {
+    height: 44,
+    width: '100%',
     shadowOffset: {
       height: 1,
       width: 0,
@@ -31,7 +31,9 @@ const styles = StyleSheet.create({
 export interface PatientsProps extends NavigationScreenProps {}
 
 export const Patients: React.FC<PatientsProps> = (props) => {
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const [activeTabIndex, setActiveTabIndex] = useState(true);
+  const [regular, setRegular] = useState(false);
+  const [followup, setFollowup] = useState(false);
   const _data = [
     { id: 1, name: 'Dr. Sanjeev Shah', speciality: '2 Consults', type: true },
     { id: 2, name: 'Dr. Sheetal Sharma', speciality: '2 Consults', type: false },
@@ -89,65 +91,213 @@ export const Patients: React.FC<PatientsProps> = (props) => {
       </View>
     );
   };
-  const renderTabPage = () => {
-    return (
-      <>
-        <View style={[styles.shadowview]}>
-          <MaterialTabs
-            items={['All', 'Follow up', 'Regular']}
-            selectedIndex={activeTabIndex}
-            onChange={(index) => setActiveTabIndex(index)}
-            barColor="#ffffff"
-            indicatorColor="#00b38e"
-            activeTextColor="#02475b"
-            inactiveTextColor={'rgba(2, 71, 91, 0.6)'}
-            activeTextStyle={{ ...theme.fonts.IBMPlexSansBold(14), color: '#02475b' }}
-            uppercase={false}
-          ></MaterialTabs>
+
+  const showRegularData = () => {
+    setRegular(true);
+    setActiveTabIndex(false);
+    setFollowup(false);
+  };
+  const showFollowUp = () => {
+    setRegular(false);
+    setActiveTabIndex(false);
+    setFollowup(true);
+  };
+  const showAllData = () => {
+    setActiveTabIndex(true);
+    setRegular(false);
+    setFollowup(false);
+  };
+
+  return (
+    <SafeAreaView style={[theme.viewStyles.container]}>
+      {renderMainHeader()}
+      <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
+
+      <View style={styles.shadowview}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <TouchableOpacity onPress={() => showAllData()}>
+            {!activeTabIndex ? (
+              <Text
+                style={{
+                  textAlign: 'left',
+                  ...theme.fonts.IBMPlexSansSemiBold(14),
+                  color: '#02475b',
+                  marginTop: 8,
+                  marginBottom: 12,
+                  marginLeft: 24,
+                  opacity: 0.6,
+                }}
+              >
+                All
+              </Text>
+            ) : (
+              <View>
+                <Text
+                  style={{
+                    textAlign: 'left',
+                    ...theme.fonts.IBMPlexSansSemiBold(14),
+                    color: '#02475b',
+                    marginTop: 8,
+                    marginBottom: 12,
+                    marginLeft: 24,
+                  }}
+                >
+                  All
+                </Text>
+                <View
+                  style={{
+                    borderColor: '#00b38e',
+                    borderWidth: 2,
+                    width: 80,
+                    marginTop: 2,
+                  }}
+                ></View>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => showRegularData()}>
+            {!regular ? (
+              <Text
+                style={{
+                  textAlign: 'left',
+                  ...theme.fonts.IBMPlexSansSemiBold(14),
+                  color: '#02475b',
+                  marginTop: 8,
+                  marginBottom: 12,
+                  marginLeft: 24,
+                  opacity: 0.6,
+                }}
+              >
+                Regular
+              </Text>
+            ) : (
+              <View>
+                <Text
+                  style={{
+                    textAlign: 'left',
+                    ...theme.fonts.IBMPlexSansSemiBold(14),
+                    color: '#02475b',
+                    marginTop: 8,
+                    marginBottom: 12,
+                    marginLeft: 24,
+                  }}
+                >
+                  Regular
+                </Text>
+                <View
+                  style={{
+                    borderColor: '#00b38e',
+                    borderWidth: 2,
+                    width: 80,
+                    marginTop: 2,
+                    marginLeft: 15,
+                  }}
+                ></View>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => showFollowUp()}>
+            {!followup ? (
+              <Text
+                style={{
+                  textAlign: 'left',
+                  ...theme.fonts.IBMPlexSansSemiBold(14),
+                  color: '#02475b',
+                  marginTop: 8,
+                  marginBottom: 12,
+                  marginLeft: 24,
+                  marginRight: 24,
+                  opacity: 0.6,
+                }}
+              >
+                FollowUp
+              </Text>
+            ) : (
+              <View>
+                <Text
+                  style={{
+                    textAlign: 'left',
+                    ...theme.fonts.IBMPlexSansSemiBold(14),
+                    color: '#02475b',
+                    marginTop: 8,
+                    marginBottom: 12,
+                    marginLeft: 24,
+                    marginRight: 24,
+                  }}
+                >
+                  FollowUp
+                </Text>
+                <View
+                  style={{
+                    borderColor: '#00b38e',
+                    borderWidth: 2,
+                    width: 80,
+                    marginTop: 2,
+                    marginLeft: 15,
+                  }}
+                ></View>
+              </View>
+            )}
+          </TouchableOpacity>
+          <View
+            style={{
+              height: 20,
+              borderWidth: 0.5,
+              borderColor: 'rgba(2, 71, 91, 0.6)',
+              //marginLeft: 15,
+              marginTop: 10,
+            }}
+          ></View>
+          <View style={{ marginRight: 24 }}>
+            <Up />
+          </View>
         </View>
-        <View style={{ flex: 1 }}>
-          {activeTabIndex == 0 ? (
-            <ScrollView bounces={false}>
-              {_data!.map((_doctor, i, array) => {
-                return (
-                  <PatientCard
-                    doctorname={_doctor.name}
-                    icon={
-                      <View style={{ marginRight: 12 }}>
-                        <Chat />
-                      </View>
-                    }
-                    consults={_doctor.speciality}
-                    lastconsult="Last Consult: 17/07/2019 "
-                    typeValue={_doctor.type}
-                  />
-                );
-              })}
-            </ScrollView>
-          ) : (
-            <View>
-              {activeTabIndex == 1 ? (
-                <ScrollView bounces={false}>
-                  {_data!.map((_doctor, i, array) => {
-                    return (
-                      <PatientCard
-                        doctorname={_doctor.name}
-                        icon={
-                          <View style={{ marginRight: 12 }}>
-                            <Chat />
-                          </View>
-                        }
-                        consults={_doctor.speciality}
-                        lastconsult="Last Consult: 17/07/2019 "
-                        typeValue={_doctor.type}
-                      />
-                    );
-                  })}
-                </ScrollView>
-              ) : (
-                <View>
-                  {activeTabIndex == 2 ? (
-                    <ScrollView bounces={false}>
+      </View>
+      <View style={{ flex: 1 }}>
+        {activeTabIndex ? (
+          <ScrollView bounces={false} style={{ flex: 1 }}>
+            {_data!.map((_doctor, i, array) => {
+              return (
+                <PatientCard
+                  doctorname={_doctor.name}
+                  icon={
+                    <View style={{ marginRight: 12 }}>
+                      <Chat />
+                    </View>
+                  }
+                  consults={_doctor.speciality}
+                  lastconsult="Last Consult: 17/07/2019 "
+                  typeValue={_doctor.type}
+                  onPress={() => props.navigation.push(AppRoutes.PatientDetailsPage)}
+                />
+              );
+            })}
+          </ScrollView>
+        ) : (
+          <View style={{ flex: 1 }}>
+            {regular ? (
+              <ScrollView bounces={false} style={{ flex: 1 }}>
+                {_data!.map((_doctor, i, array) => {
+                  return (
+                    <PatientCard
+                      doctorname={_doctor.name}
+                      icon={
+                        <View style={{ marginRight: 12 }}>
+                          <Chat />
+                        </View>
+                      }
+                      consults={_doctor.speciality}
+                      lastconsult="Last Consult: 17/07/2019 "
+                      typeValue={_doctor.type}
+                    />
+                  );
+                })}
+              </ScrollView>
+            ) : (
+              <View style={{ flex: 1 }}>
+                {followup ? (
+                  <View style={{ flex: 1 }}>
+                    <ScrollView bounces={false} style={{ flex: 1 }}>
                       {_data!.map((_doctor, i, array) => {
                         return (
                           <PatientCard
@@ -164,21 +314,13 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                         );
                       })}
                     </ScrollView>
-                  ) : null}
-                </View>
-              )}
-            </View>
-          )}
-        </View>
-      </>
-    );
-  };
-
-  return (
-    <SafeAreaView style={[theme.viewStyles.container]}>
-      {renderMainHeader()}
-      <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
-      {renderTabPage()}
+                  </View>
+                ) : null}
+              </View>
+            )}
+          </View>
+        )}
+      </View>
     </SafeAreaView>
   );
 };

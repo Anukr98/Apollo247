@@ -26,8 +26,16 @@ import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Slider } from 'react-native-elements';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Platform,
+} from 'react-native';
+import { Slider, Overlay } from 'react-native-elements';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import {
   NavigationParams,
@@ -302,9 +310,9 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   calenderView: {
-    position: 'absolute',
-    zIndex: 2,
-    top: 0,
+    //position: 'absolute',
+    //zIndex: 2,
+
     width: '90%',
     marginLeft: 16,
     marginRight: 16,
@@ -314,9 +322,23 @@ const styles = StyleSheet.create({
       width: 0,
       height: 5,
     },
+
     shadowRadius: 10,
     shadowOpacity: 0.2,
-    elevation: 5,
+    //elevation: 15,
+    overflow: 'visible',
+    ...Platform.select({
+      ios: {
+        // zIndex: 1,
+        // top: -32,
+        position: 'absolute',
+      },
+      android: {
+        zIndex: 200,
+        elevation: Platform.OS === 'android' ? 250 : 0,
+        // position: 'absolute',
+      },
+    }),
   },
 });
 
@@ -443,6 +465,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [calenderShow, setCalenderShow] = useState(false);
   const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
   const [symptonsData, setSymptonsData] = useState<any>([]);
+  const [showstyles, setShowStyles] = useState<any>([
+    {
+      marginLeft: 16,
+      marginRight: 20,
+      ...theme.fonts.IBMPlexSansMedium(18),
+      width: '90%',
+      borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+      borderBottomWidth: 2,
+      marginBottom: 32,
+    },
+  ]);
 
   useEffect(() => {
     const didBlurSubscription = props.navigation.addListener('didFocus', (payload) => {
@@ -773,9 +806,18 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         <CalendarView
           date={date}
           onPressDate={(date) => {
-            console.log(moment(date).format('DD/MM/YYYY'), 'DD/MM/YYYY');
+            console.log('android cale', moment(date).format('DD/MM/YYYY'), 'DD/MM/YYYY');
             setSelectDate(moment(date).format('DD/MM/YYYY'));
             setCalenderShow(!calenderShow);
+            setShowStyles({
+              marginLeft: 16,
+              marginRight: 20,
+              ...theme.fonts.IBMPlexSansMedium(18),
+              width: '90%',
+              borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+              borderBottomWidth: 2,
+              marginBottom: 32,
+            });
           }}
           calendarType={type}
           onCalendarTypeChanged={(type) => {
@@ -785,6 +827,18 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         />
       </View>
     );
+  };
+  const showCalender = () => {
+    setCalenderShow(!calenderShow);
+    setShowStyles({
+      marginLeft: 16,
+      marginRight: 20,
+      ...theme.fonts.IBMPlexSansMedium(18),
+      width: '90%',
+      borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+      borderBottomWidth: 2,
+      marginBottom: 0,
+    });
   };
   const renderFollowUpView = () => {
     return (
@@ -860,17 +914,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               </View>
               {sliderValue > 10 ? (
                 <View>
-                  <View
-                    style={{
-                      marginLeft: 16,
-                      marginRight: 20,
-                      ...theme.fonts.IBMPlexSansMedium(18),
-                      width: '90%',
-                      borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-                      borderBottomWidth: 2,
-                      marginBottom: 32,
-                    }}
-                  >
+                  <View style={showstyles}>
                     <Text
                       style={{
                         color: 'rgba(2, 71, 91, 0.6)',
@@ -900,12 +944,32 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           {selectDate}
                         </Text>
                       )}
-                      <TouchableOpacity onPress={() => setCalenderShow(!calenderShow)}>
+                      <TouchableOpacity onPress={() => showCalender()}>
                         <View style={{ marginTop: 4 }}>
                           <CalendarIcon />
                         </View>
                       </TouchableOpacity>
                     </View>
+                  </View>
+                  <View style={{ elevation: 1000 }}>
+                    {calenderShow ? (
+                      <View
+                        style={{
+                          borderRadius: 10,
+                          shadowColor: '#000000',
+                          shadowOffset: {
+                            width: 0,
+                            height: 5,
+                          },
+                          shadowRadius: 10,
+                          shadowOpacity: 0.2,
+                          elevation: 10000,
+                          zIndex: 100,
+                        }}
+                      >
+                        {renderCalenderView()}
+                      </View>
+                    ) : null}
                   </View>
                 </View>
               ) : null}
@@ -997,7 +1061,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   };
   const renderOtherInstructionsView = () => {
     return (
-      <View>
+      <View style={{ zIndex: -1 }}>
         <CollapseCard
           heading="Other Instructions"
           collapse={otherInstructions}
@@ -1109,7 +1173,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   };
   return (
     <View style={styles.casesheetView}>
-      <ScrollView bounces={false} contentContainerStyle={styles.contentContainer}>
+      <ScrollView bounces={false} style={{ zIndex: 1 }}>
         {renderPatientImage()}
         {renderBasicProfileDetails(PatientInfoData, AppId, Appintmentdatetimeconsultpage)}
         {renderSymptonsView()}
@@ -1120,27 +1184,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         {renderMedicinePrescription()}
         {renderDiagonisticPrescription()}
         {renderFollowUpView()}
-        {calenderShow ? (
-          <View
-            style={{
-              borderColor: 'red',
-              marginLeft: 20,
-              marginRight: 20,
-              marginTop: -130,
-              borderRadius: 10,
-              shadowColor: '#000000',
-              shadowOffset: {
-                width: 0,
-                height: 5,
-              },
-              shadowRadius: 10,
-              shadowOpacity: 0.2,
-              elevation: 5,
-            }}
-          >
-            {renderCalenderView()}
-          </View>
-        ) : null}
 
         <View style={{ zIndex: -1 }}>
           {renderOtherInstructionsView()}

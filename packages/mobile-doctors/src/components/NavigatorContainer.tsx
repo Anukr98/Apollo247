@@ -41,6 +41,7 @@ import {
 import { ShareConsult } from '@aph/mobile-doctors/src/components/ConsultRoom/ShareConsult';
 import { ChatDoctor } from '@aph/mobile-doctors/src/components/ChatDoctor';
 import { Sample } from '@aph/mobile-doctors/src/components/Sample';
+import { PatientDetailsPage } from '@aph/mobile-doctors/src/components/PatientDetailsPage';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -81,6 +82,7 @@ export enum AppRoutes {
   ShareConsult = 'ShareConsult',
   ChatDoctor = 'ChatDoctor',
   Sample = 'Sample',
+  PatientDetailsPage = 'PatientDetailsPage',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -204,6 +206,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.Sample]: {
     screen: Sample,
+  },
+  [AppRoutes.PatientDetailsPage]: {
+    screen: PatientDetailsPage,
   },
 };
 

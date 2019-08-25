@@ -8,6 +8,8 @@ import {
   Text,
   View,
   ViewStyle,
+  TouchableOpacityProps,
+  TouchableOpacity,
 } from 'react-native';
 import { theme } from '../../theme/theme';
 import { Star } from '@aph/mobile-doctors/src/components/ui/Icons';
@@ -87,6 +89,7 @@ export interface CalendarCardProps {
   lastconsult?: string;
   icon2?: Element;
   typeValue?: boolean;
+  onPress?: TouchableOpacityProps['onPress'];
 }
 
 export const PatientCard: React.FC<CalendarCardProps> = (props) => {
@@ -111,41 +114,43 @@ export const PatientCard: React.FC<CalendarCardProps> = (props) => {
             ></Star>
           ) : null}
         </View>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            marginRight: 12,
-            marginBottom: 8,
-            marginTop: 16,
-            marginLeft: 12,
-          }}
-        >
-          <View style={styles.iconview}>
-            <Text style={styles.doctorNameStyles} numberOfLines={1}>
-              {props.doctorname}
-            </Text>
-            <View style={{ marginBottom: 4 }}>{props.icon}</View>
+        <TouchableOpacity onPress={props.onPress}>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              marginRight: 12,
+              marginBottom: 8,
+              marginTop: 16,
+              marginLeft: 12,
+            }}
+          >
+            <View style={styles.iconview}>
+              <Text style={styles.doctorNameStyles} numberOfLines={1}>
+                {props.doctorname}
+              </Text>
+              <View style={{ marginBottom: 4 }}>{props.icon}</View>
+            </View>
+            <View style={styles.seperatorline}></View>
+            <View style={[styles.iconview, { marginTop: 8.5 }]}>
+              <Text style={styles.lastconsult} numberOfLines={1}>
+                {props.lastconsult}
+              </Text>
+              <View
+                style={{
+                  height: 12,
+                  borderWidth: 0.5,
+                  borderColor: 'rgba(2, 71, 91, 0.6)',
+                  //marginLeft: 15,
+                  //marginTop: 10,
+                }}
+              ></View>
+              <Text style={styles.consultstyles} numberOfLines={1}>
+                {props.consults}
+              </Text>
+            </View>
           </View>
-          <View style={styles.seperatorline}></View>
-          <View style={[styles.iconview, { marginTop: 8.5 }]}>
-            <Text style={styles.lastconsult} numberOfLines={1}>
-              {props.lastconsult}
-            </Text>
-            <View
-              style={{
-                height: 12,
-                borderWidth: 0.5,
-                borderColor: 'rgba(2, 71, 91, 0.6)',
-                //marginLeft: 15,
-                //marginTop: 10,
-              }}
-            ></View>
-            <Text style={styles.consultstyles} numberOfLines={1}>
-              {props.consults}
-            </Text>
-          </View>
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   );
