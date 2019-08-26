@@ -15,6 +15,7 @@ import {
 
 interface OptionType {
   name: string;
+  __typename: 'DiagnosticPrescription';
 }
 
 const suggestions: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription | null)[] = [
@@ -43,11 +44,11 @@ function renderInputComponent(inputProps: any) {
 }
 
 function renderSuggestion(
-  suggestion: OptionType,
+  suggestion: OptionType | null,
   { query, isHighlighted }: Autosuggest.RenderSuggestionParams
 ) {
-  const matches = match(suggestion.name, query);
-  const parts = parse(suggestion.name, matches);
+  const matches = match(suggestion!.name, query);
+  const parts = parse(suggestion!.name, matches);
 
   return (
     <MenuItem selected={isHighlighted} component="div">
@@ -83,8 +84,8 @@ function getSuggestions(value: string) {
       });
 }
 
-function getSuggestionValue(suggestion: OptionType) {
-  return suggestion.name;
+function getSuggestionValue(suggestion: OptionType | null) {
+  return suggestion!.name;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -183,7 +184,6 @@ interface CasesheetInfoProps {
 }
 export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
   const classes = useStyles();
-  //const [selectedValues, setSelectedValues] = useState<OptionType[]>([{ name: 'Diagnostic ABC' }]);
   const [selectedValues, setSelectedValues] = useState<
     (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription | null)[]
   >([]);
@@ -202,10 +202,6 @@ export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
       );
     }
   }, []);
-  // const [favoriteDiagnostics, setFavoriteDiagnostics] = useState<OptionType[]>([
-  //   { name: 'Diagnostic DEF' },
-  //   { name: 'Diagnostic XYZ' },
-  // ]);
   const [state, setState] = React.useState({
     single: '',
     popper: '',
@@ -236,7 +232,7 @@ export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
 
   const autosuggestProps = {
     renderInputComponent,
-    suggestions: stateSuggestions,
+    suggestions: (stateSuggestions as unknown) as OptionType[],
     onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
     onSuggestionsClearRequested: handleSuggestionsClearRequested,
     getSuggestionValue,
@@ -261,24 +257,6 @@ export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
           ))}
         </Typography>
       </Typography>
-      {/* <Typography component="div" className={classes.column}>
-        <Typography component="h3" variant="h4">
-          Favorite Diagnostics
-        </Typography>
-        <Typography component="div" className={classes.listContainer}>
-          {favoriteDiagnostics.map((item, idx) => (
-            <Chip
-              key={idx}
-              label={item.name}
-              onDelete={() => {
-                setSelectedValues(selectedValues.concat(item));
-                setFavoriteDiagnostics(favoriteDiagnostics.filter((i) => i.name !== item.name));
-              }}
-              deleteIcon={<AddCircle className={classes.icon} />}
-            />
-          ))}
-        </Typography>
-      </Typography> */}
       <Typography component="div" className={classes.textFieldContainer}>
         {!showAddCondition && (
           <AphButton
@@ -291,36 +269,35 @@ export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
           </AphButton>
         )}
         {showAddCondition && (
-          <div>fkgdjfhgkdf</div>
-          // <Autosuggest
-          //   onSuggestionSelected={(e, { suggestion }) => {
-          //     setSelectedValues(selectedValues.concat(suggestion));
-          //     setShowAddCondition(false);
-          //     setState({
-          //       single: '',
-          //       popper: '',
-          //     });
-          //   }}
-          //   {...autosuggestProps}
-          //   inputProps={{
-          //     classes,
-          //     id: 'react-autosuggest-simple',
-          //     placeholder: 'Search Diagnostics',
-          //     value: state.single,
-          //     onChange: handleChange('single'),
-          //   }}
-          //   theme={{
-          //     container: classes.container,
-          //     suggestionsContainerOpen: classes.suggestionsContainerOpen,
-          //     suggestionsList: classes.suggestionsList,
-          //     suggestion: classes.suggestion,
-          //   }}
-          //   renderSuggestionsContainer={(options) => (
-          //     <Paper {...options.containerProps} square>
-          //       {options.children}
-          //     </Paper>
-          //   )}
-          // />
+          <Autosuggest
+            onSuggestionSelected={(e, { suggestion }) => {
+              setSelectedValues(selectedValues.concat(suggestion));
+              setShowAddCondition(false);
+              setState({
+                single: '',
+                popper: '',
+              });
+            }}
+            {...autosuggestProps}
+            inputProps={{
+              classes,
+              id: 'react-autosuggest-simple',
+              placeholder: 'Search Diagnostics',
+              value: state.single,
+              onChange: handleChange('single'),
+            }}
+            theme={{
+              container: classes.container,
+              suggestionsContainerOpen: classes.suggestionsContainerOpen,
+              suggestionsList: classes.suggestionsList,
+              suggestion: classes.suggestion,
+            }}
+            renderSuggestionsContainer={(options) => (
+              <Paper {...options.containerProps} square>
+                {options.children}
+              </Paper>
+            )}
+          />
         )}
       </Typography>
     </Typography>
