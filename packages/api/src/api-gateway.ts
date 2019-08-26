@@ -7,6 +7,7 @@ import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl } from '@aph/universal/dist/aphRoutes';
+import { AphStorageClient } from 'AphStorageClient';
 //import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 
 export interface GatewayContext {
@@ -114,24 +115,32 @@ export type Resolver<Parent, Args, Context, Result> = (
     console.log('allowed cors origins:', corsOrigins.join(','));
   });
 
-  /*console.log('------------------------MESSAGE QUEUE TEST----------------------------');
+  console.log('------------------------STORAGE TEST----------------------------');
 
-  AphMqClient.connect();
+  AphStorageClient.blobService.getServiceProperties((error, result, response) => {
+    if (error) console.log('error', error);
+    if (result) console.log('result', result);
+    if (response) console.log('response', response);
+  });
 
-  type TestMessage = AphMqMessage<AphMqMessageTypes.TEST, { time: Date }>;
-  const testMessage: TestMessage = {
-    type: AphMqMessageTypes.TEST,
-    payload: {
-      time: new Date(),
-    },
-  };
+  // console.log('------------------------MESSAGE QUEUE TEST----------------------------');
 
-  console.log('sending message', testMessage);
-  AphMqClient.send(testMessage);
+  // AphMqClient.connect();
 
-  AphMqClient.onReceive<TestMessage>(AphMqMessageTypes.TEST, (receivedMessage) => {
-    console.log('received message!', receivedMessage.message);
-    console.log('accepting message');
-    receivedMessage.accept();
-  });*/
+  // type TestMessage = AphMqMessage<AphMqMessageTypes.TEST, { time: Date }>;
+  // const testMessage: TestMessage = {
+  //   type: AphMqMessageTypes.TEST,
+  //   payload: {
+  //     time: new Date(),
+  //   },
+  // };
+
+  // console.log('sending message', testMessage);
+  // AphMqClient.send(testMessage);
+
+  // AphMqClient.onReceive<TestMessage>(AphMqMessageTypes.TEST, (receivedMessage) => {
+  //   console.log('received message!', receivedMessage.message);
+  //   console.log('accepting message');
+  //   receivedMessage.accept();
+  // })
 })();
