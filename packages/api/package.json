@@ -56,6 +56,7 @@
     "apollo-env": "^0.5.1",
     "apollo-server": "^2.6.3",
     "apollo-server-core": "^2.6.7",
+    "azure-storage": "^2.10.3",
     "class-validator": "^0.9.1",
     "date-fns": "^2.0.0-beta.2",
     "faker": "^4.1.0",
