@@ -39,7 +39,7 @@ export const AuthProvider: React.FC = (props) => {
   );
   const [firebaseUser, setFirebaseUser] = useState<RNFirebase.User | null>(null);
   const [isAuthenticating] = useState<boolean>(false);
-  const [doctorDetails, setDoctorDetails] = useState<GetDoctorDetails_getDoctorDetails | null>(
+  const [doctorDetails, _setDoctorDetails] = useState<GetDoctorDetails_getDoctorDetails | null>(
     null
   );
 
@@ -130,7 +130,7 @@ export const AuthProvider: React.FC = (props) => {
         .signOut()
         .then((_) => {
           setFirebaseUser(null);
-          setDoctorDetails(null);
+          _setDoctorDetails(null);
           resolve();
         })
         .catch((e) => {
@@ -138,8 +138,9 @@ export const AuthProvider: React.FC = (props) => {
         });
     });
   };
-
-  // listen to firebase auth
+  const setDoctorDetails = (doctorDetails: GetDoctorDetails_getDoctorDetails | null) => {
+    _setDoctorDetails(doctorDetails);
+  }; // listen to firebase auth
   useEffect(() => {
     const authStateListener = firebase.auth().onAuthStateChanged((firebaseUser) => {
       // firebaseUser is verified and logged in

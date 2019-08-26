@@ -15,6 +15,7 @@ export interface getPatinetAppointments_getPatinetAppointments_patinetAppointmen
 
 export interface getPatinetAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_doctorHospital_facility {
   __typename: "Facility";
+  id: string;
   name: string;
   streetLine1: string | null;
   streetLine2: string | null;

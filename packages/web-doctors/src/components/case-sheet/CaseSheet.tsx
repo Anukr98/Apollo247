@@ -24,6 +24,7 @@ import {
   OtherInstructions,
 } from 'components/case-sheet/panels';
 import { UserCard } from 'components/case-sheet/UserCard';
+import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -57,8 +58,34 @@ const useStyles = makeStyles((theme: Theme) => {
       flex: 'initial',
       margin: '0 15px 0 0',
       minWidth: 300,
+      maxWidth: 300,
       [theme.breakpoints.down('xs')]: {
         margin: '0 0 15px 0',
+        maxWidth: '100%',
+      },
+      '& h2': {
+        fontSize: 20,
+        lineHeight: 'normal',
+        fontWeight: 600,
+        color: '#02475b',
+      },
+      '& h5': {
+        fontSize: 16,
+        lineHeight: 'normal',
+        fontWeight: 500,
+        color: 'rgba(2, 71, 91, 0.8)',
+        marginBottom: 10,
+        textTransform: 'capitalize',
+      },
+      '& h6': {
+        fontSize: 14,
+        lineHeight: 'normal',
+        fontWeight: 500,
+        color: 'rgba(2, 71, 91, 0.8)',
+        marginBottom: 10,
+      },
+      '& hr': {
+        marginBottom: 10,
       },
     },
     expandIcon: {
@@ -107,10 +134,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CaseSheet: React.FC = () => {
+interface CasesheetInfoProps {
+  casesheetInfo: GetJuniorDoctorCaseSheet;
+  appointmentId: string;
+}
+export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
   const classes = useStyles();
   const [expanded, setExpanded] = useState<string | boolean>(false);
-
   const handlePanelExpansion = (panelName: string) => (
     e: React.ChangeEvent<{}>,
     isExpanded: boolean
@@ -120,7 +150,7 @@ export const CaseSheet: React.FC = () => {
     <div className={classes.container}>
       <div className={classes.caseSheet}>
         <section className={`${classes.column} ${classes.right}`}>
-          <UserCard />
+          <UserCard casesheetInfo={props.casesheetInfo} appointmentId={props.appointmentId} />
         </section>
         <section className={classes.column}>
           {/* Symptoms Panel */}
@@ -133,7 +163,7 @@ export const CaseSheet: React.FC = () => {
               <Typography variant="h3">Symptoms</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <Symptoms />
+              <Symptoms casesheetInfo={props.casesheetInfo} />
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
@@ -245,7 +275,7 @@ export const CaseSheet: React.FC = () => {
               <Typography variant="h3">Other Instructions</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <OtherInstructions />
+              <OtherInstructions casesheetInfo={props.casesheetInfo} />
             </ExpansionPanelDetails>
           </ExpansionPanel>
         </section>

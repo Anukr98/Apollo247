@@ -56,6 +56,11 @@ export interface getDoctorDetailsById_getDoctorDetailsById_starTeam {
   isActive: boolean | null;
 }
 
+export interface getDoctorDetailsById_getDoctorDetailsById_consultHours_facility {
+  __typename: "Facility";
+  id: string;
+}
+
 export interface getDoctorDetailsById_getDoctorDetailsById_consultHours {
   __typename: "ConsultHours";
   consultMode: ConsultMode;
@@ -64,6 +69,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById_consultHours {
   weekDay: WeekDay;
   isActive: boolean;
   id: string;
+  facility: getDoctorDetailsById_getDoctorDetailsById_consultHours_facility | null;
 }
 
 export interface getDoctorDetailsById_getDoctorDetailsById {

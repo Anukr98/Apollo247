@@ -13,9 +13,12 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Alert,
 } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { searchMedicineApi, MedicineProduct } from '@aph/mobile-doctors/src/components/ApiCall';
+import { AxiosResponse } from 'axios';
 
 const styles = StyleSheet.create({
   container: {
@@ -28,8 +31,8 @@ export interface ProfileProps extends NavigationScreenProps {}
 
 export const AddMedicine: React.FC<ProfileProps> = (props) => {
   const [doctorSearchText, setDoctorSearchText] = useState<string>('');
-  const [filteredStarDoctors, setFilteredStarDoctors] = useState<Doctor[] | null>([]);
-  const client = useApolloClient();
+  const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const showHeaderView = () => {
     return (
       <Header
@@ -55,9 +58,10 @@ export const AddMedicine: React.FC<ProfileProps> = (props) => {
   };
   const onPressDoctorSearchListItem = (text: string) => {
     Keyboard.dismiss();
-
+    console.log('text', text); //remove this line later
     setDoctorSearchText(text);
-    setFilteredStarDoctors([]);
+    setMedicineList([]);
+    props.navigation.pop();
   };
   const formatSuggestionsText = (text: string, searchKey: string) => {
     return (
@@ -66,10 +70,6 @@ export const AddMedicine: React.FC<ProfileProps> = (props) => {
           color: theme.colors.darkBlueColor(),
           ...theme.fonts.IBMPlexSansMedium(18),
         }}
-        // highlightStyle={{
-        //   color: theme.colors.darkBlueColor(),
-        //   ...theme.fonts.IBMPlexSansBold(18),
-        // }}
         searchWords={[searchKey]}
         textToHighlight={text}
       />
@@ -77,18 +77,18 @@ export const AddMedicine: React.FC<ProfileProps> = (props) => {
   };
   const renderSuggestionCard = () => (
     <View style={{ marginTop: 2 }}>
-      {filteredStarDoctors!.length > 0 ? (
-        <View>
-          {filteredStarDoctors!.map((item, i) => {
-            const drName = ` ${item!.firstName}`;
+      {medicineList!.length > 0 ? (
+        <ScrollView>
+          {medicineList!.map((item, i) => {
+            const drName = ` ${item!.name}`;
             return (
               <TouchableOpacity
-                onPress={() => onPressDoctorSearchListItem(`Dr. ${item!.firstName}`)}
+                onPress={() => onPressDoctorSearchListItem(`Dr. ${item!.name}`)}
                 style={{ marginHorizontal: 16, marginTop: 8 }}
                 key={i}
               >
                 {formatSuggestionsText(drName, doctorSearchText)}
-                {i < filteredStarDoctors!.length - 1 ? (
+                {i < medicineList!.length - 1 ? (
                   <View
                     style={{
                       marginTop: 10,
@@ -104,10 +104,15 @@ export const AddMedicine: React.FC<ProfileProps> = (props) => {
               </TouchableOpacity>
             );
           })}
-        </View>
+        </ScrollView>
       ) : null}
     </View>
   );
+  const showGenericALert = (e: { response: AxiosResponse }) => {
+    const error = e && e.response && e.response.data.message;
+    console.log({ errorResponse: e.response, error }); //remove this line later
+    Alert.alert('Error', error || 'Unknown error occurred.');
+  };
   const filterDoctors = (searchText: string) => {
     if (searchText != '' && !/^[A-Za-z .]+$/.test(searchText)) {
       return;
@@ -115,31 +120,20 @@ export const AddMedicine: React.FC<ProfileProps> = (props) => {
 
     setDoctorSearchText(searchText);
     console.log(searchText);
-    if (searchText == '') {
-      setFilteredStarDoctors([]);
+    if (!(searchText && searchText.length > 2)) {
+      setMedicineList([]);
       return;
     }
-    // do api call
-    // client
-    //   .query<GetDoctorsForStarDoctorProgram, GetDoctorsForStarDoctorProgramVariables>({
-    //     query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
-    //     variables: { searchString: searchText.replace('Dr. ', '') },
-    //   })
-    getDoctorsForStarDoctorProgramData.data.getDoctorsForStarDoctorProgram!(
-      searchText.replace('Dr. ', '')
-    )
-      .then((_data) => {
-        console.log('flitered array', _data);
-        // const doctorProfile =
-        //   (_data.data.getDoctorsForStarDoctorProgram &&
-        //     _data.data.getDoctorsForStarDoctorProgram.map((i) => i!.profile)) ||
-        //   [];
-        const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
-        setFilteredStarDoctors(doctorProfile);
+    setIsLoading(true);
+    searchMedicineApi(searchText)
+      .then(({ data }) => {
+        console.log('medicineList', data);
+        setIsLoading(false);
+        setMedicineList(data.products || []);
       })
       .catch((e) => {
-        console.log('Error occured while searching for Doctors', e);
-        //Alert.alert('Error', 'Error occured while searching for Doctors');
+        setIsLoading(false);
+        showGenericALert(e);
       });
   };
 
@@ -186,11 +180,11 @@ export const AddMedicine: React.FC<ProfileProps> = (props) => {
               autoFocus
               style={{
                 ...theme.fonts.IBMPlexSansMedium(18),
-                width: '80%',
+                width: '90%',
                 color: '#01475b',
                 paddingBottom: 4,
               }}
-              placeholder="Search Condition"
+              placeholder="Search Medicine"
               placeholderTextColor="rgba(1, 71, 91, 0.3)"
               value={doctorSearchText}
               onChange={(text) => filterDoctors(text.nativeEvent.text.replace(/\\/g, ''))}
