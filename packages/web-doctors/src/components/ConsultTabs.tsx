@@ -82,6 +82,19 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
+interface UserInfoObject {
+  patientId: string;
+  image: string;
+  name: string;
+  age: number;
+  gender: string;
+  location: string;
+  uhid: string;
+  appointmentId: string;
+}
+interface CasesheetInfoObj {
+  userInfo: UserInfoObject;
+}
 type Params = { id: string; patientId: string };
 export const ConsultTabs: React.FC = (props) => {
   const classes = useStyles();
@@ -99,6 +112,18 @@ export const ConsultTabs: React.FC = (props) => {
   const [loaded, setLoaded] = useState<boolean>(false);
   const params = useParams<Params>();
   const paramId = params.id;
+  const casesheetInfo: CasesheetInfoObj = {
+    userInfo: {
+      patientId: '123456',
+      image: 'images/ic_patientchat.png',
+      name: 'Seema Singh',
+      age: 56,
+      gender: 'F',
+      location: 'Mumbai',
+      uhid: '5566',
+      appointmentId: '2232',
+    },
+  };
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
@@ -182,7 +207,7 @@ export const ConsultTabs: React.FC = (props) => {
             </div>
             {tabValue === 0 && (
               <TabContainer>
-                <CaseSheet />
+                <CaseSheet casesheetInfo={casesheetInfo} />
               </TabContainer>
             )}
             {tabValue === 1 && (
