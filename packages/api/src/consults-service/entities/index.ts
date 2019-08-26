@@ -41,6 +41,9 @@ export enum REQUEST_ROLES {
 //Appointment starts
 @Entity()
 export class Appointment extends BaseEntity {
+  @Column({ nullable: true, default: 0 })
+  apolloAppointmentId: number;
+
   @Column({ type: 'timestamp' })
   @IsDate()
   appointmentDateTime: Date;

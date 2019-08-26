@@ -25,6 +25,7 @@ export interface AppointmentPayload {
   specialityId: string;
   userFirstName: string;
   userLastName: string;
+  apptIdPg: string;
 }
 
 export interface AppointmentResp {
