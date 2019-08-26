@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Typography, Chip, Theme, MenuItem, Paper, TextField } from '@material-ui/core';
 import DoneIcon from '@material-ui/icons/Done';
 import { makeStyles, createStyles } from '@material-ui/styles';
@@ -8,12 +8,19 @@ import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
+import {
+  GetJuniorDoctorCaseSheet,
+  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
+} from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 interface OptionType {
-  label: string;
+  name: string;
 }
 
-const suggestions: OptionType[] = [{ label: 'Ultrasound' }, { label: 'Ultra-something else' }];
+const suggestions: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription | null)[] = [
+  { name: 'Ultrasound', __typename: 'DiagnosticPrescription' },
+  { name: 'Ultra-something else', __typename: 'DiagnosticPrescription' },
+];
 
 function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -39,8 +46,8 @@ function renderSuggestion(
   suggestion: OptionType,
   { query, isHighlighted }: Autosuggest.RenderSuggestionParams
 ) {
-  const matches = match(suggestion.label, query);
-  const parts = parse(suggestion.label, matches);
+  const matches = match(suggestion.name, query);
+  const parts = parse(suggestion.name, matches);
 
   return (
     <MenuItem selected={isHighlighted} component="div">
@@ -64,7 +71,9 @@ function getSuggestions(value: string) {
     ? []
     : suggestions.filter((suggestion) => {
         const keep =
-          count < 5 && suggestion.label.slice(0, inputLength).toLowerCase() === inputValue;
+          count < 5 &&
+          suggestion !== null &&
+          suggestion.name!.slice(0, inputLength).toLowerCase() === inputValue;
 
         if (keep) {
           count += 1;
@@ -75,7 +84,7 @@ function getSuggestions(value: string) {
 }
 
 function getSuggestionValue(suggestion: OptionType) {
-  return suggestion.label;
+  return suggestion.name;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -133,18 +142,41 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export const DiagnosticPrescription: React.FC = () => {
+interface CasesheetInfoProps {
+  casesheetInfo: GetJuniorDoctorCaseSheet;
+}
+export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
   const classes = useStyles();
-  const [selectedValues, setSelectedValues] = useState<OptionType[]>([{ label: 'Diagnostic ABC' }]);
-  const [favoriteDiagnostics, setFavoriteDiagnostics] = useState<OptionType[]>([
-    { label: 'Diagnostic DEF' },
-    { label: 'Diagnostic XYZ' },
-  ]);
+  //const [selectedValues, setSelectedValues] = useState<OptionType[]>([{ name: 'Diagnostic ABC' }]);
+  const [selectedValues, setSelectedValues] = useState<
+    (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription | null)[]
+  >([]);
+  useEffect(() => {
+    if (
+      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
+      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
+      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription &&
+      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription !==
+        null &&
+      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
+        .length > 0
+    ) {
+      setSelectedValues(
+        props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
+      );
+    }
+  }, []);
+  // const [favoriteDiagnostics, setFavoriteDiagnostics] = useState<OptionType[]>([
+  //   { name: 'Diagnostic DEF' },
+  //   { name: 'Diagnostic XYZ' },
+  // ]);
   const [state, setState] = React.useState({
     single: '',
     popper: '',
   });
-  const [stateSuggestions, setSuggestions] = React.useState<OptionType[]>([]);
+  const [stateSuggestions, setSuggestions] = React.useState<
+    (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription | null)[]
+  >([]);
 
   const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {
     setSuggestions(getSuggestions(value));
@@ -185,14 +217,14 @@ export const DiagnosticPrescription: React.FC = () => {
           {selectedValues.map((item, idx) => (
             <Chip
               key={idx}
-              label={item.label}
+              label={item!.name}
               onDelete={() => {}}
               deleteIcon={<DoneIcon className={classes.icon} />}
             />
           ))}
         </Typography>
       </Typography>
-      <Typography component="div" className={classes.column}>
+      {/* <Typography component="div" className={classes.column}>
         <Typography component="h3" variant="h4">
           Favorite Diagnostics
         </Typography>
@@ -200,16 +232,16 @@ export const DiagnosticPrescription: React.FC = () => {
           {favoriteDiagnostics.map((item, idx) => (
             <Chip
               key={idx}
-              label={item.label}
+              label={item.name}
               onDelete={() => {
                 setSelectedValues(selectedValues.concat(item));
-                setFavoriteDiagnostics(favoriteDiagnostics.filter((i) => i.label !== item.label));
+                setFavoriteDiagnostics(favoriteDiagnostics.filter((i) => i.name !== item.name));
               }}
               deleteIcon={<AddCircle className={classes.icon} />}
             />
           ))}
         </Typography>
-      </Typography>
+      </Typography> */}
       <Typography component="div" className={classes.textFieldContainer}>
         {!showAddCondition && (
           <AphButton
@@ -221,35 +253,36 @@ export const DiagnosticPrescription: React.FC = () => {
           </AphButton>
         )}
         {showAddCondition && (
-          <Autosuggest
-            onSuggestionSelected={(e, { suggestion }) => {
-              setSelectedValues(selectedValues.concat(suggestion));
-              setShowAddCondition(false);
-              setState({
-                single: '',
-                popper: '',
-              });
-            }}
-            {...autosuggestProps}
-            inputProps={{
-              classes,
-              id: 'react-autosuggest-simple',
-              placeholder: 'Search Diagnostics',
-              value: state.single,
-              onChange: handleChange('single'),
-            }}
-            theme={{
-              container: classes.container,
-              suggestionsContainerOpen: classes.suggestionsContainerOpen,
-              suggestionsList: classes.suggestionsList,
-              suggestion: classes.suggestion,
-            }}
-            renderSuggestionsContainer={(options) => (
-              <Paper {...options.containerProps} square>
-                {options.children}
-              </Paper>
-            )}
-          />
+          <div>fkgdjfhgkdf</div>
+          // <Autosuggest
+          //   onSuggestionSelected={(e, { suggestion }) => {
+          //     setSelectedValues(selectedValues.concat(suggestion));
+          //     setShowAddCondition(false);
+          //     setState({
+          //       single: '',
+          //       popper: '',
+          //     });
+          //   }}
+          //   {...autosuggestProps}
+          //   inputProps={{
+          //     classes,
+          //     id: 'react-autosuggest-simple',
+          //     placeholder: 'Search Diagnostics',
+          //     value: state.single,
+          //     onChange: handleChange('single'),
+          //   }}
+          //   theme={{
+          //     container: classes.container,
+          //     suggestionsContainerOpen: classes.suggestionsContainerOpen,
+          //     suggestionsList: classes.suggestionsList,
+          //     suggestion: classes.suggestion,
+          //   }}
+          //   renderSuggestionsContainer={(options) => (
+          //     <Paper {...options.containerProps} square>
+          //       {options.children}
+          //     </Paper>
+          //   )}
+          // />
         )}
       </Typography>
     </Typography>

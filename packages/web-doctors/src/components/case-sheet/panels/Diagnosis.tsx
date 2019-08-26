@@ -117,7 +117,7 @@ const useStyles = makeStyles((theme: Theme) =>
       '& h4': {
         fontSize: 14,
         fontWeight: 500,
-        color: 'rgba(128, 128, 128, 0.3)',
+        color: 'rgba(2, 71, 91, 0.6)',
         marginBottom: 12,
       },
     },
