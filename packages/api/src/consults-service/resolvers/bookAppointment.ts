@@ -85,10 +85,13 @@ const bookAppointment: Resolver<
   ConsultServiceContext,
   BookAppointmentResult
 > = async (parent, { appointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
+  console.log(appointmentInput.appointmentDateTime, 'input date time');
+  console.log(appointmentInput.appointmentDateTime.toISOString(), 'iso string');
+  console.log(new Date(appointmentInput.appointmentDateTime.toISOString()), 'iso to date');
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
     ...appointmentInput,
     status: STATUS.PENDING,
-    appointmentDateTime: appointmentInput.appointmentDateTime,
+    appointmentDateTime: new Date(appointmentInput.appointmentDateTime.toISOString()),
   };
 
   //check if patient id is valid
@@ -152,8 +155,6 @@ const bookAppointment: Resolver<
     patientDob = format(patientDetails.dateOfBirth, 'dd/MM/yyyy');
   }
 
-  console.log('mobile number', patientDetails.mobileNumber.substr(3));
-
   const payload: AppointmentPayload = {
     appointmentDate: format(appointmentInput.appointmentDateTime, 'dd/MM/yyyy'),
     appointmentTypeId: 1,
@@ -190,7 +191,6 @@ const bookAppointment: Resolver<
     payload,
   };
 
-  console.log('sending message', testMessage);
   AphMqClient.send(testMessage);
   //message queue ends
 
