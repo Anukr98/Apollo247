@@ -21,9 +21,13 @@ import {
 
 interface OptionType {
   name: string;
+  __typename: 'Diagnosis';
 }
 
-const suggestions: OptionType[] = [{ name: 'Sore Throat' }, { name: 'Sorosis' }];
+const suggestions: OptionType[] = [
+  { name: 'Sore Throat', __typename: 'Diagnosis' },
+  { name: 'Sorosis', __typename: 'Diagnosis' },
+];
 
 function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -182,29 +186,29 @@ export const Diagnosis: React.FC<CasesheetInfoProps> = (props) => {
       setSelectedValues(props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis);
     }
   }, []);
-  // const [state, setState] = React.useState({
-  //   single: '',
-  //   popper: '',
-  // });
-  // const [stateSuggestions, setSuggestions] = React.useState<OptionType[]>([]);
+  const [state, setState] = React.useState({
+    single: '',
+    popper: '',
+  });
+  const [stateSuggestions, setSuggestions] = React.useState<OptionType[]>([]);
 
-  // const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {
-  //   setSuggestions(getSuggestions(value));
-  // };
+  const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {
+    setSuggestions(getSuggestions(value));
+  };
 
-  // const handleSuggestionsClearRequested = () => {
-  //   setSuggestions([]);
-  // };
+  const handleSuggestionsClearRequested = () => {
+    setSuggestions([]);
+  };
 
-  // const handleChange = (name: keyof typeof state) => (
-  //   event: React.ChangeEvent<{}>,
-  //   { newValue }: Autosuggest.ChangeEvent
-  // ) => {
-  //   setState({
-  //     ...state,
-  //     [name]: newValue,
-  //   });
-  // };
+  const handleChange = (name: keyof typeof state) => (
+    event: React.ChangeEvent<{}>,
+    { newValue }: Autosuggest.ChangeEvent
+  ) => {
+    setState({
+      ...state,
+      [name]: newValue,
+    });
+  };
   const handleDelete = (name: any) => {
     console.log(name);
     setSelectedValues(selectedValues.filter((item) => item!.name !== name));
@@ -212,14 +216,14 @@ export const Diagnosis: React.FC<CasesheetInfoProps> = (props) => {
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
   const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
 
-  // const autosuggestProps = {
-  //   renderInputComponent,
-  //   suggestions: stateSuggestions,
-  //   onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
-  //   onSuggestionsClearRequested: handleSuggestionsClearRequested,
-  //   getSuggestionValue,
-  //   renderSuggestion,
-  // };
+  const autosuggestProps = {
+    renderInputComponent,
+    suggestions: stateSuggestions,
+    onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
+    onSuggestionsClearRequested: handleSuggestionsClearRequested,
+    getSuggestionValue,
+    renderSuggestion,
+  };
 
   return (
     <Typography component="div" className={classes.mainContainer}>
@@ -248,36 +252,35 @@ export const Diagnosis: React.FC<CasesheetInfoProps> = (props) => {
         </AphButton>
       )}
       {showAddCondition && (
-        <div>autosuggest</div>
-        // <Autosuggest
-        //   onSuggestionSelected={(e, { suggestion }) => {
-        //     setSelectedValues(selectedValues.concat(suggestion));
-        //     setShowAddCondition(false);
-        //     setState({
-        //       single: '',
-        //       popper: '',
-        //     });
-        //   }}
-        //   {...autosuggestProps}
-        //   inputProps={{
-        //     classes,
-        //     id: 'react-autosuggest-simple',
-        //     placeholder: 'Search Condition',
-        //     value: state.single,
-        //     onChange: handleChange('single'),
-        //   }}
-        //   theme={{
-        //     container: classes.container,
-        //     suggestionsContainerOpen: classes.suggestionsContainerOpen,
-        //     suggestionsList: classes.suggestionsList,
-        //     suggestion: classes.suggestion,
-        //   }}
-        //   renderSuggestionsContainer={(options) => (
-        //     <Paper {...options.containerProps} square className={classes.searchpopup}>
-        //       {options.children}
-        //     </Paper>
-        //   )}
-        // />
+        <Autosuggest
+          onSuggestionSelected={(e, { suggestion }) => {
+            setSelectedValues(selectedValues.concat(suggestion));
+            setShowAddCondition(false);
+            setState({
+              single: '',
+              popper: '',
+            });
+          }}
+          {...autosuggestProps}
+          inputProps={{
+            classes,
+            id: 'react-autosuggest-simple',
+            placeholder: 'Search Condition',
+            value: state.single,
+            onChange: handleChange('single'),
+          }}
+          theme={{
+            container: classes.container,
+            suggestionsContainerOpen: classes.suggestionsContainerOpen,
+            suggestionsList: classes.suggestionsList,
+            suggestion: classes.suggestion,
+          }}
+          renderSuggestionsContainer={(options) => (
+            <Paper {...options.containerProps} square className={classes.searchpopup}>
+              {options.children}
+            </Paper>
+          )}
+        />
       )}
     </Typography>
   );
