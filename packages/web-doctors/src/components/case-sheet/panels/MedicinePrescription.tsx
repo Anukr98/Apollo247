@@ -265,6 +265,11 @@ const useStyles = makeStyles((theme: Theme) =>
         display: 'none !important',
       },
     },
+    loader: {
+      left: '50%',
+      top: 41,
+      position: 'relative',
+    },
   })
 );
 
@@ -357,6 +362,7 @@ export const MedicinePrescription: React.FC = () => {
       selected: true,
     },
   ]);
+
   const [searchInput, setSearchInput] = useState('');
   function getSuggestions(value: string) {
     const inputValue = deburr(value.trim()).toLowerCase();
@@ -449,7 +455,7 @@ export const MedicinePrescription: React.FC = () => {
           <h6>
             {medicine.times} times a day ({medicine.daySlots}) for {medicine.duration}
           </h6>
-          <img
+          {/* <img
             className={classes.checkImg}
             src={
               medicine.selected
@@ -457,7 +463,7 @@ export const MedicinePrescription: React.FC = () => {
                 : require('images/ic_unselected.svg')
             }
             alt="chkUncheck"
-          />
+          /> */}
         </Paper>
       );
     }
@@ -477,10 +483,18 @@ export const MedicinePrescription: React.FC = () => {
     );
   });
   const addUpdateMedicines = () => {
+    const toBeTakenSlotsArr: any = [];
+    const daySlotsArr: any = [];
     const isTobeTakenSelected = toBeTakenSlots.filter(function(slot: SlotsObject) {
+      if (slot.selected) {
+        toBeTakenSlotsArr.push(slot.value);
+      }
       return slot.selected !== false;
     });
     const daySlotsSelected = daySlots.filter(function(slot: SlotsObject) {
+      if (slot.selected) {
+        daySlotsArr.push(slot.value);
+      }
       return slot.selected !== false;
     });
     if (daySlotsSelected.length === 0) {
@@ -491,7 +505,7 @@ export const MedicinePrescription: React.FC = () => {
       setErrorState({ ...errorState, durationErr: true, daySlotErr: false, tobeTakenErr: false });
     } else {
       setErrorState({ ...errorState, durationErr: false, daySlotErr: false, tobeTakenErr: false });
-      alert('Api Call to submit action');
+
       // const inputParams = {
       //   caseSheetId: '1234',
       //   tablets: tabletsCount,
@@ -499,6 +513,20 @@ export const MedicinePrescription: React.FC = () => {
       //   toBeTakenSlots: toBeTakenSlots,
       //   medicineInstruction: medicineInstruction
       // }
+      const slot1value = '';
+
+      const inputParams = {
+        id: selectedValue.trim(),
+        value: selectedValue,
+        name: selectedValue,
+        times: daySlotsSelected.length,
+        daySlots: `${daySlotsArr.join(',')}`,
+        duration: `${consumptionDuration}  ${toBeTakenSlotsArr.join(',')}`,
+        selected: true,
+      };
+      const x = selectedMedicines;
+      x.push(inputParams);
+      setSelectedMedicines(x);
       setIsDialogOpen(false);
     }
   };
@@ -633,7 +661,7 @@ export const MedicinePrescription: React.FC = () => {
                       </Paper>
                     )}
                   />
-                  {loading ? <CircularProgress /> : null}
+                  {loading ? <CircularProgress className={classes.loader} /> : null}
                 </div>
               </div>
             ) : (
