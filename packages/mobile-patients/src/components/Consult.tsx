@@ -1,34 +1,34 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import { DoctorPlaceholder, DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
-import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { GET_PATIENT_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getPatinetAppointments,
+  getPatinetAppointments_getPatinetAppointments_patinetAppointments,
+} from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
+import { useQuery } from 'react-apollo-hooks';
 import {
   AsyncStorage,
   Dimensions,
+  Image,
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Image,
 } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
-import { NavigationScreenProps, FlatList } from 'react-navigation';
-import { useQuery } from 'react-apollo-hooks';
-import {
-  getPatinetAppointments,
-  getPatinetAppointments_getPatinetAppointments_patinetAppointments,
-} from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
-import { GET_PATIENT_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
-import moment from 'moment';
-import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { getDateFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
+
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -284,8 +284,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             paddingBottom: 4,
             paddingRight: 16,
             textAlign: 'right',
-            ...theme.fonts.IBMPlexSansBold(13),
-            color: theme.colors.APP_YELLOW,
+            ...theme.viewStyles.yellowTextStyle,
           }}
         >
           ADD MEMBER
@@ -335,9 +334,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 <Text
                   style={{
                     marginTop: 8,
-                    color: '#fc9916',
                     textAlign: 'left',
-                    ...theme.fonts.IBMPlexSansBold(13),
+                    ...theme.viewStyles.yellowTextStyle,
                   }}
                 >
                   {serviceTitle.description}

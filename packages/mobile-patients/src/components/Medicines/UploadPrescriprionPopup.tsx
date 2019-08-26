@@ -272,7 +272,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
               <Text
                 style={{
                   ...theme.fonts.IBMPlexSansMedium(12),
-                  color: 'rgba(2, 71, 91, 0.6)',
+                  color: theme.colors.TEXT_LIGHT_BLUE,
                   paddingTop: 8,
                   paddingBottom: 16,
                   // paddingHorizontal: 20,

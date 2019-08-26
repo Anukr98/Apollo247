@@ -47,9 +47,7 @@ const styles = StyleSheet.create({
   },
   gotItTextStyles: {
     paddingTop: 16,
-    ...theme.fonts.IBMPlexSansBold(13),
-    lineHeight: 24,
-    color: '#fc9916',
+    ...theme.viewStyles.yellowTextStyle,
   },
   hiTextStyle: {
     marginLeft: 20,
@@ -283,8 +281,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             paddingBottom: 4,
             paddingRight: 16,
             textAlign: 'right',
-            ...theme.fonts.IBMPlexSansBold(13),
-            color: theme.colors.APP_YELLOW,
+            ...theme.viewStyles.yellowTextStyle,
           }}
         >
           ADD MEMBER
@@ -507,7 +504,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <Button
               title={string.home.consult_doctor}
               style={styles.buttonStyles}
-              onPress={() => {}}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.SymptomChecker);
+              }}
             />
           </View>
           <View style={{ width: '100%', height: 436 }}>
@@ -586,9 +585,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       <Text
                         style={{
                           marginTop: 8,
-                          color: '#fc9916',
                           textAlign: 'left',
-                          ...theme.fonts.IBMPlexSansBold(13),
+                          ...theme.viewStyles.yellowTextStyle,
                         }}
                       >
                         {serviceTitle.descripiton}

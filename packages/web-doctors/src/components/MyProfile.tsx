@@ -714,7 +714,9 @@ interface DoctorDetailsProps {
 }
 export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
   const { doctor, clinics } = props;
-  const [mobileNumber, setMobileNumber] = useState<string>('');
+  const [mobileNumber, setMobileNumber] = useState<string>(
+    doctor.delegateNumber ? doctor.delegateNumber : ''
+  );
   const [phoneMessage, setPhoneMessage] = useState<string>('');
   const [delegateNumberStatus, setDelegateNumberStatus] = useState<string>('');
   const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
@@ -893,7 +895,6 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                 <AphButton
                   variant="contained"
                   color="primary"
-                  disabled={mobileNumber !== '' && phoneMessage.length > 0}
                   classes={{ root: classes.saveButton }}
                   onClick={(e) => {
                     mutate({});
@@ -912,7 +913,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                 <AphButton
                   variant="contained"
                   color="primary"
-                  disabled={mobileNumber !== '' && phoneMessage.length > 0}
+                  disabled={mobileNumber!.length !== 10 || phoneMessage.length > 0}
                   classes={{ root: classes.saveButton }}
                   onClick={(e) => {
                     mutate({

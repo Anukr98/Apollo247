@@ -33,6 +33,10 @@ import {
   NavigationRouteConfig,
   StackNavigatorConfig,
 } from 'react-navigation';
+import { HealthRecordsHome } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordsHome';
+import { ConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/ConsultDetails';
+import { RecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/RecordDetails';
+import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomChecker';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -65,6 +69,10 @@ export enum AppRoutes {
   SelectPrescription = 'SelectPrescription',
   UploadPrescription = 'UploadPrescription',
   SelectDeliveryAddress = 'SelectDeliveryAddress',
+  HealthRecordsHome = 'HealthRecordsHome',
+  ConsultDetails = 'ConsultDetails',
+  RecordDetails = 'RecordDetails',
+  SymptomChecker = 'SymptomChecker',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -175,6 +183,18 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.SelectDeliveryAddress]: {
     screen: SelectDeliveryAddress,
+  },
+  [AppRoutes.HealthRecordsHome]: {
+    screen: HealthRecordsHome,
+  },
+  [AppRoutes.ConsultDetails]: {
+    screen: ConsultDetails,
+  },
+  [AppRoutes.RecordDetails]: {
+    screen: RecordDetails,
+  },
+  [AppRoutes.SymptomChecker]: {
+    screen: SymptomChecker,
   },
 };
 

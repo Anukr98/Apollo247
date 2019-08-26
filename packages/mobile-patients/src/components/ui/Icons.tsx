@@ -488,3 +488,79 @@ export const OrderTrackerSmallIcon: React.FC<IconProps> = (props) => (
 export const CouponIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_coupon.png')} />
 );
+
+export const TrackerBig: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('./icons/ic_tracker_big.png')}
+  />
+);
+
+export const OnlineConsult: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('./icons/ic_onlineconsult.png')}
+  />
+);
+
+export const PrescriptionSkyBlue: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('./icons/ic_prescription_sky_blue.png')}
+  />
+);
+
+export const Down: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_accordion_down.png')} />
+);
+
+export const Up: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_accordion_up.png')} />
+);
+
+export const Poor: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 52, width: 52 }} {...props} source={require('./icons/poor.png')} />
+);
+export const PoorSelected: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 52, width: 52 }}
+    {...props}
+    source={require('./icons/poor_selected.png')}
+  />
+);
+
+export const Okay: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 52, width: 52 }} {...props} source={require('./icons/okay.png')} />
+);
+export const OkaySelected: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 52, width: 52 }}
+    {...props}
+    source={require('./icons/okay_selected.png')}
+  />
+);
+export const Great: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 52, width: 52 }} {...props} source={require('./icons/great.png')} />
+);
+export const GreatSelected: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 52, width: 52 }}
+    {...props}
+    source={require('./icons/great_selected.png')}
+  />
+);
+
+export const FileBig: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 40, width: 40 }}
+    {...props}
+    source={require('./icons/ic_file_big.png')}
+  />
+);
+
+export const Download: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_download.png')} />
+);
