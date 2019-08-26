@@ -10,7 +10,7 @@ export class PatientRepository extends Repository<Patient> {
   getPatientDetails(id: string) {
     return this.findOne({
       where: { id },
-      relations: ['lifeStyle', 'healthVault', 'familyHistory'],
+      relations: ['lifeStyle', 'healthVault', 'familyHistory', 'patientAddress'],
     });
   }
 }
