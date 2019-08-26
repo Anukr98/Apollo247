@@ -218,8 +218,11 @@ export const ConsultTabs: React.FC = (props) => {
             </div>
             {tabValue === 0 && (
               <TabContainer>
-                {casesheetInfo ?
-                <CaseSheet casesheetInfo={casesheetInfo} appointmentId={appointmentId} /> : ''}
+                {casesheetInfo ? (
+                  <CaseSheet casesheetInfo={casesheetInfo} appointmentId={appointmentId} />
+                ) : (
+                  ''
+                )}
               </TabContainer>
             )}
             {tabValue === 1 && (
