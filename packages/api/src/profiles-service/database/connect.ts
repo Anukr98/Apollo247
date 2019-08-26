@@ -8,6 +8,7 @@ import {
   Facility,
   Packages,
   StarTeam,
+  DoctorDeviceTokens,
 } from 'doctors-service/entities';
 import {
   Patient,
@@ -59,6 +60,7 @@ export const connect = async () => {
         ConsultHours,
         DoctorBankAccounts,
         Packages,
+        DoctorDeviceTokens,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,

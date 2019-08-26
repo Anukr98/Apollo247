@@ -6,15 +6,15 @@ import { format } from 'date-fns';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { NavigationScreenProps } from 'react-navigation';
-import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
-import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
+
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    backgroundColor: '#f7f7f7', //theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
 
   consultDescText: {
@@ -89,44 +89,89 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
   return (
     <SafeAreaView style={styles.container}>
       <View>{showHeaderView()}</View>
-      <View>
+      <ScrollView bounces={false}>
         {profileData!.doctorType == 'STAR_APOLLO' || profileData!.doctorType == 'APOLLO' ? (
-          //   <SquareCardWithTitle title="Consultation Type" containerStyle={{ marginTop: 0 }}>
-          //     <Text style={styles.consultDescText}>
-          //       What type of consults will you be available for?
-          //     </Text>
-          //     <Text
-          //       style={{
-          //         marginLeft: 20,
-          //         marginTop: 8,
-          //         ...theme.fonts.IBMPlexSansMedium(16),
-          //         color: '#02475b',
-          //         marginBottom: 20,
-          //       }}
-          //     >
-          //       Physical, Online
-          //     </Text>
-          //   </SquareCardWithTitle>
           <View>
-            <Text>Consultation Type</Text>
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansSemiBold(16),
+                color: '#02475b',
+                marginBottom: 16,
+                marginLeft: 20,
+                marginTop: 20,
+              }}
+            >
+              Consultation Type
+            </Text>
+            <View
+              style={{
+                backgroundColor: '#fff',
+                borderRadius: 10,
+                marginLeft: 20,
+                marginRight: 20,
+                marginBottom: 32,
+                shadowColor: '#000000',
+                shadowOffset: {
+                  width: 0,
+                  height: 5,
+                },
+                shadowRadius: 10,
+                shadowOpacity: 0.2,
+                elevation: 5,
+              }}
+            >
+              <Text style={styles.consultDescText}>
+                What type of consults will you be available for?
+              </Text>
+              <Text
+                style={{
+                  marginLeft: 20,
+                  marginTop: 8,
+                  ...theme.fonts.IBMPlexSansMedium(16),
+                  color: '#02475b',
+                  marginBottom: 20,
+                }}
+              >
+                Physical, Online
+              </Text>
+            </View>
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansSemiBold(16),
+                color: '#02475b',
+                // marginBottom: 16,
+                marginLeft: 20,
+                //marginTop: 20,
+              }}
+            >
+              Consultation Hours
+            </Text>
+            <View style={{ marginLeft: 20, marginRight: 20 }}>
+              {profileData!.consultHours!.map((i, idx) => (
+                <ConsultationHoursCard
+                  days={i!.weekDay}
+                  timing={fromatConsultationHours(i!.startTime, i!.endTime)}
+                  isAvailableForOnlineConsultation={i!.consultMode.toLocaleLowerCase()}
+                  //isAvailableForPhysicalConsultation={i!.consultType}
+                  key={idx}
+                  type="fixed"
+                  containerStyle={{
+                    shadowColor: '#000000',
+                    shadowOffset: {
+                      width: 0,
+                      height: 5,
+                    },
+                    shadowRadius: 10,
+                    shadowOpacity: 0.2,
+                    elevation: 5,
+                  }}
+                />
+              ))}
+            </View>
           </View>
         ) : null}
-        {/* <SquareCardWithTitle
-          title="Consultation Hours"
-          containerStyle={{ marginTop: 16, paddingBottom: 16 }}
-        >
-          {profileData!.consultHours!.map((i, idx) => (
-            <ConsultationHoursCard
-              days={i!.weekDay}
-              timing={fromatConsultationHours(i!.startTime, i!.endTime)}
-              isAvailableForOnlineConsultation={i!.consultMode.toLocaleLowerCase()}
-              //isAvailableForPhysicalConsultation={i!.consultType}
-              key={idx}
-              type="fixed"
-            />
-          ))}
-        </SquareCardWithTitle> */}
-        <View style={{ margin: 20, flexDirection: 'row', marginBottom: -10 }}>
+
+        <View style={{ margin: 20, flexDirection: 'row', marginBottom: 10 }}>
           <View style={{ marginTop: 4 }}>
             <RoundChatIcon />
           </View>
@@ -144,7 +189,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
             </Text>
           </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };

@@ -303,7 +303,7 @@ export const Cart: React.FC = (props) => {
               <span className={classes.count}>03</span>
               <AphButton className={classes.addItemBtn}>Add Items</AphButton>
             </div>
-            <MedicineStripCard />
+            {/* <MedicineStripCard /> */}
             <div className={classes.sectionHeader}>
               <span>Upload Prescription</span>
               <span className={classes.count}>

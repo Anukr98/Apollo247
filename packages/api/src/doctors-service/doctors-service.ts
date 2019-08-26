@@ -44,7 +44,11 @@ import {
   starDoctorTypeDefs,
 } from 'doctors-service/resolvers/starDoctorProgram';
 import { starTeamResolvers, starTeamTypeDefs } from 'doctors-service/resolvers/starTeam';
-import { GraphQLTime } from 'graphql-iso-date';
+import {
+  saveDoctorDeviceTokenTypeDefs,
+  saveDoctorDeviceTokenResolvers,
+} from 'doctors-service/resolvers/saveDoctorDeviceToken';
+import { GraphQLTime, GraphQLDate } from 'graphql-iso-date';
 import gql from 'graphql-tag';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
@@ -76,9 +80,11 @@ import { getConnection } from 'typeorm';
     schema: buildFederatedSchema([
       {
         typeDefs: gql`
+          scalar Date
           scalar Time
         `,
         resolvers: {
+          Date: GraphQLDate,
           Time: GraphQLTime,
         },
       },
@@ -125,6 +131,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: starTeamTypeDefs,
         resolvers: starTeamResolvers,
+      },
+      {
+        typeDefs: saveDoctorDeviceTokenTypeDefs,
+        resolvers: saveDoctorDeviceTokenResolvers,
       },
     ]),
   });

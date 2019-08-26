@@ -4,6 +4,11 @@ import {
   CalendarIcon,
   RightIcon,
   Notification,
+  Profile,
+  AvailabilityIcon,
+  FeeIcon,
+  SmartPrescription,
+  Settings,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
@@ -21,6 +26,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   ScrollViewBase,
+  Image,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -28,6 +34,8 @@ import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { Availability } from '@aph/mobile-doctors/src/components/ProfileSetup/Availability';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 const { height } = Dimensions.get('window');
 
@@ -125,7 +133,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
     return (
       <View style={[styles.cardContainer]}>
         <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-          <Notification />
+          <SmartPrescription />
           <Text style={styles.headingText}>My Stats</Text>
           <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
             <RightIcon />
@@ -144,7 +152,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
           }}
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-            <Notification />
+            <Profile />
             <Text style={styles.headingText}>My Profile</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
@@ -164,7 +172,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
           }}
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-            <Notification />
+            <AvailabilityIcon />
             <Text style={styles.headingText}>Availibility</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
@@ -175,16 +183,23 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
     );
   };
 
-  const renderFeesView = () => {
+  const renderFeesView = (data: GetDoctorDetails_getDoctorDetails) => {
     return (
       <View style={[styles.cardContainer]}>
-        <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-          <Notification />
-          <Text style={styles.headingText}>Fees</Text>
-          <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
-            <RightIcon />
+        <TouchableOpacity
+          onPress={() => {
+            console.log('hi', data);
+            props.navigation.navigate(AppRoutes.MyFees, { ProfileData: data });
+          }}
+        >
+          <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
+            <FeeIcon />
+            <Text style={styles.headingText}>Fees</Text>
+            <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
+              <RightIcon />
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -192,7 +207,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
     return (
       <View style={[styles.cardContainer]}>
         <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-          <Notification />
+          <SmartPrescription />
           <Text style={styles.headingText}>Smart Prescription</Text>
           <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
             <RightIcon />
@@ -206,7 +221,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       <View style={[styles.cardContainer]}>
         <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.MyAccount)}>
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
-            <Notification />
+            <Settings />
             <Text style={styles.headingText}>Settings</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
@@ -219,7 +234,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
   return (
     <View style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
       <ScrollView bounces={false}>
-        <SafeAreaView style={theme.viewStyles.container}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
           <KeyboardAwareScrollView
             style={{ flex: 1 }}
             showsVerticalScrollIndicator={false}
@@ -233,7 +248,16 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
             ) : (
               !!getDoctorProfile && (
                 <>
-                  <PatientPlaceHolderImage />
+                  {getDoctorProfile!.photoUrl ? (
+                    <Image
+                      style={{ height: 178, width: '100%' }}
+                      source={{
+                        uri: getDoctorProfile!.photoUrl,
+                      }}
+                    />
+                  ) : (
+                    <PatientPlaceHolderImage />
+                  )}
                   <View
                     style={{
                       backgroundColor: '#ffffff',
@@ -254,7 +278,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                     {renderMyStatsView()}
                     {renderMyProfileView(getDoctorProfile)}
                     {renderAvailabilityView(getDoctorProfile)}
-                    {renderFeesView()}
+                    {renderFeesView(getDoctorProfile)}
                     {renderSmartPrescriptionView()}
                     {renderSettingsView()}
                   </View>
