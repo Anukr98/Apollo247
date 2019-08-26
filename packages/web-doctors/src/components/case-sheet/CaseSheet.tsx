@@ -135,7 +135,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
     <div className={classes.container}>
       <div className={classes.caseSheet}>
         <section className={`${classes.column} ${classes.right}`}>
-          <UserCard casesheetInfo={props.casesheetInfo}/>
+          <UserCard casesheetInfo={props.casesheetInfo} />
         </section>
         <section className={classes.column}>
           {/* Symptoms Panel */}
