@@ -1,10 +1,5 @@
 import '@aph/universal/dist/global';
-import {
-  Appointment,
-  AppointmentSessions,
-  CaseSheet,
-  MedicinePrescription,
-} from 'consults-service/entities/';
+import { Appointment, AppointmentSessions, CaseSheet } from 'consults-service/entities/';
 import {
   ConsultHours,
   Doctor,
@@ -44,7 +39,7 @@ export const connect = async () => {
     },
     {
       name: 'consults-db',
-      entities: [Appointment, AppointmentSessions, MedicinePrescription, CaseSheet],
+      entities: [Appointment, AppointmentSessions, CaseSheet],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
       port: parseInt(process.env.CONSULTS_DB_PORT, 10),

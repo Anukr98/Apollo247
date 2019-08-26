@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
     width: '100%',
     // height: 'auto',
   },
+
   menuDropdown: {
     position: 'absolute',
     top: 184,
@@ -76,6 +77,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
+
   weekViewContainer: {
     marginTop: 16,
     backgroundColor: theme.colors.WHITE,
@@ -131,7 +133,6 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     console.log('DoctirNAME', doctorName);
   });
 
-  console.log('DoctorIdAPPPPP', DoctorId);
   const [date, setDate] = useState<Date>(new Date());
   const [calendarDate, setCalendarDate] = useState<Date>(new Date()); // to maintain a sync between week view change and calendar month
   const [isCalendarVisible, setCalendarVisible] = useState(false);
@@ -158,6 +159,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const getAppointments = data && data.getDoctorAppointments;
   const todayDateStyle = moment(calendarDate).format('YYYY-MM-DD');
   console.log('todayDateStyle', todayDateStyle);
+  console.log('getAppointments', getAppointments);
   const mark = {
     [todayDateStyle]: {
       customStyles: {
@@ -374,7 +376,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   };
 
   return (
-    <SafeAreaView style={theme.viewStyles.container}>
+    <SafeAreaView style={[theme.viewStyles.container]}>
       {renderMainHeader()}
       <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
 
