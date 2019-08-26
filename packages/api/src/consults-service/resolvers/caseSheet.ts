@@ -9,7 +9,6 @@ import { AphError } from 'AphError';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { Patient } from 'profiles-service/entities';
-import { isDate } from 'date-fns';
 
 export const caseSheetTypeDefs = gql`
   enum ConsultMode {
@@ -249,13 +248,14 @@ const updateCaseSheet: Resolver<
   CaseSheet
 > = async (parent, { UpdateCaseSheetInput }, { consultsDb }) => {
   const inputArguments = JSON.parse(JSON.stringify(UpdateCaseSheetInput));
+
+  //validate date
+  if (inputArguments.followUpDate != null && isNaN(new Date(inputArguments.followUpDate).valueOf()))
+    throw new AphError(AphErrorMessages.INVALID_DATE_FORMAT);
+
   const followUpAfterInDays =
     inputArguments.followUpAfterInDays == '' ? 0 : <Number>inputArguments.followUpAfterInDays;
   const followUpDate = inputArguments.followUpDate == '' ? null : <Date>inputArguments.followUpDate;
-
-  //validate date
-  if (followUpDate != null && !isDate(followUpDate))
-    throw new AphError(AphErrorMessages.INVALID_ENTITY);
 
   //validate casesheetid
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
