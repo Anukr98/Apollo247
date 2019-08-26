@@ -18,13 +18,19 @@ const useStyles = makeStyles(() => ({
     borderRadius: '5px',
     border: 'solid 1px rgba(2, 71, 91, 0.15)',
     backgroundColor: 'rgba(0, 0, 0, 0.02)',
+    width: '90%',
   },
   textContent: {
     color: '#01475b',
+    fontSize: 14,
+    fontWeight: 500,
+    lineHeight: 1.43,
   },
   header: {
-    color: '#02475b',
-    opacity: 0.6,
+    color: 'rgba(2,71,91,0.6)',
+    marginBottom: 8,
+    marginTop: 16,
+    fontWeight: 500,
   },
 }));
 
