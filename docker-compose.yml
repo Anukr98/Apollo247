@@ -36,6 +36,9 @@ services:
     volumes:
       - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
 
+  storage:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+
   api-gateway:
     image: node:12.6.0
     env_file: .env
@@ -57,12 +60,13 @@ services:
     volumes:
       - ./:/apollo-hospitals:cached
     depends_on:
+      - nginx
       - profiles-service
       - doctors-service
       - consults-service
       - notifications-service
-      - nginx
       - rabbitmq
+      - storage
 
   profiles-service:
     image: node:12.6.0
