@@ -60,6 +60,29 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         margin: '0 0 15px 0',
       },
+      '& h2': {
+        fontSize: 20,
+        lineHeight: 'normal',
+        fontWeight: 600,
+        color: '#02475b',
+      },
+      '& h5': {
+        fontSize: 16,
+        lineHeight: 'normal',
+        fontWeight: 500,
+        color: 'rgba(2, 71, 91, 0.8)',
+        marginBottom: 10,
+      },
+      '& h6': {
+        fontSize: 14,
+        lineHeight: 'normal',
+        fontWeight: 500,
+        color: 'rgba(2, 71, 91, 0.8)',
+        marginBottom: 10,
+      },
+      '& hr': {
+        marginBottom: 10,
+      },
     },
     expandIcon: {
       color: '#02475b',

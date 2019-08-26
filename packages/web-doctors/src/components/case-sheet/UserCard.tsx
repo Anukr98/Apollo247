@@ -10,17 +10,17 @@ export const UserCard: React.FC = () => {
         title="patient name"
       />
       <CardContent>
-        <Typography gutterBottom variant="h4" component="h2">
+        <Typography gutterBottom variant="h2">
           Seema Singh
         </Typography>
-        <Typography variant="body2" color="textSecondary" component="p">
+        <Typography variant="h5" color="textSecondary">
           56, F, Mumbai
         </Typography>
         <Divider />
-        <Typography variant="body2" color="textSecondary" component="p">
+        <Typography variant="h6" color="textSecondary">
           UHID: 012345
         </Typography>
-        <Typography variant="body2" color="textSecondary" component="p">
+        <Typography variant="h6" color="textSecondary">
           Appt ID: 98765
         </Typography>
       </CardContent>
