@@ -35,6 +35,7 @@ export interface TabsComponentProps {
   onChange: (title: string) => void;
   style?: StyleProp<ViewStyle>;
   showIcons?: boolean;
+  textStyle?: StyleProp<ViewStyle>;
 }
 
 export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
@@ -74,6 +75,7 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
               style={[
                 styles.textStyle,
                 selected === item.title ? { color: theme.colors.LIGHT_BLUE } : {},
+                props.textStyle,
               ]}
             >
               {item.title}

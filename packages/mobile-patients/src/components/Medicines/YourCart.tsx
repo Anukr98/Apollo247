@@ -46,9 +46,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(13),
   },
   yellowTextStyle: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    lineHeight: 24,
-    color: theme.colors.APP_YELLOW,
+    ...theme.viewStyles.yellowTextStyle,
     padding: 16,
   },
   blueTextStyle: {
