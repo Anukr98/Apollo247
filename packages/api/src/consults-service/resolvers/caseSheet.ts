@@ -248,10 +248,20 @@ const updateCaseSheet: Resolver<
   CaseSheet
 > = async (parent, { UpdateCaseSheetInput }, { consultsDb }) => {
   const inputArguments = JSON.parse(JSON.stringify(UpdateCaseSheetInput));
+
+  //validate date
+  if (inputArguments.followUpDate != null && isNaN(new Date(inputArguments.followUpDate).valueOf()))
+    throw new AphError(AphErrorMessages.INVALID_DATE_FORMAT);
+
   const followUpAfterInDays =
     inputArguments.followUpAfterInDays == '' ? 0 : <Number>inputArguments.followUpAfterInDays;
-
   const followUpDate = inputArguments.followUpDate == '' ? null : <Date>inputArguments.followUpDate;
+
+  //validate casesheetid
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const getCaseSheetData = await caseSheetRepo.getCaseSheetById(inputArguments.id);
+  if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
+
   const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = {
     ...inputArguments,
     symptoms: JSON.parse(inputArguments.symptoms),
@@ -263,7 +273,6 @@ const updateCaseSheet: Resolver<
     followUpAfterInDays: followUpAfterInDays,
   };
 
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
 
   const getUpdatedCaseSheet = await caseSheetRepo.getCaseSheetById(inputArguments.id);
