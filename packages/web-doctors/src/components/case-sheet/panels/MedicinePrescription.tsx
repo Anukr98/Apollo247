@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Theme,
   makeStyles,
@@ -16,12 +16,20 @@ import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
 import _isEmpty from 'lodash/isEmpty';
+import axios from 'axios';
+import _debounce from 'lodash/debounce';
+import { CircularProgress } from '@material-ui/core';
+
+const apiDetails = {
+  url: 'http://uat.apollopharmacy.in/searchprd_api.php',
+  authToken: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+}; // this must goes
 
 interface OptionType {
   label: string;
 }
 
-const suggestions: OptionType[] = [
+let suggestions: OptionType[] = [
   { label: 'Ibuprofen, 200 mg' },
   { label: 'Ibugesic plus, 1.5% wwa' },
   { label: 'Ibuenatal' },
@@ -67,29 +75,6 @@ function renderSuggestion(
       </div>
     </MenuItem>
   );
-}
-
-function getSuggestions(value: string) {
-  const inputValue = deburr(value.trim()).toLowerCase();
-  const inputLength = inputValue.length;
-  let count = 0;
-
-  return inputLength === 0
-    ? []
-    : suggestions.filter((suggestion) => {
-        const keep =
-          count < 5 && suggestion.label.slice(0, inputLength).toLowerCase() === inputValue;
-
-        if (keep) {
-          count += 1;
-        }
-
-        return keep;
-      });
-}
-
-function getSuggestionValue(suggestion: OptionType) {
-  return suggestion.label;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -302,6 +287,7 @@ interface errorObject {
   tobeTakenErr: boolean;
   durationErr: boolean;
 }
+
 export const MedicinePrescription: React.FC = () => {
   const classes = useStyles();
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
@@ -336,6 +322,9 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
   ]);
+
+  const [loading, setLoading] = useState<boolean>(false);
+
   const [toBeTakenSlots, setToBeTakenSlots] = React.useState<SlotsObject[]>([
     {
       id: 'afterfood',
@@ -368,6 +357,70 @@ export const MedicinePrescription: React.FC = () => {
       selected: true,
     },
   ]);
+  const [searchInput, setSearchInput] = useState('');
+  function getSuggestions(value: string) {
+    const inputValue = deburr(value.trim()).toLowerCase();
+    const inputLength = inputValue.length;
+    let count = 0;
+
+    return inputLength === 0
+      ? []
+      : suggestions.filter((suggestion) => {
+          const keep =
+            count < 5 && suggestion.label.slice(0, inputLength).toLowerCase() === inputValue;
+
+          if (keep) {
+            count += 1;
+          }
+
+          return keep;
+        });
+  }
+  const fetchMedicines = async (value: any) => {
+    setLoading(true);
+    const FinalSearchdata: any = [];
+    await axios
+      .post(
+        apiDetails.url,
+        { params: value },
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+          },
+        }
+      )
+      .then((result) => {
+        const medicines = result.data.products ? result.data.products : [];
+        console.log(medicines);
+        medicines.slice(0, 10).forEach((res: any) => {
+          const data = { label: '' };
+          data.label = res.name;
+          FinalSearchdata.push(data);
+        });
+        // FinalSearchdata.push(searchdata);
+        console.log(FinalSearchdata);
+        suggestions = FinalSearchdata;
+        setSearchInput(value);
+        setLoading(false);
+
+        // suggestions: [
+        //   {
+        //     label: 'qwer',
+        //   },
+        // ];
+      })
+      .catch();
+  };
+
+  function getSuggestionValue(suggestion: OptionType) {
+    return suggestion.label;
+  }
+  useEffect(() => {
+    if (searchInput.length > 2) {
+      setSuggestions(getSuggestions(searchInput));
+    }
+  }, [searchInput]);
+
   const daySlotsToggleAction = (slotId: string) => {
     const slots = daySlots.map(function(slot: SlotsObject) {
       if (slotId === slot.id) {
@@ -483,6 +536,9 @@ export const MedicinePrescription: React.FC = () => {
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
+    if (newValue.length > 2) {
+      fetchMedicines(newValue);
+    }
     setState({
       ...state,
       [name]: newValue,
@@ -562,6 +618,7 @@ export const MedicinePrescription: React.FC = () => {
                       id: 'react-autosuggest-simple',
                       placeholder: 'Search Instructions',
                       value: state.single,
+
                       onChange: handleChange('single'),
                     }}
                     theme={{
@@ -576,6 +633,7 @@ export const MedicinePrescription: React.FC = () => {
                       </Paper>
                     )}
                   />
+                  {loading ? <CircularProgress /> : null}
                 </div>
               </div>
             ) : (
