@@ -73,7 +73,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
                 props.onCalendarTypeChanged && props.onCalendarTypeChanged(CALENDAR_TYPE.MONTH);
               }}
             >
-              <DropdownBlueUp />
+              <DropdownBlueDown />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
@@ -82,7 +82,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
                 props.onCalendarTypeChanged && props.onCalendarTypeChanged(CALENDAR_TYPE.WEEK);
               }}
             >
-              <DropdownBlueDown />
+              <DropdownBlueUp />
             </TouchableOpacity>
           )}
         </View>

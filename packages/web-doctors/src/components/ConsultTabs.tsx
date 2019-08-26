@@ -13,7 +13,11 @@ import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
 } from 'graphql/types/createAppointmentSession';
-import { CREATE_APPOINTMENT_SESSION } from 'graphql/profiles';
+import {
+  GetJuniorDoctorCaseSheet,
+  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet,
+} from 'graphql/types/GetJuniorDoctorCaseSheet';
+import { CREATE_APPOINTMENT_SESSION, GET_JUNIOR_DOCTOR_CASESHEET } from 'graphql/profiles';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
@@ -82,19 +86,19 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-interface UserInfoObject {
-  patientId: string;
-  image: string;
-  name: string;
-  age: number;
-  gender: string;
-  location: string;
-  uhid: string;
-  appointmentId: string;
-}
-interface CasesheetInfoObj {
-  userInfo: UserInfoObject;
-}
+// interface UserInfoObject {
+//   patientId: string;
+//   image: string;
+//   name: string;
+//   age: number;
+//   gender: string;
+//   location: string;
+//   uhid: string;
+//   appointmentId: string;
+// }
+// interface CasesheetInfoObj {
+//   userInfo: UserInfoObject;
+// }
 type Params = { id: string; patientId: string };
 export const ConsultTabs: React.FC = (props) => {
   const classes = useStyles();
@@ -112,18 +116,7 @@ export const ConsultTabs: React.FC = (props) => {
   const [loaded, setLoaded] = useState<boolean>(false);
   const params = useParams<Params>();
   const paramId = params.id;
-  const casesheetInfo: CasesheetInfoObj = {
-    userInfo: {
-      patientId: '123456',
-      image: 'images/ic_patientchat.png',
-      name: 'Seema Singh',
-      age: 56,
-      gender: 'F',
-      location: 'Mumbai',
-      uhid: '5566',
-      appointmentId: '2232',
-    },
-  };
+  const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
@@ -133,6 +126,23 @@ export const ConsultTabs: React.FC = (props) => {
       setAppointmentId(paramId);
       setpatientId(params.patientId);
       setdoctorId(currentPatient.id);
+
+      client
+        .query<GetJuniorDoctorCaseSheet>({
+          query: GET_JUNIOR_DOCTOR_CASESHEET,
+          fetchPolicy: 'no-cache',
+          variables: { appointmentId: paramId },
+        })
+        .then((_data) => {
+          setCasesheetInfo(_data.data);
+          // setsessionId(_data.data.createAppointmentSession.sessionId);
+          // settoken(_data.data.createAppointmentSession.appointmentToken);
+          // setappointmentDateTime(_data.data.createAppointmentSession.appointmentDateTime);
+        })
+        .catch((e: any) => {
+          console.log('Error occured creating session', e);
+        });
+
       setLoaded(true);
     }
     return () => {
@@ -168,6 +178,7 @@ export const ConsultTabs: React.FC = (props) => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
     }, 10);
   };
+  // console.log(casesheetInfo);
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
@@ -207,7 +218,7 @@ export const ConsultTabs: React.FC = (props) => {
             </div>
             {tabValue === 0 && (
               <TabContainer>
-                <CaseSheet casesheetInfo={casesheetInfo} />
+                <CaseSheet casesheetInfo={casesheetInfo} appointmentId={appointmentId} />
               </TabContainer>
             )}
             {tabValue === 1 && (

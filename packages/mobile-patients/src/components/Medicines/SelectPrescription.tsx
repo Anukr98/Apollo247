@@ -77,7 +77,7 @@ export const SelectPrescription: React.FC<SelectPrescriptionProps> = (props) => 
             <View style={{ flexDirection: 'row', paddingTop: 5, paddingBottom: 3.5 }}>
               <Text
                 style={{
-                  color: 'rgba(2, 71, 91, 0.6)',
+                  color: theme.colors.TEXT_LIGHT_BLUE,
                   textAlign: 'left',
                   ...theme.fonts.IBMPlexSansMedium(14),
                   lineHeight: 20,
@@ -96,7 +96,7 @@ export const SelectPrescription: React.FC<SelectPrescriptionProps> = (props) => 
               <Text
                 style={{
                   paddingLeft: 19,
-                  color: 'rgba(2, 71, 91, 0.6)',
+                  color: theme.colors.TEXT_LIGHT_BLUE,
                   textAlign: 'left',
                   ...theme.fonts.IBMPlexSansMedium(14),
                   lineHeight: 20,
