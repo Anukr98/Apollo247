@@ -4,16 +4,30 @@ import { makeStyles } from '@material-ui/styles';
 
 const data = [
   {
-    Fever: ['Since: Last 2 days', 'How often: Nights', 'Severity: High, 102˚F'],
+    since: 'Last 2 days',
+    disease: 'Fever',
+    howOften: 'Nights',
+    Severity: 'High, 102˚F',
+    //Fever: ['Since: Last 2 days', 'How often: Nights', 'Severity: High, 102˚F'],
   },
   {
-    'Cough & Cold': [
-      'Since: Last 1 week',
-      'How often: All day, even while sleeping',
-      'Severity: Spots of blood in flem',
-    ],
+    disease: 'Cough & Cold',
+    since: 'Since: Last 1 days',
+    howOften: 'All day, even while sleeping',
+    Severity: 'Spots of blood in flem',
+    // CoughCold: [
+    //   'Since: Last 1 week',
+    //   'How often: All day, even while sleeping',
+    //   'Severity: Spots of blood in flem',
+    // ],
   },
-  { Nausea: ['Since: Last 2 days', 'How often: After food', 'Severity: Mild'] },
+  {
+    disease: 'Nausea',
+    since: 'Since: Last 2 days',
+    howOften: 'After food',
+    Severity: 'Mild',
+    //Nausea: ['Since: Last 2 days', 'How often: After food', 'Severity: Mild'] },
+  },
 ];
 
 const useStyles = makeStyles(() => ({
@@ -76,22 +90,43 @@ export const Symptoms: React.FC = () => {
       <List className={classes.symtomList}>
         {data.map((item, idx) => (
           <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
-            <ListItemText className={classes.symtomHeading} primary={Object.keys(item)[0]} />
+            {/* {Object.keys(item)[0]} */}
+            <ListItemText className={classes.symtomHeading} primary={item.disease} />
             <Fragment>
               <List>
-                {!!item &&
-                  !!Object.values(item).length &&
-                  Object.values(item)[0]!.map((text, iidx) => (
-                    <ListItem key={iidx} alignItems="flex-start" className={classes.symtomContent}>
-                      <ListItemText
-                        secondary={
-                          <Fragment>
-                            <Typography component="span">{text}</Typography>
-                          </Fragment>
-                        }
-                      />
-                    </ListItem>
-                  ))}
+                {item.since && (
+                  <ListItem alignItems="flex-start" className={classes.symtomContent}>
+                    <ListItemText
+                      secondary={
+                        <Fragment>
+                          <Typography component="span">Since: {item.since}</Typography>
+                        </Fragment>
+                      }
+                    />
+                  </ListItem>
+                )}
+                {item.howOften && (
+                  <ListItem alignItems="flex-start" className={classes.symtomContent}>
+                    <ListItemText
+                      secondary={
+                        <Fragment>
+                          <Typography component="span">How Often : {item.howOften}</Typography>
+                        </Fragment>
+                      }
+                    />
+                  </ListItem>
+                )}
+                {item.Severity && (
+                  <ListItem alignItems="flex-start" className={classes.symtomContent}>
+                    <ListItemText
+                      secondary={
+                        <Fragment>
+                          <Typography component="span">Severity: {item.Severity}</Typography>
+                        </Fragment>
+                      }
+                    />
+                  </ListItem>
+                )}
               </List>
             </Fragment>
           </ListItem>

@@ -225,4 +225,8 @@ export class AppointmentRepository extends Repository<Appointment> {
   updateAppointmentStatus(id: string, status: STATUS) {
     this.update(id, { status });
   }
+
+  confirmAppointment(id: string, status: STATUS, apolloAppointmentId: number) {
+    this.update(id, { status, apolloAppointmentId });
+  }
 }

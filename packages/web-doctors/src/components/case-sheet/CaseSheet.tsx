@@ -129,11 +129,26 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-
-export const CaseSheet: React.FC = () => {
+interface UserInfoObject {
+  patientId: string;
+  image: string;
+  name: string;
+  age: number;
+  gender: string;
+  location: string;
+  uhid: string;
+  appointmentId: string;
+}
+interface CasesheetInfoObj {
+  userInfo: UserInfoObject;
+}
+interface CasesheetInfoProps {
+  casesheetInfo: CasesheetInfoObj;
+}
+export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
   const classes = useStyles();
   const [expanded, setExpanded] = useState<string | boolean>(false);
-
+  const userInfo = props.casesheetInfo;
   const handlePanelExpansion = (panelName: string) => (
     e: React.ChangeEvent<{}>,
     isExpanded: boolean
@@ -143,7 +158,7 @@ export const CaseSheet: React.FC = () => {
     <div className={classes.container}>
       <div className={classes.caseSheet}>
         <section className={`${classes.column} ${classes.right}`}>
-          <UserCard />
+          <UserCard casesheetInfo={props.casesheetInfo} />
         </section>
         <section className={classes.column}>
           {/* Symptoms Panel */}
