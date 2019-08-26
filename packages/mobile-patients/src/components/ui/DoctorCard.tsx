@@ -119,7 +119,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   if (availability.error) {
     console.log('error', availability.error);
   } else {
-    console.log(availability.data, 'availabilityData', 'availableSlots');
     if (
       availability &&
       availability.data &&
@@ -133,9 +132,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
         .availableSlot;
       const ISOFormat = `${todayDate}T${nextSlot}:48.000Z`;
-      console.log(ISOFormat, new Date(ISOFormat));
       const formatedTime = Moment(new Date(ISOFormat), 'HH:mm:ss.SSSz').format('HH:mm');
-      console.log(formatedTime, todayDate, 'formatedTime', nextSlot, 'nextSlot');
       let timeDiff: number = 0;
       const time = formatedTime.split(':');
       const today: Date = new Date();
@@ -151,10 +148,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       }
       if (timeDiff < 0) {
         const availableTime = Moment(new Date(ISOFormat), 'HH:mm:ss.SSSz').format('h:mm A');
-        console.log(availableTime, 'availableTime');
         setavailableTime(availableTime);
       }
-      console.log(timeDiff, 'timeDiff');
       setavailableInMin(timeDiff);
     }
   }
