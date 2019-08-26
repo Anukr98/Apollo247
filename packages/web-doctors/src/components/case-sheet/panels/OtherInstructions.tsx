@@ -229,7 +229,7 @@ export const OtherInstructions: React.FC<CasesheetInfoProps> = (props) => {
         {showAddCondition && (
           <Autosuggest
             onSuggestionSelected={(e, { suggestion }) => {
-              //setFavoriteDiagnostics(selectedValues.concat(suggestion));
+              //setSelectedValues(selectedValues.concat(suggestion));
               setShowAddCondition(false);
               setState({
                 single: '',
