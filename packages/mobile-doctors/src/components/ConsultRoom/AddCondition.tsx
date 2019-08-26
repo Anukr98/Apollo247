@@ -17,7 +17,11 @@ import {
 } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { searchMedicineApi, MedicineProduct } from '@aph/mobile-doctors/src/components/ApiCall';
+import {
+  searchMedicineApi,
+  MedicineProduct,
+  addDiagonsisList,
+} from '@aph/mobile-doctors/src/components/ApiCall';
 import { AxiosResponse } from 'axios';
 
 const styles = StyleSheet.create({
@@ -60,7 +64,11 @@ export const AddCondition: React.FC<ProfileProps> = (props) => {
     Keyboard.dismiss();
     console.log('text', text); //remove this line later
     setDoctorSearchText(text);
-    setMedicineList([]);
+    addDiagonsisList({
+      name: text,
+      __typename: 'Diagnosis',
+    });
+    //setMedicineList([]);
     props.navigation.pop();
   };
   const formatSuggestionsText = (text: string, searchKey: string) => {

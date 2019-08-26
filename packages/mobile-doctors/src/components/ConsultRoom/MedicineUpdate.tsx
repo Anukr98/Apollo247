@@ -1,6 +1,6 @@
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow, Up, Down, Plus, Minus } from '@aph/mobile-doctors/src/components/ui/Icons';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, View, TouchableOpacity, Text, TextInput } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { ChipViewCard } from '@aph/mobile-doctors/src/components/ui/ChipViewCard';
@@ -10,6 +10,8 @@ import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextIn
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
+import console = require('console');
+import { updateMedicineList } from '@aph/mobile-doctors/src/components/ApiCall';
 
 const styles = StyleSheet.create({
   container: {
@@ -122,28 +124,57 @@ const styles = StyleSheet.create({
 });
 
 type ConsultationType = {
-  morning: string;
-  noon: string;
-  evening: string;
-  night: string;
-  afterfood: string;
-  beforefood: string;
+  [key: string]: boolean;
 };
 
-export interface ProfileProps extends NavigationScreenProps {}
+export interface ProfileProps
+  extends NavigationScreenProps<{
+    Name: string;
+    Dosage: string;
+    MedicineToBeTaken: string;
+    MedicineInstructions: string;
+    MedicineTimings: string;
+    MedicineConsumptionDurationInDays: string;
+  }> {}
 
 export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
   const [count, setCount] = useState(0);
-  const [medinceName, setMedinceName] = useState<string>('Ibuprofen, 200mg');
   const [value, setValue] = useState<string>('');
-  const [consultationType, setConsultationType] = useState<ConsultationType>({
-    morning: 'Morning',
-    noon: 'Noon',
-    evening: 'Evening',
-    night: 'Night',
-    afterfood: 'After Food',
-    beforefood: 'Before Food',
+  const [duration, setDuration] = useState<string>('');
+  const [consultationType, setConsultationType] = useState({
+    MORNING: { title: 'Morning', isSelected: false },
+    NOON: { title: 'Noon', isSelected: false },
+    EVENING: { title: 'Evening', isSelected: false },
+    NIGHT: { title: 'Night', isSelected: false },
   });
+
+  const [medicneupdate, setMedicineUpdate] = useState({
+    AFTER_FOOD: { title: 'After Food', isSelected: false },
+    BEFORE_FOOD: { title: 'Before Food', isSelected: false },
+  });
+
+  useEffect(() => {
+    setDuration(props.navigation.getParam('MedicineConsumptionDurationInDays'));
+    setValue(props.navigation.getParam('MedicineInstructions'));
+    setCount(parseInt(props.navigation.getParam('Dosage').substring(0, 1)));
+    const abc = props.navigation.getParam('MedicineToBeTaken');
+    setMedicineUpdate({
+      ...medicneupdate,
+      [abc]: {
+        isSelected: !!abc,
+        title: medicneupdate[abc].title,
+      },
+    });
+    const def = props.navigation.getParam('MedicineTimings');
+    setConsultationType({
+      ...consultationType,
+      [def]: {
+        isSelected: !!def,
+        title: consultationType[def].title,
+      },
+    });
+  }, []);
+
   const showHeaderView = () => {
     return (
       <Header
@@ -157,7 +188,7 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="MEDICINE UPDATE"
+        headerText={props.navigation.getParam('Name')}
       ></Header>
     );
   };
@@ -232,100 +263,58 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
             //marginBottom: 24,
           }}
         >
-          <ChipViewCard
-            title="Morning"
-            onChange={(isChecked) => {
-              if (!isChecked && !consultationType.morning) {
-                return;
-              } else {
-                console.log('morngn', consultationType.morning);
-                // setConsultationType({ ...consultationType, morning: isChecked });
-              }
-            }}
-            isChecked={!!consultationType.morning}
-          />
-          <ChipViewCard
-            title="Noon"
-            onChange={(isChecked) => {
-              if (!isChecked && !consultationType.noon) {
-                return;
-              } else {
-                console.log('morngn', consultationType.noon);
-                // setConsultationType({ ...consultationType, noon: isChecked });
-              }
-            }}
-            isChecked={!!consultationType.noon}
-          />
-          <ChipViewCard
-            title="Evening"
-            onChange={(isChecked) => {
-              if (!isChecked && !consultationType.evening) {
-                return;
-              } else {
-                console.log('morngn', consultationType.evening);
-                // setConsultationType({ ...consultationType, evening: isChecked });
-              }
-            }}
-            isChecked={!!consultationType.evening}
-          />
-          <ChipViewCard
-            title="Night"
-            onChange={(isChecked) => {
-              if (!isChecked && !consultationType.night) {
-                return;
-              } else {
-                console.log('morngn', consultationType.night);
-                // setConsultationType({ ...consultationType, night: isChecked });
-              }
-            }}
-            isChecked={!!consultationType.night}
-          />
+          {Object.keys(consultationType).map((key) => {
+            const data = consultationType[key];
+            return (
+              <ChipViewCard
+                title={data.title}
+                onChange={(isChecked) => {
+                  console.log({ key, isChecked });
+                  setConsultationType({
+                    ...consultationType,
+                    [key]: { isSelected: isChecked, title: data.title },
+                  });
+                }}
+                isChecked={consultationType[key].isSelected}
+              />
+            );
+          })}
         </View>
         <Text style={styles.dosage}>To be taken</Text>
         <View
           style={{
             flexDirection: 'row',
-            // justifyContent: 'space-between',
+            //justifyContent: 'space-between',
             marginLeft: 16,
             marginRight: 16,
+            padding: 10,
             // marginBottom: 24,
           }}
         >
-          <ChipViewCard
-            title="After Food"
-            onChange={(isChecked) => {
-              if (!isChecked && !consultationType.afterfood) {
-                return;
-              } else {
-                console.log('morngn', consultationType.afterfood);
-                // setConsultationType({ ...consultationType, afterfood: isChecked });
-              }
-            }}
-            isChecked={!!consultationType.afterfood}
-          />
-
-          <View style={{ flex: 0.1 }} />
-
-          <ChipViewCard
-            title="Before Food"
-            onChange={(isChecked) => {
-              if (!isChecked && !consultationType.beforefood) {
-                return;
-              } else {
-                console.log('morngn', consultationType.beforefood);
-                // setConsultationType({ ...consultationType, beforefood: isChecked });
-              }
-            }}
-            isChecked={!!consultationType.beforefood}
-          />
+          {Object.keys(medicneupdate).map((key) => {
+            const data = medicneupdate[key];
+            return (
+              <ChipViewCard
+                title={data.title}
+                onChange={(isChecked) => {
+                  console.log({ key, isChecked });
+                  setMedicineUpdate({
+                    ...medicneupdate,
+                    [key]: { isSelected: isChecked, title: data.title },
+                  });
+                }}
+                isChecked={medicneupdate[key].isSelected}
+              />
+            );
+          })}
         </View>
         <Text style={styles.dosage}>Duration of Consumption</Text>
         <View style={[styles.inputValidView]}>
           <TextInput
-            autoFocus
             style={styles.inputStyle}
-            value={value}
-            onChangeText={(value) => setValue(value)}
+            value={duration}
+            onChangeText={(duration) => setDuration(duration)}
+            autoCorrect={true}
           />
         </View>
         <Text style={styles.dosage}>Instructions (if any)</Text>
@@ -345,7 +334,33 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
           variant="white"
           style={[styles.buttonsaveStyle, { marginRight: 16 }]}
         />
-        <Button title="UPDATE" style={styles.buttonendStyle} />
+        <Button
+          title="UPDATE"
+          style={styles.buttonendStyle}
+          onPress={() => {
+            let dosagefianl = '';
+            console.log({
+              medicineName: props.navigation.getParam('Name'),
+              medicineDosage: count,
+              medicineToBeTaken: 'BEFORE_FOOD',
+              medicineInstructions: value,
+              medicineTimings: 'MORNING',
+              medicineConsumptionDurationInDays: duration,
+            });
+            if (count > 0) {
+              dosagefianl = count.toString().concat('tablets');
+            }
+            updateMedicineList({
+              medicineName: props.navigation.getParam('Name'),
+              medicineDosage: dosagefianl,
+              medicineToBeTaken: 'BEFORE_FOOD',
+              medicineInstructions: value,
+              medicineTimings: 'MORNING',
+              medicineConsumptionDurationInDays: duration,
+            });
+            props.navigation.pop();
+          }}
+        />
       </View>
     </SafeAreaView>
   );

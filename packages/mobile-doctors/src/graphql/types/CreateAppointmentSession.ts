@@ -12,6 +12,7 @@ export interface CreateAppointmentSession_createAppointmentSession {
   __typename: "CreateAppointmentSession";
   sessionId: string;
   appointmentToken: string;
+  caseSheetId: string | null;
 }
 
 export interface CreateAppointmentSession {

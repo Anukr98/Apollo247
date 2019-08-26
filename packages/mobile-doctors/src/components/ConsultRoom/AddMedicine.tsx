@@ -17,7 +17,11 @@ import {
 } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { searchMedicineApi, MedicineProduct } from '@aph/mobile-doctors/src/components/ApiCall';
+import {
+  searchMedicineApi,
+  MedicineProduct,
+  addMedicineList,
+} from '@aph/mobile-doctors/src/components/ApiCall';
 import { AxiosResponse } from 'axios';
 
 const styles = StyleSheet.create({
@@ -56,11 +60,19 @@ export const AddMedicine: React.FC<ProfileProps> = (props) => {
       ></Header>
     );
   };
-  const onPressDoctorSearchListItem = (text: string) => {
+  const onPressDoctorSearchListItem = (text: string, id: number) => {
     Keyboard.dismiss();
     console.log('text', text); //remove this line later
     setDoctorSearchText(text);
-    setMedicineList([]);
+    addMedicineList({
+      medicineName: text,
+      medicineDosage: '3 tablets',
+      medicineToBeTaken: 'AFTER_FOOD',
+      medicineInstructions: 'No instructions',
+      medicineTimings: 'MORNING',
+      medicineConsumptionDurationInDays: '3',
+      id: id,
+    });
     props.navigation.pop();
   };
   const formatSuggestionsText = (text: string, searchKey: string) => {
@@ -83,7 +95,7 @@ export const AddMedicine: React.FC<ProfileProps> = (props) => {
             const drName = ` ${item!.name}`;
             return (
               <TouchableOpacity
-                onPress={() => onPressDoctorSearchListItem(`Dr. ${item!.name}`)}
+                onPress={() => onPressDoctorSearchListItem(item.name, item.id)}
                 style={{ marginHorizontal: 16, marginTop: 8 }}
                 key={i}
               >

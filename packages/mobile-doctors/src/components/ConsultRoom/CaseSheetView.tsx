@@ -1,4 +1,14 @@
-import { getSysmptonsList, setSysmptonsList } from '@aph/mobile-doctors/src/components/ApiCall';
+import {
+  getSysmptonsList,
+  setSysmptonsList,
+  getDiagonsisList,
+  setDiagonsisList,
+  getDiagnosticPrescriptionDataList,
+  setDiagnosticPrescriptionDataList,
+  getMedicineList,
+  setMedicineList,
+  removeSysmptonsList,
+} from '@aph/mobile-doctors/src/components/ApiCall';
 import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
 import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
 import { HealthCard } from '@aph/mobile-doctors/src/components/ConsultRoom/HealthCard';
@@ -18,6 +28,8 @@ import {
   Start,
   ToogleOff,
   ToogleOn,
+  UnSelected,
+  Selected,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
@@ -43,6 +55,18 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GetJuniorDoctorCaseSheet } from '@aph/mobile-doctors/src/graphql/types/GetJuniorDoctorCaseSheet';
+import {
+  GET_JUNIOR_DOCTOR_CASESHEET,
+  CREATEAPPOINTMENTSESSION,
+} from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  CreateAppointmentSession,
+  CreateAppointmentSessionVariables,
+} from '@aph/mobile-doctors/src/graphql/types/CreateAppointmentSession';
+import { REQUEST_ROLES } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import console = require('console');
 
 const styles = StyleSheet.create({
   casesheetView: {
@@ -434,17 +458,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const [value, setValue] = useState<string>('');
 
-  const [familyValues, setFamilyValues] = useState<string>(
-    'Father: Cardiac patient\nMother: Severe diabetes\nMarried, No kids'
-  );
+  const [familyValues, setFamilyValues] = useState<any>([]);
 
-  const [allergiesData, setAllergiesData] = useState<string>('Paracetamol, Dairy, Dust');
-  const [lifeStyleData, setLifeStyleData] = useState<string>(
-    'Patient doesn’t smoke\nRecovered from chickenpox 6 months\nago'
-  );
-  const [juniordoctornotes, setJuniorDoctorNotes] = useState<string>(
-    'Fever, Cough and Cold, Nausea'
-  );
+  const [allergiesData, setAllergiesData] = useState<string>('');
+  const [lifeStyleData, setLifeStyleData] = useState<any>([]);
+  const [juniordoctornotes, setJuniorDoctorNotes] = useState<string>('');
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
   const [showButtons, setShowButtons] = useState(false);
   const [show, setShow] = useState(false);
@@ -465,6 +483,18 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [calenderShow, setCalenderShow] = useState(false);
   const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
   const [symptonsData, setSymptonsData] = useState<any>([]);
+  const [diagnosisData, setDiagnosisData] = useState<any>([]);
+  const [diagnosticPrescriptionData, setDiagnosticPrescription] = useState<any>([]);
+  const [otherInstructionsData, setOtherInstructionsData] = useState<any>([]);
+  const [medicinePrescriptionData, setMedicinePrescriptionData] = useState<any>([]);
+  const [sessionId, setsessionId] = useState<string>('');
+  const [token, settoken] = useState<string>('');
+  const [getcasesheetId, setGetCaseshhetId] = useState<string>('');
+
+  const [pickData, setPickData] = useState<{ [id: string]: boolean }>({});
+
+  // const [getSysmptonsListData, setGetSysmptonsListData] = useState<any>([]);
+
   const [showstyles, setShowStyles] = useState<any>([
     {
       marginLeft: 16,
@@ -476,84 +506,89 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       marginBottom: 32,
     },
   ]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const client = useApolloClient();
+
+  useEffect(() => {
+    client
+      .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+        mutation: CREATEAPPOINTMENTSESSION,
+        variables: {
+          createAppointmentSessionInput: {
+            appointmentId: AppId,
+            requestRole: REQUEST_ROLES.DOCTOR,
+          },
+        },
+      })
+      .then((_data: any) => {
+        console.log('creat', _data);
+        setsessionId(_data.data.createAppointmentSession.sessionId);
+        settoken(_data.data.createAppointmentSession.appointmentToken);
+        setGetCaseshhetId(_data.data.createAppointmentSession.caseSheetId);
+      })
+      .catch((e: any) => {
+        console.log('Error occured while create session', e);
+      });
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    client
+      .query<GetJuniorDoctorCaseSheet>({
+        query: GET_JUNIOR_DOCTOR_CASESHEET,
+        fetchPolicy: 'no-cache',
+        variables: { appointmentId: AppId },
+      })
+      .then((_data) => {
+        const result = _data.data.getJuniorDoctorCaseSheet;
+        console.log('GET_JUNIOR_DOCTOR_CASESHEET', result);
+        setSymptonsData(_data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms);
+        // setGetSysmptonsListData(_data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms);
+        setFamilyValues(_data.data.getJuniorDoctorCaseSheet!.patientDetails!.familyHistory);
+        setAllergiesData(_data.data.getJuniorDoctorCaseSheet!.patientDetails!.allergies!);
+        setLifeStyleData(_data.data.getJuniorDoctorCaseSheet!.patientDetails!.lifeStyle);
+        setJuniorDoctorNotes(_data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.notes!);
+        setDiagnosisData(_data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis);
+        setOtherInstructionsData(
+          _data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
+        );
+        setDiagnosticPrescription(
+          _data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
+        );
+        setMedicinePrescriptionData(
+          _data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
+        );
+
+        setLoading(false);
+        setSysmptonsList(_data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms!);
+        setDiagonsisList(_data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis!);
+        setDiagnosticPrescriptionDataList(
+          _data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription!
+        );
+        setMedicineList(
+          _data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription!
+        );
+      })
+      .catch((e) => {
+        setLoading(false);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', error);
+      });
+  }, []);
 
   useEffect(() => {
     const didBlurSubscription = props.navigation.addListener('didFocus', (payload) => {
-      console.debug('didFocus', payload);
+      console.log('didFocus', payload);
       setSymptonsData(getSysmptonsList());
+      setDiagnosisData(getDiagonsisList());
+      setDiagnosticPrescription(getDiagnosticPrescriptionDataList());
+      setMedicinePrescriptionData(getMedicineList());
     });
     () => didBlurSubscription.remove();
   }, []);
-  useEffect(() => {
-    const data = [
-      {
-        id: '1',
-        firstName: 'FEVER ',
-        secondName: '2days ',
-        thirdName: 'Night',
-        fourthName: 'High',
-      },
-      {
-        id: '2',
-        firstName: 'COLD ',
-        secondName: '2days ',
-        thirdName: 'Night',
-        fourthName: 'High',
-      },
-    ];
-    setSymptonsData(data);
-    setSysmptonsList(data);
-  }, []);
 
   const startDate = moment(date).format('YYYY-MM-DD');
-  console.log(
-    'Appintmentdatetimeconsultpagecase',
-    moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD')
-  );
-  console.log('startDatecase', startDate);
-  const appointments = [
-    {
-      id: '1',
-      firstName: 'Viral Fever',
-    },
-    {
-      id: '2',
-      firstName: 'Throat Infection',
-    },
-  ];
 
-  const diagnosis = [
-    {
-      id: '1',
-      firstName: 'Diagnostic ABC',
-    },
-    {
-      id: '2',
-      firstName: 'Diagnostic DEF',
-    },
-  ];
-
-  const instructions = [
-    {
-      id: '1',
-      firstName: 'Drink plenty of water',
-    },
-  ];
-
-  const medicineList = [
-    {
-      id: '1',
-      firstName: 'Acetaminophen 1.5% w/w ',
-      secondName: '1 tab, Once a day (night) for 1 week',
-      isActive: true,
-    },
-    {
-      id: '2',
-      firstName: 'Dextromethorphan (generic)',
-      secondName: '4 times a day (morning, afternoon, evening, night) for 5 days after food',
-      isActive: false,
-    },
-  ];
   const patientlist = [
     {
       id: '1',
@@ -660,25 +695,37 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
+  const removeSymptonData = (item: any) => {
+    removeSysmptonsList(item);
+    setSymptonsData(getSysmptonsList());
+  };
   const renderSymptonsView = () => {
     return (
       <View>
         <CollapseCard heading="Symptoms" collapse={show} onPress={() => setShow(!show)}>
-          {symptonsData.map((showdata: any) => {
-            return (
-              <View>
-                <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
-                  <SymptonsCard
-                    diseaseName={showdata.firstName}
-                    icon={<DiagonisisRemove />}
-                    days={showdata.secondName}
-                    howoften={showdata.thirdName}
-                    seviarity={showdata.fourthName}
-                  />
+          {symptonsData == null ? (
+            <Text>No data</Text>
+          ) : (
+            symptonsData.map((showdata: any) => {
+              return (
+                <View>
+                  <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
+                    <SymptonsCard
+                      diseaseName={showdata.symptom}
+                      icon={
+                        <TouchableOpacity onPress={() => removeSymptonData(showdata.symptom)}>
+                          <DiagonisisRemove />
+                        </TouchableOpacity>
+                      }
+                      days={`Since : ${showdata.since}`}
+                      howoften={`How Often : ${showdata.howOften}`}
+                      seviarity={`Severity : ${showdata.severity}`}
+                    />
+                  </View>
                 </View>
-              </View>
-            );
-          })}
+              );
+            })
+          )}
           <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
             <AddPlus />
             <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddSymptons)}>
@@ -715,7 +762,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         >
           <View style={styles.symptomsInputView}>
             <TextInput
-              style={styles.symptomsText}
+              style={[styles.symptomsText, { marginRight: 12 }]}
               multiline={true}
               onChangeText={(juniordoctornotes) => setJuniorDoctorNotes(juniordoctornotes)}
             >
@@ -735,14 +782,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         onPress={() => setdiagonisticPrescription(!diagonisticPrescription)}
       >
         <Text style={[styles.familyText, { marginBottom: 12 }]}>Diagnostics</Text>
-        {diagnosis.map((showdata, i) => {
-          return (
-            <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
-              <DiagnosicsCard diseaseName={showdata.firstName} icon={<DiagonisisRemove />} />
-            </View>
-          );
-        })}
-
+        {diagnosticPrescriptionData == null ? (
+          <Text>Nodata</Text>
+        ) : (
+          diagnosticPrescriptionData.map((showdata: any, i) => {
+            return (
+              <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
+                <DiagnosicsCard diseaseName={showdata.name} icon={<DiagonisisRemove />} />
+              </View>
+            );
+          })
+        )}
         <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
           <AddPlus />
           <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddDiagnostics)}>
@@ -752,6 +802,26 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </CollapseCard>
     );
   };
+  const passData = (
+    id: any,
+    name: string,
+    dosage: string,
+    medicineToBeTaken: string,
+    medicineInstructions: string,
+    medicineTimings: string,
+    medicineConsumptionDurationInDays: string
+  ) => {
+    console.log('pasdat', name);
+    setPickData({ ...pickData!, [id]: !pickData[id] });
+    props.navigation.push(AppRoutes.MedicineUpdate, {
+      Name: name,
+      Dosage: dosage,
+      MedicineToBeTaken: medicineToBeTaken,
+      MedicineInstructions: medicineInstructions,
+      MedicineTimings: medicineTimings,
+      MedicineConsumptionDurationInDays: medicineConsumptionDurationInDays,
+    });
+  };
   const renderMedicinePrescription = () => {
     return (
       <CollapseCard
@@ -760,38 +830,51 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         onPress={() => setMedicinePrescription(!medicinePrescription)}
       >
         <Text style={[styles.familyText, { marginBottom: 12 }]}>Medicines</Text>
-        {medicineList.map((showdata, i) => {
-          return (
-            <View>
-              <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
-                {showdata.isActive ? (
+        {medicinePrescriptionData == null ? (
+          <Text>No Data</Text>
+        ) : (
+          medicinePrescriptionData.map((showdata: any, i) => {
+            return (
+              <View>
+                <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
                   <MedicalCard
-                    diseaseName={showdata.firstName}
-                    icon={<DiagonisisRemove />}
-                    tabDesc={showdata.secondName}
-                    containerStyle={{
-                      borderRadius: 5,
-                      backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                      borderStyle: 'solid',
-                      borderWidth: 1,
-                      borderColor: '#00b38e',
-                    }}
-                    onPress={() => {
-                      props.navigation.push(AppRoutes.MedicineUpdate);
-                    }}
+                    diseaseName={showdata.medicineName}
+                    icon={
+                      <TouchableOpacity
+                        onPress={() =>
+                          passData(
+                            showdata.id,
+                            showdata.medicineName,
+                            showdata.medicineDosage,
+                            showdata.medicineToBeTaken,
+                            showdata.medicineInstructions,
+                            showdata.medicineTimings,
+                            showdata.medicineConsumptionDurationInDays
+                          )
+                        }
+                      >
+                        <View>{!pickData[showdata.id] ? <UnSelected /> : <Selected />}</View>
+                      </TouchableOpacity>
+                    }
+                    tabDesc={showdata.medicineInstructions}
+                    containerStyle={
+                      !pickData[showdata.id]
+                        ? null
+                        : {
+                            borderRadius: 5,
+                            backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                            borderStyle: 'solid',
+                            borderWidth: 1,
+                            borderColor: '#00b38e',
+                          }
+                    }
                   />
-                ) : (
-                  <MedicalCard
-                    diseaseName={showdata.firstName}
-                    icon={<DiagonisisRemove />}
-                    tabDesc={showdata.secondName}
-                  />
-                )}
+                </View>
               </View>
-            </View>
-          );
-        })}
-        <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
+            );
+          })
+        )}
+        <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 20 }}>
           <AddPlus />
           <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddMedicine)}>
             <Text style={styles.addDoctorText}>ADD MEDICINE</Text>
@@ -1041,13 +1124,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               marginBottom: 19,
             }}
           >
-            {appointments.map((showdata, i) => {
-              return (
-                <View>
-                  <DiagnosisCard diseaseName={showdata.firstName} icon={<DiagonisisRemove />} />
-                </View>
-              );
-            })}
+            {diagnosisData == null ? (
+              <Text>NO Data</Text>
+            ) : (
+              diagnosisData.map((showdata: any, i) => {
+                return (
+                  <View>
+                    <DiagnosisCard diseaseName={showdata.name} icon={<DiagonisisRemove />} />
+                  </View>
+                );
+              })
+            )}
           </View>
           <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
             <AddPlus />
@@ -1068,13 +1155,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           onPress={() => setOtherInstructions(!otherInstructions)}
         >
           <Text style={[styles.familyText, { marginBottom: 12 }]}>Instructions to the patient</Text>
-          {instructions.map((showdata, i) => {
-            return (
-              <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
-                <DiagnosicsCard diseaseName={showdata.firstName} icon={<DiagonisisRemove />} />
-              </View>
-            );
-          })}
+          {otherInstructionsData == null ? (
+            <Text>No Data</Text>
+          ) : (
+            otherInstructionsData.map((showdata: any, i) => {
+              return (
+                <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
+                  <DiagnosicsCard diseaseName={showdata.instruction} icon={<DiagonisisRemove />} />
+                </View>
+              );
+            })
+          )}
           {otherInstructionsadd ? (
             <View>
               <Text style={[styles.familyText, { marginBottom: 12 }]}>Add Instruction</Text>
@@ -1107,9 +1198,20 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   multiline={true}
                   placeholderTextColor="rgba(2, 71, 91, 0.4)"
                 />
-                <View style={{ alignItems: 'flex-end', margin: 8 }}>
-                  <AddPlus />
-                </View>
+                <TouchableOpacity
+                  onPress={() => {
+                    otherInstructionsData.push({
+                      instruction: 'ABCD ',
+                      __typename: 'OtherInstructions',
+                    });
+                    setOtherInstructionsAdd(!otherInstructionsadd);
+                    renderOtherInstructionsView();
+                  }}
+                >
+                  <View style={{ alignItems: 'flex-end', margin: 8 }}>
+                    <AddPlus />
+                  </View>
+                </TouchableOpacity>
               </View>
             </View>
           ) : (

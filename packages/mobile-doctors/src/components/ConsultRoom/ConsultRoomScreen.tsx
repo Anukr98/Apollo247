@@ -25,7 +25,10 @@ import {
   VideoOnIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
-import { CREATEAPPOINTMENTSESSION } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  CREATEAPPOINTMENTSESSION,
+  GET_JUNIOR_DOCTOR_CASESHEET,
+} from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
@@ -59,6 +62,7 @@ import MaterialTabs from 'react-native-material-tabs';
 import { NavigationScreenProps } from 'react-navigation';
 import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { GetJuniorDoctorCaseSheet } from '@aph/mobile-doctors/src/graphql/types/GetJuniorDoctorCaseSheet';
 
 const { height, width } = Dimensions.get('window');
 
@@ -115,6 +119,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [hideView, setHideView] = useState(false);
   const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [caseSheetIdData, setCaseSheetIdData] = useState<string>('');
   const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
   const AppId = props.navigation.getParam('AppId');
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
@@ -135,8 +141,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         },
       })
       .then((_data: any) => {
+        console.log('creat', _data);
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
+        setGetCaseshhetId(_data.data.createAppointmentSession.caseSheetId);
       })
       .catch((e: any) => {
         console.log('Error occured while create session', e);
@@ -156,6 +164,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [apiKey, setapiKey] = useState<string>('');
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
+  const [getcasesheetId, setGetCaseshhetId] = useState<string>('');
   const [cameraPosition, setCameraPosition] = useState<string>('front');
   const [mute, setMute] = useState<boolean>(true);
   const [showVideo, setShowVideo] = useState<boolean>(true);
@@ -400,8 +409,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       console.log('before insertText', insertText);
 
       insertText[insertText.length] = message.message;
-      setMessages(insertText as []);
-
+      //setMessages(insertText as []);
+      setMessages(() => [...(insertText as [])]);
       console.log('after insertText', insertText);
       console.log('messages', messages);
 
@@ -884,13 +893,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         />
 
         <OTSession
-          apiKey={'46409832'}
-          // sessionId={sessionId}
-          // token={token}
-          sessionId={'1_MX40NjQwOTgzMn5-MTU2NjYyNzM0NTIyMn5aUmtTY1Rzb0xzQkI4K2Y2Ni9zb3AvdUF-UH4'}
-          token={
-            'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9ZDk2NGRlNGQwYTNjYThmOWEzYzY1MjM2M2M3ZWEzZTM2M2YzZTY0YjpzZXNzaW9uX2lkPTFfTVg0ME5qUXdPVGd6TW41LU1UVTJOall5TnpNME5USXlNbjVhVW10VFkxUnpiMHh6UWtJNEsyWTJOaTl6YjNBdmRVRi1VSDQmY3JlYXRlX3RpbWU9MTU2NjYyNzM2NCZub25jZT0wLjk1NDE1MDA4NDk3Mzg3MTEmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2NjcxMzc2MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
-          }
+          apiKey={'46393582'}
+          sessionId={sessionId}
+          token={token}
+          // sessionId={'1_MX40NjQwOTgzMn5-MTU2NjYyNzM0NTIyMn5aUmtTY1Rzb0xzQkI4K2Y2Ni9zb3AvdUF-UH4'}
+          // token={
+          //   'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9ZDk2NGRlNGQwYTNjYThmOWEzYzY1MjM2M2M3ZWEzZTM2M2YzZTY0YjpzZXNzaW9uX2lkPTFfTVg0ME5qUXdPVGd6TW41LU1UVTJOall5TnpNME5USXlNbjVhVW10VFkxUnpiMHh6UWtJNEsyWTJOaTl6YjNBdmRVRi1VSDQmY3JlYXRlX3RpbWU9MTU2NjYyNzM2NCZub25jZT0wLjk1NDE1MDA4NDk3Mzg3MTEmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2NjcxMzc2MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
+          // }
           eventHandlers={sessionEventHandlers}
           ref={otSessionRef}
         >
@@ -1031,15 +1040,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         {isCall && (
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <OTSession
-              apiKey={'46409832'}
-              sessionId={
-                '1_MX40NjQwOTgzMn5-MTU2NjYyNzM0NTIyMn5aUmtTY1Rzb0xzQkI4K2Y2Ni9zb3AvdUF-UH4'
-              }
-              token={
-                'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9ZDk2NGRlNGQwYTNjYThmOWEzYzY1MjM2M2M3ZWEzZTM2M2YzZTY0YjpzZXNzaW9uX2lkPTFfTVg0ME5qUXdPVGd6TW41LU1UVTJOall5TnpNME5USXlNbjVhVW10VFkxUnpiMHh6UWtJNEsyWTJOaTl6YjNBdmRVRi1VSDQmY3JlYXRlX3RpbWU9MTU2NjYyNzM2NCZub25jZT0wLjk1NDE1MDA4NDk3Mzg3MTEmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2NjcxMzc2MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
-              }
-              // sessionId={sessionId}
-              // token={token}
+              apiKey={'46393582'}
+              // sessionId={
+              //   '1_MX40NjQwOTgzMn5-MTU2NjYyNzM0NTIyMn5aUmtTY1Rzb0xzQkI4K2Y2Ni9zb3AvdUF-UH4'
+              // }
+              // token={
+              //   'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9ZDk2NGRlNGQwYTNjYThmOWEzYzY1MjM2M2M3ZWEzZTM2M2YzZTY0YjpzZXNzaW9uX2lkPTFfTVg0ME5qUXdPVGd6TW41LU1UVTJOall5TnpNME5USXlNbjVhVW10VFkxUnpiMHh6UWtJNEsyWTJOaTl6YjNBdmRVRi1VSDQmY3JlYXRlX3RpbWU9MTU2NjYyNzM2NCZub25jZT0wLjk1NDE1MDA4NDk3Mzg3MTEmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2NjcxMzc2MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
+              // }
+              sessionId={sessionId}
+              token={token}
               eventHandlers={sessionEventHandlers}
               ref={otSessionRef}
               options={{

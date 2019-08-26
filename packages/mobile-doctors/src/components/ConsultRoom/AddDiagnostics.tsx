@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { NavigationScreenProps } from 'react-navigation';
+import { addDiagnosticPrescriptionDataList } from '@aph/mobile-doctors/src/components/ApiCall';
 
 const styles = StyleSheet.create({
   container: {
@@ -57,7 +58,13 @@ export const AddDiagnostics: React.FC<ProfileProps> = (props) => {
     Keyboard.dismiss();
 
     setDoctorSearchText(text);
-    setFilteredStarDoctors([]);
+    addDiagnosticPrescriptionDataList({
+      name: text,
+      __typename: 'DiagnosticPrescription',
+    });
+
+    props.navigation.pop();
+    //setFilteredStarDoctors([]);
   };
   const formatSuggestionsText = (text: string, searchKey: string) => {
     return (
@@ -83,7 +90,7 @@ export const AddDiagnostics: React.FC<ProfileProps> = (props) => {
             const drName = ` ${item!.firstName}`;
             return (
               <TouchableOpacity
-                onPress={() => onPressDoctorSearchListItem(`Dr. ${item!.firstName}`)}
+                onPress={() => onPressDoctorSearchListItem(`${item!.firstName}`)}
                 style={{ marginHorizontal: 16, marginTop: 8 }}
                 key={i}
               >

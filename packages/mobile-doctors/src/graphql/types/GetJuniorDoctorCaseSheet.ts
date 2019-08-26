@@ -48,9 +48,9 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDeta
   id: string | null;
   medicineName: string | null;
   medicineDosage: string | null;
-  medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineToBeTaken: MEDICINE_TO_BE_TAKEN | null;
   medicineInstructions: string | null;
-  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineTimings: MEDICINE_TIMINGS | null;
   medicineConsumptionDurationInDays: string | null;
 }
 

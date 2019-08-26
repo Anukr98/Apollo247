@@ -3,7 +3,7 @@ import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TextInput, View, Alert } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { addSysmptonsList } from '@aph/mobile-doctors/src/components/ApiCall';
 
@@ -202,14 +202,17 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
           title="ADD SYMPTOM"
           style={styles.buttonendStyle}
           onPress={() => {
-            addSysmptonsList({
-              id: '3',
-              firstName: 'ABCD ',
-              secondName: '7days ',
-              thirdName: 'Night',
-              fourthName: 'High',
-            });
-            props.navigation.pop();
+            if (symptons == '' && since == '' && howOften == '' && severity == '') {
+              Alert.alert('Please Enter All Fileds');
+            } else {
+              addSysmptonsList({
+                symptom: symptons,
+                since: since,
+                howOften: howOften,
+                severity: severity,
+              });
+              props.navigation.pop();
+            }
           }}
         />
       </View>
