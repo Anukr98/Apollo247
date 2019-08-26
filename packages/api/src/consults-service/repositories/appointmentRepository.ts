@@ -58,6 +58,21 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  getDoctorAppointmentHistory(doctorId: string) {
+    return this.find({
+      where: { doctorId },
+      relations: ['caseSheet'],
+      order: { appointmentDateTime: 'DESC' },
+    });
+  }
+
+  getPastAppointments(doctorId: string, patientId: string) {
+    return this.find({
+      where: { doctorId, patientId, appointmentDateTime: LessThan(new Date()) },
+      relations: ['caseSheet'],
+    });
+  }
+
   async findByDoctorIdsAndDateTimes(
     doctorIds: string[],
     appointmentDateTimes: AppointmentDateTime[]

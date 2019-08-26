@@ -250,11 +250,8 @@ export class PatientDeviceTokens extends BaseEntity {
 //patient Starts
 @Entity()
 export class Patient extends BaseEntity {
-  @OneToMany((type) => PatientDeviceTokens, (patientDeviceTokens) => patientDeviceTokens.patient)
-  patientDeviceTokens: PatientDeviceTokens[];
-
-  @OneToMany((type) => MedicineOrders, (medicineOrders) => medicineOrders.patient)
-  medicineOrders: MedicineOrders[];
+  @Column({ nullable: true, type: 'text' })
+  allergies: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
@@ -291,12 +288,18 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => PatientLifeStyle, (lifeStyle) => lifeStyle.patient)
   lifeStyle: PatientLifeStyle[];
 
+  @OneToMany((type) => MedicineOrders, (medicineOrders) => medicineOrders.patient)
+  medicineOrders: MedicineOrders[];
+
   @Column()
   @Validate(MobileNumberValidator)
   mobileNumber: string;
 
-  @Column({ nullable: true, type: 'text' })
-  allergies: string;
+  @OneToMany((type) => PatientAddress, (patientAddress) => patientAddress.patient)
+  patientAddress: PatientAddress[];
+
+  @OneToMany((type) => PatientDeviceTokens, (patientDeviceTokens) => patientDeviceTokens.patient)
+  patientDeviceTokens: PatientDeviceTokens[];
 
   @Column({ nullable: true, type: 'text' })
   photoUrl: string;
@@ -306,6 +309,9 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true })
   relation: Relation;
+
+  @OneToMany((type) => SearchHistory, (searchHistory) => searchHistory.patient)
+  searchHistory: SearchHistory[];
 
   @Column({ nullable: true })
   updatedDate: Date;
@@ -319,12 +325,6 @@ export class Patient extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
-
-  @OneToMany((type) => SearchHistory, (searchHistory) => searchHistory.patient)
-  searchHistory: SearchHistory[];
-
-  @OneToMany((type) => PatientAddress, (patientAddress) => patientAddress.patient)
-  patientAddress: PatientAddress[];
 }
 //patient Ends
 
