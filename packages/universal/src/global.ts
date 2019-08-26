@@ -19,6 +19,8 @@ declare namespace NodeJS {
     RABBITMQ_PASSWORD: string;
     MESSAGE_QUEUE_QUEUE_NAME: string;
 
+    AZURE_STORAGE_CONNECTION_STRING: string;
+
     WEB_PATIENTS_PORT: string;
     WEB_DOCTORS_PORT: string;
 
