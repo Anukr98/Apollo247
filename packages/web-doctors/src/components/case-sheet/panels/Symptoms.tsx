@@ -61,61 +61,61 @@ export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
   return (
     <Typography className={classes.container} component="div">
       {props.casesheetInfo &&
-        props.casesheetInfo.getJuniorDoctorCaseSheet &&
-        props.casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails ? (
-          <List className={classes.symtomList}>
-            {props.casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.symptoms &&
-              props.casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.symptoms.length > 0 &&
-              props.casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.symptoms.map(
-                (item, idx) => (
-                  <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
-                    <ListItemText className={classes.symtomHeading} primary={item!.symptom} />
-                    <Fragment>
-                      <List>
-                        {item!.since && (
-                          <ListItem alignItems="flex-start" className={classes.symtomContent}>
-                            <ListItemText
-                              secondary={
-                                <Fragment>
-                                  <Typography component="span">Since: {item!.since}</Typography>
-                                </Fragment>
-                              }
-                            />
-                          </ListItem>
-                        )}
-                        {item!.howOften && (
-                          <ListItem alignItems="flex-start" className={classes.symtomContent}>
-                            <ListItemText
-                              secondary={
-                                <Fragment>
-                                  <Typography component="span">
-                                    How Often : {item!.howOften}
-                                  </Typography>
-                                </Fragment>
-                              }
-                            />
-                          </ListItem>
-                        )}
-                        {item!.severity && (
-                          <ListItem alignItems="flex-start" className={classes.symtomContent}>
-                            <ListItemText
-                              secondary={
-                                <Fragment>
-                                  <Typography component="span">
-                                    Severity: {item!.severity}
-                                  </Typography>
-                                </Fragment>
-                              }
-                            />
-                          </ListItem>
-                        )}
-                      </List>
-                    </Fragment>
-                  </ListItem>
-                )
-              )}
-          </List>
-        ) : 'NO data Found'}
+      props.casesheetInfo.getJuniorDoctorCaseSheet &&
+      props.casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails ? (
+        <List className={classes.symtomList}>
+          {props.casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.symptoms &&
+            props.casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.symptoms.length > 0 &&
+            props.casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.symptoms.map(
+              (item, idx) => (
+                <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
+                  <ListItemText className={classes.symtomHeading} primary={item!.symptom} />
+                  <Fragment>
+                    <List>
+                      {item!.since && (
+                        <ListItem alignItems="flex-start" className={classes.symtomContent}>
+                          <ListItemText
+                            secondary={
+                              <Fragment>
+                                <Typography component="span">Since: {item!.since}</Typography>
+                              </Fragment>
+                            }
+                          />
+                        </ListItem>
+                      )}
+                      {item!.howOften && (
+                        <ListItem alignItems="flex-start" className={classes.symtomContent}>
+                          <ListItemText
+                            secondary={
+                              <Fragment>
+                                <Typography component="span">
+                                  How Often : {item!.howOften}
+                                </Typography>
+                              </Fragment>
+                            }
+                          />
+                        </ListItem>
+                      )}
+                      {item!.severity && (
+                        <ListItem alignItems="flex-start" className={classes.symtomContent}>
+                          <ListItemText
+                            secondary={
+                              <Fragment>
+                                <Typography component="span">Severity: {item!.severity}</Typography>
+                              </Fragment>
+                            }
+                          />
+                        </ListItem>
+                      )}
+                    </List>
+                  </Fragment>
+                </ListItem>
+              )
+            )}
+        </List>
+      ) : (
+        'NO data Found'
+      )}
     </Typography>
   );
 };
