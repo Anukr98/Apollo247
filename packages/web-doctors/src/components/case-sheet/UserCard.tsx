@@ -33,7 +33,7 @@ export const UserCard: React.FC<CasesheetInfoProps> = (props) => {
                   props.casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.lastName}
               </Typography>
             )}
-          <Typography variant="body2" color="textSecondary" component="p">
+          <Typography variant="h5" color="textSecondary" component="h5">
             {/* {props.casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.age ? props.casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.age : ''}, */}
             {props.casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.gender &&
               props.casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.gender}
@@ -45,12 +45,12 @@ export const UserCard: React.FC<CasesheetInfoProps> = (props) => {
           <Divider />
           {props.casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.uhid &&
             props.casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.uhid !== '' && (
-              <Typography variant="body2" color="textSecondary" component="p">
+              <Typography variant="h6" color="textSecondary" component="h6">
                 UHID:{props.casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.uhid}
               </Typography>
             )}
 
-          <Typography variant="body2" color="textSecondary" component="p">
+          <Typography variant="h6" color="textSecondary" component="h6">
             Appt ID:
             {props.appointmentId && props.appointmentId !== '' && props.appointmentId}
           </Typography>
