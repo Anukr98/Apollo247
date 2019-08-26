@@ -853,7 +853,9 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
               }
             }}
             error={
-              mobileNumber.trim() !== '' && showErrorMessage && !isMobileNumberValid(mobileNumber)
+              mobileNumber.trim() !== '' &&
+              ((showErrorMessage && !isMobileNumberValid(mobileNumber)) ||
+                (showErrorMessage && `+91${mobileNumber}` === doctorProfile.mobileNumber))
             }
             onKeyPress={(e) => {
               if (isNaN(parseInt(e.key, 10))) {
@@ -867,7 +869,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
               {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0 ? phoneMessage : ''}
             </FormHelperText>
           ) : (
-            <FormHelperText component="div" className={classes.statusText}>
+            <FormHelperText component="div" className={classes.statusText} error={showErrorMessage}>
               {delegateNumberStatus.length > 0 ? delegateNumberStatus : ''}
             </FormHelperText>
           )}
@@ -898,6 +900,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                   classes={{ root: classes.saveButton }}
                   onClick={(e) => {
                     mutate({});
+                    setShowErrorMessage(false);
                     setDelegateNumberStatus('Secretary Number has deleted successfully');
                   }}
                 >
@@ -916,12 +919,21 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                   disabled={mobileNumber!.length !== 10 || phoneMessage.length > 0}
                   classes={{ root: classes.saveButton }}
                   onClick={(e) => {
-                    mutate({
-                      variables: {
-                        delegateNumber: mobileNumber,
-                      },
-                    });
-                    setDelegateNumberStatus('Secretary Number has updated successfully');
+                    if (`+91${mobileNumber}` !== doctorProfile.mobileNumber) {
+                      if (mobileNumber !== doctorProfile.delegateNumber) {
+                        mutate({
+                          variables: {
+                            delegateNumber: mobileNumber,
+                          },
+                        });
+                      }
+                      setShowErrorMessage(false);
+                      setDelegateNumberStatus('Secretary Number has updated successfully');
+                    } else {
+                      setPhoneMessage('');
+                      setShowErrorMessage(true);
+                      setDelegateNumberStatus(`Secretary Number can't be same as Doctor Number`);
+                    }
                   }}
                 >
                   SAVE
