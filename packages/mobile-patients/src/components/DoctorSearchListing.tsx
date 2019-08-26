@@ -9,9 +9,8 @@ import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextI
 import { DOCTOR_SPECIALITY_BY_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDoctorsBySpecialtyAndFilters,
-  getDoctorsBySpecialtyAndFiltersVariables,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
-  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_consultHours,
+  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { ConsultMode, Gender, Range } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { default as string } from '@aph/mobile-patients/src/strings/strings.json';
@@ -31,11 +30,11 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
   topView: {
     height: 56,
-    // ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
     shadowOffset: { width: 0, height: 0 },
     shadowRadius: 2,
@@ -103,10 +102,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       selectedOptions: [],
     },
   ];
-  // strings.doctor_search_listing.filter_data.map((obj: filterDataType) => {
-  //   obj.selectedOptions = [];
-  //   return obj;
-  // });
   const tabs = [
     { title: 'All Consults' },
     { title: 'Online Consults' },
@@ -119,9 +114,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [doctorsList, setDoctorsList] = useState<
     (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[]
   >([]);
+  const [doctorsAvailability, setdoctorsAvailability] = useState<
+    | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability | null)[]
+    | null
+  >([]);
+
   const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [scrollY] = useState(new Animated.Value(0));
+  const { currentPatient } = useAllCurrentPatients();
 
   const requestLocationPermission = async () => {
     try {
@@ -130,10 +131,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         console.log('You can use the location');
-        // alert('You can use the location');
       } else {
         console.log('location permission denied');
-        // alert('Location permission denied');
       }
     } catch (err) {
       console.log(err);
@@ -146,7 +145,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, []);
 
   console.log('FilterData1111111', FilterData);
-  let experienceArray: Range[] = [];
+  const experienceArray: Range[] = [];
   if (FilterData[1].selectedOptions && FilterData[1].selectedOptions.length > 0)
     FilterData[1].selectedOptions.forEach((element: string) => {
       const splitArray = element.split(' - ');
@@ -161,7 +160,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       }
     });
 
-  let feesArray: Range[] = [];
+  const feesArray: Range[] = [];
   if (FilterData[3].selectedOptions && FilterData[3].selectedOptions.length > 0)
     FilterData[3].selectedOptions.forEach((element: string) => {
       const splitArray = element.split(' - ');
@@ -178,13 +177,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       }
     });
 
-  let availabilityArray: string[] = [];
+  let availableNow = {};
+  const availabilityArray: string[] = [];
   const today = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
   console.log('moment', moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'));
   if (FilterData[2].selectedOptions && FilterData[2].selectedOptions.length > 0)
     FilterData[2].selectedOptions.forEach((element: string) => {
       if (element === 'Now') {
-        availabilityArray.push(today);
+        // availabilityArray.push(today);
+        availableNow = {
+          availableNow: moment(new Date())
+            .utc()
+            .format('YYYY-MM-DD hh:mm'),
+        };
       }
       if (element === 'Today') {
         availabilityArray.push(today);
@@ -223,7 +228,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     feesArray,
     'feesArray'
   );
+
   const FilterInput = {
+    patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
     specialty: props.navigation.state.params ? props.navigation.state.params!.specialityId : '',
     city: FilterData[0].selectedOptions,
     experience: experienceArray,
@@ -231,13 +238,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     fees: feesArray,
     gender: FilterData[4].selectedOptions,
     language: FilterData[5].selectedOptions,
+    ...availableNow,
   };
 
-  // FilterData.forEach((obj) => {
-  //   if (obj.selectedOptions!.length > 0) {
-  //     FilterInput[obj.label.toLowerCase().split(' ')[0]] = obj.selectedOptions;
-  //   }
-  // });
   console.log(
     props.navigation.state.params,
     'speciality',
@@ -253,9 +256,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   });
   if (error) {
     console.log('error', error);
-    //Alert.alert('Error', 'Unable to get the data');
   } else {
-    console.log('data', data);
+    console.log('getDoctorsBySpecialtyAndFilters ', data);
     if (
       data &&
       data.getDoctorsBySpecialtyAndFilters &&
@@ -263,6 +265,16 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       doctorsList !== data.getDoctorsBySpecialtyAndFilters.doctors
     ) {
       setDoctorsList(data.getDoctorsBySpecialtyAndFilters.doctors);
+      setshowSpinner(false);
+    }
+
+    if (
+      data &&
+      data.getDoctorsBySpecialtyAndFilters &&
+      data.getDoctorsBySpecialtyAndFilters.doctorsAvailability &&
+      doctorsAvailability !== data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
+    ) {
+      setdoctorsAvailability(data.getDoctorsBySpecialtyAndFilters.doctorsAvailability);
       setshowSpinner(false);
     }
   }
@@ -353,16 +365,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (rowData) return <DoctorCard rowData={rowData} navigation={props.navigation} />;
     return null;
   };
-  const consultionType = (
-    consultHours:
-      | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_consultHours | null)[]
-      | null,
-    filter: ConsultMode
-  ) => {
+  const consultionType = (id: string, filter: ConsultMode) => {
+    doctorsAvailability;
     let filterType = false;
-    consultHours &&
-      consultHours.forEach((element) => {
-        if (element && element.consultMode === filter) {
+    doctorsAvailability &&
+      doctorsAvailability.forEach((element) => {
+        if (
+          element &&
+          element.doctorId === id &&
+          element.availableModes &&
+          element.availableModes.includes(filter)
+        ) {
           filterType = true;
         }
       });
@@ -373,10 +386,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const doctors = filter
       ? doctorsList.filter(
           (obj: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null) => {
-            return (
-              consultionType(obj!.consultHours, filter) ||
-              consultionType(obj!.consultHours, ConsultMode.BOTH)
-            );
+            return consultionType(obj!.id, filter) || consultionType(obj!.id, ConsultMode.BOTH);
           }
         )
       : doctorsList;
@@ -450,11 +460,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           elevation: 2,
         }}
       >
-        {/* <Animated.Text>
-          <Text>Hey, Hi</Text>
-        </Animated.Text> */}
-        {/* <Text>hello</Text> */}
-
         <Animated.View style={{ paddingHorizontal: 20, top: 0, opacity: imgOp }}>
           <Text style={styles.headingText}>{string.common.okay}</Text>
           <Text style={styles.descriptionText}>
@@ -465,7 +470,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
         <TabsComponent
           style={{
-            // marginTop: 180,
             backgroundColor: theme.colors.CARD_BG,
           }}
           data={tabs}
@@ -498,7 +502,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             { listener: handleScroll }
           )}
         >
-          {/* <ScrollView style={{ flex: 1 }} bounces={false}> */}
           {selectedTab === tabs[0].title && renderDoctorSearches()}
           {selectedTab === tabs[1].title && renderDoctorSearches(ConsultMode.ONLINE)}
           {selectedTab === tabs[2].title && renderDoctorSearches(ConsultMode.PHYSICAL)}
@@ -557,9 +560,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <FilterScene
           onClickClose={(data: filterDataType[]) => {
             setDisplayFilter(false);
-            setFilterData(data);
           }}
           setData={(data) => {
+            setshowSpinner(true);
             setFilterData(data);
           }}
           data={FilterData}

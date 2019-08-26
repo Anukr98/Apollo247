@@ -175,7 +175,7 @@ export const doctorProfile: DummyQueryResult = {
   },
 };
 
-const _doctors = [
+export const _doctors = [
   {
     profile: {
       id: '1',

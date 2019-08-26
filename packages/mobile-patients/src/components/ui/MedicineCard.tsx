@@ -35,16 +35,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(16),
     lineHeight: 24,
   },
-  priceText: {
-    color: theme.colors.SHERPA_BLUE,
-    ...theme.fonts.IBMPlexSansBold(12),
-    lineHeight: 20,
-  },
-  stripText: {
-    color: theme.colors.SHERPA_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    lineHeight: 20,
-  },
   separator: {
     backgroundColor: theme.colors.LIGHT_BLUE,
     height: 1,
@@ -93,11 +83,6 @@ const styles = StyleSheet.create({
   subscriptionTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(14),
     color: theme.colors.LIGHT_BLUE,
-  },
-  editAndAddSubscriptionTextStyle: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    lineHeight: 24,
-    color: theme.colors.APP_YELLOW,
   },
   editAndSubscriptionViewStyle: {
     flexDirection: 'row',
@@ -195,12 +180,11 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         <View style={[styles.takeRegularView, styles.alreadySubscribedView]}>
           <Text style={styles.subscriptionTextStyle}>{'You have subscribed to this already'}</Text>
           <View style={styles.editAndSubscriptionViewStyle}>
-            {renderTouchable(
-              <Text style={styles.editAndAddSubscriptionTextStyle}>{'EDIT'}</Text>,
-              () => onEditPress()
+            {renderTouchable(<Text style={theme.viewStyles.yellowTextStyle}>{'EDIT'}</Text>, () =>
+              onEditPress()
             )}
             {renderTouchable(
-              <Text style={styles.editAndAddSubscriptionTextStyle}>{'ADD NEW SUBSCRIPTION'}</Text>,
+              <Text style={theme.viewStyles.yellowTextStyle}>{'ADD NEW SUBSCRIPTION'}</Text>,
               () => onAddSubscriptionPress()
             )}
           </View>

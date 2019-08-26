@@ -259,7 +259,10 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
         <Button
           title={'APPLY FILTERS'}
           style={{ flex: 1, marginHorizontal: 40 }}
-          onPress={() => props.onClickClose(data)}
+          onPress={() => {
+            props.setData(data);
+            props.onClickClose(data);
+          }}
           disabled={length > 0 ? false : true}
         />
       </StickyBottomComponent>

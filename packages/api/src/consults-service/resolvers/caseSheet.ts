@@ -56,11 +56,16 @@ export const caseSheetTypeDefs = gql`
     id: String
   }
 
+  type CaseSheetFullDetails {
+    caseSheetDetails: CaseSheet
+    patientDetails: PatientDetails
+  }
+
   type CaseSheet {
     appointment: AppointmentId
     consultType: String
-    diagnosis: String
-    diagnosisPrescription: String
+    diagnosis: [Diagnosis]
+    diagnosticPrescription: [DiagnosticPrescription]
     doctorId: String
     followUp: Boolean
     followUpAfterInDays: String
@@ -70,7 +75,15 @@ export const caseSheetTypeDefs = gql`
     notes: String
     otherInstructions: [OtherInstructions]
     patientId: String
-    symptoms: String
+    symptoms: [SymptomList]
+  }
+
+  type Diagnosis {
+    name: String
+  }
+
+  type DiagnosticPrescription {
+    name: String
   }
 
   type MedicinePrescription {
@@ -118,13 +131,28 @@ export const caseSheetTypeDefs = gql`
     relation: String
   }
 
-  type CaseSheetFullDetails {
-    caseSheetDetails: CaseSheet
-    patientDetails: PatientDetails
+  type SymptomList {
+    symptom: String
+    since: String
+    howOften: String
+    severity: String
   }
 
+  input UpdateCaseSheetInput {
+    symptoms: String
+    notes: String
+    diagnosis: String
+    diagnosticPrescription: String
+    followUp: Boolean
+    followUpDate: String
+    followUpAfterInDays: String
+    otherInstructions: String
+    medicinePrescription: String
+    id: String
+  }
   extend type Mutation {
     createCaseSheet(CaseSheetInput: CaseSheetInput): CaseSheet
+    updateCaseSheet(UpdateCaseSheetInput: UpdateCaseSheetInput): CaseSheet
   }
 
   extend type Query {
@@ -175,7 +203,10 @@ const getJuniorDoctorCaseSheet: Resolver<
   null,
   { appointmentId: string },
   ConsultServiceContext,
-  { caseSheetDetails: CaseSheet; patientDetails: Patient }
+  {
+    caseSheetDetails: CaseSheet;
+    patientDetails: Patient;
+  }
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   //check appointmnet id
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
@@ -195,9 +226,55 @@ const getJuniorDoctorCaseSheet: Resolver<
   return { caseSheetDetails, patientDetails };
 };
 
+type UpdateCaseSheetInput = {
+  symptoms: string;
+  notes: string;
+  diagnosis: string;
+  diagnosticPrescription: string;
+  followUp: boolean;
+  followUpDate: string;
+  followUpAfterInDays: string;
+  otherInstructions: string;
+  medicinePrescription: string;
+  id: string;
+};
+
+type UpdateCaseSheetInputArgs = { UpdateCaseSheetInput: UpdateCaseSheetInput };
+
+const updateCaseSheet: Resolver<
+  null,
+  UpdateCaseSheetInputArgs,
+  ConsultServiceContext,
+  CaseSheet
+> = async (parent, { UpdateCaseSheetInput }, { consultsDb }) => {
+  const inputArguments = JSON.parse(JSON.stringify(UpdateCaseSheetInput));
+  const followUpAfterInDays =
+    inputArguments.followUpAfterInDays == '' ? 0 : <Number>inputArguments.followUpAfterInDays;
+
+  const followUpDate = inputArguments.followUpDate == '' ? null : <Date>inputArguments.followUpDate;
+  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = {
+    ...inputArguments,
+    symptoms: JSON.parse(inputArguments.symptoms),
+    diagnosis: JSON.parse(inputArguments.diagnosis),
+    diagnosticPrescription: JSON.parse(inputArguments.diagnosticPrescription),
+    otherInstructions: JSON.parse(inputArguments.otherInstructions),
+    medicinePrescription: JSON.parse(inputArguments.medicinePrescription),
+    followUpDate: followUpDate,
+    followUpAfterInDays: followUpAfterInDays,
+  };
+
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
+
+  const getUpdatedCaseSheet = await caseSheetRepo.getCaseSheetById(inputArguments.id);
+  if (getUpdatedCaseSheet == null) throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR);
+  return getUpdatedCaseSheet;
+};
+
 export const caseSheetResolvers = {
   Mutation: {
     createCaseSheet,
+    updateCaseSheet,
   },
 
   Query: { getJuniorDoctorCaseSheet },

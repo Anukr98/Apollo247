@@ -7,7 +7,11 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
+import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
+import { AppointmentPayload } from 'types/appointmentTypes';
+import { addMinutes, format } from 'date-fns';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -80,11 +84,30 @@ const bookAppointment: Resolver<
   AppointmentInputArgs,
   ConsultServiceContext,
   BookAppointmentResult
-> = async (parent, { appointmentInput }, { consultsDb, doctorsDb }) => {
+> = async (parent, { appointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
+  console.log(appointmentInput.appointmentDateTime, 'input date time');
+  console.log(appointmentInput.appointmentDateTime.toISOString(), 'iso string');
+  console.log(new Date(appointmentInput.appointmentDateTime.toISOString()), 'iso to date');
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
     ...appointmentInput,
     status: STATUS.PENDING,
+    appointmentDateTime: new Date(appointmentInput.appointmentDateTime.toISOString()),
   };
+
+  //check if patient id is valid
+  const patient = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patient.findById(appointmentInput.patientId);
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+
+  if (patientDetails.dateOfBirth == null || !patientDetails.dateOfBirth) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  }
+
+  if (patientDetails.lastName == null || !patientDetails.lastName) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  }
 
   //check if docotr id is valid
   const doctor = doctorsDb.getCustomRepository(DoctorRepository);
@@ -120,6 +143,56 @@ const bookAppointment: Resolver<
     throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
   }
   const appointment = await appts.saveAppointment(appointmentAttrs);
+  //message queue starts
+  const doctorName = docDetails.firstName + '' + docDetails.lastName;
+  const speciality = docDetails.specialty.name;
+  const aptEndTime = addMinutes(appointmentInput.appointmentDateTime, 15);
+  const slotTime =
+    format(appointmentInput.appointmentDateTime, 'HH:mm') + '-' + format(aptEndTime, 'HH:mm');
+  let patientDob: string = '01/08/1996';
+  if (patientDetails.dateOfBirth !== null) {
+    console.log(patientDetails.dateOfBirth.toString(), 'dob');
+    patientDob = format(patientDetails.dateOfBirth, 'dd/MM/yyyy');
+  }
+
+  const payload: AppointmentPayload = {
+    appointmentDate: format(appointmentInput.appointmentDateTime, 'dd/MM/yyyy'),
+    appointmentTypeId: 1,
+    askApolloReferenceIdForRelation: '52478bae-fab8-49ba-8f75-fce0e1a9f3ae',
+    askApolloReferenceIdForSelf: '52478bae-fab8-49ba-8f75-fce0e1a9f3ae',
+    cityId: 1,
+    cityName: 'Chennai',
+    dateOfBirth: patientDob,
+    doctorId: 100,
+    doctorName,
+    gender: '1',
+    hospitalId: '2',
+    hospitalName: 'Apollo Hospitals Greams Road Chennai',
+    leadSource: 'One Apollo-IOS',
+    patientEmailId: patientDetails.emailAddress,
+    patientFirstName: patientDetails.firstName,
+    patientLastName: patientDetails.lastName,
+    patientMobileNo: patientDetails.mobileNumber.substr(3),
+    patientUHID: '',
+    relationTypeId: 1,
+    salutation: 1,
+    slotId: '-1',
+    slotTime,
+    speciality,
+    specialityId: '1898',
+    userFirstName: patientDetails.firstName,
+    userLastName: patientDetails.lastName,
+    apptIdPg: appointment.id,
+  };
+  AphMqClient.connect();
+  type TestMessage = AphMqMessage<AphMqMessageTypes.BOOKAPPOINTMENT, AppointmentPayload>;
+  const testMessage: TestMessage = {
+    type: AphMqMessageTypes.BOOKAPPOINTMENT,
+    payload,
+  };
+
+  AphMqClient.send(testMessage);
+  //message queue ends
 
   //TODO after junior doctor flow.. casesheet creation should be changed.
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);

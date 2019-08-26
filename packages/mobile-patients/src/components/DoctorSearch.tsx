@@ -5,32 +5,29 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import {
   GET_ALL_SPECIALTIES,
-  GET_PAST_SEARCHES,
-  SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
-  SAVE_SEARCH,
   GET_PATIENT_PAST_SEARCHES,
+  SAVE_SEARCH,
+  SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAllSpecialties,
   getAllSpecialties_getAllSpecialties,
 } from '@aph/mobile-patients/src/graphql/types/getAllSpecialties';
-import {
-  getPastSearches,
-  getPastSearches_getPastSearches,
-} from '@aph/mobile-patients/src/graphql/types/getPastSearches';
-import { SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialty';
+import { getPastSearches_getPastSearches } from '@aph/mobile-patients/src/graphql/types/getPastSearches';
+import { getPatientPastSearches } from '@aph/mobile-patients/src/graphql/types/getPatientPastSearches';
+import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   SearchDoctorAndSpecialtyByName,
-  SearchDoctorAndSpecialtyByNameVariables,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties,
 } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialtyByName';
-import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
-
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import React, { useState } from 'react';
+import { Mutation } from 'react-apollo';
 import { useQuery } from 'react-apollo-hooks';
 import {
   FlatList,
@@ -46,10 +43,6 @@ import { theme } from '../theme/theme';
 import { Button } from './ui/Button';
 import { DoctorCard } from './ui/DoctorCard';
 import { NeedHelpAssistant } from './ui/NeedHelpAssistant';
-import { Mutation } from 'react-apollo';
-import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { getPatientPastSearches } from '@aph/mobile-patients/src/graphql/types/getPatientPastSearches';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -136,9 +129,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [doctorsList, setdoctorsList] = useState<
     (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors | null)[] | null
   >([]);
-  const [allDoctors, setallDoctors] = useState<
-    (SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors | null)[] | null
-  >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [possibleMatches, setpossibleMatches] = useState<
     SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches
@@ -148,12 +138,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   >();
   const { currentPatient } = useAllCurrentPatients();
 
-  const newData = useQuery<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>(
-    SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
-    {
-      variables: { searchText: searchText },
-    }
-  );
+  const newData = useQuery<SearchDoctorAndSpecialtyByName>(SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME, {
+    variables: {
+      searchText: searchText,
+      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+    },
+  });
   if (newData.error) {
     console.log('newData.error', newData.error);
   } else {

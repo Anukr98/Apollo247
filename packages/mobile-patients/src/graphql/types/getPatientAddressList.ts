@@ -1,0 +1,33 @@
+/* tslint:disable */
+/* eslint-disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
+// GraphQL query operation: getPatientAddressList
+// ====================================================
+
+export interface getPatientAddressList_getPatientAddressList_addressList {
+  __typename: "PatientAddress";
+  id: string;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  state: string | null;
+  zipcode: string | null;
+  landmark: string | null;
+  createdDate: any | null;
+  updatedDate: any | null;
+}
+
+export interface getPatientAddressList_getPatientAddressList {
+  __typename: "patientAddressListResult";
+  addressList: getPatientAddressList_getPatientAddressList_addressList[] | null;
+}
+
+export interface getPatientAddressList {
+  getPatientAddressList: getPatientAddressList_getPatientAddressList;
+}
+
+export interface getPatientAddressListVariables {
+  patientId?: string | null;
+}

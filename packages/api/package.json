@@ -17,6 +17,7 @@
     "start:consults-service": "webpack --config webpack.config.consults-service.js",
     "start:doctors-service": "webpack --config webpack.config.doctors-service.js",
     "start:profiles-service": "webpack --config webpack.config.profiles-service.js",
+    "start:notifications-service": "webpack --config webpack.config.notifications-service.js",
     "typecheck": "tsc --project . --noEmit"
   },
   "devDependencies": {
@@ -67,6 +68,7 @@
     "node-fetch": "^2.6.0",
     "nodemon": "^1.19.1",
     "opentok": "^2.9.1",
+    "pepipost": "^2.5.3",
     "pg": "^7.11.0",
     "pg-hstore": "^2.3.3",
     "reflect-metadata": "^0.1.13",

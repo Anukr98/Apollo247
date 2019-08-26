@@ -3,6 +3,7 @@ import rhea, { EventContext, ConnectionOptions } from 'rhea';
 
 export enum AphMqMessageTypes {
   TEST = 'TEST',
+  BOOKAPPOINTMENT = 'BOOKAPPOINTMENT',
 }
 
 export type AphMqMessage<T, P> = {

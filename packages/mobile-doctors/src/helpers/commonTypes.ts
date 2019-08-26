@@ -8,6 +8,7 @@ export type LocalStorage = {
   isProfileFlowDone?: boolean;
   isOnboardingDone?: boolean;
   doctorDetails: GetDoctorDetails_getDoctorDetails | null;
+  isLoggedIn?: boolean;
 };
 
 export type TimeOutData = {

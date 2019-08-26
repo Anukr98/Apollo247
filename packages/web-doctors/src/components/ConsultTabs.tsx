@@ -16,13 +16,15 @@ import {
 import { CREATE_APPOINTMENT_SESSION } from 'graphql/profiles';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
+import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     consultRoom: {
-      paddingTop: 68,
+      paddingTop: 64,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 68,
+        paddingTop: 64,
       },
     },
     chatContainer: {
@@ -80,9 +82,25 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-type Params = { id: string };
+interface UserInfoObject {
+  patientId: string;
+  image: string;
+  name: string;
+  age: number;
+  gender: string;
+  location: string;
+  uhid: string;
+  appointmentId: string;
+}
+interface CasesheetInfoObj {
+  userInfo: UserInfoObject;
+}
+type Params = { id: string; patientId: string };
 export const ConsultTabs: React.FC = (props) => {
   const classes = useStyles();
+  const {
+    currentPatient,
+  }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
   const [tabValue, setTabValue] = useState<number>(0);
   const [startConsult, setStartConsult] = useState<string>('');
   const [appointmentId, setAppointmentId] = useState<string>('');
@@ -94,41 +112,54 @@ export const ConsultTabs: React.FC = (props) => {
   const [loaded, setLoaded] = useState<boolean>(false);
   const params = useParams<Params>();
   const paramId = params.id;
+  const casesheetInfo: CasesheetInfoObj = {
+    userInfo: {
+      patientId: '123456',
+      image: 'images/ic_patientchat.png',
+      name: 'Seema Singh',
+      age: 56,
+      gender: 'F',
+      location: 'Mumbai',
+      uhid: '5566',
+      appointmentId: '2232',
+    },
+  };
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
   const client = useApolloClient();
   useEffect(() => {
-    if (appointmentId !== paramId && paramId !== '') {
+    if (appointmentId !== paramId && paramId !== '' && currentPatient && currentPatient.id !== '') {
       setAppointmentId(paramId);
-      client
-        .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
-          mutation: CREATE_APPOINTMENT_SESSION,
-          variables: {
-            createAppointmentSessionInput: {
-              appointmentId: paramId,
-              requestRole: REQUEST_ROLES.DOCTOR,
-            },
-          },
-        })
-        .then((_data: any) => {
-          setLoaded(true);
-          setsessionId(_data.data.createAppointmentSession.sessionId);
-          settoken(_data.data.createAppointmentSession.appointmentToken);
-          setappointmentDateTime(_data.data.createAppointmentSession.appointmentDateTime);
-          setdoctorId(_data.data.createAppointmentSession.doctorId);
-          setpatientId(_data.data.createAppointmentSession.patientId);
-        })
-        .catch((e: any) => {
-          console.log('Error occured creating session', e);
-        });
+      setpatientId(params.patientId);
+      setdoctorId(currentPatient.id);
+      setLoaded(true);
     }
     return () => {
       const cookieStr = `action=`;
       document.cookie = cookieStr + ';path=/;';
     };
   }, [paramId, appointmentId]);
-
+  const createSessionAction = () => {
+    client
+      .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+        mutation: CREATE_APPOINTMENT_SESSION,
+        variables: {
+          createAppointmentSessionInput: {
+            appointmentId: paramId,
+            requestRole: REQUEST_ROLES.DOCTOR,
+          },
+        },
+      })
+      .then((_data: any) => {
+        setsessionId(_data.data.createAppointmentSession.sessionId);
+        settoken(_data.data.createAppointmentSession.appointmentToken);
+        setappointmentDateTime(_data.data.createAppointmentSession.appointmentDateTime);
+      })
+      .catch((e: any) => {
+        console.log('Error occured creating session', e);
+      });
+  };
   const setStartConsultAction = (flag: boolean) => {
     setStartConsult('');
     const cookieStr = `action=${flag ? 'videocall' : 'audiocall'}`;
@@ -146,6 +177,7 @@ export const ConsultTabs: React.FC = (props) => {
         <div className={classes.container}>
           <CallPopover
             setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+            createSessionAction={createSessionAction}
             appointmentId={appointmentId}
             appointmentDateTime={appointmentDateTime}
             doctorId={doctorId}
@@ -175,7 +207,7 @@ export const ConsultTabs: React.FC = (props) => {
             </div>
             {tabValue === 0 && (
               <TabContainer>
-                <CaseSheet />
+                <CaseSheet casesheetInfo={casesheetInfo} />
               </TabContainer>
             )}
             {tabValue === 1 && (
