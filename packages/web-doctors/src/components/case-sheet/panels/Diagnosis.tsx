@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Typography,
   Chip,
@@ -14,12 +14,16 @@ import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import deburr from 'lodash/deburr';
+import {
+  GetJuniorDoctorCaseSheet,
+  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis,
+} from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 interface OptionType {
-  label: string;
+  name: string;
 }
 
-const suggestions: OptionType[] = [{ label: 'Sore Throat' }, { label: 'Sorosis' }];
+const suggestions: OptionType[] = [{ name: 'Sore Throat' }, { name: 'Sorosis' }];
 
 function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -45,8 +49,8 @@ function renderSuggestion(
   suggestion: OptionType,
   { query, isHighlighted }: Autosuggest.RenderSuggestionParams
 ) {
-  const matches = match(suggestion.label, query);
-  const parts = parse(suggestion.label, matches);
+  const matches = match(suggestion.name, query);
+  const parts = parse(suggestion.name, matches);
 
   return (
     <MenuItem selected={isHighlighted} component="div">
@@ -70,7 +74,7 @@ function getSuggestions(value: string) {
     ? []
     : suggestions.filter((suggestion) => {
         const keep =
-          count < 5 && suggestion.label.slice(0, inputLength).toLowerCase() === inputValue;
+          count < 5 && suggestion.name.slice(0, inputLength).toLowerCase() === inputValue;
 
         if (keep) {
           count += 1;
@@ -81,7 +85,7 @@ function getSuggestions(value: string) {
 }
 
 function getSuggestionValue(suggestion: OptionType) {
-  return suggestion.label;
+  return suggestion.name;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -107,71 +111,128 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: 0,
       padding: 0,
       listStyleType: 'none',
+      borderRadius: 10,
     },
     divider: {
       height: theme.spacing(2),
     },
     mainContainer: {
       width: '100%',
+      '& h4': {
+        fontSize: 14,
+        fontWeight: 500,
+        color: 'rgba(2, 71, 91, 0.6)',
+        marginBottom: 12,
+      },
+    },
+    diagnosBtn: {
+      border: '1px solid #00b38e',
+      borderRadius: 16,
+      color: '#00b38e',
+      fontWeight: 600,
+      backgroundColor: '#fff',
+      marginBottom: 15,
+      marginRight: 16,
+      '& svg': {
+        '& path': {
+          fill: '#00b38e',
+        },
+      },
+      '&:focus': {
+        backgroundColor: '#fff',
+      },
+    },
+
+    btnAddDoctor: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: theme.typography.fontWeightBold,
+      // pointerEvents: 'none',
+      paddingLeft: 4,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    searchpopup: {
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
+      marginTop: 2,
     },
   })
 );
 
-export const Diagnosis: React.FC = () => {
+interface CasesheetInfoProps {
+  casesheetInfo: GetJuniorDoctorCaseSheet;
+}
+export const Diagnosis: React.FC<CasesheetInfoProps> = (props) => {
   const classes = useStyles();
-  const [selectedValues, setSelectedValues] = useState<OptionType[]>([
-    { label: 'Viral Fever' },
-    { label: 'Throat Infection' },
-  ]);
-  const [state, setState] = React.useState({
-    single: '',
-    popper: '',
-  });
-  const [stateSuggestions, setSuggestions] = React.useState<OptionType[]>([]);
+  const [selectedValues, setSelectedValues] = useState<
+    (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis | null)[]
+  >([]);
+  useEffect(() => {
+    if (
+      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
+      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
+      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis &&
+      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null &&
+      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis.length > 0
+    ) {
+      setSelectedValues(props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis);
+    }
+  }, []);
+  // const [state, setState] = React.useState({
+  //   single: '',
+  //   popper: '',
+  // });
+  // const [stateSuggestions, setSuggestions] = React.useState<OptionType[]>([]);
 
-  const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {
-    setSuggestions(getSuggestions(value));
-  };
+  // const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {
+  //   setSuggestions(getSuggestions(value));
+  // };
 
-  const handleSuggestionsClearRequested = () => {
-    setSuggestions([]);
-  };
+  // const handleSuggestionsClearRequested = () => {
+  //   setSuggestions([]);
+  // };
 
-  const handleChange = (name: keyof typeof state) => (
-    event: React.ChangeEvent<{}>,
-    { newValue }: Autosuggest.ChangeEvent
-  ) => {
-    setState({
-      ...state,
-      [name]: newValue,
-    });
-  };
-  const handleDelete = (label: string) => {
-    setSelectedValues(selectedValues.filter((item) => item.label !== label));
+  // const handleChange = (name: keyof typeof state) => (
+  //   event: React.ChangeEvent<{}>,
+  //   { newValue }: Autosuggest.ChangeEvent
+  // ) => {
+  //   setState({
+  //     ...state,
+  //     [name]: newValue,
+  //   });
+  // };
+  const handleDelete = (name: any) => {
+    console.log(name);
+    setSelectedValues(selectedValues.filter((item) => item!.name !== name));
   };
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
   const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
 
-  const autosuggestProps = {
-    renderInputComponent,
-    suggestions: stateSuggestions,
-    onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
-    onSuggestionsClearRequested: handleSuggestionsClearRequested,
-    getSuggestionValue,
-    renderSuggestion,
-  };
+  // const autosuggestProps = {
+  //   renderInputComponent,
+  //   suggestions: stateSuggestions,
+  //   onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
+  //   onSuggestionsClearRequested: handleSuggestionsClearRequested,
+  //   getSuggestionValue,
+  //   renderSuggestion,
+  // };
 
   return (
     <Typography component="div" className={classes.mainContainer}>
-      <Typography component="h3" variant="h4">
+      <Typography component="h4" variant="h4">
         Diagnosed Medical Condition
       </Typography>
       <Typography component="div">
-        {selectedValues.map((item: { label: string }, idx) => (
+        {selectedValues.map((item, idx) => (
           <Chip
+            className={classes.diagnosBtn}
             key={idx}
-            label={item.label}
-            onDelete={() => handleDelete(item.label)}
+            label={item!.name}
+            onDelete={() => handleDelete(item!.name)}
             color="primary"
           />
         ))}
@@ -180,41 +241,43 @@ export const Diagnosis: React.FC = () => {
         <AphButton
           variant="contained"
           color="primary"
+          classes={{ root: classes.btnAddDoctor }}
           onClick={() => showAddConditionHandler(true)}
         >
           <img src={require('images/ic_add.svg')} alt="" /> ADD CONDITION
         </AphButton>
       )}
       {showAddCondition && (
-        <Autosuggest
-          onSuggestionSelected={(e, { suggestion }) => {
-            setSelectedValues(selectedValues.concat(suggestion));
-            setShowAddCondition(false);
-            setState({
-              single: '',
-              popper: '',
-            });
-          }}
-          {...autosuggestProps}
-          inputProps={{
-            classes,
-            id: 'react-autosuggest-simple',
-            placeholder: 'Search Condition',
-            value: state.single,
-            onChange: handleChange('single'),
-          }}
-          theme={{
-            container: classes.container,
-            suggestionsContainerOpen: classes.suggestionsContainerOpen,
-            suggestionsList: classes.suggestionsList,
-            suggestion: classes.suggestion,
-          }}
-          renderSuggestionsContainer={(options) => (
-            <Paper {...options.containerProps} square>
-              {options.children}
-            </Paper>
-          )}
-        />
+        <div>autosuggest</div>
+        // <Autosuggest
+        //   onSuggestionSelected={(e, { suggestion }) => {
+        //     setSelectedValues(selectedValues.concat(suggestion));
+        //     setShowAddCondition(false);
+        //     setState({
+        //       single: '',
+        //       popper: '',
+        //     });
+        //   }}
+        //   {...autosuggestProps}
+        //   inputProps={{
+        //     classes,
+        //     id: 'react-autosuggest-simple',
+        //     placeholder: 'Search Condition',
+        //     value: state.single,
+        //     onChange: handleChange('single'),
+        //   }}
+        //   theme={{
+        //     container: classes.container,
+        //     suggestionsContainerOpen: classes.suggestionsContainerOpen,
+        //     suggestionsList: classes.suggestionsList,
+        //     suggestion: classes.suggestion,
+        //   }}
+        //   renderSuggestionsContainer={(options) => (
+        //     <Paper {...options.containerProps} square className={classes.searchpopup}>
+        //       {options.children}
+        //     </Paper>
+        //   )}
+        // />
       )}
     </Typography>
   );

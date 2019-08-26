@@ -114,9 +114,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     notesHeader: {
       color: '#0087ba',
+      fontSize: 17,
+      fontWeight: 500,
+      marginBottom: 10,
     },
     notesContainer: {
-      padding: 20,
+      padding: 16,
+      backgroundColor: '#fff',
     },
     textFieldColor: {
       '& input': {
@@ -129,7 +133,10 @@ const useStyles = makeStyles((theme: Theme) => {
     textFieldWrapper: {
       border: 'solid 1px #30c1a3',
       borderRadius: 10,
-      padding: 20,
+      padding: 16,
+      color: '#01475b',
+      fontSize: 14,
+      fontWeight: 500,
     },
   };
 });
@@ -205,7 +212,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
               <Typography variant="h3">Juniour Doctor's Notes</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <DoctorsNotes />
+              <DoctorsNotes casesheetInfo={props.casesheetInfo} />
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
@@ -219,7 +226,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
               <Typography variant="h3">Diagnosis</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <Diagnosis />
+              <Diagnosis casesheetInfo={props.casesheetInfo} />
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
@@ -247,7 +254,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
               <Typography variant="h3">Diagnostic Prescription</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <DiagnosticPrescription />
+              <DiagnosticPrescription casesheetInfo={props.casesheetInfo} />
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
