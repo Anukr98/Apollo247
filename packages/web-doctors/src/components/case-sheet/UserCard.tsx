@@ -7,11 +7,6 @@ interface CasesheetInfoProps {
   appointmentId: string;
 }
 export const UserCard: React.FC<CasesheetInfoProps> = (props) => {
-  console.log(
-    props.casesheetInfo && props.casesheetInfo.getJuniorDoctorCaseSheet
-      ? props.casesheetInfo.getJuniorDoctorCaseSheet
-      : ''
-  );
   return (
     props.casesheetInfo &&
     props.casesheetInfo.getJuniorDoctorCaseSheet &&
