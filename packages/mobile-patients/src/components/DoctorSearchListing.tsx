@@ -2,7 +2,12 @@ import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Filter, LocationOff, LocationOn } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Filter,
+  LocationOff,
+  LocationOn,
+  Location,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -28,6 +33,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  AsyncStorage,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -58,7 +64,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
   },
 });
-
+const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 export interface DoctorSearchListingProps extends NavigationScreenProps {}
 export type filterDataType = {
   label: string;
@@ -121,6 +127,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [locationSearchList, setlocationSearchList] = useState<string[]>([]);
+
   const [scrollY] = useState(new Animated.Value(0));
   const { currentPatient } = useAllCurrentPatients();
 
@@ -142,6 +150,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   useEffect(() => {
     console.log('didmout');
     Platform.OS === 'android' && requestLocationPermission();
+    fetchCurrentLocation();
   }, []);
 
   console.log('FilterData1111111', FilterData);
@@ -283,13 +292,39 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     // console.log(e, 'jvjhvhm');
   };
 
+  const autoSearch = (searchText: string) => {
+    axios
+      .get(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&latitude=17.3355835&longitude=78.46756239999999&key=${key}`
+      )
+      .then((obj) => {
+        console.log(obj, 'places');
+        if (obj.data.predictions) {
+          const address = obj.data.predictions.map(
+            (item: {
+              structured_formatting: {
+                main_text: string;
+              };
+            }) => {
+              return item.structured_formatting.main_text;
+            }
+          );
+          console.log(address, 'address');
+          setlocationSearchList(address);
+          // setcurrentLocation(address.toUpperCase());
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   const fetchCurrentLocation = () => {
     // setshowLocationpopup(true);
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const searchstring = position.coords.latitude + ',' + position.coords.longitude;
-        const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
         const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
         axios
           .get(url)
@@ -297,8 +332,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             console.log(obj);
             if (obj.data.results.length > 0 && obj.data.results[0].address_components.length > 0) {
               const address = obj.data.results[0].address_components[0].short_name;
-              console.log(address, 'address');
+              console.log(address, 'address', obj.data.results[0].geometry.location, 'location');
               setcurrentLocation(address.toUpperCase());
+              AsyncStorage.setItem(
+                'location',
+                JSON.stringify(obj.data.results[0].geometry.location)
+              );
             }
           })
           .catch((error) => {
@@ -330,6 +369,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               style={{
                 color: theme.colors.SHERPA_BLUE,
                 ...theme.fonts.IBMPlexSansSemiBold(13),
+                textTransform: 'uppercase',
               }}
             >
               {currentLocation}
@@ -479,6 +519,90 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       </Animated.View>
     );
   };
+
+  const renderPopup = () => {
+    console.log(showLocationpopup, 'showLocationpopup');
+    if (showLocationpopup) {
+      return (
+        <View
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 40,
+            alignItems: 'center',
+            zIndex: 15,
+            elevation: 15,
+          }}
+        >
+          <View
+            style={{
+              ...theme.viewStyles.cardViewStyle,
+              width: 235,
+              padding: 16,
+            }}
+          >
+            <Text
+              style={{
+                color: theme.colors.CARD_HEADER,
+                ...theme.fonts.IBMPlexSansMedium(14),
+              }}
+            >
+              Current Location
+            </Text>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ flex: 7 }}>
+                <TextInputComponent
+                  conatinerstyles={{ flex: 1 }}
+                  value={currentLocation}
+                  onChangeText={(value) => {
+                    setcurrentLocation(value);
+                    autoSearch(value);
+                  }}
+                />
+              </View>
+              <View
+                style={{
+                  marginLeft: 20,
+                  alignItems: 'flex-end',
+                  justifyContent: 'center',
+                  marginBottom: 10,
+                }}
+              >
+                <LocationOn />
+              </View>
+            </View>
+            <View>
+              {locationSearchList.map((name, i) => (
+                <View
+                  key={i}
+                  style={{
+                    borderBottomWidth: 0.5,
+                    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+                    paddingVertical: 7,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: theme.colors.LIGHT_BLUE,
+                      ...theme.fonts.IBMPlexSansMedium(18),
+                    }}
+                    onPress={() => {
+                      setcurrentLocation(name);
+                      setshowLocationpopup(false);
+                    }}
+                  >
+                    {name}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
+      );
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView
@@ -506,56 +630,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           {selectedTab === tabs[1].title && renderDoctorSearches(ConsultMode.ONLINE)}
           {selectedTab === tabs[2].title && renderDoctorSearches(ConsultMode.PHYSICAL)}
         </Animated.ScrollView>
-        {showLocationpopup && (
-          <View
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: 40,
-              alignItems: 'center',
-            }}
-          >
-            <View
-              style={{
-                ...theme.viewStyles.cardViewStyle,
-                width: 230,
-                padding: 16,
-              }}
-            >
-              <Text
-                style={{
-                  color: theme.colors.CARD_HEADER,
-                  ...theme.fonts.IBMPlexSansMedium(14),
-                }}
-              >
-                Current Location
-              </Text>
-              <View style={{ flexDirection: 'row' }}>
-                <View style={{ flex: 7 }}>
-                  <TextInputComponent
-                    conatinerstyles={{ flex: 1 }}
-                    value={currentLocation}
-                    onChangeText={(value) => {
-                      setcurrentLocation(value);
-                    }}
-                  />
-                </View>
-                <View
-                  style={{
-                    marginLeft: 20,
-                    alignItems: 'flex-end',
-                    justifyContent: 'center',
-                    marginBottom: 10,
-                  }}
-                >
-                  <LocationOff />
-                </View>
-              </View>
-            </View>
-          </View>
-        )}
       </SafeAreaView>
+      {renderPopup()}
       {displayFilter && (
         <FilterScene
           onClickClose={(data: filterDataType[]) => {

@@ -21,6 +21,7 @@ import SmsListener from 'react-native-android-sms-listener';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
 import { OTPTextView } from './ui/OTPTextView';
+import firebase from 'react-native-firebase';
 
 const styles = StyleSheet.create({
   container: {
@@ -79,6 +80,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const { verifyOtp, sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
+  const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
 
   const startInterval = useCallback(
     (timer: number) => {
@@ -230,32 +232,49 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   }, [signInError, props.navigation, otp.length]);
 
+  useEffect(() => {
+    const authListener = firebase.auth().onAuthStateChanged((user) => {
+      const phoneNumberFromParams = `+91${props.navigation.getParam('phoneNumber')}`;
+      const phoneNumberLoggedIn = user && user.phoneNumber;
+      if (phoneNumberFromParams == phoneNumberLoggedIn) {
+        setAuthChanged(true);
+      }
+    });
+    () => authListener();
+  });
+
   const onClickOk = async () => {
     console.log('otp OTPVerification', otp);
     Keyboard.dismiss();
     setshowSpinner(true);
 
     verifyOtp(otp)
-      .then((result) => {
-        // console.log('result OTPVerification', result);
+      .then(() => {
         _removeFromStore();
       })
       .catch((error) => {
-        setshowSpinner(false);
-        // console.log('error', error);
-        _storeTimerData(invalidOtpCount + 1);
+        console.log({ error });
+        setTimeout(() => {
+          if (isAuthChanged) {
+            _removeFromStore();
+          } else {
+            setshowSpinner(false);
+            // console.log('error', error);
+            _storeTimerData(invalidOtpCount + 1);
 
-        if (invalidOtpCount + 1 === 3) {
-          setShowErrorMsg(true);
-          setIsValidOTP(false);
-          startInterval(timer);
-          setIntervalId(intervalId);
-        } else {
-          setShowErrorMsg(true);
-          setIsValidOTP(true);
-        }
-        setInvalidOtpCount(invalidOtpCount + 1);
-        setOtp('');
+            if (invalidOtpCount + 1 === 3) {
+              setShowErrorMsg(true);
+              setIsValidOTP(false);
+              startInterval(timer);
+              setIntervalId(intervalId);
+            } else {
+              setShowErrorMsg(true);
+              setIsValidOTP(true);
+            }
+            setInvalidOtpCount(invalidOtpCount + 1);
+            setOtp('');
+          }
+        }, 1000);
       });
   };
 
