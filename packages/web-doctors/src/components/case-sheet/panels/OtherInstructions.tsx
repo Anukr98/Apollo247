@@ -150,6 +150,9 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 600,
       fontSize: 14,
       color: '#02475b !important',
+      '&:focus': {
+        backgroundColor: 'rgba(0,0,0,0.02)',
+      },
       '& span': {
         display: 'inline-block',
         width: '100%',
