@@ -117,12 +117,19 @@ const useStyles = makeStyles((theme: Theme) =>
       flexFlow: 'row',
       flexWrap: 'wrap',
       width: '100%',
+      '& h5': {
+        color: 'rgba(2, 71, 91, 0.6)',
+        fontSize: 14,
+        fontWeight: 500,
+        marginBottom: 12,
+      },
     },
     column: {
       width: '49%',
       display: 'flex',
       marginRight: '1%',
       flexDirection: 'column',
+      marginBottom: 10,
     },
     listContainer: {
       display: 'flex',
@@ -133,6 +140,33 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     textFieldContainer: {
       width: '100%',
+    },
+    othersBtn: {
+      border: '1px solid rgba(2, 71, 91, 0.15)',
+      backgroundColor: 'rgba(0,0,0,0.02)',
+      height: 44,
+      marginBottom: 12,
+      borderRadius: 5,
+      fontWeight: 600,
+      fontSize: 14,
+      color: '#02475b !important',
+      '& span': {
+        display: 'inline-block',
+        width: '100%',
+        textAlign: 'left',
+      },
+    },
+    btnAddDoctor: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: theme.typography.fontWeightBold,
+      // pointerEvents: 'none',
+      paddingLeft: 4,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
     },
   })
 );
@@ -202,16 +236,17 @@ export const OtherInstructions: React.FC<CasesheetInfoProps> = (props) => {
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Typography component="div" className={classes.column}>
-        <Typography component="h3" variant="h4">
+        <Typography component="h5" variant="h5">
           Instructions to the patient
         </Typography>
         <Typography component="div" className={classes.listContainer}>
           {selectedValues.map((item, idx) => (
             <Chip
+              className={classes.othersBtn}
               key={idx}
               label={item!.instruction}
               onDelete={() => {}}
-              deleteIcon={<DoneIcon className={classes.icon} />}
+              deleteIcon={<img src={require('images/ic_selected.svg')} alt="" />}
             />
           ))}
         </Typography>
@@ -219,6 +254,7 @@ export const OtherInstructions: React.FC<CasesheetInfoProps> = (props) => {
       <Typography component="div" className={classes.textFieldContainer}>
         {!showAddCondition && (
           <AphButton
+            className={classes.btnAddDoctor}
             variant="contained"
             color="primary"
             onClick={() => showAddConditionHandler(true)}
