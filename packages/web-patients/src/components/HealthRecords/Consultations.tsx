@@ -102,15 +102,15 @@ const useStyles = makeStyles((theme: Theme) => {
       borderLeft: '4px solid #0087ba',
       paddingLeft: 14,
       marginTop: 20,
-      '& >div:last-child': {
+      '& >div:last-child >div': {
         position: 'relative',
         '&:before': {
           position: 'absolute',
           content: '""',
-          left: -19,
-          top: -14,
+          left: -29,
+          top: -24,
           width: 4,
-          height: '110%',
+          height: '200%',
           backgroundColor: theme.palette.common.white,
         },
       },

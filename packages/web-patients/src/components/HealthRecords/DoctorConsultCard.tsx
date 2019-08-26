@@ -11,6 +11,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 10,
       border: '1px solid #f7f8f5',
       marginBottom: 28,
+      cursor: 'pointer',
     },
     doctorInfoGroup: {
       display: 'flex',
@@ -73,6 +74,33 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     activeCard: {
       border: '1px solid #00b38e',
+      position: 'relative',
+      '&:before': {
+        content: '""',
+        display: 'block',
+        position: 'absolute',
+        left: '100%',
+        width: 0,
+        height: 0,
+        borderStyle: 'solid',
+        top: '50%',
+        borderColor: 'transparent transparent transparent #00b38e',
+        borderWidth: 9,
+        marginTop: -9,
+      },
+      '&:after': {
+        content: '""',
+        display: 'block',
+        position: 'absolute',
+        left: '100%',
+        width: 0,
+        height: 0,
+        borderStyle: 'solid',
+        top: '50%',
+        borderColor: 'transparent transparent transparent #f7f8f5',
+        borderWidth: 8,
+        marginTop: -8,
+      },
     },
   };
 });

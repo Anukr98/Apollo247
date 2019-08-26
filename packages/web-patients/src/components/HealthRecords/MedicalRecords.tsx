@@ -3,13 +3,9 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
-import { Symptoms } from 'components/HealthRecords/Symptoms';
-import { Prescription } from 'components/HealthRecords/Prescription';
-import { Diagnosis } from 'components/HealthRecords/Diagnosis';
-import { GeneralAdvice } from 'components/HealthRecords/GeneralAdvice';
-import { FollowUp } from 'components/HealthRecords/FollowUp';
-import { PaymentInvoice } from 'components/HealthRecords/PaymentInvoice';
 import { MedicalCard } from 'components/HealthRecords/MedicalCard';
+import { ToplineReport } from 'components/HealthRecords/ToplineReport';
+import { DetailedFindings } from 'components/HealthRecords/DetailedFindings';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -77,6 +73,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 1,
       marginLeft: 15,
       marginRight: 15,
+      marginBottom: 10,
       '& button': {
         boxShadow: 'none',
         backgroundColor: 'transparent',
@@ -101,16 +98,16 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 15,
       borderLeft: '4px solid #0087ba',
       paddingLeft: 14,
-      marginTop: 20,
-      '& >div:last-child': {
+      marginTop: 10,
+      '& >div:last-child >div': {
         position: 'relative',
         '&:before': {
           position: 'absolute',
           content: '""',
-          left: -19,
-          top: -14,
+          left: -29,
+          top: -24,
           width: 4,
-          height: '130%',
+          height: '200%',
           backgroundColor: theme.palette.common.white,
         },
       },
@@ -131,10 +128,42 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '50%',
       marginRight: 10,
     },
-    consultationDetails: {
+    medicalRecordsDetails: {
       paddingLeft: 20,
       paddingRight: 15,
       paddingTop: 10,
+    },
+    addReportActions: {
+      paddingLeft: 15,
+      paddingRight: 15,
+      paddingTop: 10,
+    },
+    cbcDetails: {
+      backgroundColor: theme.palette.common.white,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      borderRadius: 10,
+      marginBottom: 12,
+      padding: 14,
+      display: 'flex',
+      '&:before': {
+        display: 'none',
+      },
+    },
+    reportsDetails: {
+      paddingLeft: 25,
+      paddingRight: 25,
+      '& label': {
+        fontSize: 12,
+        fontWeight: 500,
+        color: '#01475b',
+        paddingBottom: 3,
+      },
+      '& p': {
+        fontSize: 14,
+        fontWeight: 500,
+        color: '#0087ba',
+        margin: 0,
+      },
     },
   };
 });
@@ -149,7 +178,7 @@ export const MedicalRecords: React.FC = (props) => {
           <AphButton>Online</AphButton>
           <AphButton>Physical</AphButton>
         </div>
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 276px)'}>
+        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 336px)'}>
           <div className={classes.consultationsList}>
             <div className={classes.consultGroupHeader}>
               <div className={classes.circle}></div>
@@ -173,6 +202,11 @@ export const MedicalRecords: React.FC = (props) => {
             <MedicalCard />
           </div>
         </Scrollbars>
+        <div className={classes.addReportActions}>
+          <AphButton color="primary" fullWidth>
+            Add a Report
+          </AphButton>
+        </div>
       </div>
       <div className={classes.rightSection}>
         <div className={classes.sectionHeader}>
@@ -187,13 +221,23 @@ export const MedicalRecords: React.FC = (props) => {
           </div>
         </div>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 262px)'}>
-          <div className={classes.consultationDetails}>
-            <Symptoms />
-            <Prescription />
-            <Diagnosis />
-            <GeneralAdvice />
-            <FollowUp />
-            <PaymentInvoice />
+          <div className={classes.medicalRecordsDetails}>
+            <div className={classes.cbcDetails}>
+              <div className={classes.reportsDetails}>
+                <label>Check-up Date</label>
+                <p>03 May 2019</p>
+              </div>
+              <div className={classes.reportsDetails}>
+                <label>Source</label>
+                <p>Apollo Hospital, Jubilee Hills</p>
+              </div>
+              <div className={classes.reportsDetails}>
+                <label>Referring Doctor</label>
+                <p>Dr. Simran Rai</p>
+              </div>
+            </div>
+            <ToplineReport />
+            <DetailedFindings />
           </div>
         </Scrollbars>
       </div>
