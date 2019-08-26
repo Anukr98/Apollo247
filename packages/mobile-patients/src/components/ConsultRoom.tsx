@@ -504,7 +504,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <Button
               title={string.home.consult_doctor}
               style={styles.buttonStyles}
-              onPress={() => {}}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.SymptomChecker);
+              }}
             />
           </View>
           <View style={{ width: '100%', height: 436 }}>

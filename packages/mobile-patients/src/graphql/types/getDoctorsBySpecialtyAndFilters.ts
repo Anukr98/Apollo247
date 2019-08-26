@@ -35,9 +35,16 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   consultHours: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_consultHours | null)[] | null;
 }
 
+export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability {
+  __typename: "DoctorConsultModeAvailability";
+  doctorId: string | null;
+  availableModes: (ConsultMode | null)[] | null;
+}
+
 export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters {
   __typename: "FilterDoctorsResult";
   doctors: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[] | null;
+  doctorsAvailability: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability | null)[] | null;
 }
 
 export interface getDoctorsBySpecialtyAndFilters {
