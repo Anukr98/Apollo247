@@ -24,6 +24,7 @@ import {
   OtherInstructions,
 } from 'components/case-sheet/panels';
 import { UserCard } from 'components/case-sheet/UserCard';
+import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -106,26 +107,14 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-interface UserInfoObject {
-  patientId: string;
-  image: string;
-  name: string;
-  age: number;
-  gender: string;
-  location: string;
-  uhid: string;
-  appointmentId: string;
-}
-interface CasesheetInfoObj {
-  userInfo: UserInfoObject;
-}
+
 interface CasesheetInfoProps {
-  casesheetInfo: CasesheetInfoObj;
+  casesheetInfo: GetJuniorDoctorCaseSheet;
+  appointmentId: string;
 }
 export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
   const classes = useStyles();
   const [expanded, setExpanded] = useState<string | boolean>(false);
-  const userInfo = props.casesheetInfo;
   const handlePanelExpansion = (panelName: string) => (
     e: React.ChangeEvent<{}>,
     isExpanded: boolean
@@ -135,7 +124,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
     <div className={classes.container}>
       <div className={classes.caseSheet}>
         <section className={`${classes.column} ${classes.right}`}>
-          <UserCard casesheetInfo={props.casesheetInfo} />
+          <UserCard casesheetInfo={props.casesheetInfo} appointmentId={props.appointmentId} />
         </section>
         <section className={classes.column}>
           {/* Symptoms Panel */}
