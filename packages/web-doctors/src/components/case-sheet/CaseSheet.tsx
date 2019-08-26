@@ -163,7 +163,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
               <Typography variant="h3">Symptoms</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <Symptoms />
+              <Symptoms casesheetInfo={props.casesheetInfo} />
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
@@ -275,7 +275,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
               <Typography variant="h3">Other Instructions</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <OtherInstructions />
+              <OtherInstructions casesheetInfo={props.casesheetInfo} />
             </ExpansionPanelDetails>
           </ExpansionPanel>
         </section>
