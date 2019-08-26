@@ -157,6 +157,7 @@ export const caseSheetTypeDefs = gql`
 
   extend type Query {
     getJuniorDoctorCaseSheet(appointmentId: String): CaseSheetFullDetails
+    getCaseSheet(appointmentId: String): CaseSheetFullDetails
   }
 `;
 
@@ -199,6 +200,7 @@ const createCaseSheet: Resolver<
   return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
 };
 
+//TODO : remove afer getCaseSheet integration
 const getJuniorDoctorCaseSheet: Resolver<
   null,
   { appointmentId: string },
@@ -217,6 +219,38 @@ const getJuniorDoctorCaseSheet: Resolver<
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  //get patient info
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  return { caseSheetDetails, patientDetails };
+};
+
+const getCaseSheet: Resolver<
+  null,
+  { appointmentId: string },
+  ConsultServiceContext,
+  {
+    caseSheetDetails: CaseSheet;
+    patientDetails: Patient;
+  }
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
+  //check appointmnet id
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentData = await appointmentRepo.findById(args.appointmentId);
+  if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  let caseSheetDetails;
+
+  //check whether there is a senior doctor case-sheet. Else get juniordoctor case-sheet
+  caseSheetDetails = await caseSheetRepo.getSeniorDoctorCaseSheet(appointmentData.id);
+  if (caseSheetDetails == null) {
+    caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
+    if (caseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  }
 
   //get patient info
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
@@ -286,5 +320,5 @@ export const caseSheetResolvers = {
     updateCaseSheet,
   },
 
-  Query: { getJuniorDoctorCaseSheet },
+  Query: { getJuniorDoctorCaseSheet, getCaseSheet },
 };

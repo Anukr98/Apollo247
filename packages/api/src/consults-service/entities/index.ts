@@ -11,6 +11,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { IsDate } from 'class-validator';
+import { DoctorType } from 'doctors-service/entities';
 
 export enum APPOINTMENT_TYPE {
   ONLINE = 'ONLINE',
@@ -148,6 +149,9 @@ export class CaseSheet extends BaseEntity {
 
   @Column({ nullable: true })
   createdDoctorId: string;
+
+  @Column({ default: DoctorType.JUNIOR })
+  doctorType: DoctorType;
 
   @Column({ nullable: true, type: 'json' })
   diagnosis: string;
