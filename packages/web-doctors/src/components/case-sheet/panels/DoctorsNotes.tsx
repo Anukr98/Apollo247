@@ -1,8 +1,6 @@
 import React from 'react';
 import { Typography, makeStyles } from '@material-ui/core';
-import {
-  GetJuniorDoctorCaseSheet,
-} from 'graphql/types/GetJuniorDoctorCaseSheet';
+import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -24,12 +22,10 @@ export const DoctorsNotes: React.FC<CasesheetInfoProps> = (props) => {
   const classes = useStyles();
   return (
     <Typography component="div" className={classes.container}>
-      {
-      (props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.notes) && 
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.notes
-    }
+      {props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
+        props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
+        props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.notes &&
+        props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.notes}
     </Typography>
   );
 };
