@@ -1,33 +1,31 @@
-import React, { useState } from 'react';
-import {
-  View,
-  SafeAreaView,
-  ScrollView,
-  ImageSourcePropType,
-  TouchableOpacity,
-  Dimensions,
-  Text,
-  Image,
-  StyleSheet,
-} from 'react-native';
-import { UserIntro } from '@aph/mobile-patients/src/components/ui/UserIntro';
-import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { NavigationScreenProps } from 'react-navigation';
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
-import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import { fonts } from '@aph/mobile-patients/src/theme/fonts';
-import {
-  ArrowRight,
-  CartIcon,
-  NotificationIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  CartIcon,
+  MedicineIcon,
+  NotificationIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
+import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { UserIntro } from '@aph/mobile-patients/src/components/ui/UserIntro';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-
-const { width } = Dimensions.get('window');
+import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
+import React, { useState } from 'react';
+import {
+  Image,
+  ImageSourcePropType,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   separatorStyle: {
@@ -231,69 +229,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 source={require('@aph/mobile-patients/src/images/medicine/img_adbanner.png')}
                 style={{ width: '100%' }}
               />
-              <TouchableOpacity onPress={() => {}}>
-                <View
-                  style={{
-                    ...viewStyles.cardViewStyle,
-                    ...viewStyles.shadowStyle,
-                    padding: 16,
-                    marginHorizontal: 20,
-                    flexDirection: 'row',
-                    height: 56,
-                    marginTop: 32,
-                    marginBottom: 4,
-                    alignItems: 'center',
-                  }}
-                >
+              <ListCard
+                container={{ marginTop: 32 }}
+                title={'Your Med Subscriptions'}
+                leftIcon={
                   <Image
                     style={{ height: 24, width: 24 }}
                     source={require('@aph/mobile-patients/src/images/medicine/ic_schedule.png')}
                   />
-                  <Text
-                    style={{
-                      color: colors.SHERPA_BLUE,
-                      ...fonts.IBMPlexSansMedium(17),
-                      paddingHorizontal: 16,
-                    }}
-                  >
-                    Your Med Subscriptions
-                  </Text>
-                  <View style={{ alignItems: 'flex-end', flex: 1 }}>
-                    <ArrowRight />
-                  </View>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => {}}>
-                <View
-                  style={{
-                    ...viewStyles.cardViewStyle,
-                    padding: 16,
-                    marginHorizontal: 20,
-                    flexDirection: 'row',
-                    height: 56,
-                    marginTop: 4,
-                    marginBottom: 32,
-                    alignItems: 'center',
-                  }}
-                >
-                  <Image
-                    style={{ height: 24, width: 24 }}
-                    source={require('@aph/mobile-patients/src/images/medicine/ic_tablets.png')}
-                  />
-                  <Text
-                    style={{
-                      color: colors.SHERPA_BLUE,
-                      ...fonts.IBMPlexSansMedium(17),
-                      paddingHorizontal: 16,
-                    }}
-                  >
-                    Your Orders
-                  </Text>
-                  <View style={{ alignItems: 'flex-end', flex: 1 }}>
-                    <ArrowRight />
-                  </View>
-                </View>
-              </TouchableOpacity>
+                }
+              />
+              <ListCard
+                container={{ marginBottom: 32 }}
+                title={'Your Orders'}
+                leftIcon={<MedicineIcon />}
+              />
             </View>
           ) : (
             renderTests()

@@ -1,5 +1,5 @@
-import { ConsultOnline } from '@aph/mobile-patients/src/components/ConsultOnline';
-import { ConsultPhysical } from '@aph/mobile-patients/src/components/ConsultPhysical';
+import { ConsultOnline } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultOnline';
+import { ConsultPhysical } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPhysical';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -27,6 +27,7 @@ import { useQuery } from 'react-apollo-hooks';
 import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
+import { divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -82,60 +83,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
 
   const setTimeArrayData = (availableSlots: string[]) => {
-    const array: TimeArray = [
-      { label: 'Morning', time: [] },
-      { label: 'Afternoon', time: [] },
-      { label: 'Evening', time: [] },
-      { label: 'Night', time: [] },
-    ];
-    console.log(availableSlots, 'setTimeArrayData');
-    const morningStartTime = moment('06:00', 'HH:mm');
-    const morningEndTime = moment('12:00', 'HH:mm');
-    const afternoonStartTime = moment('12:01', 'HH:mm');
-    const afternoonEndTime = moment('17:00', 'HH:mm');
-    const eveningStartTime = moment('17:01', 'HH:mm');
-    const eveningEndTime = moment('21:00', 'HH:mm');
-    const nightStartTime = moment('21:01', 'HH:mm');
-    const nightEndTime = moment('05:59', 'HH:mm');
-
-    availableSlots.forEach((slot) => {
-      const IOSFormat = `${date.toISOString().split('T')[0]}T${slot}:00.000Z`;
-      const formatedSlot = moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
-      console.log(
-        new Date() < new Date(IOSFormat),
-        new Date(),
-        new Date(IOSFormat),
-        'IOSFormat......'
-      );
-      const slotTime = moment(formatedSlot, 'HH:mm');
-      if (new Date() < new Date(IOSFormat)) {
-        if (slotTime.isBetween(nightEndTime, afternoonStartTime)) {
-          array[0] = {
-            label: 'Morning',
-            time: [...array[0].time, slot],
-          };
-        } else if (slotTime.isBetween(morningEndTime, eveningStartTime)) {
-          array[1] = {
-            ...array[1],
-            time: [...array[1].time, slot],
-          };
-        } else if (slotTime.isBetween(afternoonEndTime, nightStartTime)) {
-          array[2] = {
-            ...array[2],
-            time: [...array[2].time, slot],
-          };
-        } else if (
-          slotTime.isBetween(eveningEndTime, moment('23:59', 'HH:mm')) ||
-          slotTime.isSame(moment('00:00', 'HH:mm')) ||
-          slotTime.isBetween(moment('00:00', 'HH:mm'), morningStartTime)
-        ) {
-          array[3] = {
-            ...array[3],
-            time: [...array[3].time, slot],
-          };
-        }
-      }
-    });
+    const array = divideSlots(availableSlots, date);
     console.log(array, 'array', timeArray, 'timeArray');
     if (array !== timeArray) settimeArray(array);
   };
@@ -208,11 +156,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   0 < availableInMin!
                     ? nextAvailableSlot
                     : selectedTimeSlot;
-                console.log(timeSlot, 'timeSlottimeSlot');
+
+                const appointmentDate = moment
+                  .utc(moment(`${formatDate} ${timeSlot}`, 'DD-MM-YYYY HH:mm'))
+                  .utc()
+                  .toISOString();
                 const appointmentInput: BookAppointmentInput = {
                   patientId: props.patientId,
                   doctorId: props.doctor ? props.doctor.id : '',
-                  appointmentDateTime: `${formatDate}T${timeSlot}:00.000Z`,
+                  appointmentDateTime: appointmentDate,
                   appointmentType:
                     selectedTab === tabs[0].title
                       ? APPOINTMENT_TYPE.ONLINE

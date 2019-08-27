@@ -39,10 +39,11 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { theme } from '../theme/theme';
-import { Button } from './ui/Button';
-import { DoctorCard } from './ui/DoctorCard';
-import { NeedHelpAssistant } from './ui/NeedHelpAssistant';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
+import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 
 const styles = StyleSheet.create({
   searchContainer: {

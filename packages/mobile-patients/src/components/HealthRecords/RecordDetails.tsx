@@ -250,7 +250,7 @@ WBC: Within normal limits. No atypical WBCs/blasts seen`}</Text>
             }
             onPressLeftIcon={() => props.navigation.goBack()}
           />
-          <ScrollView>
+          <ScrollView bounces={false}>
             {renderDoctorDetails()}
             {renderData()}
             {false && renderRecordDetails()}

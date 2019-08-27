@@ -29,10 +29,11 @@ import {
 } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-const { width, height } = Dimensions.get('window');
 import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   viewName: {
