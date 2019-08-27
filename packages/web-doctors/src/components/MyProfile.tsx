@@ -833,54 +833,68 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
         </Typography>
         <StarDoctorsList currentDocId={doctorProfile.id} starDoctors={doctorProfile!.starTeam!} />
       </div>
-      <h2>Secretary Login</h2>
-      <div className={`${classes.tabContent} ${classes.awardsSection}`}>
-        <h3>Enter the mobile number you’d like to assign access of your account to</h3>
-        <FormControl fullWidth>
-          <AphInput
-            className={classes.inputWidth}
-            inputProps={{ type: 'tel', maxLength: 10 }}
-            value={mobileNumber}
-            placeholder="Enter Here"
-            onPaste={(e) => {
-              if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
-            }}
-            onChange={(event) => {
-              setDelegateNumberStatus('');
-              setMobileNumber(event.currentTarget.value);
-              if (event.currentTarget.value !== '') {
-                if (parseInt(event.currentTarget.value[0], 10) > 5) {
-                  setPhoneMessage('');
-                  setShowErrorMessage(false);
-                } else {
-                  setPhoneMessage(invalidPhoneMessage);
-                  setShowErrorMessage(true);
+      {sessionStorage.getItem('loggedInMobileNumber') === doctorProfile.mobileNumber && (
+        <div>
+          <h2>Secretary Login</h2>
+          <div className={`${classes.tabContent} ${classes.awardsSection}`}>
+            <h3>Enter the mobile number you’d like to assign access of your account to</h3>
+            <FormControl fullWidth>
+              <AphInput
+                className={classes.inputWidth}
+                inputProps={{ type: 'tel', maxLength: 10 }}
+                value={mobileNumber}
+                placeholder="Enter Here"
+                onPaste={(e) => {
+                  if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
+                }}
+                onChange={(event) => {
+                  setDelegateNumberStatus('');
+                  setMobileNumber(event.currentTarget.value);
+                  if (event.currentTarget.value !== '') {
+                    if (parseInt(event.currentTarget.value[0], 10) > 5) {
+                      setPhoneMessage('');
+                      setShowErrorMessage(false);
+                    } else {
+                      setPhoneMessage(invalidPhoneMessage);
+                      setShowErrorMessage(true);
+                    }
+                  }
+                }}
+                error={
+                  mobileNumber.trim() !== '' &&
+                  ((showErrorMessage && !isMobileNumberValid(mobileNumber)) ||
+                    (showErrorMessage && `+91${mobileNumber}` === doctorProfile.mobileNumber))
                 }
-              }
-            }}
-            error={
-              mobileNumber.trim() !== '' &&
-              ((showErrorMessage && !isMobileNumberValid(mobileNumber)) ||
-                (showErrorMessage && `+91${mobileNumber}` === doctorProfile.mobileNumber))
-            }
-            onKeyPress={(e) => {
-              if (isNaN(parseInt(e.key, 10))) {
-                e.preventDefault();
-              }
-            }}
-            startAdornment={<InputAdornment position="start"></InputAdornment>}
-          />
-          {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0 ? (
-            <FormHelperText component="div" className={classes.helpText} error={showErrorMessage}>
-              {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0 ? phoneMessage : ''}
-            </FormHelperText>
-          ) : (
-            <FormHelperText component="div" className={classes.statusText} error={showErrorMessage}>
-              {delegateNumberStatus.length > 0 ? delegateNumberStatus : ''}
-            </FormHelperText>
-          )}
-        </FormControl>
-      </div>
+                onKeyPress={(e) => {
+                  if (isNaN(parseInt(e.key, 10))) {
+                    e.preventDefault();
+                  }
+                }}
+                startAdornment={<InputAdornment position="start"></InputAdornment>}
+              />
+              {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0 ? (
+                <FormHelperText
+                  component="div"
+                  className={classes.helpText}
+                  error={showErrorMessage}
+                >
+                  {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0
+                    ? phoneMessage
+                    : ''}
+                </FormHelperText>
+              ) : (
+                <FormHelperText
+                  component="div"
+                  className={classes.statusText}
+                  error={showErrorMessage}
+                >
+                  {delegateNumberStatus.length > 0 ? delegateNumberStatus : ''}
+                </FormHelperText>
+              )}
+            </FormControl>
+          </div>
+        </div>
+      )}
       <div className={classes.helpTxt}>
         <img alt="" src={require('images/ic_info.svg')} className={classes.navLeftIcon} />
         Call <span className={classes.orange}>1800 - 3455 - 3455 </span>to make any changes
