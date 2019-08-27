@@ -25,9 +25,7 @@ import {
 } from 'components/case-sheet/panels';
 import { UserCard } from 'components/case-sheet/UserCard';
 //import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
-import {
-  GetCaseSheet,
-} from 'graphql/types/GetCaseSheet';
+import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

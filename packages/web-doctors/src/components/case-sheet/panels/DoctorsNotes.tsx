@@ -1,8 +1,6 @@
 import React from 'react';
 import { Typography, makeStyles } from '@material-ui/core';
-import {
-  GetCaseSheet,
-} from 'graphql/types/GetCaseSheet';
+import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
 
 const useStyles = makeStyles(() => ({
   container: {

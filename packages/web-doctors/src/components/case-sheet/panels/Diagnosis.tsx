@@ -20,7 +20,7 @@ import deburr from 'lodash/deburr';
 // } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import {
   GetCaseSheet,
-  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis
+  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis,
 } from 'graphql/types/GetCaseSheet';
 
 interface OptionType {

@@ -1,9 +1,7 @@
 import React, { Fragment } from 'react';
 import { Typography, List, ListItem, ListItemText } from '@material-ui/core';
 //import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
-import {
-  GetCaseSheet,
-} from 'graphql/types/GetCaseSheet';
+import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
 import { makeStyles } from '@material-ui/styles';
 const useStyles = makeStyles(() => ({
   container: {
@@ -69,52 +67,48 @@ export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
         <List className={classes.symtomList}>
           {props.casesheetInfo.getCaseSheet.caseSheetDetails.symptoms &&
             props.casesheetInfo.getCaseSheet.caseSheetDetails.symptoms.length > 0 &&
-            props.casesheetInfo.getCaseSheet.caseSheetDetails.symptoms.map(
-              (item, idx) => (
-                <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
-                  <ListItemText className={classes.symtomHeading} primary={item!.symptom} />
-                  <Fragment>
-                    <List>
-                      {item!.since && (
-                        <ListItem alignItems="flex-start" className={classes.symtomContent}>
-                          <ListItemText
-                            secondary={
-                              <Fragment>
-                                <Typography component="span">Since: {item!.since}</Typography>
-                              </Fragment>
-                            }
-                          />
-                        </ListItem>
-                      )}
-                      {item!.howOften && (
-                        <ListItem alignItems="flex-start" className={classes.symtomContent}>
-                          <ListItemText
-                            secondary={
-                              <Fragment>
-                                <Typography component="span">
-                                  How Often : {item!.howOften}
-                                </Typography>
-                              </Fragment>
-                            }
-                          />
-                        </ListItem>
-                      )}
-                      {item!.severity && (
-                        <ListItem alignItems="flex-start" className={classes.symtomContent}>
-                          <ListItemText
-                            secondary={
-                              <Fragment>
-                                <Typography component="span">Severity: {item!.severity}</Typography>
-                              </Fragment>
-                            }
-                          />
-                        </ListItem>
-                      )}
-                    </List>
-                  </Fragment>
-                </ListItem>
-              )
-            )}
+            props.casesheetInfo.getCaseSheet.caseSheetDetails.symptoms.map((item, idx) => (
+              <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
+                <ListItemText className={classes.symtomHeading} primary={item!.symptom} />
+                <Fragment>
+                  <List>
+                    {item!.since && (
+                      <ListItem alignItems="flex-start" className={classes.symtomContent}>
+                        <ListItemText
+                          secondary={
+                            <Fragment>
+                              <Typography component="span">Since: {item!.since}</Typography>
+                            </Fragment>
+                          }
+                        />
+                      </ListItem>
+                    )}
+                    {item!.howOften && (
+                      <ListItem alignItems="flex-start" className={classes.symtomContent}>
+                        <ListItemText
+                          secondary={
+                            <Fragment>
+                              <Typography component="span">How Often : {item!.howOften}</Typography>
+                            </Fragment>
+                          }
+                        />
+                      </ListItem>
+                    )}
+                    {item!.severity && (
+                      <ListItem alignItems="flex-start" className={classes.symtomContent}>
+                        <ListItemText
+                          secondary={
+                            <Fragment>
+                              <Typography component="span">Severity: {item!.severity}</Typography>
+                            </Fragment>
+                          }
+                        />
+                      </ListItem>
+                    )}
+                  </List>
+                </Fragment>
+              </ListItem>
+            ))}
         </List>
       ) : (
         'NO data Found'

@@ -13,13 +13,13 @@ import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
 } from 'graphql/types/createAppointmentSession';
+import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
+import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import {
-  GetCaseSheet,
-} from 'graphql/types/GetCaseSheet';
-import {
-  GetJuniorDoctorCaseSheet,
-} from 'graphql/types/GetJuniorDoctorCaseSheet';
-import { CREATE_APPOINTMENT_SESSION, GET_JUNIOR_DOCTOR_CASESHEET, GET_CASESHEET } from 'graphql/profiles';
+  CREATE_APPOINTMENT_SESSION,
+  GET_JUNIOR_DOCTOR_CASESHEET,
+  GET_CASESHEET,
+} from 'graphql/profiles';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';

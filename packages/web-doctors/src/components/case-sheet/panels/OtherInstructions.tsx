@@ -14,7 +14,7 @@ import Autosuggest from 'react-autosuggest';
 // } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import {
   GetCaseSheet,
-  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions
+  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions,
 } from 'graphql/types/GetCaseSheet';
 interface OptionType {
   instruction: string;
@@ -194,9 +194,7 @@ export const OtherInstructions: React.FC<CasesheetInfoProps> = (props) => {
       props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions !== null &&
       props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions.length > 0
     ) {
-      setSelectedValues(
-        props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions
-      );
+      setSelectedValues(props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions);
     }
   }, []);
   const [favoriteDiagnostics, setFavoriteDiagnostics] = useState<OptionType[]>([

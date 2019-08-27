@@ -1,9 +1,6 @@
 import React from 'react';
 import { Card, CardMedia, CardContent, Typography, Divider } from '@material-ui/core';
-import {
-  GetCaseSheet,
-} from 'graphql/types/GetCaseSheet';
-
+import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
 
 interface CasesheetInfoProps {
   casesheetInfo: GetCaseSheet;

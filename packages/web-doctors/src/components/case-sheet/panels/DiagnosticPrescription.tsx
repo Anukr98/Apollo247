@@ -14,7 +14,7 @@ import Autosuggest from 'react-autosuggest';
 // } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import {
   GetCaseSheet,
-  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription
+  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription,
 } from 'graphql/types/GetCaseSheet';
 
 interface OptionType {
@@ -196,14 +196,10 @@ export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
       props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
       props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
       props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription &&
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription !==
-        null &&
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
-        .length > 0
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription !== null &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription.length > 0
     ) {
-      setSelectedValues(
-        props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
-      );
+      setSelectedValues(props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription);
     }
   }, []);
   const [state, setState] = React.useState({
