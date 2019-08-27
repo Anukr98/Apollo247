@@ -348,7 +348,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     }, 200);
   };
   const resetMessagesAction = () => {
-    console.log(messageText.length);
     if (messageText === '' || messageText === ' ') {
       setMessageText(' ');
       setMessageText('');
@@ -363,11 +362,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
-        console.log(messageText);
         insertText[insertText.length] = message.message;
+        setMessages(() => [...(insertText)]);
         resetMessagesAction();
         srollToBottomAction();
-        setMessages(insertText);
         if (
           !showVideoChat &&
           message.message.message !== autoMessageStrings.videoCallMsg &&
@@ -697,7 +695,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               <AphInput
                 className={classes.searchInput}
                 inputProps={{ type: 'text' }}
-                placeholder="Search doctors or specialities"
+                placeholder="Type here..."
                 value={messageText}
                 onKeyPress={(e) => {
                   if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {

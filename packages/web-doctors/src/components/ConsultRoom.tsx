@@ -236,12 +236,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     });
 
     getHistory();
+    
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
+        console.log(message.message);
         insertText[insertText.length] = message.message;
-        setMessages(insertText);
-        resetMessagesAction();
+        setMessages(() => [...(insertText)]);
         if (
           !showVideoChat &&
           message.message.message !== videoCallMsg &&
@@ -264,7 +265,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return function cleanup() {
       pubnub.unsubscribe({ channels: [channel] });
     };
-  }, [messageText]);
+  }, []);
   function getCookieValue() {
     const name = 'action=';
     const ca = document.cookie.split(';');
