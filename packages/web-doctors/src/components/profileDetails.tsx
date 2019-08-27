@@ -181,6 +181,11 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorPanelLeft: {
       marginBottom: 20,
     },
+    loading: {
+      position: 'absolute',
+      left: '48%',
+      top: '48%',
+    },
     tabLeftcontent: {
       paddingLeft: 20,
       [theme.breakpoints.down('xs')]: {
@@ -195,7 +200,7 @@ export const MyAccount: React.FC = (props) => {
   const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
   const getDoctorDetailsData = data && data.getDoctorDetails ? data.getDoctorDetails : null;
   const [selectedNavTab, setselectedNavTab] = React.useState(1);
-  if (loading) return <CircularProgress />;
+  if (loading) return <CircularProgress className={classes.loading} />;
   if (error || !getDoctorDetailsData) return <div>error :(</div>;
   const doctorProfile = getDoctorDetailsData;
   const clinics = getDoctorDetailsData.doctorHospital || [];

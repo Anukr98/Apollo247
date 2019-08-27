@@ -7,6 +7,11 @@ import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import { SignIn } from 'components/SignIn';
 import { HelpPopup } from 'components/Help';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
@@ -53,6 +58,11 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         width: 28,
       },
+    },
+    userActiveDark: {
+      height: 29,
+      borderRadius: '50%',
+      backgroundColor: theme.palette.secondary.dark,
     },
     userAccountLogin: {
       marginLeft: 'auto',
@@ -134,11 +144,12 @@ const useStyles = makeStyles((theme: Theme) => {
 export const Header: React.FC = (props) => {
   const classes = useStyles();
   const avatarRef = useRef(null);
-  const { isSigningIn, isSignedIn } = useAuth();
+  const { signOut, isSigningIn, isSignedIn } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [isHelpPopupOpen, setIsHelpPopupOpen] = React.useState(false);
   const [stickyPopup, setStickyPopup] = React.useState(true);
   const [selectedTab, setSelectedTab] = React.useState(0);
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   return (
     <header className={classes.header}>
       <div className={classes.container}>
@@ -147,6 +158,7 @@ export const Header: React.FC = (props) => {
             <img src={require('images/ic_logo.png')} />
           </Link>
         </div>
+
         {isSignedIn && !window.location.href.includes('/profile') && <Navigation />}
         <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
           <ProtectedWithLoginPopup>
@@ -166,6 +178,13 @@ export const Header: React.FC = (props) => {
                         }}
                         src={require('images/ic_help.svg')}
                       />
+                      <span>
+                        <img
+                          className={classes.userActiveDark}
+                          onClick={() => setIsDialogOpen(true)}
+                          src={require('images/ic_account.svg')}
+                        />
+                      </span>
                     </div>
                   ) : (
                     <div>
@@ -204,6 +223,13 @@ export const Header: React.FC = (props) => {
                           />
                         </Link>
                       </span>
+                      <span>
+                        <img
+                          className={classes.userActiveDark}
+                          onClick={() => setIsDialogOpen(true)}
+                          src={require('images/ic_account.svg')}
+                        />
+                      </span>
                     </div>
                   )
                 ) : (
@@ -220,6 +246,20 @@ export const Header: React.FC = (props) => {
               </div>
             )}
           </ProtectedWithLoginPopup>
+          <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+            <DialogTitle>{''}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>You are successfully Logged in with Apollo 24x7</DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button color="primary" onClick={() => signOut()}>
+                Sign out
+              </Button>
+              <Button color="primary" onClick={() => setIsDialogOpen(false)} autoFocus>
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
           {isSignedIn ? (
             <Popover
               open={isHelpPopupOpen}
