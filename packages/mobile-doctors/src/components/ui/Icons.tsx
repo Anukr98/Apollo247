@@ -687,3 +687,26 @@ export const Search: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/search.png')}
   />
 );
+
+export const GreenRemove: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 26, width: 26 }}
+    {...props}
+    source={require('../../images/icons/ic_cancel_green.png')}
+  />
+);
+
+export const InpersonIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 26, width: 26 }}
+    {...props}
+    source={require('../../images/icons/round_clinic_consult_24_px.png')}
+  />
+);
+export const PhysicalIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 26, width: 26 }}
+    {...props}
+    source={require('../../images/icons/round_video_consult_24_px.png')}
+  />
+);

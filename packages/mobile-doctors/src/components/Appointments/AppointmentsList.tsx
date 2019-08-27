@@ -170,6 +170,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                       PatientInfoAll: PatientInfo,
                       AppId: appId,
                       Appintmentdatetime: i.appointmentDateTime, //getDateFormat(i.appointmentDateTime),
+                      AppointmentStatus: i.status,
                     });
                   }}
                   doctorname={i.patientInfo!.firstName || ''}

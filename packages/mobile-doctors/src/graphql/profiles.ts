@@ -200,6 +200,13 @@ export const CREATEAPPOINTMENTSESSION = gql`
     }
   }
 `;
+
+export const END_APPOINTMENT_SESSION = gql`
+  mutation EndAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput) {
+    endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput)
+  }
+`;
+
 export const UPDATE_CASESHEET = gql`
   mutation UpdateCaseSheet($UpdateCaseSheetInput: UpdateCaseSheetInput) {
     updateCaseSheet(UpdateCaseSheetInput: $UpdateCaseSheetInput) {
@@ -350,68 +357,6 @@ export const UPDATE_DELEGATE_NUMBER = gql`
         name
         createdDate
         image
-      }
-    }
-  }
-`;
-export const GET_JUNIOR_DOCTOR_CASESHEET = gql`
-  query GetJuniorDoctorCaseSheet($appointmentId: String!) {
-    getJuniorDoctorCaseSheet(appointmentId: $appointmentId) {
-      patientDetails {
-        id
-        allergies
-        lifeStyle {
-          description
-        }
-        familyHistory {
-          description
-          relation
-        }
-        dateOfBirth
-        emailAddress
-        firstName
-        lastName
-        gender
-        mobileNumber
-        uhid
-        photoUrl
-        relation
-        healthVault {
-          imageUrls
-          reportUrls
-        }
-      }
-      caseSheetDetails {
-        id
-        medicinePrescription {
-          id
-          medicineName
-          medicineDosage
-          medicineToBeTaken
-          medicineInstructions
-          medicineTimings
-          medicineConsumptionDurationInDays
-        }
-        otherInstructions {
-          instruction
-        }
-        symptoms {
-          symptom
-          since
-          howOften
-          severity
-        }
-        diagnosis {
-          name
-        }
-        diagnosticPrescription {
-          name
-        }
-        followUp
-        followUpDate
-        followUpAfterInDays
-        consultType
-        notes
       }
     }
   }

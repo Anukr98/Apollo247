@@ -23,6 +23,7 @@ import {
   addMedicineList,
 } from '@aph/mobile-doctors/src/components/ApiCall';
 import { AxiosResponse } from 'axios';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   container: {
@@ -64,16 +65,19 @@ export const AddMedicine: React.FC<ProfileProps> = (props) => {
     Keyboard.dismiss();
     console.log('text', text); //remove this line later
     setDoctorSearchText(text);
-    addMedicineList({
-      medicineName: text,
-      medicineDosage: '3 tablets',
-      medicineToBeTaken: 'AFTER_FOOD',
-      medicineInstructions: 'No instructions',
-      medicineTimings: 'MORNING',
-      medicineConsumptionDurationInDays: '3',
-      id: id,
+    props.navigation.push(AppRoutes.MedicineAddScreen, {
+      Name: text,
     });
-    props.navigation.pop();
+    // addMedicineList({
+    //   medicineName: text,
+    //   medicineDosage: '3 tablets',
+    //   medicineToBeTaken: 'AFTER_FOOD',
+    //   medicineInstructions: 'No instructions',
+    //   medicineTimings: 'MORNING',
+    //   medicineConsumptionDurationInDays: '3',
+    //   id: id,
+    // });
+    // props.navigation.pop();
   };
   const formatSuggestionsText = (text: string, searchKey: string) => {
     return (

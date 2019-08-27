@@ -48,9 +48,9 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
   id: string | null;
   medicineName: string | null;
   medicineDosage: string | null;
-  medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineToBeTaken: MEDICINE_TO_BE_TAKEN | null;
   medicineInstructions: string | null;
-  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineTimings: MEDICINE_TIMINGS | null;
   medicineConsumptionDurationInDays: string | null;
 }
 
@@ -93,7 +93,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_appointment {
-  __typename: "Appointment";
+  __typename: "AppointmentId";
   id: string | null;
 }
 
@@ -118,7 +118,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_symptoms {
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_medicinePrescription {
   __typename: "MedicinePrescription";
   medicineName: string | null;
-  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineTimings: MEDICINE_TIMINGS | null;
   medicineInstructions: string | null;
   medicineConsumptionDurationInDays: string | null;
 }
@@ -144,7 +144,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments {
   __typename: "Appointment";
-  appointmentDateTime: any | null;
+  appointmentDateTime: string | null;
   appointmentState: string | null;
   doctorId: string | null;
   hospitalId: string | null;

@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
   buttonendStyle: {
     width: '45%',
     height: 40,
-    backgroundColor: '#fc9916',
+    backgroundColor: '#fcb716',
     shadowOffset: {
       height: 2,
       width: 0,
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   buttonTextStyle: {
     ...theme.fonts.IBMPlexSansBold(13),
     textAlign: 'center',
-    color: '#890000',
+    color: '#fc9916',
   },
 });
 
@@ -84,7 +84,7 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="ADD SYMPTONS"
+        headerText="Add Symptom"
       ></Header>
     );
   };

@@ -11,7 +11,11 @@ import { string } from '@aph/mobile-doctors/src/strings/string';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 
-import { updateMedicineList, removeMedicineList } from '@aph/mobile-doctors/src/components/ApiCall';
+import {
+  updateMedicineList,
+  removeMedicineList,
+  addMedicineList,
+} from '@aph/mobile-doctors/src/components/ApiCall';
 
 const styles = StyleSheet.create({
   container: {
@@ -130,14 +134,9 @@ type ConsultationType = {
 export interface ProfileProps
   extends NavigationScreenProps<{
     Name: string;
-    Dosage: string;
-    MedicineToBeTaken: string;
-    MedicineInstructions: string;
-    MedicineTimings: string;
-    MedicineConsumptionDurationInDays: string;
   }> {}
 
-export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
+export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
   const [count, setCount] = useState(0);
   const [value, setValue] = useState<string>('');
   const [duration, setDuration] = useState<string>('');
@@ -153,27 +152,27 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
     BEFORE_FOOD: { title: 'Before Food', isSelected: false },
   });
 
-  useEffect(() => {
-    setDuration(props.navigation.getParam('MedicineConsumptionDurationInDays'));
-    setValue(props.navigation.getParam('MedicineInstructions'));
-    setCount(parseInt(props.navigation.getParam('Dosage').substring(0, 1)));
-    const abc = props.navigation.getParam('MedicineToBeTaken');
-    setMedicineUpdate({
-      ...medicneupdate,
-      [abc]: {
-        isSelected: !!abc,
-        title: medicneupdate[abc].title,
-      },
-    });
-    const def = props.navigation.getParam('MedicineTimings');
-    setConsultationType({
-      ...consultationType,
-      [def]: {
-        isSelected: !!def,
-        title: consultationType[def].title,
-      },
-    });
-  }, []);
+  //   useEffect(() => {
+  //     setDuration(props.navigation.getParam('MedicineConsumptionDurationInDays'));
+  //     setValue(props.navigation.getParam('MedicineInstructions'));
+  //     setCount(parseInt(props.navigation.getParam('Dosage').substring(0, 1)));
+  //     const abc = props.navigation.getParam('MedicineToBeTaken');
+  //     setMedicineUpdate({
+  //       ...medicneupdate,
+  //       [abc]: {
+  //         isSelected: !!abc,
+  //         title: medicneupdate[abc].title,
+  //       },
+  //     });
+  //     const def = props.navigation.getParam('MedicineTimings');
+  //     setConsultationType({
+  //       ...consultationType,
+  //       [def]: {
+  //         isSelected: !!def,
+  //         title: consultationType[def].title,
+  //       },
+  //     });
+  //   }, []);
 
   const showHeaderView = () => {
     return (
@@ -193,9 +192,9 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
     );
   };
   const removeData = () => {
-    removeMedicineList(props.navigation.getParam('Name'));
+    //removeMedicineList(props.navigation.getParam('Name'));
 
-    props.navigation.pop();
+    props.navigation.pop(2);
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -333,37 +332,45 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
       </View>
       <View style={styles.footerButtonsContainer}>
         <Button
-          title="DELETE"
+          title="CANCEL"
           titleTextStyle={styles.buttonTextStyle}
           variant="white"
           style={[styles.buttonsaveStyle, { marginRight: 16 }]}
           onPress={() => removeData()}
         />
         <Button
-          title="UPDATE"
+          title="ADD MEDICINE "
           style={styles.buttonendStyle}
           onPress={() => {
             let dosagefianl = '';
             console.log({
               medicineName: props.navigation.getParam('Name'),
               medicineDosage: count,
-              medicineToBeTaken: 'BEFORE_FOOD',
+              medicineToBeTaken: Object.keys(medicneupdate).filter(
+                (time) => medicneupdate[time].isSelected
+              ),
               medicineInstructions: value,
-              medicineTimings: 'MORNING',
+              medicineTimings: Object.keys(consultationType).filter(
+                (time) => consultationType[time].isSelected
+              ),
               medicineConsumptionDurationInDays: duration,
             });
             if (count > 0) {
               dosagefianl = count.toString().concat('tablets');
             }
-            updateMedicineList({
+            addMedicineList({
               medicineName: props.navigation.getParam('Name'),
               medicineDosage: dosagefianl,
-              medicineToBeTaken: 'BEFORE_FOOD',
+              medicineToBeTaken: Object.keys(medicneupdate).filter(
+                (time) => medicneupdate[time].isSelected
+              ),
               medicineInstructions: value,
-              medicineTimings: 'MORNING',
+              medicineTimings: Object.keys(consultationType).filter(
+                (time) => consultationType[time].isSelected
+              ),
               medicineConsumptionDurationInDays: duration,
             });
-            props.navigation.pop();
+            props.navigation.pop(2);
           }}
         />
       </View>

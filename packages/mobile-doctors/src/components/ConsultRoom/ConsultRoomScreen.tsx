@@ -108,6 +108,7 @@ export interface ConsultRoomScreenProps
     PatientInfoAll: PatientInfoData;
     AppId: string;
     Appintmentdatetime: string; //Date;
+    AppointmentStatus: string;
     // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   }> {
   // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
@@ -1911,7 +1912,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f4f5' }}>
       <StatusBar hidden={hideStatusBar} />
       {showHeaderView()}
       {dropdownShow ? renderDropdown() : null}

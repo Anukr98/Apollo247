@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    marginTop: 16,
   },
 
   doctorNameStyles: {

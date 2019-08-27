@@ -13,7 +13,7 @@ import {
 
 const styles = StyleSheet.create({
   headingText: {
-    color: '#02475b',
+    color: '#01475b',
     ...theme.fonts.IBMPlexSansMedium(17),
     margin: 16,
     textAlign: 'left',

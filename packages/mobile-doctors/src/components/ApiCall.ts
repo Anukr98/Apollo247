@@ -48,7 +48,7 @@ export const setSysmptonsList = (lsit: any[]) => {
   sysmptonsList = [...lsit];
 };
 export const removeSysmptonsList = (item: any) => {
-  const lsit = sysmptonsList.filter((symptonItem) => symptonItem.symptom == item);
+  const lsit = sysmptonsList.filter((symptonItem) => symptonItem.symptom != item);
   sysmptonsList = [...lsit];
 };
 
@@ -64,6 +64,11 @@ export const setDiagonsisList = (lsit: any[]) => {
   diagonsisList = [...lsit];
 };
 
+export const removeDiagonsisList = (item: any) => {
+  const lsit = diagonsisList.filter((diagnosis) => diagnosis.name != item);
+  diagonsisList = [...lsit];
+};
+
 let diagnosticPrescriptionDataList: unknown[] = [];
 
 export const getDiagnosticPrescriptionDataList = () => diagnosticPrescriptionDataList;
@@ -73,6 +78,13 @@ export const addDiagnosticPrescriptionDataList = (item: any) => {
 };
 
 export const setDiagnosticPrescriptionDataList = (lsit: any[]) => {
+  diagnosticPrescriptionDataList = [...lsit];
+};
+
+export const removeDiagnosticPrescriptionDataList = (item: any) => {
+  const lsit = diagnosticPrescriptionDataList.filter(
+    (diagnosticPrescriptionData) => diagnosticPrescriptionData.name != item
+  );
   diagnosticPrescriptionDataList = [...lsit];
 };
 
@@ -93,4 +105,9 @@ export const updateMedicineList = (item: any) => {
   );
   console.log({ updated, item });
   medicineList = [...updated];
+};
+
+export const removeMedicineList = (item: any) => {
+  const lsit = medicineList.filter((medicinedata) => medicinedata.medicineName != item);
+  medicineList = [...lsit];
 };

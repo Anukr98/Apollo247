@@ -8,6 +8,8 @@ import {
   getMedicineList,
   setMedicineList,
   removeSysmptonsList,
+  removeDiagnosticPrescriptionDataList,
+  removeDiagonsisList,
 } from '@aph/mobile-doctors/src/components/ApiCall';
 import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
 import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
@@ -30,6 +32,7 @@ import {
   ToogleOn,
   UnSelected,
   Selected,
+  GreenRemove,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
@@ -46,8 +49,10 @@ import {
   TouchableOpacity,
   View,
   Platform,
+  Alert,
+  Image,
 } from 'react-native';
-import { Slider, Overlay } from 'react-native-elements';
+import { Slider } from 'react-native-elements';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import {
   NavigationParams,
@@ -56,17 +61,27 @@ import {
   NavigationScreenProps,
 } from 'react-navigation';
 import { useApolloClient } from 'react-apollo-hooks';
-import { GetJuniorDoctorCaseSheet } from '@aph/mobile-doctors/src/graphql/types/GetJuniorDoctorCaseSheet';
 import {
-  GET_JUNIOR_DOCTOR_CASESHEET,
   CREATEAPPOINTMENTSESSION,
+  GET_CASESHEET,
+  UPDATE_CASESHEET,
+  END_APPOINTMENT_SESSION,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
 } from '@aph/mobile-doctors/src/graphql/types/CreateAppointmentSession';
-import { REQUEST_ROLES } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import console = require('console');
+import { REQUEST_ROLES, STATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { GetCaseSheet } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+
+import {
+  UpdateCaseSheet,
+  UpdateCaseSheetVariables,
+} from '@aph/mobile-doctors/src/graphql/types/UpdateCaseSheet';
+import {
+  EndAppointmentSession,
+  EndAppointmentSessionVariables,
+} from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
 
 const styles = StyleSheet.create({
   casesheetView: {
@@ -274,7 +289,7 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     color: '#02475b',
     opacity: 0.6,
-    ...theme.fonts.IBMPlexSansMedium(16),
+    ...theme.fonts.IBMPlexSansMedium(14),
     letterSpacing: 0.03,
     marginBottom: 12,
   },
@@ -320,7 +335,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     color: '#fc9916',
     marginTop: 2,
-    marginLeft: 5,
+    marginLeft: 7,
   },
   normalSliderText: {
     textAlign: 'center',
@@ -455,9 +470,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const PatientInfoData = props.navigation.getParam('PatientInfoAll');
   const Appintmentdatetimeconsultpage = props.navigation.getParam('Appintmentdatetime');
   const AppId = props.navigation.getParam('AppId');
+  const stastus = props.navigation.getParam('AppointmentStatus');
 
   const [value, setValue] = useState<string>('');
-
+  const [othervalue, setOthervalue] = useState<string>('');
   const [familyValues, setFamilyValues] = useState<any>([]);
 
   const [allergiesData, setAllergiesData] = useState<string>('');
@@ -487,13 +503,16 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [diagnosticPrescriptionData, setDiagnosticPrescription] = useState<any>([]);
   const [otherInstructionsData, setOtherInstructionsData] = useState<any>([]);
   const [medicinePrescriptionData, setMedicinePrescriptionData] = useState<any>([]);
-  const [sessionId, setsessionId] = useState<string>('');
-  const [token, settoken] = useState<string>('');
   const [getcasesheetId, setGetCaseshhetId] = useState<string>('');
 
   const [pickData, setPickData] = useState<{ [id: string]: boolean }>({});
+  const [healthWalletArrayData, setHealthWalletArrayData] = useState<any>([]);
+  const [pastList, setPastList] = useState<any>([]);
 
-  // const [getSysmptonsListData, setGetSysmptonsListData] = useState<any>([]);
+  const [consultationType, setConsultationType] = useState({
+    ONLINE: { title: 'Online', isSelected: false },
+    PHYSICAL: { title: 'Physical', isSelected: false },
+  });
 
   const [showstyles, setShowStyles] = useState<any>([
     {
@@ -522,8 +541,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       })
       .then((_data: any) => {
         console.log('creat', _data);
-        setsessionId(_data.data.createAppointmentSession.sessionId);
-        settoken(_data.data.createAppointmentSession.appointmentToken);
         setGetCaseshhetId(_data.data.createAppointmentSession.caseSheetId);
       })
       .catch((e: any) => {
@@ -534,40 +551,50 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   useEffect(() => {
     setLoading(true);
     client
-      .query<GetJuniorDoctorCaseSheet>({
-        query: GET_JUNIOR_DOCTOR_CASESHEET,
+      .query<GetCaseSheet>({
+        query: GET_CASESHEET,
         fetchPolicy: 'no-cache',
-        variables: { appointmentId: AppId },
+        variables: { appointmentId: '5a4d4359-8f93-49ec-bd4b-45dab149543c' },
       })
       .then((_data) => {
-        const result = _data.data.getJuniorDoctorCaseSheet;
+        const result = _data.data.getCaseSheet;
         console.log('GET_JUNIOR_DOCTOR_CASESHEET', result);
-        setSymptonsData(_data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms);
+        console.log('healthvallet', _data.data.getCaseSheet!.patientDetails!.healthVault!);
+        setSymptonsData(_data.data.getCaseSheet!.caseSheetDetails!.symptoms);
         // setGetSysmptonsListData(_data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms);
-        setFamilyValues(_data.data.getJuniorDoctorCaseSheet!.patientDetails!.familyHistory);
-        setAllergiesData(_data.data.getJuniorDoctorCaseSheet!.patientDetails!.allergies!);
-        setLifeStyleData(_data.data.getJuniorDoctorCaseSheet!.patientDetails!.lifeStyle);
-        setJuniorDoctorNotes(_data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.notes!);
-        setDiagnosisData(_data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis);
+        setFamilyValues(_data.data.getCaseSheet!.patientDetails!.familyHistory);
+        setAllergiesData(_data.data.getCaseSheet!.patientDetails!.allergies!);
+        setLifeStyleData(_data.data.getCaseSheet!.patientDetails!.lifeStyle);
+        setJuniorDoctorNotes(_data.data.getCaseSheet!.caseSheetDetails!.notes!);
+        setDiagnosisData(_data.data.getCaseSheet!.caseSheetDetails!.diagnosis);
         setOtherInstructionsData(
-          _data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
+          _data.data.getCaseSheet!.caseSheetDetails!.otherInstructions || []
         );
         setDiagnosticPrescription(
-          _data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
+          _data.data.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
         );
         setMedicinePrescriptionData(
-          _data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
+          _data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription
         );
+        setSwitchValue(_data.data.getCaseSheet!.caseSheetDetails!.followUp!);
 
+        setHealthWalletArrayData(_data.data.getCaseSheet!.patientDetails!.healthVault);
+        setPastList(_data.data.getCaseSheet!.pastAppointments!);
         setLoading(false);
-        setSysmptonsList(_data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms!);
-        setDiagonsisList(_data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis!);
+        setSysmptonsList(_data.data.getCaseSheet!.caseSheetDetails!.symptoms!);
+        setDiagonsisList(_data.data.getCaseSheet!.caseSheetDetails!.diagnosis!);
         setDiagnosticPrescriptionDataList(
-          _data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription!
+          _data.data.getCaseSheet!.caseSheetDetails!.diagnosticPrescription!
         );
-        setMedicineList(
-          _data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription!
-        );
+        setMedicineList(_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription!);
+        const def = _data.data.getCaseSheet!.caseSheetDetails!.consultType!;
+        setConsultationType({
+          ...consultationType,
+          [def]: {
+            isSelected: !!def,
+            title: consultationType[def].title,
+          },
+        });
       })
       .catch((e) => {
         setLoading(false);
@@ -589,23 +616,74 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const startDate = moment(date).format('YYYY-MM-DD');
 
-  const patientlist = [
-    {
-      id: '1',
-      firstName: 'image001.jpg ',
-      secondName: '5 MB  |  5 Aug 2019, 11.05 AM ',
-    },
-    {
-      id: '2',
-      firstName: 'image003.jpg ',
-      secondName: '5 MB  |  5 Aug 2019, 11.05 AM ',
-    },
-  ];
-
   useEffect(() => {
     setShowButtons(props.startConsult);
   }, []);
 
+  const saveDetails = () => {
+    setShowButtons(true);
+    console.log('symptonsData', getSysmptonsList());
+    console.log('junior notes', juniordoctornotes);
+    console.log('diagonisis', getDiagonsisList());
+    console.log('dia', getDiagnosticPrescriptionDataList());
+    client
+      .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
+        mutation: UPDATE_CASESHEET,
+        variables: {
+          UpdateCaseSheetInput: {
+            symptoms: JSON.stringify(getSysmptonsList()),
+            notes: value,
+            diagnosis: JSON.stringify(getDiagonsisList()),
+            diagnosticPrescription: JSON.stringify(getDiagnosticPrescriptionDataList()),
+            followUp: switchValue,
+            followUpDate: selectDate,
+            followUpAfterInDays: sliderValue,
+            otherInstructions: JSON.stringify(otherInstructionsData),
+            medicinePrescription: JSON.stringify(getMedicineList()),
+            id: getcasesheetId,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        console.log('_data', _data);
+        const result = _data.data!.updateCaseSheet;
+        console.log('UpdateCaseSheetData', result);
+        Alert.alert('UpdateCaseSheet', 'SuccessFully Updated');
+      })
+      .catch((e) => {
+        console.log('Error occured while update casesheet', e);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while adding Doctor', errorMessage, error);
+        Alert.alert('Error', errorMessage);
+      });
+  };
+  const endConsult = () => {
+    client
+      .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
+        mutation: END_APPOINTMENT_SESSION,
+        variables: {
+          endAppointmentSessionInput: {
+            appointmentId: AppId,
+            status: STATUS.COMPLETED,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        console.log('_data', _data);
+        setShowButtons(false);
+        props.onStopConsult();
+      })
+      .catch((e) => {
+        console.log('Error occured while End casesheet', e);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while End casesheet', errorMessage, error);
+        Alert.alert('Error', errorMessage);
+      });
+  };
   const renderButtonsView = () => {
     return (
       <View style={{ backgroundColor: '#f0f4f5' }}>
@@ -625,7 +703,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         ) : (
           <View style={styles.footerButtonsContainer}>
             <Button
-              onPress={() => setShowButtons(false)}
+              onPress={() => saveDetails()}
               title="SAVE"
               titleTextStyle={styles.buttonTextStyle}
               variant="white"
@@ -635,8 +713,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               title="END CONSULT"
               buttonIcon={<End />}
               onPress={() => {
-                setShowButtons(false);
-                props.onStopConsult();
+                endConsult();
               }}
               style={styles.buttonendStyle}
             />
@@ -651,13 +728,25 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       <View>
         <Text style={styles.familyText}>Family History</Text>
         <View style={styles.familyInputView}>
-          <TextInput
+          {/* <TextInput
             style={styles.symptomsText}
             multiline={true}
             onChangeText={(familyValues) => setFamilyValues(familyValues)}
           >
             {familyValues}
-          </TextInput>
+          </TextInput> */}
+          {familyValues.length == 0 ? (
+            <Text style={styles.symptomsText}>No Data</Text>
+          ) : (
+            familyValues.map((showdata: any) => {
+              return (
+                <View style={{ flexDirection: 'row' }}>
+                  <Text style={styles.symptomsText}>{showdata.relation}: </Text>
+                  <Text style={styles.symptomsText}>{showdata.description}</Text>
+                </View>
+              );
+            })
+          )}
         </View>
       </View>
     );
@@ -668,13 +757,19 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       <View>
         <Text style={styles.familyText}>Allergies</Text>
         <View style={styles.AllergiesInputView}>
-          <TextInput
+          {/* <TextInput
             style={styles.symptomsText}
             multiline={true}
+            editable={false}
             onChangeText={(allergiesData) => setAllergiesData(allergiesData)}
           >
             {allergiesData}
-          </TextInput>
+          </TextInput> */}
+          {allergiesData == null ? (
+            <Text style={styles.symptomsText}>No Data</Text>
+          ) : (
+            <Text style={styles.symptomsText}>{allergiesData}</Text>
+          )}
         </View>
       </View>
     );
@@ -684,13 +779,24 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       <View>
         <Text style={styles.familyText}>Lifestyle & Habits</Text>
         <View style={styles.familyInputView}>
-          <TextInput
+          {/* <TextInput
             style={styles.symptomsText}
             multiline={true}
             onChangeText={(lifeStyleData) => setLifeStyleData(lifeStyleData)}
           >
             {lifeStyleData}
-          </TextInput>
+          </TextInput> */}
+          {lifeStyleData.length == 0 ? (
+            <Text style={styles.symptomsText}>No Data</Text>
+          ) : (
+            lifeStyleData.map((showdata: any) => {
+              return (
+                <View>
+                  <Text style={styles.symptomsText}>{showdata.description}</Text>
+                </View>
+              );
+            })
+          )}
         </View>
       </View>
     );
@@ -704,7 +810,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       <View>
         <CollapseCard heading="Symptoms" collapse={show} onPress={() => setShow(!show)}>
           {symptonsData == null ? (
-            <Text>No data</Text>
+            <Text style={styles.symptomsText}>No data</Text>
           ) : (
             symptonsData.map((showdata: any) => {
               return (
@@ -714,7 +820,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       diseaseName={showdata.symptom}
                       icon={
                         <TouchableOpacity onPress={() => removeSymptonData(showdata.symptom)}>
-                          <DiagonisisRemove />
+                          <GreenRemove />
                         </TouchableOpacity>
                       }
                       days={`Since : ${showdata.since}`}
@@ -729,7 +835,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
             <AddPlus />
             <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddSymptons)}>
-              <Text style={styles.addDoctorText}>ADD SYMPTONS</Text>
+              <Text style={styles.addDoctorText}>ADD SYMPTON</Text>
             </TouchableOpacity>
           </View>
         </CollapseCard>
@@ -765,6 +871,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               style={[styles.symptomsText, { marginRight: 12 }]}
               multiline={true}
               onChangeText={(juniordoctornotes) => setJuniorDoctorNotes(juniordoctornotes)}
+              editable={false}
             >
               {juniordoctornotes}
             </TextInput>
@@ -773,7 +880,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-
+  const removeDiagnosticPresecription = (item: any) => {
+    console.log(item, 'item');
+    removeDiagnosticPrescriptionDataList(item);
+    setDiagnosticPrescription(getDiagnosticPrescriptionDataList());
+  };
   const renderDiagonisticPrescription = () => {
     return (
       <CollapseCard
@@ -785,10 +896,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         {diagnosticPrescriptionData == null ? (
           <Text>Nodata</Text>
         ) : (
-          diagnosticPrescriptionData.map((showdata: any, i) => {
+          diagnosticPrescriptionData.map((showdata: any) => {
             return (
               <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
-                <DiagnosicsCard diseaseName={showdata.name} icon={<DiagonisisRemove />} />
+                <DiagnosicsCard
+                  diseaseName={showdata.name}
+                  icon={
+                    <TouchableOpacity onPress={() => removeDiagnosticPresecription(showdata.name)}>
+                      <DiagonisisRemove />
+                    </TouchableOpacity>
+                  }
+                />
               </View>
             );
           })
@@ -831,7 +949,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       >
         <Text style={[styles.familyText, { marginBottom: 12 }]}>Medicines</Text>
         {medicinePrescriptionData == null ? (
-          <Text>No Data</Text>
+          <Text style={styles.symptomsText}>No Data</Text>
         ) : (
           medicinePrescriptionData.map((showdata: any, i) => {
             return (
@@ -970,6 +1088,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     onValueChange={(sliderValue) => setSliderValue(sliderValue)}
                     minimumValue={2}
                     maximumValue={12}
+                    thumbTouchSize={{ width: 20, height: 20 }}
                   />
 
                   <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'space-between' }}>
@@ -1078,7 +1197,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         // }
                       }}
                       title="Online"
-                      isChecked={true}
+                      isChecked={consultationType.online}
                       icon={<DiagonisisRemove />}
                     />
                   </View>
@@ -1105,7 +1224,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-
+  const removeDiagonsisValue = (item) => {
+    console.log(item, 'item');
+    removeDiagonsisList(item);
+    setDiagnosisData(getDiagonsisList());
+  };
   const renderDiagnosisView = () => {
     return (
       <View>
@@ -1122,16 +1245,22 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               marginLeft: 16,
               marginRight: 16,
               marginBottom: 19,
+              flexWrap: 'wrap',
             }}
           >
             {diagnosisData == null ? (
-              <Text>NO Data</Text>
+              <Text style={styles.symptomsText}>NO Data</Text>
             ) : (
               diagnosisData.map((showdata: any, i) => {
                 return (
-                  <View>
-                    <DiagnosisCard diseaseName={showdata.name} icon={<DiagonisisRemove />} />
-                  </View>
+                  <DiagnosisCard
+                    diseaseName={showdata.name}
+                    icon={
+                      <TouchableOpacity onPress={() => removeDiagonsisValue(showdata.name)}>
+                        <DiagonisisRemove />
+                      </TouchableOpacity>
+                    }
+                  />
                 );
               })
             )}
@@ -1146,6 +1275,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
+  const removeInstrution = (item) => {
+    console.log('item', item);
+    const list = otherInstructionsData.filter((other) => other.instruction != item);
+    setOtherInstructionsData(list);
+  };
   const renderOtherInstructionsView = () => {
     return (
       <View style={{ zIndex: -1 }}>
@@ -1156,12 +1290,19 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         >
           <Text style={[styles.familyText, { marginBottom: 12 }]}>Instructions to the patient</Text>
           {otherInstructionsData == null ? (
-            <Text>No Data</Text>
+            <Text style={styles.symptomsText}>No Data</Text>
           ) : (
             otherInstructionsData.map((showdata: any, i) => {
               return (
                 <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
-                  <DiagnosicsCard diseaseName={showdata.instruction} icon={<DiagonisisRemove />} />
+                  <DiagnosicsCard
+                    diseaseName={showdata.instruction}
+                    icon={
+                      <TouchableOpacity onPress={() => removeInstrution(showdata.instruction)}>
+                        <DiagonisisRemove />
+                      </TouchableOpacity>
+                    }
+                  />
                 </View>
               );
             })
@@ -1197,13 +1338,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   underlineColorAndroid="transparent"
                   multiline={true}
                   placeholderTextColor="rgba(2, 71, 91, 0.4)"
+                  value={othervalue}
+                  onChangeText={(othervalue) => setOthervalue(othervalue)}
                 />
                 <TouchableOpacity
                   onPress={() => {
-                    otherInstructionsData.push({
-                      instruction: 'ABCD ',
-                      __typename: 'OtherInstructions',
-                    });
+                    setOtherInstructionsData([
+                      ...otherInstructionsData,
+                      {
+                        instruction: othervalue,
+                      },
+                    ]);
                     setOtherInstructionsAdd(!otherInstructionsadd);
                     renderOtherInstructionsView();
                   }}
@@ -1226,6 +1371,75 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
+  const renderPastAppData = (apmnt: any) => {
+    return (
+      <View>
+        {apmnt == [] ? (
+          <Text style={styles.symptomsText}>No Data</Text>
+        ) : (
+          apmnt.caseSheet.map((_caseSheet: any, i) => {
+            return (
+              <View style={{ marginLeft: 16 }}>
+                {_caseSheet.symptoms == null ? (
+                  <Text style={styles.symptomsText}>No Data</Text>
+                ) : (
+                  _caseSheet.symptoms.map((symptoms: any, i) => {
+                    return (
+                      <View
+                        style={{
+                          backgroundColor: '#ffffff',
+                          borderRadius: 5,
+                          borderStyle: 'solid',
+                          borderWidth: 1,
+                          borderColor: 'rgba(2, 71, 91, 0.15)',
+                          marginBottom: 16,
+                        }}
+                      >
+                        <View style={{ backgroundColor: 'white', flexDirection: 'row' }}>
+                          <Text
+                            style={{
+                              color: '#0087ba',
+                              ...theme.fonts.IBMPlexSansMedium(14),
+                              marginLeft: 14,
+                              marginBottom: 8,
+                              marginTop: 12,
+                              marginRight: 14,
+                            }}
+                          >
+                            {symptoms.symptom}
+                            {symptoms.howOften} {symptoms.since} {symptoms.severity}
+                          </Text>
+                        </View>
+                        <View>
+                          <Text
+                            style={{
+                              fontFamily: 'IBMPlexSans',
+                              fontSize: 10,
+                              fontWeight: '500',
+                              fontStyle: 'normal',
+                              lineHeight: 12,
+                              letterSpacing: 0,
+                              color: 'rgba(2, 71, 91, 0.6)',
+                              marginLeft: 14,
+                              marginBottom: 8,
+                            }}
+                          >
+                            {moment
+                              .unix(apmnt.appointmentDateTime / 1000)
+                              .format('DD MMM  hh:mm a')}
+                          </Text>
+                        </View>
+                      </View>
+                    );
+                  })
+                )}
+              </View>
+            );
+          })
+        )}
+      </View>
+    );
+  };
   const renderPatientHealthWallet = () => {
     return (
       <View>
@@ -1237,38 +1451,28 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <Text style={[styles.familyText, { marginBottom: 12 }]}>
             Photos uploaded by the Patient
           </Text>
-          {patientlist.map((showdata, i) => {
-            return (
-              <View style={{ marginLeft: 16, marginRight: 20, marginBottom: 0 }}>
-                <HealthCard
-                  icon={
-                    <View style={{ height: 90, width: 90 }}>
-                      <SampleImage />
-                    </View>
-                  }
-                  diseaseName={showdata.firstName}
-                  description={showdata.secondName}
-                />
-              </View>
-            );
-          })}
-          <Text style={[styles.familyText, { marginBottom: 12 }]}>Reports</Text>
-          {patientlist.map((showdata, i) => {
-            return (
-              <View style={{ marginLeft: 16, marginRight: 20, marginBottom: 0 }}>
-                <HealthCard
-                  icon={
-                    <View style={{ height: 90, width: 90 }}>
-                      <SampleImage />
-                    </View>
-                  }
-                  diseaseName={showdata.firstName}
-                  description={showdata.secondName}
-                />
-              </View>
-            );
-          })}
+          {healthWalletArrayData.length == 0 ? (
+            <Text style={styles.symptomsText}>No Data</Text>
+          ) : (
+            healthWalletArrayData.map((showdata: any, i) => {
+              return (
+                <View style={{ marginLeft: 16, marginRight: 20, marginBottom: 0 }}>
+                  {/* <HealthCard icon={showdata.imageUrls} /> */}
+                  <Image style={{ width: 90, height: 90 }} source={{ uri: showdata.imageUrls }} />
+                </View>
+              );
+            })
+          )}
+
           <Text style={[styles.familyText, { marginBottom: 12 }]}>Past Consultations</Text>
+
+          {pastList.map((apmnt: any, i) => {
+            return (
+              <View style={{ marginLeft: 16, marginRight: 20, marginBottom: 0 }}>
+                {renderPastAppData(apmnt)}
+              </View>
+            );
+          })}
         </CollapseCard>
       </View>
     );
@@ -1301,9 +1505,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               autoCorrect={true}
             />
           </View>
-          {moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate
+          {renderButtonsView()}
+          {/* {moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
+          stastus == 'IN_PROGRESS'
             ? renderButtonsView()
-            : null}
+            : null} */}
         </View>
       </ScrollView>
     </View>
