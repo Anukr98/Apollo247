@@ -727,6 +727,8 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
     const mobNumber = sessionStorage.getItem('mobileNumberSession');
     if (mobNumber) {
       setMobileNumber(mobNumber);
+    } else if (mobNumber!.length == 0) {
+      setMobileNumber('');
     }
   }, []);
 
@@ -922,6 +924,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                     mutate({});
                     setShowErrorMessage(false);
                     setDelegateNumberStatus('Secretary Number has deleted successfully');
+                    sessionStorage.setItem('mobileNumberSession', mobileNumber);
                   }}
                 >
                   SAVE

@@ -46,10 +46,6 @@ export const caseSheetTypeDefs = gql`
     createdDoctorId: String
   }
 
-  type AppointmentId {
-    id: String
-  }
-
   type Appointment {
     id: String
     appointmentDateTime: DateTime
@@ -71,7 +67,7 @@ export const caseSheetTypeDefs = gql`
   }
 
   type CaseSheet {
-    appointment: AppointmentId
+    appointment: Appointment
     consultType: String
     diagnosis: [Diagnosis]
     diagnosticPrescription: [DiagnosticPrescription]
@@ -123,7 +119,7 @@ export const caseSheetTypeDefs = gql`
   }
 
   type PatientDetails {
-    address: [Address]
+    patientAddress: [Address]
     allergies: String
     dateOfBirth: Date
     emailAddress: String
