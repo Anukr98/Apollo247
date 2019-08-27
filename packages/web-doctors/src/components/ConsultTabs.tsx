@@ -13,8 +13,10 @@ import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
 } from 'graphql/types/createAppointmentSession';
+import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
+
 import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
-import { CREATE_APPOINTMENT_SESSION, GET_CASESHEET } from 'graphql/profiles';
+import { CREATE_APPOINTMENT_SESSION, GET_CASESHEET, UPDATE_CASESHEET } from 'graphql/profiles';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
@@ -160,6 +162,34 @@ export const ConsultTabs: React.FC = (props) => {
     };
   }, [paramId, appointmentId]);
 
+  const saveCasesheetAction = () => {
+    // client
+    //  .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
+    //   mutation:UPDATE_CASESHEET,
+    //     variables: {
+    //       UpdateCaseSheetInput: {
+    //       symptoms:JSON.stringify(getSysmptonsList()),
+    //       notes:value,
+    //       diagnosis:JSON.stringify(getDiagonsisList()),
+    //       diagnosticPrescription:JSON.stringify(getDiagnosticPrescriptionDataList()),
+    //       followUp:switchValue,
+    //       followUpDate:selectDate,
+    //       followUpAfterInDays:sliderValue,
+    //       otherInstructions:JSON.stringify(otherInstructionsData),
+    //       medicinePrescription:JSON.stringify(getMedicineList()),
+    //       id:caseSheetId,
+    //     },
+    //   },
+    //   fetchPolicy:'no-cache',
+    //  })
+    // .then((_data) => {
+    //   console.log('_data', _data);
+    //   const result=_data.data!.updateCaseSheet;
+    //  })
+    // .catch((e) => {
+    //   console.log('Error occured while update casesheet', e);
+    // });
+  };
   const createSessionAction = () => {
     client
       .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
@@ -200,6 +230,7 @@ export const ConsultTabs: React.FC = (props) => {
           <CallPopover
             setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
             createSessionAction={createSessionAction}
+            saveCasesheetAction={saveCasesheetAction}
             appointmentId={appointmentId}
             appointmentDateTime={appointmentDateTime}
             doctorId={doctorId}

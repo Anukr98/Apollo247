@@ -436,3 +436,43 @@ export const GET_CASESHEET = gql`
     }
   }
 `;
+
+export const UPDATE_CASESHEET = gql`
+  mutation UpdateCaseSheet($UpdateCaseSheetInput: UpdateCaseSheetInput) {
+    updateCaseSheet(UpdateCaseSheetInput: $UpdateCaseSheetInput) {
+      consultType
+      appointment {
+        id
+      }
+      diagnosis {
+        name
+      }
+      diagnosticPrescription {
+        name
+      }
+      doctorId
+      followUp
+      followUpAfterInDays
+      followUpDate
+      id
+      medicinePrescription {
+        medicineConsumptionDurationInDays
+        medicineName
+        medicineDosage
+        medicineTimings
+        medicineInstructions
+      }
+      notes
+      patientId
+      symptoms {
+        symptom
+        since
+        howOften
+        severity
+      }
+      otherInstructions {
+        instruction
+      }
+    }
+  }
+`;

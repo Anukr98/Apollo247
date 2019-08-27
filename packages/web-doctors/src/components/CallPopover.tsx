@@ -371,6 +371,7 @@ const useStyles = makeStyles((theme: Theme) => {
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
+  saveCasesheetAction: () => void;
   appointmentId: string;
   appointmentDateTime: string;
   doctorId: string;
@@ -595,7 +596,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         <span>
           {startAppointment ? (
             <span>
-              <Button className={classes.backButton}>Save</Button>
+              <Button
+                className={classes.backButton}
+                onClick={() => {
+                  props.saveCasesheetAction();
+                }}
+              >
+                Save
+              </Button>
               <Button
                 className={classes.endconsultButton}
                 onClick={() => {
