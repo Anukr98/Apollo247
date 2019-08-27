@@ -393,6 +393,7 @@ export const GET_CASESHEET = gql`
         notes
       }
       pastAppointments {
+        id
         appointmentDateTime
         appointmentState
         doctorId
@@ -402,9 +403,6 @@ export const GET_CASESHEET = gql`
         status
         caseSheet {
           consultType
-          appointment {
-            id
-          }
           diagnosis {
             name
           }
@@ -421,7 +419,6 @@ export const GET_CASESHEET = gql`
           followUpAfterInDays
           followUp
           medicinePrescription {
-            medicineName
             medicineName
             medicineTimings
             medicineInstructions
