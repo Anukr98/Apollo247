@@ -117,11 +117,12 @@ export type Resolver<Parent, Args, Context, Result> = (
 
   console.log('------------------------STORAGE TEST----------------------------');
 
-  AphStorageClient.blobService.getServiceProperties((error, result, response) => {
-    if (error) console.log('error', error);
-    if (result) console.log('result', result);
-    if (response) console.log('response', response);
+  const readmeBlob = await AphStorageClient.uploadBlob({
+    name: 'README.md',
+    file: '/apollo-hospitals/README.md',
   });
+  const readmeUrl = AphStorageClient.getBlobUrl(readmeBlob.name);
+  console.log('readme saved!', readmeUrl);
 
   // console.log('------------------------MESSAGE QUEUE TEST----------------------------');
 
