@@ -48,6 +48,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       borderRadius: 10,
       maxWidth: 244,
+      wordBreak: 'break-word',
     },
     boldTxt: {
       fontWeight: 700,
@@ -194,6 +195,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 40,
       marginTop: 7,
     },
+    none: {
+      display: 'none',
+    },
   };
 });
 
@@ -236,6 +240,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
+  const [msg, setMsg] = useState<string>('');
 
   const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
@@ -348,10 +353,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     }, 200);
   };
   const resetMessagesAction = () => {
-    console.log(messageText.length);
     if (messageText === '' || messageText === ' ') {
-      setMessageText(' ');
-      setMessageText('');
+      setMsg('reset');
+      setMsg('');
     }
   };
   useEffect(() => {
@@ -363,11 +367,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
-        console.log(messageText);
         insertText[insertText.length] = message.message;
+        setMessages(() => [...insertText]);
         resetMessagesAction();
         srollToBottomAction();
-        setMessages(insertText);
         if (
           !showVideoChat &&
           message.message.message !== autoMessageStrings.videoCallMsg &&
@@ -497,7 +500,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           <div className={rowData.duration ? classes.callMsg : classes.chatBubble}>
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
             {rowData.duration === '00 : 00' ? (
-              <span className={classes.missCall}>
+              <span className={classes.none}>
                 <img src={require('images/ic_missedcall.svg')} />
                 {rowData.message.toLocaleLowerCase() === 'video call ended'
                   ? 'You missed a video call'
@@ -697,7 +700,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               <AphInput
                 className={classes.searchInput}
                 inputProps={{ type: 'text' }}
-                placeholder="Search doctors or specialities"
+                placeholder="Type here..."
                 value={messageText}
                 onKeyPress={(e) => {
                   if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
