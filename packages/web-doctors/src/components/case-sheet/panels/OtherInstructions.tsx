@@ -16,11 +16,22 @@ import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions,
 } from 'graphql/types/GetCaseSheet';
+// interface OptionType {
+//   instruction: string,
+//   __typename: "OtherInstructions"
+// }
+
 interface OptionType {
   instruction: string;
+  __typename: 'OtherInstructions';
 }
 
-const suggestions: OptionType[] = [];
+const suggestions: OptionType[] = [
+  { instruction: 'Sore Throat', __typename: 'OtherInstructions' },
+  { instruction: 'Sorosis', __typename: 'OtherInstructions' },
+];
+
+// const suggestions: OptionType[] = [];
 
 function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -195,12 +206,13 @@ export const OtherInstructions: React.FC<CasesheetInfoProps> = (props) => {
       props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions.length > 0
     ) {
       setSelectedValues(props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions);
+      console.log(props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions);
     }
   }, []);
   const [favoriteDiagnostics, setFavoriteDiagnostics] = useState<OptionType[]>([
-    { instruction: 'Use sunscreen everyday' },
-    { instruction: 'Avoid outside food for a few days' },
-    { instruction: 'Avoid stepping out with wet hair' },
+    { instruction: 'Use sunscreen everyday', __typename: 'OtherInstructions' },
+    { instruction: 'Avoid outside food for a few days', __typename: 'OtherInstructions' },
+    { instruction: 'Avoid stepping out with wet hair', __typename: 'OtherInstructions' },
   ]);
   const [state, setState] = React.useState({
     single: '',
@@ -236,6 +248,10 @@ export const OtherInstructions: React.FC<CasesheetInfoProps> = (props) => {
     getSuggestionValue,
     renderSuggestion,
   };
+  const handleDelete = (name: any) => {
+    console.log(name);
+    setSelectedValues(selectedValues.filter((item) => item!.instruction !== name));
+  };
 
   return (
     <Typography component="div" className={classes.contentContainer}>
@@ -249,7 +265,7 @@ export const OtherInstructions: React.FC<CasesheetInfoProps> = (props) => {
               className={classes.othersBtn}
               key={idx}
               label={item!.instruction}
-              onDelete={() => {}}
+              onDelete={() => handleDelete(item!.instruction)}
               deleteIcon={<img src={require('images/ic_selected.svg')} alt="" />}
             />
           ))}
@@ -269,7 +285,7 @@ export const OtherInstructions: React.FC<CasesheetInfoProps> = (props) => {
         {showAddCondition && (
           <Autosuggest
             onSuggestionSelected={(e, { suggestion }) => {
-              //setSelectedValues(selectedValues.concat(suggestion));
+              setSelectedValues(selectedValues.concat(suggestion));
               setShowAddCondition(false);
               setState({
                 single: '',
