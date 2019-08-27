@@ -7,9 +7,8 @@ const publicAccessLevel = 'container';
 const blobService = createBlobService(process.env.AZURE_STORAGE_CONNECTION_STRING);
 
 const deleteContainer = () =>
-  process.env.NODE_ENV !== 'local'
-    ? Promise.resolve()
-    : new Promise((resolve, reject) =>
+  process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'development'
+    ? new Promise((resolve, reject) =>
         blobService.deleteContainerIfExists(container, (error, result, response) => {
           console.log('deleting blob container...');
           if (result) console.log(`container "${container}" deleted successfully`);
@@ -17,7 +16,8 @@ const deleteContainer = () =>
           if (response) console.log('response', response);
           resolve();
         })
-      );
+      )
+    : Promise.resolve();
 
 const createContainer = () =>
   new Promise((resolve, reject) =>
