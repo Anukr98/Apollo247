@@ -26,6 +26,7 @@ import { MyAccount } from 'components/MyAccount/MyAccount';
 import { NotificationSettings } from 'components/Notifications/NotificationSettings';
 import { PHRLanding } from 'components/HealthRecords/PHRLanding';
 import { AddRecords } from 'components/HealthRecords/AddRecords';
+import { OrdersLanding } from 'components/Orders/OrdersLanding';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -75,6 +76,7 @@ const App: React.FC = () => {
         />
         <AuthRouted exact path={clientRoutes.healthRecords()} component={PHRLanding} />
         <AuthRouted exact path={clientRoutes.addRecords()} component={AddRecords} />
+        <AuthRouted exact path={clientRoutes.yourOrders()} component={OrdersLanding} />
       </Switch>
     </div>
   );

@@ -19,16 +19,14 @@ const useStyles = makeStyles((theme: Theme) => {
     rail: {
       height: 4,
       opacity: 0.5,
-      borderRadius: 2,
-      backgroundImage: 'linear-gradient(to right, #0087ba, #0087ba)',
+      backgroundColor: 'rgba(0,179,142,0.2)',
     },
     track: {
-      backgroundImage: 'linear-gradient(to right, #0087ba, #0087ba)',
+      backgroundColor: '#0087ba',
       height: 4,
-      borderRadius: 2,
     },
     mark: {
-      backgroundImage: 'linear-gradient(to right, #0087ba, #0087ba)',
+      backgroundColor: '#0087ba',
       display: 'none',
     },
     thumb: {
@@ -70,11 +68,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const AphSlider: React.FC<SliderProps> = (props) => {
+export const AphTrackSlider: React.FC<SliderProps> = (props) => {
   const defaultClasses = useStyles({});
   const classes = props.classes || defaultClasses;
 
   return <Slider classes={classes} {...props} />;
 };
 
-export default AphSlider;
+export default AphTrackSlider;
