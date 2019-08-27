@@ -119,7 +119,7 @@ export const caseSheetTypeDefs = gql`
   }
 
   type PatientDetails {
-    address: [Address]
+    patientAddress: [Address]
     allergies: String
     dateOfBirth: Date
     emailAddress: String
