@@ -11,12 +11,6 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { Patient } from 'profiles-service/entities';
 
 export const caseSheetTypeDefs = gql`
-  enum ConsultMode {
-    ONLINE
-    PHYSICAL
-    BOTH
-  }
-
   enum Gender {
     MALE
     FEMALE
@@ -56,9 +50,23 @@ export const caseSheetTypeDefs = gql`
     id: String
   }
 
+  type Appointment {
+    appointmentDateTime: String
+    appointmentState: String
+    appointmentType: APPOINTMENT_TYPE
+    doctorId: String
+    hospitalId: String
+    patientId: String
+    parentId: String
+    status: STATUS
+    caseSheet: [CaseSheet]
+  }
+
   type CaseSheetFullDetails {
     caseSheetDetails: CaseSheet
     patientDetails: PatientDetails
+    pastAppointments: [Appointment]
+    juniorDoctorNotes: String
   }
 
   type CaseSheet {
@@ -100,7 +108,21 @@ export const caseSheetTypeDefs = gql`
     instruction: String
   }
 
+  type Address {
+    id: ID!
+    addressLine1: String
+    addressLine2: String
+    city: String
+    mobileNumber: String
+    state: String
+    zipcode: String
+    landmark: String
+    createdDate: Date
+    updatedDate: Date
+  }
+
   type PatientDetails {
+    address: [Address]
     allergies: String
     dateOfBirth: Date
     emailAddress: String
@@ -235,6 +257,8 @@ const getCaseSheet: Resolver<
   {
     caseSheetDetails: CaseSheet;
     patientDetails: Patient;
+    pastAppointments: Appointment[];
+    juniorDoctorNotes: string;
   }
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   //check appointmnet id
@@ -244,12 +268,14 @@ const getCaseSheet: Resolver<
 
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   let caseSheetDetails;
+  let juniorDoctorNotes = '';
 
   //check whether there is a senior doctor case-sheet. Else get juniordoctor case-sheet
   caseSheetDetails = await caseSheetRepo.getSeniorDoctorCaseSheet(appointmentData.id);
   if (caseSheetDetails == null) {
     caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
     if (caseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+    juniorDoctorNotes = caseSheetDetails.notes;
   }
 
   //get patient info
@@ -257,7 +283,13 @@ const getCaseSheet: Resolver<
   const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
-  return { caseSheetDetails, patientDetails };
+  //get past appointment details
+  const pastAppointments = await appointmentRepo.getPastAppointments(
+    appointmentData.doctorId,
+    appointmentData.patientId
+  );
+
+  return { caseSheetDetails, patientDetails, pastAppointments, juniorDoctorNotes };
 };
 
 type UpdateCaseSheetInput = {

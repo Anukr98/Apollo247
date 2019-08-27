@@ -5,6 +5,8 @@ import {
   BaseEntity,
   OneToMany,
   ManyToOne,
+  OneToOne,
+  JoinColumn,
   BeforeInsert,
   BeforeUpdate,
 } from 'typeorm';
@@ -250,11 +252,8 @@ export class PatientDeviceTokens extends BaseEntity {
 //patient Starts
 @Entity()
 export class Patient extends BaseEntity {
-  @OneToMany((type) => PatientDeviceTokens, (patientDeviceTokens) => patientDeviceTokens.patient)
-  patientDeviceTokens: PatientDeviceTokens[];
-
-  @OneToMany((type) => MedicineOrders, (medicineOrders) => medicineOrders.patient)
-  medicineOrders: MedicineOrders[];
+  @Column({ nullable: true, type: 'text' })
+  allergies: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
@@ -291,12 +290,24 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => PatientLifeStyle, (lifeStyle) => lifeStyle.patient)
   lifeStyle: PatientLifeStyle[];
 
+  @OneToMany((type) => MedicineOrders, (medicineOrders) => medicineOrders.patient)
+  medicineOrders: MedicineOrders[];
+
   @Column()
   @Validate(MobileNumberValidator)
   mobileNumber: string;
 
-  @Column({ nullable: true, type: 'text' })
-  allergies: string;
+  @OneToMany((type) => PatientAddress, (patientAddress) => patientAddress.patient)
+  patientAddress: PatientAddress[];
+
+  @OneToMany((type) => PatientDeviceTokens, (patientDeviceTokens) => patientDeviceTokens.patient)
+  patientDeviceTokens: PatientDeviceTokens[];
+
+  @OneToOne(
+    (type) => PatientNotificationSettings,
+    (patientNotificationSettings) => patientNotificationSettings.patient
+  )
+  patientNotificationSettings: PatientNotificationSettings;
 
   @Column({ nullable: true, type: 'text' })
   photoUrl: string;
@@ -306,6 +317,9 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true })
   relation: Relation;
+
+  @OneToMany((type) => SearchHistory, (searchHistory) => searchHistory.patient)
+  searchHistory: SearchHistory[];
 
   @Column({ nullable: true })
   updatedDate: Date;
@@ -319,12 +333,6 @@ export class Patient extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
-
-  @OneToMany((type) => SearchHistory, (searchHistory) => searchHistory.patient)
-  searchHistory: SearchHistory[];
-
-  @OneToMany((type) => PatientAddress, (patientAddress) => patientAddress.patient)
-  patientAddress: PatientAddress[];
 }
 //patient Ends
 
@@ -497,3 +505,49 @@ export class PatientHealthVault extends BaseEntity {
   }
 }
 //patientHealthVault ends
+
+//patient notification settings starts
+@Entity()
+export class PatientNotificationSettings extends BaseEntity {
+  @Column({ default: false })
+  commissionNotification: boolean;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ default: false })
+  messageFromDoctorNotification: boolean;
+
+  @OneToOne((type) => Patient, (patient) => patient.patientNotificationSettings)
+  @JoinColumn()
+  patient: Patient;
+
+  @Column({ default: false })
+  playNotificationSound: boolean;
+
+  @Column({ default: false })
+  reScheduleAndCancellationNotification: boolean;
+
+  @Column({ default: false })
+  paymentNotification: boolean;
+
+  @Column({ default: false })
+  upcomingAppointmentReminders: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//patient notification settings ends

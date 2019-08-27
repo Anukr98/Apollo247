@@ -3,7 +3,7 @@ import { Appointment, AppointmentSessions, STATUS } from 'consults-service/entit
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format, addMinutes, differenceInMinutes } from 'date-fns';
+import { format, addMinutes, differenceInMinutes, addDays } from 'date-fns';
 import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 
 @EntityRepository(Appointment)
@@ -24,8 +24,10 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   findByDateDoctorId(doctorId: string, appointmentDate: Date) {
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
-    const startDate = new Date(inputDate + 'T00:00');
-    const endDate = new Date(inputDate + 'T23:59');
+    const endDate = new Date(inputDate + 'T18:29');
+    const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
+    console.log(inputStartDate, 'inputStartDate find by date doctor id');
+    const startDate = new Date(inputStartDate + 'T18:30');
     return this.find({
       where: { doctorId, appointmentDateTime: Between(startDate, endDate) },
     });
@@ -55,6 +57,21 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.find({
       where: { doctorId, appointmentDateTime: Between(startDate, endDate) },
       order: { appointmentDateTime: 'DESC' },
+    });
+  }
+
+  getDoctorAppointmentHistory(doctorId: string) {
+    return this.find({
+      where: { doctorId },
+      relations: ['caseSheet'],
+      order: { appointmentDateTime: 'DESC' },
+    });
+  }
+
+  getPastAppointments(doctorId: string, patientId: string) {
+    return this.find({
+      where: { doctorId, patientId, appointmentDateTime: LessThan(new Date()) },
+      relations: ['caseSheet'],
     });
   }
 
@@ -102,8 +119,10 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getPatientDateAppointments(appointmentDateTime: Date, patientId: string) {
     const inputDate = format(appointmentDateTime, 'yyyy-MM-dd');
-    const startDate = new Date(inputDate + 'T00:00');
-    const endDate = new Date(inputDate + 'T23:59');
+    const endDate = new Date(inputDate + 'T18:29');
+    const inputStartDate = format(addDays(appointmentDateTime, -1), 'yyyy-MM-dd');
+    console.log(inputStartDate, 'inputStartDate get patient date appointments');
+    const startDate = new Date(inputStartDate + 'T18:30');
     return this.find({ where: { patientId, appointmentDateTime: Between(startDate, endDate) } });
   }
 
@@ -130,7 +149,7 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getDoctorNextAvailSlot(doctorId: string) {
     const curDate = new Date();
-    const curEndDate = new Date(format(new Date(), 'yyyy-MM-dd').toString() + 'T23:59');
+    const curEndDate = new Date(format(new Date(), 'yyyy-MM-dd').toString() + 'T18:29');
     return this.find({
       where: { doctorId, appointmentDateTime: Between(curDate, curEndDate) },
       order: { appointmentDateTime: 'ASC' },
@@ -198,17 +217,17 @@ export class AppointmentRepository extends Repository<Appointment> {
   getAddAlignedSlot(apptDate: Date, mins: number) {
     const nextSlot = addMinutes(apptDate, mins);
     return `${nextSlot
-      .getHours()
+      .getUTCHours()
       .toString()
       .padStart(2, '0')}:${nextSlot
-      .getMinutes()
+      .getUTCMinutes()
       .toString()
       .padStart(2, '0')}`;
   }
 
   getAlignedSlot(curDate: Date) {
-    let nextHour = curDate.getHours();
-    const nextMin = this.getNextMins(curDate.getMinutes());
+    let nextHour = curDate.getUTCHours();
+    const nextMin = this.getNextMins(curDate.getUTCMinutes());
     if (nextMin === 0) {
       nextHour++;
     }
