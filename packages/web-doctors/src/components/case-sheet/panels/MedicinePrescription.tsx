@@ -426,7 +426,7 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
   }
   useEffect(() => {
     console.log(props.casesheetInfo.getCaseSheet!.caseSheetDetails);
-    if (props.casesheetInfo &&  props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription !== null && props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription!.length > 0) {
+    if (props.casesheetInfo) {
       props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription!.forEach(
         (res: any) => {
           const inputParams = {

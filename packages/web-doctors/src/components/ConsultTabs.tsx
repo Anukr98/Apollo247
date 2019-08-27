@@ -84,6 +84,9 @@ const useStyles = makeStyles((theme: Theme) => {
     pointerNone: {
       pointerEvents: 'none',
     },
+    none:{
+      display: 'none',
+    }
   };
 });
 // interface UserInfoObject {
@@ -229,24 +232,28 @@ export const ConsultTabs: React.FC = (props) => {
             </div>
             {tabValue === 0 && (
               <TabContainer>
-                {casesheetInfo ? (
-                  <CaseSheet casesheetInfo={casesheetInfo} appointmentId={appointmentId} />
-                ) : (
-                  ''
-                )}
+                <div className={classes.none}>
+                  {casesheetInfo ? (
+                    <CaseSheet casesheetInfo={casesheetInfo} appointmentId={appointmentId} />
+                  ) : (
+                    ''
+                  )}
+                </div>
               </TabContainer>
             )}
             {tabValue === 1 && (
               <TabContainer>
-                <div className={classes.chatContainer}>
-                  <ConsultRoom
-                    startConsult={startConsult}
-                    sessionId={sessionId}
-                    token={token}
-                    appointmentId={appointmentId}
-                    doctorId={doctorId}
-                    patientId={patientId}
-                  />
+                <div className={classes.none}>
+                  <div className={classes.chatContainer}>
+                    <ConsultRoom
+                      startConsult={startConsult}
+                      sessionId={sessionId}
+                      token={token}
+                      appointmentId={appointmentId}
+                      doctorId={doctorId}
+                      patientId={patientId}
+                    />
+                  </div>
                 </div>
               </TabContainer>
             )}

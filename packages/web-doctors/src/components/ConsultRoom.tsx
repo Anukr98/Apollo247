@@ -141,6 +141,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 2,
       display: 'block',
     },
+    none: {
+      display: 'none',
+    }
   };
 });
 interface MessagesObjectProps {
@@ -166,6 +169,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
+  const [msg, setMsg] = useState<string>('');
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
@@ -220,8 +224,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
   const resetMessagesAction = () => {
     if (messageText === '') {
-      setMessageText(' ');
-      setMessageText('');
+      setMsg('reset');
+      setMsg('');
     }
   };
   useEffect(() => {
@@ -240,8 +244,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
-        console.log(message.message);
         insertText[insertText.length] = message.message;
+        console.log(message.message);
         setMessages(() => [...(insertText)]);
         if (
           !showVideoChat &&
@@ -366,7 +370,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <div className={rowData.duration ? classes.callMsg : classes.doctor}>
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
             {rowData.duration === '00 : 00' ? (
-              <span className={classes.missCall}>
+              <span className={classes.none}>
                 <img src={require('images/ic_missedcall.svg')} />
                 {rowData.message.toLocaleLowerCase() === 'video call ended'
                   ? 'You missed a video call'

@@ -422,7 +422,6 @@ export const GET_CASESHEET = gql`
           followUp
           medicinePrescription {
             medicineName
-            medicineName
             medicineTimings
             medicineInstructions
             medicineConsumptionDurationInDays
