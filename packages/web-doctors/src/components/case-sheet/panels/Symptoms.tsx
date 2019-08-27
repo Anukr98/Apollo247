@@ -1,6 +1,9 @@
 import React, { Fragment } from 'react';
 import { Typography, List, ListItem, ListItemText } from '@material-ui/core';
-import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
+//import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
+import {
+  GetCaseSheet,
+} from 'graphql/types/GetCaseSheet';
 import { makeStyles } from '@material-ui/styles';
 const useStyles = makeStyles(() => ({
   container: {
@@ -54,19 +57,19 @@ const useStyles = makeStyles(() => ({
   },
 }));
 interface CasesheetInfoProps {
-  casesheetInfo: GetJuniorDoctorCaseSheet;
+  casesheetInfo: GetCaseSheet;
 }
 export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
   const classes = useStyles();
   return (
     <Typography className={classes.container} component="div">
       {props.casesheetInfo &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails ? (
+      props.casesheetInfo.getCaseSheet &&
+      props.casesheetInfo.getCaseSheet.caseSheetDetails ? (
         <List className={classes.symtomList}>
-          {props.casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.symptoms &&
-            props.casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.symptoms.length > 0 &&
-            props.casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.symptoms.map(
+          {props.casesheetInfo.getCaseSheet.caseSheetDetails.symptoms &&
+            props.casesheetInfo.getCaseSheet.caseSheetDetails.symptoms.length > 0 &&
+            props.casesheetInfo.getCaseSheet.caseSheetDetails.symptoms.map(
               (item, idx) => (
                 <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
                   <ListItemText className={classes.symtomHeading} primary={item!.symptom} />
