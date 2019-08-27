@@ -1,3 +1,5 @@
+# This file is for NODE_ENV 'development'
+
 version: '3.4'
 
 services:
@@ -22,6 +24,23 @@ services:
     ports:
       - 8081:8081
 
+  rabbitmq:
+    image: rabbitmq:3.7.16-management-alpine
+    ports:
+      - 15672:15672
+      - ${RABBITMQ_PORT}:5672
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+      - RABBITMQ_DEFAULT_VHOST=/
+    volumes:
+      - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+
+  storage:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    ports:
+      - 10000:10000
+
   api-gateway:
     image: node:12.6.0
     env_file: .env
@@ -31,16 +50,21 @@ services:
       (! curl -s http://${PROFILES_SERVICE_HOST}:${PROFILES_SERVICE_PORT}) ||
       (! curl -s http://${DOCTORS_SERVICE_HOST}:${DOCTORS_SERVICE_PORT}) ||
       (! curl -s http://${CONSULTS_SERVICE_HOST}:${CONSULTS_SERVICE_PORT})) > /dev/null;
+      # (! curl -s http://${NOTIFICATIONS_SERVICE_HOST}:${NOTIFICATIONS_SERVICE_PORT}/graphql)
+      ) > /dev/null;
       do echo waiting for services to start...; sleep 5;
       done;
       node api-gateway.bundle.js"
     volumes:
       - ./:/apollo-hospitals:cached
     depends_on:
+      - nginx
       - profiles-service
       - doctors-service
       - consults-service
-      - nginx
+      - notifications-service
+      - rabbitmq
+      - storage
 
   profiles-service:
     image: node:12.6.0
