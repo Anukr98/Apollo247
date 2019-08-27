@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Typography, Chip, Theme, MenuItem, Paper, TextField } from '@material-ui/core';
 import DoneIcon from '@material-ui/icons/Done';
 import { makeStyles, createStyles } from '@material-ui/styles';
@@ -16,6 +16,7 @@ import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions,
 } from 'graphql/types/GetCaseSheet';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 // interface OptionType {
 //   instruction: string,
 //   __typename: "OtherInstructions"
@@ -188,27 +189,19 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-interface CasesheetInfoProps {
-  casesheetInfo: GetCaseSheet;
-}
-export const OtherInstructions: React.FC<CasesheetInfoProps> = (props) => {
+export const OtherInstructions: React.FC = () => {
   const classes = useStyles();
-  const [selectedValues, setSelectedValues] = useState<
-    (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions | null)[]
-  >([]);
+  const { otherInstructions: selectedValues, setOtherInstructions: setSelectedValues } = useContext(
+    CaseSheetContext
+  );
+  const [idx, setIdx] = React.useState();
 
   useEffect(() => {
-    if (
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions &&
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions !== null &&
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions.length > 0
-    ) {
-      setSelectedValues(props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions);
-      console.log(props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions);
+    if (idx >= 0) {
+      setSelectedValues(selectedValues);
     }
-  }, []);
+  }, [selectedValues, idx]);
+
   const [favoriteDiagnostics, setFavoriteDiagnostics] = useState<OptionType[]>([
     { instruction: 'Use sunscreen everyday', __typename: 'OtherInstructions' },
     { instruction: 'Avoid outside food for a few days', __typename: 'OtherInstructions' },
@@ -248,9 +241,11 @@ export const OtherInstructions: React.FC<CasesheetInfoProps> = (props) => {
     getSuggestionValue,
     renderSuggestion,
   };
-  const handleDelete = (name: any) => {
-    console.log(name);
-    setSelectedValues(selectedValues.filter((item) => item!.instruction !== name));
+  const handleDelete = (idx: number) => {
+    selectedValues!.splice(idx, 1);
+    setSelectedValues(selectedValues);
+    const sum = idx + Math.random();
+    setIdx(sum);
   };
 
   return (
@@ -260,12 +255,12 @@ export const OtherInstructions: React.FC<CasesheetInfoProps> = (props) => {
           Instructions to the patient
         </Typography>
         <Typography component="div" className={classes.listContainer}>
-          {selectedValues.map((item, idx) => (
+          {selectedValues!.map((item, idx) => (
             <Chip
               className={classes.othersBtn}
               key={idx}
               label={item!.instruction}
-              onDelete={() => handleDelete(item!.instruction)}
+              onDelete={() => handleDelete(idx)}
               deleteIcon={<img src={require('images/ic_selected.svg')} alt="" />}
             />
           ))}
@@ -285,7 +280,8 @@ export const OtherInstructions: React.FC<CasesheetInfoProps> = (props) => {
         {showAddCondition && (
           <Autosuggest
             onSuggestionSelected={(e, { suggestion }) => {
-              setSelectedValues(selectedValues.concat(suggestion));
+              selectedValues!.push(suggestion);
+              setSelectedValues(selectedValues);
               setShowAddCondition(false);
               setState({
                 single: '',
