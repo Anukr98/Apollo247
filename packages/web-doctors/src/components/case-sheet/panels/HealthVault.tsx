@@ -14,10 +14,30 @@ import {
 } from '@material-ui/core';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
+import { relative } from 'path';
 
 const useStyles = makeStyles(() => ({
   vaultContainer: {
     width: '100%',
+    '& h5': {
+      fontSize: 14,
+      fontWeight: 500,
+      color: 'rgba(2,71,91,0.6)',
+      padding: 0,
+      marginTop: 15,
+    },
+    '& h4': {
+      fontSize: 14,
+      fontWeight: 600,
+      color: '#0087ba',
+      padding: 0,
+    },
+    '& h6': {
+      fontSize: 10,
+      fontWeight: 500,
+      color: 'rgba(2,71,91,0.6)',
+      marginTop: 6,
+    },
   },
   bigAvatar: {
     width: '60px',
@@ -34,6 +54,46 @@ const useStyles = makeStyles(() => ({
   listItem: {
     width: '49%',
     marginRight: '1%',
+    padding: 0,
+  },
+  stepperHeading: {
+    fontSize: '14px',
+    fontWeight: 500,
+    lineHeight: 'normal',
+    color: '#0087ba !important',
+    position: 'relative',
+    top: -5,
+  },
+  videoIcon: {
+    position: 'absolute',
+    top: 7,
+    right: 15,
+    '& img': {
+      width: 20,
+    },
+  },
+  circleDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#02475b',
+    position: 'absolute',
+    left: -5,
+  },
+  listStyle: {
+    display: 'flex',
+    flexFlow: 'column',
+    alignItems: 'start',
+    width: '100%',
+    borderLeft: '1px solid #02475b',
+  },
+  childListStyle: {
+    display: 'flex',
+    flexFlow: 'column',
+    alignItems: 'start',
+    width: '100%',
+    borderLeft: 'none',
+    paddingLeft: 15,
   },
 }));
 
@@ -47,7 +107,11 @@ const theme = createMuiTheme({
     fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
     body2: {
       fontSize: '10px',
+      fontWeight: 500,
+      lineHeight: 1.2,
+      color: 'rgba(2, 71, 91, 0.6)',
     },
+
     h5: {
       fontSize: '14px',
     },
@@ -129,15 +193,29 @@ interface PastAppointmentData {
 
 interface PastAppointmentProps {
   data: PastAppointmentData[];
+  isChild: boolean;
 }
 
-const PastAppointment: React.FC<PastAppointmentProps> = ({ data }) => {
+const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
+  const classes = useStyles();
+  const ischild: boolean = true;
   return (
-    <List style={{ display: 'flex', flexFlow: 'column', alignItems: 'start', width: '100%' }}>
+    <List className={isChild ? classes.childListStyle : classes.listStyle}>
       {data.map((item, idx) => (
-        <ListItem key={idx} style={{ display: 'flex', flexFlow: 'column', alignItems: 'start' }}>
+        <ListItem
+          key={idx}
+          style={{
+            display: 'flex',
+            flexFlow: 'column',
+            paddingRight: 0,
+            paddingLeft: 0,
+            alignItems: 'start',
+          }}
+        >
           <AppointmentCard data={item} />
-          {!!item.child && !!item.child.length && <PastAppointment data={item.child} />}
+          {!!item.child && !!item.child.length && (
+            <PastAppointment data={item.child} isChild={ischild} />
+          )}
         </ListItem>
       ))}
     </List>
@@ -149,15 +227,17 @@ interface AppointmentCardProps {
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
+  const classes = useStyles();
   return (
-    <Card style={{ width: '100%' }}>
+    <Card style={{ width: '100%', height: 45 }}>
       <CardContent>
         <Grid item xs={12} style={{ width: '100%' }}>
           <Grid item container spacing={2}>
             <Grid item lg={5} sm={5} xs={4} key={1} container>
-              <Grid sm={9} xs={10} key={6} item>
+              <Grid lg={12} sm={12} xs={12} key={6} item>
                 <div>
-                  <Typography gutterBottom variant="body1">
+                  <Typography gutterBottom variant="body2">
+                    <div className={classes.circleDot}></div>
                     {`${format(new Date(data.timestamp), 'dd  MMMMMMMMMMMM yyyy, h:mm a')} ${
                       data.isFollowup ? `| Follow Up(${data.isFree ? 'Free' : 'Paid'})` : ''
                     }`}
@@ -166,22 +246,22 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
               </Grid>
             </Grid>
             {!!data.symptoms && !!data.symptoms.length && (
-              <Grid lg={5} sm={5} xs={5} key={2} item>
-                <div>
+              <Grid lg={6} sm={6} xs={5} key={2} item>
+                <div className={classes.stepperHeading}>
                   {(data.symptoms.length > 3 ? data.symptoms.slice(0, 2) : data.symptoms).join(
                     ', '
                   )}
                   {data.symptoms.length > 3 && (
-                    <Typography gutterBottom variant="caption">
+                    <Typography gutterBottom variant="body1" component="span">
                       {`, +${data.symptoms.length - 2}`}
                     </Typography>
                   )}
                 </div>
               </Grid>
             )}
-            <Grid lg={2} sm={2} xs={3} key={3} item>
+            <Grid lg={1} sm={1} xs={3} key={3} item>
               <div>
-                <IconButton aria-label="Video call">
+                <IconButton aria-label="Video call" className={classes.videoIcon}>
                   <img src={require('images/ic_video.svg')} alt="" />
                 </IconButton>
               </div>
@@ -195,7 +275,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 
 export const HealthVault: React.FC = () => {
   const classes = useStyles();
-
+  const ischild: boolean = false;
   return (
     <ThemeProvider theme={theme}>
       <Typography component="div" className={classes.vaultContainer}>
@@ -212,14 +292,14 @@ export const HealthVault: React.FC = () => {
                 <ListItemText
                   primary={
                     <Fragment>
-                      <Typography component="h5" variant="h5" color="primary">
+                      <Typography component="h4" variant="h4" color="primary">
                         {item.fileName}
                       </Typography>
                     </Fragment>
                   }
                   secondary={
                     <Fragment>
-                      <Typography component="span" variant="body2">
+                      <Typography component="h6" variant="h6">
                         {item.size} | {format(new Date(item.timestamp), 'd MMM yyyy, h:mm a')}
                       </Typography>
                     </Fragment>
@@ -242,14 +322,14 @@ export const HealthVault: React.FC = () => {
                 <ListItemText
                   primary={
                     <Fragment>
-                      <Typography component="h5" variant="h5" color="primary">
+                      <Typography component="h4" variant="h4" color="primary">
                         {item.fileName}
                       </Typography>
                     </Fragment>
                   }
                   secondary={
                     <Fragment>
-                      <Typography component="span" variant="body2">
+                      <Typography component="h6" variant="h6">
                         {item.size} | {format(new Date(item.timestamp), 'd MMM yyyy, h:mm a')}
                       </Typography>
                     </Fragment>
@@ -263,7 +343,7 @@ export const HealthVault: React.FC = () => {
           <Typography component="h5" variant="h5">
             Past Consultations
           </Typography>
-          <PastAppointment data={pastConsultationData} />
+          <PastAppointment data={pastConsultationData} isChild={ischild} />
         </Typography>
       </Typography>
     </ThemeProvider>

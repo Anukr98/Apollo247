@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Theme,
   makeStyles,
@@ -20,6 +20,7 @@ import axios from 'axios';
 import _debounce from 'lodash/debounce';
 import { CircularProgress } from '@material-ui/core';
 import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const apiDetails = {
   url: 'http://uat.apollopharmacy.in/searchprd_api.php',
@@ -134,8 +135,8 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: 'none',
     },
     activeCard: {
-      border: '1px solid #00b38e',
-      backgroundColor: '#fff',
+      // border: '1px solid #00b38e',
+      // backgroundColor: '#fff',
     },
     checkImg: {
       position: 'absolute',
@@ -274,10 +275,10 @@ const useStyles = makeStyles((theme: Theme) =>
     deleteSymptom: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      position: 'relative',
-      left: '100%',
+      top: 0,
+      right: -18,
       color: '#666666',
-      top: '-60px',
+      position: 'absolute',
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
       paddingLeft: 4,
@@ -307,11 +308,10 @@ interface errorObject {
   tobeTakenErr: boolean;
   durationErr: boolean;
 }
-interface CasesheetInfoProps {
-  casesheetInfo: GetCaseSheet;
-}
-export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
+
+export const MedicinePrescription: React.FC = () => {
   const classes = useStyles();
+  const { medicinePrescription, setMedicinePrescription } = useContext(CaseSheetContext);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
   const [idx, setIdx] = React.useState();
@@ -448,29 +448,23 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
     return suggestion.label;
   }
   useEffect(() => {
-    if (
-      props.casesheetInfo &&
-      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription !== null &&
-      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription!.length > 0
-    ) {
-      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription!.forEach(
-        (res: any) => {
-          const inputParams = {
-            id: res.medicineName.trim(),
-            value: res.medicineName,
-            name: res.medicineName,
-            times: Number(res.medicineConsumptionDurationInDays),
-            daySlots: res.medicineTimings.join(' ').toLowerCase(),
-            duration: `${Number(
-              res.medicineConsumptionDurationInDays
-            )} days ${res.medicineToBeTaken.join(' ').toLowerCase()}`,
-            selected: true,
-          };
-          const x = selectedMedicines;
-          x.push(inputParams);
-          setSelectedMedicines(x);
-        }
-      );
+    if (medicinePrescription && medicinePrescription!.length) {
+      medicinePrescription!.forEach((res: any) => {
+        const inputParams = {
+          id: res.medicineName.trim(),
+          value: res.medicineName,
+          name: res.medicineName,
+          times: Number(res.medicineConsumptionDurationInDays),
+          daySlots: res.medicineTimings.join(' ').toLowerCase(),
+          duration: `${Number(
+            res.medicineConsumptionDurationInDays
+          )} days ${res.medicineToBeTaken.join(' ').toLowerCase()}`,
+          selected: true,
+        };
+        const x = selectedMedicines;
+        x.push(inputParams);
+        setSelectedMedicines(x);
+      });
     }
   }, []);
   useEffect(() => {
@@ -502,7 +496,7 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
     (_medicine: MedicineObject | null, index: number) => {
       const medicine = _medicine!;
       return (
-        <span key={index}>
+        <div key={index} style={{ position: 'relative' }}>
           <Paper key={medicine.id} className={`${classes.paper} ${classes.activeCard}`}>
             <h5>{medicine.name}</h5>
             <h6>
@@ -525,9 +519,9 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
             classes={{ root: classes.deleteSymptom }}
             onClick={() => deletemedicine(index)}
           >
-            <img src={require('images/ic_cross.svg')} alt="" />
+            <img src={require('images/ic_cancel_green.svg')} alt="" />
           </AphButton>
-        </span>
+        </div>
       );
     }
   );

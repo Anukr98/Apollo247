@@ -66,7 +66,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions {
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms {
-  __typename: "SymptomList";
+  __typename?: "SymptomList";
   symptom: string | null;
   since: string | null;
   howOften: string | null;

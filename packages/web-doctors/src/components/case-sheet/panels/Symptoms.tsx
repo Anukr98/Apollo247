@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { Fragment, useEffect, useContext } from 'react';
 import {
   Typography,
   List,
@@ -12,22 +12,27 @@ import {
   Button,
 } from '@material-ui/core';
 //import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
-import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components';
 import _isEmpty from 'lodash/isEmpty';
+import { CaseSheetContext } from 'context/CaseSheetContext';
+
 const useStyles = makeStyles((theme: Theme) => ({
   container: {
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
     display: 'flex',
     flex: 1,
-    border: 'solid 1px rgba(2, 71, 91, 0.15)',
-    borderRadius: '5px',
   },
   listItem: {
     display: 'flex',
     flexFlow: 'column',
-    padding: '4px 0 0 12px',
+    padding: '0px 0 10px 10px',
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+    border: 'solid 1px rgba(2, 71, 91, 0.15)',
+    borderRadius: 5,
+    minWidth: 288,
+    maxWidth: 288,
+    margin: '5px 0',
+
     '& h6': {
       fontSize: 12,
       color: '#01475b',
@@ -83,6 +88,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     position: 'absolute',
     right: 0,
     color: '#666666',
+    top: 7,
+    minWidth: 10,
     fontSize: 14,
     fontWeight: theme.typography.fontWeightBold,
     paddingLeft: 4,
@@ -167,10 +174,30 @@ const useStyles = makeStyles((theme: Theme) => ({
       color: '#fc9916',
     },
   },
+  paper: {
+    textAlign: 'left',
+    color: theme.palette.text.secondary,
+    marginBottom: 12,
+    backgroundColor: '#f7f7f7',
+    border: '1px solid rgba(2,71,91,0.1)',
+    padding: '12px 40px 12px 12px',
+    maxWidth: 288,
+    borderRadius: 5,
+    position: 'relative',
+    '& h5': {
+      fontSize: 14,
+      color: '#02475b',
+      margin: 0,
+      fontWeight: 600,
+    },
+    '& h6': {
+      fontSize: 12,
+      color: '#02475b',
+      margin: 0,
+      fontWeight: 'normal',
+    },
+  },
 }));
-interface CasesheetInfoProps {
-  casesheetInfo: GetCaseSheet;
-}
 interface errorObject {
   symptomError: boolean;
   sinceError: boolean;
@@ -183,15 +210,15 @@ interface symptomObject {
   howOften: string;
   since: string;
 }
-export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
+export const Symptoms: React.FC = (props) => {
   const classes = useStyles();
+  const { symptoms, setSymptoms } = useContext(CaseSheetContext);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [symptom, setSymptom] = React.useState('');
   const [since, setSince] = React.useState('');
   const [howOften, setHowOften] = React.useState('');
   const [idx, setIdx] = React.useState();
   const [severity, setSeverity] = React.useState('');
-  const [symptomData, setSymptomData] = React.useState<symptomObject[]>([]);
   const [errorState, setErrorState] = React.useState<errorObject>({
     symptomError: false,
     sinceError: false,
@@ -200,8 +227,8 @@ export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
   });
 
   const deleteSymptom = (idx: any) => {
-    symptomData.splice(idx, 1);
-    setSymptomData(symptomData);
+    symptoms!.splice(idx, 1);
+    setSymptoms(symptoms);
     const sum = idx + Math.random();
     setIdx(sum);
   };
@@ -253,43 +280,25 @@ export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
         since: since,
         symptom: symptom,
       };
-      const x = symptomData;
+      const x = symptoms;
       x!.push(inputParams);
-      setSymptomData(x);
+      setSymptoms(x);
       setIsDialogOpen(false);
     }
   };
   useEffect(() => {
     if (idx >= 0) {
-      setSymptomData(symptomData);
+      setSymptoms(symptoms);
     }
-  }, [symptomData, idx]);
-  useEffect(() => {
-    if (
-      props.casesheetInfo &&
-      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.symptoms !== null &&
-      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.symptoms!.length > 0
-    ) {
-      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.symptoms!.forEach((res: any) => {
-        const inputParams = {
-          howOften: res.howOften,
-          severity: res.severity,
-          since: res.since,
-          symptom: res.symptom,
-        };
-        const x = symptomData;
-        x.push(inputParams);
-        setSymptomData(x);
-      });
-    }
-  }, []);
+  }, [symptoms, idx]);
+
   return (
     <Typography className={classes.container} component="div">
       <div>
-        {symptomData ? (
+        {symptoms ? (
           <List className={classes.symtomList}>
-            {symptomData &&
-              symptomData.map((item, idx) => (
+            {symptoms &&
+              symptoms!.map((item, idx) => (
                 <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
                   <ListItemText className={classes.symtomHeading} primary={item!.symptom} />
                   <AphButton
@@ -298,7 +307,7 @@ export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
                     classes={{ root: classes.deleteSymptom }}
                     onClick={() => deleteSymptom(idx)}
                   >
-                    <img src={require('images/ic_cross.svg')} alt="" />
+                    <img src={require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
                   <Fragment>
                     <List>
