@@ -548,7 +548,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           <div className={rowData.duration ? classes.callMsg : classes.petient}>
             {rightComponent == 1 && !rowData.duration && (
               <span className={classes.boldTxt}>
-                 <img src={profileImage !== null ? profileImage : 'https://via.placeholder.com/328x138'}  alt='img'/>
+                <img
+                  src={profileImage !== null ? profileImage : 'https://via.placeholder.com/328x138'}
+                  alt="img"
+                />
               </span>
             )}
             {rowData.duration === '00 : 00' ? (

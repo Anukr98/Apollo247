@@ -436,9 +436,9 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
             name: res.medicineName,
             times: Number(res.medicineConsumptionDurationInDays),
             daySlots: res.medicineTimings.join(' ').toLowerCase(),
-            duration: `${Number(res.medicineConsumptionDurationInDays)} days ${res.medicineToBeTaken
-              .join(' ')
-              .toLowerCase()}`,
+            duration: `${Number(
+              res.medicineConsumptionDurationInDays
+            )} days ${res.medicineToBeTaken.join(' ').toLowerCase()}`,
             selected: true,
           };
           const x = selectedMedicines;

@@ -29,12 +29,15 @@ export const UserCard: React.FC<CasesheetInfoProps> = (props) => {
               </Typography>
             )}
           <Typography variant="h5" color="textSecondary" component="h5">
-            {props.casesheetInfo.getCaseSheet.patientDetails.dateOfBirth ? Math.abs(
- new Date(Date.now()).getUTCFullYear() -
- new Date(
- props.casesheetInfo!.getCaseSheet!.patientDetails!.dateOfBirth
- ).getUTCFullYear()
- ) : ''},
+            {props.casesheetInfo.getCaseSheet.patientDetails.dateOfBirth
+              ? Math.abs(
+                  new Date(Date.now()).getUTCFullYear() -
+                    new Date(
+                      props.casesheetInfo!.getCaseSheet!.patientDetails!.dateOfBirth
+                    ).getUTCFullYear()
+                )
+              : ''}
+            ,
             {props.casesheetInfo.getCaseSheet.patientDetails.gender &&
               props.casesheetInfo.getCaseSheet.patientDetails.gender}
             ,
