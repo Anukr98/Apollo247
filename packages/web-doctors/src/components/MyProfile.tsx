@@ -715,7 +715,7 @@ interface DoctorDetailsProps {
 export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
   const { doctor, clinics } = props;
   const [mobileNumber, setMobileNumber] = useState<string>(
-    doctor.delegateNumber ? doctor.delegateNumber : ''
+    doctor.delegateNumber ? doctor.delegateNumber.substring(3) : ''
   );
   const [phoneMessage, setPhoneMessage] = useState<string>('');
   const [delegateNumberStatus, setDelegateNumberStatus] = useState<string>('');
@@ -929,7 +929,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                       if (mobileNumber !== doctorProfile.delegateNumber) {
                         mutate({
                           variables: {
-                            delegateNumber: mobileNumber,
+                            delegateNumber: `+91${mobileNumber}`,
                           },
                         });
                       }
