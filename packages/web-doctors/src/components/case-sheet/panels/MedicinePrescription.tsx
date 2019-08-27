@@ -19,6 +19,7 @@ import _isEmpty from 'lodash/isEmpty';
 import axios from 'axios';
 import _debounce from 'lodash/debounce';
 import { CircularProgress } from '@material-ui/core';
+import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
 
 const apiDetails = {
   url: 'http://uat.apollopharmacy.in/searchprd_api.php',
@@ -292,8 +293,10 @@ interface errorObject {
   tobeTakenErr: boolean;
   durationErr: boolean;
 }
-
-export const MedicinePrescription: React.FC = () => {
+interface CasesheetInfoProps {
+  casesheetInfo: GetCaseSheet;
+}
+export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
   const classes = useStyles();
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
@@ -343,24 +346,24 @@ export const MedicinePrescription: React.FC = () => {
     },
   ]);
   const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([
-    {
-      id: '1',
-      value: 'Acetamenophen 1.5% w/w',
-      name: 'Acetamenophen 1.5% w/w',
-      times: 2,
-      daySlots: 'morning, night',
-      duration: '1 week',
-      selected: false,
-    },
-    {
-      id: '2',
-      value: 'Dextromethorphan (generic)',
-      name: 'Dextromethorphan (generic)',
-      times: 4,
-      daySlots: 'morning, afternoon, evening, night',
-      duration: '5 days after food',
-      selected: true,
-    },
+    // {
+    //   id: '1',
+    //   value: 'Acetamenophen 1.5% w/w',
+    //   name: 'Acetamenophen 1.5% w/w',
+    //   times: 2,
+    //   daySlots: 'morning, night',
+    //   duration: '1 week',
+    //   selected: false,
+    // },
+    // {
+    //   id: '2',
+    //   value: 'Dextromethorphan (generic)',
+    //   name: 'Dextromethorphan (generic)',
+    //   times: 4,
+    //   daySlots: 'morning, afternoon, evening, night',
+    //   duration: '5 days after food',
+    //   selected: true,
+    // },
   ]);
 
   const [searchInput, setSearchInput] = useState('');
@@ -421,6 +424,30 @@ export const MedicinePrescription: React.FC = () => {
   function getSuggestionValue(suggestion: OptionType) {
     return suggestion.label;
   }
+  useEffect(() => {
+    console.log(props.casesheetInfo.getCaseSheet!.caseSheetDetails);
+    if (props.casesheetInfo) {
+      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription!.forEach(
+        (res: any) => {
+          const inputParams = {
+            id: res.medicineName.trim(),
+            value: res.medicineName,
+            name: res.medicineName,
+            times: Number(res.medicineConsumptionDurationInDays),
+            daySlots: res.medicineTimings.toLowerCase(),
+            duration: `${Number(res.medicineConsumptionDurationInDays)} days ${res.medicineToBeTaken
+              .split('_')
+              .join('')
+              .toLowerCase()}`,
+            selected: true,
+          };
+          const x = selectedMedicines;
+          x.push(inputParams);
+          setSelectedMedicines(x);
+        }
+      );
+    }
+  }, []);
   useEffect(() => {
     if (searchInput.length > 2) {
       setSuggestions(getSuggestions(searchInput));
