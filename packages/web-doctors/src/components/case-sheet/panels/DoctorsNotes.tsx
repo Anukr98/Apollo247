@@ -12,6 +12,7 @@ const useStyles = makeStyles(() => ({
     fontSize: 14,
     lineHeight: 1.43,
     fontWeight: 'normal',
+    width: '100%',
   },
 }));
 

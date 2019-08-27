@@ -18,16 +18,20 @@ import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components'
 import _isEmpty from 'lodash/isEmpty';
 const useStyles = makeStyles((theme: Theme) => ({
   container: {
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
     display: 'flex',
     flex: 1,
-    border: 'solid 1px rgba(2, 71, 91, 0.15)',
-    borderRadius: '5px',
   },
   listItem: {
     display: 'flex',
     flexFlow: 'column',
-    padding: '4px 0 0 12px',
+    padding: '0px 0 10px 10px',
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+    border: 'solid 1px rgba(2, 71, 91, 0.15)',
+    borderRadius: 5,
+    minWidth: 288,
+    maxWidth: 288,
+    margin: '5px 0',
+
     '& h6': {
       fontSize: 12,
       color: '#01475b',
@@ -83,6 +87,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     position: 'absolute',
     right: 0,
     color: '#666666',
+    top: 7,
+    minWidth: 10,
     fontSize: 14,
     fontWeight: theme.typography.fontWeightBold,
     paddingLeft: 4,
@@ -165,6 +171,29 @@ const useStyles = makeStyles((theme: Theme) => ({
     '&:hover': {
       backgroundColor: 'transparent',
       color: '#fc9916',
+    },
+  },
+  paper: {
+    textAlign: 'left',
+    color: theme.palette.text.secondary,
+    marginBottom: 12,
+    backgroundColor: '#f7f7f7',
+    border: '1px solid rgba(2,71,91,0.1)',
+    padding: '12px 40px 12px 12px',
+    maxWidth: 288,
+    borderRadius: 5,
+    position: 'relative',
+    '& h5': {
+      fontSize: 14,
+      color: '#02475b',
+      margin: 0,
+      fontWeight: 600,
+    },
+    '& h6': {
+      fontSize: 12,
+      color: '#02475b',
+      margin: 0,
+      fontWeight: 'normal',
     },
   },
 }));
@@ -298,7 +327,7 @@ export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
                     classes={{ root: classes.deleteSymptom }}
                     onClick={() => deleteSymptom(idx)}
                   >
-                    <img src={require('images/ic_cross.svg')} alt="" />
+                    <img src={require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
                   <Fragment>
                     <List>
