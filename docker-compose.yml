@@ -36,8 +36,10 @@ services:
     volumes:
       - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
 
-  storage:
-    image: mcr.microsoft.com/azure-storage/azurite:latest
+  # storage:
+  #   image: mcr.microsoft.com/azure-storage/azurite:latest
+  #   ports:
+  #     - 10000:10000
 
   api-gateway:
     image: node:12.6.0
@@ -66,7 +68,7 @@ services:
       - consults-service
       - notifications-service
       - rabbitmq
-      - storage
+      # - storage
 
   profiles-service:
     image: node:12.6.0
