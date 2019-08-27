@@ -174,6 +174,7 @@ export const ChatRoom: React.FC = (props) => {
             </div>
             <div className={classes.rightSection}>
               <ChatWindow
+                doctorDetails={data}
                 appointmentId={appointmentId}
                 doctorId={doctorId}
                 hasDoctorJoined={(hasDoctorJoined: boolean) => setHasDoctorJoined(hasDoctorJoined)}

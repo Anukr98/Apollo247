@@ -48,9 +48,9 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
   id: string | null;
   medicineName: string | null;
   medicineDosage: string | null;
-  medicineToBeTaken: MEDICINE_TO_BE_TAKEN | null;
+  medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
   medicineInstructions: string | null;
-  medicineTimings: MEDICINE_TIMINGS | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
   medicineConsumptionDurationInDays: string | null;
 }
 
@@ -92,11 +92,6 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   notes: string | null;
 }
 
-export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_appointment {
-  __typename: "AppointmentId";
-  id: string | null;
-}
-
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis {
   __typename: "Diagnosis";
   name: string | null;
@@ -118,7 +113,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_symptoms {
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_medicinePrescription {
   __typename: "MedicinePrescription";
   medicineName: string | null;
-  medicineTimings: MEDICINE_TIMINGS | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
   medicineInstructions: string | null;
   medicineConsumptionDurationInDays: string | null;
 }
@@ -131,7 +126,6 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstr
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
   __typename: "CaseSheet";
   consultType: string | null;
-  appointment: GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_appointment | null;
   diagnosis: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis | null)[] | null;
   diagnosticPrescription: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] | null;
   symptoms: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_symptoms | null)[] | null;
@@ -144,7 +138,8 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments {
   __typename: "Appointment";
-  appointmentDateTime: string | null;
+  id: string | null;
+  appointmentDateTime: any | null;
   appointmentState: string | null;
   doctorId: string | null;
   hospitalId: string | null;
