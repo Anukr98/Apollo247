@@ -400,14 +400,12 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
       )
       .then((result) => {
         const medicines = result.data.products ? result.data.products : [];
-        console.log(medicines);
         medicines.slice(0, 10).forEach((res: any) => {
           const data = { label: '' };
           data.label = res.name;
           FinalSearchdata.push(data);
         });
         // FinalSearchdata.push(searchdata);
-        console.log(FinalSearchdata);
         suggestions = FinalSearchdata;
         setSearchInput(value);
         setLoading(false);
@@ -425,7 +423,6 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
     return suggestion.label;
   }
   useEffect(() => {
-    console.log(props.casesheetInfo.getCaseSheet!.caseSheetDetails);
     if (props.casesheetInfo) {
       props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription!.forEach(
         (res: any) => {
