@@ -232,18 +232,18 @@ export const ConsultTabs: React.FC = (props) => {
             </div>
             {tabValue === 0 && (
               <TabContainer>
-                <div className={classes.none}>
+                {/* <div className={classes.none}> */}
                   {casesheetInfo ? (
                     <CaseSheet casesheetInfo={casesheetInfo} appointmentId={appointmentId} />
                   ) : (
                     ''
                   )}
-                </div>
+                {/* </div> */}
               </TabContainer>
             )}
             {tabValue === 1 && (
               <TabContainer>
-                <div className={classes.none}>
+                {/* <div className={classes.none}> */}
                   <div className={classes.chatContainer}>
                     <ConsultRoom
                       startConsult={startConsult}
@@ -254,7 +254,7 @@ export const ConsultTabs: React.FC = (props) => {
                       patientId={patientId}
                     />
                   </div>
-                </div>
+                {/* </div> */}
               </TabContainer>
             )}
           </div>

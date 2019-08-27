@@ -197,7 +197,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     none: {
       display: 'none',
-    }
+    },
   };
 });
 
@@ -368,7 +368,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       status: (statusEvent) => {},
       message: (message) => {
         insertText[insertText.length] = message.message;
-        setMessages(() => [...(insertText)]);
+        setMessages(() => [...insertText]);
         resetMessagesAction();
         srollToBottomAction();
         if (
