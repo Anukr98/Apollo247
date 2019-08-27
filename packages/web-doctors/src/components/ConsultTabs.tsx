@@ -14,12 +14,7 @@ import {
   CreateAppointmentSessionVariables,
 } from 'graphql/types/createAppointmentSession';
 import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
-import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
-import {
-  CREATE_APPOINTMENT_SESSION,
-  GET_JUNIOR_DOCTOR_CASESHEET,
-  GET_CASESHEET,
-} from 'graphql/profiles';
+import { CREATE_APPOINTMENT_SESSION, GET_CASESHEET } from 'graphql/profiles';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
@@ -85,6 +80,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     pointerNone: {
       pointerEvents: 'none',
+    },
+    none: {
+      display: 'none',
     },
   };
 });
@@ -231,15 +229,18 @@ export const ConsultTabs: React.FC = (props) => {
             </div>
             {tabValue === 0 && (
               <TabContainer>
+                {/* <div className={classes.none}> */}
                 {casesheetInfo ? (
                   <CaseSheet casesheetInfo={casesheetInfo} appointmentId={appointmentId} />
                 ) : (
                   ''
                 )}
+                {/* </div> */}
               </TabContainer>
             )}
             {tabValue === 1 && (
               <TabContainer>
+                {/* <div className={classes.none}> */}
                 <div className={classes.chatContainer}>
                   <ConsultRoom
                     startConsult={startConsult}
@@ -250,6 +251,7 @@ export const ConsultTabs: React.FC = (props) => {
                     patientId={patientId}
                   />
                 </div>
+                {/* </div> */}
               </TabContainer>
             )}
           </div>

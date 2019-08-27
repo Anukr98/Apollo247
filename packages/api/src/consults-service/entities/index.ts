@@ -162,7 +162,7 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   doctorId: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: false })
   followUp: Boolean;
 
   @Column({ nullable: true })
