@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import {
   Theme,
@@ -142,11 +142,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface CasesheetInfoProps {
-  casesheetInfo: GetCaseSheet;
-  appointmentId: string;
-}
-export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
+export const CaseSheet: React.FC = () => {
   const classes = useStyles();
   const [expanded, setExpanded] = useState<string | boolean>(false);
   const handlePanelExpansion = (panelName: string) => (
@@ -158,7 +154,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
     <div className={classes.container}>
       <div className={classes.caseSheet}>
         <section className={`${classes.column} ${classes.right}`}>
-          <UserCard casesheetInfo={props.casesheetInfo} appointmentId={props.appointmentId} />
+          <UserCard />
         </section>
         <section className={classes.column}>
           {/* Symptoms Panel */}
@@ -171,7 +167,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
               <Typography variant="h3">Symptoms</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <Symptoms casesheetInfo={props.casesheetInfo} />
+              <Symptoms />
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
@@ -213,7 +209,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
               <Typography variant="h3">Juniour Doctor's Notes</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <DoctorsNotes casesheetInfo={props.casesheetInfo} />
+              <DoctorsNotes />
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
@@ -227,12 +223,12 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
               <Typography variant="h3">Diagnosis</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <Diagnosis casesheetInfo={props.casesheetInfo} />
+              <Diagnosis />
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
           {/* Medicine Prescription Panel */}
-          <ExpansionPanel
+          {/* <ExpansionPanel
             expanded={expanded === 'medicinePrescription'}
             onChange={handlePanelExpansion('medicinePrescription')}
             className={classes.expandIcon}
@@ -243,10 +239,10 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
             <ExpansionPanelDetails>
               <MedicinePrescription casesheetInfo={props.casesheetInfo} />
             </ExpansionPanelDetails>
-          </ExpansionPanel>
+          </ExpansionPanel> */}
 
           {/* Diagnostic Prescription Panel */}
-          <ExpansionPanel
+          {/* <ExpansionPanel
             expanded={expanded === 'diagnosticPrescription'}
             onChange={handlePanelExpansion('diagnosticPrescription')}
             className={classes.expandIcon}
@@ -257,10 +253,10 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
             <ExpansionPanelDetails>
               <DiagnosticPrescription casesheetInfo={props.casesheetInfo} />
             </ExpansionPanelDetails>
-          </ExpansionPanel>
+          </ExpansionPanel> */}
 
           {/* Follow Up Panel */}
-          <ExpansionPanel
+          {/* <ExpansionPanel
             expanded={expanded === 'followup'}
             onChange={handlePanelExpansion('followup')}
             className={classes.expandIcon}
@@ -271,10 +267,10 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
             <ExpansionPanelDetails>
               <FollowUp />
             </ExpansionPanelDetails>
-          </ExpansionPanel>
+          </ExpansionPanel> */}
 
           {/* Other Instructions Panel */}
-          <ExpansionPanel
+          {/* <ExpansionPanel
             expanded={expanded === 'otherInstructions'}
             onChange={handlePanelExpansion('otherInstructions')}
             className={classes.expandIcon}
@@ -285,7 +281,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
             <ExpansionPanelDetails>
               <OtherInstructions casesheetInfo={props.casesheetInfo} />
             </ExpansionPanelDetails>
-          </ExpansionPanel>
+          </ExpansionPanel> */}
         </section>
       </div>
       <Divider className={classes.divider} />
