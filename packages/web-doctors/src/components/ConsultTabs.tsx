@@ -13,11 +13,20 @@ import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
 } from 'graphql/types/createAppointmentSession';
+import {
+  EndAppointmentSession,
+  EndAppointmentSessionVariables,
+} from 'graphql/types/EndAppointmentSession';
 import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
 
 import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
-import { CREATE_APPOINTMENT_SESSION, GET_CASESHEET, UPDATE_CASESHEET } from 'graphql/profiles';
-import { REQUEST_ROLES } from 'graphql/types/globalTypes';
+import {
+  CREATE_APPOINTMENT_SESSION,
+  GET_CASESHEET,
+  UPDATE_CASESHEET,
+  END_APPOINTMENT_SESSION,
+} from 'graphql/profiles';
+import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { useAuth } from 'hooks/authHooks';
@@ -138,6 +147,7 @@ export const ConsultTabs: React.FC = (props) => {
         })
         .then((_data) => {
           setCasesheetInfo(_data.data);
+          console.log(_data.data);
           // if (
           //   _data.data &&
           //   _data.data.getCaseSheet &&
@@ -190,6 +200,32 @@ export const ConsultTabs: React.FC = (props) => {
     //   console.log('Error occured while update casesheet', e);
     // });
   };
+
+  const endConsultAction = () => {
+    //     client
+    // .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
+    // mutation: END_APPOINTMENT_SESSION,
+    // variables: {
+    // endAppointmentSessionInput: {
+    // appointmentId: appointmentId,
+    // status: STATUS.COMPLETED,
+    // },
+    // },
+    // fetchPolicy: 'no-cache',
+    // })
+    // .then((_data) => {
+    // console.log('_data', _data);
+    // setShowButtons(false);
+    // props.onStopConsult();
+    // })
+    // .catch((e) => {
+    // console.log('Error occured while End casesheet', e);
+    // const error = JSON.parse(JSON.stringify(e));
+    // const errorMessage = error && error.message;
+    // console.log('Error occured while End casesheet', errorMessage, error);
+    // Alert.alert('Error', errorMessage);
+    // });
+  };
   const createSessionAction = () => {
     client
       .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
@@ -219,7 +255,6 @@ export const ConsultTabs: React.FC = (props) => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
     }, 10);
   };
-  // console.log(casesheetInfo);
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
@@ -231,6 +266,7 @@ export const ConsultTabs: React.FC = (props) => {
             setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
             createSessionAction={createSessionAction}
             saveCasesheetAction={saveCasesheetAction}
+            endConsultAction={endConsultAction}
             appointmentId={appointmentId}
             appointmentDateTime={appointmentDateTime}
             doctorId={doctorId}

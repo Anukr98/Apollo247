@@ -476,3 +476,8 @@ export const UPDATE_CASESHEET = gql`
     }
   }
 `;
+export const END_APPOINTMENT_SESSION = gql`
+  mutation EndAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput) {
+    endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput)
+  }
+`;
