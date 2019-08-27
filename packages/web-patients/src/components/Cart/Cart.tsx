@@ -5,16 +5,17 @@ import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
-import { MedicineCard } from 'components/Medicine/MedicineCard';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
 import { Checkout } from 'components/Cart/Checkout';
 import { OrderSuccess } from 'components/Cart/OrderSuccess';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
-import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
+
+// import { MedicineCard } from 'components/Medicine/MedicineCard';
+// import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -289,20 +290,24 @@ const TabContainer: React.FC = (props) => {
 
 export const Cart: React.FC = (props) => {
   const classes = useStyles();
+  const mascotRef = useRef(null);
+
   const [tabValue, setTabValue] = useState<number>(0);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
-  const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
-
+  const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
   const { cartTotal } = useShoppingCart();
   const deliveryCharges = 30; // this must be retrieved from api later.
 
-  const totalAmount = (cartTotal + deliveryCharges).toFixed(2);
+  const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
 
+  const totalAmount = (cartTotal + deliveryCharges).toFixed(2);
   const cartItems = localStorage.getItem('cartItems')
     ? JSON.parse(localStorage.getItem('cartItems') || '')
     : [];
+
+  const disableSubmit = deliveryAddressId === '';
 
   // console.log('cart items......', cartItems, cartTotal);
 
@@ -453,8 +458,13 @@ export const Cart: React.FC = (props) => {
             </Scrollbars>
           </div>
           <div className={classes.dialogActions}>
-            <AphButton onClick={() => setIsPopoverOpen(true)} color="primary" fullWidth>
-              Pay - RS. 360
+            <AphButton
+              onClick={() => setIsPopoverOpen(true)}
+              color="primary"
+              fullWidth
+              disabled={disableSubmit}
+            >
+              Pay - RS. {totalAmount}
             </AphButton>
           </div>
         </div>

@@ -292,13 +292,16 @@ export const SearchMedicines: React.FC = (props) => {
                   const source: CancelTokenSource = axios.CancelToken.source();
                   // source && source.cancel('Operation has been canceled.');
                   axios
-                    .get(`${apiDetails.url}?params=${medicineName}`, {
-                      // .get(`https://www.google.com`, {
-                      cancelToken: source.token,
-                      headers: {
-                        Authorization: apiDetails.authToken,
-                      },
-                    })
+                    .post(
+                      apiDetails.url,
+                      { params: medicineName },
+                      {
+                        cancelToken: source.token,
+                        headers: {
+                          Authorization: apiDetails.authToken,
+                        },
+                      }
+                    )
                     .then((result) => {
                       const medicines = result.data.products ? result.data.products : [];
                       const medicineCount = result.data.product_count
@@ -320,6 +323,8 @@ export const SearchMedicines: React.FC = (props) => {
                       }
                     });
                   // source && source.cancel('Operation has been canceled.');
+                } else {
+                  setLoading(false);
                 }
                 // debouncedFunction(medicineName)();
               }}

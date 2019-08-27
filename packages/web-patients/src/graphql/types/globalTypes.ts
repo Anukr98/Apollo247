@@ -119,6 +119,17 @@ export interface FilterDoctorInput {
   location?: string | null;
 }
 
+export interface PatientAddressInput {
+  patientId: string;
+  addressLine1: string;
+  addressLine2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipcode: string;
+  mobileNumber?: string | null;
+  landmark?: string | null;
+}
+
 export interface PatientAppointmentsInput {
   patientId: string;
   appointmentDate: any;
