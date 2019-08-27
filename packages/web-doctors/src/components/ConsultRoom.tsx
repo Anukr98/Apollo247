@@ -143,7 +143,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     none: {
       display: 'none',
-    }
+    },
   };
 });
 interface MessagesObjectProps {
@@ -240,13 +240,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     });
 
     getHistory();
-    
+
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
         insertText[insertText.length] = message.message;
         console.log(message.message);
-        setMessages(() => [...(insertText)]);
+        setMessages(() => [...insertText]);
         if (
           !showVideoChat &&
           message.message.message !== videoCallMsg &&

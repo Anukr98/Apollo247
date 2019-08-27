@@ -14,10 +14,7 @@ import {
   CreateAppointmentSessionVariables,
 } from 'graphql/types/createAppointmentSession';
 import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
-import {
-  CREATE_APPOINTMENT_SESSION,
-  GET_CASESHEET,
-} from 'graphql/profiles';
+import { CREATE_APPOINTMENT_SESSION, GET_CASESHEET } from 'graphql/profiles';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
@@ -84,9 +81,9 @@ const useStyles = makeStyles((theme: Theme) => {
     pointerNone: {
       pointerEvents: 'none',
     },
-    none:{
+    none: {
       display: 'none',
-    }
+    },
   };
 });
 // interface UserInfoObject {
@@ -233,27 +230,27 @@ export const ConsultTabs: React.FC = (props) => {
             {tabValue === 0 && (
               <TabContainer>
                 {/* <div className={classes.none}> */}
-                  {casesheetInfo ? (
-                    <CaseSheet casesheetInfo={casesheetInfo} appointmentId={appointmentId} />
-                  ) : (
-                    ''
-                  )}
+                {casesheetInfo ? (
+                  <CaseSheet casesheetInfo={casesheetInfo} appointmentId={appointmentId} />
+                ) : (
+                  ''
+                )}
                 {/* </div> */}
               </TabContainer>
             )}
             {tabValue === 1 && (
               <TabContainer>
                 {/* <div className={classes.none}> */}
-                  <div className={classes.chatContainer}>
-                    <ConsultRoom
-                      startConsult={startConsult}
-                      sessionId={sessionId}
-                      token={token}
-                      appointmentId={appointmentId}
-                      doctorId={doctorId}
-                      patientId={patientId}
-                    />
-                  </div>
+                <div className={classes.chatContainer}>
+                  <ConsultRoom
+                    startConsult={startConsult}
+                    sessionId={sessionId}
+                    token={token}
+                    appointmentId={appointmentId}
+                    doctorId={doctorId}
+                    patientId={patientId}
+                  />
+                </div>
                 {/* </div> */}
               </TabContainer>
             )}

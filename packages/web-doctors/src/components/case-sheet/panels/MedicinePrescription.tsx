@@ -423,7 +423,11 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
     return suggestion.label;
   }
   useEffect(() => {
-    if (props.casesheetInfo &&  props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription !== null && props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription!.length > 0) {
+    if (
+      props.casesheetInfo &&
+      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription !== null &&
+      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription!.length > 0
+    ) {
       props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription!.forEach(
         (res: any) => {
           const inputParams = {

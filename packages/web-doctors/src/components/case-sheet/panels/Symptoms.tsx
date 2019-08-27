@@ -265,7 +265,11 @@ export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
     }
   }, [symptomData, idx]);
   useEffect(() => {
-    if (props.casesheetInfo &&  props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.symptoms !== null && props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.symptoms!.length > 0) {
+    if (
+      props.casesheetInfo &&
+      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.symptoms !== null &&
+      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.symptoms!.length > 0
+    ) {
       props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.symptoms!.forEach((res: any) => {
         const inputParams = {
           howOften: res.howOften,
