@@ -22,6 +22,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
   GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetCaseSheet';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
@@ -134,6 +135,9 @@ export const ConsultTabs: React.FC = () => {
   const [diagnosticPrescription, setDiagnosticPrescription] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[] | null
   >(null);
+  const [medicinePrescription, setMedicinePrescription] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
+  >(null);
   /* case sheet data*/
 
   useEffect(() => {
@@ -158,6 +162,8 @@ export const ConsultTabs: React.FC = () => {
             .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[]);
           setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
             .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
+          setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+            .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
         })
         .catch((e: any) => {
           console.log('Error occured creating session', e);
@@ -173,7 +179,13 @@ export const ConsultTabs: React.FC = () => {
   }, [paramId, appointmentId]);
 
   const saveCasesheetAction = () => {
-    console.log(symptoms, diagnosis);
+    console.log(
+      JSON.stringify(symptoms),
+      JSON.stringify(diagnosis),
+      JSON.stringify(otherInstructions),
+      JSON.stringify(diagnosticPrescription),
+      JSON.stringify(medicinePrescription)
+    );
     // client
     //  .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
     //   mutation:UPDATE_CASESHEET,
@@ -230,7 +242,7 @@ export const ConsultTabs: React.FC = () => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
     }, 10);
   };
-  // console.log(casesheetInfo);
+
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
@@ -251,6 +263,8 @@ export const ConsultTabs: React.FC = () => {
             setOtherInstructions,
             diagnosticPrescription,
             setDiagnosticPrescription,
+            medicinePrescription,
+            setMedicinePrescription,
           }}
         >
           <div className={classes.container}>

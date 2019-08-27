@@ -228,7 +228,7 @@ export const CaseSheet: React.FC = () => {
           </ExpansionPanel>
 
           {/* Medicine Prescription Panel */}
-          {/* <ExpansionPanel
+          <ExpansionPanel
             expanded={expanded === 'medicinePrescription'}
             onChange={handlePanelExpansion('medicinePrescription')}
             className={classes.expandIcon}
@@ -237,9 +237,9 @@ export const CaseSheet: React.FC = () => {
               <Typography variant="h3">Medicine Prescription</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <MedicinePrescription casesheetInfo={props.casesheetInfo} />
+              <MedicinePrescription />
             </ExpansionPanelDetails>
-          </ExpansionPanel> */}
+          </ExpansionPanel>
 
           {/* Diagnostic Prescription Panel */}
           <ExpansionPanel
