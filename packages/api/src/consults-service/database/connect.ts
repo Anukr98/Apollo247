@@ -24,6 +24,7 @@ import {
   MedicineOrderLineItems,
   MedicineOrderPayments,
   PatientDeviceTokens,
+  PatientNotificationSettings,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -73,6 +74,7 @@ export const connect = async () => {
         MedicineOrderLineItems,
         MedicineOrderPayments,
         PatientDeviceTokens,
+        PatientNotificationSettings,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
