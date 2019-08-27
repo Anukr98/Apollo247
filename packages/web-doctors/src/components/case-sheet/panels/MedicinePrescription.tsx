@@ -271,6 +271,20 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 41,
       position: 'relative',
     },
+    deleteSymptom: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      position: 'relative',
+      left: '100%',
+      color: '#666666',
+      top: '-60px',
+      fontSize: 14,
+      fontWeight: theme.typography.fontWeightBold,
+      paddingLeft: 4,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
   })
 );
 
@@ -300,6 +314,7 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
   const classes = useStyles();
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
+  const [idx, setIdx] = React.useState();
   const [medicineInstruction, setMedicineInstruction] = React.useState<string>('');
   const [errorState, setErrorState] = React.useState<errorObject>({
     daySlotErr: false,
@@ -418,7 +433,17 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
       })
       .catch();
   };
-
+  const deletemedicine = (idx: any) => {
+    selectedMedicines.splice(idx, 1);
+    setSelectedMedicines(selectedMedicines);
+    const sum = idx + Math.random();
+    setIdx(sum);
+  };
+  useEffect(() => {
+    if (idx >= 0) {
+      setSelectedMedicines(selectedMedicines);
+    }
+  }, [selectedMedicines, idx]);
   function getSuggestionValue(suggestion: OptionType) {
     return suggestion.label;
   }
@@ -477,12 +502,13 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
     (_medicine: MedicineObject | null, index: number) => {
       const medicine = _medicine!;
       return (
-        <Paper key={medicine.id} className={`${classes.paper} ${classes.activeCard}`}>
-          <h5>{medicine.name}</h5>
-          <h6>
-            {medicine.times} times a day ({medicine.daySlots}) for {medicine.duration}
-          </h6>
-          {/* <img
+        <span key={index}>
+          <Paper key={medicine.id} className={`${classes.paper} ${classes.activeCard}`}>
+            <h5>{medicine.name}</h5>
+            <h6>
+              {medicine.times} times a day ({medicine.daySlots}) for {medicine.duration}
+            </h6>
+            {/* <img
             className={classes.checkImg}
             src={
               medicine.selected
@@ -491,7 +517,17 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
             }
             alt="chkUncheck"
           /> */}
-        </Paper>
+          </Paper>
+          <AphButton
+            variant="contained"
+            color="primary"
+            key={`del ${index}`}
+            classes={{ root: classes.deleteSymptom }}
+            onClick={() => deletemedicine(index)}
+          >
+            <img src={require('images/ic_cross.svg')} alt="" />
+          </AphButton>
+        </span>
       );
     }
   );
