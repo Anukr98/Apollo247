@@ -289,7 +289,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
                 setOtp(newOtp);
               }}
               onKeyPress={(e) => {
-                if (e.key == 'Enter') {
+                if (otp.join('').length === numOtpDigits && e.key == 'Enter') {
                   verifyOtp(otp.join(''));
                   setSubmitCount(submitCount + 1);
                 }
@@ -412,7 +412,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             mobileNumber.trim() !== '' && showErrorMessage && !isMobileNumberValid(mobileNumber)
           }
           onKeyPress={(e) => {
-            if (e.key == 'Enter') {
+            if (mobileNumber.length === 10 && e.key == 'Enter') {
               sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
                 setDisplayOtpInput(true)
               );
