@@ -724,7 +724,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
   const classes = useStyles();
   const doctorProfile = doctor;
   useEffect(() => {
-    const mobNumber = window.localStorage.getItem('mobileNumberSession');
+    const mobNumber = sessionStorage.getItem('mobileNumberSession');
     if (mobNumber) {
       setMobileNumber(mobNumber);
     }
@@ -940,7 +940,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                   classes={{ root: classes.saveButton }}
                   onClick={(e) => {
                     if (`+91${mobileNumber}` !== doctorProfile.mobileNumber) {
-                      if (mobileNumber !== doctorProfile.delegateNumber) {
+                      if (`+91${mobileNumber}` !== doctorProfile.delegateNumber) {
                         mutate({
                           variables: {
                             delegateNumber: `+91${mobileNumber}`,
@@ -949,7 +949,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                       }
                       setShowErrorMessage(false);
                       setDelegateNumberStatus('Secretary Number has updated successfully');
-                      window.localStorage.setItem('mobileNumberSession', mobileNumber);
+                      sessionStorage.setItem('mobileNumberSession', mobileNumber);
                     } else {
                       setPhoneMessage('');
                       setShowErrorMessage(true);
