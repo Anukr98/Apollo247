@@ -51,7 +51,8 @@ export const caseSheetTypeDefs = gql`
   }
 
   type Appointment {
-    appointmentDateTime: String
+    id: String
+    appointmentDateTime: DateTime
     appointmentState: String
     appointmentType: APPOINTMENT_TYPE
     doctorId: String
@@ -98,8 +99,8 @@ export const caseSheetTypeDefs = gql`
     medicineConsumptionDurationInDays: String
     medicineDosage: String
     medicineInstructions: String
-    medicineTimings: MEDICINE_TIMINGS
-    medicineToBeTaken: MEDICINE_TO_BE_TAKEN
+    medicineTimings: [MEDICINE_TIMINGS]
+    medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
     medicineName: String
     id: String
   }
