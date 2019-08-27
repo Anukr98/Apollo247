@@ -564,3 +564,15 @@ export const FileBig: React.FC<IconProps> = (props) => (
 export const Download: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_download.png')} />
 );
+
+export const NotificaitonAccounts: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_notificaiton_accounts.png')} />
+);
+
+export const Invoice: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_invoice.png')} />
+);
+
+export const AddFileIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_addfile.png')} />
+);

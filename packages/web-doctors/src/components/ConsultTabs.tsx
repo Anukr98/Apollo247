@@ -13,11 +13,10 @@ import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
 } from 'graphql/types/createAppointmentSession';
-import {
-  GetJuniorDoctorCaseSheet,
-  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet,
-} from 'graphql/types/GetJuniorDoctorCaseSheet';
-import { CREATE_APPOINTMENT_SESSION, GET_JUNIOR_DOCTOR_CASESHEET } from 'graphql/profiles';
+import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
+
+import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
+import { CREATE_APPOINTMENT_SESSION, GET_CASESHEET, UPDATE_CASESHEET } from 'graphql/profiles';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
@@ -84,6 +83,9 @@ const useStyles = makeStyles((theme: Theme) => {
     pointerNone: {
       pointerEvents: 'none',
     },
+    none: {
+      display: 'none',
+    },
   };
 });
 // interface UserInfoObject {
@@ -113,6 +115,7 @@ export const ConsultTabs: React.FC = (props) => {
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
   const [doctorId, setdoctorId] = useState<string>('');
   const [patientId, setpatientId] = useState<string>('');
+  const [caseSheetId, setCaseSheetId] = useState<string>('');
   const [loaded, setLoaded] = useState<boolean>(false);
   const params = useParams<Params>();
   const paramId = params.id;
@@ -128,13 +131,21 @@ export const ConsultTabs: React.FC = (props) => {
       setdoctorId(currentPatient.id);
 
       client
-        .query<GetJuniorDoctorCaseSheet>({
-          query: GET_JUNIOR_DOCTOR_CASESHEET,
+        .query<GetCaseSheet>({
+          query: GET_CASESHEET,
           fetchPolicy: 'no-cache',
           variables: { appointmentId: paramId },
         })
         .then((_data) => {
           setCasesheetInfo(_data.data);
+          // if (
+          //   _data.data &&
+          //   _data.data.getCaseSheet &&
+          //   _data.data.getCaseSheet.caseSheetDetails &&
+          //   _data.data.getCaseSheet.caseSheetDetails.id
+          // ) {
+          //   setCaseSheetId(_data.data.getCaseSheet.caseSheetDetails.id);
+          // }
           // setsessionId(_data.data.createAppointmentSession.sessionId);
           // settoken(_data.data.createAppointmentSession.appointmentToken);
           // setappointmentDateTime(_data.data.createAppointmentSession.appointmentDateTime);
@@ -150,6 +161,35 @@ export const ConsultTabs: React.FC = (props) => {
       document.cookie = cookieStr + ';path=/;';
     };
   }, [paramId, appointmentId]);
+
+  const saveCasesheetAction = () => {
+    // client
+    //  .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
+    //   mutation:UPDATE_CASESHEET,
+    //     variables: {
+    //       UpdateCaseSheetInput: {
+    //       symptoms:JSON.stringify(getSysmptonsList()),
+    //       notes:value,
+    //       diagnosis:JSON.stringify(getDiagonsisList()),
+    //       diagnosticPrescription:JSON.stringify(getDiagnosticPrescriptionDataList()),
+    //       followUp:switchValue,
+    //       followUpDate:selectDate,
+    //       followUpAfterInDays:sliderValue,
+    //       otherInstructions:JSON.stringify(otherInstructionsData),
+    //       medicinePrescription:JSON.stringify(getMedicineList()),
+    //       id:caseSheetId,
+    //     },
+    //   },
+    //   fetchPolicy:'no-cache',
+    //  })
+    // .then((_data) => {
+    //   console.log('_data', _data);
+    //   const result=_data.data!.updateCaseSheet;
+    //  })
+    // .catch((e) => {
+    //   console.log('Error occured while update casesheet', e);
+    // });
+  };
   const createSessionAction = () => {
     client
       .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
@@ -165,6 +205,7 @@ export const ConsultTabs: React.FC = (props) => {
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
         setappointmentDateTime(_data.data.createAppointmentSession.appointmentDateTime);
+        setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
       })
       .catch((e: any) => {
         console.log('Error occured creating session', e);
@@ -189,6 +230,7 @@ export const ConsultTabs: React.FC = (props) => {
           <CallPopover
             setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
             createSessionAction={createSessionAction}
+            saveCasesheetAction={saveCasesheetAction}
             appointmentId={appointmentId}
             appointmentDateTime={appointmentDateTime}
             doctorId={doctorId}
@@ -218,15 +260,18 @@ export const ConsultTabs: React.FC = (props) => {
             </div>
             {tabValue === 0 && (
               <TabContainer>
+                {/* <div className={classes.none}> */}
                 {casesheetInfo ? (
                   <CaseSheet casesheetInfo={casesheetInfo} appointmentId={appointmentId} />
                 ) : (
                   ''
                 )}
+                {/* </div> */}
               </TabContainer>
             )}
             {tabValue === 1 && (
               <TabContainer>
+                {/* <div className={classes.none}> */}
                 <div className={classes.chatContainer}>
                   <ConsultRoom
                     startConsult={startConsult}
@@ -237,6 +282,7 @@ export const ConsultTabs: React.FC = (props) => {
                     patientId={patientId}
                   />
                 </div>
+                {/* </div> */}
               </TabContainer>
             )}
           </div>

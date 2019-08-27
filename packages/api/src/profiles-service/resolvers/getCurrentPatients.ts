@@ -34,6 +34,7 @@ export const getCurrentPatientsTypeDefs = gql`
   }
 
   type Patient @key(fields: "id") {
+    addressList: [PatientAddress]
     id: ID!
     firstName: String
     lastName: String

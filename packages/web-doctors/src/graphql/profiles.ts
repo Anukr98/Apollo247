@@ -255,6 +255,7 @@ export const CREATE_APPOINTMENT_SESSION = gql`
       patientId
       doctorId
       appointmentDateTime
+      caseSheetId
     }
   }
 `;
@@ -327,6 +328,150 @@ export const GET_JUNIOR_DOCTOR_CASESHEET = gql`
         followUpAfterInDays
         consultType
         notes
+      }
+    }
+  }
+`;
+
+export const GET_CASESHEET = gql`
+  query GetCaseSheet($appointmentId: String!) {
+    getCaseSheet(appointmentId: $appointmentId) {
+      patientDetails {
+        id
+        allergies
+        lifeStyle {
+          description
+        }
+        familyHistory {
+          description
+          relation
+        }
+        dateOfBirth
+        emailAddress
+        firstName
+        lastName
+        gender
+        mobileNumber
+        uhid
+        photoUrl
+        relation
+        healthVault {
+          imageUrls
+          reportUrls
+        }
+      }
+      caseSheetDetails {
+        id
+        appointment {
+          id
+          appointmentDateTime
+        }
+        medicinePrescription {
+          id
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineConsumptionDurationInDays
+        }
+        otherInstructions {
+          instruction
+        }
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+        }
+        diagnosis {
+          name
+        }
+        diagnosticPrescription {
+          name
+        }
+        followUp
+        followUpDate
+        followUpAfterInDays
+        consultType
+        notes
+      }
+      pastAppointments {
+        id
+        appointmentDateTime
+        appointmentState
+        doctorId
+        hospitalId
+        patientId
+        parentId
+        status
+        caseSheet {
+          consultType
+          diagnosis {
+            name
+          }
+          diagnosticPrescription {
+            name
+          }
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+          }
+          followUpDate
+          followUpAfterInDays
+          followUp
+          medicinePrescription {
+            medicineName
+            medicineTimings
+            medicineInstructions
+            medicineConsumptionDurationInDays
+          }
+          otherInstructions {
+            instruction
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const UPDATE_CASESHEET = gql`
+  mutation UpdateCaseSheet($UpdateCaseSheetInput: UpdateCaseSheetInput) {
+    updateCaseSheet(UpdateCaseSheetInput: $UpdateCaseSheetInput) {
+      consultType
+      appointment {
+        id
+      }
+      diagnosis {
+        name
+      }
+      diagnosticPrescription {
+        name
+      }
+      doctorId
+      followUp
+      followUpAfterInDays
+      followUpDate
+      id
+      medicinePrescription {
+        medicineConsumptionDurationInDays
+        medicineName
+        medicineDosage
+        medicineTimings
+        medicineInstructions
+      }
+      notes
+      patientId
+      symptoms {
+        symptom
+        since
+        howOften
+        severity
+      }
+      otherInstructions {
+        instruction
       }
     }
   }

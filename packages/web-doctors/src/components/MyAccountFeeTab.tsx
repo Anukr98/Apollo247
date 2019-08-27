@@ -299,64 +299,66 @@ export const MyAccountFeeTab: React.FC<FeesProps> = (props) => {
           </div>
         </Grid>
       </Grid>
-      {data.bankAccount && data.bankAccount.length > 0 && (
-        <Grid container spacing={0}>
-          <Grid item lg={12} sm={12} xs={12}>
-            <Typography variant="h2">Payment Details</Typography>
-          </Grid>
+      {sessionStorage.getItem('loggedInMobileNumber') === data.mobileNumber &&
+        data.bankAccount &&
+        data.bankAccount.length > 0 && (
+          <Grid container spacing={0}>
+            <Grid item lg={12} sm={12} xs={12}>
+              <Typography variant="h2">Payment Details</Typography>
+            </Grid>
 
-          <Grid item lg={12} sm={12} xs={12}>
-            <div className={classes.tabContent}>
-              <ExpansionPanel className={`${classes.serviceItem}`}>
-                <ExpansionPanelSummary
-                  expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-                >
-                  <div className={classes.columnAC}>
-                    <Typography className={classes.heading}>
-                      A/C Number:{' xxxx xxxx xxxx '}
-                      {data.bankAccount &&
-                        data.bankAccount![0]!.accountNumber.substr(
-                          data.bankAccount && data.bankAccount![0]!.accountNumber.length - 4,
-                          data.bankAccount && data.bankAccount![0]!.accountNumber.length - 1
-                        )}
-                    </Typography>
-                  </div>
-                  <div>
-                    <Typography className={classes.secondaryHeading}>
-                      {data.bankAccount![0]!.bankName}
-                    </Typography>
-                  </div>
-                </ExpansionPanelSummary>
+            <Grid item lg={12} sm={12} xs={12}>
+              <div className={classes.tabContent}>
+                <ExpansionPanel className={`${classes.serviceItem}`}>
+                  <ExpansionPanelSummary
+                    expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+                  >
+                    <div className={classes.columnAC}>
+                      <Typography className={classes.heading}>
+                        A/C Number:{' xxxx xxxx xxxx '}
+                        {data.bankAccount &&
+                          data.bankAccount![0]!.accountNumber.substr(
+                            data.bankAccount && data.bankAccount![0]!.accountNumber.length - 4,
+                            data.bankAccount && data.bankAccount![0]!.accountNumber.length - 1
+                          )}
+                      </Typography>
+                    </div>
+                    <div>
+                      <Typography className={classes.secondaryHeading}>
+                        {data.bankAccount![0]!.bankName}
+                      </Typography>
+                    </div>
+                  </ExpansionPanelSummary>
 
-                <ExpansionPanelDetails className={classes.serviceItem}>
-                  <div className={classes.topBorder}>
-                    <Grid container alignItems="flex-start" spacing={0}>
-                      <Grid item lg={12} sm={12} xs={12}>
-                        <div className={classes.accountDetailsHeading}>Account Holder’s Name</div>
-                        <Typography variant="h5" className={classes.accountDetails}>
-                          {data.bankAccount[0]!.accountHolderName}
-                        </Typography>
+                  <ExpansionPanelDetails className={classes.serviceItem}>
+                    <div className={classes.topBorder}>
+                      <Grid container alignItems="flex-start" spacing={0}>
+                        <Grid item lg={12} sm={12} xs={12}>
+                          <div className={classes.accountDetailsHeading}>Account Holder’s Name</div>
+                          <Typography variant="h5" className={classes.accountDetails}>
+                            {data.bankAccount[0]!.accountHolderName}
+                          </Typography>
+                        </Grid>
+                        <Grid item lg={12} sm={12} xs={12}>
+                          <div className={classes.accountDetailsHeading}>IFSC Code</div>
+                          <Typography variant="h5" className={classes.accountDetails}>
+                            {data.bankAccount![0]!.IFSCcode}
+                          </Typography>
+                        </Grid>
+                        <Grid item lg={12} sm={12} xs={12}>
+                          <div className={classes.accountDetailsHeading}>Account Type</div>
+                          <Typography variant="h5" className={classes.accountDetails}>
+                            {data.bankAccount![0]!.accountType}
+                          </Typography>
+                        </Grid>
                       </Grid>
-                      <Grid item lg={12} sm={12} xs={12}>
-                        <div className={classes.accountDetailsHeading}>IFSC Code</div>
-                        <Typography variant="h5" className={classes.accountDetails}>
-                          {data.bankAccount![0]!.IFSCcode}
-                        </Typography>
-                      </Grid>
-                      <Grid item lg={12} sm={12} xs={12}>
-                        <div className={classes.accountDetailsHeading}>Account Type</div>
-                        <Typography variant="h5" className={classes.accountDetails}>
-                          {data.bankAccount![0]!.accountType}
-                        </Typography>
-                      </Grid>
-                    </Grid>
-                  </div>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
-            </div>
+                    </div>
+                  </ExpansionPanelDetails>
+                </ExpansionPanel>
+              </div>
+            </Grid>
           </Grid>
-        </Grid>
-      )}
+        )}
       <div className={classes.helpTxt}>
         <img alt="" src={require('images/ic_info.svg')} className={classes.navLeftIcon} />
         Call <span className={classes.orange}>1800 - 3455 - 3455 </span>to make any changes

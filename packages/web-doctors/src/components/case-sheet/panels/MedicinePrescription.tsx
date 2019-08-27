@@ -19,6 +19,7 @@ import _isEmpty from 'lodash/isEmpty';
 import axios from 'axios';
 import _debounce from 'lodash/debounce';
 import { CircularProgress } from '@material-ui/core';
+import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
 
 const apiDetails = {
   url: 'http://uat.apollopharmacy.in/searchprd_api.php',
@@ -270,6 +271,20 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 41,
       position: 'relative',
     },
+    deleteSymptom: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      position: 'relative',
+      left: '100%',
+      color: '#666666',
+      top: '-60px',
+      fontSize: 14,
+      fontWeight: theme.typography.fontWeightBold,
+      paddingLeft: 4,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
   })
 );
 
@@ -292,11 +307,14 @@ interface errorObject {
   tobeTakenErr: boolean;
   durationErr: boolean;
 }
-
-export const MedicinePrescription: React.FC = () => {
+interface CasesheetInfoProps {
+  casesheetInfo: GetCaseSheet;
+}
+export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
   const classes = useStyles();
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
+  const [idx, setIdx] = React.useState();
   const [medicineInstruction, setMedicineInstruction] = React.useState<string>('');
   const [errorState, setErrorState] = React.useState<errorObject>({
     daySlotErr: false,
@@ -343,24 +361,24 @@ export const MedicinePrescription: React.FC = () => {
     },
   ]);
   const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([
-    {
-      id: '1',
-      value: 'Acetamenophen 1.5% w/w',
-      name: 'Acetamenophen 1.5% w/w',
-      times: 2,
-      daySlots: 'morning, night',
-      duration: '1 week',
-      selected: false,
-    },
-    {
-      id: '2',
-      value: 'Dextromethorphan (generic)',
-      name: 'Dextromethorphan (generic)',
-      times: 4,
-      daySlots: 'morning, afternoon, evening, night',
-      duration: '5 days after food',
-      selected: true,
-    },
+    // {
+    //   id: '1',
+    //   value: 'Acetamenophen 1.5% w/w',
+    //   name: 'Acetamenophen 1.5% w/w',
+    //   times: 2,
+    //   daySlots: 'morning, night',
+    //   duration: '1 week',
+    //   selected: false,
+    // },
+    // {
+    //   id: '2',
+    //   value: 'Dextromethorphan (generic)',
+    //   name: 'Dextromethorphan (generic)',
+    //   times: 4,
+    //   daySlots: 'morning, afternoon, evening, night',
+    //   duration: '5 days after food',
+    //   selected: true,
+    // },
   ]);
 
   const [searchInput, setSearchInput] = useState('');
@@ -397,14 +415,12 @@ export const MedicinePrescription: React.FC = () => {
       )
       .then((result) => {
         const medicines = result.data.products ? result.data.products : [];
-        console.log(medicines);
         medicines.slice(0, 10).forEach((res: any) => {
           const data = { label: '' };
           data.label = res.name;
           FinalSearchdata.push(data);
         });
         // FinalSearchdata.push(searchdata);
-        console.log(FinalSearchdata);
         suggestions = FinalSearchdata;
         setSearchInput(value);
         setLoading(false);
@@ -417,10 +433,46 @@ export const MedicinePrescription: React.FC = () => {
       })
       .catch();
   };
-
+  const deletemedicine = (idx: any) => {
+    selectedMedicines.splice(idx, 1);
+    setSelectedMedicines(selectedMedicines);
+    const sum = idx + Math.random();
+    setIdx(sum);
+  };
+  useEffect(() => {
+    if (idx >= 0) {
+      setSelectedMedicines(selectedMedicines);
+    }
+  }, [selectedMedicines, idx]);
   function getSuggestionValue(suggestion: OptionType) {
     return suggestion.label;
   }
+  useEffect(() => {
+    if (
+      props.casesheetInfo &&
+      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription !== null &&
+      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription!.length > 0
+    ) {
+      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription!.forEach(
+        (res: any) => {
+          const inputParams = {
+            id: res.medicineName.trim(),
+            value: res.medicineName,
+            name: res.medicineName,
+            times: Number(res.medicineConsumptionDurationInDays),
+            daySlots: res.medicineTimings.join(' ').toLowerCase(),
+            duration: `${Number(
+              res.medicineConsumptionDurationInDays
+            )} days ${res.medicineToBeTaken.join(' ').toLowerCase()}`,
+            selected: true,
+          };
+          const x = selectedMedicines;
+          x.push(inputParams);
+          setSelectedMedicines(x);
+        }
+      );
+    }
+  }, []);
   useEffect(() => {
     if (searchInput.length > 2) {
       setSuggestions(getSuggestions(searchInput));
@@ -450,12 +502,13 @@ export const MedicinePrescription: React.FC = () => {
     (_medicine: MedicineObject | null, index: number) => {
       const medicine = _medicine!;
       return (
-        <Paper key={medicine.id} className={`${classes.paper} ${classes.activeCard}`}>
-          <h5>{medicine.name}</h5>
-          <h6>
-            {medicine.times} times a day ({medicine.daySlots}) for {medicine.duration}
-          </h6>
-          {/* <img
+        <span key={index}>
+          <Paper key={medicine.id} className={`${classes.paper} ${classes.activeCard}`}>
+            <h5>{medicine.name}</h5>
+            <h6>
+              {medicine.times} times a day ({medicine.daySlots}) for {medicine.duration}
+            </h6>
+            {/* <img
             className={classes.checkImg}
             src={
               medicine.selected
@@ -464,7 +517,17 @@ export const MedicinePrescription: React.FC = () => {
             }
             alt="chkUncheck"
           /> */}
-        </Paper>
+          </Paper>
+          <AphButton
+            variant="contained"
+            color="primary"
+            key={`del ${index}`}
+            classes={{ root: classes.deleteSymptom }}
+            onClick={() => deletemedicine(index)}
+          >
+            <img src={require('images/ic_cross.svg')} alt="" />
+          </AphButton>
+        </span>
       );
     }
   );

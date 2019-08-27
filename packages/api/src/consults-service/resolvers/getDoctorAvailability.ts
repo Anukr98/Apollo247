@@ -46,7 +46,8 @@ const getDoctorAvailableSlots: Resolver<
     const ed = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlots[0].endTime.toString()}`;
     const consultStartTime = new Date(st);
     const consultEndTime = new Date(ed);
-    const slotsCount = Math.ceil(differenceInMinutes(consultEndTime, consultStartTime) / 60) * 4;
+    const slotsCount =
+      Math.ceil(Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * 4;
     const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
     let startTime = new Date(DoctorAvailabilityInput.availableDate.toDateString() + ' ' + stTime);
     availableSlots = Array(slotsCount)
@@ -55,11 +56,11 @@ const getDoctorAvailableSlots: Resolver<
         const stTime = startTime;
         startTime = addMinutes(startTime, 15);
         const stTimeHours = stTime
-          .getHours()
+          .getUTCHours()
           .toString()
           .padStart(2, '0');
         const stTimeMins = stTime
-          .getMinutes()
+          .getUTCMinutes()
           .toString()
           .padStart(2, '0');
         return `${stTimeHours}:${stTimeMins}`;
@@ -73,10 +74,10 @@ const getDoctorAvailableSlots: Resolver<
   if (apptSlots && apptSlots.length > 0) {
     apptSlots.map((appt) => {
       const sl = `${appt.appointmentDateTime
-        .getHours()
+        .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appt.appointmentDateTime
-        .getMinutes()
+        .getUTCMinutes()
         .toString()
         .padStart(2, '0')}`;
       if (availableSlots.indexOf(sl) >= 0) {

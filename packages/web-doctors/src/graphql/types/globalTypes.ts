@@ -105,6 +105,19 @@ export interface CreateAppointmentSessionInput {
   requestRole: REQUEST_ROLES;
 }
 
+export interface UpdateCaseSheetInput {
+  symptoms?: string | null;
+  notes?: string | null;
+  diagnosis?: string | null;
+  diagnosticPrescription?: string | null;
+  followUp?: boolean | null;
+  followUpDate?: string | null;
+  followUpAfterInDays?: string | null;
+  otherInstructions?: string | null;
+  medicinePrescription?: string | null;
+  id?: string | null;
+}
+
 export interface UpdatePatientInput {
   id: string;
   firstName?: string | null;

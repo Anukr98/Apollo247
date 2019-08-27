@@ -8,6 +8,7 @@ import { STATUS, CaseSheet } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -101,7 +102,7 @@ const createAppointmentSession: Resolver<
   createAppointmentSessionInputArgs,
   ConsultServiceContext,
   CreateAppointmentSession
-> = async (parent, { createAppointmentSessionInput }, { consultsDb }) => {
+> = async (parent, { createAppointmentSessionInput }, { consultsDb, doctorsDb }) => {
   const opentok = new openTok('46393582', 'f27789a7bad5d0ec7e5fd2c36ffba08a4830a91d');
   let sessionId = '',
     token = '',
@@ -121,12 +122,14 @@ const createAppointmentSession: Resolver<
 
   //check whether if senior doctors casesheet already exists
   let caseSheetDetails;
-  caseSheetDetails = await caseSheetRepo.getSeniorDoctorCaseSheet(
-    apptDetails.id,
-    apptDetails.doctorId
-  );
+  caseSheetDetails = await caseSheetRepo.getSeniorDoctorCaseSheet(apptDetails.id);
 
   if (caseSheetDetails == null) {
+    //get doctor details
+    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctordata = await doctorRepository.findById(apptDetails.doctorId);
+    if (doctordata == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+
     const caseSheetAttrs: Partial<CaseSheet> = {
       diagnosis: juniorDoctorcaseSheet.diagnosis,
       diagnosticPrescription: juniorDoctorcaseSheet.diagnosticPrescription,
@@ -140,6 +143,7 @@ const createAppointmentSession: Resolver<
       patientId: apptDetails.patientId,
       appointment: apptDetails,
       createdDoctorId: apptDetails.doctorId,
+      doctorType: doctordata.doctorType,
     };
     caseSheetDetails = await caseSheetRepo.savecaseSheet(caseSheetAttrs);
     if (caseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);

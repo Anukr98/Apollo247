@@ -85,6 +85,7 @@ const bookAppointment: Resolver<
   ConsultServiceContext,
   BookAppointmentResult
 > = async (parent, { appointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
+  console.log('current date', new Date());
   console.log(appointmentInput.appointmentDateTime, 'input date time');
   console.log(appointmentInput.appointmentDateTime.toISOString(), 'iso string');
   console.log(new Date(appointmentInput.appointmentDateTime.toISOString()), 'iso to date');

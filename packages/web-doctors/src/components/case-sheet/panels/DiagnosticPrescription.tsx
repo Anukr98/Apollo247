@@ -8,16 +8,21 @@ import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
+// import {
+//   GetJuniorDoctorCaseSheet,
+//   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
+// } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import {
-  GetJuniorDoctorCaseSheet,
-  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
-} from 'graphql/types/GetJuniorDoctorCaseSheet';
+  GetCaseSheet,
+  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription,
+} from 'graphql/types/GetCaseSheet';
 
 interface OptionType {
   name: string;
+  __typename: 'DiagnosticPrescription';
 }
 
-const suggestions: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription | null)[] = [
+const suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [
   { name: 'Ultrasound', __typename: 'DiagnosticPrescription' },
   { name: 'Ultra-something else', __typename: 'DiagnosticPrescription' },
 ];
@@ -43,11 +48,11 @@ function renderInputComponent(inputProps: any) {
 }
 
 function renderSuggestion(
-  suggestion: OptionType,
+  suggestion: OptionType | null,
   { query, isHighlighted }: Autosuggest.RenderSuggestionParams
 ) {
-  const matches = match(suggestion.name, query);
-  const parts = parse(suggestion.name, matches);
+  const matches = match(suggestion!.name, query);
+  const parts = parse(suggestion!.name, matches);
 
   return (
     <MenuItem selected={isHighlighted} component="div">
@@ -83,8 +88,8 @@ function getSuggestions(value: string) {
       });
 }
 
-function getSuggestionValue(suggestion: OptionType) {
-  return suggestion.name;
+function getSuggestionValue(suggestion: OptionType | null) {
+  return suggestion!.name;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -179,39 +184,30 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface CasesheetInfoProps {
-  casesheetInfo: GetJuniorDoctorCaseSheet;
+  casesheetInfo: GetCaseSheet;
 }
 export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
   const classes = useStyles();
-  //const [selectedValues, setSelectedValues] = useState<OptionType[]>([{ name: 'Diagnostic ABC' }]);
   const [selectedValues, setSelectedValues] = useState<
-    (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription | null)[]
+    (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[]
   >([]);
   useEffect(() => {
     if (
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription !==
-        null &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
-        .length > 0
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription !== null &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription.length > 0
     ) {
-      setSelectedValues(
-        props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
-      );
+      setSelectedValues(props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription);
     }
   }, []);
-  // const [favoriteDiagnostics, setFavoriteDiagnostics] = useState<OptionType[]>([
-  //   { name: 'Diagnostic DEF' },
-  //   { name: 'Diagnostic XYZ' },
-  // ]);
   const [state, setState] = React.useState({
     single: '',
     popper: '',
   });
   const [stateSuggestions, setSuggestions] = React.useState<
-    (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription | null)[]
+    (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[]
   >([]);
 
   const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {
@@ -236,7 +232,7 @@ export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
 
   const autosuggestProps = {
     renderInputComponent,
-    suggestions: stateSuggestions,
+    suggestions: (stateSuggestions as unknown) as OptionType[],
     onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
     onSuggestionsClearRequested: handleSuggestionsClearRequested,
     getSuggestionValue,
@@ -261,24 +257,6 @@ export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
           ))}
         </Typography>
       </Typography>
-      {/* <Typography component="div" className={classes.column}>
-        <Typography component="h3" variant="h4">
-          Favorite Diagnostics
-        </Typography>
-        <Typography component="div" className={classes.listContainer}>
-          {favoriteDiagnostics.map((item, idx) => (
-            <Chip
-              key={idx}
-              label={item.name}
-              onDelete={() => {
-                setSelectedValues(selectedValues.concat(item));
-                setFavoriteDiagnostics(favoriteDiagnostics.filter((i) => i.name !== item.name));
-              }}
-              deleteIcon={<AddCircle className={classes.icon} />}
-            />
-          ))}
-        </Typography>
-      </Typography> */}
       <Typography component="div" className={classes.textFieldContainer}>
         {!showAddCondition && (
           <AphButton
@@ -291,36 +269,35 @@ export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
           </AphButton>
         )}
         {showAddCondition && (
-          <div>fkgdjfhgkdf</div>
-          // <Autosuggest
-          //   onSuggestionSelected={(e, { suggestion }) => {
-          //     setSelectedValues(selectedValues.concat(suggestion));
-          //     setShowAddCondition(false);
-          //     setState({
-          //       single: '',
-          //       popper: '',
-          //     });
-          //   }}
-          //   {...autosuggestProps}
-          //   inputProps={{
-          //     classes,
-          //     id: 'react-autosuggest-simple',
-          //     placeholder: 'Search Diagnostics',
-          //     value: state.single,
-          //     onChange: handleChange('single'),
-          //   }}
-          //   theme={{
-          //     container: classes.container,
-          //     suggestionsContainerOpen: classes.suggestionsContainerOpen,
-          //     suggestionsList: classes.suggestionsList,
-          //     suggestion: classes.suggestion,
-          //   }}
-          //   renderSuggestionsContainer={(options) => (
-          //     <Paper {...options.containerProps} square>
-          //       {options.children}
-          //     </Paper>
-          //   )}
-          // />
+          <Autosuggest
+            onSuggestionSelected={(e, { suggestion }) => {
+              setSelectedValues(selectedValues.concat(suggestion));
+              setShowAddCondition(false);
+              setState({
+                single: '',
+                popper: '',
+              });
+            }}
+            {...autosuggestProps}
+            inputProps={{
+              classes,
+              id: 'react-autosuggest-simple',
+              placeholder: 'Search Diagnostics',
+              value: state.single,
+              onChange: handleChange('single'),
+            }}
+            theme={{
+              container: classes.container,
+              suggestionsContainerOpen: classes.suggestionsContainerOpen,
+              suggestionsList: classes.suggestionsList,
+              suggestion: classes.suggestion,
+            }}
+            renderSuggestionsContainer={(options) => (
+              <Paper {...options.containerProps} square>
+                {options.children}
+              </Paper>
+            )}
+          />
         )}
       </Typography>
     </Typography>
