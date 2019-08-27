@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { MoreVert } from '@material-ui/icons';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import isNumeric from 'validator/lib/isNumeric';
 import {
   Theme,
@@ -723,6 +723,12 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
 
   const classes = useStyles();
   const doctorProfile = doctor;
+  useEffect(() => {
+    const mobNumber = window.localStorage.getItem('mobileNumberSession');
+    if (mobNumber) {
+      setMobileNumber(mobNumber);
+    }
+  }, []);
 
   return (
     <div>
@@ -929,6 +935,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                       }
                       setShowErrorMessage(false);
                       setDelegateNumberStatus('Secretary Number has updated successfully');
+                      window.localStorage.setItem('mobileNumberSession', mobileNumber);
                     } else {
                       setPhoneMessage('');
                       setShowErrorMessage(true);
