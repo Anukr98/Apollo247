@@ -3,6 +3,7 @@ import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -66,6 +67,18 @@ const useStyles = makeStyles((theme: Theme) => {
 export const Navigation: React.FC = (props) => {
   const classes = useStyles();
   const currentPath = window.location.pathname;
+  const { cartItems } = useShoppingCart();
+
+  let cartCountToShow = 0;
+
+  if (cartItems.length === 0) {
+    cartCountToShow = localStorage.getItem('cartItems')
+      ? JSON.parse(localStorage.getItem('cartItems') || '').length
+      : 0;
+  } else {
+    cartCountToShow = cartItems.length;
+  }
+
   return (
     <div className={classes.appNavigation} data-cypress="Navigation">
       <Link
@@ -98,8 +111,8 @@ export const Navigation: React.FC = (props) => {
         }`}
       >
         <span>
-          <img src={require('images/ic_cart.svg')} alt="" />
-          <span className={classes.itemCount}>2</span>
+          <img src={require('images/ic_cart.svg')} alt="Shopping Cart" />
+          <span className={classes.itemCount}>{cartCountToShow}</span>
         </span>
       </Link>
       <Link to="/" className={`${classes.iconLink}`}>

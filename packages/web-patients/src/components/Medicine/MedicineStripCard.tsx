@@ -2,11 +2,12 @@ import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Paper, Popover, Typography, FormControlLabel, MenuItem } from '@material-ui/core';
 import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
-import { MedicineInterface } from 'components/Medicine/SearchMedicines';
+import { MedicineCartItem } from 'components/MedicinesCartProvider';
 import _uniqueId from 'lodash/uniqueId';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import _unescape from 'lodash/unescape';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 // import { AphCheckbox } from 'components/AphCheckbox';
 
@@ -309,12 +310,13 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface MedicineStripCardProps {
-  medicines: MedicineInterface[];
+  medicines: MedicineCartItem[];
 }
 
 export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
   const classes = useStyles();
   const medicineRef = useRef(null);
+  const { addCartItem, updateCartItem } = useShoppingCart();
 
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [selectedPackedQty, setSelectedPackedQty] = React.useState<number[]>([]);
@@ -326,13 +328,26 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
 
   const { medicines } = props;
 
+  // console.log(medicines);
+
   const medicinesMarkup = () => {
     return medicines.map((medicineDetails, index) => {
       const medicineName = _startCase(_toLower(medicineDetails.name));
       const medicinePrice = medicineDetails.price.toFixed(2);
-      const isPrescriptionRequired = parseInt(medicineDetails.is_prescription_required, 10);
+      const medicineQty = medicineDetails.quantity;
+      const isPrescriptionRequired =
+        medicineDetails.is_prescription_required === '0' ? false : true;
       const medicineDescription = medicineDetails.description;
       const isInStock = medicineDetails.is_in_stock;
+      const medicineSku = medicineDetails.sku;
+      const medicineId = medicineDetails.id;
+      const medicineImage = medicineDetails.image;
+      const medicineSmallImage = medicineDetails.small_image;
+      const status = medicineDetails.status;
+      const thumbnail = medicineDetails.thumbnail;
+      const typeId = medicineDetails.type_id;
+
+      // console.log(medicineName, isPrescriptionRequired);
 
       if (!selectedPackedQty[index]) {
         selectedPackedQty[index] = 1;
@@ -350,10 +365,11 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                       : require('images/ic_tablets.svg')
                   }
                   alt="Medicine Type"
+                  title={isPrescriptionRequired ? 'Prescription required' : ''}
                 />
               </div>
               <div className={classes.medicineName}>
-                {medicineName}{' '}
+                {medicineName}
                 <div className={`${classes.tabInfo} ${!isInStock ? classes.errorColor : ''}`}>
                   {isInStock ? 'Pack Of 10' : 'Out Of Stock'}
                 </div>
@@ -377,7 +393,9 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
               <div className={classes.medicinePrice}>Rs. {medicinePrice}</div>
               <div
                 className={`${classes.medicinePack} ${
-                  selectedPackedContainer[index] ? classes.showElement : classes.hideElement
+                  selectedPackedContainer[index] || medicineQty > 0
+                    ? classes.showElement
+                    : classes.hideElement
                 }`}
               >
                 <AphCustomDropdown
@@ -390,6 +408,21 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                       ...previousValues,
                       ...existingValues,
                     ]);
+                    updateCartItem({
+                      description: medicineDescription,
+                      id: medicineId,
+                      image: medicineImage,
+                      is_in_stock: isInStock,
+                      is_prescription_required: medicineDetails.is_prescription_required,
+                      name: medicineName,
+                      price: parseFloat(medicinePrice),
+                      sku: medicineSku,
+                      small_image: medicineSmallImage,
+                      status: status,
+                      thumbnail: thumbnail,
+                      type_id: typeId,
+                      quantity: selectedPackedQty[index],
+                    });
                   }}
                   key={_uniqueId('dropdown_')}
                 >
@@ -406,18 +439,71 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
               </div>
               {isInStock ? (
                 <div className={classes.addToCart}>
-                  <AphButton
-                    onClick={(e) => {
-                      const existingSelectedPackedValues = selectedPackedContainer;
-                      existingSelectedPackedValues[index] = true;
-                      setSelectedPackedContainer((previousValues) => [
-                        ...previousValues,
-                        ...existingSelectedPackedValues,
-                      ]);
-                    }}
-                  >
-                    <img src={require('images/ic_plus.svg')} alt="Add to Cart" />
-                  </AphButton>
+                  {medicineQty > 0 ? (
+                    <AphButton
+                      onClick={(e) => {
+                        const existingSelectedPackedValues = selectedPackedContainer;
+                        existingSelectedPackedValues[index] = true;
+                        setSelectedPackedContainer((previousValues) => [
+                          ...previousValues,
+                          ...existingSelectedPackedValues,
+                        ]);
+                        addCartItem({
+                          description: medicineDescription,
+                          id: medicineId,
+                          image: medicineImage,
+                          is_in_stock: isInStock,
+                          is_prescription_required: medicineDetails.is_prescription_required,
+                          name: medicineName,
+                          price: parseFloat(medicinePrice),
+                          sku: medicineSku,
+                          small_image: medicineSmallImage,
+                          status: status,
+                          thumbnail: thumbnail,
+                          type_id: typeId,
+                          quantity: selectedPackedQty[index],
+                        });
+                      }}
+                    >
+                      <img
+                        src={require('images/ic_cross_onorange_small.svg')}
+                        alt="Remove Item"
+                        title="Remove item from Cart"
+                      />
+                    </AphButton>
+                  ) : (
+                    <AphButton
+                      onClick={(e) => {
+                        const existingSelectedPackedValues = selectedPackedContainer;
+                        existingSelectedPackedValues[index] = true;
+                        setSelectedPackedContainer((previousValues) => [
+                          ...previousValues,
+                          ...existingSelectedPackedValues,
+                        ]);
+                        addCartItem({
+                          description: medicineDescription,
+                          id: medicineId,
+                          image: medicineImage,
+                          is_in_stock: isInStock,
+                          is_prescription_required: medicineDetails.is_prescription_required,
+                          name: medicineName,
+                          price: parseFloat(medicinePrice),
+                          sku: medicineSku,
+                          small_image: medicineSmallImage,
+                          status: status,
+                          thumbnail: thumbnail,
+                          type_id: typeId,
+                          quantity: selectedPackedQty[index],
+                        });
+                      }}
+                    >
+                      <img
+                        src={require('images/ic_plus.svg')}
+                        alt="Add Item"
+                        title="Add item to Cart"
+                      />
+                    </AphButton>
+                  )}
                 </div>
               ) : null}
             </div>

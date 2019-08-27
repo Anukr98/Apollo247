@@ -1,13 +1,24 @@
-import React, { useState, createContext, useContext } from 'react';
+/** Acknowledgement: This work is based on the POC done by Kabir Sarin :) **/
+
+import React, { useState, createContext, useContext, useEffect } from 'react';
+import axios from 'axios';
+
+const quoteUrl = 'http://api.apollopharmacy.in/apollo_api.php?type=guest_quote';
 
 export interface MedicineCartItem {
-  id: string;
-  name: string;
   description: string;
-  forPatientId: string;
-  quantity: number;
+  id: number;
+  image: string;
+  is_in_stock: boolean;
+  is_prescription_required: string;
+  name: string;
   price: number;
-  subscribed: boolean;
+  sku: string;
+  small_image: string;
+  status: number;
+  thumbnail: string;
+  type_id: string;
+  quantity: number;
 }
 
 export interface MedicineCartContextProps {
@@ -18,6 +29,8 @@ export interface MedicineCartContextProps {
     | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
     | null;
   cartTotal: number;
+  getQuoteId(): string | null;
+  getCartId(): number | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -26,16 +39,57 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   removeCartItem: null,
   updateCartItem: null,
   cartTotal: 0,
+  getQuoteId(): string {
+    return '';
+  },
+  getCartId(): number {
+    return 0;
+  },
 });
 
 export const MedicinesCartProvider: React.FC = (props) => {
-  const [cartItems, setCartItems] = useState<MedicineCartContextProps['cartItems']>([]);
+  const [cartItems, setCartItems] = useState<MedicineCartContextProps['cartItems']>(
+    localStorage.getItem('cartItems') ? JSON.parse(localStorage.getItem('cartItems') || '') : []
+  );
 
-  const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) =>
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    }
+  }, [cartItems]);
+
+  const newQuoteId = () => {
+    let quoteId = '';
+    axios
+      .post(quoteUrl)
+      .then((data) => {
+        if (data.data.quote_id) {
+          localStorage.setItem('quoteId', data.data.quote_id);
+          quoteId = data.data.quote_id;
+        }
+      })
+      .catch((err) => {
+        alert(err);
+      });
+    return quoteId;
+  };
+
+  const getQuoteId = () => {
+    if (localStorage.getItem('quoteId')) return localStorage.getItem('quoteId');
+    else return newQuoteId();
+  };
+
+  const getCartId = () => {
+    return 0;
+  };
+
+  const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) => {
     setCartItems([...cartItems, itemToAdd]);
+  };
 
-  const removeCartItem: MedicineCartContextProps['removeCartItem'] = (id) =>
+  const removeCartItem: MedicineCartContextProps['removeCartItem'] = (id) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
+  };
 
   const updateCartItem: MedicineCartContextProps['updateCartItem'] = (itemUpdates) => {
     const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
@@ -58,6 +112,8 @@ export const MedicinesCartProvider: React.FC = (props) => {
         removeCartItem,
         updateCartItem,
         cartTotal,
+        getQuoteId,
+        getCartId,
       }}
     >
       {props.children}
@@ -73,4 +129,6 @@ export const useShoppingCart = () => ({
   removeCartItem: useShoppingCartContext().removeCartItem!,
   updateCartItem: useShoppingCartContext().updateCartItem!,
   cartTotal: useShoppingCartContext().cartTotal,
+  quoteId: useShoppingCartContext().getQuoteId,
+  cartId: useShoppingCartContext().getCartId,
 });
