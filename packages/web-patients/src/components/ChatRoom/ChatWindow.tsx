@@ -12,7 +12,7 @@ import {
   UpdateAppointmentSessionVariables,
 } from 'graphql/types/UpdateAppointmentSession';
 import { useMutation } from 'react-apollo-hooks';
-//import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -214,7 +214,7 @@ interface ChatWindowProps {
   appointmentId: string;
   doctorId: string;
   hasDoctorJoined: (hasDoctorJoined: boolean) => void;
-  //doctorDetails: DoctorDetails;
+  doctorDetails: DoctorDetails;
 }
 
 interface AutoMessageStrings {
@@ -229,11 +229,11 @@ let timerIntervalId: any;
 let stoppedConsulTimer: number;
 export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const classes = useStyles();
-  //const { doctorDetails } = props;
-  // const profileImage =
-  //   doctorDetails && doctorDetails.getDoctorDetailsById
-  //     ? doctorDetails.getDoctorDetailsById.photoUrl
-  //     : '';
+  const { doctorDetails } = props;
+  const profileImage =
+    doctorDetails && doctorDetails.getDoctorDetailsById
+      ? doctorDetails.getDoctorDetailsById.photoUrl
+      : '';
   const { allCurrentPatients } = useAllCurrentPatients();
   const currentUserId = (allCurrentPatients && allCurrentPatients[0].id) || '';
 
@@ -548,11 +548,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           <div className={rowData.duration ? classes.callMsg : classes.petient}>
             {rightComponent == 1 && !rowData.duration && (
               <span className={classes.boldTxt}>
-                <img src={require('images/ic_patientchat.png')} />
-                {/* <img
+                <img
                   src={profileImage !== null ? profileImage : 'https://via.placeholder.com/328x138'}
                   alt="img"
-                /> */}
+                />
               </span>
             )}
             {rowData.duration === '00 : 00' ? (
