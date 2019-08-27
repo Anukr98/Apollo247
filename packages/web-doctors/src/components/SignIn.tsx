@@ -412,12 +412,13 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             mobileNumber.trim() !== '' && showErrorMessage && !isMobileNumberValid(mobileNumber)
           }
           onKeyPress={(e) => {
-            if (mobileNumber.length === 10 && e.key == 'Enter') {
+            if (!showErrorMessage && mobileNumber.length === 10 && e.key == 'Enter') {
               sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
                 setDisplayOtpInput(true)
               );
               setStickyPopupValue();
             }
+            if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
           }}
           startAdornment={
             <InputAdornment className={classes.inputAdornment} position="start">
