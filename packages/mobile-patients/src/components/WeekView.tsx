@@ -31,11 +31,6 @@ const styles = StyleSheet.create({
     color: theme.colors.APP_GREEN,
     backgroundColor: theme.colors.CLEAR,
   },
-  textStyle: {
-    ...theme.fonts.IBMPlexSansSemiBold(12),
-    letterSpacing: 0.3,
-    color: '#80a3ad',
-  },
   textStyleToday: {
     backgroundColor: theme.colors.APP_GREEN,
     ...theme.fonts.IBMPlexSansSemiBold(14),

@@ -1,19 +1,23 @@
-import { NavigationScreenProps } from 'react-navigation';
-import React, { useState } from 'react';
-import { StyleSheet, SafeAreaView, View, TouchableOpacity, Image } from 'react-native';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { ScrollView } from 'react-native-gesture-handler';
-import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import strings from '@aph/mobile-patients/src/strings/strings.json';
-import { UserIntro } from '@aph/mobile-patients/src/components/ui/UserIntro';
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
-import { NotificationIcon, Filter } from '@aph/mobile-patients/src/components/ui/Icons';
-import { HealthConsultView } from '@aph/mobile-patients/src/components/HealthRecords/HealthConsultView';
-import { filterDataType } from '@aph/mobile-patients/src/components/DoctorSearchListing';
+import { filterDataType } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { AddFilePopup } from '@aph/mobile-patients/src/components/HealthRecords/AddFilePopup';
+import { HealthConsultView } from '@aph/mobile-patients/src/components/HealthRecords/HealthConsultView';
 import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  AddFileIcon,
+  Filter,
+  NotificationIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { UserIntro } from '@aph/mobile-patients/src/components/ui/UserIntro';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import React, { useState } from 'react';
+import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -21,8 +25,9 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.lightSeparatorStyle,
     marginHorizontal: 20,
     marginBottom: 20,
-    alignItems: 'flex-end',
-    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 });
 
@@ -46,6 +51,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderFilter = () => {
     return (
       <View style={styles.filterViewStyle}>
+        <TouchableOpacity onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}>
+          <AddFileIcon />
+        </TouchableOpacity>
         <TouchableOpacity onPress={() => setDisplayFilter(true)}>
           <Filter />
         </TouchableOpacity>

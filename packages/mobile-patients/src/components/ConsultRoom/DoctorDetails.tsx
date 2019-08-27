@@ -1,4 +1,4 @@
-import { ConsultOverlay } from '@aph/mobile-patients/src/components/ConsultOverlay';
+import { ConsultOverlay } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultOverlay';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
@@ -40,7 +40,7 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { AppRoutes } from './NavigatorContainer';
+import { AppRoutes } from '../NavigatorContainer';
 
 const { height, width } = Dimensions.get('window');
 

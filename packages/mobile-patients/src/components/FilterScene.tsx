@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { Calendar, DateObject } from 'react-native-calendars';
 import { ScrollView } from 'react-native-gesture-handler';
-import { filterDataType } from '@aph/mobile-patients/src/components/DoctorSearchListing';
+import { filterDataType } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
 
 const styles = StyleSheet.create({
   container: {

@@ -58,7 +58,7 @@ export const CollapseCard: React.FC<CollapseCardProps> = (props) => {
           </TouchableOpacity>
         </View>
       </View>
-      {props.collapse ? props.children : null}
+      {props.collapse ? props.children : <View style={{ height: 20 }} />}
     </View>
   );
 };

@@ -18,7 +18,8 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import Moment from 'moment';
 import { StyleSheet, Text, View } from 'react-native';
-import { CalendarView, CALENDAR_TYPE } from './ui/CalendarView';
+import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
+import { timeTo12HrFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -42,26 +43,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     color: theme.colors.APP_GREEN,
     ...theme.fonts.IBMPlexSansMedium(15),
-  },
-  placeholderTextStyle: {
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
-  },
-  placeholderViewStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    borderBottomWidth: 2,
-    paddingTop: 7,
-    paddingBottom: 3,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
-  horizontalSeparatorStyle: {
-    borderRightWidth: 0.5,
-    borderRightColor: 'rgba(2, 71, 91, 0.3)',
-    marginHorizontal: 16,
-    marginBottom: 5,
   },
 });
 
@@ -177,20 +158,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       setavailableInMin(timeDiff);
     }
   }
-
-  const timeTo12HrFormat = (time: string) => {
-    const IOSFormat = `${date.toISOString().split('T')[0]}T${time}:00.000Z`;
-    const formatedSlot = Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
-    const time_array = formatedSlot.split(':');
-    let ampm = 'am';
-    if (Number(time_array[0]) >= 12) {
-      ampm = 'pm';
-    }
-    if (Number(time_array[0]) > 12) {
-      time_array[0] = (Number(time_array[0]) - 12).toString();
-    }
-    return time_array[0].replace(/^00/, '12').replace(/^0/, '') + ':' + time_array[1] + ' ' + ampm;
-  };
 
   const renderTimings = () => {
     // console.log(timeArray, 'timeArray123456789', selectedtiming);

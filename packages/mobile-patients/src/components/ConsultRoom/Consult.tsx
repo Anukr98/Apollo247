@@ -104,16 +104,6 @@ const styles = StyleSheet.create({
     marginVertical: 16,
     borderRadius: 10,
   },
-  buttonView: {
-    height: 44,
-    backgroundColor: theme.colors.BUTTON_BG,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    ...theme.fonts.IBMPlexSansBold(14),
-    color: theme.colors.BUTTON_TEXT,
-  },
   availableView: {
     position: 'absolute',
     right: 0,
@@ -138,13 +128,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(12),
     color: theme.colors.SKY_BLUE,
   },
-  doctorLocation: {
-    marginBottom: 16,
-    paddingTop: 2,
-    paddingLeft: 0,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: theme.colors.SEARCH_EDUCATION_COLOR,
-  },
   consultTextStyles: {
     paddingVertical: 11.5,
     paddingLeft: 0,
@@ -157,20 +140,10 @@ const styles = StyleSheet.create({
   },
 });
 
-type currentProfiles = {
-  firstName: string;
-  id: string;
-  lastName: string;
-  mobileNumber: string;
-  sex: string;
-  uhid: string;
-};
-
 export interface ConsultProps extends NavigationScreenProps {}
 export const Consult: React.FC<ConsultProps> = (props) => {
   const thingsToDo = string.consult_room.things_to_do.data;
   const articles = string.consult_room.articles.data;
-  // const scrollViewWidth = thingsToDo.length * 250 + thingsToDo.length * 20;
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [userName, setuserName] = useState<string>('');
   const { analytics } = useAuth();
@@ -303,20 +276,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           <TouchableHighlight key={i}>
             <View
               style={{
-                // height: 104,
                 ...theme.viewStyles.cardViewStyle,
-                // borderRadius: 10,
                 padding: 16,
-                // backgroundColor: '#f7f8f5',
                 flexDirection: 'row',
                 marginHorizontal: 20,
                 marginTop: i === 0 ? 11 : 8,
                 marginBottom: thingsToDo.length === i + 1 ? 16 : 8,
-                // shadowColor: '#808080',
-                // shadowOffset: { width: 0, height: 1 },
-                // shadowOpacity: 0.4,
-                // shadowRadius: 10,
-                // elevation: 5,
               }}
               key={i}
             >
@@ -363,26 +328,17 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               style={{
                 height: 104,
                 ...theme.viewStyles.cardViewStyle,
-                // borderRadius: 10,
-                // padding: 16,
-                // backgroundColor: '#f7f8f5',
                 flexDirection: 'row',
                 marginHorizontal: 20,
                 padding: 0,
                 marginTop: i === 0 ? 15 : 8,
                 marginBottom: articles.length === i + 1 ? 32 : 8,
-                // shadowColor: '#808080',
-                // shadowOffset: { width: 0, height: 1 },
-                // shadowOpacity: 0.4,
-                // shadowRadius: 10,
-                // elevation: 5,
               }}
               key={i}
             >
               <View
                 style={{
                   overflow: 'hidden',
-                  // backgroundColor: 'red',
                   borderTopLeftRadius: 10,
                   borderBottomLeftRadius: 10,
                 }}
@@ -413,175 +369,185 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     );
   };
 
+  const renderConsultations = () => {
+    return (
+      <FlatList
+        keyExtractor={(_, index) => index.toString()}
+        contentContainerStyle={{ padding: 12, paddingTop: 0 }}
+        horizontal={true}
+        data={consultations}
+        bounces={false}
+        showsHorizontalScrollIndicator={false}
+        renderItem={({ item }) => {
+          const appointmentDateTime = moment
+            .utc(item.appointmentDateTime)
+            .local()
+            .format('YYYY-MM-DD HH:mm:ss');
+          const minutes = moment.duration(moment(appointmentDateTime).diff(new Date())).asMinutes();
+          const title =
+            minutes > 0 && minutes <= 15
+              ? `${Math.ceil(minutes)} MINS`
+              : moment(appointmentDateTime).format(
+                  appointmentDateTime.split(' ')[0] === new Date().toISOString().split('T')[0]
+                    ? 'h:mm A'
+                    : 'DD MMM h:mm A'
+                );
+          const isActive = minutes > 0 && minutes <= 15 ? true : false;
+
+          return (
+            <View style={{ width: 312 }}>
+              <TouchableOpacity
+                style={[styles.doctorView]}
+                onPress={() =>
+                  props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                    data: item,
+                  })
+                }
+              >
+                <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
+                  <View style={{ flexDirection: 'row' }}>
+                    {/* {(rowData.availableForPhysicalConsultation || rowData.availableForVirtualConsultation) &&
+                            props.displayButton &&
+                            rowData.availableIn ? ( */}
+                    <CapsuleView title={title} style={styles.availableView} isActive={isActive} />
+                    <View style={styles.imageView}>
+                      {item.doctorInfo && item.doctorInfo.photoUrl && (
+                        <Image
+                          style={{
+                            width: 60,
+                            height: 60,
+                            borderRadius: 30,
+                          }}
+                          source={{ uri: item.doctorInfo.photoUrl }}
+                        />
+                      )}
+
+                      {/* {item.isStarDoctor ? (
+              <Star style={{ height: 28, width: 28, position: 'absolute', top: 66, left: 30 }} />
+            ) : null} */}
+                    </View>
+                    <View style={{ flex: 1, marginRight: 16 }}>
+                      <Text style={styles.doctorNameStyles} numberOfLines={1}>
+                        Dr.{' '}
+                        {item.doctorInfo
+                          ? `${item.doctorInfo.firstName} ${item.doctorInfo.lastName}`
+                          : ''}
+                      </Text>
+                      <Text style={styles.doctorSpecializationStyles}>
+                        {item.doctorInfo && item.doctorInfo.specialty
+                          ? item.doctorInfo.specialty.name
+                          : ''}
+                        {item.doctorInfo ? ` | ${item.doctorInfo.experience} YRS` : ''}
+                      </Text>
+                      <View style={styles.separatorStyle} />
+                      <Text style={styles.consultTextStyles}>
+                        {item.appointmentType === 'ONLINE' ? 'Online' : 'Physical'} Consultation
+                      </Text>
+                      <View style={styles.separatorStyle} />
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          marginBottom: 16,
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        {['FEVER', 'COUGH & COLD'].map((name) => (
+                          <CapsuleView
+                            title={name}
+                            isActive={false}
+                            style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
+                            titleTextStyle={{ color: theme.colors.SKY_BLUE }}
+                          />
+                        ))}
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </View>
+          );
+        }}
+      />
+    );
+  };
+
+  const renderTopView = () => {
+    const todayConsults = consultations.filter(
+      (item) => item.appointmentDateTime.split('T')[0] === new Date().toISOString().split('T')[0]
+    );
+    console.log(todayConsults, 'todayConsults');
+    return (
+      <View style={{ width: '100%' }}>
+        <View style={styles.viewName}>
+          <View style={{ alignItems: 'flex-end', marginTop: 20, height: 57 }}>
+            <TouchableOpacity onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}>
+              <ApolloLogo style={{}} />
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity
+            onPress={() => setShowMenu(true)}
+            activeOpacity={1}
+            style={{
+              flexDirection: 'row',
+              marginTop: 8,
+              alignItems: 'center',
+            }}
+          >
+            <View style={{ flexDirection: 'row' }}>
+              <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
+              <View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text style={styles.nameTextStyle}>{userName}!</Text>
+                  <DropdownGreen style={{ marginTop: 8 }} />
+                </View>
+                <View style={styles.seperatorStyle} />
+              </View>
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.descriptionTextStyle}>
+            {consultations.length > 0
+              ? `You have ${consultations.length} upcoming consultation${
+                  consultations.length > 1 ? 's' : ''
+                }!`
+              : string.consult_room.description}
+          </Text>
+          <View style={{ height: consultations.length > 0 ? 84 : 48 }} />
+        </View>
+        <View style={styles.cardContainerStyle}>
+          {consultations.length > 0 ? (
+            renderConsultations()
+          ) : (
+            <View
+              style={{
+                marginLeft: 20,
+                marginTop: 20,
+              }}
+            >
+              <Button
+                title={string.home.consult_doctor}
+                style={styles.buttonStyles}
+                onPress={() => {
+                  // props.navigation.navigate(AppRoutes.DoctorSearch);
+                }}
+              />
+            </View>
+          )}
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {showMenu && Popup()}
-          {/* <View style={{ top: 200, position: 'absolute', zIndex: 3 }}>
-           
-          </View> */}
-          <View style={{ width: '100%' }}>
-            <View style={styles.viewName}>
-              <View style={{ alignItems: 'flex-end', marginTop: 20, height: 57 }}>
-                <TouchableOpacity onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}>
-                  <ApolloLogo style={{}} />
-                </TouchableOpacity>
-              </View>
-              <TouchableOpacity
-                onPress={() => setShowMenu(true)}
-                activeOpacity={1}
-                style={{
-                  flexDirection: 'row',
-                  marginTop: 8,
-                  alignItems: 'center',
-                }}
-              >
-                <View style={{ flexDirection: 'row' }}>
-                  <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
-                  <View>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Text style={styles.nameTextStyle}>{userName}!</Text>
-                      <DropdownGreen style={{ marginTop: 8 }} />
-                    </View>
-                    <View style={styles.seperatorStyle} />
-                  </View>
-                </View>
-              </TouchableOpacity>
-              <Text style={styles.descriptionTextStyle}>
-                {consultations.length > 0
-                  ? `You have ${consultations.length} consultation${
-                      consultations.length > 1 ? 's' : ''
-                    } today!`
-                  : string.consult_room.description}
-              </Text>
-              <View style={{ height: consultations.length > 0 ? 84 : 48 }} />
-            </View>
-            <View style={styles.cardContainerStyle}>
-              {consultations.length > 0 ? (
-                <FlatList
-                  keyExtractor={(_, index) => index.toString()}
-                  contentContainerStyle={{ padding: 12, paddingTop: 0 }}
-                  horizontal={true}
-                  data={consultations}
-                  bounces={false}
-                  showsHorizontalScrollIndicator={false}
-                  renderItem={({ item }) => {
-                    const appointmentDateTime = moment
-                      .utc(item.appointmentDateTime)
-                      .local()
-                      .format('YYYY-MM-DD HH:mm:ss');
-                    const minutes = moment
-                      .duration(moment(appointmentDateTime).diff(new Date()))
-                      .asMinutes();
-                    const title =
-                      minutes > 0 && minutes <= 15
-                        ? `${Math.ceil(minutes)} MINS`
-                        : moment(appointmentDateTime).format('h:mm A');
-                    const isActive = minutes > 0 && minutes <= 15 ? true : false;
-
-                    return (
-                      <View style={{ width: 312 }}>
-                        <TouchableOpacity
-                          style={[styles.doctorView]}
-                          onPress={() =>
-                            props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                              data: item,
-                            })
-                          }
-                        >
-                          <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
-                            <View style={{ flexDirection: 'row' }}>
-                              {/* {(rowData.availableForPhysicalConsultation || rowData.availableForVirtualConsultation) &&
-                            props.displayButton &&
-                            rowData.availableIn ? ( */}
-                              <CapsuleView
-                                title={title}
-                                style={styles.availableView}
-                                isActive={isActive}
-                              />
-                              <View style={styles.imageView}>
-                                {item.doctorInfo && item.doctorInfo.photoUrl && (
-                                  <Image
-                                    style={{
-                                      width: 60,
-                                      height: 60,
-                                      borderRadius: 30,
-                                    }}
-                                    source={{ uri: item.doctorInfo.photoUrl }}
-                                  />
-                                )}
-
-                                {/* {item.isStarDoctor ? (
-              <Star style={{ height: 28, width: 28, position: 'absolute', top: 66, left: 30 }} />
-            ) : null} */}
-                              </View>
-                              <View style={{ flex: 1, marginRight: 16 }}>
-                                <Text style={styles.doctorNameStyles}>
-                                  Dr.{' '}
-                                  {item.doctorInfo
-                                    ? `${item.doctorInfo.firstName} ${item.doctorInfo.lastName}`
-                                    : ''}
-                                </Text>
-                                <Text style={styles.doctorSpecializationStyles}>
-                                  {item.doctorInfo && item.doctorInfo.specialty
-                                    ? item.doctorInfo.specialty.name
-                                    : ''}
-                                  {item.doctorInfo ? ` | ${item.doctorInfo.experience} YRS` : ''}
-                                </Text>
-                                <View style={styles.separatorStyle} />
-                                <Text style={styles.consultTextStyles}>
-                                  {item.appointmentType === 'ONLINE' ? 'Online' : 'Physical'}{' '}
-                                  Consultation
-                                </Text>
-                                <View style={styles.separatorStyle} />
-                                <View
-                                  style={{
-                                    flexDirection: 'row',
-                                    marginBottom: 16,
-                                    flexWrap: 'wrap',
-                                  }}
-                                >
-                                  {['FEVER', 'COUGH & COLD'].map((name) => (
-                                    <CapsuleView
-                                      title={name}
-                                      isActive={false}
-                                      style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
-                                      titleTextStyle={{ color: theme.colors.SKY_BLUE }}
-                                    />
-                                  ))}
-                                </View>
-                              </View>
-                            </View>
-                          </View>
-                        </TouchableOpacity>
-                      </View>
-                    );
-                  }}
-                />
-              ) : (
-                <View
-                  style={{
-                    marginLeft: 20,
-                    marginTop: 20,
-                  }}
-                >
-                  <Button
-                    title={string.home.consult_doctor}
-                    style={styles.buttonStyles}
-                    onPress={() => {
-                      // props.navigation.navigate(AppRoutes.DoctorSearch);
-                    }}
-                  />
-                </View>
-              )}
-            </View>
-          </View>
+          {renderTopView()}
           <View style={{ marginTop: consultations.length > 0 ? 116 : 16 }}>
             {renderThingsToDo()}
             {renderArticles()}
