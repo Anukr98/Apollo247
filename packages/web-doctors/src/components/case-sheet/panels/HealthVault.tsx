@@ -77,6 +77,23 @@ const useStyles = makeStyles(() => ({
     height: 10,
     borderRadius: 5,
     backgroundColor: '#02475b',
+    position: 'absolute',
+    left: -5,
+  },
+  listStyle: {
+    display: 'flex',
+    flexFlow: 'column',
+    alignItems: 'start',
+    width: '100%',
+    borderLeft: '1px solid #02475b',
+  },
+  childListStyle: {
+    display: 'flex',
+    flexFlow: 'column',
+    alignItems: 'start',
+    width: '100%',
+    borderLeft: 'none',
+    paddingLeft: 15,
   },
 }));
 
@@ -176,26 +193,29 @@ interface PastAppointmentData {
 
 interface PastAppointmentProps {
   data: PastAppointmentData[];
+  isChild: boolean;
 }
 
-const PastAppointment: React.FC<PastAppointmentProps> = ({ data }) => {
+const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
+  const classes = useStyles();
+  const ischild: boolean = true;
   return (
-    <List
-      style={{
-        display: 'flex',
-        flexFlow: 'column',
-        alignItems: 'start',
-        width: '100%',
-        borderLeft: '1px solid #02475b',
-      }}
-    >
+    <List className={isChild ? classes.childListStyle : classes.listStyle}>
       {data.map((item, idx) => (
         <ListItem
           key={idx}
-          style={{ display: 'flex', flexFlow: 'column', paddingRight: 0, alignItems: 'start' }}
+          style={{
+            display: 'flex',
+            flexFlow: 'column',
+            paddingRight: 0,
+            paddingLeft: 0,
+            alignItems: 'start',
+          }}
         >
           <AppointmentCard data={item} />
-          {!!item.child && !!item.child.length && <PastAppointment data={item.child} />}
+          {!!item.child && !!item.child.length && (
+            <PastAppointment data={item.child} isChild={ischild} />
+          )}
         </ListItem>
       ))}
     </List>
@@ -255,7 +275,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 
 export const HealthVault: React.FC = () => {
   const classes = useStyles();
-
+  const ischild: boolean = false;
   return (
     <ThemeProvider theme={theme}>
       <Typography component="div" className={classes.vaultContainer}>
@@ -323,7 +343,7 @@ export const HealthVault: React.FC = () => {
           <Typography component="h5" variant="h5">
             Past Consultations
           </Typography>
-          <PastAppointment data={pastConsultationData} />
+          <PastAppointment data={pastConsultationData} isChild={ischild} />
         </Typography>
       </Typography>
     </ThemeProvider>
