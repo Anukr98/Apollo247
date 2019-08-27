@@ -362,6 +362,10 @@ export const GET_CASESHEET = gql`
       }
       caseSheetDetails {
         id
+        appointment {
+          id
+          appointmentDateTime
+        }
         medicinePrescription {
           id
           medicineName
