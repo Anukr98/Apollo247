@@ -10,6 +10,7 @@ import { Diagnosis } from 'components/HealthRecords/Diagnosis';
 import { GeneralAdvice } from 'components/HealthRecords/GeneralAdvice';
 import { FollowUp } from 'components/HealthRecords/FollowUp';
 import { PaymentInvoice } from 'components/HealthRecords/PaymentInvoice';
+import { PrescriptionPreview } from 'components/HealthRecords/PrescriptionPreview';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -77,6 +78,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 1,
       marginLeft: 15,
       marginRight: 15,
+      marginBottom: 10,
       '& button': {
         boxShadow: 'none',
         backgroundColor: 'transparent',
@@ -101,7 +103,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 15,
       borderLeft: '4px solid #0087ba',
       paddingLeft: 14,
-      marginTop: 20,
+      marginTop: 10,
       '& >div:last-child >div': {
         position: 'relative',
         '&:before': {
@@ -136,6 +138,11 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 15,
       paddingTop: 10,
     },
+    addReportActions: {
+      paddingLeft: 15,
+      paddingRight: 15,
+      paddingTop: 10,
+    },
   };
 });
 
@@ -149,7 +156,7 @@ export const Consultations: React.FC = (props) => {
           <AphButton>Online</AphButton>
           <AphButton>Physical</AphButton>
         </div>
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 276px)'}>
+        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 336px)'}>
           <div className={classes.consultationsList}>
             <div className={classes.consultGroupHeader}>
               <div className={classes.circle}></div>
@@ -173,6 +180,11 @@ export const Consultations: React.FC = (props) => {
             <DoctorConsultCard />
           </div>
         </Scrollbars>
+        <div className={classes.addReportActions}>
+          <AphButton color="primary" fullWidth>
+            Add a Report
+          </AphButton>
+        </div>
       </div>
       <div className={classes.rightSection}>
         <div className={classes.sectionHeader}>
@@ -195,6 +207,7 @@ export const Consultations: React.FC = (props) => {
             <GeneralAdvice />
             <FollowUp />
             <PaymentInvoice />
+            <PrescriptionPreview />
           </div>
         </Scrollbars>
       </div>

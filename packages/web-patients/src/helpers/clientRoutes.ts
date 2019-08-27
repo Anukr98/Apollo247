@@ -14,6 +14,7 @@ export const clientRoutes = {
   chatRoom: (appointmentId: string, doctorId: string) => `/chat-room/${appointmentId}/${doctorId}`,
   myAccount: () => '/profile',
   notificationSettings: () => '/settings',
+  addRecords: () => '/add-records',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
