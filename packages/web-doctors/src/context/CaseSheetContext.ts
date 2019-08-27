@@ -2,6 +2,8 @@ import {
   GetCaseSheet_getCaseSheet_patientDetails,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
 } from 'graphql/types/GetCaseSheet';
 import { createContext } from 'react';
 
@@ -22,6 +24,22 @@ export interface CaseSheetContextProps {
         React.SetStateAction<GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null>
       >
     | (() => void);
+  otherInstructions: GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null;
+  setOtherInstructions:
+    | React.Dispatch<
+        React.SetStateAction<GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null>
+      >
+    | (() => void);
+  diagnosticPrescription:
+    | GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
+    | null;
+  setDiagnosticPrescription:
+    | React.Dispatch<
+        React.SetStateAction<
+          GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[] | null
+        >
+      >
+    | (() => void);
 }
 
 export const CaseSheetContext = createContext<CaseSheetContextProps>({
@@ -33,4 +51,8 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   notes: null,
   diagnosis: null,
   setDiagnosis: () => {},
+  otherInstructions: null,
+  setOtherInstructions: () => {},
+  diagnosticPrescription: null,
+  setDiagnosticPrescription: () => {},
 });

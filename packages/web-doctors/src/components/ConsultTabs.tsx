@@ -20,6 +20,8 @@ import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
 } from 'graphql/types/GetCaseSheet';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
@@ -126,6 +128,12 @@ export const ConsultTabs: React.FC = () => {
   const [diagnosis, setDiagnosis] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null
   >(null);
+  const [otherInstructions, setOtherInstructions] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null
+  >(null);
+  const [diagnosticPrescription, setDiagnosticPrescription] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[] | null
+  >(null);
   /* case sheet data*/
 
   useEffect(() => {
@@ -146,6 +154,10 @@ export const ConsultTabs: React.FC = () => {
             .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
           setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
             .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
+          setOtherInstructions((_data!.data!.getCaseSheet!.caseSheetDetails!
+            .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[]);
+          setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+            .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
         })
         .catch((e: any) => {
           console.log('Error occured creating session', e);
@@ -230,11 +242,15 @@ export const ConsultTabs: React.FC = () => {
             loading: !loaded,
             caseSheetId: appointmentId,
             patientDetails: casesheetInfo!.getCaseSheet!.patientDetails,
-            symptoms: casesheetInfo!.getCaseSheet!.caseSheetDetails!.symptoms,
+            symptoms,
             setSymptoms,
             notes: casesheetInfo!.getCaseSheet!.caseSheetDetails!.notes,
-            diagnosis: casesheetInfo!.getCaseSheet!.caseSheetDetails!.diagnosis,
+            diagnosis,
             setDiagnosis,
+            otherInstructions,
+            setOtherInstructions,
+            diagnosticPrescription,
+            setDiagnosticPrescription,
           }}
         >
           <div className={classes.container}>

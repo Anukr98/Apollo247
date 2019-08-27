@@ -242,7 +242,7 @@ export const CaseSheet: React.FC = () => {
           </ExpansionPanel> */}
 
           {/* Diagnostic Prescription Panel */}
-          {/* <ExpansionPanel
+          <ExpansionPanel
             expanded={expanded === 'diagnosticPrescription'}
             onChange={handlePanelExpansion('diagnosticPrescription')}
             className={classes.expandIcon}
@@ -251,12 +251,12 @@ export const CaseSheet: React.FC = () => {
               <Typography variant="h3">Diagnostic Prescription</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <DiagnosticPrescription casesheetInfo={props.casesheetInfo} />
+              <DiagnosticPrescription />
             </ExpansionPanelDetails>
-          </ExpansionPanel> */}
+          </ExpansionPanel>
 
           {/* Follow Up Panel */}
-          {/* <ExpansionPanel
+          <ExpansionPanel
             expanded={expanded === 'followup'}
             onChange={handlePanelExpansion('followup')}
             className={classes.expandIcon}
@@ -267,10 +267,10 @@ export const CaseSheet: React.FC = () => {
             <ExpansionPanelDetails>
               <FollowUp />
             </ExpansionPanelDetails>
-          </ExpansionPanel> */}
+          </ExpansionPanel>
 
           {/* Other Instructions Panel */}
-          {/* <ExpansionPanel
+          <ExpansionPanel
             expanded={expanded === 'otherInstructions'}
             onChange={handlePanelExpansion('otherInstructions')}
             className={classes.expandIcon}
@@ -279,9 +279,9 @@ export const CaseSheet: React.FC = () => {
               <Typography variant="h3">Other Instructions</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <OtherInstructions casesheetInfo={props.casesheetInfo} />
+              <OtherInstructions />
             </ExpansionPanelDetails>
-          </ExpansionPanel> */}
+          </ExpansionPanel>
         </section>
       </div>
       <Divider className={classes.divider} />
