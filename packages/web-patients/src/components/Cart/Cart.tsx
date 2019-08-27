@@ -295,11 +295,16 @@ export const Cart: React.FC = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
 
+  const { cartTotal } = useShoppingCart();
+  const deliveryCharges = 30; // this must be retrieved from api later.
+
+  const totalAmount = (cartTotal + deliveryCharges).toFixed(2);
+
   const cartItems = localStorage.getItem('cartItems')
     ? JSON.parse(localStorage.getItem('cartItems') || '')
     : [];
 
-  // console.log('cart items......', cartItems);
+  // console.log('cart items......', cartItems, cartTotal);
 
   return (
     <div className={classes.root}>
@@ -413,17 +418,17 @@ export const Cart: React.FC = (props) => {
                   <div className={classes.topSection}>
                     <div className={classes.priceRow}>
                       <span>Subtotal</span>
-                      <span className={classes.priceCol}>Rs. 450</span>
+                      <span className={classes.priceCol}>Rs. {cartTotal.toFixed(2)}</span>
                     </div>
                     <div className={classes.priceRow}>
                       <span>Delivery Charges</span>
-                      <span className={classes.priceCol}>+ Rs. 30</span>
+                      <span className={classes.priceCol}>+ Rs. {deliveryCharges}</span>
                     </div>
                   </div>
                   <div className={classes.bottomSection}>
                     <div className={classes.priceRow}>
                       <span>To Pay</span>
-                      <span className={classes.totalPrice}>Rs. 480 </span>
+                      <span className={classes.totalPrice}>Rs. {totalAmount}</span>
                     </div>
                   </div>
                 </div>
@@ -432,7 +437,7 @@ export const Cart: React.FC = (props) => {
           </Scrollbars>
           <div className={classes.checkoutBtn}>
             <AphButton onClick={() => setIsDialogOpen(true)} color="primary" fullWidth>
-              Proceed to pay — RS. 480
+              Proceed to pay — RS. {totalAmount}
             </AphButton>
           </div>
         </div>

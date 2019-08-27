@@ -328,7 +328,7 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
 
   const { medicines } = props;
 
-  // console.log(medicines);
+  console.log(medicines);
 
   const medicinesMarkup = () => {
     return medicines.map((medicineDetails, index) => {
@@ -348,9 +348,10 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
       const typeId = medicineDetails.type_id;
 
       // console.log(medicineName, isPrescriptionRequired);
+      // console.log(selectedPackedQty[index], medicineDetails.quantity);
 
       if (!selectedPackedQty[index]) {
-        selectedPackedQty[index] = 1;
+        selectedPackedQty[index] = medicineDetails.quantity > 0 ? medicineDetails.quantity : 1;
         selectedPackedContainer[index] = false;
       }
       return (
