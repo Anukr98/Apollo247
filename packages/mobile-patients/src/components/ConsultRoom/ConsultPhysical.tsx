@@ -19,23 +19,15 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Dimensions } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { CalendarView, CALENDAR_TYPE } from './ui/CalendarView';
-import moment from 'moment';
+import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
 import { useQuery } from 'react-apollo-hooks';
 import { getDoctorPhysicalAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorPhysicalAvailableSlots';
 import { GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
-
-const { width, height } = Dimensions.get('window');
+import { divideSlots, timeTo12HrFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
-  selectedButtonView: {
-    backgroundColor: theme.colors.APP_GREEN,
-  },
-  selectedButtonText: {
-    color: theme.colors.WHITE,
-  },
   optionsView: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -168,70 +160,8 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     });
   }, [props.clinics, selectedClinic]);
 
-  const timeTo12HrFormat = (time: string) => {
-    const IOSFormat = `${date.toISOString().split('T')[0]}T${time}:00.000Z`;
-    const formatedSlot = moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
-    const time_array = formatedSlot.split(':');
-    let ampm = 'am';
-    if (Number(time_array[0]) >= 12) {
-      ampm = 'pm';
-    }
-    if (Number(time_array[0]) > 12) {
-      time_array[0] = (Number(time_array[0]) - 12).toString();
-    }
-    return time_array[0].replace(/^00/, '12').replace(/^0/, '') + ':' + time_array[1] + ' ' + ampm;
-  };
-
   const setTimeArrayData = (availableSlots: string[]) => {
-    let array: TimeArray = [
-      { label: 'Morning', time: [] },
-      { label: 'Afternoon', time: [] },
-      { label: 'Evening', time: [] },
-      { label: 'Night', time: [] },
-    ];
-    console.log(availableSlots, 'setTimeArrayData');
-    const morningStartTime = moment('06:00', 'HH:mm');
-    const morningEndTime = moment('12:00', 'HH:mm');
-    const afternoonStartTime = moment('12:01', 'HH:mm');
-    const afternoonEndTime = moment('17:00', 'HH:mm');
-    const eveningStartTime = moment('17:01', 'HH:mm');
-    const eveningEndTime = moment('21:00', 'HH:mm');
-    const nightStartTime = moment('21:01', 'HH:mm');
-    const nightEndTime = moment('05:59', 'HH:mm');
-
-    availableSlots.forEach((slot) => {
-      const IOSFormat = `${date.toISOString().split('T')[0]}T${slot}:00.000Z`;
-      const formatedSlot = moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
-      console.log(new Date() < new Date(IOSFormat), 'IOSFormat......');
-      const slotTime = moment(formatedSlot, 'HH:mm');
-      if (new Date() < new Date(IOSFormat)) {
-        if (slotTime.isBetween(nightEndTime, afternoonStartTime)) {
-          array[0] = {
-            label: 'Morning',
-            time: [...array[0].time, slot],
-          };
-        } else if (slotTime.isBetween(morningEndTime, eveningStartTime)) {
-          array[1] = {
-            ...array[1],
-            time: [...array[1].time, slot],
-          };
-        } else if (slotTime.isBetween(afternoonEndTime, nightStartTime)) {
-          array[2] = {
-            ...array[2],
-            time: [...array[2].time, slot],
-          };
-        } else if (
-          slotTime.isBetween(eveningEndTime, moment('23:59', 'HH:mm')) ||
-          slotTime.isSame(moment('00:00', 'HH:mm')) ||
-          slotTime.isBetween(moment('00:00', 'HH:mm'), morningStartTime)
-        ) {
-          array[3] = {
-            ...array[3],
-            time: [...array[3].time, slot],
-          };
-        }
-      }
-    });
+    const array = divideSlots(availableSlots, date);
     console.log(array, 'array', timeArray, 'timeArray');
     if (array !== timeArray) settimeArray(array);
   };

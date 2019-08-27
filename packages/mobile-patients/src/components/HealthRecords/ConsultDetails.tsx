@@ -312,7 +312,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             }
             onPressLeftIcon={() => props.navigation.goBack()}
           />
-          <ScrollView>
+          <ScrollView bounces={false}>
             {renderDoctorDetails()}
             {renderData()}
           </ScrollView>

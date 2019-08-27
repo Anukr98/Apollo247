@@ -3,7 +3,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Location, More } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React from 'react';
 import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -49,8 +49,6 @@ const styles = StyleSheet.create({
 export interface AppointmentDetailsProps extends NavigationScreenProps {}
 
 export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => {
-  const [searchText, setSearchText] = useState<string>('');
-
   const data = props.navigation.state.params!.data;
   console.log(
     props.navigation.state.params!.data,
