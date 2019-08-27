@@ -24,7 +24,8 @@ import {
   OtherInstructions,
 } from 'components/case-sheet/panels';
 import { UserCard } from 'components/case-sheet/UserCard';
-import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
+//import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
+import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -142,7 +143,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface CasesheetInfoProps {
-  casesheetInfo: GetJuniorDoctorCaseSheet;
+  casesheetInfo: GetCaseSheet;
   appointmentId: string;
 }
 export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
@@ -240,7 +241,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
               <Typography variant="h3">Medicine Prescription</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <MedicinePrescription />
+              <MedicinePrescription casesheetInfo={props.casesheetInfo} />
             </ExpansionPanelDetails>
           </ExpansionPanel>
 

@@ -14,10 +14,14 @@ import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import deburr from 'lodash/deburr';
+// import {
+//   GetJuniorDoctorCaseSheet,
+//   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis,
+// } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import {
-  GetJuniorDoctorCaseSheet,
-  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis,
-} from 'graphql/types/GetJuniorDoctorCaseSheet';
+  GetCaseSheet,
+  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis,
+} from 'graphql/types/GetCaseSheet';
 
 interface OptionType {
   name: string;
@@ -168,22 +172,22 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface CasesheetInfoProps {
-  casesheetInfo: GetJuniorDoctorCaseSheet;
+  casesheetInfo: GetCaseSheet;
 }
 export const Diagnosis: React.FC<CasesheetInfoProps> = (props) => {
   const classes = useStyles();
   const [selectedValues, setSelectedValues] = useState<
-    (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis | null)[]
+    (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis | null)[]
   >([]);
   useEffect(() => {
     if (
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis.length > 0
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosis &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosis !== null &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosis.length > 0
     ) {
-      setSelectedValues(props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis);
+      setSelectedValues(props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosis);
     }
   }, []);
   const [state, setState] = React.useState({

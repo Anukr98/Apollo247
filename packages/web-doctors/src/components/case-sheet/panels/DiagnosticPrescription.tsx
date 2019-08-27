@@ -8,17 +8,21 @@ import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
+// import {
+//   GetJuniorDoctorCaseSheet,
+//   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
+// } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import {
-  GetJuniorDoctorCaseSheet,
-  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
-} from 'graphql/types/GetJuniorDoctorCaseSheet';
+  GetCaseSheet,
+  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription,
+} from 'graphql/types/GetCaseSheet';
 
 interface OptionType {
   name: string;
   __typename: 'DiagnosticPrescription';
 }
 
-const suggestions: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription | null)[] = [
+const suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [
   { name: 'Ultrasound', __typename: 'DiagnosticPrescription' },
   { name: 'Ultra-something else', __typename: 'DiagnosticPrescription' },
 ];
@@ -180,26 +184,22 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface CasesheetInfoProps {
-  casesheetInfo: GetJuniorDoctorCaseSheet;
+  casesheetInfo: GetCaseSheet;
 }
 export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
   const classes = useStyles();
   const [selectedValues, setSelectedValues] = useState<
-    (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription | null)[]
+    (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[]
   >([]);
   useEffect(() => {
     if (
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription !==
-        null &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
-        .length > 0
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription !== null &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription.length > 0
     ) {
-      setSelectedValues(
-        props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
-      );
+      setSelectedValues(props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription);
     }
   }, []);
   const [state, setState] = React.useState({
@@ -207,7 +207,7 @@ export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
     popper: '',
   });
   const [stateSuggestions, setSuggestions] = React.useState<
-    (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription | null)[]
+    (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[]
   >([]);
 
   const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {

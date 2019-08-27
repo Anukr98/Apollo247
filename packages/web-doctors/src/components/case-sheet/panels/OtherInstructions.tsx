@@ -8,11 +8,14 @@ import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
+// import {
+//   GetJuniorDoctorCaseSheet,
+//   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions,
+// } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import {
-  GetJuniorDoctorCaseSheet,
-  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions,
-} from 'graphql/types/GetJuniorDoctorCaseSheet';
-
+  GetCaseSheet,
+  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions,
+} from 'graphql/types/GetCaseSheet';
 interface OptionType {
   instruction: string;
 }
@@ -175,25 +178,23 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface CasesheetInfoProps {
-  casesheetInfo: GetJuniorDoctorCaseSheet;
+  casesheetInfo: GetCaseSheet;
 }
 export const OtherInstructions: React.FC<CasesheetInfoProps> = (props) => {
   const classes = useStyles();
   const [selectedValues, setSelectedValues] = useState<
-    (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions | null)[]
+    (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions | null)[]
   >([]);
 
   useEffect(() => {
     if (
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions !== null &&
-      props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions.length > 0
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions !== null &&
+      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions.length > 0
     ) {
-      setSelectedValues(
-        props.casesheetInfo.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
-      );
+      setSelectedValues(props.casesheetInfo.getCaseSheet!.caseSheetDetails!.otherInstructions);
     }
   }, []);
   const [favoriteDiagnostics, setFavoriteDiagnostics] = useState<OptionType[]>([
