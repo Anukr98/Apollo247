@@ -5,6 +5,8 @@ import {
   BaseEntity,
   OneToMany,
   ManyToOne,
+  OneToOne,
+  JoinColumn,
   BeforeInsert,
   BeforeUpdate,
 } from 'typeorm';
@@ -301,6 +303,12 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => PatientDeviceTokens, (patientDeviceTokens) => patientDeviceTokens.patient)
   patientDeviceTokens: PatientDeviceTokens[];
 
+  @OneToOne(
+    (type) => PatientNotificationSettings,
+    (patientNotificationSettings) => patientNotificationSettings.patient
+  )
+  patientNotificationSettings: PatientNotificationSettings;
+
   @Column({ nullable: true, type: 'text' })
   photoUrl: string;
 
@@ -497,3 +505,49 @@ export class PatientHealthVault extends BaseEntity {
   }
 }
 //patientHealthVault ends
+
+//patient notification settings starts
+@Entity()
+export class PatientNotificationSettings extends BaseEntity {
+  @Column({ default: false })
+  commissionNotification: boolean;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ default: false })
+  messageFromDoctorNotification: boolean;
+
+  @OneToOne((type) => Patient, (patient) => patient.patientNotificationSettings)
+  @JoinColumn()
+  patient: Patient;
+
+  @Column({ default: false })
+  playNotificationSound: boolean;
+
+  @Column({ default: false })
+  reScheduleAndCancellationNotification: boolean;
+
+  @Column({ default: false })
+  paymentNotification: boolean;
+
+  @Column({ default: false })
+  upcomingAppointmentReminders: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//patient notification settings ends
