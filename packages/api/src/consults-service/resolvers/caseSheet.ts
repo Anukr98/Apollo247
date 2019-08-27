@@ -119,7 +119,7 @@ export const caseSheetTypeDefs = gql`
   }
 
   type PatientDetails {
-    address: [Address]
+    patientAddress: [Address]
     allergies: String
     dateOfBirth: Date
     emailAddress: String
@@ -279,6 +279,8 @@ const getCaseSheet: Resolver<
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  console.log(patientDetails);
 
   //get past appointment details
   const pastAppointments = await appointmentRepo.getPastAppointments(

@@ -6237,7 +6237,7 @@
         "description": null,
         "fields": [
           {
-            "name": "address",
+            "name": "patientAddress",
             "description": null,
             "args": [],
             "type": {
