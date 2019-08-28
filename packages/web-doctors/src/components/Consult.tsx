@@ -154,7 +154,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
           {isCall && (
             <OTSession
-              apiKey="46393582"
+              apiKey="46401302"
               sessionId={props.sessionId}
               token={props.token}
               eventHandlers={{

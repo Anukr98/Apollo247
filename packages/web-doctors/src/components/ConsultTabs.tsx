@@ -355,14 +355,11 @@ export const ConsultTabs: React.FC = () => {
                   />
                 </Tabs>
               </div>
-              {/* {tabValue === 0 && ( */}
               <TabContainer>
                 <div className={tabValue !== 0 ? classes.none : classes.block}>
                   {casesheetInfo ? <CaseSheet /> : ''}
                 </div>
               </TabContainer>
-              {/* )} */}
-              {/* {tabValue === 1 && ( */}
               <TabContainer>
                 <div className={tabValue !== 1 ? classes.none : classes.block}>
                   <div className={classes.chatContainer}>
@@ -377,7 +374,6 @@ export const ConsultTabs: React.FC = () => {
                   </div>
                 </div>
               </TabContainer>
-              {/* )} */}
             </div>
           </div>
         </CaseSheetContext.Provider>
