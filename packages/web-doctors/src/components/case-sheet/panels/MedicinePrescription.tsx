@@ -629,13 +629,13 @@ export const MedicinePrescription: React.FC = () => {
     const daySlotsArr: any = [];
     const isTobeTakenSelected = toBeTakenSlots.filter(function(slot: SlotsObject) {
       if (slot.selected) {
-        toBeTakenSlotsArr.push(slot.value);
+        toBeTakenSlotsArr.push(slot.value.toUpperCase().replace(' ', '_'));
       }
       return slot.selected !== false;
     });
     const daySlotsSelected = daySlots.filter(function(slot: SlotsObject) {
       if (slot.selected) {
-        daySlotsArr.push(slot.value);
+        daySlotsArr.push(slot.value.toUpperCase());
       }
       return slot.selected !== false;
     });

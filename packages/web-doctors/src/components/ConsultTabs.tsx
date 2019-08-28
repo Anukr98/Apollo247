@@ -216,32 +216,32 @@ export const ConsultTabs: React.FC = () => {
       JSON.stringify(diagnosticPrescription),
       JSON.stringify(medicinePrescription)
     );
-    // client
-    //   .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
-    //     mutation: UPDATE_CASESHEET,
-    //     variables: {
-    //       UpdateCaseSheetInput: {
-    //         symptoms: JSON.stringify(symptoms),
-    //         //notes: value,
-    //         diagnosis: JSON.stringify(diagnosis),
-    //         diagnosticPrescription: JSON.stringify(diagnosticPrescription),
-    //         //followUp: switchValue,
-    //         //followUpDate: selectDate,
-    //         //followUpAfterInDays: sliderValue,
-    //         otherInstructions: JSON.stringify(otherInstructions),
-    //         medicinePrescription: JSON.stringify(medicinePrescription),
-    //         id: caseSheetId,
-    //       },
-    //     },
-    //     fetchPolicy: 'no-cache',
-    //   })
-    //   .then((_data) => {
-    //     console.log('_data', _data);
-    //     //const result = _data.data!.updateCaseSheet;
-    //   })
-    //   .catch((e) => {
-    //     console.log('Error occured while update casesheet', e);
-    //   });
+    client
+      .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
+        mutation: UPDATE_CASESHEET,
+        variables: {
+          UpdateCaseSheetInput: {
+            symptoms: JSON.stringify(symptoms),
+            //notes: value,
+            diagnosis: JSON.stringify(diagnosis),
+            diagnosticPrescription: JSON.stringify(diagnosticPrescription),
+            //followUp: switchValue,
+            //followUpDate: selectDate,
+            //followUpAfterInDays: sliderValue,
+            otherInstructions: JSON.stringify(otherInstructions),
+            //medicinePrescription: JSON.stringify(medicinePrescription),
+            id: caseSheetId,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        console.log('_data', _data);
+        //const result = _data.data!.updateCaseSheet;
+      })
+      .catch((e) => {
+        console.log('Error occured while update casesheet', e);
+      });
   };
 
   const endConsultAction = () => {
