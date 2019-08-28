@@ -54,7 +54,7 @@ export const AddCondition: React.FC<ProfileProps> = (props) => {
         rightIcons={[
           {
             icon: <Cancel />,
-            //onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => props.navigation.pop(),
           },
         ]}
       ></Header>

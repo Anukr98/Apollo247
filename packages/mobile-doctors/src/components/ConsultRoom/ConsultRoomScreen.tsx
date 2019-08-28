@@ -97,6 +97,8 @@ const startConsultMsg = '^^#startconsult';
 const stopConsultMsg = '^^#stopconsult';
 const typingMsg = '^^#typing';
 const endCallMsg = '^^callme`stop^^';
+const covertVideoMsg = '^^convert`video^^';
+const covertAudioMsg = '^^convert`audio^^';
 const patientId = 'Sai';
 // const channel = 'Channel7';
 
@@ -238,6 +240,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [callTimer, setCallTimer] = useState<number>(0);
   const [callAccepted, setCallAccepted] = useState<boolean>(false);
 
+  const [convertVideo, setConvertVideo] = useState<boolean>(false);
+
   const startInterval = (timer: number) => {
     setConsultStarted(true);
     intervalId = setInterval(() => {
@@ -374,6 +378,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             stopTimer();
             setCallAccepted(false);
             setReturnToCall(false);
+          } else if (message.message.message === covertVideoMsg) {
+            setConvertVideo(true);
+          } else if (message.message.message === covertAudioMsg) {
+            console.log('covertVideoMsg', covertAudioMsg);
+            setConvertVideo(false);
           } else if (
             message.message.message === 'Audio call ended' ||
             message.message.message === 'Video call ended'
@@ -843,7 +852,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const AudioCall = () => {
     return (
       <View style={audioCallStyles}>
-        <PatientPlaceHolderImage style={{ width: width, height: height }} />
+        {!convertVideo && <PatientPlaceHolderImage style={{ width: width, height: height }} />}
         {!PipView && (
           <>
             <View
@@ -894,12 +903,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         />
 
         <OTSession
-          apiKey={'46393582'}
+          apiKey={'46401302'}
           sessionId={sessionId}
           token={token}
-          // sessionId={'1_MX40NjQwOTgzMn5-MTU2NjYyNzM0NTIyMn5aUmtTY1Rzb0xzQkI4K2Y2Ni9zb3AvdUF-UH4'}
+          // sessionId={'2_MX40NjQwOTgzMn5-MTU2Njk3NTkyMjgxM35yK0YwQjhHUnhGS2k1dTM4eUpBbHFHY3p-UH4'}
           // token={
-          //   'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9ZDk2NGRlNGQwYTNjYThmOWEzYzY1MjM2M2M3ZWEzZTM2M2YzZTY0YjpzZXNzaW9uX2lkPTFfTVg0ME5qUXdPVGd6TW41LU1UVTJOall5TnpNME5USXlNbjVhVW10VFkxUnpiMHh6UWtJNEsyWTJOaTl6YjNBdmRVRi1VSDQmY3JlYXRlX3RpbWU9MTU2NjYyNzM2NCZub25jZT0wLjk1NDE1MDA4NDk3Mzg3MTEmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2NjcxMzc2MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
+          //   'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9NDAzMWJlZDA0NzAxMTIyMWU1NzU2OWI4MmEzYjg3YTI0N2VmZDkyYzpzZXNzaW9uX2lkPTJfTVg0ME5qUXdPVGd6TW41LU1UVTJOamszTlRreU1qZ3hNMzV5SzBZd1FqaEhVbmhHUzJrMWRUTTRlVXBCYkhGSFkzcC1VSDQmY3JlYXRlX3RpbWU9MTU2Njk3NTkzNiZub25jZT0wLjMwNjk1ODQ4MDE0NzM0MTczJnJvbGU9bW9kZXJhdG9yJmV4cGlyZV90aW1lPTE1Njk1Njc5MzUmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
           // }
           eventHandlers={sessionEventHandlers}
           ref={otSessionRef}
@@ -907,7 +916,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           <OTPublisher
             style={publisherStyles}
             properties={{
-              publishVideo: false,
+              publishVideo: convertVideo ? true : false,
               publishAudio: mute,
               audioVolume: 100,
             }}
@@ -919,7 +928,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             eventHandlers={subscriberEventHandlers}
             properties={{
               subscribeToAudio: true,
-              subscribeToVideo: false,
+              subscribeToVideo: convertVideo ? true : false,
               audioVolume: 100,
             }}
           />
@@ -971,6 +980,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
               setChatReceived(false);
               setReturnToCall(true);
+              setPublisherStyles({
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: 1,
+                height: 1,
+                zIndex: 100,
+                elevation: 1000,
+                borderRadius: 30,
+              });
             }}
           >
             {chatReceived ? (
@@ -997,6 +1016,28 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           </TouchableOpacity> */}
           <TouchableOpacity
             onPress={() => {
+              showVideo === true ? setShowVideo(false) : setShowVideo(true);
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: showVideo === true ? covertVideoMsg : covertAudioMsg,
+                  },
+                  channel: channel,
+                  storeInHistory: false,
+                },
+                (status, response) => {}
+              );
+            }}
+          >
+            {showVideo === true ? (
+              <VideoOnIcon style={{ height: 60, width: 60 }} />
+            ) : (
+              <VideoOffIcon style={{ height: 60, width: 60 }} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
               mute === true ? setMute(false) : setMute(true);
             }}
           >
@@ -1012,13 +1053,26 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               setHideStatusBar(false);
               stopTimer();
               setChatReceived(false);
-
+              setConvertVideo(false);
+              setShowVideo(true);
               pubnub.publish(
                 {
                   message: {
                     isTyping: true,
                     message: 'Audio call ended',
                     duration: callTimerStarted,
+                    id: props.navigation.getParam('DoctorId'),
+                  },
+                  channel: channel,
+                  storeInHistory: true,
+                },
+                (status, response) => {}
+              );
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: endCallMsg,
                     id: props.navigation.getParam('DoctorId'),
                   },
                   channel: channel,
@@ -1041,12 +1095,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         {isCall && (
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <OTSession
-              apiKey={'46393582'}
+              apiKey={'46401302'}
               // sessionId={
-              //   '1_MX40NjQwOTgzMn5-MTU2NjYyNzM0NTIyMn5aUmtTY1Rzb0xzQkI4K2Y2Ni9zb3AvdUF-UH4'
+              //   '2_MX40NjQwOTgzMn5-MTU2Njk3NTkyMjgxM35yK0YwQjhHUnhGS2k1dTM4eUpBbHFHY3p-UH4'
               // }
               // token={
-              //   'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9ZDk2NGRlNGQwYTNjYThmOWEzYzY1MjM2M2M3ZWEzZTM2M2YzZTY0YjpzZXNzaW9uX2lkPTFfTVg0ME5qUXdPVGd6TW41LU1UVTJOall5TnpNME5USXlNbjVhVW10VFkxUnpiMHh6UWtJNEsyWTJOaTl6YjNBdmRVRi1VSDQmY3JlYXRlX3RpbWU9MTU2NjYyNzM2NCZub25jZT0wLjk1NDE1MDA4NDk3Mzg3MTEmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2NjcxMzc2MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
+              //   'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9NDAzMWJlZDA0NzAxMTIyMWU1NzU2OWI4MmEzYjg3YTI0N2VmZDkyYzpzZXNzaW9uX2lkPTJfTVg0ME5qUXdPVGd6TW41LU1UVTJOamszTlRreU1qZ3hNMzV5SzBZd1FqaEhVbmhHUzJrMWRUTTRlVXBCYkhGSFkzcC1VSDQmY3JlYXRlX3RpbWU9MTU2Njk3NTkzNiZub25jZT0wLjMwNjk1ODQ4MDE0NzM0MTczJnJvbGU9bW9kZXJhdG9yJmV4cGlyZV90aW1lPTE1Njk1Njc5MzUmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
               // }
               sessionId={sessionId}
               token={token}
@@ -1223,12 +1277,25 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               height: 2,
               backgroundColor: '#00b38e',
             });
+            setPipView(false);
             pubnub.publish(
               {
                 message: {
                   isTyping: true,
                   message: 'Video call ended',
                   duration: callTimerStarted,
+                  id: props.navigation.getParam('DoctorId'),
+                },
+                channel: channel,
+                storeInHistory: true,
+              },
+              (status, response) => {}
+            );
+            pubnub.publish(
+              {
+                message: {
+                  isTyping: true,
+                  message: endCallMsg,
                   id: props.navigation.getParam('DoctorId'),
                 },
                 channel: channel,
@@ -1389,6 +1456,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     isTyping: true,
                     message: 'Video call ended',
                     duration: callTimerStarted,
+                    id: props.navigation.getParam('DoctorId'),
+                  },
+                  channel: channel,
+                  storeInHistory: true,
+                },
+                (status, response) => {}
+              );
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: endCallMsg,
                     id: props.navigation.getParam('DoctorId'),
                   },
                   channel: channel,
@@ -1595,6 +1674,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               bottom: 0,
               elevation: 2000,
             });
+            setPublisherStyles({
+              position: 'absolute',
+              top: 44,
+              right: 20,
+              width: 112,
+              height: 148,
+              zIndex: 100,
+              elevation: 1000,
+              borderRadius: 30,
+            });
           }}
         >
           <View
@@ -1767,7 +1856,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         storeInHistory: true,
       },
       (status, response) => {
-        setActiveTabIndex(1);
+        setActiveTabIndex(0);
         setStartConsult(true);
         startInterval(timer);
       }

@@ -20,7 +20,7 @@ import {
   View,
 } from 'react-native';
 import SmsListener from 'react-native-android-sms-listener';
-import firebase from 'react-native-firebase';
+import firebase, { RNFirebase } from 'react-native-firebase';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
@@ -240,7 +240,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                 });
               } else {
                 setVerifyingPhonenNumber(true);
-                (sendOtp &&
+                sendOtp &&
                   sendOtp(phoneNumber)
                     .then((confirmResult) => {
                       setVerifyingPhonenNumber(false);
@@ -254,12 +254,14 @@ export const Login: React.FC<LoginProps> = (props) => {
                       });
                       setPhoneNumber('');
                     })
-                    .catch((error) => {
+                    .catch((error: RNFirebase.RnError) => {
                       console.log(error, 'error');
                       setVerifyingPhonenNumber(false);
-                      Alert.alert('Error', 'The interaction was cancelled by the user.');
-                    })) ||
-                  Alert.alert('Something wrong');
+                      Alert.alert(
+                        'Error',
+                        (error && error.message) || 'The interaction was cancelled by the user.'
+                      );
+                    });
               }
             }
           }}

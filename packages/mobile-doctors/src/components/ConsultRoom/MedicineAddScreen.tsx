@@ -1,21 +1,21 @@
-import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import { BackArrow, Up, Down, Plus, Minus } from '@aph/mobile-doctors/src/components/ui/Icons';
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, View, TouchableOpacity, Text, TextInput } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import { ChipViewCard } from '@aph/mobile-doctors/src/components/ui/ChipViewCard';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { CapsuleView } from '@aph/mobile-doctors/src/components/ui/CapsuleView';
-import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
-import { string } from '@aph/mobile-doctors/src/strings/string';
+import { addMedicineList } from '@aph/mobile-doctors/src/components/ApiCall';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
-
+import { ChipViewCard } from '@aph/mobile-doctors/src/components/ui/ChipViewCard';
+import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
+import { BackArrow, Minus, Plus } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import React, { useState } from 'react';
 import {
-  updateMedicineList,
-  removeMedicineList,
-  addMedicineList,
-} from '@aph/mobile-doctors/src/components/ApiCall';
+  Alert,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {
@@ -31,31 +31,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   countText: { marginLeft: 10, ...theme.fonts.IBMPlexSansMedium(16), color: '#02475b' },
-  timeofthedayText: {
-    color: 'rgba(2, 71, 91, 0.6)',
-    ...theme.fonts.IBMPlexSansMedium(14),
-    marginBottom: 10,
-  },
-  foodmedicineview: {
-    flexDirection: 'row',
-    marginBottom: 24,
-    flex: 1,
-    marginRight: 16,
-  },
-  daysview: {
-    flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginRight: 16,
-    marginBottom: 16,
-  },
-  addDoctorText: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    letterSpacing: 0,
-    color: '#fc9916',
-    marginTop: 2,
-  },
+
   inputView: {
     height: 60,
     borderRadius: 10,
@@ -67,21 +43,7 @@ const styles = StyleSheet.create({
     marginRight: 20,
     marginBottom: 10,
   },
-  inputStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    // width: '80%',
-    color: theme.colors.INPUT_TEXT,
-    paddingBottom: 4,
-  },
-  inputValidView: {
-    borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-    borderBottomWidth: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '90%',
-    paddingBottom: 0,
-    marginLeft: 20,
-  },
+
   footerButtonsContainer: {
     // zIndex: -1,
     justifyContent: 'center',
@@ -137,7 +99,7 @@ export interface ProfileProps
   }> {}
 
 export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(1);
   const [value, setValue] = useState<string>('');
   const [duration, setDuration] = useState<string>('');
   const [consultationType, setConsultationType] = useState({
@@ -151,28 +113,6 @@ export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
     AFTER_FOOD: { title: 'After Food', isSelected: false },
     BEFORE_FOOD: { title: 'Before Food', isSelected: false },
   });
-
-  //   useEffect(() => {
-  //     setDuration(props.navigation.getParam('MedicineConsumptionDurationInDays'));
-  //     setValue(props.navigation.getParam('MedicineInstructions'));
-  //     setCount(parseInt(props.navigation.getParam('Dosage').substring(0, 1)));
-  //     const abc = props.navigation.getParam('MedicineToBeTaken');
-  //     setMedicineUpdate({
-  //       ...medicneupdate,
-  //       [abc]: {
-  //         isSelected: !!abc,
-  //         title: medicneupdate[abc].title,
-  //       },
-  //     });
-  //     const def = props.navigation.getParam('MedicineTimings');
-  //     setConsultationType({
-  //       ...consultationType,
-  //       [def]: {
-  //         isSelected: !!def,
-  //         title: consultationType[def].title,
-  //       },
-  //     });
-  //   }, []);
 
   const showHeaderView = () => {
     return (
@@ -233,11 +173,20 @@ export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
       >
         <Text style={styles.dosage}>Dosage</Text>
         <View style={{ flexDirection: 'row', marginLeft: 16 }}>
-          <TouchableOpacity onPress={() => setCount(count - 1)}>
-            <View>
-              <Minus />
-            </View>
-          </TouchableOpacity>
+          {count == 0 ? (
+            <TouchableOpacity>
+              <View>
+                <Minus />
+              </View>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={() => setCount(count - 1)}>
+              <View>
+                <Minus />
+              </View>
+            </TouchableOpacity>
+          )}
+
           <Text style={styles.countText}>
             {count} tablet{count > 1 ? 's' : ''}
           </Text>
@@ -312,14 +261,30 @@ export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
           })}
         </View>
         <Text style={styles.dosage}>Duration of Consumption</Text>
-        <View style={[styles.inputValidView]}>
-          <TextInput
+
+        {/* <TextInput
             style={styles.inputStyle}
             value={duration}
             onChangeText={(duration) => setDuration(duration)}
             autoCorrect={true}
-          />
-        </View>
+          /> */}
+        <TextInput
+          style={{
+            marginLeft: 16,
+            marginRight: 20,
+            ...theme.fonts.IBMPlexSansMedium(18),
+            width: '90%',
+            borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+            borderBottomWidth: 2,
+            marginBottom: 16,
+
+            color: '#01475b',
+          }}
+          maxLength={20}
+          value={duration}
+          onChangeText={(duration) => setDuration(duration)}
+        />
+
         <Text style={styles.dosage}>Instructions (if any)</Text>
         <TextInputComponent
           placeholder="Enter instructions here.."
@@ -342,35 +307,39 @@ export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
           title="ADD MEDICINE "
           style={styles.buttonendStyle}
           onPress={() => {
-            let dosagefianl = '';
-            console.log({
-              medicineName: props.navigation.getParam('Name'),
-              medicineDosage: count,
-              medicineToBeTaken: Object.keys(medicneupdate).filter(
-                (time) => medicneupdate[time].isSelected
-              ),
-              medicineInstructions: value,
-              medicineTimings: Object.keys(consultationType).filter(
-                (time) => consultationType[time].isSelected
-              ),
-              medicineConsumptionDurationInDays: duration,
-            });
-            if (count > 0) {
-              dosagefianl = count.toString().concat('tablets');
+            if (count == 0 || value == '' || duration == '') {
+              Alert.alert('Please select all fields');
+            } else {
+              let dosagefianl = '';
+              console.log({
+                medicineName: props.navigation.getParam('Name'),
+                medicineDosage: count,
+                medicineToBeTaken: Object.keys(medicneupdate).filter(
+                  (time) => medicneupdate[time].isSelected
+                ),
+                medicineInstructions: value,
+                medicineTimings: Object.keys(consultationType).filter(
+                  (time) => consultationType[time].isSelected
+                ),
+                medicineConsumptionDurationInDays: duration,
+              });
+              if (count > 0) {
+                dosagefianl = count.toString().concat('tablets');
+              }
+              addMedicineList({
+                medicineName: props.navigation.getParam('Name'),
+                medicineDosage: dosagefianl,
+                medicineToBeTaken: Object.keys(medicneupdate).filter(
+                  (time) => medicneupdate[time].isSelected
+                ),
+                medicineInstructions: value,
+                medicineTimings: Object.keys(consultationType).filter(
+                  (time) => consultationType[time].isSelected
+                ),
+                medicineConsumptionDurationInDays: duration,
+              });
+              props.navigation.pop(2);
             }
-            addMedicineList({
-              medicineName: props.navigation.getParam('Name'),
-              medicineDosage: dosagefianl,
-              medicineToBeTaken: Object.keys(medicneupdate).filter(
-                (time) => medicneupdate[time].isSelected
-              ),
-              medicineInstructions: value,
-              medicineTimings: Object.keys(consultationType).filter(
-                (time) => consultationType[time].isSelected
-              ),
-              medicineConsumptionDurationInDays: duration,
-            });
-            props.navigation.pop(2);
           }}
         />
       </View>

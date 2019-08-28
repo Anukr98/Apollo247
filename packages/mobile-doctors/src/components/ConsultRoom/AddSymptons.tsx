@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
   medicineText: {
     color: 'rgba(2, 71, 91, 0.6)',
     ...theme.fonts.IBMPlexSansMedium(14),
-    marginBottom: 0,
+    marginBottom: 4,
     marginLeft: 16,
     marginTop: 16,
   },
@@ -126,13 +126,13 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
           style={{
             marginLeft: 16,
             marginRight: 20,
-            ...theme.fonts.IBMPlexSansMedium(18),
+            ...theme.fonts.IBMPlexSansBold(16),
             width: '90%',
             borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-            borderBottomWidth: 2,
+            borderBottomWidth: 1,
             marginBottom: 16,
 
-            color: '#01475b',
+            color: '#02475b',
           }}
           onChangeText={(symptons) => setSymptons(symptons)}
           maxLength={20}
@@ -147,7 +147,7 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
             ...theme.fonts.IBMPlexSansMedium(18),
             width: '90%',
             borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-            borderBottomWidth: 2,
+            borderBottomWidth: 1,
             marginBottom: 16,
 
             color: '#01475b',
@@ -164,7 +164,7 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
             ...theme.fonts.IBMPlexSansMedium(18),
             width: '90%',
             borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-            borderBottomWidth: 2,
+            borderBottomWidth: 1,
             marginBottom: 16,
 
             color: '#01475b',
@@ -181,7 +181,7 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
             ...theme.fonts.IBMPlexSansMedium(18),
             width: '90%',
             borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-            borderBottomWidth: 2,
+            borderBottomWidth: 1,
             marginBottom: 16,
 
             color: '#01475b',
@@ -197,13 +197,14 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
           titleTextStyle={styles.buttonTextStyle}
           variant="white"
           style={[styles.buttonsaveStyle, { marginRight: 16 }]}
+          onPress={() => props.navigation.pop()}
         />
         <Button
           title="ADD SYMPTOM"
           style={styles.buttonendStyle}
           onPress={() => {
-            if (symptons == '' && since == '' && howOften == '' && severity == '') {
-              Alert.alert('Please Enter All Fileds');
+            if (symptons == '' || since == '' || howOften == '' || severity == '') {
+              Alert.alert('Please enter all fields');
             } else {
               addSysmptonsList({
                 symptom: symptons,

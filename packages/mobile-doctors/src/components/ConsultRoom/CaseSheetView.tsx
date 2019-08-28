@@ -554,7 +554,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       .query<GetCaseSheet>({
         query: GET_CASESHEET,
         fetchPolicy: 'no-cache',
-        variables: { appointmentId: '5a4d4359-8f93-49ec-bd4b-45dab149543c' },
+        variables: { appointmentId: AppId },
       })
       .then((_data) => {
         const result = _data.data.getCaseSheet;
@@ -622,10 +622,26 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const saveDetails = () => {
     setShowButtons(true);
-    console.log('symptonsData', getSysmptonsList());
-    console.log('junior notes', juniordoctornotes);
-    console.log('diagonisis', getDiagonsisList());
-    console.log('dia', getDiagnosticPrescriptionDataList());
+    console.log('symptonsData', JSON.stringify(JSON.stringify(getSysmptonsList())));
+    console.log('junior notes', value);
+    console.log('diagonisis', JSON.stringify(JSON.stringify(getDiagonsisList())));
+    console.log('dia', JSON.stringify(JSON.stringify(getDiagnosticPrescriptionDataList())));
+    console.log('med', JSON.stringify(JSON.stringify(getMedicineList())));
+    console.log('get', getcasesheetId);
+    console.log('other', JSON.stringify(JSON.stringify(otherInstructionsData)));
+    console.log('switchValue', switchValue);
+
+    let followUpAfterInDays = '';
+    if (sliderValue == 2) {
+      followUpAfterInDays = '2';
+    } else if (sliderValue == 5) {
+      followUpAfterInDays = '5';
+    } else if (sliderValue == 8) {
+      followUpAfterInDays = '7';
+    } else {
+      followUpAfterInDays = 'custom';
+    }
+    console.log('followUpAfterInDays', followUpAfterInDays);
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
         mutation: UPDATE_CASESHEET,
@@ -633,13 +649,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           UpdateCaseSheetInput: {
             symptoms: JSON.stringify(getSysmptonsList()),
             notes: value,
-            diagnosis: JSON.stringify(getDiagonsisList()),
-            diagnosticPrescription: JSON.stringify(getDiagnosticPrescriptionDataList()),
+            diagnosis: JSON.stringify(getDiagonsisList()), //'[{"name":"Dr. CTDO 12.5/20MG TABLET","__typename":"Diagnosis"}]',
+            diagnosticPrescription: JSON.stringify(getDiagnosticPrescriptionDataList()), //'[{"name":"Mayuri","__typename":"DiagnosticPrescription"}]',
             followUp: switchValue,
-            followUpDate: selectDate,
-            followUpAfterInDays: sliderValue,
-            otherInstructions: JSON.stringify(otherInstructionsData),
-            medicinePrescription: JSON.stringify(getMedicineList()),
+            followUpDate: null,
+            followUpAfterInDays: followUpAfterInDays, //sliderValue.toString().concat('days'),
+            otherInstructions: JSON.stringify(otherInstructionsData), //'[{"instruction":"Drink Plenty of Water"},{"instruction":"Use sunscreen every day"}]',
+            medicinePrescription: JSON.stringify(getMedicineList()), //'[{"medicineName":"CTDO 6.25/40MG TABLET","medicineDosage":"2tablets","medicineToBeTaken":["BEFORE_FOOD"],"medicineInstructions":"Ccc","medicineTimings":["MORNING"],"medicineConsumptionDurationInDays":"Gg"}]',
             id: getcasesheetId,
           },
         },
@@ -691,7 +707,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <View style={styles.footerButtonsContainersave}>
             <Button
               title="START CONSULT"
-              disabled={props.startConsult}
+              //disabled={props.startConsult}
               buttonIcon={<Start />}
               onPress={() => {
                 setShowButtons(true);
@@ -824,7 +840,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         </TouchableOpacity>
                       }
                       days={`Since : ${showdata.since}`}
-                      howoften={`How Often : ${showdata.howOften}`}
+                      howoften={`How Often : ${
+                        showdata.howOften == null ? 'N/A' : showdata.howOften
+                      }`}
                       seviarity={`Severity : ${showdata.severity}`}
                     />
                   </View>
@@ -924,9 +942,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     id: any,
     name: string,
     dosage: string,
-    medicineToBeTaken: string,
+    medicineToBeTaken: any,
     medicineInstructions: string,
-    medicineTimings: string,
+    medicineTimings: any,
     medicineConsumptionDurationInDays: string
   ) => {
     console.log('pasdat', name);
@@ -948,7 +966,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         onPress={() => setMedicinePrescription(!medicinePrescription)}
       >
         <Text style={[styles.familyText, { marginBottom: 12 }]}>Medicines</Text>
-        {medicinePrescriptionData == null ? (
+        {medicinePrescriptionData == null || medicinePrescriptionData.length == 0 ? (
           <Text style={styles.symptomsText}>No Data</Text>
         ) : (
           medicinePrescriptionData.map((showdata: any, i) => {
@@ -971,21 +989,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           )
                         }
                       >
-                        <View>{!pickData[showdata.id] ? <UnSelected /> : <Selected />}</View>
+                        <View>{!pickData[showdata.id] ? <Selected /> : <Selected />}</View>
                       </TouchableOpacity>
                     }
                     tabDesc={showdata.medicineInstructions}
-                    containerStyle={
-                      !pickData[showdata.id]
-                        ? null
-                        : {
-                            borderRadius: 5,
-                            backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                            borderStyle: 'solid',
-                            borderWidth: 1,
-                            borderColor: '#00b38e',
-                          }
-                    }
+                    containerStyle={{
+                      borderRadius: 5,
+                      backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                      borderStyle: 'solid',
+                      borderWidth: 1,
+                      borderColor: '#00b38e',
+                    }}
                   />
                 </View>
               </View>
@@ -1237,7 +1251,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           collapse={diagnosisView}
           onPress={() => setDiagnosisView(!diagnosisView)}
         >
-          <Text style={styles.familyText}>Diagnosed Medical Condition</Text>
+          <Text style={[styles.familyText, { marginBottom: 0 }]}>Diagnosed Medical Condition</Text>
           <View
             style={{
               flexDirection: 'row',
@@ -1464,7 +1478,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             })
           )}
 
-          <Text style={[styles.familyText, { marginBottom: 12 }]}>Past Consultations</Text>
+          <Text style={[styles.familyText, { marginBottom: 12, marginTop: 16 }]}>
+            Past Consultations
+          </Text>
 
           {pastList.map((apmnt: any, i) => {
             return (
@@ -1505,11 +1521,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               autoCorrect={true}
             />
           </View>
-          {renderButtonsView()}
-          {/* {moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
+          {/* {renderButtonsView()} */}
+          {moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
           stastus == 'IN_PROGRESS'
             ? renderButtonsView()
-            : null} */}
+            : null}
         </View>
       </ScrollView>
     </View>

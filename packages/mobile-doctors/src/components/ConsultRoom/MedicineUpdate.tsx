@@ -131,8 +131,8 @@ export interface ProfileProps
   extends NavigationScreenProps<{
     Name: string;
     Dosage: string;
-    MedicineToBeTaken: string;
-    MedicineInstructions: string;
+    MedicineToBeTaken: any;
+    MedicineInstructions: any;
     MedicineTimings: string;
     MedicineConsumptionDurationInDays: string;
   }> {}
