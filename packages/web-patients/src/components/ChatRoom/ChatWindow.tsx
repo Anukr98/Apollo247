@@ -256,7 +256,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const timerSeconds = startingTime - timerMinuts * 60;
   const timerLastMinuts = Math.floor(startingTime / 60);
   const timerLastSeconds = startingTime - timerMinuts * 60;
-  const [audio] = useState(new Audio('http://streaming.tdiradio.com:8000/house.mp3'));
+  const [audio] = useState(
+    new Audio('https://mrrhealthcheck-stage.azurewebsites.net/Images/Passes/NotifySound.mp3')
+  );
   const [playing, setPlaying] = useState(false);
   const toggle = () => setPlaying(!playing);
 

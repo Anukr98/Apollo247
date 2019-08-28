@@ -232,15 +232,17 @@ export const Diagnosis: React.FC = () => {
         Diagnosed Medical Condition
       </Typography>
       <Typography component="div">
-        {selectedValues!.map((item, idx) => (
-          <Chip
-            className={classes.diagnosBtn}
-            key={idx}
-            label={item!.name}
-            onDelete={() => handleDelete(idx)}
-            color="primary"
-          />
-        ))}
+        {selectedValues !== null &&
+          selectedValues.length > 0 &&
+          selectedValues!.map((item, idx) => (
+            <Chip
+              className={classes.diagnosBtn}
+              key={idx}
+              label={item!.name}
+              onDelete={() => handleDelete(idx)}
+              color="primary"
+            />
+          ))}
       </Typography>
       {!showAddCondition && (
         <AphButton

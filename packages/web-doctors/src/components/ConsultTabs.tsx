@@ -161,16 +161,27 @@ export const ConsultTabs: React.FC = () => {
         })
         .then((_data) => {
           setCasesheetInfo(_data.data);
-          setSymptoms((_data!.data!.getCaseSheet!.caseSheetDetails!
-            .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
-          setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
-            .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
-          setOtherInstructions((_data!.data!.getCaseSheet!.caseSheetDetails!
-            .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[]);
-          setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-            .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
-          setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-            .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
+
+          _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
+            ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
+                .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
+            : setDiagnosis([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.symptoms
+            ? setSymptoms((_data!.data!.getCaseSheet!.caseSheetDetails!
+                .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[])
+            : setSymptoms([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.otherInstructions
+            ? setOtherInstructions((_data!.data!.getCaseSheet!.caseSheetDetails!
+                .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[])
+            : setOtherInstructions([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
+            ? setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+                .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[])
+            : setDiagnosticPrescription([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.medicinePrescription
+            ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+                .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
+            : setMedicinePrescription([]);
           if (
             _data.data &&
             _data.data.getCaseSheet &&
@@ -182,7 +193,6 @@ export const ConsultTabs: React.FC = () => {
             setappointmentDateTime(
               _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
             );
-            //setCaseSheetId(_data.data.getCaseSheet.caseSheetDetails.id);
           }
         })
         .catch((e: any) => {
