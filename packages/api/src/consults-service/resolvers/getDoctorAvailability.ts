@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
-import { addMinutes, format, differenceInMinutes, addDays } from 'date-fns';
+import { addMinutes, format, differenceInMinutes, addDays, addMilliseconds } from 'date-fns';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
@@ -45,7 +45,10 @@ const getDoctorAvailableSlots: Resolver<
     let st = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlots[0].startTime.toString()}`;
     const ed = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlots[0].endTime.toString()}`;
     let consultStartTime = new Date(st);
-    const consultEndTime = new Date(ed);
+    let consultEndTime = new Date(ed);
+    consultStartTime = addMilliseconds(consultStartTime, -19800000);
+    consultEndTime = addMilliseconds(consultEndTime, -19800000);
+    console.log(consultStartTime, consultEndTime);
     let previousDate: Date = DoctorAvailabilityInput.availableDate;
     if (consultEndTime < consultStartTime) {
       previousDate = addDays(DoctorAvailabilityInput.availableDate, -1);
