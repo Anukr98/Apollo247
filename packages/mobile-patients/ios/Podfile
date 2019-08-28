@@ -12,5 +12,10 @@ target 'ApolloPatient' do
  pod 'Firebase/Auth'
  pod 'GoogleAppMeasurement'
  pod 'OpenTok', '~> 2.15.3'
+ pod 'Firebase/Messaging', '~> 6.2.0'
+
+#  pod 'RNImageCropPicker', :path => '../node_modules/react-native-image-crop-picker'
+
+#  pod 'RNDeviceInfo', :path => '../node_modules/react-native-device-info'
 
 end

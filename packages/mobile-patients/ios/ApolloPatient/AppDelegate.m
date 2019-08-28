@@ -14,6 +14,8 @@
 //#import <Fabric/Fabric.h>
 //#import <Crashlytics/Crashlytics.h>
 #import "RNSplashScreen.h"  // here
+#import "RNFirebaseNotifications.h"
+#import "RNFirebaseMessaging.h"
 
 @implementation AppDelegate
 
@@ -23,21 +25,71 @@
   RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
                                                    moduleName:@"ApolloPatient"
                                             initialProperties:nil];
-
+  
   rootView.backgroundColor = [[UIColor alloc] initWithRed:1.0f green:1.0f blue:1.0f alpha:1];
-
+  
   self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
   UIViewController *rootViewController = [UIViewController new];
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
-//  [RNSplashScreen show];  // here
+  //  [RNSplashScreen show];  // here
   [RNSplashScreen showSplash:@"LaunchScreen" inRootView:rootView];
-
+  
   [FIRApp configure];
-//  [Fabric with:@[[Crashlytics class]]];
-
+  [RNFirebaseNotifications configure];
+  //  [Fabric with:@[[Crashlytics class]]];
+  
+  //  [[UNUserNotificationCenter currentNotificationCenter] setDelegate:self];
+  
+  UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+  center.delegate = self;
+  [center requestAuthorizationWithOptions:(UNAuthorizationOptionSound | UNAuthorizationOptionAlert | UNAuthorizationOptionBadge) completionHandler:^(BOOL granted, NSError * _Nullable error) {
+    if( !error ) {
+      // required to get the app to do anything at all about push notifications
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [[UIApplication sharedApplication] registerForRemoteNotifications];
+      });
+      NSLog( @"Push registration success." );
+    } else {
+      NSLog( @"Push registration FAILED" );
+      NSLog( @"ERROR: %@ - %@", error.localizedFailureReason, error.localizedDescription );
+      NSLog( @"SUGGESTIONS: %@ - %@", error.localizedRecoveryOptions, error.localizedRecoverySuggestion );
+    }
+  }];
+  
   return YES;
+}
+
+- (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
+  [[RNFirebaseNotifications instance] didReceiveLocalNotification:notification];
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(nonnull NSDictionary *)userInfo
+fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHandler{
+  [[RNFirebaseNotifications instance] didReceiveRemoteNotification:userInfo fetchCompletionHandler:completionHandler];
+}
+
+- (void)application:(UIApplication *)application didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
+  [[RNFirebaseMessaging instance] didRegisterUserNotificationSettings:notificationSettings];
+}
+
+- (void)applicationDidBecomeActive:(UIApplication *)application
+{
+  application.applicationIconBadgeNumber = 0;
+}
+
+// Required for the register event.
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
+{
+  NSLog(@"deviceToken %@",deviceToken);
+  NSString *pushToken;
+  pushToken = [deviceToken description];
+  pushToken = [pushToken stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]];
+  pushToken = [pushToken stringByReplacingOccurrencesOfString:@" " withString:@""];
+  
+  [[NSUserDefaults standardUserDefaults]setObject:pushToken forKey:@"deviceToken"];
+  [[NSUserDefaults standardUserDefaults]synchronize];
 }
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge

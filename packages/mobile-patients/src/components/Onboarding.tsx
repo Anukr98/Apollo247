@@ -24,6 +24,7 @@ import {
 import AppIntroSlider from 'react-native-app-intro-slider';
 import firebase from 'react-native-firebase';
 import { NavigationScreenProps } from 'react-navigation';
+
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
