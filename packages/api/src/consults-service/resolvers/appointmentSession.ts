@@ -103,7 +103,12 @@ const createAppointmentSession: Resolver<
   ConsultServiceContext,
   CreateAppointmentSession
 > = async (parent, { createAppointmentSessionInput }, { consultsDb, doctorsDb }) => {
-  const opentok = new openTok('46393582', 'f27789a7bad5d0ec7e5fd2c36ffba08a4830a91d');
+  if (!process.env.OPENTOK_KEY && !process.env.OPENTOK_SECRET) {
+    throw new AphError(AphErrorMessages.INVALID_OPENTOK_KEYS);
+  }
+  const opentok_key = process.env.OPENTOK_KEY ? process.env.OPENTOK_KEY : '';
+  const opentok_secret = process.env.OPENTOK_SECRET ? process.env.OPENTOK_SECRET : '';
+  const opentok = new openTok(opentok_key, opentok_secret);
   let sessionId = '',
     token = '',
     patientId = '',
@@ -218,7 +223,12 @@ const updateAppointmentSession: Resolver<
   ConsultServiceContext,
   AppointmentSession
 > = async (parent, { updateAppointmentSessionInput }, { consultsDb }) => {
-  const opentok = new openTok('46393582', 'f27789a7bad5d0ec7e5fd2c36ffba08a4830a91d');
+  if (!process.env.OPENTOK_KEY && !process.env.OPENTOK_SECRET) {
+    throw new AphError(AphErrorMessages.INVALID_OPENTOK_KEYS);
+  }
+  const opentok_key = process.env.OPENTOK_KEY ? process.env.OPENTOK_KEY : '';
+  const opentok_secret = process.env.OPENTOK_SECRET ? process.env.OPENTOK_SECRET : '';
+  const opentok = new openTok(opentok_key, opentok_secret);
   let token = '',
     sessionId = '';
   const apptSessionRepo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
