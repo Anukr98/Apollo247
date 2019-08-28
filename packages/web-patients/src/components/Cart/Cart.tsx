@@ -26,6 +26,10 @@ const useStyles = makeStyles((theme: Theme) => {
       PaddingLeft: 3,
       display: 'flex',
     },
+    buttonDisable: {
+      backgroundColor: '#fed984',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2) !important',
+    },
     leftSection: {
       width: 'calc(100% - 328px)',
       paddingRight: 5,
@@ -441,7 +445,13 @@ export const Cart: React.FC = (props) => {
             </div>
           </Scrollbars>
           <div className={classes.checkoutBtn}>
-            <AphButton onClick={() => setIsDialogOpen(true)} color="primary" fullWidth>
+            <AphButton
+              onClick={() => setIsDialogOpen(true)}
+              color="primary"
+              fullWidth
+              disabled={disableSubmit}
+              className={disableSubmit ? classes.buttonDisable : ''}
+            >
               Proceed to pay — RS. {totalAmount}
             </AphButton>
           </div>
