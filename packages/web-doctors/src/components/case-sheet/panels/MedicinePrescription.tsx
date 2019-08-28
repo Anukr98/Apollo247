@@ -46,7 +46,7 @@ function renderInputComponent(inputProps: any) {
       placeholder="Search"
       fullWidth
       InputProps={{
-        inputRef: (node) => {
+        inputRef: (node: any) => {
           ref(node);
           inputRef(node);
         },
@@ -272,11 +272,25 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 41,
       position: 'relative',
     },
+    updateSymptom: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      top: 30,
+      right: 15,
+      color: '#666666',
+      position: 'absolute',
+      fontSize: 14,
+      fontWeight: theme.typography.fontWeightBold,
+      paddingLeft: 4,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
     deleteSymptom: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
       top: 0,
-      right: -18,
+      right: 15,
       color: '#666666',
       position: 'absolute',
       fontSize: 14,
@@ -303,6 +317,15 @@ interface MedicineObject {
   duration: string;
   selected: boolean;
 }
+interface MedicineObjectArr {
+  medicineConsumptionDurationInDays: string;
+  medicineDosage: any;
+  medicineInstructions: string;
+  medicineTimings: [];
+  medicineToBeTaken: [];
+  medicineName: string;
+  id: string;
+}
 interface errorObject {
   daySlotErr: boolean;
   tobeTakenErr: boolean;
@@ -311,10 +334,14 @@ interface errorObject {
 
 export const MedicinePrescription: React.FC = () => {
   const classes = useStyles();
-  const { medicinePrescription, setMedicinePrescription } = useContext(CaseSheetContext);
+  const {
+    medicinePrescription: selectedMedicinesArr,
+    setMedicinePrescription: setSelectedMedicinesArr,
+  } = useContext(CaseSheetContext);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
   const [idx, setIdx] = React.useState();
+  const [isUpdate, setIsUpdate] = React.useState(false);
   const [medicineInstruction, setMedicineInstruction] = React.useState<string>('');
   const [errorState, setErrorState] = React.useState<errorObject>({
     daySlotErr: false,
@@ -380,6 +407,7 @@ export const MedicinePrescription: React.FC = () => {
     //   selected: true,
     // },
   ]);
+  // const [selectedMedicinesArr, setSelectedMedicinesArr] = React.useState<MedicineObjectArr[]>([]);
 
   const [searchInput, setSearchInput] = useState('');
   function getSuggestions(value: string) {
@@ -436,21 +464,66 @@ export const MedicinePrescription: React.FC = () => {
   const deletemedicine = (idx: any) => {
     selectedMedicines.splice(idx, 1);
     setSelectedMedicines(selectedMedicines);
+    selectedMedicinesArr!.splice(idx, 1);
+    setSelectedMedicinesArr(selectedMedicinesArr);
     const sum = idx + Math.random();
     setIdx(sum);
+  };
+  const updateMedicine = (idx: any) => {
+    const slots = toBeTakenSlots.map((slot: SlotsObject) => {
+      selectedMedicinesArr![idx].medicineToBeTaken!.map((selectedSlot: any) => {
+        const selectedValue = selectedSlot.replace(' ', '');
+        if (selectedValue.toLowerCase() === slot.id) {
+          slot.selected = !slot.selected;
+        }
+      });
+      return slot;
+    });
+    setToBeTakenSlots(slots);
+
+    const dayslots = daySlots.map((slot: SlotsObject) => {
+      selectedMedicinesArr![idx].medicineTimings!.map((selectedSlot: any) => {
+        if (selectedSlot.toLowerCase() === slot.id) {
+          slot.selected = !slot.selected;
+        }
+      });
+      return slot;
+    });
+    setDaySlots(dayslots);
+    console.log(selectedMedicinesArr![idx].medicineTimings);
+
+    setMedicineInstruction(selectedMedicinesArr![idx].medicineInstructions!);
+    setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
+    setTabletsCount(Number(selectedMedicinesArr![idx].medicineDosage!));
+    // setDaySlots(selectedMedicinesArr[idx].medicineTimings);
+    setSelectedValue(selectedMedicinesArr![idx].medicineName!);
+    // setToBeTakenSlots(selectedMedicinesArr[idx].medicineToBeTaken);
+    setIsDialogOpen(true);
+    setShowDosage(true);
+    setIsUpdate(true);
   };
   useEffect(() => {
     if (idx >= 0) {
       setSelectedMedicines(selectedMedicines);
+      setSelectedMedicinesArr(selectedMedicinesArr);
     }
-  }, [selectedMedicines, idx]);
+  }, [selectedMedicines, idx, selectedMedicines]);
   function getSuggestionValue(suggestion: OptionType) {
     return suggestion.label;
   }
   useEffect(() => {
-    if (medicinePrescription && medicinePrescription!.length) {
-      medicinePrescription!.forEach((res: any) => {
-        const inputParams = {
+    if (selectedMedicinesArr && selectedMedicinesArr!.length) {
+      selectedMedicinesArr!.forEach((res: any) => {
+        const inputParamsArr: any = {
+          medicineConsumptionDurationInDays: res.medicineConsumptionDurationInDays,
+          medicineDosage: res.medicineDosage,
+          medicineInstructions: res.medicineInstructions,
+          medicineTimings: res.medicineTimings,
+          medicineToBeTaken: res.medicineToBeTaken,
+          medicineName: res.medicineName,
+          id: res.id,
+        };
+        const inputParams: any = {
           id: res.medicineName.trim(),
           value: res.medicineName,
           name: res.medicineName,
@@ -461,6 +534,9 @@ export const MedicinePrescription: React.FC = () => {
           )} days ${res.medicineToBeTaken.join(' ').toLowerCase()}`,
           selected: true,
         };
+        const xArr = selectedMedicinesArr;
+        xArr.push(inputParamsArr);
+        setSelectedMedicinesArr(xArr);
         const x = selectedMedicines;
         x.push(inputParams);
         setSelectedMedicines(x);
@@ -512,6 +588,15 @@ export const MedicinePrescription: React.FC = () => {
             alt="chkUncheck"
           /> */}
           </Paper>
+          <AphButton
+            variant="contained"
+            color="primary"
+            key={`del ${index}`}
+            classes={{ root: classes.updateSymptom }}
+            onClick={() => updateMedicine(index)}
+          >
+            <img src={require('images/round_edit_24_px.svg')} alt="" />
+          </AphButton>
           <AphButton
             variant="contained"
             color="primary"
@@ -571,8 +656,16 @@ export const MedicinePrescription: React.FC = () => {
       //   medicineInstruction: medicineInstruction
       // }
       const slot1value = '';
-
-      const inputParams = {
+      const inputParamsArr: any = {
+        medicineConsumptionDurationInDays: consumptionDuration,
+        medicineDosage: tabletsCount,
+        medicineInstructions: medicineInstruction,
+        medicineTimings: daySlotsArr,
+        medicineToBeTaken: toBeTakenSlotsArr,
+        medicineName: selectedValue,
+        id: selectedValue.trim,
+      };
+      const inputParams: any = {
         id: selectedValue.trim(),
         value: selectedValue,
         name: selectedValue,
@@ -581,10 +674,43 @@ export const MedicinePrescription: React.FC = () => {
         duration: `${consumptionDuration}  ${toBeTakenSlotsArr.join(',')}`,
         selected: true,
       };
-      const x = selectedMedicines;
-      x.push(inputParams);
-      setSelectedMedicines(x);
+      if (isUpdate) {
+        const xArr = selectedMedicinesArr;
+        xArr!.splice(idx, 1, inputParamsArr);
+        setSelectedMedicinesArr(xArr);
+        const x = selectedMedicines;
+        x.splice(idx, 1, inputParams);
+        setSelectedMedicines(x);
+      } else {
+        const xArr = selectedMedicinesArr;
+        xArr!.push(inputParamsArr);
+        setSelectedMedicinesArr(xArr);
+        const x = selectedMedicines;
+        x.push(inputParams);
+        setSelectedMedicines(x);
+      }
+
       setIsDialogOpen(false);
+      setIsUpdate(false);
+      setShowDosage(false);
+      const slots = toBeTakenSlots.map((slot: SlotsObject) => {
+        slot.selected = false;
+        return slot;
+      });
+      setToBeTakenSlots(slots);
+
+      const dayslots = daySlots.map((slot: SlotsObject) => {
+        slot.selected = false;
+        return slot;
+      });
+      setDaySlots(dayslots);
+
+      setMedicineInstruction('');
+      setConsumptionDuration('');
+      setTabletsCount(1);
+      // setDaySlots(selectedMedicinesArr[idx].medicineTimings);
+      setSelectedValue('');
+      // setToBeTakenSlots(selectedMedicinesArr[idx].medicineToBeTaken);
     }
   };
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
@@ -781,7 +907,7 @@ export const MedicinePrescription: React.FC = () => {
                         <AphTextField
                           placeholder=""
                           value={consumptionDuration}
-                          onChange={(event) => {
+                          onChange={(event: any) => {
                             setConsumptionDuration(event.target.value);
                           }}
                           error={errorState.durationErr}
@@ -803,7 +929,7 @@ export const MedicinePrescription: React.FC = () => {
                         <AphTextField
                           placeholder="search"
                           value={medicineInstruction}
-                          onChange={(event) => {
+                          onChange={(event: any) => {
                             setMedicineInstruction(event.target.value);
                           }}
                         />
@@ -822,14 +948,25 @@ export const MedicinePrescription: React.FC = () => {
                   >
                     Cancel
                   </AphButton>
-                  <AphButton
-                    color="primary"
-                    onClick={() => {
-                      addUpdateMedicines();
-                    }}
-                  >
-                    Add Medicine
-                  </AphButton>
+                  {isUpdate ? (
+                    <AphButton
+                      color="primary"
+                      onClick={() => {
+                        addUpdateMedicines();
+                      }}
+                    >
+                      Update Medicine
+                    </AphButton>
+                  ) : (
+                    <AphButton
+                      color="primary"
+                      onClick={() => {
+                        addUpdateMedicines();
+                      }}
+                    >
+                      Add Medicine
+                    </AphButton>
+                  )}
                 </div>
               </div>
             )}

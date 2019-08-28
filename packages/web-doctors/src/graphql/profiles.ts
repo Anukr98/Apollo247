@@ -346,7 +346,7 @@ export const GET_CASESHEET = gql`
           description
           relation
         }
-        patientAddress{
+        patientAddress {
           city
         }
         dateOfBirth
