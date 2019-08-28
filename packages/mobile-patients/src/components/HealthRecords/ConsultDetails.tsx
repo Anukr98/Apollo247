@@ -3,9 +3,15 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ShareGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  getCaseSheet,
+  getCaseSheet_getCaseSheet_caseSheetDetails,
+} from '@aph/mobile-patients/src/graphql/types/getCaseSheet';
+import { GET_CASESHEET_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -67,6 +73,41 @@ export interface ConsultDetailsProps extends NavigationScreenProps {}
 export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const [showsymptoms, setshowsymptoms] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
+  const [caseSheetDetails, setcaseSheetDetails] = useState<
+    getCaseSheet_getCaseSheet_caseSheetDetails
+  >();
+
+  const client = useApolloClient();
+
+  const fetchData = useCallback(() => {
+    client
+      .query<getCaseSheet>({
+        query: GET_CASESHEET_DETAILS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          appointmentId: '5a4d4359-8f93-49ec-bd4b-45dab149543c',
+        },
+      })
+      .then(({ data: { getCaseSheet } }) => {
+        // set to context
+        console.log('getPatientAddressList qqq', getCaseSheet);
+        if (
+          getCaseSheet &&
+          getCaseSheet.caseSheetDetails &&
+          caseSheetDetails !== getCaseSheet.caseSheetDetails
+        ) {
+          setcaseSheetDetails(getCaseSheet.caseSheetDetails);
+        }
+      })
+      .catch((e) => {
+        const error = JSON.parse(JSON.stringify(e));
+        console.log(e, error);
+      });
+  }, [client, caseSheetDetails]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const data = {
     doctorInfo: {
