@@ -114,13 +114,13 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '3px 5px 5px 0',
         fontSize: 16,
         fontWeight: theme.typography.fontWeightMedium,
-        color: '#02475b',
+        color: '#01475b',
         margin: 0,
       },
       '& h4': {
-        padding: '5px 5px 0 0',
-        fontSize: 20,
-        fontWeight: 600,
+        padding: '0 5px 0 0',
+        fontSize: 18,
+        fontWeight: 500,
       },
       '& h5': {
         padding: '5px 5px 3px 0',
@@ -131,7 +131,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '0 5px 10px 0',
         letterSpacing: '0.3px',
         fontSize: 12,
-        fontWeight: 600,
+        fontWeight: 500,
         color: '#0087ba',
         '& span': {
           padding: '0 2px',
@@ -299,7 +299,7 @@ export const MyAccount: React.FC = (props) => {
                       }
                       className={classes.navLeftIcon}
                     />
-                    Availibility
+                    Availability
                     <img
                       alt=""
                       src={
