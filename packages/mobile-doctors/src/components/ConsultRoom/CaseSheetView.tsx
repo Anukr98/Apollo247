@@ -1,19 +1,18 @@
 import {
-  getSysmptonsList,
-  setSysmptonsList,
-  getDiagonsisList,
-  setDiagonsisList,
   getDiagnosticPrescriptionDataList,
-  setDiagnosticPrescriptionDataList,
+  getDiagonsisList,
   getMedicineList,
-  setMedicineList,
-  removeSysmptonsList,
+  getSysmptonsList,
   removeDiagnosticPrescriptionDataList,
   removeDiagonsisList,
+  removeSysmptonsList,
+  setDiagnosticPrescriptionDataList,
+  setDiagonsisList,
+  setMedicineList,
+  setSysmptonsList,
 } from '@aph/mobile-doctors/src/components/ApiCall';
 import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
 import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
-import { HealthCard } from '@aph/mobile-doctors/src/components/ConsultRoom/HealthCard';
 import { MedicalCard } from '@aph/mobile-doctors/src/components/ConsultRoom/MedicalCard';
 import { SymptonsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/SymptonsCard';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
@@ -25,32 +24,61 @@ import {
   CalendarIcon,
   DiagonisisRemove,
   End,
+  GreenRemove,
+  InpersonIcon,
   PatientPlaceHolderImage,
-  SampleImage,
+  PhysicalIcon,
+  Selected,
   Start,
   ToogleOff,
   ToogleOn,
   UnSelected,
-  Selected,
-  GreenRemove,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
+import {
+  CREATEAPPOINTMENTSESSION,
+  END_APPOINTMENT_SESSION,
+  GET_CASESHEET,
+  UPDATE_CASESHEET,
+} from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  CreateAppointmentSession,
+  CreateAppointmentSessionVariables,
+} from '@aph/mobile-doctors/src/graphql/types/CreateAppointmentSession';
+import {
+  EndAppointmentSession,
+  EndAppointmentSessionVariables,
+} from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
+import {
+  GetCaseSheet,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+} from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import { REQUEST_ROLES, STATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import {
+  UpdateCaseSheet,
+  UpdateCaseSheetVariables,
+} from '@aph/mobile-doctors/src/graphql/types/UpdateCaseSheet';
 import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
+  Alert,
+  Image,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Platform,
-  Alert,
-  Image,
 } from 'react-native';
 import { Slider } from 'react-native-elements';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
@@ -60,28 +88,6 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
-import { useApolloClient } from 'react-apollo-hooks';
-import {
-  CREATEAPPOINTMENTSESSION,
-  GET_CASESHEET,
-  UPDATE_CASESHEET,
-  END_APPOINTMENT_SESSION,
-} from '@aph/mobile-doctors/src/graphql/profiles';
-import {
-  CreateAppointmentSession,
-  CreateAppointmentSessionVariables,
-} from '@aph/mobile-doctors/src/graphql/types/CreateAppointmentSession';
-import { REQUEST_ROLES, STATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import { GetCaseSheet } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
-
-import {
-  UpdateCaseSheet,
-  UpdateCaseSheetVariables,
-} from '@aph/mobile-doctors/src/graphql/types/UpdateCaseSheet';
-import {
-  EndAppointmentSession,
-  EndAppointmentSessionVariables,
-} from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
 
 const styles = StyleSheet.create({
   casesheetView: {
@@ -508,11 +514,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [pickData, setPickData] = useState<{ [id: string]: boolean }>({});
   const [healthWalletArrayData, setHealthWalletArrayData] = useState<any>([]);
   const [pastList, setPastList] = useState<any>([]);
+  const { isDelegateLogin, setIsDelegateLogin } = useAuth();
 
-  const [consultationType, setConsultationType] = useState({
-    ONLINE: { title: 'Online', isSelected: false },
-    PHYSICAL: { title: 'Physical', isSelected: false },
-  });
+  const [consultationType, setConsultationType] = useState<'ONLINE' | 'PHYSICAL' | ''>('');
 
   const [showstyles, setShowStyles] = useState<any>([
     {
@@ -581,20 +585,16 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         setHealthWalletArrayData(_data.data.getCaseSheet!.patientDetails!.healthVault);
         setPastList(_data.data.getCaseSheet!.pastAppointments!);
         setLoading(false);
-        setSysmptonsList(_data.data.getCaseSheet!.caseSheetDetails!.symptoms!);
-        setDiagonsisList(_data.data.getCaseSheet!.caseSheetDetails!.diagnosis!);
-        setDiagnosticPrescriptionDataList(
-          _data.data.getCaseSheet!.caseSheetDetails!.diagnosticPrescription!
-        );
-        setMedicineList(_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription!);
-        const def = _data.data.getCaseSheet!.caseSheetDetails!.consultType!;
-        setConsultationType({
-          ...consultationType,
-          [def]: {
-            isSelected: !!def,
-            title: consultationType[def].title,
-          },
-        });
+        setSysmptonsList(_data.data.getCaseSheet!.caseSheetDetails!
+          .symptoms! as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
+        setDiagonsisList(_data.data.getCaseSheet!.caseSheetDetails!
+          .diagnosis! as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
+        setDiagnosticPrescriptionDataList(_data.data.getCaseSheet!.caseSheetDetails!
+          .diagnosticPrescription! as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
+        setMedicineList(_data.data.getCaseSheet!.caseSheetDetails!
+          .medicinePrescription! as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
+        const consultType = _data.data.getCaseSheet!.caseSheetDetails!.consultType! || '';
+        setConsultationType(consultType as typeof consultationType);
       })
       .catch((e) => {
         setLoading(false);
@@ -700,14 +700,49 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         Alert.alert('Error', errorMessage);
       });
   };
+
+  const [enableConsultButton, setEnableConsultButton] = useState(false);
+
+  useEffect(() => {
+    const consultStartTime = moment.utc(Appintmentdatetimeconsultpage).local();
+    const consultEndTime = moment
+      .utc(Appintmentdatetimeconsultpage)
+      .local()
+      .add(15, 'minutes');
+    const now = moment(new Date());
+    // const diffBwConsultStartAndNow = moment.duration(moment(consultStartTime).diff(now));
+
+    // * start timer if consult is about to start within next 10 minutes so that if the user
+    // is in the same screen for next 10 minutes we can keep on checking and enable consult button, no need to refresh the page
+    // * startConsult Button will be disabled for previous (completed) appointments.
+
+    if (now.isBetween(consultStartTime, consultEndTime)) {
+      setEnableConsultButton(true);
+    } else if (moment.duration(moment(consultEndTime).diff(now)).asMinutes() > 0) {
+      setEnableConsultButton(false);
+    } else {
+      const consultDisableInterval = setInterval(() => {
+        // if diffBwConsultStartAndNow is == 0 then enable start consult button
+        const now = moment(new Date());
+        const consultStartTime = moment.utc(Appintmentdatetimeconsultpage).local();
+        const diffBwConsultStartAndNow = moment.duration(moment(consultStartTime).diff(now));
+        if (diffBwConsultStartAndNow.minutes() > 0 && diffBwConsultStartAndNow.minutes() < 15) {
+          setEnableConsultButton(true);
+          clearInterval(consultDisableInterval);
+        }
+      }, 1000);
+    }
+  }, []);
+
   const renderButtonsView = () => {
+    console.log({ Appintmentdatetimeconsultpage });
     return (
       <View style={{ backgroundColor: '#f0f4f5' }}>
         {showButtons == false ? (
           <View style={styles.footerButtonsContainersave}>
             <Button
               title="START CONSULT"
-              //disabled={props.startConsult}
+              disabled={enableConsultButton}
               buttonIcon={<Start />}
               onPress={() => {
                 setShowButtons(true);
@@ -877,6 +912,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
   const renderJuniorDoctorNotes = () => {
+    if (isDelegateLogin) return null;
     return (
       <View>
         <CollapseCard
@@ -938,24 +974,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </CollapseCard>
     );
   };
-  const passData = (
-    id: any,
-    name: string,
-    dosage: string,
-    medicineToBeTaken: any,
-    medicineInstructions: string,
-    medicineTimings: any,
-    medicineConsumptionDurationInDays: string
-  ) => {
-    console.log('pasdat', name);
-    setPickData({ ...pickData!, [id]: !pickData[id] });
+  const passData = (medicine: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription) => {
     props.navigation.push(AppRoutes.MedicineUpdate, {
-      Name: name,
-      Dosage: dosage,
-      MedicineToBeTaken: medicineToBeTaken,
-      MedicineInstructions: medicineInstructions,
-      MedicineTimings: medicineTimings,
-      MedicineConsumptionDurationInDays: medicineConsumptionDurationInDays,
+      medicine,
     });
   };
   const renderMedicinePrescription = () => {
@@ -976,19 +997,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   <MedicalCard
                     diseaseName={showdata.medicineName}
                     icon={
-                      <TouchableOpacity
-                        onPress={() =>
-                          passData(
-                            showdata.id,
-                            showdata.medicineName,
-                            showdata.medicineDosage,
-                            showdata.medicineToBeTaken,
-                            showdata.medicineInstructions,
-                            showdata.medicineTimings,
-                            showdata.medicineConsumptionDurationInDays
-                          )
-                        }
-                      >
+                      <TouchableOpacity onPress={() => passData(showdata)}>
                         <View>{!pickData[showdata.id] ? <Selected /> : <Selected />}</View>
                       </TouchableOpacity>
                     }
@@ -1203,31 +1212,19 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   <View>
                     <SelectableButton
                       containerStyle={{ marginRight: 20 }}
-                      onChange={(isChecked) => {
-                        // if (!isChecked && !consultationType.online) {
-                        //   return;
-                        // } else {
-                        //   setConsultationType({ ...consultationType, physical: isChecked });
-                        // }
-                      }}
+                      onChange={() => {}}
                       title="Online"
-                      isChecked={consultationType.online}
-                      icon={<DiagonisisRemove />}
+                      isChecked={consultationType == 'ONLINE'}
+                      icon={<InpersonIcon />}
                     />
                   </View>
                   <View>
                     <SelectableButton
                       containerStyle={{ marginRight: 20, borderColor: '#00b38e', borderWidth: 1 }}
-                      onChange={(isChecked) => {
-                        // if (!isChecked && !consultationType.online) {
-                        //   return;
-                        // } else {
-                        //   setConsultationType({ ...consultationType, physical: isChecked });
-                        // }
-                      }}
+                      onChange={() => {}}
                       title="In-person"
-                      isChecked={false}
-                      icon={<DiagonisisRemove />}
+                      isChecked={consultationType == 'PHYSICAL'}
+                      icon={<PhysicalIcon />}
                     />
                   </View>
                 </View>
@@ -1238,7 +1235,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-  const removeDiagonsisValue = (item) => {
+  const removeDiagonsisValue = (item: string) => {
     console.log(item, 'item');
     removeDiagonsisList(item);
     setDiagnosisData(getDiagonsisList());

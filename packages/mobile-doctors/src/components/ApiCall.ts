@@ -1,3 +1,9 @@
+import {
+  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+} from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import Axios, { AxiosResponse } from 'axios';
 
 const AUTH_TOKEN = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
@@ -36,78 +42,107 @@ export const searchMedicineApi = (
   );
 };
 
-let sysmptonsList: unknown[] = [];
+let sysmptonsList: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] = [];
 
 export const getSysmptonsList = () => sysmptonsList;
 
-export const addSysmptonsList = (item: any) => {
-  sysmptonsList = [...sysmptonsList, item];
+export const addSysmptonsList = (item: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms) => {
+  const foundIndex = sysmptonsList.findIndex((s) => s.symptom == item.symptom);
+  if (foundIndex > -1) {
+    return;
+  } else {
+    sysmptonsList = [...sysmptonsList, item];
+  }
 };
 
-export const setSysmptonsList = (lsit: any[]) => {
+export const setSysmptonsList = (lsit: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]) => {
   sysmptonsList = [...lsit];
 };
-export const removeSysmptonsList = (item: any) => {
-  const lsit = sysmptonsList.filter((symptonItem) => symptonItem.symptom != item);
+export const removeSysmptonsList = (name: string) => {
+  const lsit = sysmptonsList.filter((symptonItem) => symptonItem.symptom != name);
   sysmptonsList = [...lsit];
 };
 
-let diagonsisList: unknown[] = [];
+let diagonsisList: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] = [];
 
 export const getDiagonsisList = () => diagonsisList;
 
-export const addDiagonsisList = (item: any) => {
-  diagonsisList = [...diagonsisList, item];
+export const addDiagonsisList = (item: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis) => {
+  const foundIndex = diagonsisList.findIndex((d) => d.name == item.name);
+  if (foundIndex > -1) {
+    return;
+  } else {
+    diagonsisList = [...diagonsisList, item];
+  }
 };
 
-export const setDiagonsisList = (lsit: any[]) => {
+export const setDiagonsisList = (lsit: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]) => {
   diagonsisList = [...lsit];
 };
 
-export const removeDiagonsisList = (item: any) => {
-  const lsit = diagonsisList.filter((diagnosis) => diagnosis.name != item);
+export const removeDiagonsisList = (name: string) => {
+  const lsit = diagonsisList.filter((diagnosis) => diagnosis.name != name);
   diagonsisList = [...lsit];
 };
 
-let diagnosticPrescriptionDataList: unknown[] = [];
+let diagnosticPrescriptionDataList: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[] = [];
 
 export const getDiagnosticPrescriptionDataList = () => diagnosticPrescriptionDataList;
 
-export const addDiagnosticPrescriptionDataList = (item: any) => {
-  diagnosticPrescriptionDataList = [...diagnosticPrescriptionDataList, item];
+export const addDiagnosticPrescriptionDataList = (
+  item: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription
+) => {
+  const foundIndex = diagnosticPrescriptionDataList.findIndex((s) => s.name == item.name);
+  if (foundIndex > -1) {
+    return;
+  } else {
+    diagnosticPrescriptionDataList = [...diagnosticPrescriptionDataList, item];
+  }
 };
 
-export const setDiagnosticPrescriptionDataList = (lsit: any[]) => {
+export const setDiagnosticPrescriptionDataList = (
+  lsit: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
+) => {
   diagnosticPrescriptionDataList = [...lsit];
 };
 
-export const removeDiagnosticPrescriptionDataList = (item: any) => {
+export const removeDiagnosticPrescriptionDataList = (name: string) => {
   const lsit = diagnosticPrescriptionDataList.filter(
-    (diagnosticPrescriptionData) => diagnosticPrescriptionData.name != item
+    (diagnosticPrescriptionData) => diagnosticPrescriptionData.name != name
   );
   diagnosticPrescriptionDataList = [...lsit];
 };
 
-let medicineList: unknown[] = [];
+let medicineList: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] = [];
 
 export const getMedicineList = () => medicineList;
 
-export const addMedicineList = (item: any) => {
-  medicineList = [...medicineList, item];
+export const addMedicineList = (
+  item: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
+) => {
+  const foundIndex = medicineList.findIndex((m) => m.medicineName == item.medicineName);
+  if (foundIndex > -1) {
+    return;
+  } else {
+    medicineList = [...medicineList, item];
+  }
 };
 
-export const setMedicineList = (lsit: any[]) => {
+export const setMedicineList = (
+  lsit: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
+) => {
   medicineList = [...lsit];
 };
-export const updateMedicineList = (item: any) => {
-  const updated = medicineList.map((medicine: any) =>
+export const updateMedicineList = (
+  item: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
+) => {
+  const updated = medicineList.map((medicine) =>
     medicine.medicineName == item.medicineName ? item : medicine
   );
-  console.log({ updated, item });
   medicineList = [...updated];
 };
 
-export const removeMedicineList = (item: any) => {
-  const lsit = medicineList.filter((medicinedata) => medicinedata.medicineName != item);
+export const removeMedicineList = (name: string) => {
+  const lsit = medicineList.filter((medicinedata) => medicinedata.medicineName != name);
   medicineList = [...lsit];
 };

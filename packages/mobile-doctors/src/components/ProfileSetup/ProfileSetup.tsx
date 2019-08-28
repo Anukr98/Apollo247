@@ -32,6 +32,7 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
+import { DoctorType } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 //import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
 const isMobileNumberValid = (n: string) => true;
@@ -181,10 +182,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [isReloading, setReloading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
-  const { doctorDetails } = useAuth();
-  // useEffect(()=>{
-  //   props.navigation.addListener((''))
-  // })
+  const { isDelegateLogin, setDoctorDetails: setDoctorDetailsToContext } = useAuth();
 
   useEffect(() => {
     setLoading(true);
@@ -196,6 +194,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
 
         try {
           setDoctorDetails(result);
+          setDoctorDetailsToContext && setDoctorDetailsToContext(result);
         } catch (e) {
           console.log('Unable to set DoctorDetails');
         }
@@ -209,22 +208,6 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         console.log('Error occured while fetching Doctor profile', error);
       });
   }, []);
-
-  const fetchProfileData = (isReload: boolean) => {
-    isReload ? setReloading(true) : setLoading(true);
-    client
-      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
-      .then((_data) => {
-        console.log('getDoctorProfile', _data!);
-        const result = _data.data.getDoctorDetails;
-        setGetDoctorProfile(result);
-        isReload ? setReloading(false) : setLoading(false);
-      })
-      .catch((e) => {
-        isReload ? setReloading(false) : setLoading(false);
-        console.log('Error occured while loading data', e);
-      });
-  };
 
   const [
     getDoctorProfile,
@@ -269,9 +252,9 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
     <ProfileTabHeader
       title={headerContent[tabIndex].heading(data!.lastName)}
       description={headerContent[tabIndex].description}
-      tabs={(data!.doctorType == 'STAR_APOLLO' || data!.doctorType == 'APOLLO'
-        ? headerContent
-        : [headerContent[0], headerContent[1]]
+      tabs={(data!.doctorType == DoctorType.PAYROLL || isDelegateLogin
+        ? [headerContent[0], headerContent[1]]
+        : headerContent
       ).map((content) => content.tab)}
       activeTabIndex={tabIndex}
     />
@@ -291,7 +274,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
 
   const renderFooterButtons = (tabIndex: number, data: GetDoctorDetails_getDoctorDetails) => {
     const onPressProceed = () => {
-      const tabsCount = data!.doctorType == 'STAR_APOLLO' || data!.doctorType == 'APOLLO' ? 3 : 2;
+      const tabsCount = data!.doctorType == DoctorType.PAYROLL || isDelegateLogin ? 2 : 3;
       if (tabIndex < tabsCount - 1) {
         setActiveTabIndex(tabIndex + 1);
         scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0, false);

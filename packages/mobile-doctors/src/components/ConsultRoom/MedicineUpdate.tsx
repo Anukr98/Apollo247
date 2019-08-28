@@ -1,17 +1,18 @@
-import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import { BackArrow, Up, Down, Plus, Minus } from '@aph/mobile-doctors/src/components/ui/Icons';
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, View, TouchableOpacity, Text, TextInput } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import { ChipViewCard } from '@aph/mobile-doctors/src/components/ui/ChipViewCard';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { CapsuleView } from '@aph/mobile-doctors/src/components/ui/CapsuleView';
-import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
-import { string } from '@aph/mobile-doctors/src/strings/string';
+import { removeMedicineList, updateMedicineList } from '@aph/mobile-doctors/src/components/ApiCall';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
-
-import { updateMedicineList, removeMedicineList } from '@aph/mobile-doctors/src/components/ApiCall';
+import { ChipViewCard } from '@aph/mobile-doctors/src/components/ui/ChipViewCard';
+import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
+import { BackArrow, Minus, Plus } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
+import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import {
+  MEDICINE_TIMINGS,
+  MEDICINE_TO_BE_TAKEN,
+} from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import React, { useState } from 'react';
+import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {
@@ -26,38 +27,16 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     marginTop: 16,
   },
-  countText: { marginLeft: 10, ...theme.fonts.IBMPlexSansMedium(16), color: '#02475b' },
-  timeofthedayText: {
-    color: 'rgba(2, 71, 91, 0.6)',
-    ...theme.fonts.IBMPlexSansMedium(14),
-    marginBottom: 10,
-  },
-  foodmedicineview: {
-    flexDirection: 'row',
-    marginBottom: 24,
-    flex: 1,
-    marginRight: 16,
-  },
-  daysview: {
-    flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginRight: 16,
-    marginBottom: 16,
-  },
-  addDoctorText: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    letterSpacing: 0,
-    color: '#fc9916',
-    marginTop: 2,
+  countText: {
+    marginLeft: 10,
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: '#02475b',
   },
   inputView: {
     height: 60,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#30c1a3',
-    // marginTop: 10,
     color: '#01475b',
     marginLeft: 20,
     marginRight: 20,
@@ -65,7 +44,6 @@ const styles = StyleSheet.create({
   },
   inputStyle: {
     ...theme.fonts.IBMPlexSansMedium(18),
-    // width: '80%',
     color: theme.colors.INPUT_TEXT,
     paddingBottom: 4,
   },
@@ -79,7 +57,6 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   footerButtonsContainer: {
-    // zIndex: -1,
     justifyContent: 'center',
     paddingTop: 20,
     paddingBottom: 20,
@@ -124,56 +101,53 @@ const styles = StyleSheet.create({
 });
 
 type ConsultationType = {
-  [key: string]: boolean;
+  [key: string]: {
+    isSelected: boolean;
+    title: string;
+  };
 };
+
+const medicineTimings: { [a: string]: string } = {
+  [MEDICINE_TIMINGS.MORNING]: 'Morning',
+  [MEDICINE_TIMINGS.NOON]: 'Noon',
+  [MEDICINE_TIMINGS.EVENING]: 'Evening',
+  [MEDICINE_TIMINGS.NIGHT]: 'Night',
+};
+
+console.log({ medicineTimings });
+
+const medicineToBeTaken: { [a: string]: string } = {
+  [MEDICINE_TO_BE_TAKEN.AFTER_FOOD]: 'After Food',
+  [MEDICINE_TO_BE_TAKEN.BEFORE_FOOD]: 'Before Food',
+};
+console.log({ medicineToBeTaken });
 
 export interface ProfileProps
   extends NavigationScreenProps<{
-    Name: string;
-    Dosage: string;
-    MedicineToBeTaken: any;
-    MedicineInstructions: any;
-    MedicineTimings: string;
-    MedicineConsumptionDurationInDays: string;
+    medicine: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription;
   }> {}
 
 export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
-  const [count, setCount] = useState(0);
-  const [value, setValue] = useState<string>('');
-  const [duration, setDuration] = useState<string>('');
-  const [consultationType, setConsultationType] = useState({
-    MORNING: { title: 'Morning', isSelected: false },
-    NOON: { title: 'Noon', isSelected: false },
-    EVENING: { title: 'Evening', isSelected: false },
-    NIGHT: { title: 'Night', isSelected: false },
+  const medicine = props.navigation.getParam('medicine');
+  console.log({ medicine });
+  const [count, setCount] = useState<number>(parseInt(medicine.medicineDosage || '0', 10));
+  const [value, setValue] = useState<string>(medicine.medicineInstructions || '');
+  const [duration, setDuration] = useState<string>(
+    medicine.medicineConsumptionDurationInDays || ''
+  );
+
+  const prepareConsultationType: ConsultationType = {};
+  ((medicine.medicineTimings! as unknown) as []).forEach((m) => {
+    prepareConsultationType[m] = { isSelected: true, title: medicineTimings[m] };
+  });
+  const [consultationType, setConsultationType] = useState(prepareConsultationType);
+
+  const prepareTimings: ConsultationType = {};
+  ((medicine.medicineToBeTaken! as unknown) as []).forEach((m) => {
+    prepareTimings[m] = { isSelected: true, title: medicineToBeTaken[m] };
   });
 
-  const [medicneupdate, setMedicineUpdate] = useState({
-    AFTER_FOOD: { title: 'After Food', isSelected: false },
-    BEFORE_FOOD: { title: 'Before Food', isSelected: false },
-  });
-
-  useEffect(() => {
-    setDuration(props.navigation.getParam('MedicineConsumptionDurationInDays'));
-    setValue(props.navigation.getParam('MedicineInstructions'));
-    setCount(parseInt(props.navigation.getParam('Dosage').substring(0, 1)));
-    const abc = props.navigation.getParam('MedicineToBeTaken');
-    setMedicineUpdate({
-      ...medicneupdate,
-      [abc]: {
-        isSelected: !!abc,
-        title: medicneupdate[abc].title,
-      },
-    });
-    const def = props.navigation.getParam('MedicineTimings');
-    setConsultationType({
-      ...consultationType,
-      [def]: {
-        isSelected: !!def,
-        title: consultationType[def].title,
-      },
-    });
-  }, []);
+  const [medicneupdate, setMedicineUpdate] = useState(prepareTimings);
 
   const showHeaderView = () => {
     return (
@@ -188,15 +162,16 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText={props.navigation.getParam('Name')}
+        headerText={medicine.medicineName || ''}
       ></Header>
     );
   };
-  const removeData = () => {
-    removeMedicineList(props.navigation.getParam('Name'));
 
+  const removeData = () => {
+    removeMedicineList(medicine.medicineName || '');
     props.navigation.pop();
   };
+
   return (
     <SafeAreaView style={styles.container}>
       <View
@@ -264,22 +239,22 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
             justifyContent: 'space-between',
             marginLeft: 16,
             marginRight: 16,
-            //marginBottom: 24,
           }}
         >
-          {Object.keys(consultationType).map((key) => {
-            const data = consultationType[key];
+          {Object.keys(medicineTimings).map((key) => {
+            const title = medicineTimings[key];
             return (
               <ChipViewCard
-                title={data.title}
+                key={key}
+                title={title}
                 onChange={(isChecked) => {
                   console.log({ key, isChecked });
                   setConsultationType({
                     ...consultationType,
-                    [key]: { isSelected: isChecked, title: data.title },
+                    [key]: { isSelected: isChecked, title: title },
                   });
                 }}
-                isChecked={consultationType[key].isSelected}
+                isChecked={!!(consultationType[key] && consultationType[key].isSelected)}
               />
             );
           })}
@@ -288,26 +263,25 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
         <View
           style={{
             flexDirection: 'row',
-            //justifyContent: 'space-between',
             marginLeft: 16,
             marginRight: 16,
-            padding: 10,
-            // marginBottom: 24,
           }}
         >
-          {Object.keys(medicneupdate).map((key) => {
-            const data = medicneupdate[key];
+          {Object.keys(medicineToBeTaken).map((key) => {
+            const title = medicineToBeTaken[key];
             return (
               <ChipViewCard
-                title={data.title}
+                containerStyle={{ marginRight: 8 }}
+                key={key}
+                title={title}
                 onChange={(isChecked) => {
                   console.log({ key, isChecked });
                   setMedicineUpdate({
                     ...medicneupdate,
-                    [key]: { isSelected: isChecked, title: data.title },
+                    [key]: { isSelected: isChecked, title: title },
                   });
                 }}
-                isChecked={medicneupdate[key].isSelected}
+                isChecked={!!(medicneupdate[key] && medicneupdate[key].isSelected)}
               />
             );
           })}
@@ -344,26 +318,22 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
           style={styles.buttonendStyle}
           onPress={() => {
             let dosagefianl = '';
-            console.log({
-              medicineName: props.navigation.getParam('Name'),
-              medicineDosage: count,
-              medicineToBeTaken: 'BEFORE_FOOD',
-              medicineInstructions: value,
-              medicineTimings: 'MORNING',
-              medicineConsumptionDurationInDays: duration,
-            });
             if (count > 0) {
               dosagefianl = count.toString().concat('tablets');
             }
             updateMedicineList({
-              medicineName: props.navigation.getParam('Name'),
+              medicineName: medicine.medicineName,
               medicineDosage: dosagefianl,
-              medicineToBeTaken: 'BEFORE_FOOD',
+              medicineToBeTaken: (Object.keys(medicneupdate).filter(
+                (m) => medicneupdate[m].isSelected
+              ) as unknown) as MEDICINE_TO_BE_TAKEN,
               medicineInstructions: value,
-              medicineTimings: 'MORNING',
+              medicineTimings: Object.keys(consultationType).filter(
+                (m) => consultationType[m].isSelected
+              ),
               medicineConsumptionDurationInDays: duration,
             });
-            props.navigation.pop();
+            props.navigation.goBack();
           }}
         />
       </View>

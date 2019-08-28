@@ -207,6 +207,7 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
               Alert.alert('Please enter all fields');
             } else {
               addSysmptonsList({
+                __typename: 'SymptomList',
                 symptom: symptons,
                 since: since,
                 howOften: howOften,

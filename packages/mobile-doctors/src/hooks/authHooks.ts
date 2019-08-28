@@ -10,12 +10,16 @@ export const useAuth = () => {
   const sendOtp = useContext(AuthContext).sendOtp;
   const verifyOtp = useContext(AuthContext).verifyOtp;
   const clearFirebaseUser = useContext(AuthContext).clearFirebaseUser;
+  const setIsDelegateLogin = useContext(AuthContext).setIsDelegateLogin;
+  const isDelegateLogin = useContext(AuthContext).isDelegateLogin;
   return {
     analytics,
     isLoggedIn,
     firebaseUser,
     setDoctorDetails,
     doctorDetails,
+    setIsDelegateLogin,
+    isDelegateLogin,
     sendOtp,
     verifyOtp,
     clearFirebaseUser,
