@@ -19,6 +19,7 @@ export interface CaseSheetContextProps {
       >
     | (() => void);
   notes: string | null;
+  setNotes: React.Dispatch<React.SetStateAction<string | null>> | (() => void);
   diagnosis: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null;
   setDiagnosis:
     | React.Dispatch<
@@ -49,6 +50,14 @@ export interface CaseSheetContextProps {
         >
       >
     | (() => void);
+  consultType: string[];
+  setConsultType: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
+  followUp: boolean[];
+  setFollowUp: React.Dispatch<React.SetStateAction<boolean[]>> | (() => void);
+  followUpAfterInDays: string[];
+  setFollowUpAfterInDays: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
+  followUpDate: string[];
+  setFollowUpDate: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
 }
 
 export const CaseSheetContext = createContext<CaseSheetContextProps>({
@@ -58,6 +67,7 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   symptoms: null,
   setSymptoms: () => {},
   notes: null,
+  setNotes: () => {},
   diagnosis: null,
   setDiagnosis: () => {},
   otherInstructions: null,
@@ -66,4 +76,12 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setDiagnosticPrescription: () => {},
   medicinePrescription: null,
   setMedicinePrescription: () => {},
+  consultType: [],
+  setConsultType: () => {},
+  followUp: [],
+  setFollowUp: () => {},
+  followUpAfterInDays: [],
+  setFollowUpAfterInDays: () => {},
+  followUpDate: [],
+  setFollowUpDate: () => {},
 });
