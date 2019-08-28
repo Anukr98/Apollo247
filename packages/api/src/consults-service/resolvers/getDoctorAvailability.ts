@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
-import { addMinutes, format, differenceInMinutes, addDays, addMilliseconds } from 'date-fns';
+import { addMinutes, format, differenceInMinutes, addDays } from 'date-fns';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
