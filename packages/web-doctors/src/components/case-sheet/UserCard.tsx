@@ -1,10 +1,44 @@
 import React, { useContext } from 'react';
 import { Card, CardMedia, CardContent, Typography, Divider } from '@material-ui/core';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { Gender } from 'graphql/types/globalTypes';
 
 export const UserCard: React.FC = () => {
   const { loading, patientDetails, caseSheetId } = useContext(CaseSheetContext);
+  const userCardStrip = [];
 
+  if (
+    patientDetails!.dateOfBirth &&
+    patientDetails!.dateOfBirth !== null &&
+    patientDetails!.dateOfBirth !== ''
+  ) {
+    userCardStrip.push(
+      Math.abs(
+        new Date(Date.now()).getUTCFullYear() -
+          new Date(patientDetails!.dateOfBirth).getUTCFullYear()
+      ).toString()
+    );
+  }
+  if (patientDetails!.gender && patientDetails!.gender !== null) {
+    if (patientDetails!.gender === Gender.FEMALE) {
+      userCardStrip.push('F');
+    }
+    if (patientDetails!.gender === Gender.MALE) {
+      userCardStrip.push('M');
+    }
+    if (patientDetails!.gender === Gender.OTHER) {
+      userCardStrip.push('O');
+    }
+  }
+  if (
+    patientDetails &&
+    patientDetails!.patientAddress &&
+    patientDetails.patientAddress !== null &&
+    patientDetails.patientAddress.length > 0 &&
+    patientDetails!.patientAddress[0]!.city !== ''
+  ) {
+    userCardStrip.push(patientDetails!.patientAddress[0]!.city);
+  }
   return loading && !patientDetails ? (
     <div></div>
   ) : (
@@ -24,16 +58,7 @@ export const UserCard: React.FC = () => {
             </Typography>
           )}
         <Typography variant="h5" color="textSecondary" component="h5">
-          {patientDetails!.dateOfBirth
-            ? Math.abs(
-                new Date(Date.now()).getUTCFullYear() -
-                  new Date(patientDetails!.dateOfBirth).getUTCFullYear()
-              )
-            : ''}
-          ,{patientDetails!.gender && patientDetails!.gender},
-          {/* {props.casesheetInfo.getCaseSheet.patientDetails.location &&
-              props.casesheetInfo.getCaseSheet.patientDetails.location !== '' &&
-              props.casesheetInfo.getCaseSheet.patientDetails.location} */}
+          {userCardStrip.join(', ')}
         </Typography>
         <Divider />
         {patientDetails!.uhid && patientDetails!.uhid !== '' && (
@@ -44,7 +69,7 @@ export const UserCard: React.FC = () => {
 
         <Typography variant="h6" color="textSecondary" component="h6">
           Appt ID:
-          {caseSheetId && caseSheetId !== '' && caseSheetId}
+          {caseSheetId && caseSheetId !== '' && caseSheetId.slice(0, 5)}
         </Typography>
       </CardContent>
     </Card>
