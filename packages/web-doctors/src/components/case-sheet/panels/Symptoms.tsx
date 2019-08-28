@@ -297,7 +297,7 @@ export const Symptoms: React.FC = (props) => {
   return (
     <Typography className={classes.container} component="div">
       <div>
-        {symptoms ? (
+        {symptoms && symptoms.length > 0 ? (
           <List className={classes.symtomList}>
             {symptoms &&
               symptoms!.map((item, idx) => (
