@@ -633,3 +633,26 @@ export const GET_CASESHEET_DETAILS = gql`
     }
   }
 `;
+
+export const SAVE_DEVICE_TOKEN = gql`
+  mutation saveDeviceToken($SaveDeviceTokenInput: SaveDeviceTokenInput!) {
+    saveDeviceToken(SaveDeviceTokenInput: $SaveDeviceTokenInput) {
+      deviceToken {
+        id
+        deviceType
+        deviceOS
+        deviceToken
+        createdDate
+        updatedDate
+      }
+    }
+  }
+`;
+
+// export const END_APPOINTMENT_SESSION = gql`
+//   mutation endAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput!) {
+//     endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput) {
+
+//     }
+//   }
+// `;
