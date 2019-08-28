@@ -132,14 +132,14 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     ) {
       const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
         .availableSlot;
-      const IOSFormat = `${todayDate}T${nextSlot}:00.000Z`;
-      console.log(IOSFormat, new Date(IOSFormat));
-      const formatedTime = Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('HH:mm');
+      // const IOSFormat =  `${todayDate}T${nextSlot}:00.000Z`;
+      console.log(nextSlot, new Date(nextSlot));
+      const formatedTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('HH:mm');
       console.log(formatedTime, 'formatedTime');
       let timeDiff: Number = 0;
       const time = formatedTime.split(':');
-      let today: Date = new Date();
-      let date2: Date = new Date(
+      const today: Date = new Date();
+      const date2: Date = new Date(
         today.getFullYear(),
         today.getMonth(),
         today.getDate(),
@@ -151,9 +151,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       }
       console.log(timeDiff, 'timeDiff');
 
-      props.setNextAvailableSlot(
-        availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot
-      );
+      props.setNextAvailableSlot(nextSlot);
       props.setavailableInMin(timeDiff);
       setavailableInMin(timeDiff);
     }

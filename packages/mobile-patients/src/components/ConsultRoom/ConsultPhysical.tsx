@@ -18,8 +18,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { StyleSheet, Text, View, Platform, PermissionsAndroid } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
 import { useQuery } from 'react-apollo-hooks';
@@ -134,7 +134,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     { label: 'Night', time: [] },
   ]);
 
-  useEffect(() => {
+  const fetchLocation = useCallback(() => {
     navigator.geolocation.getCurrentPosition((position) => {
       const searchstring = position.coords.latitude + ',' + position.coords.longitude;
       const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
@@ -158,7 +158,28 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           console.log(error);
         });
     });
-  }, [props.clinics, selectedClinic]);
+  }, [selectedClinic]);
+
+  const requestLocationPermission = useCallback(async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('You can use the location', granted);
+        fetchLocation();
+      } else {
+        console.log('location permission denied');
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }, [fetchLocation]);
+
+  useEffect(() => {
+    console.log('didmout');
+    Platform.OS === 'android' && requestLocationPermission();
+  }, [requestLocationPermission]);
 
   const setTimeArrayData = (availableSlots: string[]) => {
     const array = divideSlots(availableSlots, date);

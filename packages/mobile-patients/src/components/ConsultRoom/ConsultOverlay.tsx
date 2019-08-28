@@ -84,7 +84,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
   const setTimeArrayData = (availableSlots: string[]) => {
     const array = divideSlots(availableSlots, date);
-    console.log(array, 'array', timeArray, 'timeArray');
+    console.log(array, 'array', timeArray, 'timeArray.......');
     if (array !== timeArray) settimeArray(array);
   };
 
@@ -148,7 +148,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               }
               onPress={() => {
                 setshowSpinner(true);
-                const formatDate = date.toISOString().split('T')[0];
                 const timeSlot =
                   tabs[0].title === selectedTab &&
                   isConsultOnline &&
@@ -156,15 +155,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   0 < availableInMin!
                     ? nextAvailableSlot
                     : selectedTimeSlot;
-
-                const appointmentDate = moment
-                  .utc(moment(`${formatDate} ${timeSlot}`, 'DD-MM-YYYY HH:mm'))
-                  .utc()
-                  .toISOString();
+                // const formatDate = date.toISOString().split('T')[0];
+                // const appointmentDate = moment
+                //   .utc(moment(`${formatDate} ${timeSlot}`, 'DD-MM-YYYY HH:mm'))
+                //   .utc()
+                //   .toISOString();
                 const appointmentInput: BookAppointmentInput = {
                   patientId: props.patientId,
                   doctorId: props.doctor ? props.doctor.id : '',
-                  appointmentDateTime: appointmentDate,
+                  appointmentDateTime: timeSlot, //appointmentDate,
                   appointmentType:
                     selectedTab === tabs[0].title
                       ? APPOINTMENT_TYPE.ONLINE
