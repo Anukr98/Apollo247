@@ -7,9 +7,9 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
-import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
-import { AppointmentPayload } from 'types/appointmentTypes';
-import { addMinutes, format } from 'date-fns';
+//import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
+//import { AppointmentPayload } from 'types/appointmentTypes';
+//import { addMinutes, format } from 'date-fns';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
@@ -145,7 +145,7 @@ const bookAppointment: Resolver<
   }
   const appointment = await appts.saveAppointment(appointmentAttrs);
   //message queue starts
-  const doctorName = docDetails.firstName + '' + docDetails.lastName;
+  /*const doctorName = docDetails.firstName + '' + docDetails.lastName;
   const speciality = docDetails.specialty.name;
   const aptEndTime = addMinutes(appointmentInput.appointmentDateTime, 15);
   const slotTime =
@@ -192,7 +192,7 @@ const bookAppointment: Resolver<
     payload,
   };
 
-  AphMqClient.send(testMessage);
+  AphMqClient.send(testMessage);*/
   //message queue ends
 
   //TODO after junior doctor flow.. casesheet creation should be changed.

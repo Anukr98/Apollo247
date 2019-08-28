@@ -49,7 +49,7 @@ export const saveMedicineOrderTypeDefs = gql`
     medicineDeliveryType: MEDICINE_DELIVERY_TYPE!
     patinetAddressId: ID
     devliveryCharges: Float
-    items: [MedicineItem]
+    items: [MedicineCartItem]
     payment: MedicinePaymentDetails
   }
 
