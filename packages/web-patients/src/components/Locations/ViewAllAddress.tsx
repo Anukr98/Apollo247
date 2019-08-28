@@ -22,6 +22,10 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#01475b',
       },
     },
+    buttonDisable: {
+      backgroundColor: '#fed984',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2) !important',
+    },
     radioLabel: {
       margin: 0,
       fontSize: 14,
@@ -67,12 +71,18 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface ViewAllAddressProps {
   addresses: GetPatientAddressList_getPatientAddressList_addressList[];
+  updateDeliveryAddress: (deliveryAddressId: string) => void;
 }
 
 export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
   const classes = useStyles();
 
   const { addresses } = props;
+  const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
+
+  const { updateDeliveryAddress } = props;
+
+  const disableSubmit = deliveryAddressId === '';
 
   return (
     <div className={classes.shadowHide}>
@@ -88,10 +98,15 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                     return (
                       <li>
                         <FormControlLabel
+                          checked={deliveryAddressId === addressId}
                           className={classes.radioLabel}
                           value={addressId}
                           control={<AphRadio color="primary" />}
                           label={address}
+                          onChange={() => {
+                            setDeliveryAddressId(addressId);
+                            updateDeliveryAddress(addressId);
+                          }}
                         />
                       </li>
                     );
@@ -103,7 +118,12 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
         </Scrollbars>
       </div>
       <div className={classes.dialogActions}>
-        <AphButton color="primary" fullWidth>
+        <AphButton
+          color="primary"
+          fullWidth
+          disabled={disableSubmit}
+          className={disableSubmit ? classes.buttonDisable : ''}
+        >
           Done
         </AphButton>
       </div>

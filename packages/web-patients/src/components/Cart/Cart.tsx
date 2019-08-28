@@ -313,6 +313,8 @@ export const Cart: React.FC = (props) => {
 
   const disableSubmit = deliveryAddressId === '';
 
+  console.log(deliveryAddressId, 'deliver address is...');
+
   // console.log('cart items......', cartItems, cartTotal);
 
   return (
@@ -395,7 +397,11 @@ export const Cart: React.FC = (props) => {
                   </Tabs>
                   {tabValue === 0 && (
                     <TabContainer>
-                      <HomeDelivery />
+                      <HomeDelivery
+                        updateDeliveryAddress={(deliveryAddressId) =>
+                          setDeliveryAddressId(deliveryAddressId)
+                        }
+                      />
                     </TabContainer>
                   )}
                   {tabValue === 1 && (

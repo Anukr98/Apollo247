@@ -84,13 +84,20 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const HomeDelivery: React.FC = (props) => {
+interface HomeDeliveryProps {
+  updateDeliveryAddress: (deliveryAddressId: string) => void;
+}
+
+export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   const classes = useStyles();
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
   const [isViewAllAddressDialogOpen, setIsViewAllAddressDialogOpen] = React.useState<boolean>(
     false
   );
   const { currentPatient } = useAllCurrentPatients();
+  const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
+
+  const { updateDeliveryAddress } = props;
 
   const { data, loading, error } = useQueryWithSkip<
     GetPatientAddressList,
@@ -125,10 +132,15 @@ export const HomeDelivery: React.FC = (props) => {
           return showAddress < 3 ? (
             <li key={index}>
               <FormControlLabel
+                checked={deliveryAddressId === addressId}
                 className={classes.radioLabel}
                 value={addressId}
                 control={<AphRadio color="primary" />}
                 label={address}
+                onChange={() => {
+                  setDeliveryAddressId(addressId);
+                  updateDeliveryAddress(addressId);
+                }}
               />
             </li>
           ) : (
@@ -177,7 +189,12 @@ export const HomeDelivery: React.FC = (props) => {
           </div>
           Select Delivery Address
         </AphDialogTitle>
-        <ViewAllAddress addresses={addressList} />
+        <ViewAllAddress
+          addresses={addressList}
+          updateDeliveryAddress={(deliveryAddressId: string) =>
+            updateDeliveryAddress(deliveryAddressId)
+          }
+        />
       </AphDialog>
     </div>
   );
