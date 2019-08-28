@@ -13,6 +13,10 @@ import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
 } from 'graphql/types/createAppointmentSession';
+import {
+  EndAppointmentSession,
+  EndAppointmentSessionVariables,
+} from 'graphql/types/EndAppointmentSession';
 import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
 
 import { CREATE_APPOINTMENT_SESSION, GET_CASESHEET, UPDATE_CASESHEET } from 'graphql/profiles';
@@ -94,6 +98,9 @@ const useStyles = makeStyles((theme: Theme) => {
     none: {
       display: 'none',
     },
+    block: {
+      display: 'block',
+    },
   };
 });
 
@@ -164,6 +171,19 @@ export const ConsultTabs: React.FC = () => {
             .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
           setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
             .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
+          if (
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.caseSheetDetails &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
+          ) {
+            //setappointmentDateTime('2019-08-27T17:30:00.000Z');
+            setappointmentDateTime(
+              _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
+            );
+            //setCaseSheetId(_data.data.getCaseSheet.caseSheetDetails.id);
+          }
         })
         .catch((e: any) => {
           console.log('Error occured creating session', e);
@@ -187,30 +207,56 @@ export const ConsultTabs: React.FC = () => {
       JSON.stringify(medicinePrescription)
     );
     // client
-    //  .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
-    //   mutation:UPDATE_CASESHEET,
+    //   .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
+    //     mutation: UPDATE_CASESHEET,
     //     variables: {
     //       UpdateCaseSheetInput: {
-    //       symptoms:JSON.stringify(getSysmptonsList()),
-    //       notes:value,
-    //       diagnosis:JSON.stringify(getDiagonsisList()),
-    //       diagnosticPrescription:JSON.stringify(getDiagnosticPrescriptionDataList()),
-    //       followUp:switchValue,
-    //       followUpDate:selectDate,
-    //       followUpAfterInDays:sliderValue,
-    //       otherInstructions:JSON.stringify(otherInstructionsData),
-    //       medicinePrescription:JSON.stringify(getMedicineList()),
-    //       id:caseSheetId,
+    //         symptoms: JSON.stringify(symptoms),
+    //         //notes: value,
+    //         diagnosis: JSON.stringify(diagnosis),
+    //         diagnosticPrescription: JSON.stringify(diagnosticPrescription),
+    //         //followUp: switchValue,
+    //         //followUpDate: selectDate,
+    //         //followUpAfterInDays: sliderValue,
+    //         otherInstructions: JSON.stringify(otherInstructions),
+    //         medicinePrescription: JSON.stringify(medicinePrescription),
+    //         id: caseSheetId,
+    //       },
     //     },
-    //   },
-    //   fetchPolicy:'no-cache',
-    //  })
+    //     fetchPolicy: 'no-cache',
+    //   })
+    //   .then((_data) => {
+    //     console.log('_data', _data);
+    //     //const result = _data.data!.updateCaseSheet;
+    //   })
+    //   .catch((e) => {
+    //     console.log('Error occured while update casesheet', e);
+    //   });
+  };
+
+  const endConsultAction = () => {
+    //     client
+    // .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
+    // mutation: END_APPOINTMENT_SESSION,
+    // variables: {
+    // endAppointmentSessionInput: {
+    // appointmentId: appointmentId,
+    // status: STATUS.COMPLETED,
+    // },
+    // },
+    // fetchPolicy: 'no-cache',
+    // })
     // .then((_data) => {
-    //   console.log('_data', _data);
-    //   const result=_data.data!.updateCaseSheet;
-    //  })
+    // console.log('_data', _data);
+    // setShowButtons(false);
+    // props.onStopConsult();
+    // })
     // .catch((e) => {
-    //   console.log('Error occured while update casesheet', e);
+    // console.log('Error occured while End casesheet', e);
+    // const error = JSON.parse(JSON.stringify(e));
+    // const errorMessage = error && error.message;
+    // console.log('Error occured while End casesheet', errorMessage, error);
+    // Alert.alert('Error', errorMessage);
     // });
   };
   const createSessionAction = () => {
@@ -242,7 +288,6 @@ export const ConsultTabs: React.FC = () => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
     }, 10);
   };
-
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
@@ -272,6 +317,7 @@ export const ConsultTabs: React.FC = () => {
               setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
               createSessionAction={createSessionAction}
               saveCasesheetAction={saveCasesheetAction}
+              endConsultAction={endConsultAction}
               appointmentId={appointmentId}
               appointmentDateTime={appointmentDateTime}
               doctorId={doctorId}
@@ -299,13 +345,16 @@ export const ConsultTabs: React.FC = () => {
                   />
                 </Tabs>
               </div>
-              {tabValue === 0 && (
-                <TabContainer>
-                  <CaseSheet />
-                </TabContainer>
-              )}
-              {tabValue === 1 && (
-                <TabContainer>
+              {/* {tabValue === 0 && ( */}
+              <TabContainer>
+                <div className={tabValue !== 0 ? classes.none : classes.block}>
+                  {casesheetInfo ? <CaseSheet /> : ''}
+                </div>
+              </TabContainer>
+              {/* )} */}
+              {/* {tabValue === 1 && ( */}
+              <TabContainer>
+                <div className={tabValue !== 1 ? classes.none : classes.block}>
                   <div className={classes.chatContainer}>
                     <ConsultRoom
                       startConsult={startConsult}
@@ -316,8 +365,9 @@ export const ConsultTabs: React.FC = () => {
                       patientId={patientId}
                     />
                   </div>
-                </TabContainer>
-              )}
+                </div>
+              </TabContainer>
+              {/* )} */}
             </div>
           </div>
         </CaseSheetContext.Provider>
