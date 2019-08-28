@@ -41,7 +41,7 @@ export const savePrescriptionMedicineOrderTypeDefs = gql`
 
   extend type Mutation {
     SavePrescriptionMedicineOrder(
-      MedicineCartInput: MedicineCartInput
+      PrescriptionMedicineInput: PrescriptionMedicineInput
     ): SavePrescriptionMedicineOrderResult!
   }
 `;
@@ -93,6 +93,8 @@ const SavePrescriptionMedicineOrder: Resolver<
     quoteId: PrescriptionMedicineInput.quoteId,
     appointmentId: PrescriptionMedicineInput.appointmentId,
     prescriptionImageUrl: PrescriptionMedicineInput.prescriptionImageUrl,
+    estimatedAmount: 0.0,
+    devliveryCharges: 0.0,
   };
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
