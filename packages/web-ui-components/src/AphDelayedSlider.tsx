@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) => {
     thumb: {
       width: 28,
       height: 28,
-      backgroundImage: 'url(' + require('images/ic_tracker_done.svg') + ')',
+      backgroundImage: 'url(' + require('images/ic_tracker_hold.svg') + ')',
       backgroundSize: '100% 100%',
       backgroundRepeat: 'no-repeat',
       backgroundColor: 'transparent',
@@ -80,11 +80,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const AphTrackSlider: React.FC<SliderProps> = (props) => {
+export const AphDelayedSlider: React.FC<SliderProps> = (props) => {
   const defaultClasses = useStyles({});
   const classes = props.classes || defaultClasses;
 
   return <Slider classes={classes} {...props} />;
 };
 
-export default AphTrackSlider;
+export default AphDelayedSlider;

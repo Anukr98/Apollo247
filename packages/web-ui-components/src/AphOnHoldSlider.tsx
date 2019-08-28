@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme: Theme) => {
     rail: {
       height: 4,
       opacity: 0.5,
-      backgroundColor: 'rgba(0,179,142,0.2)',
+      backgroundColor: 'rgba(229,0,0,0.2)',
     },
     track: {
       backgroundColor: '#0087ba',
@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) => {
     thumb: {
       width: 28,
       height: 28,
-      backgroundImage: 'url(' + require('images/ic_tracker_done.svg') + ')',
+      backgroundImage: 'url(' + require('images/ic_hold.svg') + ')',
       backgroundSize: '100% 100%',
       backgroundRepeat: 'no-repeat',
       backgroundColor: 'transparent',
@@ -80,11 +80,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const AphTrackSlider: React.FC<SliderProps> = (props) => {
+export const AphOnHoldSlider: React.FC<SliderProps> = (props) => {
   const defaultClasses = useStyles({});
   const classes = props.classes || defaultClasses;
 
   return <Slider classes={classes} {...props} />;
 };
 
-export default AphTrackSlider;
+export default AphOnHoldSlider;

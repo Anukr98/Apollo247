@@ -22,11 +22,11 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'rgba(0,179,142,0.2)',
     },
     track: {
-      backgroundColor: '#0087ba',
+      backgroundColor: '#00b38e',
       height: 4,
     },
     mark: {
-      backgroundColor: '#0087ba',
+      backgroundColor: '#00b38e',
       display: 'none',
     },
     thumb: {
@@ -80,11 +80,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const AphTrackSlider: React.FC<SliderProps> = (props) => {
+export const AphDeliveredSlider: React.FC<SliderProps> = (props) => {
   const defaultClasses = useStyles({});
   const classes = props.classes || defaultClasses;
 
   return <Slider classes={classes} {...props} />;
 };
 
-export default AphTrackSlider;
+export default AphDeliveredSlider;
