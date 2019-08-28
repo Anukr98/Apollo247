@@ -230,13 +230,14 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       //   differenceInMinutes = -1;
       // }
       if (availability && availability.availableSlot !== '') {
-        const slotTimeUtc = new Date(
-          new Date(
-            `${format(new Date(), 'yyyy-MM-dd')} ${availability.availableSlot}:00`
-          ).toISOString()
-        ).getTime();
-        const localTimeOffset = new Date().getTimezoneOffset() * 60000;
-        const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
+        // const slotTimeUtc = new Date(
+        //   new Date(
+        //     `${format(new Date(), 'yyyy-MM-dd')} ${availability.availableSlot}:00`
+        //   ).toISOString()
+        // ).getTime();
+        // const localTimeOffset = new Date().getTimezoneOffset() * 60000;
+        // const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
+        const slotTime = new Date(availability.availableSlot).getTime();
         const currentTime = new Date(new Date().toISOString()).getTime();
         if (slotTime > currentTime) {
           const difference = slotTime - currentTime;
@@ -247,6 +248,8 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       }
     });
   }
+
+  // console.log(differenceInMinutes, 'hello.....');
 
   // if (differenceInMinutes <= 15) {
   //   onBookConsult(true);

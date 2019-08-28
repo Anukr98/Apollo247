@@ -138,7 +138,7 @@ interface ConsultProps {
   timerMinuts: number;
   timerSeconds: number;
 }
-const openTokApiKey = '46393582';
+const openTokApiKey = '46401302';
 export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
   const [isCall, setIscall] = React.useState(true);

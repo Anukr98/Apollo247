@@ -112,6 +112,7 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
     variables: {
       patientId: (currentPatient && currentPatient.id) || '',
     },
+    fetchPolicy: 'no-cache',
   });
 
   if (loading) {
