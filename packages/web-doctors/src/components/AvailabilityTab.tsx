@@ -172,6 +172,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: theme.typography.pxToRem(20),
       color: theme.palette.secondary.dark,
       fontWeight: theme.typography.fontWeightMedium,
+      lineHeight: 1.2,
     },
     secondaryHeading: {
       fontSize: theme.typography.pxToRem(15),

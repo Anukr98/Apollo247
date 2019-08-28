@@ -277,7 +277,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
       // pointerEvents: 'none',
-      paddingLeft: 4,
+      paddingLeft: 0,
       marginBottom: 20,
       '& img': {
         marginRight: 8,
