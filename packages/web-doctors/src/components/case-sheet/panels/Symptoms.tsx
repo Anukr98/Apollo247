@@ -205,6 +205,7 @@ interface errorObject {
   severityError: boolean;
 }
 interface symptomObject {
+  __typename: string;
   symptom: string;
   severity: string;
   howOften: string;
@@ -274,7 +275,8 @@ export const Symptoms: React.FC = (props) => {
         severityError: false,
       });
 
-      const inputParams = {
+      const inputParams: any = {
+        __typename: 'SymptomList',
         howOften: howOften,
         severity: severity,
         since: since,
