@@ -704,29 +704,28 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [enableConsultButton, setEnableConsultButton] = useState(false);
 
   useEffect(() => {
-    const consultStartTime = moment.utc(Appintmentdatetimeconsultpage).local();
-    const consultEndTime = moment
-      .utc(Appintmentdatetimeconsultpage)
-      .local()
-      .add(15, 'minutes');
-    const now = moment(new Date());
-    // const diffBwConsultStartAndNow = moment.duration(moment(consultStartTime).diff(now));
-
-    // * start timer if consult is about to start within next 10 minutes so that if the user
+    // Start timer if consult is about to start within next 10 minutes so that if the user
     // is in the same screen for next 10 minutes we can keep on checking and enable consult button, no need to refresh the page
-    // * startConsult Button will be disabled for previous (completed) appointments.
+    // StartConsult Button will be disabled for previous (completed) appointments.
+    const _now = moment(new Date());
+    const _consultStartTime = moment
+      .utc(Appintmentdatetimeconsultpage)
+      .clone()
+      .local();
+    const _consultEndTime = _consultStartTime.clone().add(15, 'minutes');
+    const isConsultInBetween = _now.isBetween(_consultStartTime, _consultEndTime);
+    const diffBwConsultStartAndNowInMins = moment
+      .duration(moment(_consultStartTime).diff(_now))
+      .asMinutes();
+    const isAboutToStartWithinTenMinutes =
+      diffBwConsultStartAndNowInMins > 0 && diffBwConsultStartAndNowInMins < 10;
 
-    if (now.isBetween(consultStartTime, consultEndTime)) {
+    if (isConsultInBetween) {
       setEnableConsultButton(true);
-    } else if (moment.duration(moment(consultEndTime).diff(now)).asMinutes() > 0) {
-      setEnableConsultButton(false);
-    } else {
+    } else if (isAboutToStartWithinTenMinutes) {
+      // Start timer here and clear when consult time starts
       const consultDisableInterval = setInterval(() => {
-        // if diffBwConsultStartAndNow is == 0 then enable start consult button
-        const now = moment(new Date());
-        const consultStartTime = moment.utc(Appintmentdatetimeconsultpage).local();
-        const diffBwConsultStartAndNow = moment.duration(moment(consultStartTime).diff(now));
-        if (diffBwConsultStartAndNow.minutes() > 0 && diffBwConsultStartAndNow.minutes() < 15) {
+        if (moment(new Date()).isBetween(_consultStartTime, _consultEndTime)) {
           setEnableConsultButton(true);
           clearInterval(consultDisableInterval);
         }
@@ -742,7 +741,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <View style={styles.footerButtonsContainersave}>
             <Button
               title="START CONSULT"
-              disabled={enableConsultButton}
+              disabled={!enableConsultButton}
               buttonIcon={<Start />}
               onPress={() => {
                 setShowButtons(true);
