@@ -45,9 +45,7 @@ const getDoctorAvailableSlots: Resolver<
     let st = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlots[0].startTime.toString()}`;
     const ed = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlots[0].endTime.toString()}`;
     let consultStartTime = new Date(st);
-    let consultEndTime = new Date(ed);
-    consultStartTime = addMilliseconds(consultStartTime, -19800000);
-    consultEndTime = addMilliseconds(consultEndTime, -19800000);
+    const consultEndTime = new Date(ed);
     console.log(consultStartTime, consultEndTime);
     let previousDate: Date = DoctorAvailabilityInput.availableDate;
     if (consultEndTime < consultStartTime) {
