@@ -4,7 +4,7 @@ import { CaseSheetContext } from 'context/CaseSheetContext';
 
 export const UserCard: React.FC = () => {
   const { loading, patientDetails, caseSheetId } = useContext(CaseSheetContext);
-
+  console.log(patientDetails);
   return loading && !patientDetails ? (
     <div></div>
   ) : (
@@ -31,9 +31,13 @@ export const UserCard: React.FC = () => {
               )
             : ''}
           ,{patientDetails!.gender && patientDetails!.gender},
-          {/* {props.casesheetInfo.getCaseSheet.patientDetails.location &&
-              props.casesheetInfo.getCaseSheet.patientDetails.location !== '' &&
-              props.casesheetInfo.getCaseSheet.patientDetails.location} */}
+          {patientDetails &&
+          patientDetails!.patientAddress &&
+          patientDetails.patientAddress !== null &&
+          patientDetails.patientAddress.length > 0 &&
+          patientDetails!.patientAddress[0]!.city !== ''
+            ? patientDetails!.patientAddress[0]!.city
+            : ''}
         </Typography>
         <Divider />
         {patientDetails!.uhid && patientDetails!.uhid !== '' && (

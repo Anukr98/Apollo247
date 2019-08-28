@@ -408,7 +408,7 @@ export const Symptoms: React.FC = (props) => {
                               component="div"
                               error={errorState.symptomError}
                             >
-                              Please Enter something
+                              Please Enter Symptom
                             </FormHelperText>
                           )}
                         </div>
@@ -430,7 +430,7 @@ export const Symptoms: React.FC = (props) => {
                               component="div"
                               error={errorState.sinceError}
                             >
-                              Please Enter something
+                              Please Enter Since
                             </FormHelperText>
                           )}
                         </div>
@@ -452,7 +452,7 @@ export const Symptoms: React.FC = (props) => {
                               component="div"
                               error={errorState.howOfftenError}
                             >
-                              Please Enter something
+                              Please Enter How Often
                             </FormHelperText>
                           )}
                         </div>
@@ -474,7 +474,7 @@ export const Symptoms: React.FC = (props) => {
                               component="div"
                               error={errorState.severityError}
                             >
-                              Please Enter something
+                              Please Enter Severity
                             </FormHelperText>
                           )}
                         </div>
