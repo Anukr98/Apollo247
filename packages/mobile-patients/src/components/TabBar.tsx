@@ -1,23 +1,21 @@
-import { AppRoute, AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { ConsultRoom } from '@aph/mobile-patients/src/components/ConsultRoom';
-import { HealthRecords } from '@aph/mobile-patients/src/components/HealthRecords';
-import { MyAccount } from '@aph/mobile-patients/src/components/MyAccount';
+import { MyAccount } from '@aph/mobile-patients/src/components/Account/MyAccount';
+import { Consult } from '@aph/mobile-patients/src/components/ConsultRoom/Consult';
+import { HealthRecordsHome } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordsHome';
 import { Medicine } from '@aph/mobile-patients/src/components/Medicines/Medicine';
-
+import { AppRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   ConsultationRoom,
-  MyHealth,
-  Person,
-  ShoppingCart,
-  PersonFocused,
-  MyHealthFocused,
   ConsultationRoomFocused,
+  MyHealth,
+  MyHealthFocused,
+  Person,
+  PersonFocused,
+  ShoppingCart,
   ShoppingCartFocused,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigation';
-import { Consult } from '@aph/mobile-patients/src/components/Consult';
 
 const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
   'CONSULT ROOM': <ConsultationRoom />,
@@ -35,7 +33,7 @@ const routeToFocusedIcon: Partial<Record<string, NavigationRouteConfig>> = {
 
 const routeConfigMap: Partial<Record<string, NavigationRouteConfig>> = {
   'CONSULT ROOM': Consult,
-  'HEALTH RECORDS': HealthRecords,
+  'HEALTH RECORDS': HealthRecordsHome,
   'TESTS & MEDICINES': Medicine,
   'MY ACCOUNT': MyAccount,
 };

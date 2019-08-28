@@ -2,6 +2,7 @@ import { EntityRepository, Repository } from 'typeorm';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { CaseSheet } from 'consults-service/entities';
+import { DoctorType } from 'doctors-service/entities';
 
 @EntityRepository(CaseSheet)
 export class CaseSheetRepository extends Repository<CaseSheet> {
@@ -14,18 +15,33 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
   }
 
   getJuniorDoctorCaseSheet(appointmentId: string) {
+    const juniorDoctorType = DoctorType.JUNIOR;
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
       .where('case_sheet.appointment = :appointmentId', { appointmentId })
-      .andWhere('case_sheet.createdDoctorId is null')
+      .andWhere('case_sheet.doctorType = :juniorDoctorType', { juniorDoctorType })
       .getOne();
   }
 
-  getSeniorDoctorCaseSheet(appointmentId: string, createdDoctorId: string) {
+  getSeniorDoctorCaseSheet(appointmentId: string) {
+    const juniorDoctorType = DoctorType.JUNIOR;
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
       .where('case_sheet.appointment = :appointmentId', { appointmentId })
-      .andWhere('case_sheet.createdDoctorId = :createdDoctorId', { createdDoctorId })
+      .andWhere('case_sheet.createdDoctorId != :juniorDoctorType', { juniorDoctorType })
       .getOne();
+  }
+
+  updateCaseSheet(id: string, caseSheetAttrs: Partial<CaseSheet>) {
+    return this.update(id, caseSheetAttrs).catch((createErrors) => {
+      throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { createErrors });
+    });
+  }
+
+  getCaseSheetById(id: string) {
+    return this.findOne({
+      where: [{ id }],
+      relations: ['appointment'],
+    });
   }
 }

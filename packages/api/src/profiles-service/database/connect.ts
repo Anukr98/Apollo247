@@ -21,6 +21,7 @@ import {
   MedicineOrderLineItems,
   MedicineOrderPayments,
   PatientDeviceTokens,
+  PatientNotificationSettings,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -39,6 +40,7 @@ export const connect = async () => {
         MedicineOrderLineItems,
         MedicineOrderPayments,
         PatientDeviceTokens,
+        PatientNotificationSettings,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

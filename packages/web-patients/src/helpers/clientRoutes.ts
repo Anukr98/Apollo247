@@ -6,7 +6,7 @@ export const clientRoutes = {
   doctorsLanding: () => '/doctors',
   consultRoom: () => '/consult-room',
   testsAndMedicine: () => '/tests-medicines',
-  healthRecords: () => '#',
+  healthRecords: () => '/health-records',
   patients: () => '/patients',
   prescriptionsLanding: () => '/prescriptions',
   cartLanding: () => '/cart',
@@ -14,6 +14,7 @@ export const clientRoutes = {
   chatRoom: (appointmentId: string, doctorId: string) => `/chat-room/${appointmentId}/${doctorId}`,
   myAccount: () => '/profile',
   notificationSettings: () => '/settings',
+  addRecords: () => '/add-records',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

@@ -36,6 +36,14 @@ import {
   updatePatientResolvers,
   updatePatientTypeDefs,
 } from 'profiles-service/resolvers/updatePatient';
+import {
+  savePatientNotificationSettingsResolvers,
+  savePatientNotificationSettingsTypeDefs,
+} from 'profiles-service/resolvers/savePatientNotificationSettings';
+import {
+  getPatientNotificationSettingsResolvers,
+  getPatientNotificationSettingsTypeDefs,
+} from 'profiles-service/resolvers/getPatientNotificationSettings';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 
@@ -108,6 +116,14 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: saveDeviceTokenTypeDefs,
         resolvers: saveDeviceTokenResolvers,
+      },
+      {
+        typeDefs: savePatientNotificationSettingsTypeDefs,
+        resolvers: savePatientNotificationSettingsResolvers,
+      },
+      {
+        typeDefs: getPatientNotificationSettingsTypeDefs,
+        resolvers: getPatientNotificationSettingsResolvers,
       },
     ]),
   });

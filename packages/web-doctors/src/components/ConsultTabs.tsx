@@ -13,11 +13,26 @@ import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
 } from 'graphql/types/createAppointmentSession';
-import { CREATE_APPOINTMENT_SESSION } from 'graphql/profiles';
+import {
+  EndAppointmentSession,
+  EndAppointmentSessionVariables,
+} from 'graphql/types/EndAppointmentSession';
+import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
+
+import { CREATE_APPOINTMENT_SESSION, GET_CASESHEET, UPDATE_CASESHEET } from 'graphql/profiles';
+import {
+  GetCaseSheet,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+} from 'graphql/types/GetCaseSheet';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { useAuth } from 'hooks/authHooks';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -80,10 +95,18 @@ const useStyles = makeStyles((theme: Theme) => {
     pointerNone: {
       pointerEvents: 'none',
     },
+    none: {
+      display: 'none',
+    },
+    block: {
+      display: 'block',
+    },
   };
 });
+
 type Params = { id: string; patientId: string };
-export const ConsultTabs: React.FC = (props) => {
+
+export const ConsultTabs: React.FC = () => {
   const classes = useStyles();
   const {
     currentPatient,
@@ -96,25 +119,146 @@ export const ConsultTabs: React.FC = (props) => {
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
   const [doctorId, setdoctorId] = useState<string>('');
   const [patientId, setpatientId] = useState<string>('');
-  const [loaded, setLoaded] = useState<boolean>(false);
+  const [caseSheetId, setCaseSheetId] = useState<string>('');
+  const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
   const params = useParams<Params>();
   const paramId = params.id;
+  const [loaded, setLoaded] = useState<boolean>(false);
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
   const client = useApolloClient();
+
+  /* case sheet data*/
+  const [symptoms, setSymptoms] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null
+  >(null);
+  const [diagnosis, setDiagnosis] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null
+  >(null);
+  const [otherInstructions, setOtherInstructions] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null
+  >(null);
+  const [diagnosticPrescription, setDiagnosticPrescription] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[] | null
+  >(null);
+  const [medicinePrescription, setMedicinePrescription] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
+  >(null);
+  /* case sheet data*/
+
   useEffect(() => {
     if (appointmentId !== paramId && paramId !== '' && currentPatient && currentPatient.id !== '') {
       setAppointmentId(paramId);
       setpatientId(params.patientId);
       setdoctorId(currentPatient.id);
-      setLoaded(true);
+
+      client
+        .query<GetCaseSheet>({
+          query: GET_CASESHEET,
+          fetchPolicy: 'no-cache',
+          variables: { appointmentId: paramId },
+        })
+        .then((_data) => {
+          setCasesheetInfo(_data.data);
+          setSymptoms((_data!.data!.getCaseSheet!.caseSheetDetails!
+            .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
+          setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
+            .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
+          setOtherInstructions((_data!.data!.getCaseSheet!.caseSheetDetails!
+            .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[]);
+          setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+            .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
+          setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+            .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
+          if (
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.caseSheetDetails &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
+          ) {
+            //setappointmentDateTime('2019-08-27T17:30:00.000Z');
+            setappointmentDateTime(
+              _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
+            );
+            //setCaseSheetId(_data.data.getCaseSheet.caseSheetDetails.id);
+          }
+        })
+        .catch((e: any) => {
+          console.log('Error occured creating session', e);
+        })
+        .finally(() => {
+          setLoaded(true);
+        });
     }
     return () => {
       const cookieStr = `action=`;
       document.cookie = cookieStr + ';path=/;';
     };
   }, [paramId, appointmentId]);
+
+  const saveCasesheetAction = () => {
+    console.log(
+      JSON.stringify(symptoms),
+      JSON.stringify(diagnosis),
+      JSON.stringify(otherInstructions),
+      JSON.stringify(diagnosticPrescription),
+      JSON.stringify(medicinePrescription)
+    );
+    // client
+    //   .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
+    //     mutation: UPDATE_CASESHEET,
+    //     variables: {
+    //       UpdateCaseSheetInput: {
+    //         symptoms: JSON.stringify(symptoms),
+    //         //notes: value,
+    //         diagnosis: JSON.stringify(diagnosis),
+    //         diagnosticPrescription: JSON.stringify(diagnosticPrescription),
+    //         //followUp: switchValue,
+    //         //followUpDate: selectDate,
+    //         //followUpAfterInDays: sliderValue,
+    //         otherInstructions: JSON.stringify(otherInstructions),
+    //         medicinePrescription: JSON.stringify(medicinePrescription),
+    //         id: caseSheetId,
+    //       },
+    //     },
+    //     fetchPolicy: 'no-cache',
+    //   })
+    //   .then((_data) => {
+    //     console.log('_data', _data);
+    //     //const result = _data.data!.updateCaseSheet;
+    //   })
+    //   .catch((e) => {
+    //     console.log('Error occured while update casesheet', e);
+    //   });
+  };
+
+  const endConsultAction = () => {
+    //     client
+    // .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
+    // mutation: END_APPOINTMENT_SESSION,
+    // variables: {
+    // endAppointmentSessionInput: {
+    // appointmentId: appointmentId,
+    // status: STATUS.COMPLETED,
+    // },
+    // },
+    // fetchPolicy: 'no-cache',
+    // })
+    // .then((_data) => {
+    // console.log('_data', _data);
+    // setShowButtons(false);
+    // props.onStopConsult();
+    // })
+    // .catch((e) => {
+    // console.log('Error occured while End casesheet', e);
+    // const error = JSON.parse(JSON.stringify(e));
+    // const errorMessage = error && error.message;
+    // console.log('Error occured while End casesheet', errorMessage, error);
+    // Alert.alert('Error', errorMessage);
+    // });
+  };
   const createSessionAction = () => {
     client
       .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
@@ -130,6 +274,7 @@ export const ConsultTabs: React.FC = (props) => {
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
         setappointmentDateTime(_data.data.createAppointmentSession.appointmentDateTime);
+        setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
       })
       .catch((e: any) => {
         console.log('Error occured creating session', e);
@@ -149,58 +294,83 @@ export const ConsultTabs: React.FC = (props) => {
         <Header />
       </div>
       {loaded && (
-        <div className={classes.container}>
-          <CallPopover
-            setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-            createSessionAction={createSessionAction}
-            appointmentId={appointmentId}
-            appointmentDateTime={appointmentDateTime}
-            doctorId={doctorId}
-          />
-          <div>
+        <CaseSheetContext.Provider
+          value={{
+            loading: !loaded,
+            caseSheetId: appointmentId,
+            patientDetails: casesheetInfo!.getCaseSheet!.patientDetails,
+            symptoms,
+            setSymptoms,
+            notes: casesheetInfo!.getCaseSheet!.caseSheetDetails!.notes,
+            diagnosis,
+            setDiagnosis,
+            otherInstructions,
+            setOtherInstructions,
+            diagnosticPrescription,
+            setDiagnosticPrescription,
+            medicinePrescription,
+            setMedicinePrescription,
+          }}
+        >
+          <div className={classes.container}>
+            <CallPopover
+              setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+              createSessionAction={createSessionAction}
+              saveCasesheetAction={saveCasesheetAction}
+              endConsultAction={endConsultAction}
+              appointmentId={appointmentId}
+              appointmentDateTime={appointmentDateTime}
+              doctorId={doctorId}
+            />
             <div>
-              <Tabs
-                value={tabValue}
-                variant="fullWidth"
-                classes={{
-                  root: classes.tabsRoot,
-                  indicator: classes.tabsIndicator,
-                }}
-                onChange={(e, newValue) => {
-                  setTabValue(newValue);
-                }}
-              >
-                <Tab
-                  classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                  label="Case Sheet"
-                />
-                <Tab
-                  classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                  label="Chat"
-                />
-              </Tabs>
-            </div>
-            {tabValue === 0 && (
-              <TabContainer>
-                <CaseSheet />
-              </TabContainer>
-            )}
-            {tabValue === 1 && (
-              <TabContainer>
-                <div className={classes.chatContainer}>
-                  <ConsultRoom
-                    startConsult={startConsult}
-                    sessionId={sessionId}
-                    token={token}
-                    appointmentId={appointmentId}
-                    doctorId={doctorId}
-                    patientId={patientId}
+              <div>
+                <Tabs
+                  value={tabValue}
+                  variant="fullWidth"
+                  classes={{
+                    root: classes.tabsRoot,
+                    indicator: classes.tabsIndicator,
+                  }}
+                  onChange={(e, newValue) => {
+                    setTabValue(newValue);
+                  }}
+                >
+                  <Tab
+                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                    label="Case Sheet"
                   />
+                  <Tab
+                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                    label="Chat"
+                  />
+                </Tabs>
+              </div>
+              {/* {tabValue === 0 && ( */}
+              <TabContainer>
+                <div className={tabValue !== 0 ? classes.none : classes.block}>
+                  {casesheetInfo ? <CaseSheet /> : ''}
                 </div>
               </TabContainer>
-            )}
+              {/* )} */}
+              {/* {tabValue === 1 && ( */}
+              <TabContainer>
+                <div className={tabValue !== 1 ? classes.none : classes.block}>
+                  <div className={classes.chatContainer}>
+                    <ConsultRoom
+                      startConsult={startConsult}
+                      sessionId={sessionId}
+                      token={token}
+                      appointmentId={paramId}
+                      doctorId={doctorId}
+                      patientId={patientId}
+                    />
+                  </div>
+                </div>
+              </TabContainer>
+              {/* )} */}
+            </div>
           </div>
-        </div>
+        </CaseSheetContext.Provider>
       )}
     </div>
   );

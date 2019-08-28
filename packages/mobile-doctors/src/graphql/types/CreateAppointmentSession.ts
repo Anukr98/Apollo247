@@ -9,7 +9,7 @@ import { CreateAppointmentSessionInput } from "./globalTypes";
 // ====================================================
 
 export interface CreateAppointmentSession_createAppointmentSession {
-  __typename: "AppointmentSession";
+  __typename: "CreateAppointmentSession";
   sessionId: string;
   appointmentToken: string;
 }

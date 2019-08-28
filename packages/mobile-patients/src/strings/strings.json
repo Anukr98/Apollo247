@@ -213,5 +213,19 @@
     "urOrders": "YOUR ORDERS",
     "trackOrder": "Track Order",
     "viewBill": "View Bill"
+  },
+  "health_records_home": {
+    "description": "Find all your health record & prescription in one place.",
+    "view_consult": "VIEW CONSULT",
+    "order_medicine": "ORDER MEDICINES",
+    "book_follow_up": "BOOK FOLLOW-UP",
+    "tabs": [
+      {
+        "title": "Consults & Rx"
+      },
+      {
+        "title": "Medical Records"
+      }
+    ]
   }
 }

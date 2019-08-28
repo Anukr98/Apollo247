@@ -27,12 +27,21 @@ import { ProfileSetup } from '@aph/mobile-doctors/src/components/ProfileSetup/Pr
 import { SplashScreen } from '@aph/mobile-doctors/src/components/SplashScreen';
 import { TabBar } from '@aph/mobile-doctors/src/components/TabBar';
 import { TransitionPage } from '@aph/mobile-doctors/src/components/TransitionPage';
+import { BasicAccount } from '@aph/mobile-doctors/src/components/Account/BasicAccount';
+import { MyFees } from '@aph/mobile-doctors/src/components/Account/MyFees';
+import { AddSymptons } from '@aph/mobile-doctors/src/components/ConsultRoom/AddSymptons';
+import { TransferConsult } from '@aph/mobile-doctors/src/components/ConsultRoom/TransferConsult';
+import { ReschduleConsult } from '@aph/mobile-doctors/src/components/ConsultRoom/ReschduleConsult';
 import {
   createAppContainer,
   createStackNavigator,
   NavigationRouteConfig,
   StackNavigatorConfig,
 } from 'react-navigation';
+import { ShareConsult } from '@aph/mobile-doctors/src/components/ConsultRoom/ShareConsult';
+import { ChatDoctor } from '@aph/mobile-doctors/src/components/ChatDoctor';
+import { Sample } from '@aph/mobile-doctors/src/components/Sample';
+import { PatientDetailsPage } from '@aph/mobile-doctors/src/components/PatientDetailsPage';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -65,6 +74,15 @@ export enum AppRoutes {
   AddDiagnostics = 'AddDiagnostics',
   AddMedicine = 'AddMedicine',
   MedicineUpdate = 'MedicineUpdate',
+  BasicAccount = 'BasicAccount',
+  MyFees = 'MyFees',
+  AddSymptons = 'AddSymptons',
+  TransferConsult = 'TransferConsult',
+  ReschduleConsult = 'ReschduleConsult',
+  ShareConsult = 'ShareConsult',
+  ChatDoctor = 'ChatDoctor',
+  Sample = 'Sample',
+  PatientDetailsPage = 'PatientDetailsPage',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -164,6 +182,33 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MedicineUpdate]: {
     screen: MedicineUpdate,
+  },
+  [AppRoutes.BasicAccount]: {
+    screen: BasicAccount,
+  },
+  [AppRoutes.MyFees]: {
+    screen: MyFees,
+  },
+  [AppRoutes.AddSymptons]: {
+    screen: AddSymptons,
+  },
+  [AppRoutes.TransferConsult]: {
+    screen: TransferConsult,
+  },
+  [AppRoutes.ReschduleConsult]: {
+    screen: ReschduleConsult,
+  },
+  [AppRoutes.ShareConsult]: {
+    screen: ShareConsult,
+  },
+  [AppRoutes.ChatDoctor]: {
+    screen: ChatDoctor,
+  },
+  [AppRoutes.Sample]: {
+    screen: Sample,
+  },
+  [AppRoutes.PatientDetailsPage]: {
+    screen: PatientDetailsPage,
   },
 };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Typography, Chip, Theme, MenuItem, Paper, TextField } from '@material-ui/core';
 import DoneIcon from '@material-ui/icons/Done';
 import { makeStyles, createStyles } from '@material-ui/styles';
@@ -8,12 +8,31 @@ import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
+// import {
+//   GetJuniorDoctorCaseSheet,
+//   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions,
+// } from 'graphql/types/GetJuniorDoctorCaseSheet';
+import {
+  GetCaseSheet,
+  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions,
+} from 'graphql/types/GetCaseSheet';
+import { CaseSheetContext } from 'context/CaseSheetContext';
+// interface OptionType {
+//   instruction: string,
+//   __typename: "OtherInstructions"
+// }
 
 interface OptionType {
-  label: string;
+  instruction: string;
+  __typename: 'OtherInstructions';
 }
 
-const suggestions: OptionType[] = [];
+const suggestions: OptionType[] = [
+  { instruction: 'Sore Throat', __typename: 'OtherInstructions' },
+  { instruction: 'Sorosis', __typename: 'OtherInstructions' },
+];
+
+// const suggestions: OptionType[] = [];
 
 function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -39,8 +58,8 @@ function renderSuggestion(
   suggestion: OptionType,
   { query, isHighlighted }: Autosuggest.RenderSuggestionParams
 ) {
-  const matches = match(suggestion.label, query);
-  const parts = parse(suggestion.label, matches);
+  const matches = match(suggestion.instruction, query);
+  const parts = parse(suggestion.instruction, matches);
 
   return (
     <MenuItem selected={isHighlighted} component="div">
@@ -64,7 +83,7 @@ function getSuggestions(value: string) {
     ? []
     : suggestions.filter((suggestion) => {
         const keep =
-          count < 5 && suggestion.label.slice(0, inputLength).toLowerCase() === inputValue;
+          count < 5 && suggestion.instruction.slice(0, inputLength).toLowerCase() === inputValue;
 
         if (keep) {
           count += 1;
@@ -75,7 +94,7 @@ function getSuggestions(value: string) {
 }
 
 function getSuggestionValue(suggestion: OptionType) {
-  return suggestion.label;
+  return suggestion.instruction;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -113,12 +132,19 @@ const useStyles = makeStyles((theme: Theme) =>
       flexFlow: 'row',
       flexWrap: 'wrap',
       width: '100%',
+      '& h5': {
+        color: 'rgba(2, 71, 91, 0.6)',
+        fontSize: 14,
+        fontWeight: 500,
+        marginBottom: 12,
+      },
     },
     column: {
       width: '49%',
       display: 'flex',
       marginRight: '1%',
       flexDirection: 'column',
+      marginBottom: 10,
     },
     listContainer: {
       display: 'flex',
@@ -130,18 +156,56 @@ const useStyles = makeStyles((theme: Theme) =>
     textFieldContainer: {
       width: '100%',
     },
+    othersBtn: {
+      border: '1px solid rgba(2, 71, 91, 0.15)',
+      backgroundColor: 'rgba(0,0,0,0.02)',
+      height: 44,
+      marginBottom: 12,
+      borderRadius: 5,
+      fontWeight: 600,
+      fontSize: 14,
+      color: '#02475b !important',
+      '&:focus': {
+        backgroundColor: 'rgba(0,0,0,0.02)',
+      },
+      '& span': {
+        display: 'inline-block',
+        width: '100%',
+        textAlign: 'left',
+      },
+    },
+    btnAddDoctor: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: theme.typography.fontWeightBold,
+      // pointerEvents: 'none',
+      paddingLeft: 4,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
   })
 );
 
 export const OtherInstructions: React.FC = () => {
   const classes = useStyles();
-  const [selectedValues, setSelectedValues] = useState<OptionType[]>([
-    { label: 'Drink plenty of water' },
-  ]);
+  const { otherInstructions: selectedValues, setOtherInstructions: setSelectedValues } = useContext(
+    CaseSheetContext
+  );
+  const [idx, setIdx] = React.useState();
+
+  useEffect(() => {
+    if (idx >= 0) {
+      setSelectedValues(selectedValues);
+    }
+  }, [selectedValues, idx]);
+
   const [favoriteDiagnostics, setFavoriteDiagnostics] = useState<OptionType[]>([
-    { label: 'Use sunscreen everyday' },
-    { label: 'Avoid outside food for a few days' },
-    { label: 'Avoid stepping out with wet hair' },
+    { instruction: 'Use sunscreen everyday', __typename: 'OtherInstructions' },
+    { instruction: 'Avoid outside food for a few days', __typename: 'OtherInstructions' },
+    { instruction: 'Avoid stepping out with wet hair', __typename: 'OtherInstructions' },
   ]);
   const [state, setState] = React.useState({
     single: '',
@@ -177,38 +241,27 @@ export const OtherInstructions: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
+  const handleDelete = (idx: number) => {
+    selectedValues!.splice(idx, 1);
+    setSelectedValues(selectedValues);
+    const sum = idx + Math.random();
+    setIdx(sum);
+  };
 
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Typography component="div" className={classes.column}>
-        <Typography component="h3" variant="h4">
+        <Typography component="h5" variant="h5">
           Instructions to the patient
         </Typography>
         <Typography component="div" className={classes.listContainer}>
-          {selectedValues.map((item, idx) => (
+          {selectedValues!.map((item, idx) => (
             <Chip
+              className={classes.othersBtn}
               key={idx}
-              label={item.label}
-              onDelete={() => {}}
-              deleteIcon={<DoneIcon className={classes.icon} />}
-            />
-          ))}
-        </Typography>
-      </Typography>
-      <Typography component="div" className={classes.column}>
-        <Typography component="h3" variant="h4">
-          Favorite Diagnostics
-        </Typography>
-        <Typography component="div" className={classes.listContainer}>
-          {favoriteDiagnostics.map((item, idx) => (
-            <Chip
-              key={idx}
-              label={item.label}
-              onDelete={() => {
-                setSelectedValues(selectedValues.concat(item));
-                setFavoriteDiagnostics(favoriteDiagnostics.filter((i) => i.label !== item.label));
-              }}
-              deleteIcon={<AddCircle className={classes.icon} />}
+              label={item!.instruction}
+              onDelete={() => handleDelete(idx)}
+              deleteIcon={<img src={require('images/ic_selected.svg')} alt="" />}
             />
           ))}
         </Typography>
@@ -216,6 +269,7 @@ export const OtherInstructions: React.FC = () => {
       <Typography component="div" className={classes.textFieldContainer}>
         {!showAddCondition && (
           <AphButton
+            className={classes.btnAddDoctor}
             variant="contained"
             color="primary"
             onClick={() => showAddConditionHandler(true)}
@@ -226,7 +280,8 @@ export const OtherInstructions: React.FC = () => {
         {showAddCondition && (
           <Autosuggest
             onSuggestionSelected={(e, { suggestion }) => {
-              setSelectedValues(selectedValues.concat(suggestion));
+              selectedValues!.push(suggestion);
+              setSelectedValues(selectedValues);
               setShowAddCondition(false);
               setState({
                 single: '',

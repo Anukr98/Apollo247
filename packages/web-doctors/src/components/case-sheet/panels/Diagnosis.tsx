@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Typography,
   Chip,
@@ -14,12 +14,25 @@ import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import deburr from 'lodash/deburr';
+// import {
+//   GetJuniorDoctorCaseSheet,
+//   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis,
+// } from 'graphql/types/GetJuniorDoctorCaseSheet';
+import {
+  GetCaseSheet,
+  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis,
+} from 'graphql/types/GetCaseSheet';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 interface OptionType {
-  label: string;
+  name: string;
+  __typename: 'Diagnosis';
 }
 
-const suggestions: OptionType[] = [{ label: 'Sore Throat' }, { label: 'Sorosis' }];
+const suggestions: OptionType[] = [
+  { name: 'Sore Throat', __typename: 'Diagnosis' },
+  { name: 'Sorosis', __typename: 'Diagnosis' },
+];
 
 function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -45,8 +58,8 @@ function renderSuggestion(
   suggestion: OptionType,
   { query, isHighlighted }: Autosuggest.RenderSuggestionParams
 ) {
-  const matches = match(suggestion.label, query);
-  const parts = parse(suggestion.label, matches);
+  const matches = match(suggestion.name, query);
+  const parts = parse(suggestion.name, matches);
 
   return (
     <MenuItem selected={isHighlighted} component="div">
@@ -70,7 +83,7 @@ function getSuggestions(value: string) {
     ? []
     : suggestions.filter((suggestion) => {
         const keep =
-          count < 5 && suggestion.label.slice(0, inputLength).toLowerCase() === inputValue;
+          count < 5 && suggestion.name.slice(0, inputLength).toLowerCase() === inputValue;
 
         if (keep) {
           count += 1;
@@ -81,7 +94,7 @@ function getSuggestions(value: string) {
 }
 
 function getSuggestionValue(suggestion: OptionType) {
-  return suggestion.label;
+  return suggestion.name;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -107,22 +120,71 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: 0,
       padding: 0,
       listStyleType: 'none',
+      borderRadius: 10,
     },
     divider: {
       height: theme.spacing(2),
     },
     mainContainer: {
       width: '100%',
+      '& h4': {
+        fontSize: 14,
+        fontWeight: 500,
+        color: 'rgba(2, 71, 91, 0.6)',
+        marginBottom: 12,
+      },
+    },
+    diagnosBtn: {
+      border: '1px solid #00b38e',
+      borderRadius: 16,
+      color: '#00b38e',
+      fontWeight: 600,
+      backgroundColor: '#fff',
+      marginBottom: 15,
+      marginRight: 16,
+      '& svg': {
+        '& path': {
+          fill: '#00b38e',
+        },
+      },
+      '&:focus': {
+        backgroundColor: '#fff',
+      },
+    },
+
+    btnAddDoctor: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: theme.typography.fontWeightBold,
+      // pointerEvents: 'none',
+      paddingLeft: 4,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    searchpopup: {
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
+      marginTop: 2,
     },
   })
 );
 
 export const Diagnosis: React.FC = () => {
   const classes = useStyles();
-  const [selectedValues, setSelectedValues] = useState<OptionType[]>([
-    { label: 'Viral Fever' },
-    { label: 'Throat Infection' },
-  ]);
+  const [idx, setIdx] = React.useState();
+  const { diagnosis: selectedValues, setDiagnosis: setSelectedValues } = useContext(
+    CaseSheetContext
+  );
+
+  useEffect(() => {
+    if (idx >= 0) {
+      setSelectedValues(selectedValues);
+    }
+  }, [selectedValues, idx]);
+
   const [state, setState] = React.useState({
     single: '',
     popper: '',
@@ -146,8 +208,11 @@ export const Diagnosis: React.FC = () => {
       [name]: newValue,
     });
   };
-  const handleDelete = (label: string) => {
-    setSelectedValues(selectedValues.filter((item) => item.label !== label));
+  const handleDelete = (idx: number) => {
+    selectedValues!.splice(idx, 1);
+    setSelectedValues(selectedValues);
+    const sum = idx + Math.random();
+    setIdx(sum);
   };
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
   const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
@@ -163,15 +228,16 @@ export const Diagnosis: React.FC = () => {
 
   return (
     <Typography component="div" className={classes.mainContainer}>
-      <Typography component="h3" variant="h4">
+      <Typography component="h4" variant="h4">
         Diagnosed Medical Condition
       </Typography>
       <Typography component="div">
-        {selectedValues.map((item: { label: string }, idx) => (
+        {selectedValues!.map((item, idx) => (
           <Chip
+            className={classes.diagnosBtn}
             key={idx}
-            label={item.label}
-            onDelete={() => handleDelete(item.label)}
+            label={item!.name}
+            onDelete={() => handleDelete(idx)}
             color="primary"
           />
         ))}
@@ -180,6 +246,7 @@ export const Diagnosis: React.FC = () => {
         <AphButton
           variant="contained"
           color="primary"
+          classes={{ root: classes.btnAddDoctor }}
           onClick={() => showAddConditionHandler(true)}
         >
           <img src={require('images/ic_add.svg')} alt="" /> ADD CONDITION
@@ -188,7 +255,8 @@ export const Diagnosis: React.FC = () => {
       {showAddCondition && (
         <Autosuggest
           onSuggestionSelected={(e, { suggestion }) => {
-            setSelectedValues(selectedValues.concat(suggestion));
+            selectedValues!.push(suggestion);
+            setSelectedValues(selectedValues);
             setShowAddCondition(false);
             setState({
               single: '',
@@ -210,7 +278,7 @@ export const Diagnosis: React.FC = () => {
             suggestion: classes.suggestion,
           }}
           renderSuggestionsContainer={(options) => (
-            <Paper {...options.containerProps} square>
+            <Paper {...options.containerProps} square className={classes.searchpopup}>
               {options.children}
             </Paper>
           )}

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Typography, makeStyles } from '@material-ui/core';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -7,21 +8,21 @@ const useStyles = makeStyles(() => ({
     border: 'solid 1px rgba(2, 71, 91, 0.15)',
     backgroundColor: 'rgba(0, 0, 0, 0.02)',
     color: '#01475b !important',
-    padding: '10px',
+    padding: '10px 10px 10px 20px',
+    fontSize: 14,
+    lineHeight: 1.43,
+    fontWeight: 'normal',
+    width: '100%',
   },
 }));
 
-export const DoctorsNotes: React.FC = () => {
+export const DoctorsNotes: React.FC = (props) => {
   const classes = useStyles();
+  const { loading, notes } = useContext(CaseSheetContext);
 
   return (
     <Typography component="div" className={classes.container}>
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-      labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-      laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
-      voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
-      non proident Dunt in culpa qui officia deserunt mollit anim id est laborum. Teur sint occaecat
-      cupidatat non proident
+      {!loading && notes ? notes : 'No notes'}
     </Typography>
   );
 };

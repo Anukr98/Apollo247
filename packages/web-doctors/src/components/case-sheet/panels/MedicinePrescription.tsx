@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Theme,
   makeStyles,
@@ -16,12 +16,22 @@ import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
 import _isEmpty from 'lodash/isEmpty';
+import axios from 'axios';
+import _debounce from 'lodash/debounce';
+import { CircularProgress } from '@material-ui/core';
+import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
+import { CaseSheetContext } from 'context/CaseSheetContext';
+
+const apiDetails = {
+  url: 'http://uat.apollopharmacy.in/searchprd_api.php',
+  authToken: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+}; // this must goes
 
 interface OptionType {
   label: string;
 }
 
-const suggestions: OptionType[] = [
+let suggestions: OptionType[] = [
   { label: 'Ibuprofen, 200 mg' },
   { label: 'Ibugesic plus, 1.5% wwa' },
   { label: 'Ibuenatal' },
@@ -67,29 +77,6 @@ function renderSuggestion(
       </div>
     </MenuItem>
   );
-}
-
-function getSuggestions(value: string) {
-  const inputValue = deburr(value.trim()).toLowerCase();
-  const inputLength = inputValue.length;
-  let count = 0;
-
-  return inputLength === 0
-    ? []
-    : suggestions.filter((suggestion) => {
-        const keep =
-          count < 5 && suggestion.label.slice(0, inputLength).toLowerCase() === inputValue;
-
-        if (keep) {
-          count += 1;
-        }
-
-        return keep;
-      });
-}
-
-function getSuggestionValue(suggestion: OptionType) {
-  return suggestion.label;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -148,8 +135,8 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: 'none',
     },
     activeCard: {
-      border: '1px solid #00b38e',
-      backgroundColor: '#fff',
+      // border: '1px solid #00b38e',
+      // backgroundColor: '#fff',
     },
     checkImg: {
       position: 'absolute',
@@ -280,6 +267,25 @@ const useStyles = makeStyles((theme: Theme) =>
         display: 'none !important',
       },
     },
+    loader: {
+      left: '50%',
+      top: 41,
+      position: 'relative',
+    },
+    deleteSymptom: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      top: 0,
+      right: -18,
+      color: '#666666',
+      position: 'absolute',
+      fontSize: 14,
+      fontWeight: theme.typography.fontWeightBold,
+      paddingLeft: 4,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
   })
 );
 
@@ -302,10 +308,13 @@ interface errorObject {
   tobeTakenErr: boolean;
   durationErr: boolean;
 }
+
 export const MedicinePrescription: React.FC = () => {
   const classes = useStyles();
+  const { medicinePrescription, setMedicinePrescription } = useContext(CaseSheetContext);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
+  const [idx, setIdx] = React.useState();
   const [medicineInstruction, setMedicineInstruction] = React.useState<string>('');
   const [errorState, setErrorState] = React.useState<errorObject>({
     daySlotErr: false,
@@ -336,6 +345,9 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
   ]);
+
+  const [loading, setLoading] = useState<boolean>(false);
+
   const [toBeTakenSlots, setToBeTakenSlots] = React.useState<SlotsObject[]>([
     {
       id: 'afterfood',
@@ -349,25 +361,118 @@ export const MedicinePrescription: React.FC = () => {
     },
   ]);
   const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([
-    {
-      id: '1',
-      value: 'Acetamenophen 1.5% w/w',
-      name: 'Acetamenophen 1.5% w/w',
-      times: 2,
-      daySlots: 'morning, night',
-      duration: '1 week',
-      selected: false,
-    },
-    {
-      id: '2',
-      value: 'Dextromethorphan (generic)',
-      name: 'Dextromethorphan (generic)',
-      times: 4,
-      daySlots: 'morning, afternoon, evening, night',
-      duration: '5 days after food',
-      selected: true,
-    },
+    // {
+    //   id: '1',
+    //   value: 'Acetamenophen 1.5% w/w',
+    //   name: 'Acetamenophen 1.5% w/w',
+    //   times: 2,
+    //   daySlots: 'morning, night',
+    //   duration: '1 week',
+    //   selected: false,
+    // },
+    // {
+    //   id: '2',
+    //   value: 'Dextromethorphan (generic)',
+    //   name: 'Dextromethorphan (generic)',
+    //   times: 4,
+    //   daySlots: 'morning, afternoon, evening, night',
+    //   duration: '5 days after food',
+    //   selected: true,
+    // },
   ]);
+
+  const [searchInput, setSearchInput] = useState('');
+  function getSuggestions(value: string) {
+    const inputValue = deburr(value.trim()).toLowerCase();
+    const inputLength = inputValue.length;
+    let count = 0;
+
+    return inputLength === 0
+      ? []
+      : suggestions.filter((suggestion) => {
+          const keep =
+            count < 5 && suggestion.label.slice(0, inputLength).toLowerCase() === inputValue;
+
+          if (keep) {
+            count += 1;
+          }
+
+          return keep;
+        });
+  }
+  const fetchMedicines = async (value: any) => {
+    setLoading(true);
+    const FinalSearchdata: any = [];
+    await axios
+      .post(
+        apiDetails.url,
+        { params: value },
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+          },
+        }
+      )
+      .then((result) => {
+        const medicines = result.data.products ? result.data.products : [];
+        medicines.slice(0, 10).forEach((res: any) => {
+          const data = { label: '' };
+          data.label = res.name;
+          FinalSearchdata.push(data);
+        });
+        // FinalSearchdata.push(searchdata);
+        suggestions = FinalSearchdata;
+        setSearchInput(value);
+        setLoading(false);
+
+        // suggestions: [
+        //   {
+        //     label: 'qwer',
+        //   },
+        // ];
+      })
+      .catch();
+  };
+  const deletemedicine = (idx: any) => {
+    selectedMedicines.splice(idx, 1);
+    setSelectedMedicines(selectedMedicines);
+    const sum = idx + Math.random();
+    setIdx(sum);
+  };
+  useEffect(() => {
+    if (idx >= 0) {
+      setSelectedMedicines(selectedMedicines);
+    }
+  }, [selectedMedicines, idx]);
+  function getSuggestionValue(suggestion: OptionType) {
+    return suggestion.label;
+  }
+  useEffect(() => {
+    if (medicinePrescription && medicinePrescription!.length) {
+      medicinePrescription!.forEach((res: any) => {
+        const inputParams = {
+          id: res.medicineName.trim(),
+          value: res.medicineName,
+          name: res.medicineName,
+          times: Number(res.medicineConsumptionDurationInDays),
+          daySlots: res.medicineTimings.join(' ').toLowerCase(),
+          duration: `${Number(
+            res.medicineConsumptionDurationInDays
+          )} days ${res.medicineToBeTaken.join(' ').toLowerCase()}`,
+          selected: true,
+        };
+        const x = selectedMedicines;
+        x.push(inputParams);
+        setSelectedMedicines(x);
+      });
+    }
+  }, []);
+  useEffect(() => {
+    if (searchInput.length > 2) {
+      setSuggestions(getSuggestions(searchInput));
+    }
+  }, [searchInput]);
+
   const daySlotsToggleAction = (slotId: string) => {
     const slots = daySlots.map(function(slot: SlotsObject) {
       if (slotId === slot.id) {
@@ -391,12 +496,13 @@ export const MedicinePrescription: React.FC = () => {
     (_medicine: MedicineObject | null, index: number) => {
       const medicine = _medicine!;
       return (
-        <Paper key={medicine.id} className={`${classes.paper} ${classes.activeCard}`}>
-          <h5>{medicine.name}</h5>
-          <h6>
-            {medicine.times} times a day ({medicine.daySlots}) for {medicine.duration}
-          </h6>
-          <img
+        <div key={index} style={{ position: 'relative' }}>
+          <Paper key={medicine.id} className={`${classes.paper} ${classes.activeCard}`}>
+            <h5>{medicine.name}</h5>
+            <h6>
+              {medicine.times} times a day ({medicine.daySlots}) for {medicine.duration}
+            </h6>
+            {/* <img
             className={classes.checkImg}
             src={
               medicine.selected
@@ -404,8 +510,18 @@ export const MedicinePrescription: React.FC = () => {
                 : require('images/ic_unselected.svg')
             }
             alt="chkUncheck"
-          />
-        </Paper>
+          /> */}
+          </Paper>
+          <AphButton
+            variant="contained"
+            color="primary"
+            key={`del ${index}`}
+            classes={{ root: classes.deleteSymptom }}
+            onClick={() => deletemedicine(index)}
+          >
+            <img src={require('images/ic_cancel_green.svg')} alt="" />
+          </AphButton>
+        </div>
       );
     }
   );
@@ -424,10 +540,18 @@ export const MedicinePrescription: React.FC = () => {
     );
   });
   const addUpdateMedicines = () => {
+    const toBeTakenSlotsArr: any = [];
+    const daySlotsArr: any = [];
     const isTobeTakenSelected = toBeTakenSlots.filter(function(slot: SlotsObject) {
+      if (slot.selected) {
+        toBeTakenSlotsArr.push(slot.value);
+      }
       return slot.selected !== false;
     });
     const daySlotsSelected = daySlots.filter(function(slot: SlotsObject) {
+      if (slot.selected) {
+        daySlotsArr.push(slot.value);
+      }
       return slot.selected !== false;
     });
     if (daySlotsSelected.length === 0) {
@@ -438,7 +562,7 @@ export const MedicinePrescription: React.FC = () => {
       setErrorState({ ...errorState, durationErr: true, daySlotErr: false, tobeTakenErr: false });
     } else {
       setErrorState({ ...errorState, durationErr: false, daySlotErr: false, tobeTakenErr: false });
-      alert('Api Call to submit action');
+
       // const inputParams = {
       //   caseSheetId: '1234',
       //   tablets: tabletsCount,
@@ -446,6 +570,20 @@ export const MedicinePrescription: React.FC = () => {
       //   toBeTakenSlots: toBeTakenSlots,
       //   medicineInstruction: medicineInstruction
       // }
+      const slot1value = '';
+
+      const inputParams = {
+        id: selectedValue.trim(),
+        value: selectedValue,
+        name: selectedValue,
+        times: daySlotsSelected.length,
+        daySlots: `${daySlotsArr.join(',')}`,
+        duration: `${consumptionDuration}  ${toBeTakenSlotsArr.join(',')}`,
+        selected: true,
+      };
+      const x = selectedMedicines;
+      x.push(inputParams);
+      setSelectedMedicines(x);
       setIsDialogOpen(false);
     }
   };
@@ -483,6 +621,9 @@ export const MedicinePrescription: React.FC = () => {
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
+    if (newValue.length > 2) {
+      fetchMedicines(newValue);
+    }
     setState({
       ...state,
       [name]: newValue,
@@ -562,6 +703,7 @@ export const MedicinePrescription: React.FC = () => {
                       id: 'react-autosuggest-simple',
                       placeholder: 'Search Instructions',
                       value: state.single,
+
                       onChange: handleChange('single'),
                     }}
                     theme={{
@@ -576,6 +718,7 @@ export const MedicinePrescription: React.FC = () => {
                       </Paper>
                     )}
                   />
+                  {loading ? <CircularProgress className={classes.loader} /> : null}
                 </div>
               </div>
             ) : (

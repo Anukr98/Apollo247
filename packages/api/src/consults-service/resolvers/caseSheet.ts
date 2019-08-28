@@ -9,15 +9,8 @@ import { AphError } from 'AphError';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { Patient } from 'profiles-service/entities';
-import { Timestamp } from 'typeorm';
 
 export const caseSheetTypeDefs = gql`
-  enum ConsultMode {
-    ONLINE
-    PHYSICAL
-    BOTH
-  }
-
   enum Gender {
     MALE
     FEMALE
@@ -53,20 +46,31 @@ export const caseSheetTypeDefs = gql`
     createdDoctorId: String
   }
 
-  type AppointmentId {
+  type Appointment {
     id: String
+    appointmentDateTime: DateTime
+    appointmentState: String
+    appointmentType: APPOINTMENT_TYPE
+    doctorId: String
+    hospitalId: String
+    patientId: String
+    parentId: String
+    status: STATUS
+    caseSheet: [CaseSheet]
   }
 
   type CaseSheetFullDetails {
     caseSheetDetails: CaseSheet
     patientDetails: PatientDetails
+    pastAppointments: [Appointment]
+    juniorDoctorNotes: String
   }
 
   type CaseSheet {
-    appointment: AppointmentId
+    appointment: Appointment
     consultType: String
-    diagnosis: String
-    diagnosisPrescription: String
+    diagnosis: [Diagnosis]
+    diagnosticPrescription: [DiagnosticPrescription]
     doctorId: String
     followUp: Boolean
     followUpAfterInDays: String
@@ -79,12 +83,20 @@ export const caseSheetTypeDefs = gql`
     symptoms: [SymptomList]
   }
 
+  type Diagnosis {
+    name: String
+  }
+
+  type DiagnosticPrescription {
+    name: String
+  }
+
   type MedicinePrescription {
     medicineConsumptionDurationInDays: String
     medicineDosage: String
     medicineInstructions: String
-    medicineTimings: MEDICINE_TIMINGS
-    medicineToBeTaken: MEDICINE_TO_BE_TAKEN
+    medicineTimings: [MEDICINE_TIMINGS]
+    medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
     medicineName: String
     id: String
   }
@@ -93,7 +105,21 @@ export const caseSheetTypeDefs = gql`
     instruction: String
   }
 
+  type Address {
+    id: ID!
+    addressLine1: String
+    addressLine2: String
+    city: String
+    mobileNumber: String
+    state: String
+    zipcode: String
+    landmark: String
+    createdDate: Date
+    updatedDate: Date
+  }
+
   type PatientDetails {
+    patientAddress: [Address]
     allergies: String
     dateOfBirth: Date
     emailAddress: String
@@ -131,12 +157,26 @@ export const caseSheetTypeDefs = gql`
     severity: String
   }
 
+  input UpdateCaseSheetInput {
+    symptoms: String
+    notes: String
+    diagnosis: String
+    diagnosticPrescription: String
+    followUp: Boolean
+    followUpDate: String
+    followUpAfterInDays: String
+    otherInstructions: String
+    medicinePrescription: String
+    id: String
+  }
   extend type Mutation {
     createCaseSheet(CaseSheetInput: CaseSheetInput): CaseSheet
+    updateCaseSheet(UpdateCaseSheetInput: UpdateCaseSheetInput): CaseSheet
   }
 
   extend type Query {
     getJuniorDoctorCaseSheet(appointmentId: String): CaseSheetFullDetails
+    getCaseSheet(appointmentId: String): CaseSheetFullDetails
   }
 `;
 
@@ -179,6 +219,7 @@ const createCaseSheet: Resolver<
   return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
 };
 
+//TODO : remove afer getCaseSheet integration
 const getJuniorDoctorCaseSheet: Resolver<
   null,
   { appointmentId: string },
@@ -206,24 +247,100 @@ const getJuniorDoctorCaseSheet: Resolver<
   return { caseSheetDetails, patientDetails };
 };
 
+const getCaseSheet: Resolver<
+  null,
+  { appointmentId: string },
+  ConsultServiceContext,
+  {
+    caseSheetDetails: CaseSheet;
+    patientDetails: Patient;
+    pastAppointments: Appointment[];
+    juniorDoctorNotes: string;
+  }
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
+  //check appointmnet id
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentData = await appointmentRepo.findById(args.appointmentId);
+  if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  let caseSheetDetails;
+  let juniorDoctorNotes = '';
+
+  //check whether there is a senior doctor case-sheet. Else get juniordoctor case-sheet
+  caseSheetDetails = await caseSheetRepo.getSeniorDoctorCaseSheet(appointmentData.id);
+  if (caseSheetDetails == null) {
+    caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
+    if (caseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+    juniorDoctorNotes = caseSheetDetails.notes;
+  }
+
+  //get patient info
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  //get past appointment details
+  const pastAppointments = await appointmentRepo.getPastAppointments(
+    appointmentData.doctorId,
+    appointmentData.patientId
+  );
+
+  return { caseSheetDetails, patientDetails, pastAppointments, juniorDoctorNotes };
+};
+
 type UpdateCaseSheetInput = {
-  symptoms: JSON;
+  symptoms: string;
   notes: string;
-  diagnosis: JSON;
-  diagnosticPrescription: JSON;
-  followUp: string;
-  followUpDate: Timestamp;
-  followUpAfterInDays: number;
-  otherInstructions: JSON;
-  medicinePrescription: JSON;
+  diagnosis: string;
+  diagnosticPrescription: string;
+  followUp: boolean;
+  followUpDate: string;
+  followUpAfterInDays: string;
+  otherInstructions: string;
+  medicinePrescription: string;
   id: string;
 };
-const updateCaseSheet: Resolver<null, {}, ConsultServiceContext, string> = async (
-  parent,
-  args,
-  { consultsDb }
-) => {
-  return '';
+
+type UpdateCaseSheetInputArgs = { UpdateCaseSheetInput: UpdateCaseSheetInput };
+
+const updateCaseSheet: Resolver<
+  null,
+  UpdateCaseSheetInputArgs,
+  ConsultServiceContext,
+  CaseSheet
+> = async (parent, { UpdateCaseSheetInput }, { consultsDb }) => {
+  const inputArguments = JSON.parse(JSON.stringify(UpdateCaseSheetInput));
+
+  //validate date
+  if (inputArguments.followUpDate != null && isNaN(new Date(inputArguments.followUpDate).valueOf()))
+    throw new AphError(AphErrorMessages.INVALID_DATE_FORMAT);
+
+  const followUpAfterInDays =
+    inputArguments.followUpAfterInDays == '' ? 0 : <Number>inputArguments.followUpAfterInDays;
+  const followUpDate = inputArguments.followUpDate == '' ? null : <Date>inputArguments.followUpDate;
+
+  //validate casesheetid
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const getCaseSheetData = await caseSheetRepo.getCaseSheetById(inputArguments.id);
+  if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
+
+  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = {
+    ...inputArguments,
+    symptoms: JSON.parse(inputArguments.symptoms),
+    diagnosis: JSON.parse(inputArguments.diagnosis),
+    diagnosticPrescription: JSON.parse(inputArguments.diagnosticPrescription),
+    otherInstructions: JSON.parse(inputArguments.otherInstructions),
+    medicinePrescription: JSON.parse(inputArguments.medicinePrescription),
+    followUpDate: followUpDate,
+    followUpAfterInDays: followUpAfterInDays,
+  };
+
+  await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
+
+  const getUpdatedCaseSheet = await caseSheetRepo.getCaseSheetById(inputArguments.id);
+  if (getUpdatedCaseSheet == null) throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR);
+  return getUpdatedCaseSheet;
 };
 
 export const caseSheetResolvers = {
@@ -232,5 +349,5 @@ export const caseSheetResolvers = {
     updateCaseSheet,
   },
 
-  Query: { getJuniorDoctorCaseSheet },
+  Query: { getJuniorDoctorCaseSheet, getCaseSheet },
 };

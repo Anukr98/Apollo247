@@ -288,6 +288,12 @@ export const SignIn: React.FC<PopupProps> = (props) => {
                 }
                 setOtp(newOtp);
               }}
+              onKeyPress={(e) => {
+                if (otp.join('').length === numOtpDigits && e.key == 'Enter') {
+                  verifyOtp(otp.join(''));
+                  setSubmitCount(submitCount + 1);
+                }
+              }}
               onKeyDown={(e) => {
                 const backspaceWasPressed = e.key === 'Backspace';
                 const currentInputIsEmpty = otp[index] == null;
@@ -406,9 +412,13 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             mobileNumber.trim() !== '' && showErrorMessage && !isMobileNumberValid(mobileNumber)
           }
           onKeyPress={(e) => {
-            if (isNaN(parseInt(e.key, 10))) {
-              e.preventDefault();
+            if (!showErrorMessage && mobileNumber.length === 10 && e.key == 'Enter') {
+              sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
+                setDisplayOtpInput(true)
+              );
+              setStickyPopupValue();
             }
+            if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
           }}
           startAdornment={
             <InputAdornment className={classes.inputAdornment} position="start">

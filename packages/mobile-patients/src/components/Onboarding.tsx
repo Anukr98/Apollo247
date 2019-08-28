@@ -71,9 +71,8 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   skipTextStyle: {
+    ...theme.viewStyles.yellowTextStyle,
     color: '#a4a4a4',
-    lineHeight: 24,
-    ...theme.fonts.IBMPlexSansBold(13),
     textAlign: 'center',
   },
 });

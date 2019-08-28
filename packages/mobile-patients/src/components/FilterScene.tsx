@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { Calendar, DateObject } from 'react-native-calendars';
 import { ScrollView } from 'react-native-gesture-handler';
-import { filterDataType } from '@aph/mobile-patients/src/components/DoctorSearchListing';
+import { filterDataType } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
 
 const styles = StyleSheet.create({
   container: {
@@ -259,7 +259,10 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
         <Button
           title={'APPLY FILTERS'}
           style={{ flex: 1, marginHorizontal: 40 }}
-          onPress={() => props.onClickClose(data)}
+          onPress={() => {
+            props.setData(data);
+            props.onClickClose(data);
+          }}
           disabled={length > 0 ? false : true}
         />
       </StickyBottomComponent>

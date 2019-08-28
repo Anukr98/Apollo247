@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import {
   Theme,
@@ -24,6 +24,8 @@ import {
   OtherInstructions,
 } from 'components/case-sheet/panels';
 import { UserCard } from 'components/case-sheet/UserCard';
+//import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
+import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -57,8 +59,34 @@ const useStyles = makeStyles((theme: Theme) => {
       flex: 'initial',
       margin: '0 15px 0 0',
       minWidth: 300,
+      maxWidth: 300,
       [theme.breakpoints.down('xs')]: {
         margin: '0 0 15px 0',
+        maxWidth: '100%',
+      },
+      '& h2': {
+        fontSize: 20,
+        lineHeight: 'normal',
+        fontWeight: 600,
+        color: '#02475b',
+      },
+      '& h5': {
+        fontSize: 16,
+        lineHeight: 'normal',
+        fontWeight: 500,
+        color: 'rgba(2, 71, 91, 0.8)',
+        marginBottom: 10,
+        textTransform: 'capitalize',
+      },
+      '& h6': {
+        fontSize: 14,
+        lineHeight: 'normal',
+        fontWeight: 500,
+        color: 'rgba(2, 71, 91, 0.8)',
+        marginBottom: 10,
+      },
+      '& hr': {
+        marginBottom: 10,
       },
     },
     expandIcon: {
@@ -87,9 +115,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     notesHeader: {
       color: '#0087ba',
+      fontSize: 17,
+      fontWeight: 500,
+      marginBottom: 10,
     },
     notesContainer: {
-      padding: 20,
+      padding: 16,
+      backgroundColor: '#fff',
     },
     textFieldColor: {
       '& input': {
@@ -102,7 +134,10 @@ const useStyles = makeStyles((theme: Theme) => {
     textFieldWrapper: {
       border: 'solid 1px #30c1a3',
       borderRadius: 10,
-      padding: 20,
+      padding: 16,
+      color: '#01475b',
+      fontSize: 14,
+      fontWeight: 500,
     },
   };
 });
@@ -110,7 +145,6 @@ const useStyles = makeStyles((theme: Theme) => {
 export const CaseSheet: React.FC = () => {
   const classes = useStyles();
   const [expanded, setExpanded] = useState<string | boolean>(false);
-
   const handlePanelExpansion = (panelName: string) => (
     e: React.ChangeEvent<{}>,
     isExpanded: boolean

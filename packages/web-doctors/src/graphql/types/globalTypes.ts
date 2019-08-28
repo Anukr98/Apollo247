@@ -46,6 +46,18 @@ export enum INVITEDSTATUS {
   REJECTED = "REJECTED",
 }
 
+export enum MEDICINE_TIMINGS {
+  EVENING = "EVENING",
+  MORNING = "MORNING",
+  NIGHT = "NIGHT",
+  NOON = "NOON",
+}
+
+export enum MEDICINE_TO_BE_TAKEN {
+  AFTER_FOOD = "AFTER_FOOD",
+  BEFORE_FOOD = "BEFORE_FOOD",
+}
+
 export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
@@ -91,6 +103,24 @@ export enum WeekDay {
 export interface CreateAppointmentSessionInput {
   appointmentId: string;
   requestRole: REQUEST_ROLES;
+}
+
+export interface EndAppointmentSessionInput {
+  appointmentId: string;
+  status: STATUS;
+}
+
+export interface UpdateCaseSheetInput {
+  symptoms?: string | null;
+  notes?: string | null;
+  diagnosis?: string | null;
+  diagnosticPrescription?: string | null;
+  followUp?: boolean | null;
+  followUpDate?: string | null;
+  followUpAfterInDays?: string | null;
+  otherInstructions?: string | null;
+  medicinePrescription?: string | null;
+  id?: string | null;
 }
 
 export interface UpdatePatientInput {

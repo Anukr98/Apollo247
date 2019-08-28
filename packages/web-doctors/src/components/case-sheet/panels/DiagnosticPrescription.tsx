@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Typography, Chip, Theme, MenuItem, Paper, TextField } from '@material-ui/core';
 import DoneIcon from '@material-ui/icons/Done';
 import { makeStyles, createStyles } from '@material-ui/styles';
@@ -8,12 +8,25 @@ import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
+// import {
+//   GetJuniorDoctorCaseSheet,
+//   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
+// } from 'graphql/types/GetJuniorDoctorCaseSheet';
+import {
+  GetCaseSheet,
+  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription,
+} from 'graphql/types/GetCaseSheet';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 interface OptionType {
-  label: string;
+  name: string;
+  __typename: 'DiagnosticPrescription';
 }
 
-const suggestions: OptionType[] = [{ label: 'Ultrasound' }, { label: 'Ultra-something else' }];
+const suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [
+  { name: 'Ultrasound', __typename: 'DiagnosticPrescription' },
+  { name: 'Ultra-something else', __typename: 'DiagnosticPrescription' },
+];
 
 function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -36,11 +49,11 @@ function renderInputComponent(inputProps: any) {
 }
 
 function renderSuggestion(
-  suggestion: OptionType,
+  suggestion: OptionType | null,
   { query, isHighlighted }: Autosuggest.RenderSuggestionParams
 ) {
-  const matches = match(suggestion.label, query);
-  const parts = parse(suggestion.label, matches);
+  const matches = match(suggestion!.name, query);
+  const parts = parse(suggestion!.name, matches);
 
   return (
     <MenuItem selected={isHighlighted} component="div">
@@ -64,7 +77,9 @@ function getSuggestions(value: string) {
     ? []
     : suggestions.filter((suggestion) => {
         const keep =
-          count < 5 && suggestion.label.slice(0, inputLength).toLowerCase() === inputValue;
+          count < 5 &&
+          suggestion !== null &&
+          suggestion.name!.slice(0, inputLength).toLowerCase() === inputValue;
 
         if (keep) {
           count += 1;
@@ -74,8 +89,8 @@ function getSuggestions(value: string) {
       });
 }
 
-function getSuggestionValue(suggestion: OptionType) {
-  return suggestion.label;
+function getSuggestionValue(suggestion: OptionType | null) {
+  return suggestion!.name;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -113,6 +128,12 @@ const useStyles = makeStyles((theme: Theme) =>
       flexFlow: 'row',
       flexWrap: 'wrap',
       width: '100%',
+      '& h5': {
+        color: 'rgba(2, 71, 91, 0.6)',
+        fontSize: 14,
+        fontWeight: 500,
+        marginBottom: 12,
+      },
     },
     column: {
       width: '49%',
@@ -130,21 +151,60 @@ const useStyles = makeStyles((theme: Theme) =>
     textFieldContainer: {
       width: '100%',
     },
+    othersBtn: {
+      border: '1px solid rgba(2, 71, 91, 0.15)',
+      backgroundColor: 'rgba(0,0,0,0.02)',
+      height: 44,
+      marginBottom: 12,
+      borderRadius: 5,
+      fontWeight: 600,
+      fontSize: 14,
+      color: '#02475b !important',
+      '&:focus': {
+        backgroundColor: 'rgba(0,0,0,0.02)',
+      },
+      '& span': {
+        display: 'inline-block',
+        width: '100%',
+        textAlign: 'left',
+      },
+    },
+    btnAddDoctor: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: theme.typography.fontWeightBold,
+      // pointerEvents: 'none',
+      paddingLeft: 4,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
   })
 );
 
 export const DiagnosticPrescription: React.FC = () => {
   const classes = useStyles();
-  const [selectedValues, setSelectedValues] = useState<OptionType[]>([{ label: 'Diagnostic ABC' }]);
-  const [favoriteDiagnostics, setFavoriteDiagnostics] = useState<OptionType[]>([
-    { label: 'Diagnostic DEF' },
-    { label: 'Diagnostic XYZ' },
-  ]);
+  const {
+    diagnosticPrescription: selectedValues,
+    setDiagnosticPrescription: setSelectedValues,
+  } = useContext(CaseSheetContext);
+  const [idx, setIdx] = React.useState();
+
+  useEffect(() => {
+    if (idx >= 0) {
+      setSelectedValues(selectedValues);
+    }
+  }, [selectedValues, idx]);
+
   const [state, setState] = React.useState({
     single: '',
     popper: '',
   });
-  const [stateSuggestions, setSuggestions] = React.useState<OptionType[]>([]);
+  const [stateSuggestions, setSuggestions] = React.useState<
+    (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[]
+  >([]);
 
   const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {
     setSuggestions(getSuggestions(value));
@@ -168,7 +228,7 @@ export const DiagnosticPrescription: React.FC = () => {
 
   const autosuggestProps = {
     renderInputComponent,
-    suggestions: stateSuggestions,
+    suggestions: (stateSuggestions as unknown) as OptionType[],
     onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
     onSuggestionsClearRequested: handleSuggestionsClearRequested,
     getSuggestionValue,
@@ -178,34 +238,17 @@ export const DiagnosticPrescription: React.FC = () => {
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Typography component="div" className={classes.column}>
-        <Typography component="h3" variant="h4">
+        <Typography component="h5" variant="h5">
           Diagnosed Medical Condition
         </Typography>
         <Typography component="div" className={classes.listContainer}>
-          {selectedValues.map((item, idx) => (
+          {selectedValues!.map((item, idx) => (
             <Chip
+              className={classes.othersBtn}
               key={idx}
-              label={item.label}
+              label={item!.name}
               onDelete={() => {}}
-              deleteIcon={<DoneIcon className={classes.icon} />}
-            />
-          ))}
-        </Typography>
-      </Typography>
-      <Typography component="div" className={classes.column}>
-        <Typography component="h3" variant="h4">
-          Favorite Diagnostics
-        </Typography>
-        <Typography component="div" className={classes.listContainer}>
-          {favoriteDiagnostics.map((item, idx) => (
-            <Chip
-              key={idx}
-              label={item.label}
-              onDelete={() => {
-                setSelectedValues(selectedValues.concat(item));
-                setFavoriteDiagnostics(favoriteDiagnostics.filter((i) => i.label !== item.label));
-              }}
-              deleteIcon={<AddCircle className={classes.icon} />}
+              deleteIcon={<img src={require('images/ic_selected.svg')} alt="" />}
             />
           ))}
         </Typography>
@@ -213,6 +256,7 @@ export const DiagnosticPrescription: React.FC = () => {
       <Typography component="div" className={classes.textFieldContainer}>
         {!showAddCondition && (
           <AphButton
+            className={classes.btnAddDoctor}
             variant="contained"
             color="primary"
             onClick={() => showAddConditionHandler(true)}
@@ -223,7 +267,8 @@ export const DiagnosticPrescription: React.FC = () => {
         {showAddCondition && (
           <Autosuggest
             onSuggestionSelected={(e, { suggestion }) => {
-              setSelectedValues(selectedValues.concat(suggestion));
+              selectedValues!.push(suggestion);
+              setSelectedValues(selectedValues);
               setShowAddCondition(false);
               setState({
                 single: '',

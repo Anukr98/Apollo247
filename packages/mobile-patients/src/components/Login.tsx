@@ -25,6 +25,7 @@ import {
   timeOutDataType,
   ReceivedSmsMessage,
 } from '@aph/mobile-patients/src/components/OTPVerification';
+import { RNFirebase } from 'react-native-firebase';
 
 const styles = StyleSheet.create({
   container: {
@@ -212,8 +213,11 @@ export const Login: React.FC<LoginProps> = (props) => {
                       phoneNumber: phoneNumber,
                     });
                   })
-                  .catch((error) => {
-                    Alert.alert('Error', 'The interaction was cancelled by the user.');
+                  .catch((error: RNFirebase.RnError) => {
+                    Alert.alert(
+                      'Error',
+                      (error && error.message) || 'The interaction was cancelled by the user.'
+                    );
                   });
               }
             }

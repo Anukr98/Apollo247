@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Theme, CircularProgress, FormHelperText } from '@material-ui/core';
+import React, { useState } from 'react';
+import { Theme, CircularProgress } from '@material-ui/core';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import { createStyles, makeStyles } from '@material-ui/styles';
@@ -11,6 +11,7 @@ import { UPDATE_PATIENT } from 'graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _capitalize from 'lodash/capitalize';
 import _sortBy from 'lodash/sortBy';
+import FormHelperText from '@material-ui/core/FormHelperText';
 import { format, parseISO } from 'date-fns';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -40,13 +41,6 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         color: theme.palette.secondary.dark,
       },
-    },
-    errorText: {
-      fontSize: 12,
-      fontWeight: 500,
-      color: '#890000',
-      marginTop: 10,
-      lineHeight: 2,
     },
     actions: {
       padding: 20,
@@ -114,32 +108,18 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: theme.palette.secondary.light,
     },
+    placeholder: {
+      opacity: 0.3,
+    },
+    selectEmpty: {
+      marginTop: theme.spacing(2),
+    },
     menuSelected: {
       backgroundColor: 'transparent !important',
       color: '#00b38e !important',
     },
     menuItemHide: {
       display: 'none',
-    },
-    menuPopover: {
-      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.3)',
-      marginLeft: -30,
-      '& ul': {
-        padding: '10px 20px',
-        '& li': {
-          fontSize: 16,
-          fontWeight: 500,
-          color: '#01475b',
-          minHeight: 'auto',
-          paddingLeft: 0,
-          paddingRight: 0,
-          borderBottom: '1px solid rgba(1,71,91,0.2)',
-          textTransform: 'capitalize',
-          '&:last-child': {
-            borderBottom: 'none',
-          },
-        },
-      },
     },
   });
 });
@@ -158,9 +138,9 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
     [Relation.FATHER]: 2,
     [Relation.SISTER]: 3,
     [Relation.BROTHER]: 4,
-    [Relation.WIFE]: 5,
-    [Relation.HUSBAND]: 6,
-    [Relation.COUSIN]: 7,
+    [Relation.COUSIN]: 5,
+    [Relation.WIFE]: 6,
+    [Relation.HUSBAND]: 7,
     [Relation.OTHER]: 8,
   };
 
@@ -176,14 +156,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
     patient.relation || ''
   );
 
-  useEffect(() => {
-    //By default selectedRelation 1 st profile should be ME when there is an empty input
-    if (number === 1 && selectedRelation === '') {
-      setSelectedRelation(Relation.ME);
-      const updatedPatient = { ...patient, relation: Relation.ME };
-      props.onUpdatePatient(updatedPatient);
-    }
-  }, [number, selectedRelation, patient, props]);
+  const placeholderClass = selectedRelation ? 'classes.placeholder' : '';
 
   return (
     <div className={classes.profileBox} data-cypress="PatientProfile">
@@ -194,29 +167,22 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
       <div className={classes.boxContent}>
         <div className={classes.userName}>{_capitalize(patient.firstName || '')}</div>
         <div className={classes.userInfo}>
-          {_capitalize(patient.gender || '')}
-          {patient.gender && ' | '}
+          {_capitalize(patient.gender + ' | ')}
           {patient.dateOfBirth && format(parseISO(patient.dateOfBirth), 'dd MMMM yyyy')}
         </div>
         <AphSelect
-          value={selectedRelation}
+          value={selectedRelation ? _capitalize(selectedRelation) : 'Relation'}
           onChange={(e) => {
             const updatedRelation = e.target.value as Relation;
             setSelectedRelation(updatedRelation);
             const updatedPatient = { ...patient, relation: updatedRelation };
             props.onUpdatePatient(updatedPatient);
           }}
-          MenuProps={{
-            classes: { paper: classes.menuPopover },
-            anchorOrigin: {
-              vertical: 'center',
-              horizontal: 'right',
-            },
-          }}
+          native={false}
+          displayEmpty={true}
+          renderValue={(value) => `${value}`}
         >
-          <MenuItem className={classes.menuItemHide} disabled>
-            Relation
-          </MenuItem>
+          <MenuItem value={selectedRelation} disabled></MenuItem>
           {orderedRelations.map((relationOption) => (
             <MenuItem
               selected={relationOption === selectedRelation}
@@ -243,10 +209,18 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const classes = useStyles();
   const [patients, setPatients] = useState(props.patients);
   const [loading, setLoading] = useState(false);
-  const disabled = patients.some(isPatientInvalid);
-  const [message, setMessage] = useState<string>('');
-  const validMessage = '';
-  let isOK = false;
+  const loneUser = patients.length === 1 && patients[0].relation !== 'ME';
+  if (loneUser) patients[0].relation = Relation.ME;
+  const onePrimaryUser = patients.filter((x) => x.relation === Relation.ME).length === 1;
+  const multiplePrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length > 1;
+  const noPrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length < 1;
+  const disabled = patients.some(isPatientInvalid) || !onePrimaryUser;
+  let primaryUserErrorMessage;
+  if (multiplePrimaryUsers)
+    primaryUserErrorMessage = 'Relation can be set as Me for only 1 profile';
+  else if (noPrimaryUsers)
+    primaryUserErrorMessage = 'There should be 1 profile with relation set as Me';
+
   return (
     <div className={classes.signUpPop} data-cypress="ExistingProfile">
       <div className={classes.mascotIcon}>
@@ -258,17 +232,17 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
             welcome
             <br /> to apollo 24/7
           </Typography>
-
-          {patients.length === 0 ? null : (
+          {patients.length > 1 ? (
             <p>
-              We have found {patients.length} {patients.length > 1 ? 'accounts ' : 'account '}
-              registered with this mobile number. Please tell us who is who? :)
+              We have found {patients.length} accounts registered with this mobile number. Please
+              tell us who is who? :)
             </p>
+          ) : null}
+          {primaryUserErrorMessage && (
+            <FormHelperText component="div" error={true}>
+              {primaryUserErrorMessage}
+            </FormHelperText>
           )}
-          <FormHelperText component="div" className={classes.errorText}>
-            {message}
-          </FormHelperText>
-
           <div className={classes.formGroup}>
             {patients &&
               patients.map((p, i) => (
@@ -293,38 +267,21 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
             <AphButton
               type="submit"
               onClick={() => {
-                let count = 0;
-                patients.map((patient, i) => {
-                  patients[i].relation === 'ME' ? (count = count + 1) : '';
-                });
-                if (count > 1) {
-                  setMessage('Relation can be set as Me for only 1 profile');
-                  isOK = true;
-                } else if (count === 0) {
-                  setMessage('There should be 1 profile with relation set as Me');
-                  isOK = true;
-                } else {
-                  setMessage(validMessage);
-                  isOK = false;
-                }
-                if (isOK == false) {
-                  const updatePatientPromises = patients.map((patient) => {
-                    return mutate({
-                      variables: {
-                        patientInput: {
-                          id: patient.id,
-                          relation: patient.relation,
-                        },
+                const updatePatientPromises = patients.map((patient) => {
+                  return mutate({
+                    variables: {
+                      patientInput: {
+                        id: patient.id,
+                        relation: patient.relation,
                       },
-                    });
+                    },
                   });
-                  setLoading(true);
-                  Promise.all(updatePatientPromises)
-                    .then(() => props.onComplete())
-                    .catch(() => window.alert('Something went wrong :('))
-                    .finally(() => setLoading(false));
-                  window.location.reload();
-                }
+                });
+                setLoading(true);
+                Promise.all(updatePatientPromises)
+                  .then(() => props.onComplete())
+                  .catch(() => window.alert('Something went wrong :('))
+                  .finally(() => setLoading(false));
               }}
               disabled={disabled}
               fullWidth

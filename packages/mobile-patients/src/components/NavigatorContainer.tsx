@@ -1,12 +1,19 @@
-import { AppointmentDetails } from '@aph/mobile-patients/src/components/AppointmentDetails';
+import { AddressBook } from '@aph/mobile-patients/src/components/Account/AddressBook';
+import { MyAccount } from '@aph/mobile-patients/src/components/Account/MyAccount';
+import { NotificationSettings } from '@aph/mobile-patients/src/components/Account/NotificationSettings';
 import { ChatRoom } from '@aph/mobile-patients/src/components/ChatRoom';
-import { Consult } from '@aph/mobile-patients/src/components/Consult';
-import { ConsultRoom } from '@aph/mobile-patients/src/components/ConsultRoom';
-import { DoctorDetails } from '@aph/mobile-patients/src/components/DoctorDetails';
-import { DoctorSearch } from '@aph/mobile-patients/src/components/DoctorSearch';
-import { DoctorSearchListing } from '@aph/mobile-patients/src/components/DoctorSearchListing';
+import { AppointmentDetails } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentDetails';
+import { Consult } from '@aph/mobile-patients/src/components/ConsultRoom/Consult';
+import { ConsultRoom } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultRoom';
+import { DoctorDetails } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorDetails';
+import { DoctorSearch } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearch';
+import { DoctorSearchListing } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { HealthRecords } from '@aph/mobile-patients/src/components/HealthRecords';
+import { AddRecord } from '@aph/mobile-patients/src/components/HealthRecords/AddRecord';
+import { ConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/ConsultDetails';
+import { HealthRecordsHome } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordsHome';
+import { RecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/RecordDetails';
 import { Login } from '@aph/mobile-patients/src/components/Login';
 import { AddAddress } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { ApplyCouponScene } from '@aph/mobile-patients/src/components/Medicines/ApplyCouponScene';
@@ -19,12 +26,12 @@ import { StorePickupScene } from '@aph/mobile-patients/src/components/Medicines/
 import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicines/UploadPrescription';
 import { YourCart } from '@aph/mobile-patients/src/components/Medicines/YourCart';
 import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
-import { MyAccount } from '@aph/mobile-patients/src/components/MyAccount';
 import { Onboarding } from '@aph/mobile-patients/src/components/Onboarding';
 import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
 import { OTPVerification } from '@aph/mobile-patients/src/components/OTPVerification';
 import { SignUp } from '@aph/mobile-patients/src/components/SignUp';
 import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
+import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomChecker';
 import { TabBar } from '@aph/mobile-patients/src/components/TabBar';
 import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';
 import {
@@ -65,6 +72,13 @@ export enum AppRoutes {
   SelectPrescription = 'SelectPrescription',
   UploadPrescription = 'UploadPrescription',
   SelectDeliveryAddress = 'SelectDeliveryAddress',
+  HealthRecordsHome = 'HealthRecordsHome',
+  ConsultDetails = 'ConsultDetails',
+  RecordDetails = 'RecordDetails',
+  SymptomChecker = 'SymptomChecker',
+  AddressBook = 'AddressBook',
+  NotificationSettings = 'NotificationSettings',
+  AddRecord = 'AddRecord',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -175,6 +189,27 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.SelectDeliveryAddress]: {
     screen: SelectDeliveryAddress,
+  },
+  [AppRoutes.HealthRecordsHome]: {
+    screen: HealthRecordsHome,
+  },
+  [AppRoutes.ConsultDetails]: {
+    screen: ConsultDetails,
+  },
+  [AppRoutes.RecordDetails]: {
+    screen: RecordDetails,
+  },
+  [AppRoutes.SymptomChecker]: {
+    screen: SymptomChecker,
+  },
+  [AppRoutes.AddressBook]: {
+    screen: AddressBook,
+  },
+  [AppRoutes.NotificationSettings]: {
+    screen: NotificationSettings,
+  },
+  [AppRoutes.AddRecord]: {
+    screen: AddRecord,
   },
 };
 

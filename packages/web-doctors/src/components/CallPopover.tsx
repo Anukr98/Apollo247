@@ -371,6 +371,8 @@ const useStyles = makeStyles((theme: Theme) => {
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
+  saveCasesheetAction: () => void;
+  endConsultAction: () => void;
   appointmentId: string;
   appointmentDateTime: string;
   doctorId: string;
@@ -595,13 +597,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         <span>
           {startAppointment ? (
             <span>
-              <Button className={classes.backButton}>Save</Button>
+              <Button
+                className={classes.backButton}
+                onClick={() => {
+                  props.saveCasesheetAction();
+                }}
+              >
+                Save
+              </Button>
               <Button
                 className={classes.endconsultButton}
                 onClick={() => {
                   onStopConsult();
                   setStartAppointment(!startAppointment);
                   stopInterval();
+                  props.endConsultAction();
                 }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -620,7 +630,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           ) : (
             <Button
               className={classes.consultButton}
-              disabled={startAppointmentButton}
+              //disabled={startAppointmentButton}
               onClick={() => {
                 !startAppointment ? onStartConsult() : onStopConsult();
                 !startAppointment ? startInterval(900) : stopInterval();
