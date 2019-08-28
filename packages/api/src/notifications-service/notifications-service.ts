@@ -8,9 +8,9 @@ import {
   getSearchesTypeDefs,
   getSearchesResolvers,
 } from 'notifications-service/resolvers/getSearches';
-import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
-import { AppointmentPayload } from 'types/appointmentTypes';
-import { bookAppointmentApollo } from 'notifications-service/bookAppointmentApollo';
+//import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
+//import { AppointmentPayload } from 'types/appointmentTypes';
+//import { bookAppointmentApollo } from 'notifications-service/bookAppointmentApollo';
 import { connect } from 'consults-service/database/connect';
 
 (async () => {
@@ -28,7 +28,7 @@ import { connect } from 'consults-service/database/connect';
     console.log(`🚀 notifications-service ready (internal url: ${url})`);
   });
 
-  AphMqClient.connect();
+  /*AphMqClient.connect();
 
   type TestMessage = AphMqMessage<AphMqMessageTypes.BOOKAPPOINTMENT, AppointmentPayload>;
 
@@ -38,5 +38,5 @@ import { connect } from 'consults-service/database/connect';
     //SendMail.send(receivedMessage.message);
     bookAppointmentApollo.book(receivedMessage.message);
     receivedMessage.accept();
-  });
+  });*/
 })();
