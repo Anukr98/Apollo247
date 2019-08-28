@@ -240,14 +240,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     ) {
       const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
         .availableSlot;
-      const ISOFormat = `${todayDate}T${nextSlot}:00.000Z`;
-      console.log(ISOFormat, new Date(ISOFormat));
-      const formatedTime = Moment(new Date(ISOFormat), 'HH:mm:ss.SSSz').format('HH:mm');
+      // const ISOFormat = nextSlot; // `${todayDate}T${nextSlot}:00.000Z`;
+      console.log(nextSlot, new Date(nextSlot));
+      const formatedTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('HH:mm');
       console.log(formatedTime, 'formatedTime');
       let timeDiff: Number = 0;
       const time = formatedTime.split(':');
-      let today: Date = new Date();
-      let date2: Date = new Date(
+      const today: Date = new Date();
+      const date2: Date = new Date(
         today.getFullYear(),
         today.getMonth(),
         today.getDate(),
@@ -258,7 +258,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
       }
       if (timeDiff < 0) {
-        const availableTime = Moment(new Date(ISOFormat), 'HH:mm:ss.SSSz').format('h:mm A');
+        const availableTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('h:mm A');
         console.log(availableTime, 'availableTime');
         setavailableTime(availableTime);
       }

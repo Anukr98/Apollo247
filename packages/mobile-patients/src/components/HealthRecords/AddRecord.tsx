@@ -295,7 +295,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           </ScrollView>
         </SafeAreaView>
         {renderBottomButton()}
-        {displayOrderPopup && (
+        {/* {displayOrderPopup && (
           <AddFilePopup
             onClickClose={() => {
               setdisplayOrderPopup(false);
@@ -305,7 +305,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               setImages(data);
             }}
           />
-        )}
+        )} */}
       </View>
     );
   return null;

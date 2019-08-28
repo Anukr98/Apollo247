@@ -36,6 +36,7 @@ const styles = StyleSheet.create({
     color: theme.colors.INPUT_TEXT,
     paddingRight: 6,
     lineHeight: 28,
+    paddingTop: Platform.OS === 'ios' ? 0 : 4,
     paddingBottom: Platform.OS === 'ios' ? 5 : 0,
   },
   inputStyle: {
@@ -226,7 +227,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         >
           <View
             style={[
-              { height: 56, paddingTop: 20 },
+              { paddingTop: Platform.OS === 'ios' ? 20 : 15 },
               phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
             ]}
           >
