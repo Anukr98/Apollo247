@@ -727,7 +727,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
     const mobNumber = sessionStorage.getItem('mobileNumberSession');
     if (mobNumber) {
       setMobileNumber(mobNumber);
-    } else if (mobNumber!.length == 0) {
+    } else if (mobNumber == null || (mobNumber && mobNumber.length == 0)) {
       setMobileNumber('');
     }
   }, []);
