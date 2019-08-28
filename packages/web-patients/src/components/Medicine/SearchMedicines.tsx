@@ -8,7 +8,7 @@ import { MedicineCard } from 'components/Medicine/MedicineCard';
 import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
 import axios, { CancelTokenSource, AxiosError, Cancel } from 'axios';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import _debounce from 'lodash/debounce';
+// import _debounce from 'lodash/debounce';
 import { MedicineCartItem } from 'components/MedicinesCartProvider';
 
 const apiDetails = {
@@ -317,10 +317,10 @@ export const SearchMedicines: React.FC = (props) => {
                       setLoading(false);
                     })
                     .catch((thrown: AxiosError | Cancel) => {
-                      if (axios.isCancel(thrown)) {
-                        const cancel: Cancel = thrown;
-                        console.log(cancel);
-                      }
+                      // if (axios.isCancel(thrown)) {
+                      //   const cancel: Cancel = thrown;
+                      //   console.log(cancel);
+                      // }
                     });
                   // source && source.cancel('Operation has been canceled.');
                 } else {

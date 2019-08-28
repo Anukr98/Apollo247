@@ -301,21 +301,17 @@ export const Cart: React.FC = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
-  const { cartTotal } = useShoppingCart();
+  const { cartTotal, cartItems } = useShoppingCart();
   const deliveryCharges = 30; // this must be retrieved from api later.
 
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
-
   const totalAmount = (cartTotal + deliveryCharges).toFixed(2);
-  const cartItems = localStorage.getItem('cartItems')
-    ? JSON.parse(localStorage.getItem('cartItems') || '')
-    : [];
+
+  // const cartItems = localStorage.getItem('cartItems')
+  //   ? JSON.parse(localStorage.getItem('cartItems') || '')
+  //   : [];
 
   const disableSubmit = deliveryAddressId === '';
-
-  console.log(deliveryAddressId, 'deliver address is...');
-
-  // console.log('cart items......', cartItems, cartTotal);
 
   return (
     <div className={classes.root}>
