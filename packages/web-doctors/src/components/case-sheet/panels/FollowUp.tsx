@@ -5,10 +5,33 @@ import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
+import { fontWeight } from '@material-ui/system';
 
 const useStyles = makeStyles(() => ({
   followUpContainer: {
     width: '100%',
+  },
+  switchBtn: {
+    position: 'absolute',
+    right: 10,
+  },
+  followupTxt: {
+    fontSize: 14,
+    color: 'rgba(2, 71, 91, 0.6)',
+    fontWeight: 500,
+    marginBottom: 16,
+    display: 'inline-block',
+  },
+  followupAfter: {
+    paddingTop: 16,
+  },
+  followup: {
+    '& h5': {
+      fontSize: 14,
+      color: 'rgba(2, 71, 91, 0.6)',
+      fontWeight: 500,
+      paddingBottom: 8,
+    },
   },
   button: {
     borderRadius: '5px',
@@ -16,9 +39,18 @@ const useStyles = makeStyles(() => ({
     border: 'solid 1px #00b38e',
     backgroundColor: '#ffffff',
     color: '#00b38e',
+    marginRight: 10,
     '&.Mui-selected': {
       color: '#ffffff',
       backgroundColor: '#00b38e !important',
+    },
+    '&.markLabel': {
+      color: '#02475b',
+      fontSize: 12,
+      fontWeight: 'normal',
+    },
+    '&.markLabelActive': {
+      color: 'red',
     },
   },
 }));
@@ -95,18 +127,21 @@ export const FollowUp: React.FC = () => {
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <Typography component="div" className={classes.followUpContainer}>
         <Typography component="div">
-          <Typography component="span">Do you recommend a follow up?</Typography>
+          <Typography component="span" className={classes.followupTxt}>
+            Do you recommend a follow up?
+          </Typography>
           <Switch
             checked={shouldFollowUp}
             onChange={(e) => setShouldFollowUp(e.target.checked)}
             value="followup"
             color="primary"
+            className={classes.switchBtn}
           />
         </Typography>
         {shouldFollowUp && (
-          <div>
+          <div className={classes.followup}>
             <Divider />
-            <Typography component="div">
+            <Typography className={classes.followupAfter} component="div">
               <Typography component="h5" variant="h5">
                 Follow Up After
               </Typography>
