@@ -3,6 +3,7 @@ package com.apollopatient;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 import com.zxcpoiu.incallmanager.InCallManagerPackage;
 import io.github.elyx0.reactnativedocumentpicker.DocumentPickerPackage;
 import com.opentokreactnative.OTPackage;
@@ -34,6 +35,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new AsyncStoragePackage(),
             new InCallManagerPackage(),
             new DocumentPickerPackage(),
             new OTPackage(),

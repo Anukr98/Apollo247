@@ -26,6 +26,7 @@ import { useQuery } from 'react-apollo-hooks';
 import { getDoctorPhysicalAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorPhysicalAvailableSlots';
 import { GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { divideSlots, timeTo12HrFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import Permissions from 'react-native-permissions';
 
 const styles = StyleSheet.create({
   optionsView: {
@@ -135,29 +136,47 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   ]);
 
   const fetchLocation = useCallback(() => {
-    navigator.geolocation.getCurrentPosition((position) => {
-      const searchstring = position.coords.latitude + ',' + position.coords.longitude;
-      const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+    Permissions.request('location')
+      .then((response) => {
+        console.log(response, 'permission response');
+        if (response === 'authorized') {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+              const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 
-      const destination = selectedClinic
-        ? `${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}` // `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}`
-        : '';
-      const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
-      Axios.get(distanceUrl)
-        .then((obj) => {
-          console.log(obj, 'distanceUrl');
-          if (obj.data.rows.length > 0 && obj.data.rows[0].elements.length > 0) {
-            const value = obj.data.rows[0].elements[0].distance
-              ? obj.data.rows[0].elements[0].distance.value
-              : 0;
-            console.log(`${(value / 1000).toFixed(1)} Kms`, 'distance');
-            setdistance(`${(value / 1000).toFixed(1)} Kms`);
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    });
+              const destination = selectedClinic
+                ? `${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}` // `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}`
+                : '';
+              const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
+              Axios.get(distanceUrl)
+                .then((obj) => {
+                  console.log(obj, 'distanceUrl');
+                  if (obj.data.rows.length > 0 && obj.data.rows[0].elements.length > 0) {
+                    const value = obj.data.rows[0].elements[0].distance
+                      ? obj.data.rows[0].elements[0].distance.value
+                      : 0;
+                    console.log(`${(value / 1000).toFixed(1)} Kms`, 'distance');
+                    setdistance(`${(value / 1000).toFixed(1)} Kms`);
+                  }
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+            },
+            (error) => console.log(JSON.stringify(error)),
+            { enableHighAccuracy: false, timeout: 2000 }
+          );
+        }
+        //response is an object mapping type to permission
+        // this.setState({
+        //   cameraPermission: response.camera,
+        //   photoPermission: response.photo,
+        // });
+      })
+      .catch((error) => {
+        console.log(error, 'error permission');
+      });
   }, [selectedClinic]);
 
   const requestLocationPermission = useCallback(async () => {
