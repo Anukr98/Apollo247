@@ -124,6 +124,7 @@ export const ConsultTabs: React.FC = () => {
   const params = useParams<Params>();
   const paramId = params.id;
   const [loaded, setLoaded] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
@@ -161,7 +162,7 @@ export const ConsultTabs: React.FC = () => {
         })
         .then((_data) => {
           setCasesheetInfo(_data.data);
-
+          setError('');
           _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
             ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
                 .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
@@ -196,6 +197,7 @@ export const ConsultTabs: React.FC = () => {
           }
         })
         .catch((e: any) => {
+          setError('Error occured in getcasesheet api');
           console.log('Error occured creating session', e);
         })
         .finally(() => {
@@ -237,9 +239,12 @@ export const ConsultTabs: React.FC = () => {
       })
       .then((_data) => {
         console.log('_data', _data);
+        setError('');
+        alert('Casesheet updated successfully');
         //const result = _data.data!.updateCaseSheet;
       })
       .catch((e) => {
+        setError('Error occured in Updatecasesheet api');
         console.log('Error occured while update casesheet', e);
       });
   };
@@ -285,8 +290,10 @@ export const ConsultTabs: React.FC = () => {
         settoken(_data.data.createAppointmentSession.appointmentToken);
         setappointmentDateTime(_data.data.createAppointmentSession.appointmentDateTime);
         setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
+        setError('');
       })
       .catch((e: any) => {
+        setError('Error occured creating session');
         console.log('Error occured creating session', e);
       });
   };
@@ -303,80 +310,84 @@ export const ConsultTabs: React.FC = () => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      {loaded && (
-        <CaseSheetContext.Provider
-          value={{
-            loading: !loaded,
-            caseSheetId: appointmentId,
-            patientDetails: casesheetInfo!.getCaseSheet!.patientDetails,
-            symptoms,
-            setSymptoms,
-            notes: casesheetInfo!.getCaseSheet!.caseSheetDetails!.notes,
-            diagnosis,
-            setDiagnosis,
-            otherInstructions,
-            setOtherInstructions,
-            diagnosticPrescription,
-            setDiagnosticPrescription,
-            medicinePrescription,
-            setMedicinePrescription,
-          }}
-        >
-          <div className={classes.container}>
-            <CallPopover
-              setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-              createSessionAction={createSessionAction}
-              saveCasesheetAction={saveCasesheetAction}
-              endConsultAction={endConsultAction}
-              appointmentId={appointmentId}
-              appointmentDateTime={appointmentDateTime}
-              doctorId={doctorId}
-            />
-            <div>
+      {error ? (
+        <Typography className={classes.tabRoot}>{error}</Typography>
+      ) : (
+        loaded && (
+          <CaseSheetContext.Provider
+            value={{
+              loading: !loaded,
+              caseSheetId: appointmentId,
+              patientDetails: casesheetInfo!.getCaseSheet!.patientDetails,
+              symptoms,
+              setSymptoms,
+              notes: casesheetInfo!.getCaseSheet!.caseSheetDetails!.notes,
+              diagnosis,
+              setDiagnosis,
+              otherInstructions,
+              setOtherInstructions,
+              diagnosticPrescription,
+              setDiagnosticPrescription,
+              medicinePrescription,
+              setMedicinePrescription,
+            }}
+          >
+            <div className={classes.container}>
+              <CallPopover
+                setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+                createSessionAction={createSessionAction}
+                saveCasesheetAction={saveCasesheetAction}
+                endConsultAction={endConsultAction}
+                appointmentId={appointmentId}
+                appointmentDateTime={appointmentDateTime}
+                doctorId={doctorId}
+              />
               <div>
-                <Tabs
-                  value={tabValue}
-                  variant="fullWidth"
-                  classes={{
-                    root: classes.tabsRoot,
-                    indicator: classes.tabsIndicator,
-                  }}
-                  onChange={(e, newValue) => {
-                    setTabValue(newValue);
-                  }}
-                >
-                  <Tab
-                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                    label="Case Sheet"
-                  />
-                  <Tab
-                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                    label="Chat"
-                  />
-                </Tabs>
-              </div>
-              <TabContainer>
-                <div className={tabValue !== 0 ? classes.none : classes.block}>
-                  {casesheetInfo ? <CaseSheet /> : ''}
-                </div>
-              </TabContainer>
-              <TabContainer>
-                <div className={tabValue !== 1 ? classes.none : classes.block}>
-                  <div className={classes.chatContainer}>
-                    <ConsultRoom
-                      startConsult={startConsult}
-                      sessionId={sessionId}
-                      token={token}
-                      appointmentId={paramId}
-                      doctorId={doctorId}
-                      patientId={patientId}
+                <div>
+                  <Tabs
+                    value={tabValue}
+                    variant="fullWidth"
+                    classes={{
+                      root: classes.tabsRoot,
+                      indicator: classes.tabsIndicator,
+                    }}
+                    onChange={(e, newValue) => {
+                      setTabValue(newValue);
+                    }}
+                  >
+                    <Tab
+                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                      label="Case Sheet"
                     />
-                  </div>
+                    <Tab
+                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                      label="Chat"
+                    />
+                  </Tabs>
                 </div>
-              </TabContainer>
+                <TabContainer>
+                  <div className={tabValue !== 0 ? classes.none : classes.block}>
+                    {casesheetInfo ? <CaseSheet /> : ''}
+                  </div>
+                </TabContainer>
+                <TabContainer>
+                  <div className={tabValue !== 1 ? classes.none : classes.block}>
+                    <div className={classes.chatContainer}>
+                      <ConsultRoom
+                        startConsult={startConsult}
+                        sessionId={sessionId}
+                        token={token}
+                        appointmentId={paramId}
+                        doctorId={doctorId}
+                        patientId={patientId}
+                      />
+                    </div>
+                  </div>
+                </TabContainer>
+              </div>
             </div>
-          </div>
-        </CaseSheetContext.Provider>
+          </CaseSheetContext.Provider>
+        )
       )}
     </div>
   );
