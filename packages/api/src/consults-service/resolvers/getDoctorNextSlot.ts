@@ -71,6 +71,10 @@ const getDoctorNextAvailableSlot: Resolver<
           }
         }
       }
+      const curDate = format(new Date(), 'yyyy-MM-dd');
+      if (availableSlot != '') {
+        availableSlot = `${curDate}T${availableSlot}:00.000Z`;
+      }
       const doctorSlot: SlotAvailability = { doctorId, availableSlot };
       doctorAvailalbeSlots.push(doctorSlot);
       resolve(doctorSlot);
