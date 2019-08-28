@@ -157,10 +157,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   ) {
     data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
       if (availability && availability.availableSlot !== '') {
-        const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
-        const slotTimeStamp =
-          getIstTimestamp(new Date(), availability.availableSlot) + milliSeconds;
-        const currentTime = new Date().getTime();
+        // const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
+        // const slotTimeStamp =
+        //   getIstTimestamp(new Date(), availability.availableSlot) + milliSeconds;
+        //   const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
+        const slotTimeStamp = new Date(availability.availableSlot).getTime();
+        const currentTime = new Date(new Date().toISOString()).getTime();
         if (slotTimeStamp > currentTime) {
           availableSlot = slotTimeStamp;
           const difference = slotTimeStamp - currentTime;

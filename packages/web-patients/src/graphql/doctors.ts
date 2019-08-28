@@ -151,8 +151,8 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
 `;
 
 export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
-  query SearchDoctorAndSpecialtyByName($searchText: String!) {
-    SearchDoctorAndSpecialtyByName(searchText: $searchText) {
+  query SearchDoctorAndSpecialtyByName($searchText: String!, $patientId: ID!) {
+    SearchDoctorAndSpecialtyByName(searchText: $searchText, patientId: $patientId) {
       doctors {
         id
         firstName
