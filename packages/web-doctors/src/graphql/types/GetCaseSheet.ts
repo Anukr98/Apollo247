@@ -19,6 +19,11 @@ export interface GetCaseSheet_getCaseSheet_patientDetails_familyHistory {
   relation: string | null;
 }
 
+export interface GetCaseSheet_getCaseSheet_patientDetails_patientAddress {
+  __typename: "Address";
+  city: string | null;
+}
+
 export interface GetCaseSheet_getCaseSheet_patientDetails_healthVault {
   __typename: "PatientHealthVault";
   imageUrls: string | null;
@@ -31,6 +36,7 @@ export interface GetCaseSheet_getCaseSheet_patientDetails {
   allergies: string | null;
   lifeStyle: (GetCaseSheet_getCaseSheet_patientDetails_lifeStyle | null)[] | null;
   familyHistory: (GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null;
+  patientAddress: (GetCaseSheet_getCaseSheet_patientDetails_patientAddress | null)[] | null;
   dateOfBirth: any | null;
   emailAddress: string | null;
   firstName: string | null;
@@ -66,7 +72,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions {
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms {
-  __typename?: "SymptomList";
+  __typename: "SymptomList";
   symptom: string | null;
   since: string | null;
   howOften: string | null;

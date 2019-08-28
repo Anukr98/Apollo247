@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
       '& a': {
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: 600,
         color: theme.palette.secondary.dark,
         textTransform: 'uppercase',

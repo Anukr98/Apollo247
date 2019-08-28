@@ -242,15 +242,17 @@ export const DiagnosticPrescription: React.FC = () => {
           Diagnosed Medical Condition
         </Typography>
         <Typography component="div" className={classes.listContainer}>
-          {selectedValues!.map((item, idx) => (
-            <Chip
-              className={classes.othersBtn}
-              key={idx}
-              label={item!.name}
-              onDelete={() => {}}
-              deleteIcon={<img src={require('images/ic_selected.svg')} alt="" />}
-            />
-          ))}
+          {selectedValues !== null &&
+            selectedValues.length > 0 &&
+            selectedValues!.map((item, idx) => (
+              <Chip
+                className={classes.othersBtn}
+                key={idx}
+                label={item!.name}
+                onDelete={() => {}}
+                deleteIcon={<img src={require('images/ic_selected.svg')} alt="" />}
+              />
+            ))}
         </Typography>
       </Typography>
       <Typography component="div" className={classes.textFieldContainer}>

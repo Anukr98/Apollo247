@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
-import { addMinutes, format, differenceInMinutes } from 'date-fns';
+import { addMinutes, format, differenceInMinutes, addDays } from 'date-fns';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
@@ -42,14 +42,22 @@ const getDoctorAvailableSlots: Resolver<
   const timeSlots = await consultHourRep.getConsultHours(DoctorAvailabilityInput.doctorId, weekDay);
   let availableSlots: string[] = [];
   if (timeSlots && timeSlots.length > 0) {
-    const st = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlots[0].startTime.toString()}`;
+    let st = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlots[0].startTime.toString()}`;
     const ed = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlots[0].endTime.toString()}`;
-    const consultStartTime = new Date(st);
+    let consultStartTime = new Date(st);
     const consultEndTime = new Date(ed);
+    let previousDate: Date = DoctorAvailabilityInput.availableDate;
+    if (consultEndTime < consultStartTime) {
+      previousDate = addDays(DoctorAvailabilityInput.availableDate, -1);
+      st = `${previousDate.toDateString()} ${timeSlots[0].startTime.toString()}`;
+      consultStartTime = new Date(st);
+    }
     const slotsCount =
       Math.ceil(Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * 4;
     const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
-    let startTime = new Date(DoctorAvailabilityInput.availableDate.toDateString() + ' ' + stTime);
+    let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
+    console.log(slotsCount, 'slots count');
+    console.log(startTime, 'slot start time');
     availableSlots = Array(slotsCount)
       .fill(0)
       .map(() => {
@@ -63,9 +71,12 @@ const getDoctorAvailableSlots: Resolver<
           .getUTCMinutes()
           .toString()
           .padStart(2, '0');
-        return `${stTimeHours}:${stTimeMins}`;
+        const startDateStr = format(stTime, 'yyyy-MM-dd');
+        const endStr = ':00.000Z';
+        return `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
       });
   }
+  console.log(availableSlots, 'availableSlots');
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const apptSlots = await appts.findByDateDoctorId(
     DoctorAvailabilityInput.doctorId,
@@ -73,13 +84,22 @@ const getDoctorAvailableSlots: Resolver<
   );
   if (apptSlots && apptSlots.length > 0) {
     apptSlots.map((appt) => {
-      const sl = `${appt.appointmentDateTime
+      const apptDt = format(appt.appointmentDateTime, 'yyyy-MM-dd');
+      const sl = `${apptDt}T${appt.appointmentDateTime
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appt.appointmentDateTime
         .getUTCMinutes()
         .toString()
-        .padStart(2, '0')}`;
+        .padStart(2, '0')}:00.000Z`;
+      console.log(sl, 'slot');
+      console.log(availableSlots.indexOf(sl), 'index of');
+      console.log(
+        appt.appointmentDateTime.toDateString(),
+        appt.appointmentDateTime,
+        availableSlots.indexOf(sl),
+        'check index with date'
+      );
       if (availableSlots.indexOf(sl) >= 0) {
         availableSlots.splice(availableSlots.indexOf(sl), 1);
       }

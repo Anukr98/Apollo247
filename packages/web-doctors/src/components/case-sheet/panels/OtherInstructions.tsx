@@ -255,15 +255,17 @@ export const OtherInstructions: React.FC = () => {
           Instructions to the patient
         </Typography>
         <Typography component="div" className={classes.listContainer}>
-          {selectedValues!.map((item, idx) => (
-            <Chip
-              className={classes.othersBtn}
-              key={idx}
-              label={item!.instruction}
-              onDelete={() => handleDelete(idx)}
-              deleteIcon={<img src={require('images/ic_selected.svg')} alt="" />}
-            />
-          ))}
+          {selectedValues !== null &&
+            selectedValues.length > 0 &&
+            selectedValues!.map((item, idx) => (
+              <Chip
+                className={classes.othersBtn}
+                key={idx}
+                label={item!.instruction}
+                onDelete={() => handleDelete(idx)}
+                deleteIcon={<img src={require('images/ic_selected.svg')} alt="" />}
+              />
+            ))}
         </Typography>
       </Typography>
       <Typography component="div" className={classes.textFieldContainer}>

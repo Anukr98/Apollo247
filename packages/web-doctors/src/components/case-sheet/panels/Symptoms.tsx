@@ -205,6 +205,7 @@ interface errorObject {
   severityError: boolean;
 }
 interface symptomObject {
+  __typename: string;
   symptom: string;
   severity: string;
   howOften: string;
@@ -274,7 +275,8 @@ export const Symptoms: React.FC = (props) => {
         severityError: false,
       });
 
-      const inputParams = {
+      const inputParams: any = {
+        __typename: 'SymptomList',
         howOften: howOften,
         severity: severity,
         since: since,
@@ -295,7 +297,7 @@ export const Symptoms: React.FC = (props) => {
   return (
     <Typography className={classes.container} component="div">
       <div>
-        {symptoms ? (
+        {symptoms && symptoms.length > 0 ? (
           <List className={classes.symtomList}>
             {symptoms &&
               symptoms!.map((item, idx) => (
@@ -406,7 +408,7 @@ export const Symptoms: React.FC = (props) => {
                               component="div"
                               error={errorState.symptomError}
                             >
-                              Please Enter something
+                              Please Enter Symptom
                             </FormHelperText>
                           )}
                         </div>
@@ -428,7 +430,7 @@ export const Symptoms: React.FC = (props) => {
                               component="div"
                               error={errorState.sinceError}
                             >
-                              Please Enter something
+                              Please Enter Since
                             </FormHelperText>
                           )}
                         </div>
@@ -450,7 +452,7 @@ export const Symptoms: React.FC = (props) => {
                               component="div"
                               error={errorState.howOfftenError}
                             >
-                              Please Enter something
+                              Please Enter How Often
                             </FormHelperText>
                           )}
                         </div>
@@ -472,7 +474,7 @@ export const Symptoms: React.FC = (props) => {
                               component="div"
                               error={errorState.severityError}
                             >
-                              Please Enter something
+                              Please Enter Severity
                             </FormHelperText>
                           )}
                         </div>

@@ -105,6 +105,11 @@ export interface CreateAppointmentSessionInput {
   requestRole: REQUEST_ROLES;
 }
 
+export interface EndAppointmentSessionInput {
+  appointmentId: string;
+  status: STATUS;
+}
+
 export interface UpdateCaseSheetInput {
   symptoms?: string | null;
   notes?: string | null;
