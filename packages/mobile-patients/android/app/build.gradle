@@ -150,6 +150,7 @@ android {
 }
 
 dependencies {
+    implementation project(':@react-native-community_async-storage')
     implementation project(':react-native-incall-manager')
     implementation project(':react-native-document-picker')
     implementation project(':opentok-react-native')

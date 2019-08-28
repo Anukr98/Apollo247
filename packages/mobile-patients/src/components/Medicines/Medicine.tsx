@@ -161,7 +161,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <ScrollView style={{ flex: 1 }}>
           <View
             style={{
-              height: 236,
+              height: 225,
               justifyContent: 'space-between',
             }}
           >
@@ -200,8 +200,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               </UserIntro>
             </View>
             <TabsComponent
+              textStyle={{
+                paddingTop: 12,
+              }}
               style={{
-                marginTop: 192,
+                height: 43,
+                marginTop: 181,
                 backgroundColor: colors.CARD_BG,
                 ...viewStyles.shadowStyle,
               }}

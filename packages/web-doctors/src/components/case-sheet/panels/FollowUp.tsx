@@ -9,6 +9,13 @@ import DateFnsUtils from '@date-io/date-fns';
 const useStyles = makeStyles(() => ({
   followUpContainer: {
     width: '100%',
+    '& .followup-label': {
+      '&.first-label': {
+        paddingLeft: '60px',
+      },
+      display: 'inline-block',
+      textAlign: 'center',
+    },
   },
   button: {
     borderRadius: '5px',
@@ -26,25 +33,40 @@ const useStyles = makeStyles(() => ({
 const marks = [
   {
     value: 2,
-    label: '2 days',
+    label: (
+      <span className="followup-label first-label">
+        2<br />
+        days
+      </span>
+    ),
   },
   {
     value: 5,
-    label: '5 days',
+    label: (
+      <span className="followup-label">
+        5<br />
+        days
+      </span>
+    ),
   },
   {
     value: 7,
-    label: '7 days',
+    label: (
+      <span className="followup-label">
+        7<br />
+        days
+      </span>
+    ),
   },
   {
     value: 9,
-    label: 'Custom',
+    label: <span className="followup-label">Custom</span>,
   },
 ];
 
-function valuetext(value: number) {
-  return `${value}°C`;
-}
+const valuetext = (value: number) => {
+  return `${value} days`;
+};
 
 const PrettoSlider = withStyles({
   root: {
@@ -74,6 +96,21 @@ const PrettoSlider = withStyles({
     height: 8,
     borderRadius: 4,
   },
+  // markLabel: {
+  //   width: '10px',
+  //   display: 'inline-block',
+  //   whiteSpace: 'normal',
+  // '&::after': {
+  //   content: '"days"',
+  //   display: 'block'
+  // },
+  // '&:nth-child(5)': {
+  //   paddingLeft: '70px'
+  // },
+  // '&:nth-last-child(2)::after': {
+  //   content: '""'
+  // }
+  // }
 })(Slider);
 
 export const FollowUp: React.FC = () => {

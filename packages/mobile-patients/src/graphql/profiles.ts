@@ -577,3 +577,59 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
     }
   }
 `;
+
+export const GET_CASESHEET_DETAILS = gql`
+  query getCaseSheet($appointmentId: String) {
+    getCaseSheet(appointmentId: $appointmentId) {
+      caseSheetDetails {
+        appointment {
+          id
+          appointmentDateTime
+          appointmentState
+          appointmentType
+          doctorId
+          hospitalId
+          patientId
+          parentId
+          status
+        }
+        consultType
+        diagnosis {
+          name
+        }
+        diagnosticPrescription {
+          name
+        }
+        doctorId
+        followUp
+        followUpAfterInDays
+        followUpDate
+        id
+        medicinePrescription {
+          medicineConsumptionDurationInDays
+          medicineDosage
+          medicineInstructions
+          medicineTimings
+          medicineToBeTaken
+          medicineName
+          id
+        }
+        notes
+        otherInstructions {
+          instruction
+        }
+        patientId
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+        }
+      }
+      patientDetails {
+        id
+      }
+      juniorDoctorNotes
+    }
+  }
+`;

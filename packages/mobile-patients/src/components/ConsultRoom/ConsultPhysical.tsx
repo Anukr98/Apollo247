@@ -18,14 +18,15 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { StyleSheet, Text, View, Platform, PermissionsAndroid } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
 import { useQuery } from 'react-apollo-hooks';
 import { getDoctorPhysicalAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorPhysicalAvailableSlots';
 import { GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { divideSlots, timeTo12HrFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import Permissions from 'react-native-permissions';
 
 const styles = StyleSheet.create({
   optionsView: {
@@ -134,31 +135,70 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     { label: 'Night', time: [] },
   ]);
 
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition((position) => {
-      const searchstring = position.coords.latitude + ',' + position.coords.longitude;
-      const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+  const fetchLocation = useCallback(() => {
+    Permissions.request('location')
+      .then((response) => {
+        console.log(response, 'permission response');
+        if (response === 'authorized') {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+              const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 
-      const destination = selectedClinic
-        ? `${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}` // `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}`
-        : '';
-      const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
-      Axios.get(distanceUrl)
-        .then((obj) => {
-          console.log(obj, 'distanceUrl');
-          if (obj.data.rows.length > 0 && obj.data.rows[0].elements.length > 0) {
-            const value = obj.data.rows[0].elements[0].distance
-              ? obj.data.rows[0].elements[0].distance.value
-              : 0;
-            console.log(`${(value / 1000).toFixed(1)} Kms`, 'distance');
-            setdistance(`${(value / 1000).toFixed(1)} Kms`);
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    });
-  }, [props.clinics, selectedClinic]);
+              const destination = selectedClinic
+                ? `${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}` // `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}`
+                : '';
+              const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
+              Axios.get(distanceUrl)
+                .then((obj) => {
+                  console.log(obj, 'distanceUrl');
+                  if (obj.data.rows.length > 0 && obj.data.rows[0].elements.length > 0) {
+                    const value = obj.data.rows[0].elements[0].distance
+                      ? obj.data.rows[0].elements[0].distance.value
+                      : 0;
+                    console.log(`${(value / 1000).toFixed(1)} Kms`, 'distance');
+                    setdistance(`${(value / 1000).toFixed(1)} Kms`);
+                  }
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+            },
+            (error) => console.log(JSON.stringify(error)),
+            { enableHighAccuracy: false, timeout: 2000 }
+          );
+        }
+        //response is an object mapping type to permission
+        // this.setState({
+        //   cameraPermission: response.camera,
+        //   photoPermission: response.photo,
+        // });
+      })
+      .catch((error) => {
+        console.log(error, 'error permission');
+      });
+  }, [selectedClinic]);
+
+  const requestLocationPermission = useCallback(async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('You can use the location', granted);
+        fetchLocation();
+      } else {
+        console.log('location permission denied');
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }, [fetchLocation]);
+
+  useEffect(() => {
+    console.log('didmout');
+    Platform.OS === 'android' && requestLocationPermission();
+  }, [requestLocationPermission]);
 
   const setTimeArrayData = (availableSlots: string[]) => {
     const array = divideSlots(availableSlots, date);
