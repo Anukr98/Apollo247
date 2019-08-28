@@ -16,6 +16,7 @@ export const clientRoutes = {
   notificationSettings: () => '/settings',
   addRecords: () => '/add-records',
   yourOrders: () => '/orders',
+  trackOrders: () => '/track-orders',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
