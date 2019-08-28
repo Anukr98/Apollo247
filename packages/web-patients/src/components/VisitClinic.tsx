@@ -249,7 +249,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     fetchPolicy: 'network-only',
   });
 
-  console.log('data is..........', data);
+  // console.log('data is..........', data);
 
   useEffect(() => {
     if (prevDateSelected !== dateSelected) setTimeSelected('');

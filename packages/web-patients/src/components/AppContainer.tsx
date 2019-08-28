@@ -15,7 +15,6 @@ import DateFnsUtils from '@date-io/date-fns';
 import { DoctorsLanding } from 'components/DoctorsLanding';
 import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
-import { ShoppingCartProvider } from '@aph/shared-ui-components/dist/ShoppingCartProvider';
 import { CartPoc } from 'components/CartPoc';
 import { CartLanding } from 'components/Cart/CartLanding';
 import { MedicineLanding } from 'components/Medicine/MedicineLanding';
@@ -24,6 +23,7 @@ import { ChatRoom } from 'components/ChatRoom/ChatRoom';
 import { PrescriptionsLanding } from 'components/Prescriptions/PrescriptionsLanding';
 import { MyAccount } from 'components/MyAccount/MyAccount';
 import { NotificationSettings } from 'components/Notifications/NotificationSettings';
+import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
 import { PHRLanding } from 'components/HealthRecords/PHRLanding';
 import { AddRecords } from 'components/HealthRecords/AddRecords';
 
@@ -88,9 +88,9 @@ const AppContainer: React.FC = () => {
       <AuthProvider>
         <AphThemeProvider theme={theme}>
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <ShoppingCartProvider>
+            <MedicinesCartProvider>
               <App />
-            </ShoppingCartProvider>
+            </MedicinesCartProvider>
           </MuiPickersUtilsProvider>
         </AphThemeProvider>
       </AuthProvider>

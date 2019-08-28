@@ -1,10 +1,17 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, FormControlLabel } from '@material-ui/core';
+import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
 import React from 'react';
 import { AphRadio, AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
-import Scrollbars from 'react-custom-scrollbars';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
+
+import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
+import {
+  GetPatientAddressList,
+  GetPatientAddressListVariables,
+} from 'graphql/types/GetPatientAddressList';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -77,86 +84,117 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const HomeDelivery: React.FC = (props) => {
+interface HomeDeliveryProps {
+  updateDeliveryAddress: (deliveryAddressId: string) => void;
+}
+
+export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   const classes = useStyles();
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
   const [isViewAllAddressDialogOpen, setIsViewAllAddressDialogOpen] = React.useState<boolean>(
     false
   );
+  const { currentPatient } = useAllCurrentPatients();
+  const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
+
+  const { updateDeliveryAddress } = props;
+
+  const { data, loading, error } = useQueryWithSkip<
+    GetPatientAddressList,
+    GetPatientAddressListVariables
+  >(GET_PATIENT_ADDRESSES_LIST, {
+    variables: {
+      patientId: (currentPatient && currentPatient.id) || '',
+    },
+  });
+
+  if (loading) {
+    return <CircularProgress />;
+  }
+  if (error) {
+    return <></>;
+  }
+
+  const addressList =
+    data && data.getPatientAddressList && data.getPatientAddressList.addressList
+      ? data.getPatientAddressList.addressList
+      : [];
+
+  let showAddress = 0;
 
   return (
     <div className={classes.root}>
       <ul>
-        <li>
-          <FormControlLabel
-            className={classes.radioLabel}
-            value="a"
-            control={<AphRadio color="primary" />}
-            checked
-            label="27/A, Kalpataru Enclave Jubilee Hills Hyderabad, Telangana — 500033"
-          />
-        </li>
-        <li>
-          <FormControlLabel
-            className={classes.radioLabel}
-            value="b"
-            control={<AphRadio color="primary" />}
-            label="27/A, Kalpataru Enclave Jubilee Hills Hyderabad, Telangana — 500033"
-          />
-        </li>
+        {addressList.map((addressDetails, index) => {
+          const addressId = addressDetails.id;
+          const address = `${addressDetails.addressLine1} - ${addressDetails.zipcode}`;
+          showAddress++;
+          return showAddress < 3 ? (
+            <li key={index}>
+              <FormControlLabel
+                checked={deliveryAddressId === addressId}
+                className={classes.radioLabel}
+                value={addressId}
+                control={<AphRadio color="primary" />}
+                label={address}
+                onChange={() => {
+                  setDeliveryAddressId(addressId);
+                  updateDeliveryAddress(addressId);
+                }}
+              />
+            </li>
+          ) : (
+            ''
+          );
+        })}
       </ul>
       <div className={classes.bottomActions}>
         <AphButton onClick={() => setIsAddAddressDialogOpen(true)}>Add new address</AphButton>
-        <AphButton
-          onClick={() => setIsViewAllAddressDialogOpen(true)}
-          className={classes.viewAllBtn}
-        >
-          View All
-        </AphButton>
+        {addressList.length > 2 ? (
+          <AphButton
+            onClick={() => setIsViewAllAddressDialogOpen(true)}
+            className={classes.viewAllBtn}
+          >
+            View All
+          </AphButton>
+        ) : null}
       </div>
-      <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
+
+      <AphDialog
+        open={isAddAddressDialogOpen}
+        maxWidth="sm"
+        onClose={() => {
+          setIsAddAddressDialogOpen(false);
+        }}
+      >
         <AphDialogTitle>
           <div className={classes.backArrow}>
             <img src={require('images/ic_back.svg')} alt="" />
           </div>
           Add New Address
         </AphDialogTitle>
-        <div className={classes.shadowHide}>
-          <div className={classes.dialogContent}>
-            <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
-              <div className={classes.customScrollBar}>
-                <AddNewAddress />
-              </div>
-            </Scrollbars>
-          </div>
-          <div className={classes.dialogActions}>
-            <AphButton color="primary" fullWidth>
-              Save & Use
-            </AphButton>
-          </div>
-        </div>
+        <AddNewAddress />
       </AphDialog>
-      <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
+
+      <AphDialog
+        open={isViewAllAddressDialogOpen}
+        maxWidth="sm"
+        onClose={() => {
+          setIsViewAllAddressDialogOpen(false);
+        }}
+      >
         <AphDialogTitle>
           <div className={classes.backArrow}>
             <img src={require('images/ic_back.svg')} alt="" />
           </div>
           Select Delivery Address
         </AphDialogTitle>
-        <div className={classes.shadowHide}>
-          <div className={classes.dialogContent}>
-            <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
-              <div className={classes.customScrollBar}>
-                <ViewAllAddress />
-              </div>
-            </Scrollbars>
-          </div>
-          <div className={classes.dialogActions}>
-            <AphButton color="primary" fullWidth>
-              Done
-            </AphButton>
-          </div>
-        </div>
+        <ViewAllAddress
+          addresses={addressList}
+          updateDeliveryAddress={(deliveryAddressId: string) =>
+            updateDeliveryAddress(deliveryAddressId)
+          }
+        />
       </AphDialog>
     </div>
   );
