@@ -110,8 +110,6 @@ const SavePrescriptionMedicineOrder: Resolver<
     };
     await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
   }
-  console.log(saveOrder, 'save order');
-
   return { status: MEDICINE_ORDER_STATUS.QUOTE, orderId: saveOrder.id };
 };
 
