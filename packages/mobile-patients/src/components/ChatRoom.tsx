@@ -43,6 +43,8 @@ import {
   KeyboardAvoidingView,
   KeyboardEvent,
   AsyncStorage,
+  Image,
+  NativeModules,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import DocumentPicker from 'react-native-document-picker';
@@ -50,7 +52,10 @@ import { DropDown } from '@aph/mobile-patients/src/components/ui/DropDown';
 import InCallManager from 'react-native-incall-manager';
 import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import moment from 'moment';
+import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
+const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
 
 const timer: number = 900;
@@ -156,6 +161,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [chatReceived, setChatReceived] = useState(false);
   const [doctorJoined, setDoctorJoined] = useState(false);
   const [apiCalled, setApiCalled] = useState(false);
+  const [userName, setuserName] = useState<string>('');
+  const [convertVideo, setConvertVideo] = useState<boolean>(false);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -164,12 +171,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const startConsultMsg = '^^#startconsult';
   const stopConsultMsg = '^^#stopconsult';
   const typingMsg = '^^#typing';
+  const covertVideoMsg = '^^convert`video^^';
+  const covertAudioMsg = '^^convert`audio^^';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
 
   let intervalId: NodeJS.Timeout;
   let stoppedTimer: number;
+
+  const { analytics } = useAuth();
+  const { currentPatient } = useAllCurrentPatients();
+
+  useEffect(() => {
+    const userName =
+      currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
+    setuserName(userName);
+    console.log('consult room', currentPatient);
+    analytics.setCurrentScreen(AppRoutes.ChatRoom);
+  }, []);
+
   const client = useApolloClient();
 
   const updateSessionAPI = () => {
@@ -292,6 +313,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setCallAccepted(false);
       setHideStatusBar(false);
       console.log('session stream connectionDestroyed!', event);
+      setConvertVideo(false);
 
       setTimerStyles({
         position: 'absolute',
@@ -338,7 +360,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       withPresence: true,
     });
 
-    getHistory();
+    getHistory(0);
     registerForPushNotification();
 
     pubnub.addListener({
@@ -370,59 +392,60 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
   }, []);
 
-  const registerForPushNotification = async () => {
-    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
-    const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
+  const registerForPushNotification = () => {
+    console.log('registerForPushNotification:');
+    ExportDeviceToken.getPushNotificationToken(handlePushNotification);
+  };
 
-    if (Platform.OS == 'ios') {
-      pubnub.push.addChannels(
-        {
-          channels: [channel],
-          device: deviceToken2.deviceToken,
-          pushGateway: 'apns',
-        },
-        (status) => {
-          if (status.error) {
-            console.log('operation failed w/ error:', status);
-          } else {
-            console.log('operation done!');
-          }
-        }
-      );
-      console.log('ios:', token);
-      // Send iOS Notification from debug console: {"pn_apns":{"aps":{"alert":"Hello World."}}}
-    } else {
-      pubnub.push.addChannels(
-        {
-          channels: [channel],
-          device: deviceToken2.deviceToken,
-          pushGateway: 'gcm', // apns, gcm, mpns
-        },
-        (status) => {
-          if (status.error) {
-            console.log('operation failed w/ error:', status);
-          } else {
-            console.log('operation done!');
-          }
-        }
-      );
-      // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
-    }
+  const handlePushNotification = async (deviceToken: string) => {
+    console.log('Device Token Received', deviceToken);
+
+    const fcmToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const androidToken = fcmToken ? JSON.parse(fcmToken) : '';
+    console.log('android:', androidToken);
+
+    // if (Platform.OS === 'ios') {
+    //   pubnub.push.addChannels(
+    //     {
+    //       channels: [channel],
+    //       device: deviceToken,
+    //       pushGateway: 'apns',
+    //     },
+    //     (status: any) => {
+    //       if (status.error) {
+    //         console.log('operation failed w/ error:', status);
+    //       } else {
+    //         console.log('operation done!');
+    //       }
+    //     }
+    //   );
+    //   console.log('ios:', token);
+    //   // Send iOS Notification from debug console: {"pn_apns":{"aps":{"alert":"Hello World."}}}
+    // } else {
+    //   pubnub.push.addChannels({
+    //     channels: [channel],
+    //     device: androidToken,
+    //     pushGateway: 'gcm', // apns, gcm, mpns
+    //   });
+    //   // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
+    // }
   };
 
   let insertText: object[] = [];
 
-  const getHistory = () => {
+  const getHistory = (timetoken: number) => {
     pubnub.history(
       {
         channel: channel,
         reverse: true,
         count: 100000,
         stringifiedTimeToken: true,
-        // includeTimetoken: true,
-        // start: 15663634751393502,
+        start: timetoken,
       },
       (status, res) => {
+        // const start = res.startTimeToken;
+        const msgs = res.messages;
+
         const newmessage: { message: string }[] = [];
 
         res.messages.forEach((element, index) => {
@@ -444,13 +467,48 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setMessages(newmessage as []);
           console.log('newmessage', newmessage);
 
+          if (msgs.length == 100) {
+            console.log('hihihihihi');
+            // getHistory(start);
+          }
+
           setTimeout(() => {
-            flatListRef.current! && flatListRef.current!.scrollToEnd();
+            flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
           }, 1000);
         }
       }
     );
   };
+
+  // function getAllMessages(timetoken) {
+  //   pubnub.history(
+  //     {
+  //       channel: 'ba7897d4-848f-4f02-8058-ebac75382be8',
+  //       stringifiedTimeToken: true, // false is the default
+  //       start: timetoken // start time token to fetch
+  //       //count: 1000
+  //     },
+  //     function (status, response) {
+  //       var msgs = response.messages;
+  //       var start = response.startTimeToken;
+  //       var end = response.endTimeToken;
+  //       // if msgs were retrieved, do something useful with them
+  //       if (msgs != "undefined" && msgs.length > 0) {
+  //         console.log(msgs.length);
+  //         console.log("start : " + start);
+  //         console.log("end : " + end);
+  //         console.log("Lenght" + msgs.length);
+  //       }
+  //       // if 100 msgs were retrieved, there might be more; call history again
+  //       if (msgs.length == 100) {
+  //         console.log("hihihihihi");
+  //         getAllMessages(start);
+
+  //       }
+  //     }
+  //   );
+  // }
+  // getAllMessages(0);
 
   const checkingAppointmentDates = () => {
     const currentTime = moment(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(
@@ -496,10 +554,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         stopInterval();
         startInterval(timer);
         updateSessionAPI();
-        // checkingAppointmentDates();
+        checkingAppointmentDates();
       } else if (message.message.message === stopConsultMsg) {
         console.log('listener remainingTime', remainingTime);
         stopInterval();
+        setConvertVideo(false);
       } else if (
         message.message.message === 'Audio call ended' ||
         message.message.message === 'Video call ended'
@@ -510,6 +569,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         InCallManager.stopRingtone();
         InCallManager.stop();
         addMessages(message);
+      } else if (message.message.message === covertVideoMsg) {
+        console.log('covertVideoMsg', covertVideoMsg);
+        setConvertVideo(true);
+      } else if (message.message.message === covertAudioMsg) {
+        console.log('covertVideoMsg', covertAudioMsg);
+        setConvertVideo(false);
       }
     } else {
       addMessages(message);
@@ -517,22 +582,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const addMessages = (message: Pubnub.MessageEvent) => {
-    // console.log('addListener message', message.message);
-    console.log('before insertText', insertText);
-
     insertText[insertText.length] = message.message;
-
-    console.log('after insertText', insertText);
-
-    setMessages(insertText as []);
-    console.log('after messages', messages);
-
+    setMessages(() => [...(insertText as [])]);
     if (!isCall || !isAudioCall) {
       setChatReceived(true);
     }
     setTimeout(() => {
-      flatListRef.current! && flatListRef.current!.scrollToEnd();
-    }, 1000);
+      flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: false });
+    }, 300);
   };
 
   const keyboardDidShow = (e: KeyboardEvent) => {
@@ -544,7 +601,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         : height - e.endCoordinates.height - 185
     );
     setTimeout(() => {
-      flatListRef.current! && flatListRef.current!.scrollToEnd();
+      flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: false });
     }, 500);
   };
 
@@ -594,7 +651,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rightComponent = 0;
       return (
         <View>
-          {leftComponent === 1 ? (
+          {leftComponent === 1 && (
             <View
               style={{
                 backgroundColor: 'transparent',
@@ -602,7 +659,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 marginVertical: 8,
               }}
             />
-          ) : null}
+          )}
           {rowData.message === 'Audio call ended' || rowData.message === 'Video call ended' ? (
             <>
               {rowData.duration === '00 : 00' ? (
@@ -616,8 +673,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     paddingVertical: 17,
                   }}
                 >
-                  {leftComponent === 1 ? (
-                    <DoctorImage
+                  {leftComponent === 1 && (
+                    <View
                       style={{
                         width: 32,
                         height: 32,
@@ -625,8 +682,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         position: 'absolute',
                         left: 0,
                       }}
-                    />
-                  ) : null}
+                    >
+                      {appointmentData.doctorInfo.photoUrl ? (
+                        <Image
+                          source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                          style={{
+                            width: 32,
+                            height: 32,
+                          }}
+                        />
+                      ) : (
+                        <DoctorImage
+                          style={{
+                            width: 32,
+                            height: 32,
+                            bottom: 0,
+                            position: 'absolute',
+                            left: 0,
+                          }}
+                        />
+                      )}
+                    </View>
+                  )}
                   <View
                     style={{
                       marginLeft: 40,
@@ -701,8 +778,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     alignSelf: 'flex-start',
                   }}
                 >
-                  {leftComponent === 1 ? (
-                    <DoctorImage
+                  {leftComponent === 1 && (
+                    <View
                       style={{
                         width: 32,
                         height: 32,
@@ -710,8 +787,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         position: 'absolute',
                         left: 0,
                       }}
-                    />
-                  ) : null}
+                    >
+                      {appointmentData.doctorInfo.photoUrl ? (
+                        <Image
+                          source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                          style={{
+                            width: 32,
+                            height: 32,
+                          }}
+                        />
+                      ) : (
+                        <DoctorImage
+                          style={{
+                            width: 32,
+                            height: 32,
+                            bottom: 0,
+                            position: 'absolute',
+                            left: 0,
+                          }}
+                        />
+                      )}
+                    </View>
+                  )}
                   <View
                     style={{
                       borderRadius: 10,
@@ -759,8 +856,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 alignSelf: 'flex-start',
               }}
             >
-              {leftComponent === 1 ? (
-                <DoctorImage
+              {leftComponent === 1 && (
+                <View
                   style={{
                     width: 32,
                     height: 32,
@@ -768,14 +865,33 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     position: 'absolute',
                     left: 0,
                   }}
-                />
-              ) : null}
+                >
+                  {appointmentData.doctorInfo.photoUrl ? (
+                    <Image
+                      source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                      style={{
+                        width: 32,
+                        height: 32,
+                      }}
+                    />
+                  ) : (
+                    <DoctorImage
+                      style={{
+                        width: 32,
+                        height: 32,
+                        bottom: 0,
+                        position: 'absolute',
+                        left: 0,
+                      }}
+                    />
+                  )}
+                </View>
+              )}
               <View
                 style={{
                   backgroundColor: 'white',
                   marginLeft: 38,
                   borderRadius: 10,
-                  // width: 244,
                 }}
               >
                 <Text
@@ -870,6 +986,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const renderChatView = () => {
+    // console.log('renderChatView');
+
     return (
       <View style={{ width: width, height: heightList, marginTop: 0 }}>
         <FlatList
@@ -883,7 +1001,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           bounces={false}
           data={messages}
-          onEndReachedThreshold={0.5}
+          onEndReachedThreshold={0.1}
           renderItem={({ item, index }) => renderChatRow(item, index)}
           keyExtractor={(_, index) => index.toString()}
           numColumns={1}
@@ -898,9 +1016,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         {isCall && (
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <OTSession
-              apiKey={'46393582'}
+              apiKey={'46401302'}
               sessionId={sessionId}
               token={token}
+              // apiKey={'46409832'}
+              // sessionId={
+              //   '2_MX40NjQwOTgzMn5-MTU2Njk3NTkyMjgxM35yK0YwQjhHUnhGS2k1dTM4eUpBbHFHY3p-UH4'
+              // }
+              // token={
+              //   'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9NDAzMWJlZDA0NzAxMTIyMWU1NzU2OWI4MmEzYjg3YTI0N2VmZDkyYzpzZXNzaW9uX2lkPTJfTVg0ME5qUXdPVGd6TW41LU1UVTJOamszTlRreU1qZ3hNMzV5SzBZd1FqaEhVbmhHUzJrMWRUTTRlVXBCYkhGSFkzcC1VSDQmY3JlYXRlX3RpbWU9MTU2Njk3NTkzNiZub25jZT0wLjMwNjk1ODQ4MDE0NzM0MTczJnJvbGU9bW9kZXJhdG9yJmV4cGlyZV90aW1lPTE1Njk1Njc5MzUmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
+              // }
               eventHandlers={sessionEventHandlers}
               ref={otSessionRef}
               options={{
@@ -990,7 +1115,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const AudioCall = () => {
     return (
       <View style={audioCallStyles}>
-        <DoctorCall style={audioCallImageStyles} />
+        {!convertVideo && <DoctorCall style={audioCallImageStyles} />}
         <View
           style={{
             position: 'absolute',
@@ -1002,6 +1127,64 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             opacity: 0.6,
           }}
         />
+        <OTSession
+          apiKey={'46401302'}
+          sessionId={sessionId}
+          token={token}
+          // apiKey={'46409832'}
+          // sessionId={'2_MX40NjQwOTgzMn5-MTU2Njk3NTkyMjgxM35yK0YwQjhHUnhGS2k1dTM4eUpBbHFHY3p-UH4'}
+          // token={
+          //   'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9NDAzMWJlZDA0NzAxMTIyMWU1NzU2OWI4MmEzYjg3YTI0N2VmZDkyYzpzZXNzaW9uX2lkPTJfTVg0ME5qUXdPVGd6TW41LU1UVTJOamszTlRreU1qZ3hNMzV5SzBZd1FqaEhVbmhHUzJrMWRUTTRlVXBCYkhGSFkzcC1VSDQmY3JlYXRlX3RpbWU9MTU2Njk3NTkzNiZub25jZT0wLjMwNjk1ODQ4MDE0NzM0MTczJnJvbGU9bW9kZXJhdG9yJmV4cGlyZV90aW1lPTE1Njk1Njc5MzUmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
+          // }
+          eventHandlers={sessionEventHandlers}
+          ref={otSessionRef}
+          options={{
+            connectionEventsSuppressed: true, // default is false
+            androidZOrder: 'onTop', // Android only - valid options are 'mediaOverlay' or 'onTop'
+            androidOnTop: 'publisher', // Android only - valid options are 'publisher' or 'subscriber'
+            useTextureViews: true, // Android only - default is false
+            isCamera2Capable: true, // Android only - default is false
+          }}
+        >
+          <OTPublisher
+            style={
+              convertVideo
+                ? publisherStyles
+                : {
+                    position: 'absolute',
+                    top: 44,
+                    right: 20,
+                    width: 1,
+                    height: 1,
+                    zIndex: 1000,
+                  }
+            }
+            properties={{
+              cameraPosition: cameraPosition,
+              publishVideo: convertVideo ? true : false,
+              publishAudio: mute,
+              audioVolume: 100,
+            }}
+            eventHandlers={publisherEventHandlers}
+          />
+          <OTSubscriber
+            style={
+              convertVideo
+                ? subscriberStyles
+                : {
+                    width: 1,
+                    height: 1,
+                  }
+            }
+            eventHandlers={subscriberEventHandlers}
+            subscribeToSelf={true}
+            properties={{
+              subscribeToAudio: true,
+              subscribeToVideo: convertVideo ? true : false,
+              audioVolume: 100,
+            }}
+          />
+        </OTSession>
         {showAudioPipView && (
           <View
             style={{
@@ -1024,44 +1207,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         )}
         <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
-        <OTSession
-          apiKey={'46393582'}
-          sessionId={sessionId}
-          token={token}
-          eventHandlers={sessionEventHandlers}
-          ref={otSessionRef}
-        >
-          <OTPublisher
-            style={{
-              position: 'absolute',
-              top: 44,
-              right: 20,
-              width: 1,
-              height: 1,
-              zIndex: 1000,
-            }}
-            properties={{
-              cameraPosition: cameraPosition,
-              publishVideo: false,
-              publishAudio: mute,
-              audioVolume: 100,
-            }}
-            eventHandlers={publisherEventHandlers}
-          />
-          <OTSubscriber
-            style={{
-              width: 1,
-              height: 1,
-            }}
-            eventHandlers={subscriberEventHandlers}
-            subscribeToSelf={true}
-            properties={{
-              subscribeToAudio: true,
-              subscribeToVideo: false,
-              audioVolume: 100,
-            }}
-          />
-        </OTSession>
         {showAudioPipView && renderAudioCallButtons()}
         {!showAudioPipView && renderAudioFullScreen()}
       </View>
@@ -1082,32 +1227,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       >
         <TouchableOpacity
           onPress={() => {
-            setAudioCallStyles({
-              flex: 1,
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 100,
-            });
-            setAudioCallImageStyles({
-              width,
-              height,
-            });
-            setShowAudioPipView(true);
-            setTimerStyles({
-              position: 'absolute',
-              marginHorizontal: 20,
-              marginTop: isIphoneX() ? 91 : 81,
-              width: width - 40,
-              color: 'white',
-              ...theme.fonts.IBMPlexSansSemiBold(12),
-              textAlign: 'center',
-              letterSpacing: 0.46,
-            });
-            setChatReceived(false);
-            Keyboard.dismiss();
+            changeAudioStyles();
           }}
         >
           <View
@@ -1120,6 +1240,48 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         </TouchableOpacity>
       </View>
     );
+  };
+
+  const changeAudioStyles = () => {
+    setAudioCallStyles({
+      flex: 1,
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 100,
+    });
+    setAudioCallImageStyles({
+      width,
+      height,
+    });
+    setShowAudioPipView(true);
+    setTimerStyles({
+      position: 'absolute',
+      marginHorizontal: 20,
+      marginTop: isIphoneX() ? 91 : 81,
+      width: width - 40,
+      color: 'white',
+      ...theme.fonts.IBMPlexSansSemiBold(12),
+      textAlign: 'center',
+      letterSpacing: 0.46,
+    });
+    setChatReceived(false);
+    setSubscriberStyles({
+      width,
+      height,
+    });
+    setPublisherStyles({
+      position: 'absolute',
+      top: isIphoneX() ? 74 : 44,
+      right: 20,
+      width: 112,
+      height: 148,
+      zIndex: 1000,
+      borderRadius: 30,
+    });
+    Keyboard.dismiss();
   };
 
   const renderAudioCallButtons = () => {
@@ -1148,6 +1310,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <TouchableOpacity
             onPress={() => {
               setChatReceived(false);
+
+              setSubscriberStyles({
+                width: 155,
+                height: 205,
+              });
+
+              setPublisherStyles({
+                position: 'absolute',
+                top: 1,
+                right: 1,
+                width: 1,
+                height: 1,
+                zIndex: 1000,
+              });
 
               setAudioCallStyles({
                 flex: 1,
@@ -1193,9 +1369,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             width: width - 116,
           }}
         >
-          <TouchableOpacity onPress={() => {}}>
+          {/* <TouchableOpacity onPress={() => {}}>
             <SpeakerOn style={{ width: 60, height: 60 }} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity
             onPress={() => {
               mute === true ? setMute(false) : setMute(true);
@@ -1260,42 +1436,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       >
         <TouchableOpacity
           onPress={() => {
-            setTalkStyles({
-              flex: 1,
-              backgroundColor: 'black',
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              zIndex: 100,
-            });
-            setSubscriberStyles({
-              width,
-              height,
-            });
-            setPublisherStyles({
-              position: 'absolute',
-              top: isIphoneX() ? 74 : 44,
-              right: 20,
-              width: 112,
-              height: 148,
-              zIndex: 1000,
-              borderRadius: 30,
-            });
-            setPipView(false);
-            setTimerStyles({
-              position: 'absolute',
-              marginHorizontal: 20,
-              marginTop: isIphoneX() ? 91 : 81,
-              width: width - 40,
-              color: 'white',
-              ...theme.fonts.IBMPlexSansSemiBold(12),
-              textAlign: 'center',
-              letterSpacing: 0.46,
-            });
-            setChatReceived(false);
-            Keyboard.dismiss();
+            changeVideoStyles();
           }}
         >
           <FullScreenIcon style={{ width: 40, height: 40 }} />
@@ -1336,6 +1477,45 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         </TouchableOpacity>
       </View>
     );
+  };
+
+  const changeVideoStyles = () => {
+    setTalkStyles({
+      flex: 1,
+      backgroundColor: 'black',
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      zIndex: 100,
+    });
+    setSubscriberStyles({
+      width,
+      height,
+    });
+    setPublisherStyles({
+      position: 'absolute',
+      top: isIphoneX() ? 74 : 44,
+      right: 20,
+      width: 112,
+      height: 148,
+      zIndex: 1000,
+      borderRadius: 30,
+    });
+    setPipView(false);
+    setTimerStyles({
+      position: 'absolute',
+      marginHorizontal: 20,
+      marginTop: isIphoneX() ? 91 : 81,
+      width: width - 40,
+      color: 'white',
+      ...theme.fonts.IBMPlexSansSemiBold(12),
+      textAlign: 'center',
+      letterSpacing: 0.46,
+    });
+    setChatReceived(false);
+    Keyboard.dismiss();
   };
 
   const renderChatNotificationIcon = () => {
@@ -1391,7 +1571,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               width: width,
               height: 66,
               backgroundColor: 'white',
-              // top: 0,
               bottom: 0,
             });
             setLinestyles({
@@ -1400,12 +1579,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               marginTop: -10,
               height: 2,
               backgroundColor: '#00b38e',
-              // marginLeft: 20,
-              // marginRight: 64,
-              // marginTop: 0,
-              // height: 2,
-              // backgroundColor: '#00b38e',
-              // zIndex: -1,
             });
           }}
         >
@@ -1577,6 +1750,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             Keyboard.dismiss();
             InCallManager.stopRingtone();
             InCallManager.stop();
+            changeAudioStyles();
+            setConvertVideo(false);
+            changeVideoStyles();
 
             if (token) {
               PublishAudioVideo();

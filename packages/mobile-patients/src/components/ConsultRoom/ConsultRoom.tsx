@@ -44,8 +44,6 @@ import { DEVICE_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes'
 
 const { width, height } = Dimensions.get('window');
 
-const { width, height } = Dimensions.get('window');
-
 const styles = StyleSheet.create({
   viewName: {
     backgroundColor: theme.colors.WHITE,
@@ -214,7 +212,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     userName = userName.toLowerCase();
     setuserName(userName);
     currentPatient && setshowSpinner(false);
-    console.log('consult room', currentPatient);
+    // console.log('consult room', currentPatient);
     analytics.setCurrentScreen(AppRoutes.ConsultRoom);
   }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
@@ -241,13 +239,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .messaging()
       .getToken()
       .then((token) => {
+        console.log('token', token);
         if (token !== deviceToken2.deviceToken) {
           const input = {
             deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
             deviceToken: token,
-            deviceOS: DeviceInfo.getBaseOS(),
+            deviceOS: Platform.OS === 'ios' ? '' : DeviceInfo.getBaseOS(),
             patientId: currentPatient ? currentPatient.id : '',
           };
+          console.log('input', input);
 
           if (currentPatient && !deviceTokenApICalled) {
             setDeviceTokenApICalled(true);
@@ -512,6 +512,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 if (i === 0) {
                   props.navigation.replace(AppRoutes.TabBar);
                 } else if (i == 1) {
+                } else if (i == 2) {
+                } else if (i == 3) {
                 }
               }}
             >

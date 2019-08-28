@@ -648,3 +648,11 @@ export const SAVE_DEVICE_TOKEN = gql`
     }
   }
 `;
+
+// export const END_APPOINTMENT_SESSION = gql`
+//   mutation endAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput!) {
+//     endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput) {
+
+//     }
+//   }
+// `;

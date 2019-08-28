@@ -40,7 +40,23 @@
   [RNFirebaseNotifications configure];
   //  [Fabric with:@[[Crashlytics class]]];
   
-  [[UNUserNotificationCenter currentNotificationCenter] setDelegate:self];
+  //  [[UNUserNotificationCenter currentNotificationCenter] setDelegate:self];
+  
+  UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+  center.delegate = self;
+  [center requestAuthorizationWithOptions:(UNAuthorizationOptionSound | UNAuthorizationOptionAlert | UNAuthorizationOptionBadge) completionHandler:^(BOOL granted, NSError * _Nullable error) {
+    if( !error ) {
+      // required to get the app to do anything at all about push notifications
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [[UIApplication sharedApplication] registerForRemoteNotifications];
+      });
+      NSLog( @"Push registration success." );
+    } else {
+      NSLog( @"Push registration FAILED" );
+      NSLog( @"ERROR: %@ - %@", error.localizedFailureReason, error.localizedDescription );
+      NSLog( @"SUGGESTIONS: %@ - %@", error.localizedRecoveryOptions, error.localizedRecoverySuggestion );
+    }
+  }];
   
   return YES;
 }
@@ -58,6 +74,23 @@ fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHand
   [[RNFirebaseMessaging instance] didRegisterUserNotificationSettings:notificationSettings];
 }
 
+- (void)applicationDidBecomeActive:(UIApplication *)application
+{
+  application.applicationIconBadgeNumber = 0;
+}
+
+// Required for the register event.
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
+{
+  NSLog(@"deviceToken %@",deviceToken);
+  NSString *pushToken;
+  pushToken = [deviceToken description];
+  pushToken = [pushToken stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]];
+  pushToken = [pushToken stringByReplacingOccurrencesOfString:@" " withString:@""];
+  
+  [[NSUserDefaults standardUserDefaults]setObject:pushToken forKey:@"deviceToken"];
+  [[NSUserDefaults standardUserDefaults]synchronize];
+}
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {

@@ -7,7 +7,6 @@
 //==============================================================
 
 export enum APPOINTMENT_TYPE {
-  BOTH = 'BOTH',
   ONLINE = 'ONLINE',
   PHYSICAL = 'PHYSICAL',
 }
@@ -36,15 +35,15 @@ export enum Gender {
 }
 
 export enum MEDICINE_TIMINGS {
-  EVENING = "EVENING",
-  MORNING = "MORNING",
-  NIGHT = "NIGHT",
-  NOON = "NOON",
+  EVENING = 'EVENING',
+  MORNING = 'MORNING',
+  NIGHT = 'NIGHT',
+  NOON = 'NOON',
 }
 
 export enum MEDICINE_TO_BE_TAKEN {
-  AFTER_FOOD = "AFTER_FOOD",
-  BEFORE_FOOD = "BEFORE_FOOD",
+  AFTER_FOOD = 'AFTER_FOOD',
+  BEFORE_FOOD = 'BEFORE_FOOD',
 }
 
 export enum Relation {
