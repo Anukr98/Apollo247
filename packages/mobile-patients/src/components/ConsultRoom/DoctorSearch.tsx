@@ -392,7 +392,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               props.navigation.navigate(AppRoutes.DoctorDetails, { doctorId: rowData.typeId });
             }
             if (rowData.searchType === 'SPECIALTY') {
-              props.navigation.navigate('DoctorSearchListing', { speciality: rowData.name });
+              if (rowData.typeId && rowData.name) onClickSearch(rowData.typeId, rowData.name);
+              // props.navigation.navigate('DoctorSearchListing', { speciality: rowData.name });
             }
           }}
         />
@@ -455,7 +456,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           {(mutate, { loading, data, error }) => (
             <TouchableOpacity
               onPress={() => {
-                onClickSearch(rowData);
+                onClickSearch(rowData.id, rowData.name);
                 const searchInput = {
                   type: SEARCH_TYPE.SPECIALTY,
                   typeId: rowData.id,
@@ -497,10 +498,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     else return null;
   };
 
-  const onClickSearch = (speciality: getAllSpecialties_getAllSpecialties) => {
+  const onClickSearch = (id: string, name: string) => {
     props.navigation.navigate('DoctorSearchListing', {
-      specialityId: speciality.id,
-      specialityName: speciality.name,
+      specialityId: id,
+      specialityName: name,
     });
   };
 

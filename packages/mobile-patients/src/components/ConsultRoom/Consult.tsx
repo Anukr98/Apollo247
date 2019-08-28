@@ -66,7 +66,8 @@ const styles = StyleSheet.create({
   },
   buttonStyles: {
     height: 40,
-    width: 160,
+    width: 180,
+    // paddingHorizontal: 26
     marginTop: 16,
   },
   textStyle: {
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    top: 174,
+    top: Platform.OS === 'ios' ? 174 : 184,
     zIndex: 3,
     elevation: 5,
   },
@@ -516,7 +517,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 }!`
               : string.consult_room.description}
           </Text>
-          <View style={{ height: consultations.length > 0 ? 84 : 48 }} />
+          <View
+            style={{
+              height:
+                consultations.length > 0
+                  ? Platform.OS === 'ios'
+                    ? 84
+                    : 94
+                  : Platform.OS === 'ios'
+                  ? 48
+                  : 58,
+            }}
+          />
         </View>
         <View style={styles.cardContainerStyle}>
           {consultations.length > 0 ? (
@@ -548,7 +560,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {showMenu && Popup()}
           {renderTopView()}
-          <View style={{ marginTop: consultations.length > 0 ? 116 : 16 }}>
+          <View
+            style={{
+              marginTop:
+                consultations.length > 0
+                  ? Platform.OS === 'ios'
+                    ? 116
+                    : 126
+                  : Platform.OS === 'ios'
+                  ? 16
+                  : 26,
+            }}
+          >
             {renderThingsToDo()}
             {renderArticles()}
           </View>

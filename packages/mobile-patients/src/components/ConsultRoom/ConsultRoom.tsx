@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   viewName: {
     backgroundColor: theme.colors.WHITE,
     width: '100%',
-    height: 274,
+    height: Platform.OS === 'ios' ? 274 : 284,
   },
   gotItStyles: {
     height: 60,
@@ -77,10 +77,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fcb716',
     height: 40,
-    width: 160,
+    width: 'auto',
     borderRadius: 10,
     marginLeft: 20,
     marginTop: 16,
+    paddingHorizontal: 13,
   },
   needhelpbuttonStyles: {
     backgroundColor: 'white',
@@ -496,12 +497,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             source={require('@aph/mobile-patients/src/images/doctor/doctor.png')}
             style={{
               right: 20,
-              top: 187,
+              top: Platform.OS === 'ios' ? 187 : 197,
               position: 'absolute',
               zIndex: 2,
             }}
           />
-          <View style={{ top: 180, position: 'absolute', zIndex: 3 }}>
+          <View style={{ top: Platform.OS === 'ios' ? 180 : 190, position: 'absolute', zIndex: 3 }}>
             <Button
               title={string.home.consult_doctor}
               style={styles.buttonStyles}
@@ -510,7 +511,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               }}
             />
           </View>
-          <View style={{ width: '100%', height: 436 }}>
+          <View style={{ width: '100%', height: Platform.OS === 'ios' ? 436 : 446 }}>
             <View style={styles.viewName}>
               <View style={{ alignItems: 'flex-end', marginTop: 20, height: 57 }}>
                 <TouchableOpacity onPress={() => props.navigation.replace(AppRoutes.TabBar)}>
@@ -566,7 +567,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       marginHorizontal: 20,
                       backgroundColor: theme.colors.CARD_BG,
                       flexDirection: 'row',
-                      height: 104,
+                      alignItems: 'center',
+                      // height: 104,
                       marginTop: i === 0 ? 0 : 8,
                       marginBottom: arrayTest.length === i + 1 ? 16 : 8,
                     }}
@@ -579,6 +581,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                           lineHeight: 24,
                           textAlign: 'left',
                           ...theme.fonts.IBMPlexSansMedium(14),
+                          paddingRight: 16,
                         }}
                       >
                         {serviceTitle.title}
