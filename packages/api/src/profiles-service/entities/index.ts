@@ -59,6 +59,7 @@ export enum MEDICINE_ORDER_TYPE {
 export enum MEDICINE_ORDER_PAYMENT_TYPE {
   COD = 'COD',
   ONLINE = 'ONLINE',
+  NO_PAYMENT = 'NO_PAYMENT',
 }
 
 export enum DEVICE_TYPE {
@@ -71,6 +72,9 @@ export enum DEVICE_TYPE {
 export class MedicineOrders extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
+
+  @Column('decimal', { precision: 5, scale: 2 })
+  devliveryCharges: number;
 
   @Column()
   deliveryType: MEDICINE_DELIVERY_TYPE;
@@ -87,10 +91,13 @@ export class MedicineOrders extends BaseEntity {
   @Column({ nullable: true, type: 'timestamp' })
   orderDateTime: Date;
 
+  @Column({ nullable: true })
+  patinetAddressId: string;
+
   @Column({ type: 'timestamp' })
   quoteDateTime: Date;
 
-  @Column()
+  @Column({ nullable: true })
   quoteId: string;
 
   @Column({ nullable: true })
@@ -139,6 +146,9 @@ export class MedicineOrderLineItems extends BaseEntity {
   id: string;
 
   @Column()
+  isPrescriptionNeeded: number;
+
+  @Column()
   medicineSKU: string;
 
   @Column()
@@ -146,6 +156,9 @@ export class MedicineOrderLineItems extends BaseEntity {
 
   @Column('decimal', { precision: 5, scale: 2 })
   mrp: number;
+
+  @Column({ nullable: true })
+  prescriptionImage: string;
 
   @Column('decimal', { precision: 5, scale: 2 })
   price: number;
