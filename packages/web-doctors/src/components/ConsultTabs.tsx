@@ -258,13 +258,16 @@ export const ConsultTabs: React.FC = () => {
           UpdateCaseSheetInput: {
             symptoms: JSON.stringify(symptoms),
             notes,
-            diagnosis: JSON.stringify(diagnosis),
-            diagnosticPrescription: JSON.stringify(diagnosticPrescription),
+            diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
+            diagnosticPrescription:
+              diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
             followUp: followUp[0],
-            followUpDate: followUpDate[0],
-            followUpAfterInDays: followUpAfterInDays[0],
-            otherInstructions: JSON.stringify(otherInstructions),
-            //medicinePrescription: JSON.stringify(medicinePrescription),
+            followUpDate: followUp[0] ? followUpDate[0] : null,
+            followUpAfterInDays: followUp[0] ? followUpAfterInDays[0] : null,
+            otherInstructions:
+              otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
+            medicinePrescription:
+              medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
             id: caseSheetId,
           },
         },
@@ -272,12 +275,9 @@ export const ConsultTabs: React.FC = () => {
       })
       .then((_data) => {
         console.log('_data', _data);
-        setError('');
-        alert('Casesheet updated successfully');
         //const result = _data.data!.updateCaseSheet;
       })
       .catch((e) => {
-        setError('Error occured in Updatecasesheet api');
         console.log('Error occured while update casesheet', e);
       });
   };
@@ -343,7 +343,8 @@ export const ConsultTabs: React.FC = () => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      {loaded && (
+      {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
+      {loaded && error === '' && (
         <CaseSheetContext.Provider
           value={{
             loading: !loaded,
