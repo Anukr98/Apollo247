@@ -310,8 +310,12 @@ export const Cart: React.FC = (props) => {
   // const cartItems = localStorage.getItem('cartItems')
   //   ? JSON.parse(localStorage.getItem('cartItems') || '')
   //   : [];
+  // console.log(cartItems);
 
   const disableSubmit = deliveryAddressId === '';
+  const uploadPrescriptionRequired = cartItems.findIndex((v) => v.is_prescription_required === '1');
+
+  console.log(uploadPrescriptionRequired);
 
   return (
     <div className={classes.root}>
@@ -335,24 +339,28 @@ export const Cart: React.FC = (props) => {
             {cartItems.length > 0 ? (
               <>
                 <MedicineStripCard medicines={cartItems} />
-                <div className={classes.sectionHeader}>
-                  <span>Upload Prescription</span>
-                  <span className={classes.count}>
-                    <AphButton
-                      onClick={() => setIsUploadPreDialogOpen(true)}
-                      className={classes.presUploadBtn}
-                    >
-                      Upload
-                    </AphButton>
-                  </span>
-                </div>
-                <div className={classes.uploadPrescription}>
-                  <div className={classes.noPrescriptionUpload}>
-                    Some of your medicines require prescription to make a purchase. Please upload
-                    the necessary prescriptions.
-                  </div>
-                  {/* <EPrescriptionCard /> */}
-                </div>
+                {uploadPrescriptionRequired >= 0 ? (
+                  <>
+                    <div className={classes.sectionHeader}>
+                      <span>Upload Prescription</span>
+                      <span className={classes.count}>
+                        <AphButton
+                          onClick={() => setIsUploadPreDialogOpen(true)}
+                          className={classes.presUploadBtn}
+                        >
+                          Upload
+                        </AphButton>
+                      </span>
+                    </div>
+                    <div className={classes.uploadPrescription}>
+                      <div className={classes.noPrescriptionUpload}>
+                        Some of your medicines require prescription to make a purchase. Please
+                        upload the necessary prescriptions.
+                      </div>
+                      {/* <EPrescriptionCard /> */}
+                    </div>
+                  </>
+                ) : null}
               </>
             ) : null}
 
