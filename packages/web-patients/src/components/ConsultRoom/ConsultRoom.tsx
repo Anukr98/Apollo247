@@ -176,13 +176,14 @@ export const ConsultRoom: React.FC = (props) => {
     // const aptArray = appointmentDetails.appointmentDateTime.split('T');
     // const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
     const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
-    const appointmentStatus = appointmentDetails.status;
+    // const appointmentStatus = appointmentDetails.status;
     if (
       // appointmentTime > currentTime &&
       // appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
       // the above condition is commented as per demo feedback on 13/08/2019
-      appointmentTime > currentTime &&
-      appointmentStatus === STATUS.IN_PROGRESS
+      // appointmentTime > currentTime &&
+      // appointmentStatus === STATUS.IN_PROGRESS
+      appointmentTime > currentTime
     ) {
       if (isToday(appointmentTime)) todaysConsultations++;
 

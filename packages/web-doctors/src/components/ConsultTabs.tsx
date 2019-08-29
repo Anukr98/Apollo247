@@ -146,6 +146,11 @@ export const ConsultTabs: React.FC = () => {
   const [medicinePrescription, setMedicinePrescription] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
+  const [notes, setNotes] = useState<string | null>(null);
+  const [consultType, setConsultType] = useState<string[]>([]);
+  const [followUp, setFollowUp] = useState<boolean[]>([]);
+  const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
+  const [followUpDate, setFollowUpDate] = useState<string[]>([]);
   /* case sheet data*/
 
   useEffect(() => {
@@ -183,6 +188,29 @@ export const ConsultTabs: React.FC = () => {
             ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
                 .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
             : setMedicinePrescription([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.notes
+            ? setNotes((_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string)
+            : setNotes('');
+          _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
+            ? setConsultType(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.consultType,
+              ] as unknown) as string[])
+            : setConsultType([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.followUp
+            ? setFollowUp(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
+              ] as unknown) as boolean[])
+            : setFollowUp([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
+            ? setFollowUpAfterInDays(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
+              ] as unknown) as string[])
+            : setFollowUpAfterInDays([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
+            ? setFollowUpDate(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
+              ] as unknown) as string[])
+            : setFollowUpDate([]);
           if (
             _data.data &&
             _data.data.getCaseSheet &&
@@ -216,7 +244,12 @@ export const ConsultTabs: React.FC = () => {
       JSON.stringify(diagnosis),
       JSON.stringify(otherInstructions),
       JSON.stringify(diagnosticPrescription),
-      JSON.stringify(medicinePrescription)
+      JSON.stringify(medicinePrescription),
+      notes,
+      consultType[0],
+      followUp[0],
+      followUpAfterInDays[0],
+      followUpDate[0]
     );
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
@@ -224,12 +257,12 @@ export const ConsultTabs: React.FC = () => {
         variables: {
           UpdateCaseSheetInput: {
             symptoms: JSON.stringify(symptoms),
-            //notes: value,
+            notes,
             diagnosis: JSON.stringify(diagnosis),
             diagnosticPrescription: JSON.stringify(diagnosticPrescription),
-            //followUp: switchValue,
-            //followUpDate: selectDate,
-            //followUpAfterInDays: sliderValue,
+            followUp: followUp[0],
+            followUpDate: followUpDate[0],
+            followUpAfterInDays: followUpAfterInDays[0],
             otherInstructions: JSON.stringify(otherInstructions),
             //medicinePrescription: JSON.stringify(medicinePrescription),
             id: caseSheetId,
@@ -310,38 +343,45 @@ export const ConsultTabs: React.FC = () => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      {error ? (
-        <Typography className={classes.tabRoot}>{error}</Typography>
-      ) : (
-        loaded && (
-          <CaseSheetContext.Provider
-            value={{
-              loading: !loaded,
-              caseSheetId: appointmentId,
-              patientDetails: casesheetInfo!.getCaseSheet!.patientDetails,
-              symptoms,
-              setSymptoms,
-              notes: casesheetInfo!.getCaseSheet!.caseSheetDetails!.notes,
-              diagnosis,
-              setDiagnosis,
-              otherInstructions,
-              setOtherInstructions,
-              diagnosticPrescription,
-              setDiagnosticPrescription,
-              medicinePrescription,
-              setMedicinePrescription,
-            }}
-          >
-            <div className={classes.container}>
-              <CallPopover
-                setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-                createSessionAction={createSessionAction}
-                saveCasesheetAction={saveCasesheetAction}
-                endConsultAction={endConsultAction}
-                appointmentId={appointmentId}
-                appointmentDateTime={appointmentDateTime}
-                doctorId={doctorId}
-              />
+      {loaded && (
+        <CaseSheetContext.Provider
+          value={{
+            loading: !loaded,
+            caseSheetId: appointmentId,
+            patientDetails: casesheetInfo!.getCaseSheet!.patientDetails,
+            symptoms,
+            setSymptoms,
+            notes,
+            setNotes,
+            diagnosis,
+            setDiagnosis,
+            otherInstructions,
+            setOtherInstructions,
+            diagnosticPrescription,
+            setDiagnosticPrescription,
+            medicinePrescription,
+            setMedicinePrescription,
+            consultType,
+            setConsultType,
+            followUp,
+            setFollowUp,
+            followUpAfterInDays,
+            setFollowUpAfterInDays,
+            followUpDate,
+            setFollowUpDate,
+          }}
+        >
+          <div className={classes.container}>
+            <CallPopover
+              setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+              createSessionAction={createSessionAction}
+              saveCasesheetAction={saveCasesheetAction}
+              endConsultAction={endConsultAction}
+              appointmentId={appointmentId}
+              appointmentDateTime={appointmentDateTime}
+              doctorId={doctorId}
+            />
+            <div>
               <div>
                 <div>
                   <Tabs
@@ -386,8 +426,8 @@ export const ConsultTabs: React.FC = () => {
                 </TabContainer>
               </div>
             </div>
-          </CaseSheetContext.Provider>
-        )
+          </div>
+        </CaseSheetContext.Provider>
       )}
     </div>
   );
