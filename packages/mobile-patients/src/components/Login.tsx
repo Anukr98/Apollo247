@@ -26,6 +26,7 @@ import {
   ReceivedSmsMessage,
 } from '@aph/mobile-patients/src/components/OTPVerification';
 import { RNFirebase } from 'react-native-firebase';
+import firebase from 'react-native-firebase';
 
 const styles = StyleSheet.create({
   container: {
@@ -95,7 +96,28 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
+    fireBaseFCM();
   }, [, analytics]);
+
+  const fireBaseFCM = async () => {
+    const enabled = await firebase.messaging().hasPermission();
+    if (enabled) {
+      // user has permissions
+      console.log('enabled', enabled);
+    } else {
+      // user doesn't have permission
+      console.log('not enabled');
+      try {
+        await firebase.messaging().requestPermission();
+        console.log('authorized');
+
+        // User has authorised
+      } catch (error) {
+        // User has rejected permissions
+        console.log('not enabled error', error);
+      }
+    }
+  };
 
   const requestReadSmsPermission = async () => {
     try {

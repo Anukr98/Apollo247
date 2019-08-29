@@ -32,6 +32,15 @@ import { NavigationScreenProps } from 'react-navigation';
 import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  saveDeviceToken,
+  saveDeviceTokenVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
+import { SAVE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
+import firebase from 'react-native-firebase';
+import DeviceInfo from 'react-native-device-info';
+import { DEVICE_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const { width, height } = Dimensions.get('window');
 
@@ -195,6 +204,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { analytics } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
 
   useEffect(() => {
     let userName =
@@ -202,7 +212,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     userName = userName.toLowerCase();
     setuserName(userName);
     currentPatient && setshowSpinner(false);
-    console.log('consult room', currentPatient);
+    // console.log('consult room', currentPatient);
     analytics.setCurrentScreen(AppRoutes.ConsultRoom);
   }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
@@ -215,6 +225,53 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     fetchData();
   }, []);
+
+  useEffect(() => {
+    callDeviceTokenAPI();
+  });
+
+  const client = useApolloClient();
+
+  const callDeviceTokenAPI = async () => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
+    firebase
+      .messaging()
+      .getToken()
+      .then((token) => {
+        console.log('token', token);
+        if (token !== deviceToken2.deviceToken) {
+          const input = {
+            deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
+            deviceToken: token,
+            deviceOS: Platform.OS === 'ios' ? '' : DeviceInfo.getBaseOS(),
+            patientId: currentPatient ? currentPatient.id : '',
+          };
+          console.log('input', input);
+
+          if (currentPatient && !deviceTokenApICalled) {
+            setDeviceTokenApICalled(true);
+            client
+              .mutate<saveDeviceToken, saveDeviceTokenVariables>({
+                mutation: SAVE_DEVICE_TOKEN,
+                variables: {
+                  SaveDeviceTokenInput: input,
+                },
+              })
+              .then((data: any) => {
+                console.log('APICALLED', data.data.saveDeviceToken.deviceToken);
+                AsyncStorage.setItem(
+                  'deviceToken',
+                  JSON.stringify(data.data.saveDeviceToken.deviceToken)
+                );
+              })
+              .catch((e: string) => {
+                console.log('Error occured while adding Doctor', e);
+              });
+          }
+        }
+      });
+  };
 
   const Popup = () => (
     <TouchableOpacity
@@ -455,6 +512,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 if (i === 0) {
                   props.navigation.replace(AppRoutes.TabBar);
                 } else if (i == 1) {
+                } else if (i == 2) {
+                } else if (i == 3) {
                 }
               }}
             >

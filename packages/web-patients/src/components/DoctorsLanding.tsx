@@ -15,6 +15,7 @@ import { SearchObject } from 'components/DoctorsFilter';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import Scrollbars from 'react-custom-scrollbars';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -211,6 +212,7 @@ const searchObject: SearchObject = {
 export const DoctorsLanding: React.FC = (props) => {
   const classes = useStyles();
   const [filterOptions, setFilterOptions] = useState<SearchObject>(searchObject);
+  const { currentPatient } = useAllCurrentPatients();
 
   const [matchingSpecialities, setMatchingSpecialities] = useState<number>(0);
   const [specialitySelected, setSpecialitySelected] = useState<string>('');
@@ -243,7 +245,10 @@ export const DoctorsLanding: React.FC = (props) => {
   }, [specialitySelected]);
 
   const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME, {
-    variables: { searchText: filterOptions.searchKeyword },
+    variables: {
+      searchText: filterOptions.searchKeyword,
+      patientId: currentPatient ? currentPatient.id : '',
+    },
     fetchPolicy: 'no-cache',
   });
 
