@@ -43,10 +43,19 @@ export const getAppointmentHistoryTypeDefs = gql`
     newPatientsList: [String]
   }
 
+  type PatientLog {
+    patientid: ID
+    consultscount: String
+    appointmentids: [String]
+    appointmenttimings: [DateTime]
+    patientInfo: Patient @provides(fields: "id")
+  }
+
   extend type Query {
     getAppointmentHistory(appointmentHistoryInput: AppointmentHistoryInput): AppointmentResult!
     getDoctorAppointments(startDate: Date, endDate: Date): DoctorAppointmentResult
     getAppointmentData(appointmentId: String): DoctorAppointmentResult
+    getPatientLog: [PatientLog]
   }
 `;
 
@@ -136,6 +145,28 @@ const getAppointmentData: Resolver<
   return { appointmentsHistory };
 };
 
+type PatientLog = {
+  patientid: string;
+  consultscount: string;
+  appointmentids: string[];
+  appointmenttimings: Date[];
+};
+
+const getPatientLog: Resolver<null, {}, ConsultServiceContext, PatientLog[] | null> = async (
+  parent,
+  args,
+  { consultsDb, doctorsDb, mobileNumber }
+) => {
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentsHistory = await appointmentRepo.getAppointmentsGroupByPatient(doctordata.id);
+
+  return appointmentsHistory;
+};
+
 export const getAppointmentHistoryResolvers = {
   AppointmentHistory: {
     doctorInfo(appointments: AppointmentHistory) {
@@ -147,9 +178,16 @@ export const getAppointmentHistoryResolvers = {
     },
   },
 
+  PatientLog: {
+    patientInfo(appointments: PatientLog) {
+      return { __typename: 'Patient', id: appointments.patientid };
+    },
+  },
+
   Query: {
     getAppointmentHistory,
     getDoctorAppointments,
     getAppointmentData,
+    getPatientLog,
   },
 };

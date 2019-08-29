@@ -85,8 +85,12 @@ fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHand
   NSLog(@"deviceToken %@",deviceToken);
   NSString *pushToken;
   pushToken = [deviceToken description];
-  pushToken = [pushToken stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]];
-  pushToken = [pushToken stringByReplacingOccurrencesOfString:@" " withString:@""];
+  if(deviceToken){
+    pushToken = [pushToken stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]];
+    pushToken = [pushToken stringByReplacingOccurrencesOfString:@" " withString:@""];
+  } else {
+    pushToken= @"";
+  }
   
   [[NSUserDefaults standardUserDefaults]setObject:pushToken forKey:@"deviceToken"];
   [[NSUserDefaults standardUserDefaults]synchronize];

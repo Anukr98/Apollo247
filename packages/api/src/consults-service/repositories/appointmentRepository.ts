@@ -248,4 +248,20 @@ export class AppointmentRepository extends Repository<Appointment> {
   confirmAppointment(id: string, status: STATUS, apolloAppointmentId: number) {
     this.update(id, { status, apolloAppointmentId });
   }
+
+  getAppointmentsGroupByPatient(doctorId: string) {
+    // select "patientId",count(*),ARRAY_AGG("appointmentDateTime" ORDER BY "appointmentDateTime" desc) as consultDates,ARRAY_AGG("id" ORDER BY "appointmentDateTime" desc) as appointmentIDs from appointment  group by "patientId"
+
+    const results = this.createQueryBuilder('appointment')
+      .select('appointment.patientId as patientId')
+      .addSelect('COUNT(*) AS consultsCount')
+      .addSelect(
+        'ARRAY_AGG("appointmentDateTime" ORDER BY "appointmentDateTime" desc) as appointmentTimings'
+      )
+      .addSelect('ARRAY_AGG("id" ORDER BY "appointmentDateTime" desc) as appointmentIDs')
+      .where('appointment.doctorId = :doctorId', { doctorId: doctorId })
+      .groupBy('appointment.patientId')
+      .getRawMany();
+    return results;
+  }
 }

@@ -46,6 +46,7 @@ const getDoctorAvailableSlots: Resolver<
     const ed = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlots[0].endTime.toString()}`;
     let consultStartTime = new Date(st);
     const consultEndTime = new Date(ed);
+    console.log(consultStartTime, consultEndTime);
     let previousDate: Date = DoctorAvailabilityInput.availableDate;
     if (consultEndTime < consultStartTime) {
       previousDate = addDays(DoctorAvailabilityInput.availableDate, -1);
