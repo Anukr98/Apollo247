@@ -584,3 +584,11 @@ export const Minus: React.FC<IconProps> = (props) => (
 export const Plus: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_plus.png')} />
 );
+
+export const OneApollo: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 76, height: 59 }}
+    {...props}
+    source={require('./icons/img_apolloone.png')}
+  />
+);
