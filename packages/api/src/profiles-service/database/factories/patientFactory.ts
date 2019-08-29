@@ -11,11 +11,11 @@ export const buildPatient = (attrs: Partial<Patient> = {}) => {
   patient.relation = Relation.ME;
   // patient.relation = randomEnum(Relation); // for full range of Relations
   patient.gender = randomEnum(Gender);
-  patient.mobileNumber = faker.phone.phoneNumber('+91##########');
   patient.firebaseUid = faker.random.alphaNumeric(7);
-  patient.uhid = 'uhid-'.concat(String(faker.random.number(9999)).padStart(4, '0')); //to ensure numerical portion is 4 digits
   patient.dateOfBirth = faker.date.past(80);
   patient.emailAddress = faker.internet.email();
+  patient.uhid = 'uhid-'.concat(String(faker.random.number(9999)).padStart(4, '0')); //to ensure numerical portion is 4 digits
+  patient.mobileNumber = faker.phone.phoneNumber('+91##########');
 
   return Object.assign(patient, attrs);
 };
@@ -25,9 +25,6 @@ export const buildPatientAddress = (attrs: Partial<PatientAddress> = {}) => {
   patientAddress.addressLine1 = faker.address.streetAddress();
   patientAddress.addressLine2 = faker.address.city();
   patientAddress.zipcode = faker.address.zipCode();
-
-  // id: string;  //reuse data
-  // mobileNumber: string | null;
 
   return Object.assign(patientAddress, attrs);
 };
