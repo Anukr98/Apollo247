@@ -28,6 +28,7 @@ import {
 } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import Permissions from 'react-native-permissions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -154,6 +155,29 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
+  const locationPermission = () => {
+    console.log('123456789');
+    Permissions.checkMultiple([
+      'camera',
+      'photo',
+      'location',
+      'microphone',
+      'readSms',
+      'receiveSms',
+    ])
+      .then((response) => {
+        console.log(response, 'permission response');
+        //response is an object mapping type to permission
+        // this.setState({
+        //   cameraPermission: response.camera,
+        //   photoPermission: response.photo,
+        // });
+      })
+      .catch((error) => {
+        console.log(error, 'error permission');
+      });
+  };
+
   useEffect(() => {
     let userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
@@ -170,6 +194,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
     }
     fetchData();
+    // locationPermission();
   }, []);
 
   const inputData = {

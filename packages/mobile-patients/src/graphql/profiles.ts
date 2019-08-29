@@ -656,3 +656,20 @@ export const SAVE_DEVICE_TOKEN = gql`
 //     }
 //   }
 // `;
+
+export const GET_NOTIFICATION_SETTINGS = gql`
+  query getPatientNotificationSettings($patient: ID!) {
+    getPatientNotificationSettings(patient: $patient) {
+      PatientNotificationSettings {
+        id
+        patient
+        commissionNotification
+        messageFromDoctorNotification
+        playNotificationSound
+        reScheduleAndCancellationNotification
+        paymentNotification
+        upcomingAppointmentReminders
+      }
+    }
+  }
+`;
