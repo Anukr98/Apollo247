@@ -32,6 +32,9 @@ docker-compose -f docker-compose-$1.yml run --no-deps --rm doctors-service npm r
 echo -e "\nbuilding consults-service..."
 docker-compose -f docker-compose-$1.yml run --no-deps --rm consults-service npm run start:consults-service || exit 2
 
+echo -e "\nbuilding notifications-service..."
+docker-compose -f docker-compose-$1.yml run --no-deps --rm notifications-service npm run start:notifications-service || exit 2
+
 echo -e "\nbuilding web-patients..."
 cd packages/web-patients
 npm run build || exit 2
