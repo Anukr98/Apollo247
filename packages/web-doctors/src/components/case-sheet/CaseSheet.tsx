@@ -26,6 +26,7 @@ import {
 import { UserCard } from 'components/case-sheet/UserCard';
 //import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -149,6 +150,7 @@ export const CaseSheet: React.FC = () => {
     e: React.ChangeEvent<{}>,
     isExpanded: boolean
   ) => setExpanded(isExpanded ? panelName : false);
+  const { setNotes } = useContext(CaseSheetContext);
 
   return (
     <div className={classes.container}>
@@ -294,6 +296,13 @@ export const CaseSheet: React.FC = () => {
             fullWidth
             className={classes.textFieldColor}
             placeholder="What you enter here won’t be shown to the patient.."
+            onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                setNotes((e.target as HTMLInputElement).value.trim());
+
+                e.preventDefault();
+              }
+            }}
           />
         </Typography>
       </Box>
