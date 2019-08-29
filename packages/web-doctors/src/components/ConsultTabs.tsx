@@ -124,6 +124,7 @@ export const ConsultTabs: React.FC = () => {
   const params = useParams<Params>();
   const paramId = params.id;
   const [loaded, setLoaded] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
@@ -166,7 +167,7 @@ export const ConsultTabs: React.FC = () => {
         })
         .then((_data) => {
           setCasesheetInfo(_data.data);
-
+          setError('');
           _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
             ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
                 .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
@@ -224,6 +225,7 @@ export const ConsultTabs: React.FC = () => {
           }
         })
         .catch((e: any) => {
+          setError('Error occured in getcasesheet api');
           console.log('Error occured creating session', e);
         })
         .finally(() => {
@@ -256,13 +258,16 @@ export const ConsultTabs: React.FC = () => {
           UpdateCaseSheetInput: {
             symptoms: JSON.stringify(symptoms),
             notes,
-            diagnosis: JSON.stringify(diagnosis),
-            diagnosticPrescription: JSON.stringify(diagnosticPrescription),
+            diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
+            diagnosticPrescription:
+              diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
             followUp: followUp[0],
-            followUpDate: followUpDate[0],
-            followUpAfterInDays: followUpAfterInDays[0],
-            otherInstructions: JSON.stringify(otherInstructions),
-            //medicinePrescription: JSON.stringify(medicinePrescription),
+            followUpDate: followUp[0] ? followUpDate[0] : null,
+            followUpAfterInDays: followUp[0] ? followUpAfterInDays[0] : null,
+            otherInstructions:
+              otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
+            medicinePrescription:
+              medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
             id: caseSheetId,
           },
         },
@@ -318,8 +323,10 @@ export const ConsultTabs: React.FC = () => {
         settoken(_data.data.createAppointmentSession.appointmentToken);
         setappointmentDateTime(_data.data.createAppointmentSession.appointmentDateTime);
         setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
+        setError('');
       })
       .catch((e: any) => {
+        setError('Error occured creating session');
         console.log('Error occured creating session', e);
       });
   };
@@ -336,7 +343,8 @@ export const ConsultTabs: React.FC = () => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      {loaded && (
+      {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
+      {loaded && error === '' && (
         <CaseSheetContext.Provider
           value={{
             loading: !loaded,
@@ -376,50 +384,48 @@ export const ConsultTabs: React.FC = () => {
             />
             <div>
               <div>
-                <Tabs
-                  value={tabValue}
-                  variant="fullWidth"
-                  classes={{
-                    root: classes.tabsRoot,
-                    indicator: classes.tabsIndicator,
-                  }}
-                  onChange={(e, newValue) => {
-                    setTabValue(newValue);
-                  }}
-                >
-                  <Tab
-                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                    label="Case Sheet"
-                  />
-                  <Tab
-                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                    label="Chat"
-                  />
-                </Tabs>
-              </div>
-              {/* {tabValue === 0 && ( */}
-              <TabContainer>
-                <div className={tabValue !== 0 ? classes.none : classes.block}>
-                  {casesheetInfo ? <CaseSheet /> : ''}
-                </div>
-              </TabContainer>
-              {/* )} */}
-              {/* {tabValue === 1 && ( */}
-              <TabContainer>
-                <div className={tabValue !== 1 ? classes.none : classes.block}>
-                  <div className={classes.chatContainer}>
-                    <ConsultRoom
-                      startConsult={startConsult}
-                      sessionId={sessionId}
-                      token={token}
-                      appointmentId={paramId}
-                      doctorId={doctorId}
-                      patientId={patientId}
+                <div>
+                  <Tabs
+                    value={tabValue}
+                    variant="fullWidth"
+                    classes={{
+                      root: classes.tabsRoot,
+                      indicator: classes.tabsIndicator,
+                    }}
+                    onChange={(e, newValue) => {
+                      setTabValue(newValue);
+                    }}
+                  >
+                    <Tab
+                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                      label="Case Sheet"
                     />
-                  </div>
+                    <Tab
+                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                      label="Chat"
+                    />
+                  </Tabs>
                 </div>
-              </TabContainer>
-              {/* )} */}
+                <TabContainer>
+                  <div className={tabValue !== 0 ? classes.none : classes.block}>
+                    {casesheetInfo ? <CaseSheet /> : ''}
+                  </div>
+                </TabContainer>
+                <TabContainer>
+                  <div className={tabValue !== 1 ? classes.none : classes.block}>
+                    <div className={classes.chatContainer}>
+                      <ConsultRoom
+                        startConsult={startConsult}
+                        sessionId={sessionId}
+                        token={token}
+                        appointmentId={paramId}
+                        doctorId={doctorId}
+                        patientId={patientId}
+                      />
+                    </div>
+                  </div>
+                </TabContainer>
+              </div>
             </div>
           </div>
         </CaseSheetContext.Provider>

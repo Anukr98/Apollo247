@@ -526,7 +526,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     return function cleanup() {
       pubnub.unsubscribe({ channels: [channel] });
     };
-  });
+  }, []);
 
   const onStartConsult = () => {
     const text = {
