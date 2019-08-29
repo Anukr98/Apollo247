@@ -4,20 +4,22 @@ import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCar
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   addProductToCartApi,
+  CartInfoResponse,
+  getCartInfo,
+  incOrDecProductCountToCartApi,
   MedicineProduct,
   removeProductFromCartApi,
   searchMedicineApi,
-  incOrDecProductCountToCartApi,
-  getCartInfo,
   setLocalCartInfo,
-  CartInfoResponse,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AxiosResponse } from 'axios';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Mutation } from 'react-apollo';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
   Alert,
@@ -32,6 +34,14 @@ import {
   ViewStyle,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import { GET_PATIENT_PAST_MEDICINE_SEARCHES, SAVE_SEARCH } from '../../graphql/profiles';
+import {
+  getPatientPastMedicineSearches,
+  getPatientPastMedicineSearchesVariables,
+  getPatientPastMedicineSearches_getPatientPastMedicineSearches,
+} from '../../graphql/types/getPatientPastMedicineSearches';
+import { SEARCH_TYPE } from '../../graphql/types/globalTypes';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
@@ -124,11 +134,17 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     [sku: string]: MedicineCardState;
   }>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [pastSearches, setPastSearches] = useState<
+    (getPatientPastMedicineSearches_getPatientPastMedicineSearches | null)[]
+  >([]);
+
+  const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
 
   useEffect(() => {
     getCartInfo()
       .then((cartInfo) => {
-        let cartStatus = {} as { [sku: string]: MedicineCardState };
+        let cartStatus = {} as typeof medicineCardStatus;
         cartInfo &&
           cartInfo.items.forEach((item) => {
             cartStatus[item.sku] = { isAddedToCart: true, isCardExpanded: true, unit: item.qty };
@@ -139,6 +155,23 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         });
       })
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    client
+      .query<getPatientPastMedicineSearches, getPatientPastMedicineSearchesVariables>({
+        query: GET_PATIENT_PAST_MEDICINE_SEARCHES,
+        variables: {
+          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+      })
+      .then(({ data: { getPatientPastMedicineSearches } }) => {
+        console.log({ getPatientPastMedicineSearches });
+        setPastSearches(getPatientPastMedicineSearches || []);
+      })
+      .catch((error) => {
+        console.log('Error occured', { error });
+      });
   }, []);
 
   const showGenericALert = (e: { response: AxiosResponse }) => {
@@ -156,24 +189,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     setIsLoading(true);
     searchMedicineApi(searchText)
       .then(async ({ data }) => {
-        // let cartInfo: CartInfoResponse | null = null;
-        // try {
-        //   cartInfo = await getCartInfo();
-        // } catch (error) {
-        //   console.log(error);
-        // }
-
         const products = data.products || [];
-        // products.forEach((medicine) => {
-        // const cartItem =
-        //   cartInfo && cartInfo.items.find((cartItem) => cartItem.sku == medicine.sku);
-        // if (cartItem) {
-        //   setMedicineCardStatus({
-        //     ...medicineCardStatus,
-        //     [medicine.sku]: { isAddedToCart: true, isCardExpanded: true, unit: cartItem.qty },
-        //   });
-        // }
-        // });
         setMedicineList(products);
         setIsLoading(false);
       })
@@ -187,17 +203,13 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     addProductToCartApi(medicine.sku)
       .then(async ({ data }) => {
         let cartInfo: CartInfoResponse | null = null;
-        // let cartItemId = 0;
         try {
           cartInfo = await getCartInfo();
           console.log({ cartInfo });
-          // const cartItem = cartInfo.items.find((cartItem) => cartItem.sku == medicine.sku);
-          // cartItemId = (cartItem && cartItem.item_id) || 0;
         } catch (error) {
           console.log(error);
         }
         // add to local cart
-        console.log('cartInfo before', { cartInfo });
         const cartItemIndex = cartInfo!.items.findIndex((cartItem) => cartItem.sku == medicine.sku);
         if (cartItemIndex == -1) {
           setLocalCartInfo({ ...cartInfo!, items: [...cartInfo!.items, data] });
@@ -205,14 +217,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           const items = cartInfo!.items.map((m, i) => {
             return i == cartItemIndex ? { ...m, ...{ qty: data.qty } } : m;
           });
-
           const updatedCart = { ...cartInfo!, items: [...items] };
-          console.log({ updatedCart });
           setLocalCartInfo(updatedCart);
         }
-
-        // console.log('cartItems', { cartItems });
-        // setLocalCartInfo({ ...cartInfo!, items: [...cartInfo!.items, ...cartItems] });
 
         setMedicineCardStatus({
           ...medicineCardStatus,
@@ -259,7 +266,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   };
 
   const onChangeUnitFromCart = async (medicine: MedicineProduct, unit: number) => {
-    console.log({ id: medicine.id });
+    if (unit < 1) {
+      return;
+    }
     let cartItemId = 0;
     let cartInfo: CartInfoResponse | null = null;
     try {
@@ -276,7 +285,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
     incOrDecProductCountToCartApi(medicine.sku, cartItemId, unit)
       .then(({ data }) => {
-        console.log('onChangeUnitFromCart', data);
         setMedicineCardStatus({
           ...medicineCardStatus,
           [medicine.sku]: { ...medicineCardStatus[medicine.sku], unit: data.qty },
@@ -389,19 +397,21 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   };
 
   const renderPastSearchItem = (
-    id: string,
-    pastSearch: string,
+    pastSeacrh: getPatientPastMedicineSearches_getPatientPastMedicineSearches,
     containerStyle: StyleProp<ViewStyle>
   ) => {
     return (
       <TouchableOpacity
-        key={id}
+        key={pastSeacrh.typeId!}
         style={[styles.pastSearchItemStyle, containerStyle]}
         onPress={() => {
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, { medicineId: id });
+          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+            sku: pastSeacrh.typeId,
+            title: pastSeacrh.name,
+          });
         }}
       >
-        <Text style={styles.pastSearchTextStyle}>{pastSearch}</Text>
+        <Text style={styles.pastSearchTextStyle}>{pastSeacrh.name}</Text>
       </TouchableOpacity>
     );
   };
@@ -411,12 +421,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       <>
         <SectionHeaderComponent sectionTitle={'Past Searches'} style={{ marginBottom: 0 }} />
         <View style={styles.pastSearchContainerStyle}>
-          {string.medicine.pastMedicineSearches.map((pastSearch, i, array) =>
-            renderPastSearchItem(
-              pastSearch.id,
-              pastSearch.name,
-              i == array.length - 1 ? { marginRight: 0 } : {}
-            )
+          {pastSearches.map((pastSearch, i, array) =>
+            renderPastSearchItem(pastSearch!, i == array.length - 1 ? { marginRight: 0 } : {})
           )}
         </View>
         <NeedHelpAssistant containerStyle={{ marginTop: 84 }} />
@@ -435,45 +441,63 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       index == array.length - 1 ? { marginBottom: 20 } : {},
     ];
     return (
-      <MedicineCard
-        containerStyle={medicineCardContainerStyle}
-        onPress={() => {
-          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-            sku: medicine.sku,
-            title: medicine.name,
-          });
-        }}
-        medicineName={medicine.name}
-        price={medicine.price}
-        unit={(medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].unit) || 1}
-        onPressAdd={() => {
-          onPressAddToCart(medicine);
-        }}
-        onPressRemove={() => {
-          onPressRemoveFromCart(medicine);
-        }}
-        onChangeUnit={(unit) => {
-          console.log('onChangeUnitFromCart', { id: medicine.id, unit, sku: medicine.sku });
-          onChangeUnitFromCart(medicine, unit);
-        }}
-        isCardExpanded={
-          medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].isCardExpanded
-        }
-        isInStock={medicine.status == 1}
-        isPrescriptionRequired={medicine.is_prescription_required == '1'}
-        subscriptionStatus={
-          // (medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].subscriptionStatus) ||
-          'unsubscribed'
-        }
-        onChangeSubscription={(status) => {
-          setMedicineCardStatus({
-            ...medicineCardStatus,
-            // [medicine.sku]: { ...medicineCardStatus[medicine.sku], subscriptionStatus: status },
-          });
-        }}
-        onEditPress={() => {}}
-        onAddSubscriptionPress={() => {}}
-      />
+      <Mutation<saveSearch, saveSearchVariables> mutation={SAVE_SEARCH}>
+        {(mutate, { loading, data, error }) => (
+          <MedicineCard
+            containerStyle={medicineCardContainerStyle}
+            onPress={() => {
+              console.log('currentPatient', currentPatient && currentPatient.id);
+              mutate({
+                variables: {
+                  saveSearchInput: {
+                    type: SEARCH_TYPE.MEDICINE,
+                    typeId: medicine.sku,
+                    typeName: medicine.name,
+                    patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+                  },
+                },
+              });
+              props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+                sku: medicine.sku,
+                title: medicine.name,
+              });
+            }}
+            medicineName={medicine.name}
+            price={medicine.price}
+            unit={(medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].unit) || 1}
+            onPressAdd={() => {
+              onPressAddToCart(medicine);
+            }}
+            onPressRemove={() => {
+              onPressRemoveFromCart(medicine);
+            }}
+            onChangeUnit={(unit) => {
+              console.log('onChangeUnitFromCart', { id: medicine.id, unit, sku: medicine.sku });
+              onChangeUnitFromCart(medicine, unit);
+            }}
+            isCardExpanded={
+              medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].isCardExpanded
+            }
+            isInStock={medicine.status == 1}
+            isPrescriptionRequired={medicine.is_prescription_required == '1'}
+            subscriptionStatus={
+              // (medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].subscriptionStatus) ||
+              'unsubscribed'
+            }
+            onChangeSubscription={(status) => {
+              setMedicineCardStatus({
+                ...medicineCardStatus,
+                // [medicine.sku]: { ...medicineCardStatus[medicine.sku], subscriptionStatus: status },
+              });
+            }}
+            onEditPress={() => {}}
+            onAddSubscriptionPress={() => {}}
+          >
+            {data ? console.log(data, 'savesearch data') : null}
+            {error ? console.log(error, 'savesearch error') : null}
+          </MedicineCard>
+        )}
+      </Mutation>
     );
   };
 
