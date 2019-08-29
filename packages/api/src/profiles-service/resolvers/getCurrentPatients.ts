@@ -44,6 +44,7 @@ export const getCurrentPatientsTypeDefs = gql`
     emailAddress: String
     dateOfBirth: Date
     relation: Relation
+    photoUrl: String
   }
 
   type GetCurrentPatientsResult {
@@ -142,7 +143,6 @@ export const getCurrentPatientsResolvers = {
     async __resolveReference(object: Patient) {
       const connection = getConnection();
       const patientsRepo = connection.getRepository(Patient);
-
       const patientDetails = await patientsRepo.findOne({ where: { id: object.id } });
       return patientDetails;
     },
