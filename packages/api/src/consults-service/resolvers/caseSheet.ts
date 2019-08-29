@@ -313,7 +313,10 @@ const updateCaseSheet: Resolver<
   const inputArguments = JSON.parse(JSON.stringify(UpdateCaseSheetInput));
 
   //validate date
-  if (inputArguments.followUpDate != null && isNaN(new Date(inputArguments.followUpDate).valueOf()))
+  if (
+    inputArguments.followUpDate.length > 0 &&
+    isNaN(new Date(inputArguments.followUpDate).valueOf())
+  )
     throw new AphError(AphErrorMessages.INVALID_DATE_FORMAT);
 
   const followUpAfterInDays =

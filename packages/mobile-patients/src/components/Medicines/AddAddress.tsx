@@ -1,17 +1,16 @@
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { SAVE_PATIENT_ADDRESS } from '@aph/mobile-patients/src/graphql/profiles';
-import { savePatientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
-import { Mutation } from 'react-apollo';
-import { SafeAreaView, StyleSheet, View, Text, Dimensions } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { GraphQLError } from 'graphql';
+import React, { useContext, useEffect, useState } from 'react';
+import { Alert, Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import { NavigationScreenProps } from 'react-navigation';
+import { AuthContext } from '../AuthProvider';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -56,6 +55,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [landMark, setlandMark] = useState<string>('');
   const [state, setstate] = useState<string>('');
 
+  const addAddress = useContext(AuthContext).addAddress;
+
   const [showPopup, setShowPopup] = useState<boolean>(false);
 
   useEffect(() => {
@@ -99,11 +100,11 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             <DropdownGreen size="sm" />
           </View>
         </TouchableOpacity>
-        {/* <TextInputComponent value={userName} placeholder={'User Name'} /> */}
         <TextInputComponent
           value={phoneNumber}
           onChangeText={(phoneNumber) => setphoneNumber(phoneNumber)}
           placeholder={'Phone Number'}
+          maxLength={10}
         />
         <TextInputComponent
           value={addressLine1}
@@ -184,41 +185,39 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     </TouchableOpacity>
   );
 
+  const onSavePress = () => {
+    const addressInput = {
+      patientId: userId,
+      addressLine1: addressLine1,
+      addressLine2: '',
+      city: city,
+      state: state,
+      zipcode: pincode,
+      landmark: landMark,
+      mobileNumber: phoneNumber,
+    };
+    addAddress &&
+      addAddress(addressInput)
+        .then(() => {
+          props.navigation.goBack();
+        })
+        .catch((e: ReadonlyArray<GraphQLError>) => {
+          Alert.alert('Error', e[0].message);
+        });
+  };
+
   return (
     <View style={{ flex: 1 }}>
-      <SafeAreaView style={{ ...theme.viewStyles.container }}>
+      <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         {renderAddress()}
         <StickyBottomComponent defaultBG>
-          <Mutation<savePatientAddress> mutation={SAVE_PATIENT_ADDRESS}>
-            {(mutate, { loading, data, error }) => (
-              <Button
-                title={'SAVE & USE'}
-                style={{ flex: 1, marginHorizontal: 40 }}
-                onPress={() => {
-                  const addressInput = {
-                    patientId: userId,
-                    addressLine1: addressLine1,
-                    addressLine2: '',
-                    city: city,
-                    state: state,
-                    zipcode: pincode,
-                    landmark: landMark,
-                  };
-                  console.log(addressInput, 'addressInput');
-                  mutate({
-                    variables: {
-                      PatientAddressInput: addressInput,
-                    },
-                  });
-                }}
-                disabled={addressLine1.length === 0 && pincode.length !== 6}
-              >
-                {data ? props.navigation.goBack() : null}
-                {error ? console.log('bookAppointment error', error) : null}
-              </Button>
-            )}
-          </Mutation>
+          <Button
+            title={'SAVE & USE'}
+            style={{ flex: 1, marginHorizontal: 40 }}
+            onPress={onSavePress}
+            disabled={addressLine1.length === 0 && pincode.length !== 6}
+          ></Button>
         </StickyBottomComponent>
         {showPopup && Popup()}
       </SafeAreaView>

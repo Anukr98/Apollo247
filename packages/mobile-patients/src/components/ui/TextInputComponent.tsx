@@ -80,6 +80,7 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
           underlineColorAndroid={'transparent'}
           autoCorrect={props.autoCorrect}
           selectionColor={theme.colors.INPUT_CURSOR_COLOR}
+          maxLength={props.maxLength}
           {...props.textInputprops}
         />
       )}

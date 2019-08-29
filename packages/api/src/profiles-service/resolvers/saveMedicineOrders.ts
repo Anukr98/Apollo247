@@ -60,7 +60,7 @@ export const saveMedicineOrderTypeDefs = gql`
     quantity: Int
     mrp: Float
     isPrescriptionNeeded: Int
-    prescriptionImage: String
+    prescriptionImageUrl: String
   }
 
   input MedicinePaymentDetails {
@@ -102,7 +102,7 @@ type MedicineCartItem = {
   quantity: number;
   mrp: number;
   isPrescriptionNeeded: number;
-  prescriptionImage: string;
+  prescriptionImageUrl: string;
 };
 
 type MedicinePaymentDetails = {
