@@ -8,7 +8,6 @@ import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-u
 import { OrderStatusCard } from 'components/Orders/OrderStatusCard';
 import { CancelOrder } from 'components/Orders/CancelOrder';
 import { ReturnOrder } from 'components/Orders/ReturnOrder';
-import { BankDetails } from 'components/Orders/BankDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -346,11 +345,6 @@ export const TrackOrders: React.FC = (props) => {
         <AphDialogClose onClick={() => setIsReturnOrderDialogOpen(false)} />
         <AphDialogTitle>Return Order</AphDialogTitle>
         <ReturnOrder />
-      </AphDialog>
-      <AphDialog open={isReturnOrderDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsReturnOrderDialogOpen(false)} />
-        <AphDialogTitle>Bank Details</AphDialogTitle>
-        <BankDetails />
       </AphDialog>
     </div>
   );

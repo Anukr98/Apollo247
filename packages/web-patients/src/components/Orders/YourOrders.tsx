@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, Popover } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { OrderCard } from 'components/Orders/OrderCard';
+import { OrdersMessage } from 'components/Orders/OrdersMessage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -116,12 +117,45 @@ const useStyles = makeStyles((theme: Theme) => {
     orderListing: {
       paddingTop: 10,
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
   };
 });
 
 export const YourOrders: React.FC = (props) => {
   const classes = useStyles();
   const currentPath = window.location.pathname;
+  const mascotRef = useRef(null);
+  const [isPopoverOpen] = React.useState<boolean>(true);
 
   return (
     <div className={classes.root}>
@@ -195,6 +229,28 @@ export const YourOrders: React.FC = (props) => {
         <div className={classes.sectionHeader}>Your Orders</div>
         <OrderCard />
       </div>
+      <Popover
+        open={isPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <OrdersMessage />
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };
