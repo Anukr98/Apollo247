@@ -38,7 +38,7 @@ services:
 
   storage:
     image: mcr.microsoft.com/azure-storage/azurite:latest
-    command: azurite -l ./ -d ./debug.log
+    command: azurite -l ./ -d ./debug.log --blobHost 0.0.0.0
     ports:
       - ${AZURE_STORAGE_EMULATOR_PORT}:${AZURE_STORAGE_EMULATOR_PORT}
 
