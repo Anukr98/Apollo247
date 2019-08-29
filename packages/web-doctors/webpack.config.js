@@ -116,6 +116,12 @@ module.exports = {
         watchOptions: {
           ignored: [/node_modules([\\]+|\/)+(?!@aph)/],
         },
+        proxy: {
+          '/azureStorageEmulatorProxy': {
+            target: `http://localhost:${process.env.AZURE_STORAGE_EMULATOR_PORT}`,
+            pathRewrite: { '^/azureStorageEmulatorProxy': '' },
+          },
+        },
       }
     : undefined,
 
