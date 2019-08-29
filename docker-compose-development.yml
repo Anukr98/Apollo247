@@ -39,8 +39,6 @@ services:
   storage:
     image: mcr.microsoft.com/azure-storage/azurite:latest
     command: azurite -l ./ -d ./debug.log
-    volumes:
-      - ./storage:/opt/azurite
     ports:
       - ${AZURE_STORAGE_EMULATOR_PORT}:${AZURE_STORAGE_EMULATOR_PORT}
 
