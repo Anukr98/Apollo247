@@ -45,7 +45,6 @@ export interface CollapseCardProps {
 }
 
 export const CollapseCard: React.FC<CollapseCardProps> = (props) => {
-  console.log(props, 'props');
   return (
     <View style={[styles.container, props.containerStyle]}>
       <View style={styles.labelView}>
