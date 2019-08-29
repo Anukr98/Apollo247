@@ -37,8 +37,6 @@ const parseConnectionString = (connString: string) => {
 
 const getServiceUrl = (connString: string) => {
   const parsedConn = parseConnectionString(connString);
-  console.log(connString);
-  console.log(parsedConn);
   const blobEndpoint = parsedConn.BlobEndpoint;
 
   const isSharedKeyAuth = !!parsedConn.AccountName && !!parsedConn.AccountKey;
@@ -60,8 +58,6 @@ const getServiceUrl = (connString: string) => {
       `${blobEndpoint}?${parsedConn.SharedAccessSignature}`,
       pipeline
     );
-    console.log(`${blobEndpoint}?${parsedConn.SharedAccessSignature}`);
-    console.log(serviceUrl.url);
     return serviceUrl;
   }
 
@@ -75,8 +71,6 @@ export class AphStorageClient {
   constructor(connectionString: string, containerName: string) {
     this.serviceUrl = getServiceUrl(connectionString);
     this.containerUrl = ContainerURL.fromServiceURL(this.serviceUrl, containerName);
-    console.log(this.serviceUrl);
-    console.log(this.containerUrl);
   }
 
   testStorageConnection = () => this.serviceUrl.getProperties(Aborter.none);
