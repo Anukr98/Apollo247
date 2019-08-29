@@ -1,6 +1,6 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, Popover } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -165,12 +165,44 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 20,
       paddingTop: 10,
     },
+    menuPopover: {
+      minWidth: 160,
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.4)',
+      backgroundColor: theme.palette.common.white,
+    },
+    menuBtnGroup: {
+      padding: '5px 16px',
+      '& button': {
+        boxShadow: 'none',
+        borderRadius: 0,
+        backgroundColor: 'transparent',
+        fontSize: 18,
+        fontWeight: 500,
+        color: '#01475b',
+        padding: '5px 0',
+        display: 'block',
+        textTransform: 'none',
+        borderBottom: '0.5px solid rgba(1,71,91,0.3)',
+        width: '100%',
+        textAlign: 'left',
+        '&:last-child': {
+          borderBottom: 0,
+        },
+      },
+    },
   };
 });
 
 export const TrackOrders: React.FC = (props) => {
   const classes = useStyles();
   const currentPath = window.location.pathname;
+  const [moreActionsDialog, setMoreActionsDialog] = React.useState<null | HTMLElement>(null);
+  const moreActionsopen = Boolean(moreActionsDialog);
+
+  function handleClick(event: React.MouseEvent<HTMLElement>) {
+    setMoreActionsDialog(event.currentTarget);
+  }
 
   return (
     <div className={classes.root}>
@@ -253,9 +285,29 @@ export const TrackOrders: React.FC = (props) => {
           <div className={classes.headerActions}>
             <AphButton className={classes.btnActive}>Track Order</AphButton>
             <AphButton>View Bills</AphButton>
-            <AphButton className={classes.moreBtn}>
+            <AphButton onClick={handleClick} className={classes.moreBtn}>
               <img src={require('images/ic_more.svg')} alt="" />
             </AphButton>
+            <Popover
+              anchorEl={moreActionsDialog}
+              keepMounted
+              open={moreActionsopen}
+              onClick={() => setMoreActionsDialog(null)}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              classes={{ paper: classes.menuPopover }}
+            >
+              <div className={classes.menuBtnGroup}>
+                <AphButton>Cancel Order</AphButton>
+                <AphButton>Return Order</AphButton>
+              </div>
+            </Popover>
           </div>
         </div>
         <div className={classes.orderTrackCrads}>
