@@ -193,7 +193,7 @@ export class MedicineOrderLineItems extends BaseEntity {
 //medicine orders  payments start
 @Entity()
 export class MedicineOrderPayments extends BaseEntity {
-  @Column('decimal', { precision: 5, scale: 2 })
+  @Column('decimal', { precision: 5, scale: 2, nullable: true })
   amountPaid: number;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

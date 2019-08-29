@@ -54,7 +54,7 @@ type PrescriptionMedicineInput = {
   patinetAddressId: string;
   prescriptionImageUrl: string;
   appointmentId: string;
-  payment: PrescriptionMedicinePaymentDetails;
+  payment?: PrescriptionMedicinePaymentDetails;
 };
 
 type PrescriptionMedicinePaymentDetails = {
@@ -62,7 +62,7 @@ type PrescriptionMedicinePaymentDetails = {
   amountPaid: number;
   paymentRefId: string;
   paymentStatus: string;
-  paymentDateTime?: Date;
+  paymentDateTime: Date;
 };
 
 type SavePrescriptionMedicineOrderResult = {
@@ -99,7 +99,10 @@ const SavePrescriptionMedicineOrder: Resolver<
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
 
-  if (prescriptionMedicineInput.payment.paymentType !== MEDICINE_ORDER_PAYMENT_TYPE.NO_PAYMENT) {
+  if (
+    prescriptionMedicineInput.payment &&
+    prescriptionMedicineInput.payment.paymentType !== MEDICINE_ORDER_PAYMENT_TYPE.NO_PAYMENT
+  ) {
     const paymentAttrs: Partial<MedicineOrderPayments> = {
       medicineOrders: saveOrder,
       paymentDateTime: prescriptionMedicineInput.payment.paymentDateTime,
