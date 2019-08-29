@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Switch, Divider, makeStyles, Slider, withStyles } from '@material-ui/core';
+import { Typography, Switch, Divider, Slider, createMuiTheme, withStyles } from '@material-ui/core';
+import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { debounce } from 'lodash';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
@@ -11,8 +12,15 @@ const useStyles = makeStyles(() => ({
   followUpContainer: {
     width: '100%',
     '& .followup-label': {
+      color: 'rgba(2,71,91,0.6)',
+      fontSize: 12,
+      marginTop: 5,
       '&.first-label': {
-        paddingLeft: '60px',
+        paddingLeft: 60,
+      },
+      '&.last-label': {
+        paddingRight: 40,
+        paddingTop: 9,
       },
       display: 'inline-block',
       textAlign: 'center',
@@ -51,13 +59,63 @@ const useStyles = makeStyles(() => ({
       color: '#ffffff',
       backgroundColor: '#00b38e !important',
     },
+    '&:first-child': {
+      borderRadius: 5,
+    },
+    '&:last-child': {
+      borderRadius: 5,
+      border: 'solid 1px #00b38e',
+    },
     '&.markLabel': {
       color: '#02475b',
       fontSize: 12,
       fontWeight: 'normal',
     },
-    '&.markLabelActive': {
-      color: 'red',
+  },
+  recommendedType: {
+    marginTop: 25,
+    marginBottom: 10,
+  },
+  datepicker: {
+    '& div': {
+      '&:before': {
+        // borderBottom: '#f7f7f7 !important',
+      },
+      '&:after': {
+        // borderBottom: '#f7f7f7 !important',
+      },
+    },
+
+    '& input': {
+      color: '#02475b',
+      fontSize: 18,
+      fontWeight: 600,
+      borderBottom: 'none',
+      '&:hover': {
+        // borderBottom: 'none',
+        '&:before': {
+          // borderBottom: 'none',
+        },
+      },
+      '&:before': {
+        // borderBottom: 'none',
+      },
+      '&:after': {
+        // borderBottom: 'none',
+      },
+    },
+  },
+  datePickerOpen: {
+    '& input': {
+      background: `url(${require('images/ic_cal_up.svg')}) no-repeat right center`,
+      cursor: 'pointer',
+      backgroundSize: 30,
+    },
+  },
+  datePickerClose: {
+    '& input': {
+      'background-image': `url(${require('images/ic_cal_down.svg')})`,
+      backgroundSize: 30,
     },
   },
 }));
@@ -92,7 +150,7 @@ const marks = [
   },
   {
     value: 9,
-    label: <span className="followup-label">Custom</span>,
+    label: <span className="followup-label last-label">Custom</span>,
   },
 ];
 
@@ -145,6 +203,37 @@ const PrettoSlider = withStyles({
   // }
 })(Slider);
 
+const defaultMaterialTheme = createMuiTheme({
+  palette: {
+    primary: {
+      main: '#00b38e',
+    },
+    text: {
+      primary: '#00b38e',
+    },
+    action: {
+      selected: '#fff',
+    },
+  },
+  typography: {
+    fontWeightMedium: 600,
+    htmlFontSize: 14,
+    fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
+    body1: {
+      fontSize: 16,
+      color: '#02475b',
+      fontWeight: 700,
+    },
+    body2: {
+      fontWeight: 600,
+    },
+    caption: {
+      fontSize: 12,
+      color: '#80a3ad !important',
+      fontWeight: 600,
+    },
+  },
+});
 export const FollowUp: React.FC = () => {
   const classes = useStyles();
   const [shouldFollowUp, setShouldFollowUp] = useState<boolean>(false);
@@ -191,23 +280,27 @@ export const FollowUp: React.FC = () => {
                 onChange={debounce((e, value) => setFollowUpDays(value), 200)}
               />
               {followUpDays === 9 && (
-                <div>
+                <div className={classes.recommendedType}>
                   <Typography component="h5" variant="h5">
                     Follow Up On
                   </Typography>
-                  <KeyboardDatePicker
-                    autoOk
-                    placeholder="dd/mm/yyyy"
-                    variant="inline"
-                    format="dd/MM/yyyy"
-                    value={selectedDate}
-                    InputAdornmentProps={{ position: 'end' }}
-                    onChange={(date) => handleDateChange((date as unknown) as Date)}
-                  />
+                  <ThemeProvider theme={defaultMaterialTheme}>
+                    <KeyboardDatePicker
+                      disableToolbar
+                      className={classes.datepicker}
+                      autoOk
+                      placeholder="dd/mm/yyyy"
+                      variant="inline"
+                      format="dd/MM/yyyy"
+                      value={selectedDate}
+                      InputAdornmentProps={{ position: 'end' }}
+                      onChange={(date) => handleDateChange((date as unknown) as Date)}
+                    />
+                  </ThemeProvider>
                 </div>
               )}
             </Typography>
-            <Typography component="div">
+            <Typography component="div" className={classes.recommendedType}>
               <Typography component="h5" variant="h5">
                 Recommended Consult Type
               </Typography>
@@ -220,6 +313,7 @@ export const FollowUp: React.FC = () => {
                     <img src={require('images/ic_video.svg')} alt="" /> online
                   </ToggleButton>
                   <ToggleButton value="inperson" className={classes.button}>
+                    <img src={require('images/ic_clicic_consult.svg')} alt="" />
                     In-person
                   </ToggleButton>
                 </ToggleButtonGroup>
