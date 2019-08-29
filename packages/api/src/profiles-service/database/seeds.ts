@@ -1,9 +1,14 @@
 import { connect } from 'profiles-service/database/connect';
-import { buildPatient } from 'profiles-service/database/factories/patientFactory';
+import {
+  buildPatient,
+  buildPatientAddress,
+} from 'profiles-service/database/factories/patientFactory';
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { SearchHistoryRepository } from 'profiles-service/repositories/searchHistoryRepository';
 import { getConnection } from 'typeorm';
+import faker from 'faker/locale/en_IND';
+import _ from 'lodash';
 
 (async () => {
   console.log('Seeding profiles-db...');
@@ -21,6 +26,7 @@ import { getConnection } from 'typeorm';
   const searchHistoryRepo = profilesDb.getCustomRepository(SearchHistoryRepository);
 
   console.log('Building and saving records...');
-  const patient = buildPatient();
-  patientRepo.save(patient);
+
+  // _.times(50, () => patientRepo.save(buildPatient(), patientAddressRepo.save(buildPatientAddress())));
+  _.times(50, () => patientAddressRepo.save(buildPatientAddress()));
 })();
