@@ -64,10 +64,10 @@ services:
       - ./:/apollo-hospitals:cached
     depends_on:
       - nginx
-      # - profiles-service
-      # - doctors-service
-      # - consults-service
-      # - notifications-service
+      - profiles-service
+      - doctors-service
+      - consults-service
+      - notifications-service
       - rabbitmq
       - storage
 
