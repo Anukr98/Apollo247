@@ -531,3 +531,20 @@ export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
     }
   }
 `;
+
+export const GET_NOTIFICATION_SETTINGS = gql`
+  query getPatientNotificationSettings($patient: ID!) {
+    getPatientNotificationSettings(patient: $patient) {
+      PatientNotificationSettings {
+        id
+        patient
+        commissionNotification
+        messageFromDoctorNotification
+        playNotificationSound
+        reScheduleAndCancellationNotification
+        paymentNotification
+        upcomingAppointmentReminders
+      }
+    }
+  }
+`;

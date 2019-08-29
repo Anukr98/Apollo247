@@ -1,18 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigatorSDK, $Generator } from 'praktice-navigator-react-native-sdk';
 // import { Generator } from 'praktice-navigator-react-native-sdk';
 import { NavigationScreenProps } from 'react-navigation';
 import { SafeAreaView, View, Text, Button } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 export interface SymptomCheckerProps extends NavigationScreenProps {}
 
 export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
+  const { currentPatient } = useAllCurrentPatients();
+  const [userName, setuserName] = useState<string>('');
+
+  useEffect(() => {
+    // let userName =
+    //   currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
+    // userName = userName.toLowerCase();
+    currentPatient && setuserName(currentPatient.firstName ? currentPatient.firstName : '');
+    console.log('consult room', currentPatient);
+  }, [currentPatient, userName, props.navigation.state.params]);
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
         <Header
-          title="SURJ’S SYMPTOMS"
+          title={`${userName.toUpperCase()}’S SYMPTOMS`}
           leftIcon="backArrow"
           onPressLeftIcon={() => props.navigation.goBack()}
         />
@@ -32,14 +44,26 @@ export const CategoryComponent: React.FC<CategoryComponentProps> = (props) => {
     type: 'categoryTitle',
     component: Text,
     componentProps: [
-      { style: { fontFamily: 'IBMPlexSans-Medium', color: '#02475b', fontSize: 14 } },
+      {
+        style: { fontFamily: 'IBMPlexSans-Medium', color: '#02475b', fontSize: 14 },
+        onPress: () => {
+          console.log('componentProps');
+        },
+      },
     ],
   });
 
   const SymptomsList = $Generator({
     type: 'categoryList',
     component: Text,
-    componentProps: [{ style: {} }],
+    componentProps: [
+      {
+        style: {},
+        onPress: () => {
+          console.log('hi');
+        },
+      },
+    ],
   });
 
   return (

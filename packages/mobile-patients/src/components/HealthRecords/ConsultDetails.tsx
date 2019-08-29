@@ -6,7 +6,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { useApolloClient } from 'react-apollo-hooks';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   getCaseSheet,
   getCaseSheet_getCaseSheet_caseSheetDetails,
@@ -77,37 +77,59 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     getCaseSheet_getCaseSheet_caseSheetDetails
   >();
 
-  const client = useApolloClient();
+  // const client = useApolloClient();
 
-  const fetchData = useCallback(() => {
-    client
-      .query<getCaseSheet>({
-        query: GET_CASESHEET_DETAILS,
-        fetchPolicy: 'no-cache',
-        variables: {
-          appointmentId: '5a4d4359-8f93-49ec-bd4b-45dab149543c',
-        },
-      })
-      .then(({ data: { getCaseSheet } }) => {
-        // set to context
-        console.log('getPatientAddressList qqq', getCaseSheet);
-        if (
-          getCaseSheet &&
-          getCaseSheet.caseSheetDetails &&
-          caseSheetDetails !== getCaseSheet.caseSheetDetails
-        ) {
-          setcaseSheetDetails(getCaseSheet.caseSheetDetails);
-        }
-      })
-      .catch((e) => {
-        const error = JSON.parse(JSON.stringify(e));
-        console.log(e, error);
-      });
-  }, [client, caseSheetDetails]);
+  // const fetchData = useCallback(() => {
+  //   client
+  //     .query<getCaseSheet>({
+  //       query: GET_CASESHEET_DETAILS,
+  //       fetchPolicy: 'no-cache',
+  //       variables: {
+  //         appointmentId: '9aed38c8-d330-40bf-b2cb-1caebffeb144',
+  //       },
+  //     })
+  //     .then(({ data: { getCaseSheet } }) => {
+  //       // set to context
+  //       console.log('getCaseSheet', getCaseSheet);
+  //       if (
+  //         getCaseSheet &&
+  //         getCaseSheet.caseSheetDetails &&
+  //         caseSheetDetails !== getCaseSheet.caseSheetDetails
+  //       ) {
+  //         setcaseSheetDetails(getCaseSheet.caseSheetDetails);
+  //       }
+  //     })
+  //     .catch((e) => {
+  //       const error = JSON.parse(JSON.stringify(e));
+  //       console.log(e, error);
+  //     });
+  // }, [client, caseSheetDetails]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  // useEffect(() => {
+  //   // fetchData();
+  // }, [fetchData]);
+
+  const getData = useQuery<getCaseSheet>(GET_CASESHEET_DETAILS, {
+    fetchPolicy: 'no-cache',
+    variables: {
+      appointmentId: '9aed38c8-d330-40bf-b2cb-1caebffeb144',
+    },
+  });
+
+  if (getData.data) {
+    if (
+      getData &&
+      getData.data &&
+      getData.data.getCaseSheet &&
+      getData.data.getCaseSheet.caseSheetDetails &&
+      caseSheetDetails !== getData.data.getCaseSheet.caseSheetDetails
+    ) {
+      console.log(getData.data.getCaseSheet.caseSheetDetails);
+      setcaseSheetDetails(getData.data.getCaseSheet.caseSheetDetails);
+    }
+  } else {
+    console.log(getData.error, 'getData error');
+  }
 
   const data = {
     doctorInfo: {
@@ -198,32 +220,36 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderSymptoms = () => {
-    return (
-      <View
-        style={{
-          marginTop: 24,
-        }}
-      >
-        <CollapseCard
-          heading="SYMPTOMS"
-          collapse={showsymptoms}
-          onPress={() => setshowsymptoms(!showsymptoms)}
+    if (caseSheetDetails && caseSheetDetails.symptoms)
+      return (
+        <View
+          style={{
+            marginTop: 24,
+          }}
         >
-          <View style={styles.cardViewStyle}>
-            {symptoms.map((item) => {
-              return (
-                <View>
-                  <View style={styles.labelViewStyle}>
-                    <Text style={styles.labelStyle}>{item.label}</Text>
-                  </View>
-                  <Text style={styles.dataTextStyle}>{item.data}</Text>
-                </View>
-              );
-            })}
-          </View>
-        </CollapseCard>
-      </View>
-    );
+          <CollapseCard
+            heading="SYMPTOMS"
+            collapse={showsymptoms}
+            onPress={() => setshowsymptoms(!showsymptoms)}
+          >
+            <View style={styles.cardViewStyle}>
+              {caseSheetDetails.symptoms.map((item) => {
+                if (item)
+                  return (
+                    <View>
+                      <View style={styles.labelViewStyle}>
+                        <Text style={styles.labelStyle}>{item.symptom}</Text>
+                      </View>
+                      <Text style={styles.dataTextStyle}>Since: {item.since}</Text>
+                      <Text style={styles.dataTextStyle}>How Often: {item.howOften}</Text>
+                      <Text style={styles.dataTextStyle}>Severity: {item.severity}</Text>
+                    </View>
+                  );
+              })}
+            </View>
+          </CollapseCard>
+        </View>
+      );
   };
 
   const renderPrescriptions = () => {
@@ -324,15 +350,17 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderData = () => {
-    return (
-      <View>
-        {renderSymptoms()}
-        {renderPrescriptions()}
-        {renderDiagnosis()}
-        {renderGenerealAdvice()}
-        {renderFollowUp()}
-      </View>
-    );
+    if (caseSheetDetails)
+      return (
+        <View>
+          {renderSymptoms()}
+          {renderPrescriptions()}
+          {renderDiagnosis()}
+          {renderGenerealAdvice()}
+          {renderFollowUp()}
+        </View>
+      );
+    return null;
   };
 
   if (data.doctorInfo)
