@@ -38,8 +38,11 @@ services:
 
   storage:
     image: mcr.microsoft.com/azure-storage/azurite:latest
+    command: azurite -l ./ -d ./debug.log
+    volumes:
+      - ./storage:/opt/azurite
     ports:
-      - 10000:10000
+      - ${AZURE_STORAGE_EMULATOR_PORT}:${AZURE_STORAGE_EMULATOR_PORT}
 
   api-gateway:
     image: node:12.6.0
@@ -63,10 +66,10 @@ services:
       - ./:/apollo-hospitals:cached
     depends_on:
       - nginx
-      - profiles-service
-      - doctors-service
-      - consults-service
-      - notifications-service
+      # - profiles-service
+      # - doctors-service
+      # - consults-service
+      # - notifications-service
       - rabbitmq
       - storage
 
