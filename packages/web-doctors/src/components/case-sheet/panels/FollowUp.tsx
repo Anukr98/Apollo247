@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Typography, Switch, Divider, makeStyles, Slider, withStyles } from '@material-ui/core';
 import { debounce } from 'lodash';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles(() => ({
   followUpContainer: {
@@ -115,10 +116,24 @@ const PrettoSlider = withStyles({
 
 export const FollowUp: React.FC = () => {
   const classes = useStyles();
-  const [shouldFollowUp, setShouldFollowUp] = useState<boolean>(false);
-  const [followUpDays, setFollowUpDays] = useState<number>(2);
-  const [consultType, setConsultType] = useState<string>('');
-  const [selectedDate, handleDateChange] = useState<Date>(new Date());
+  const {
+    consultType: consultTypeData,
+    setConsultType: setConsultTypeData,
+    followUp,
+    setFollowUp,
+    followUpAfterInDays,
+    setFollowUpAfterInDays,
+    followUpDate,
+    setFollowUpDate,
+  } = useContext(CaseSheetContext);
+  const [shouldFollowUp, setShouldFollowUp] = useState<boolean>(!!followUp[0]);
+  const [followUpDays, setFollowUpDays] = useState<number>(
+    parseInt(followUpAfterInDays[0], 10) || 2
+  );
+  const [consultType, setConsultType] = useState<string>(consultTypeData[0]);
+  const [selectedDate, handleDateChange] = useState<Date>(
+    followUpDate[0] ? new Date(followUpDate[0]) : new Date()
+  );
 
   useEffect(() => {
     if (!shouldFollowUp) {
@@ -127,6 +142,20 @@ export const FollowUp: React.FC = () => {
       setConsultType('');
     }
   }, [shouldFollowUp]);
+
+  useEffect(() => {
+    consultTypeData[0] = consultType;
+    setConsultTypeData(consultTypeData);
+
+    followUp[0] = shouldFollowUp;
+    setFollowUp(followUp);
+
+    followUpAfterInDays[0] = `${followUpDays === 9 ? 'Custom' : followUpDays}`;
+    setFollowUpAfterInDays(followUpAfterInDays);
+
+    followUpDate[0] = `${followUpDays === 9 ? selectedDate : ''}`;
+    setFollowUpDate(followUpDate);
+  }, [consultType, shouldFollowUp, followUpDays, selectedDate]);
 
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -178,13 +207,14 @@ export const FollowUp: React.FC = () => {
               </Typography>
               <Typography component="div">
                 <ToggleButtonGroup
+                  exclusive
                   value={consultType}
                   onChange={(e, newValue) => setConsultType(newValue)}
                 >
-                  <ToggleButton value="online" className={classes.button}>
+                  <ToggleButton value="ONLINE" className={classes.button}>
                     <img src={require('images/ic_video.svg')} alt="" /> online
                   </ToggleButton>
-                  <ToggleButton value="inperson" className={classes.button}>
+                  <ToggleButton value="PHYSICAL" className={classes.button}>
                     In-person
                   </ToggleButton>
                 </ToggleButtonGroup>
