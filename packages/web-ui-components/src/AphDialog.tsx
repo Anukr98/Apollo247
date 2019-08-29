@@ -3,7 +3,7 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Dialog } from '@material-ui/core';
 import { DialogProps } from '@material-ui/core/Dialog';
 
-const dialogStyles = makeStyles((theme: Theme) => {
+const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     root: {
       padding: 0,
@@ -44,34 +44,12 @@ const dialogStyles = makeStyles((theme: Theme) => {
     },
   });
 });
-const useStyles = makeStyles((theme: Theme) => {
-  return createStyles({
-    dialogBoxClose: {
-      position: 'absolute',
-      right: -48,
-      top: 0,
-      width: 28,
-      height: 28,
-      borderRadius: '50%',
-      backgroundColor: theme.palette.common.white,
-      cursor: 'pointer',
-      [theme.breakpoints.down('xs')]: {
-        right: 0,
-        top: -48,
-      },
-    },
-  });
-});
 
 const AphDialog: React.FC<DialogProps> = (props) => {
   const classes = useStyles();
-  const dialogClasses = dialogStyles();
 
   return (
-    <Dialog {...props} classes={dialogClasses}>
-      <div className={classes.dialogBoxClose}>
-        <img src={require('images/ic_cross_popup.svg')} alt="" />
-      </div>
+    <Dialog {...props} classes={classes}>
       {props.children}
     </Dialog>
   );

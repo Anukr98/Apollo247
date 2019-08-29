@@ -27,7 +27,7 @@ services:
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
     command: bash -c "
-      while ((! curl -s http://${PROFILES_SERVICE_HOST}/graphql) || (! curl -s http://${DOCTORS_SERVICE_HOST}/graphql) || (! curl -s http://${CONSULTS_SERVICE_HOST}/graphql)) > /dev/null;
+      while ((! curl -s http://${PROFILES_SERVICE_HOST}/graphql) || (! curl -s http://${DOCTORS_SERVICE_HOST}/graphql) || (! curl -s http://${CONSULTS_SERVICE_HOST}/graphql) || (! curl -s http://${NOTIFICATIONS_SERVICE_HOST}/graphql)) > /dev/null;
       do echo waiting for services to start...; sleep 5;
       done;
       node api-gateway.bundle.js"
@@ -37,6 +37,7 @@ services:
       - profiles-service
       - doctors-service
       - consults-service
+      - notifications-service
       - nginx
 
   profiles-service:
@@ -105,3 +106,11 @@ services:
     environment:
       - POSTGRES_USER=${CONSULTS_DB_USER}
       - POSTGRES_PASSWORD=${CONSULTS_DB_PASSWORD}
+
+  notifications-service:
+    image: node:12.6.0
+    env_file: .env
+    working_dir: /apollo-hospitals/packages/api
+    command: bash -c "npm run start:notifications-service"
+    volumes:
+      - ./:/apollo-hospitals:cached
