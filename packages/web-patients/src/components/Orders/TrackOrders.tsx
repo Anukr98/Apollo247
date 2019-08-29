@@ -4,8 +4,11 @@ import { Theme, Popover } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { OrderStatusCard } from 'components/Orders/OrderStatusCard';
+import { CancelOrder } from 'components/Orders/CancelOrder';
+import { ReturnOrder } from 'components/Orders/ReturnOrder';
+import { BankDetails } from 'components/Orders/BankDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -191,6 +194,20 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    dialogBoxClose: {
+      position: 'absolute',
+      right: -48,
+      top: 0,
+      width: 28,
+      height: 28,
+      borderRadius: '50%',
+      backgroundColor: theme.palette.common.white,
+      cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        right: 0,
+        top: -48,
+      },
+    },
   };
 });
 
@@ -198,6 +215,8 @@ export const TrackOrders: React.FC = (props) => {
   const classes = useStyles();
   const currentPath = window.location.pathname;
   const [moreActionsDialog, setMoreActionsDialog] = React.useState<null | HTMLElement>(null);
+  const [isCancelOrderDialogOpen, setIsCancelOrderDialogOpen] = React.useState<boolean>(false);
+  const [isReturnOrderDialogOpen, setIsReturnOrderDialogOpen] = React.useState<boolean>(false);
   const moreActionsopen = Boolean(moreActionsDialog);
 
   function handleClick(event: React.MouseEvent<HTMLElement>) {
@@ -304,8 +323,8 @@ export const TrackOrders: React.FC = (props) => {
               classes={{ paper: classes.menuPopover }}
             >
               <div className={classes.menuBtnGroup}>
-                <AphButton>Cancel Order</AphButton>
-                <AphButton>Return Order</AphButton>
+                <AphButton onClick={() => setIsCancelOrderDialogOpen(true)}>Cancel Order</AphButton>
+                <AphButton onClick={() => setIsReturnOrderDialogOpen(true)}>Return Order</AphButton>
               </div>
             </Popover>
           </div>
@@ -318,6 +337,21 @@ export const TrackOrders: React.FC = (props) => {
           </Scrollbars>
         </div>
       </div>
+      <AphDialog open={isCancelOrderDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsCancelOrderDialogOpen(false)} />
+        <AphDialogTitle>Cancel Order</AphDialogTitle>
+        <CancelOrder />
+      </AphDialog>
+      <AphDialog open={isReturnOrderDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsReturnOrderDialogOpen(false)} />
+        <AphDialogTitle>Return Order</AphDialogTitle>
+        <ReturnOrder />
+      </AphDialog>
+      <AphDialog open={isReturnOrderDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsReturnOrderDialogOpen(false)} />
+        <AphDialogTitle>Bank Details</AphDialogTitle>
+        <BankDetails />
+      </AphDialog>
     </div>
   );
 };
