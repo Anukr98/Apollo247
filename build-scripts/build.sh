@@ -60,6 +60,7 @@ echo "'packages/api/node_modules' -> 'skeleton/apollo-hospitals/packages/api/nod
 cp -RL packages/api/node_modules skeleton/apollo-hospitals/packages/api/ || exit 2
 cp packages/api/firebase-secrets.json skeleton/apollo-hospitals/packages/api/ || exit 2
 cp packages/api/package.json skeleton/apollo-hospitals/packages/api/ || exit 2
+cp packages/api/webpack.config.notifications-service.js skeleton/apollo-hospitals/packages/api/ || exit 2
 
 echo -e "\ncopying web-patients files..."
 mkdir -pv skeleton/apollo-hospitals/packages/web-patients/ || exit 2
