@@ -179,11 +179,13 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const calendarRef = useRef<HTMLDivElement>(null);
 
   const { currentPatient } = useAllCurrentPatients();
-  const currentTime = new Date().getTime();
-  const autoSlot = getAutoSlot();
+  // const currentTime = new Date().getTime();
+  // const autoSlot = getAutoSlot();
+
   const { doctorDetails } = props;
 
   let slotAvailableNext = '';
+  let autoSlot = '';
 
   // console.log('-------', autoSlot);
 
@@ -274,15 +276,21 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   ) {
     nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
       if (availability && availability.availableSlot !== '') {
-        const slotTimeUtc = new Date(
-          new Date(`${apiDateFormat} ${availability.availableSlot}:00`).toISOString()
-        ).getTime();
-        const localTimeOffset = new Date().getTimezoneOffset() * 60000;
-        const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
+        // console.log(availability.availableSlot);
+        // const slotTimeUtc = new Date(
+        //   new Date(`${apiDateFormat} ${availability.availableSlot}:00`).toISOString()
+        // ).getTime();
+        // const localTimeOffset = new Date().getTimezoneOffset() * 60000;
+        // const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
+        // const currentTime = new Date(new Date().toISOString()).getTime();
+        const slotTime = new Date(availability.availableSlot).getTime();
         const currentTime = new Date(new Date().toISOString()).getTime();
         if (slotTime > currentTime) {
           const difference = slotTime - currentTime;
+          const slotArray = availability.availableSlot.split('T');
           differenceInMinutes = Math.round(difference / 60000);
+          slotAvailableNext = slotArray[1].substr(0, 5);
+          autoSlot = availability.availableSlot;
         }
       } else {
         differenceInMinutes = -1;
@@ -296,14 +304,15 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     (availableSlotsData && availableSlotsData.getDoctorAvailableSlots.availableSlots) || [];
 
   availableSlots.map((slot) => {
-    const slotTimeUtc = new Date(new Date(`${apiDateFormat} ${slot}:00`).toISOString()).getTime();
-    const localTimeOffset = new Date().getTimezoneOffset() * 60000;
-    const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
+    // const slotTimeUtc = new Date(new Date(`${apiDateFormat} ${slot}:00`).toISOString()).getTime();
+    // const localTimeOffset = new Date().getTimezoneOffset() * 60000;
+    // const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
+    const slotTime = new Date(slot).getTime();
     const currentTime = new Date(new Date().toISOString()).getTime();
     if (slotTime > currentTime) {
-      if (slot === autoSlot) {
-        slotAvailableNext = autoSlot;
-      }
+      // if (slot === autoSlot) {
+      //   slotAvailableNext = autoSlot;
+      // }
       if (slotTime < morningTime) morningSlots.push(slotTime);
       else if (slotTime >= morningTime && slotTime < afternoonTime) afternoonSlots.push(slotTime);
       else if (slotTime >= afternoonTime && slotTime < eveningTime) eveningSlots.push(slotTime);
@@ -312,6 +321,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   });
 
   const consultNowAvailable = differenceInMinutes > 0 && differenceInMinutes <= 15;
+
+  // console.log(consultNowAvailable, 'consult now available.....');
+  // console.log(slotAvailableNext, consultNow, timeSelected);
+  // console.log(slotAvailableNext, '..................................timeselected', timeSelected);
 
   let disableSubmit =
     (morningSlots.length === 0 &&
@@ -407,13 +420,15 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             bookAppointment: {
               patientId: currentPatient ? currentPatient.id : '',
               doctorId: doctorId,
-              appointmentDateTime: new Date(
-                `${apiDateFormat} ${
-                  timeSelected !== ''
-                    ? timeSelected.padStart(5, '0')
-                    : slotAvailableNext.padStart(5, '0')
-                }:00`
-              ).toISOString(),
+              appointmentDateTime: consultNowAvailable
+                ? autoSlot
+                : new Date(
+                    `${apiDateFormat} ${
+                      timeSelected !== ''
+                        ? timeSelected.padStart(5, '0')
+                        : slotAvailableNext.padStart(5, '0')
+                    }:00`
+                  ).toISOString(),
               appointmentType: APPOINTMENT_TYPE.ONLINE,
               hospitalId: '',
             },
@@ -439,13 +454,18 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 mutate();
                 // console.log(
                 //   new Date(
-                //     `${apiDateFormat} ${
-                //       timeSelected !== ''
-                //         ? timeSelected.padStart(5, '0')
-                //         : slotAvailableNext.padStart(5, '0')
-                //     }:00`
-                //   ).toISOString()
+                //     new Date(
+                //       `${apiDateFormat} ${
+                //         timeSelected !== ''
+                //           ? timeSelected.padStart(5, '0')
+                //           : slotAvailableNext.padStart(5, '0')
+                //       }:00`
+                //     )
+                //   ).toISOString(),
+                //   timeSelected,
+                //   slotAvailableNext
                 // );
+                // console.log(slotAvailableNext, '---------------------');
               }}
               className={
                 disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''

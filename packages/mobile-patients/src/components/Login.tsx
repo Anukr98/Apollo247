@@ -25,6 +25,8 @@ import {
   timeOutDataType,
   ReceivedSmsMessage,
 } from '@aph/mobile-patients/src/components/OTPVerification';
+import { RNFirebase } from 'react-native-firebase';
+import firebase from 'react-native-firebase';
 
 const styles = StyleSheet.create({
   container: {
@@ -35,6 +37,7 @@ const styles = StyleSheet.create({
     color: theme.colors.INPUT_TEXT,
     paddingRight: 6,
     lineHeight: 28,
+    paddingTop: Platform.OS === 'ios' ? 0 : 4,
     paddingBottom: Platform.OS === 'ios' ? 5 : 0,
   },
   inputStyle: {
@@ -93,7 +96,28 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
+    fireBaseFCM();
   }, [, analytics]);
+
+  const fireBaseFCM = async () => {
+    const enabled = await firebase.messaging().hasPermission();
+    if (enabled) {
+      // user has permissions
+      console.log('enabled', enabled);
+    } else {
+      // user doesn't have permission
+      console.log('not enabled');
+      try {
+        await firebase.messaging().requestPermission();
+        console.log('authorized');
+
+        // User has authorised
+      } catch (error) {
+        // User has rejected permissions
+        console.log('not enabled error', error);
+      }
+    }
+  };
 
   const requestReadSmsPermission = async () => {
     try {
@@ -212,8 +236,11 @@ export const Login: React.FC<LoginProps> = (props) => {
                       phoneNumber: phoneNumber,
                     });
                   })
-                  .catch((error) => {
-                    Alert.alert('Error', 'The interaction was cancelled by the user.');
+                  .catch((error: RNFirebase.RnError) => {
+                    Alert.alert(
+                      'Error',
+                      (error && error.message) || 'The interaction was cancelled by the user.'
+                    );
                   });
               }
             }
@@ -222,7 +249,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         >
           <View
             style={[
-              { height: 56, paddingTop: 20 },
+              { paddingTop: Platform.OS === 'ios' ? 20 : 15 },
               phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
             ]}
           >

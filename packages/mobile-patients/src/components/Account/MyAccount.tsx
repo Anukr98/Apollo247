@@ -3,19 +3,19 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   Invoice,
   Location,
-  More,
   NotificaitonAccounts,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import {
   Animated,
+  AsyncStorage,
   Dimensions,
   Platform,
   SafeAreaView,
@@ -25,9 +25,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 
-const { height, width } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   topView: {
@@ -86,6 +86,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     profileDetails,
     setprofileDetails,
   ] = useState<GetCurrentPatients_getCurrentPatients_patients | null>(currentPatient);
+  const { signOut } = useAuth();
 
   console.log(currentPatient, 'currentPatient');
 
@@ -167,6 +168,20 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     }
   };
 
+  const onPressLogout = () => {
+    signOut();
+    AsyncStorage.setItem('userLoggedIn', 'false');
+    AsyncStorage.setItem('multiSignUp', 'false');
+    AsyncStorage.setItem('signUp', 'false');
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.Login })],
+      })
+    );
+  };
+
   const renderAnimatedHeader = () => {
     return (
       <>
@@ -218,8 +233,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           }}
           leftIcon="backArrow"
           rightComponent={
-            <TouchableOpacity onPress={onShare}>
-              <More />
+            <TouchableOpacity onPress={onPressLogout}>
+              <Text>Logout</Text>
             </TouchableOpacity>
           }
           onPressLeftIcon={() => props.navigation.goBack()}

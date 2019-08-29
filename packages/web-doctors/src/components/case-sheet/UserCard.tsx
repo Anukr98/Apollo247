@@ -1,64 +1,77 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Card, CardMedia, CardContent, Typography, Divider } from '@material-ui/core';
-import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
+import { CaseSheetContext } from 'context/CaseSheetContext';
+import { Gender } from 'graphql/types/globalTypes';
 
-interface CasesheetInfoProps {
-  casesheetInfo: GetCaseSheet;
-  appointmentId: string;
-}
-export const UserCard: React.FC<CasesheetInfoProps> = (props) => {
-  return (
-    props.casesheetInfo &&
-    props.casesheetInfo.getCaseSheet &&
-    props.casesheetInfo.getCaseSheet.patientDetails && (
-      <Card>
-        <CardMedia
-          component="img"
-          image={require('images/ic_patientchat.png')}
-          title="patient name"
-        />
-        <CardContent>
-          {props.casesheetInfo.getCaseSheet.patientDetails.firstName &&
-            props.casesheetInfo.getCaseSheet.patientDetails.firstName !== '' &&
-            props.casesheetInfo.getCaseSheet.patientDetails.lastName &&
-            props.casesheetInfo.getCaseSheet.patientDetails.lastName !== '' && (
-              <Typography gutterBottom variant="h4" component="h2">
-                {props.casesheetInfo.getCaseSheet.patientDetails.firstName +
-                  ' ' +
-                  props.casesheetInfo.getCaseSheet.patientDetails.lastName}
-              </Typography>
-            )}
-          <Typography variant="h5" color="textSecondary" component="h5">
-            {props.casesheetInfo.getCaseSheet.patientDetails.dateOfBirth
-              ? Math.abs(
-                  new Date(Date.now()).getUTCFullYear() -
-                    new Date(
-                      props.casesheetInfo!.getCaseSheet!.patientDetails!.dateOfBirth
-                    ).getUTCFullYear()
-                )
-              : ''}
-            ,
-            {props.casesheetInfo.getCaseSheet.patientDetails.gender &&
-              props.casesheetInfo.getCaseSheet.patientDetails.gender}
-            ,
-            {/* {props.casesheetInfo.getCaseSheet.patientDetails.location &&
-              props.casesheetInfo.getCaseSheet.patientDetails.location !== '' &&
-              props.casesheetInfo.getCaseSheet.patientDetails.location} */}
-          </Typography>
-          <Divider />
-          {props.casesheetInfo.getCaseSheet.patientDetails.uhid &&
-            props.casesheetInfo.getCaseSheet.patientDetails.uhid !== '' && (
-              <Typography variant="h6" color="textSecondary" component="h6">
-                UHID:{props.casesheetInfo.getCaseSheet.patientDetails.uhid}
-              </Typography>
-            )}
+export const UserCard: React.FC = () => {
+  const { loading, patientDetails, caseSheetId } = useContext(CaseSheetContext);
+  const userCardStrip = [];
 
+  if (
+    patientDetails!.dateOfBirth &&
+    patientDetails!.dateOfBirth !== null &&
+    patientDetails!.dateOfBirth !== ''
+  ) {
+    userCardStrip.push(
+      Math.abs(
+        new Date(Date.now()).getUTCFullYear() -
+          new Date(patientDetails!.dateOfBirth).getUTCFullYear()
+      ).toString()
+    );
+  }
+  if (patientDetails!.gender && patientDetails!.gender !== null) {
+    if (patientDetails!.gender === Gender.FEMALE) {
+      userCardStrip.push('F');
+    }
+    if (patientDetails!.gender === Gender.MALE) {
+      userCardStrip.push('M');
+    }
+    if (patientDetails!.gender === Gender.OTHER) {
+      userCardStrip.push('O');
+    }
+  }
+  if (
+    patientDetails &&
+    patientDetails!.patientAddress &&
+    patientDetails.patientAddress !== null &&
+    patientDetails.patientAddress.length > 0 &&
+    patientDetails!.patientAddress[0]!.city !== ''
+  ) {
+    userCardStrip.push(patientDetails!.patientAddress[0]!.city);
+  }
+  return loading && !patientDetails ? (
+    <div></div>
+  ) : (
+    <Card>
+      <CardMedia
+        component="img"
+        image={require('images/ic_patientchat.png')}
+        title={`${patientDetails!.firstName} ${patientDetails!.lastName}`}
+      />
+      <CardContent>
+        {patientDetails!.firstName &&
+          patientDetails!.firstName !== '' &&
+          patientDetails!.lastName &&
+          patientDetails!.lastName !== '' && (
+            <Typography gutterBottom variant="h4" component="h2">
+              {patientDetails!.firstName + ' ' + patientDetails!.lastName}
+            </Typography>
+          )}
+        <Typography variant="h5" color="textSecondary" component="h5">
+          {userCardStrip.join(', ')}
+        </Typography>
+        <Divider />
+        {patientDetails!.uhid && patientDetails!.uhid !== '' && (
           <Typography variant="h6" color="textSecondary" component="h6">
-            Appt ID:
-            {props.appointmentId && props.appointmentId !== '' && props.appointmentId}
+            UHID:{patientDetails!.uhid}
           </Typography>
-        </CardContent>
-      </Card>
-    )
+        )}
+
+        <Typography variant="h6" color="textSecondary" component="h6">
+          Appt ID:
+          {caseSheetId && caseSheetId !== '' && caseSheetId.slice(0, 5)}
+        </Typography>
+      </CardContent>
+    </Card>
   );
 };

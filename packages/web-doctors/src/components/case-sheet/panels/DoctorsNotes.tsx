@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Typography, makeStyles } from '@material-ui/core';
-import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -16,17 +16,12 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-interface CasesheetInfoProps {
-  casesheetInfo: GetCaseSheet;
-}
-export const DoctorsNotes: React.FC<CasesheetInfoProps> = (props) => {
+export const DoctorsNotes: React.FC = (props) => {
   const classes = useStyles();
+
   return (
     <Typography component="div" className={classes.container}>
-      {props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
-        props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
-        props.casesheetInfo.getCaseSheet!.caseSheetDetails!.notes &&
-        props.casesheetInfo.getCaseSheet!.caseSheetDetails!.notes}
+      {'No notes'}
     </Typography>
   );
 };

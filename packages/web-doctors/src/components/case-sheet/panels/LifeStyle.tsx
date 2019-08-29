@@ -1,6 +1,7 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useContext } from 'react';
 import { Typography, List, ListItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -34,24 +35,92 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const data = [
-  {
-    'Family History': ['Father: Cardiac patient', 'Mother: Severe diabetes', 'Married, No kids'],
-  },
-  {
-    'Lifestyle & Habits': ['Patient doesn’t smoke, She recovered from chickenpox 6 months ago'],
-  },
-  {
-    Allergies: ['Paracetamol, Dairy, Dust'],
-  },
-];
-
 export const LifeStyle: React.FC = () => {
   const classes = useStyles();
-
-  return (
+  const { loading, patientDetails } = useContext(CaseSheetContext);
+  return loading && !patientDetails ? (
+    <div></div>
+  ) : (
     <Typography component="div" className={classes.container}>
-      {data.map((item, idx) => (
+      {patientDetails &&
+      patientDetails!.familyHistory &&
+      patientDetails!.familyHistory !== null &&
+      patientDetails!.familyHistory.length > 0 &&
+      patientDetails!.lifeStyle &&
+      patientDetails!.lifeStyle !== null &&
+      patientDetails!.lifeStyle.length > 0 &&
+      patientDetails!.allergies &&
+      patientDetails!.allergies !== null ? (
+        <div>No data available</div>
+      ) : (
+        <div>
+          {patientDetails &&
+            patientDetails!.familyHistory &&
+            patientDetails!.familyHistory !== null &&
+            patientDetails!.familyHistory.length > 0 && (
+              <Typography className={classes.column} component="div">
+                <Typography component="h5" variant="h5" className={classes.header}>
+                  Family History
+                </Typography>
+                <Typography component="div" className={classes.content}>
+                  <List>
+                    {patientDetails!.familyHistory!.map((item, idx) => (
+                      <ListItem key={idx}>
+                        <Fragment>
+                          <Typography component="p" className={classes.textContent}>
+                            {item!.relation}: {item!.description}
+                          </Typography>
+                        </Fragment>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Typography>
+              </Typography>
+            )}
+          {patientDetails &&
+            patientDetails!.lifeStyle &&
+            patientDetails!.lifeStyle !== null &&
+            patientDetails!.lifeStyle.length > 0 && (
+              <Typography className={classes.column} component="div">
+                <Typography component="h5" variant="h5" className={classes.header}>
+                  Lifestyle & Habits
+                </Typography>
+                <Typography component="div" className={classes.content}>
+                  <List>
+                    {patientDetails!.lifeStyle!.map((item, idx) => (
+                      <ListItem key={idx}>
+                        <Fragment>
+                          <Typography component="p" className={classes.textContent}>
+                            {item!.description}
+                          </Typography>
+                        </Fragment>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Typography>
+              </Typography>
+            )}
+          {patientDetails && patientDetails!.allergies && patientDetails!.allergies !== null && (
+            <Typography className={classes.column} component="div">
+              <Typography component="h5" variant="h5" className={classes.header}>
+                Allergies
+              </Typography>
+              <Typography component="div" className={classes.content}>
+                <List>
+                  <ListItem>
+                    <Fragment>
+                      <Typography component="p" className={classes.textContent}>
+                        {patientDetails!.allergies}
+                      </Typography>
+                    </Fragment>
+                  </ListItem>
+                </List>
+              </Typography>
+            </Typography>
+          )}
+        </div>
+      )}
+      {/* {data.map((item, idx) => (
         <Typography key={idx} className={classes.column} component="div">
           <Typography component="h5" variant="h5" className={classes.header}>
             {Object.keys(item)[0]}
@@ -71,7 +140,7 @@ export const LifeStyle: React.FC = () => {
             </List>
           </Typography>
         </Typography>
-      ))}
+      ))} */}
     </Typography>
   );
 };

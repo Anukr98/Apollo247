@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { Fragment, useEffect, useContext } from 'react';
 import {
   Typography,
   List,
@@ -12,10 +12,11 @@ import {
   Button,
 } from '@material-ui/core';
 //import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
-import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components';
 import _isEmpty from 'lodash/isEmpty';
+import { CaseSheetContext } from 'context/CaseSheetContext';
+
 const useStyles = makeStyles((theme: Theme) => ({
   container: {
     display: 'flex',
@@ -197,9 +198,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
   },
 }));
-interface CasesheetInfoProps {
-  casesheetInfo: GetCaseSheet;
-}
 interface errorObject {
   symptomError: boolean;
   sinceError: boolean;
@@ -207,20 +205,21 @@ interface errorObject {
   severityError: boolean;
 }
 interface symptomObject {
+  __typename: string;
   symptom: string;
   severity: string;
   howOften: string;
   since: string;
 }
-export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
+export const Symptoms: React.FC = (props) => {
   const classes = useStyles();
+  const { symptoms, setSymptoms } = useContext(CaseSheetContext);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [symptom, setSymptom] = React.useState('');
   const [since, setSince] = React.useState('');
   const [howOften, setHowOften] = React.useState('');
   const [idx, setIdx] = React.useState();
   const [severity, setSeverity] = React.useState('');
-  const [symptomData, setSymptomData] = React.useState<symptomObject[]>([]);
   const [errorState, setErrorState] = React.useState<errorObject>({
     symptomError: false,
     sinceError: false,
@@ -229,8 +228,8 @@ export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
   });
 
   const deleteSymptom = (idx: any) => {
-    symptomData.splice(idx, 1);
-    setSymptomData(symptomData);
+    symptoms!.splice(idx, 1);
+    setSymptoms(symptoms);
     const sum = idx + Math.random();
     setIdx(sum);
   };
@@ -276,49 +275,32 @@ export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
         severityError: false,
       });
 
-      const inputParams = {
+      const inputParams: any = {
+        __typename: 'SymptomList',
         howOften: howOften,
         severity: severity,
         since: since,
         symptom: symptom,
       };
-      const x = symptomData;
+      const x = symptoms;
       x!.push(inputParams);
-      setSymptomData(x);
+      setSymptoms(x);
       setIsDialogOpen(false);
     }
   };
   useEffect(() => {
     if (idx >= 0) {
-      setSymptomData(symptomData);
+      setSymptoms(symptoms);
     }
-  }, [symptomData, idx]);
-  useEffect(() => {
-    if (
-      props.casesheetInfo &&
-      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.symptoms !== null &&
-      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.symptoms!.length > 0
-    ) {
-      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.symptoms!.forEach((res: any) => {
-        const inputParams = {
-          howOften: res.howOften,
-          severity: res.severity,
-          since: res.since,
-          symptom: res.symptom,
-        };
-        const x = symptomData;
-        x.push(inputParams);
-        setSymptomData(x);
-      });
-    }
-  }, []);
+  }, [symptoms, idx]);
+
   return (
     <Typography className={classes.container} component="div">
       <div>
-        {symptomData ? (
+        {symptoms && symptoms.length > 0 ? (
           <List className={classes.symtomList}>
-            {symptomData &&
-              symptomData.map((item, idx) => (
+            {symptoms &&
+              symptoms!.map((item, idx) => (
                 <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
                   <ListItemText className={classes.symtomHeading} primary={item!.symptom} />
                   <AphButton
@@ -426,7 +408,7 @@ export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
                               component="div"
                               error={errorState.symptomError}
                             >
-                              Please Enter something
+                              Please Enter Symptom
                             </FormHelperText>
                           )}
                         </div>
@@ -448,7 +430,7 @@ export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
                               component="div"
                               error={errorState.sinceError}
                             >
-                              Please Enter something
+                              Please Enter Since
                             </FormHelperText>
                           )}
                         </div>
@@ -470,7 +452,7 @@ export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
                               component="div"
                               error={errorState.howOfftenError}
                             >
-                              Please Enter something
+                              Please Enter How Often
                             </FormHelperText>
                           )}
                         </div>
@@ -492,7 +474,7 @@ export const Symptoms: React.FC<CasesheetInfoProps> = (props) => {
                               component="div"
                               error={errorState.severityError}
                             >
-                              Please Enter something
+                              Please Enter Severity
                             </FormHelperText>
                           )}
                         </div>

@@ -277,7 +277,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
       // pointerEvents: 'none',
-      paddingLeft: 4,
+      paddingLeft: 0,
       marginBottom: 20,
       '& img': {
         marginRight: 8,
@@ -727,7 +727,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
     const mobNumber = sessionStorage.getItem('mobileNumberSession');
     if (mobNumber) {
       setMobileNumber(mobNumber);
-    } else if (mobNumber!.length == 0) {
+    } else if (mobNumber == null || (mobNumber && mobNumber.length == 0)) {
       setMobileNumber('');
     }
   }, []);

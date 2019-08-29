@@ -44,6 +44,10 @@ import {
   getPatientNotificationSettingsResolvers,
   getPatientNotificationSettingsTypeDefs,
 } from 'profiles-service/resolvers/getPatientNotificationSettings';
+import {
+  saveMedicineOrderTypeDefs,
+  saveMedicineOrderResolvers,
+} from 'profiles-service/resolvers/saveMedicineOrders';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 
@@ -124,6 +128,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: getPatientNotificationSettingsTypeDefs,
         resolvers: getPatientNotificationSettingsResolvers,
+      },
+      {
+        typeDefs: saveMedicineOrderTypeDefs,
+        resolvers: saveMedicineOrderResolvers,
       },
     ]),
   });

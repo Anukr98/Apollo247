@@ -32,6 +32,15 @@ import { NavigationScreenProps } from 'react-navigation';
 import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  saveDeviceToken,
+  saveDeviceTokenVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
+import { SAVE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
+import firebase from 'react-native-firebase';
+import DeviceInfo from 'react-native-device-info';
+import { DEVICE_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const { width, height } = Dimensions.get('window');
 
@@ -39,7 +48,7 @@ const styles = StyleSheet.create({
   viewName: {
     backgroundColor: theme.colors.WHITE,
     width: '100%',
-    height: 274,
+    height: Platform.OS === 'ios' ? 274 : 284,
   },
   gotItStyles: {
     height: 60,
@@ -77,10 +86,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fcb716',
     height: 40,
-    width: 160,
+    width: 'auto',
     borderRadius: 10,
     marginLeft: 20,
     marginTop: 16,
+    paddingHorizontal: 13,
   },
   needhelpbuttonStyles: {
     backgroundColor: 'white',
@@ -194,6 +204,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { analytics } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
 
   useEffect(() => {
     let userName =
@@ -201,7 +212,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     userName = userName.toLowerCase();
     setuserName(userName);
     currentPatient && setshowSpinner(false);
-    console.log('consult room', currentPatient);
+    // console.log('consult room', currentPatient);
     analytics.setCurrentScreen(AppRoutes.ConsultRoom);
   }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
@@ -214,6 +225,53 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     fetchData();
   }, []);
+
+  useEffect(() => {
+    callDeviceTokenAPI();
+  });
+
+  const client = useApolloClient();
+
+  const callDeviceTokenAPI = async () => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
+    firebase
+      .messaging()
+      .getToken()
+      .then((token) => {
+        console.log('token', token);
+        if (token !== deviceToken2.deviceToken) {
+          const input = {
+            deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
+            deviceToken: token,
+            deviceOS: Platform.OS === 'ios' ? '' : DeviceInfo.getBaseOS(),
+            patientId: currentPatient ? currentPatient.id : '',
+          };
+          console.log('input', input);
+
+          if (currentPatient && !deviceTokenApICalled) {
+            setDeviceTokenApICalled(true);
+            client
+              .mutate<saveDeviceToken, saveDeviceTokenVariables>({
+                mutation: SAVE_DEVICE_TOKEN,
+                variables: {
+                  SaveDeviceTokenInput: input,
+                },
+              })
+              .then((data: any) => {
+                console.log('APICALLED', data.data.saveDeviceToken.deviceToken);
+                AsyncStorage.setItem(
+                  'deviceToken',
+                  JSON.stringify(data.data.saveDeviceToken.deviceToken)
+                );
+              })
+              .catch((e: string) => {
+                console.log('Error occured while adding Doctor', e);
+              });
+          }
+        }
+      });
+  };
 
   const Popup = () => (
     <TouchableOpacity
@@ -454,6 +512,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 if (i === 0) {
                   props.navigation.replace(AppRoutes.TabBar);
                 } else if (i == 1) {
+                } else if (i == 2) {
+                } else if (i == 3) {
                 }
               }}
             >
@@ -496,12 +556,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             source={require('@aph/mobile-patients/src/images/doctor/doctor.png')}
             style={{
               right: 20,
-              top: 187,
+              top: Platform.OS === 'ios' ? 187 : 197,
               position: 'absolute',
               zIndex: 2,
             }}
           />
-          <View style={{ top: 180, position: 'absolute', zIndex: 3 }}>
+          <View style={{ top: Platform.OS === 'ios' ? 180 : 190, position: 'absolute', zIndex: 3 }}>
             <Button
               title={string.home.consult_doctor}
               style={styles.buttonStyles}
@@ -510,7 +570,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               }}
             />
           </View>
-          <View style={{ width: '100%', height: 436 }}>
+          <View style={{ width: '100%', height: Platform.OS === 'ios' ? 436 : 446 }}>
             <View style={styles.viewName}>
               <View style={{ alignItems: 'flex-end', marginTop: 20, height: 57 }}>
                 <TouchableOpacity onPress={() => props.navigation.replace(AppRoutes.TabBar)}>
@@ -566,7 +626,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       marginHorizontal: 20,
                       backgroundColor: theme.colors.CARD_BG,
                       flexDirection: 'row',
-                      height: 104,
+                      alignItems: 'center',
+                      // height: 104,
                       marginTop: i === 0 ? 0 : 8,
                       marginBottom: arrayTest.length === i + 1 ? 16 : 8,
                     }}
@@ -579,6 +640,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                           lineHeight: 24,
                           textAlign: 'left',
                           ...theme.fonts.IBMPlexSansMedium(14),
+                          paddingRight: 16,
                         }}
                       >
                         {serviceTitle.title}

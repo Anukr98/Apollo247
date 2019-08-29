@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Typography, Chip, Theme, MenuItem, Paper, TextField } from '@material-ui/core';
 import DoneIcon from '@material-ui/icons/Done';
 import { makeStyles, createStyles } from '@material-ui/styles';
@@ -16,6 +16,7 @@ import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription,
 } from 'graphql/types/GetCaseSheet';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 interface OptionType {
   name: string;
@@ -183,25 +184,20 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-interface CasesheetInfoProps {
-  casesheetInfo: GetCaseSheet;
-}
-export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
+export const DiagnosticPrescription: React.FC = () => {
   const classes = useStyles();
-  const [selectedValues, setSelectedValues] = useState<
-    (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[]
-  >([]);
+  const {
+    diagnosticPrescription: selectedValues,
+    setDiagnosticPrescription: setSelectedValues,
+  } = useContext(CaseSheetContext);
+  const [idx, setIdx] = React.useState();
+
   useEffect(() => {
-    if (
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription &&
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription !== null &&
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription.length > 0
-    ) {
-      setSelectedValues(props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosticPrescription);
+    if (idx >= 0) {
+      setSelectedValues(selectedValues);
     }
-  }, []);
+  }, [selectedValues, idx]);
+
   const [state, setState] = React.useState({
     single: '',
     popper: '',
@@ -246,15 +242,17 @@ export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
           Diagnosed Medical Condition
         </Typography>
         <Typography component="div" className={classes.listContainer}>
-          {selectedValues.map((item, idx) => (
-            <Chip
-              className={classes.othersBtn}
-              key={idx}
-              label={item!.name}
-              onDelete={() => {}}
-              deleteIcon={<img src={require('images/ic_selected.svg')} alt="" />}
-            />
-          ))}
+          {selectedValues !== null &&
+            selectedValues.length > 0 &&
+            selectedValues!.map((item, idx) => (
+              <Chip
+                className={classes.othersBtn}
+                key={idx}
+                label={item!.name}
+                onDelete={() => {}}
+                deleteIcon={<img src={require('images/ic_selected.svg')} alt="" />}
+              />
+            ))}
         </Typography>
       </Typography>
       <Typography component="div" className={classes.textFieldContainer}>
@@ -271,7 +269,8 @@ export const DiagnosticPrescription: React.FC<CasesheetInfoProps> = (props) => {
         {showAddCondition && (
           <Autosuggest
             onSuggestionSelected={(e, { suggestion }) => {
-              setSelectedValues(selectedValues.concat(suggestion));
+              selectedValues!.push(suggestion);
+              setSelectedValues(selectedValues);
               setShowAddCondition(false);
               setState({
                 single: '',

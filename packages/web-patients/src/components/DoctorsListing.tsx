@@ -6,6 +6,7 @@ import { AphButton } from '@aph/web-ui-components';
 import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
 import _filter from 'lodash/filter';
+import _compact from 'lodash/compact';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { GET_DOCTORS_BY_SPECIALITY_AND_FILTERS } from 'graphql/doctors';
 import { SearchObject } from 'components/DoctorsFilter';
@@ -17,6 +18,7 @@ import { format, addDays } from 'date-fns';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import { ConsultMode } from 'graphql/types/globalTypes';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -165,7 +167,7 @@ interface DoctorsListingProps {
 
 const convertAvailabilityToDate = (availability: String[]) => {
   return _map(availability, (ava) => {
-    if (ava === 'now') return 'NOW';
+    // if (ava === 'now') return 'NOW';
     if (ava === 'today') return format(new Date(), 'yyyy-MM-dd');
     if (ava === 'tomorrow') return format(addDays(new Date(), 1), 'yyyy-MM-dd');
     if (ava === 'next3') return format(addDays(new Date(), 3), 'yyyy-MM-dd');
@@ -177,6 +179,8 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   const { filter, specialityName, specialityId } = props;
   const [selectedFilterOption, setSelectedFilterOption] = useState<string>('all');
+  const { currentPatient } = useAllCurrentPatients();
+
   const consultOptions = {
     all: 'All Consults',
     ONLINE: 'Online Consult',
@@ -216,14 +220,29 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   }
 
   const apiVairables = {
+    patientId: currentPatient ? currentPatient.id : '',
     specialty: specialityId,
     city: filter.cityName,
     experience: expRange,
+    availability: _compact(convertAvailabilityToDate(filter.availability || [])),
     fees: feeRange,
-    availability: convertAvailabilityToDate(filter.availability || []),
     gender: filter.gender,
     language: filter.language,
+    availableNow:
+      filter.availability && filter.availability.findIndex((v) => v == 'now') >= 0
+        ? format(new Date(), 'yyyy-MM-dd HH:mm')
+        : '',
   };
+
+  // console.log(
+  //   filter.availability &&
+  //     filter.availability.findIndex((v) => {
+  //       console.log(v);
+  //       return v == 'now';
+  //     }),
+  //   filter.availability && filter.availability.length,
+  //   '----------'
+  // );
 
   // console.log(specialityId);
 

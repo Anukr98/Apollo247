@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Typography,
   Chip,
@@ -22,6 +22,7 @@ import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis,
 } from 'graphql/types/GetCaseSheet';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 interface OptionType {
   name: string;
@@ -171,25 +172,19 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-interface CasesheetInfoProps {
-  casesheetInfo: GetCaseSheet;
-}
-export const Diagnosis: React.FC<CasesheetInfoProps> = (props) => {
+export const Diagnosis: React.FC = () => {
   const classes = useStyles();
-  const [selectedValues, setSelectedValues] = useState<
-    (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis | null)[]
-  >([]);
+  const [idx, setIdx] = React.useState();
+  const { diagnosis: selectedValues, setDiagnosis: setSelectedValues } = useContext(
+    CaseSheetContext
+  );
+
   useEffect(() => {
-    if (
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails &&
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosis &&
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosis !== null &&
-      props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosis.length > 0
-    ) {
-      setSelectedValues(props.casesheetInfo.getCaseSheet!.caseSheetDetails!.diagnosis);
+    if (idx >= 0) {
+      setSelectedValues(selectedValues);
     }
-  }, []);
+  }, [selectedValues, idx]);
+
   const [state, setState] = React.useState({
     single: '',
     popper: '',
@@ -213,9 +208,11 @@ export const Diagnosis: React.FC<CasesheetInfoProps> = (props) => {
       [name]: newValue,
     });
   };
-  const handleDelete = (name: any) => {
-    console.log(name);
-    setSelectedValues(selectedValues.filter((item) => item!.name !== name));
+  const handleDelete = (idx: number) => {
+    selectedValues!.splice(idx, 1);
+    setSelectedValues(selectedValues);
+    const sum = idx + Math.random();
+    setIdx(sum);
   };
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
   const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
@@ -235,15 +232,17 @@ export const Diagnosis: React.FC<CasesheetInfoProps> = (props) => {
         Diagnosed Medical Condition
       </Typography>
       <Typography component="div">
-        {selectedValues.map((item, idx) => (
-          <Chip
-            className={classes.diagnosBtn}
-            key={idx}
-            label={item!.name}
-            onDelete={() => handleDelete(item!.name)}
-            color="primary"
-          />
-        ))}
+        {selectedValues !== null &&
+          selectedValues.length > 0 &&
+          selectedValues!.map((item, idx) => (
+            <Chip
+              className={classes.diagnosBtn}
+              key={idx}
+              label={item!.name}
+              onDelete={() => handleDelete(idx)}
+              color="primary"
+            />
+          ))}
       </Typography>
       {!showAddCondition && (
         <AphButton
@@ -258,7 +257,8 @@ export const Diagnosis: React.FC<CasesheetInfoProps> = (props) => {
       {showAddCondition && (
         <Autosuggest
           onSuggestionSelected={(e, { suggestion }) => {
-            setSelectedValues(selectedValues.concat(suggestion));
+            selectedValues!.push(suggestion);
+            setSelectedValues(selectedValues);
             setShowAddCondition(false);
             setState({
               single: '',

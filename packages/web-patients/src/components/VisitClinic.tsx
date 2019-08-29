@@ -249,7 +249,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     fetchPolicy: 'network-only',
   });
 
-  console.log('data is..........', data);
+  // console.log('data is..........', data);
 
   useEffect(() => {
     if (prevDateSelected !== dateSelected) setTimeSelected('');
@@ -269,9 +269,10 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
 
   const availableSlots = (data && data.getDoctorPhysicalAvailableSlots.availableSlots) || [];
   availableSlots.map((slot) => {
-    const slotTimeUtc = new Date(new Date(`${apiDateFormat} ${slot}:00`).toISOString()).getTime();
-    const localTimeOffset = new Date().getTimezoneOffset() * 60000;
-    const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
+    // const slotTimeUtc = new Date(new Date(`${apiDateFormat} ${slot}:00`).toISOString()).getTime();
+    // const localTimeOffset = new Date().getTimezoneOffset() * 60000;
+    // const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
+    const slotTime = new Date(slot).getTime();
     const currentTime = new Date(new Date().toISOString()).getTime();
     if (slotTime > currentTime) {
       if (slotTime < morningTime) morningSlots.push(slotTime);

@@ -77,6 +77,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [otp, setOtp] = useState<string>('');
   const [isresent, setIsresent] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [onOtpClick, setOnOtpClick] = useState<boolean>(false);
 
   const { verifyOtp, sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
@@ -206,24 +207,26 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   useEffect(() => {
-    if (currentPatient) {
-      if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
-        if (currentPatient.relation == null) {
-          props.navigation.replace(AppRoutes.MultiSignup);
+    if (onOtpClick) {
+      if (currentPatient) {
+        if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
+          if (currentPatient.relation == null) {
+            props.navigation.replace(AppRoutes.MultiSignup);
+          } else {
+            AsyncStorage.setItem('userLoggedIn', 'true');
+            props.navigation.replace(AppRoutes.ConsultRoom);
+          }
         } else {
-          AsyncStorage.setItem('userLoggedIn', 'true');
-          props.navigation.replace(AppRoutes.ConsultRoom);
-        }
-      } else {
-        if (currentPatient.firstName == '') {
-          props.navigation.replace(AppRoutes.SignUp);
-        } else {
-          AsyncStorage.setItem('userLoggedIn', 'true');
-          props.navigation.replace(AppRoutes.ConsultRoom);
+          if (currentPatient.firstName == '') {
+            props.navigation.replace(AppRoutes.SignUp);
+          } else {
+            AsyncStorage.setItem('userLoggedIn', 'true');
+            props.navigation.replace(AppRoutes.ConsultRoom);
+          }
         }
       }
     }
-  }, [props.navigation, currentPatient]);
+  }, [props.navigation, currentPatient, onOtpClick]);
 
   useEffect(() => {
     if (signInError && otp.length === 6) {
@@ -251,9 +254,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     verifyOtp(otp)
       .then(() => {
         _removeFromStore();
+        setOnOtpClick(true);
       })
       .catch((error) => {
         console.log({ error });
+        setOnOtpClick(false);
         setTimeout(() => {
           if (isAuthChanged) {
             _removeFromStore();

@@ -346,6 +346,9 @@ export const GET_CASESHEET = gql`
           description
           relation
         }
+        patientAddress {
+          city
+        }
         dateOfBirth
         emailAddress
         firstName
@@ -474,5 +477,10 @@ export const UPDATE_CASESHEET = gql`
         instruction
       }
     }
+  }
+`;
+export const END_APPOINTMENT_SESSION = gql`
+  mutation EndAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput) {
+    endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput)
   }
 `;

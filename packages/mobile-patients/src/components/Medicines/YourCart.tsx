@@ -8,29 +8,22 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { GET_PATIENT_ADDRESS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  getPatientAddressList,
-  getPatientAddressList_getPatientAddressList_addressList,
-} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import {
   CartInfoResponse,
-  MedicineProductsResponse,
-  getCartInfo,
   CartItem,
+  getCartInfo,
+  MedicineProduct,
+  removeProductFromCartApi,
+  setLocalCartInfo,
+  incOrDecProductCountToCartApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import Axios from 'axios';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import {
-  FlatList,
-  NavigationEventSubscription,
-  NavigationScreenProps,
-  ScrollView,
-} from 'react-navigation';
+import React, { useContext, useEffect, useState } from 'react';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import { AuthContext } from '../AuthProvider';
+import { AxiosResponse } from 'axios';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -65,31 +58,21 @@ const styles = StyleSheet.create({
   },
 });
 
-let didFocusSubscription: NavigationEventSubscription;
-const addresses = [
-  'Apollo Pharmacy\nPlot No B / 88, Opposite Andhra Bank\nJubilee Hills',
-  'Apollo Pharmacy\nPlot No B / 88, Opposite Andhra Bank\nJubilee Hills',
-  'Apollo Pharmacy\nPlot No B / 88, Opposite Andhra Bank\nJubilee Hills',
-];
-
-type MedicineCardState = {
+interface MedicineCardState {
   // subscriptionStatus: 'already-subscribed' | 'subscribed-now' | 'unsubscribed';
   isCardExpanded: boolean;
   isAddedToCart: boolean;
   unit: number;
-};
+  price: number;
+}
 
 export interface YourCartProps extends NavigationScreenProps {}
 
 export const YourCart: React.FC<YourCartProps> = (props) => {
   const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
-  const [selectedHomeDelivery, setselectedHomeDelivery] = useState<number>(0);
-
+  const [selectedHomeDelivery, setselectedHomeDelivery] = useState<string>('');
   const [medicineList, setMedicineList] = useState<CartItem[]>([]);
-  const [addressList, setaddressList] = useState<
-    getPatientAddressList_getPatientAddressList_addressList[] | null
-  >([]);
   const [cartDetails, setcartDetails] = useState<CartInfoResponse>();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [medicineCardStatus, setMedicineCardStatus] = useState<{
@@ -97,16 +80,30 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }>({});
 
   const { currentPatient } = useAllCurrentPatients();
-  const client = useApolloClient();
+  const addressList = useContext(AuthContext).addresses;
+  const selectedAddressId = useContext(AuthContext).selectedAddressId;
+  const setSelectedAddressId = useContext(AuthContext).setSelectedAddressId;
+  const totalItemsPrices = Object.keys(medicineCardStatus).map(
+    (sku) => medicineCardStatus[sku].price * medicineCardStatus[sku].unit
+  );
+  const grandTotal =
+    totalItemsPrices.length > 0
+      ? totalItemsPrices.reduce((accumulator, currentValue) => accumulator + currentValue)
+      : 0;
 
   useEffect(() => {
     getCartInfo()
       .then((cartInfo) => {
         setcartDetails(cartInfo);
-        let cartStatus = {} as { [sku: string]: MedicineCardState };
+        let cartStatus = {} as typeof medicineCardStatus;
         cartInfo &&
           cartInfo.items.forEach((item) => {
-            cartStatus[item.sku] = { isAddedToCart: true, isCardExpanded: true, unit: item.qty };
+            cartStatus[item.sku] = {
+              isAddedToCart: true,
+              isCardExpanded: true,
+              unit: item.qty,
+              price: item.price,
+            };
           });
         setMedicineCardStatus({
           ...medicineCardStatus,
@@ -120,52 +117,79 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       });
   }, []);
 
-  const fetchAddress = useCallback(() => {
-    client
-      .query<getPatientAddressList>({ query: GET_PATIENT_ADDRESS_LIST, fetchPolicy: 'no-cache' })
-      .then(({ data: { getPatientAddressList } }) => {
-        // set to context
-        console.log('getPatientAddressList qqq', getPatientAddressList);
+  const showGenericALert = (e: { response: AxiosResponse }) => {
+    const error = e && e.response && e.response.data.message;
+    console.log({ errorResponse: e.response, error }); //remove this line later
+    Alert.alert('Error', error || 'Unknown error occurred.');
+  };
+
+  const onPressRemoveFromCart = async (medicine: MedicineProduct) => {
+    console.log({ id: medicine.id });
+    let cartItemId = 0;
+    let cartInfo: CartInfoResponse | null = null;
+    try {
+      cartInfo = await getCartInfo();
+      const cartItem = cartInfo.items.find((cartItem) => cartItem.sku == medicine.sku);
+      cartItemId = (cartItem && cartItem.item_id) || 0;
+    } catch (error) {
+      console.log(error);
+    }
+    if (!cartItemId) {
+      Alert.alert('Error', 'Item does not exist in cart');
+      return;
+    }
+    removeProductFromCartApi(cartItemId)
+      .then(({ data }) => {
+        console.log('onPressRemoveFromCar', data);
+        const cloneOfMedicineCardStatus = { ...medicineCardStatus };
+        delete cloneOfMedicineCardStatus[medicine.sku];
+        setMedicineCardStatus(cloneOfMedicineCardStatus);
+        // remove from local cart
+        const cartItems = cartInfo!.items.filter((item) => item.item_id != cartItemId);
+        setLocalCartInfo({ ...cartInfo!, items: cartItems });
+        setcartDetails({ ...cartInfo!, items: cartItems });
       })
       .catch((e) => {
-        const error = JSON.parse(JSON.stringify(e));
-        console.log(e, error);
+        showGenericALert(e);
       });
-  }, [client]);
+  };
 
-  useEffect(() => {
-    fetchAddress();
-    didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      console.log('didFocus', payload);
-      fetchAddress();
-    });
-  }, [fetchAddress, props.navigation]);
-
-  useEffect(() => {
-    return () => {
-      didFocusSubscription && didFocusSubscription.remove();
-    };
-  }, []);
-
-  console.log(currentPatient);
-  const { data, error } = useQuery<getPatientAddressList>(GET_PATIENT_ADDRESS_LIST, {
-    variables: {
-      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-    },
-  });
-  if (error) {
-    console.log('error', error);
-  } else {
-    console.log('getPatientAddressList', data);
-    if (
-      data &&
-      data.getPatientAddressList &&
-      addressList !== data.getPatientAddressList.addressList
-    ) {
-      console.log('data', data.getPatientAddressList);
-      setaddressList(data.getPatientAddressList.addressList);
+  const onChangeUnitFromCart = async (medicine: MedicineProduct, unit: number) => {
+    if (unit < 1) {
+      return;
     }
-  }
+    console.log({ id: medicine.id });
+    let cartItemId = 0;
+    let cartInfo: CartInfoResponse | null = null;
+    try {
+      cartInfo = await getCartInfo();
+      const cartItem = cartInfo.items.find((cartItem) => cartItem.sku == medicine.sku);
+      cartItemId = (cartItem && cartItem.item_id) || 0;
+    } catch (error) {
+      console.log(error);
+    }
+    if (!cartItemId) {
+      Alert.alert('Error', 'Item does not exist in cart');
+      return;
+    }
+    incOrDecProductCountToCartApi(medicine.sku, cartItemId, unit)
+      .then(({ data }) => {
+        console.log('onChangeUnitFromCart', data);
+        setMedicineCardStatus({
+          ...medicineCardStatus,
+          [medicine.sku]: {
+            ...medicineCardStatus[medicine.sku],
+            unit: data.qty,
+            price: data.price,
+          },
+        });
+        const cartItems = cartInfo!.items.map((item) => (item.item_id != cartItemId ? item : data));
+        setLocalCartInfo({ ...cartInfo!, items: cartItems });
+      })
+      .catch((e) => {
+        showGenericALert(e);
+      });
+  };
 
   const renderHeader = () => {
     return (
@@ -205,8 +229,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderItemsInCart = () => {
-    const cartItemsCount = (cartDetails && cartDetails.items.length) || 0;
-    const _cartItemsCount = cartItemsCount < 10 ? `0${cartItemsCount}` : cartItemsCount.toString();
+    const cartItemsCount = Object.keys(medicineCardStatus).length || 0;
+    const _cartItemsCount =
+      cartItemsCount < 10 && cartItemsCount > 0 ? `0${cartItemsCount}` : cartItemsCount.toString();
     return (
       <View>
         {renderLabel('ITEMS IN YOUR CART', _cartItemsCount)}
@@ -234,14 +259,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               unit={
                 (medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].unit) || 1
               }
-              onPressAdd={() => {
-                // onPressAddToCart(medicine);
-              }}
+              onPressAdd={() => {}}
               onPressRemove={() => {
-                // onPressRemoveFromCart(medicine);
+                onPressRemoveFromCart((medicine as unknown) as MedicineProduct);
               }}
               onChangeUnit={(unit) => {
-                // onChangeUnitFromCart(medicine, unit);
+                onChangeUnitFromCart((medicine as unknown) as MedicineProduct, unit);
               }}
               isCardExpanded={
                 medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].isCardExpanded
@@ -252,12 +275,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 // (medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].subscriptionStatus) ||
                 'unsubscribed'
               }
-              onChangeSubscription={(status) => {
-                setMedicineCardStatus({
-                  ...medicineCardStatus,
-                  // [medicine.sku]: { ...medicineCardStatus[medicine.sku], subscriptionStatus: status },
-                });
-              }}
+              onChangeSubscription={() => {}}
               onEditPress={() => {}}
               onAddSubscriptionPress={() => {}}
             />
@@ -302,6 +320,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderHomeDelivery = () => {
+    const selectedAddressIndex =
+      addressList && addressList.findIndex((address) => address.id == selectedAddressId);
+    const addressListLength = addressList && addressList.length;
+    const spliceStartIndex =
+      selectedAddressIndex == addressListLength - 1
+        ? selectedAddressIndex - 1
+        : selectedAddressIndex;
+    const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
+
     return (
       <View
         style={{
@@ -310,17 +337,23 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         }}
       >
         {addressList &&
-          [...addressList].slice(0, 2).map((item, index: number) => (
-            <RadioSelectionItem
-              title={`${item.addressLine1} ${item.addressLine2}\n ${item.city} ${item.state} ${item.landmark}`}
-              isSelected={selectedHomeDelivery === index}
-              onPress={() => setselectedHomeDelivery(index)}
-              containerStyle={{
-                marginTop: 16,
-              }}
-              hideSeparator={index + 1 === addressList.length}
-            />
-          ))}
+          addressList.slice(startIndex, startIndex + 2).map((item, index) => {
+            console.log({ item, i: item.id }, item.id === selectedAddressId);
+            return (
+              <RadioSelectionItem
+                key={item.id}
+                title={`${item.addressLine1}, ${item.addressLine2}\n${item.landmark}\n${item.city}, ${item.state} - ${item.zipcode}`}
+                isSelected={selectedAddressId == item.id}
+                onPress={() => {
+                  setSelectedAddressId && setSelectedAddressId(item.id);
+                }}
+                containerStyle={{
+                  marginTop: 16,
+                }}
+                hideSeparator={index + 1 === addressList.length}
+              />
+            );
+          })}
         <View
           style={{
             flexDirection: 'row',
@@ -328,9 +361,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           }}
         >
           <Text
-            style={{
-              ...styles.yellowTextStyle,
-            }}
+            style={styles.yellowTextStyle}
             onPress={() => props.navigation.navigate(AppRoutes.AddAddress)}
           >
             ADD NEW ADDRESS
@@ -338,9 +369,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           <View>
             {addressList && addressList.length > 2 && (
               <Text
-                style={{
-                  ...styles.yellowTextStyle,
-                }}
+                style={styles.yellowTextStyle}
                 onPress={() => props.navigation.navigate(AppRoutes.SelectDeliveryAddress)}
               >
                 VIEW ALL
@@ -361,20 +390,19 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         }}
       >
         <TextInputComponent />
-        {addresses &&
-          [...addresses].slice(0, 2).map((item, index: number) => (
-            <RadioSelectionItem
-              title={item}
-              isSelected={selectedHomeDelivery === index}
-              onPress={() => setselectedHomeDelivery(index)}
-              containerStyle={{
-                marginTop: 16,
-              }}
-              hideSeparator={index + 1 === addresses.length}
-            />
-          ))}
+        {[...addressList].slice(0, 2).map((item, index: number) => (
+          <RadioSelectionItem
+            title={item.addressLine1!}
+            isSelected={selectedHomeDelivery === item.id}
+            onPress={() => setselectedHomeDelivery(item.id)}
+            containerStyle={{
+              marginTop: 16,
+            }}
+            hideSeparator={index + 1 === addressList.length}
+          />
+        ))}
         <View>
-          {addresses && addresses.length > 2 && (
+          {addressList.length > 2 && (
             <Text
               style={{
                 ...styles.yellowTextStyle,
@@ -475,9 +503,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             }}
           >
             <Text style={styles.blueTextStyle}>Subtotal</Text>
-            <Text style={styles.blueTextStyle}>
-              Rs. {cartDetails ? cartDetails.grand_total : 0}
-            </Text>
+            <Text style={styles.blueTextStyle}>Rs. {grandTotal}</Text>
           </View>
           <View
             style={{
@@ -498,7 +524,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             <Text style={styles.blueTextStyle}>To Pay </Text>
             <Text style={[styles.blueTextStyle, { ...theme.fonts.IBMPlexSansBold }]}>
               {' '}
-              Rs. {cartDetails ? cartDetails.grand_total : 0}{' '}
+              Rs. {grandTotal}{' '}
             </Text>
           </View>
         </View>
@@ -584,11 +610,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
         <ScrollView>
-          <View
-            style={{
-              marginVertical: 24,
-            }}
-          >
+          <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
             {renderUploadPrescription()}
             {renderDelivery()}
@@ -599,7 +621,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         </ScrollView>
         <StickyBottomComponent defaultBG>
           <Button
-            title={`PROCEED TO PAY — RS. ${cartDetails ? cartDetails.grand_total : 0}`}
+            title={`PROCEED TO PAY — RS. ${grandTotal}`}
             style={{ flex: 1, marginHorizontal: 40 }}
           />
         </StickyBottomComponent>

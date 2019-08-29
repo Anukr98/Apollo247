@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import {
   Theme,
@@ -26,6 +26,7 @@ import {
 import { UserCard } from 'components/case-sheet/UserCard';
 //import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -142,23 +143,20 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface CasesheetInfoProps {
-  casesheetInfo: GetCaseSheet;
-  appointmentId: string;
-}
-export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
+export const CaseSheet: React.FC = () => {
   const classes = useStyles();
   const [expanded, setExpanded] = useState<string | boolean>(false);
   const handlePanelExpansion = (panelName: string) => (
     e: React.ChangeEvent<{}>,
     isExpanded: boolean
   ) => setExpanded(isExpanded ? panelName : false);
+  const { setNotes } = useContext(CaseSheetContext);
 
   return (
     <div className={classes.container}>
       <div className={classes.caseSheet}>
         <section className={`${classes.column} ${classes.right}`}>
-          <UserCard casesheetInfo={props.casesheetInfo} appointmentId={props.appointmentId} />
+          <UserCard />
         </section>
         <section className={classes.column}>
           {/* Symptoms Panel */}
@@ -171,7 +169,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
               <Typography variant="h3">Symptoms</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <Symptoms casesheetInfo={props.casesheetInfo} />
+              <Symptoms />
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
@@ -213,7 +211,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
               <Typography variant="h3">Juniour Doctor's Notes</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <DoctorsNotes casesheetInfo={props.casesheetInfo} />
+              <DoctorsNotes />
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
@@ -227,7 +225,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
               <Typography variant="h3">Diagnosis</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <Diagnosis casesheetInfo={props.casesheetInfo} />
+              <Diagnosis />
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
@@ -241,7 +239,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
               <Typography variant="h3">Medicine Prescription</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <MedicinePrescription casesheetInfo={props.casesheetInfo} />
+              <MedicinePrescription />
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
@@ -255,7 +253,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
               <Typography variant="h3">Diagnostic Prescription</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <DiagnosticPrescription casesheetInfo={props.casesheetInfo} />
+              <DiagnosticPrescription />
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
@@ -283,7 +281,7 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
               <Typography variant="h3">Other Instructions</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <OtherInstructions casesheetInfo={props.casesheetInfo} />
+              <OtherInstructions />
             </ExpansionPanelDetails>
           </ExpansionPanel>
         </section>
@@ -298,6 +296,13 @@ export const CaseSheet: React.FC<CasesheetInfoProps> = (props) => {
             fullWidth
             className={classes.textFieldColor}
             placeholder="What you enter here won’t be shown to the patient.."
+            onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                setNotes((e.target as HTMLInputElement).value.trim());
+
+                e.preventDefault();
+              }
+            }}
           />
         </Typography>
       </Box>

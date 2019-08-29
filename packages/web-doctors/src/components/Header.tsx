@@ -54,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) => {
         width: 55,
         display: 'inline-block',
         textAlign: 'center',
+        cursor: 'pointer',
       },
       '& img': {
         width: 28,

@@ -1,21 +1,5 @@
 import gql from 'graphql-tag';
 
-export const GET_PATIENTS = gql`
-  query GetPatients {
-    getPatients {
-      patients {
-        id
-        mobileNumber
-        firstName
-        lastName
-        gender
-        uhid
-        relation
-      }
-    }
-  }
-`;
-
 export const GET_CURRENT_PATIENTS = gql`
   query GetCurrentPatients {
     getCurrentPatients {
@@ -86,82 +70,6 @@ export const GET_PATIENT_PAST_SEARCHES = gql`
   }
 `;
 
-export const GET_SPECIALTIES = gql`
-  query getSpecialties {
-    getSpecialties {
-      id
-      name
-      image
-    }
-  }
-`;
-
-export const GET_DOCTOR_PROFILE_BY_ID = gql`
-  query getDoctorProfileById($id: String!) {
-    getDoctorProfileById(id: $id) {
-      profile {
-        id
-        salutation
-        firstName
-        lastName
-        experience
-        speciality
-        specialization
-        isStarDoctor
-        education
-        services
-        languages
-        city
-        address
-        awards
-        photoUrl
-        registrationNumber
-        isProfileComplete
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        onlineConsultationFees
-        physicalConsultationFees
-        availableIn
-      }
-      paymentDetails {
-        accountNumber
-        address
-      }
-      clinics {
-        id
-        name
-        image
-        addressLine1
-        addressLine2
-        addressLine3
-        city
-        isClinic
-      }
-      starDoctorTeam {
-        id
-        salutation
-        firstName
-        lastName
-        experience
-        speciality
-        specialization
-        education
-        city
-        address
-        photoUrl
-      }
-      consultationHours {
-        days
-        startTime
-        endTime
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        type
-      }
-    }
-  }
-`;
-
 export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
   query SearchDoctorAndSpecialty($searchText: String!) {
     SearchDoctorAndSpecialty(searchText: $searchText) {
@@ -216,32 +124,6 @@ export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
           name
           image
         }
-      }
-    }
-  }
-`;
-
-export const SPECIALITY_DOCTOR_FILTERS = gql`
-  query getSpecialtyDoctorsWithFilters($filterInput: filterInput) {
-    getSpecialtyDoctorsWithFilters(filterInput: $filterInput) {
-      doctors {
-        id
-        salutation
-        firstName
-        lastName
-        experience
-        speciality
-        specialization
-        isStarDoctor
-        education
-        services
-        languages
-        city
-        address
-        photoUrl
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        availableIn
       }
     }
   }
@@ -524,24 +406,6 @@ export const GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS = gql`
   }
 `;
 
-export const UPDATE_PATIENT_ADDRESS = gql`
-  mutation updatePatientAddress($UpdatePatientAddressInput: UpdatePatientAddressInput!) {
-    updatePatientAddress(UpdatePatientAddressInput: $UpdatePatientAddressInput) {
-      patientAddress {
-        id
-        addressLine1
-        addressLine2
-        city
-        state
-        zipcode
-        landmark
-        createdDate
-        updatedDate
-      }
-    }
-  }
-`;
-
 export const SAVE_PATIENT_ADDRESS = gql`
   mutation savePatientAddress($PatientAddressInput: PatientAddressInput!) {
     savePatientAddress(PatientAddressInput: $PatientAddressInput) {
@@ -574,6 +438,96 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         createdDate
         updatedDate
       }
+    }
+  }
+`;
+
+export const GET_CASESHEET_DETAILS = gql`
+  query getCaseSheet($appointmentId: String) {
+    getCaseSheet(appointmentId: $appointmentId) {
+      caseSheetDetails {
+        appointment {
+          id
+          appointmentDateTime
+          appointmentState
+          appointmentType
+          doctorId
+          hospitalId
+          patientId
+          parentId
+          status
+        }
+        consultType
+        diagnosis {
+          name
+        }
+        diagnosticPrescription {
+          name
+        }
+        doctorId
+        followUp
+        followUpAfterInDays
+        followUpDate
+        id
+        medicinePrescription {
+          medicineConsumptionDurationInDays
+          medicineDosage
+          medicineInstructions
+          medicineTimings
+          medicineToBeTaken
+          medicineName
+          id
+        }
+        notes
+        otherInstructions {
+          instruction
+        }
+        patientId
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+        }
+      }
+      patientDetails {
+        id
+      }
+      juniorDoctorNotes
+    }
+  }
+`;
+
+export const SAVE_DEVICE_TOKEN = gql`
+  mutation saveDeviceToken($SaveDeviceTokenInput: SaveDeviceTokenInput!) {
+    saveDeviceToken(SaveDeviceTokenInput: $SaveDeviceTokenInput) {
+      deviceToken {
+        id
+        deviceType
+        deviceOS
+        deviceToken
+        createdDate
+        updatedDate
+      }
+    }
+  }
+`;
+
+// export const END_APPOINTMENT_SESSION = gql`
+//   mutation endAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput!) {
+//     endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput) {
+
+//     }
+//   }
+// `;
+
+export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
+  query getPatientPastMedicineSearches($patientId: ID!) {
+    getPatientPastMedicineSearches(patientId: $patientId) {
+      searchType
+      typeId
+      name
+      image
     }
   }
 `;

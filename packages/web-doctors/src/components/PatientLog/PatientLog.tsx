@@ -137,22 +137,23 @@ const useStyles = makeStyles((theme: Theme) => {
     tabBarHeading: {
       boxShadow: 'inset 0px 5px 6px -6px rgba(128,128,128,0.3)',
       backgroundColor: theme.palette.secondary.contrastText,
+      position: 'relative',
     },
     sortByTitle: {
       width: 100,
       height: 63,
-      padding: 20,
+      padding: 17,
       position: 'absolute',
-      right: '25%',
+      right: '85%',
       fontWeight: 700,
       fontSize: 16,
     },
     sortByDropdown: {
-      width: '16%',
+      width: '22%',
       height: 63,
       padding: 20,
       position: 'absolute',
-      right: '11%',
+      right: '1%',
       fontWeight: 700,
       fontSize: 16,
       paddingTop: 5,
@@ -165,6 +166,7 @@ const useStyles = makeStyles((theme: Theme) => {
       left: '270px',
       width: 180,
       color: '#00b38e !important',
+      display: 'inline-block',
       '& ul': {
         padding: '10px 0px',
         '& li': {
@@ -244,8 +246,9 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
               >
                 {tabsHtml}
               </AntTabs>
-              <span className={classes.sortByTitle}>Sort by:</span>
+
               <span className={classes.sortByDropdown}>
+                <span className={classes.sortByTitle}>Sort by:</span>
                 <AphSelect
                   value={sortBY}
                   fullWidth

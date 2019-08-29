@@ -372,6 +372,7 @@ interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
   saveCasesheetAction: () => void;
+  endConsultAction: () => void;
   appointmentId: string;
   appointmentDateTime: string;
   doctorId: string;
@@ -610,6 +611,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   onStopConsult();
                   setStartAppointment(!startAppointment);
                   stopInterval();
+                  props.endConsultAction();
                 }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">

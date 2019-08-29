@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Theme,
   makeStyles,
@@ -20,6 +20,7 @@ import axios from 'axios';
 import _debounce from 'lodash/debounce';
 import { CircularProgress } from '@material-ui/core';
 import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const apiDetails = {
   url: 'http://uat.apollopharmacy.in/searchprd_api.php',
@@ -45,7 +46,7 @@ function renderInputComponent(inputProps: any) {
       placeholder="Search"
       fullWidth
       InputProps={{
-        inputRef: (node) => {
+        inputRef: (node: any) => {
           ref(node);
           inputRef(node);
         },
@@ -271,11 +272,25 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 41,
       position: 'relative',
     },
+    updateSymptom: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      top: 30,
+      right: 15,
+      color: '#666666',
+      position: 'absolute',
+      fontSize: 14,
+      fontWeight: theme.typography.fontWeightBold,
+      paddingLeft: 4,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
     deleteSymptom: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
       top: 0,
-      right: -18,
+      right: 15,
       color: '#666666',
       position: 'absolute',
       fontSize: 14,
@@ -302,19 +317,31 @@ interface MedicineObject {
   duration: string;
   selected: boolean;
 }
+interface MedicineObjectArr {
+  medicineConsumptionDurationInDays: string;
+  medicineDosage: any;
+  medicineInstructions: string;
+  medicineTimings: [];
+  medicineToBeTaken: [];
+  medicineName: string;
+  id: string;
+}
 interface errorObject {
   daySlotErr: boolean;
   tobeTakenErr: boolean;
   durationErr: boolean;
 }
-interface CasesheetInfoProps {
-  casesheetInfo: GetCaseSheet;
-}
-export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
+
+export const MedicinePrescription: React.FC = () => {
   const classes = useStyles();
+  const {
+    medicinePrescription: selectedMedicinesArr,
+    setMedicinePrescription: setSelectedMedicinesArr,
+  } = useContext(CaseSheetContext);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
   const [idx, setIdx] = React.useState();
+  const [isUpdate, setIsUpdate] = React.useState(false);
   const [medicineInstruction, setMedicineInstruction] = React.useState<string>('');
   const [errorState, setErrorState] = React.useState<errorObject>({
     daySlotErr: false,
@@ -380,6 +407,7 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
     //   selected: true,
     // },
   ]);
+  // const [selectedMedicinesArr, setSelectedMedicinesArr] = React.useState<MedicineObjectArr[]>([]);
 
   const [searchInput, setSearchInput] = useState('');
   function getSuggestions(value: string) {
@@ -436,41 +464,83 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
   const deletemedicine = (idx: any) => {
     selectedMedicines.splice(idx, 1);
     setSelectedMedicines(selectedMedicines);
+    selectedMedicinesArr!.splice(idx, 1);
+    setSelectedMedicinesArr(selectedMedicinesArr);
     const sum = idx + Math.random();
     setIdx(sum);
+  };
+  const updateMedicine = (idx: any) => {
+    const slots = toBeTakenSlots.map((slot: SlotsObject) => {
+      selectedMedicinesArr![idx].medicineToBeTaken!.map((selectedSlot: any) => {
+        const selectedValue = selectedSlot.replace(' ', '');
+        if (selectedValue.toLowerCase() === slot.id) {
+          slot.selected = !slot.selected;
+        }
+      });
+      return slot;
+    });
+    setToBeTakenSlots(slots);
+
+    const dayslots = daySlots.map((slot: SlotsObject) => {
+      selectedMedicinesArr![idx].medicineTimings!.map((selectedSlot: any) => {
+        if (selectedSlot.toLowerCase() === slot.id) {
+          slot.selected = !slot.selected;
+        }
+      });
+      return slot;
+    });
+    setDaySlots(dayslots);
+    console.log(selectedMedicinesArr![idx].medicineTimings);
+
+    setMedicineInstruction(selectedMedicinesArr![idx].medicineInstructions!);
+    setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
+    setTabletsCount(Number(selectedMedicinesArr![idx].medicineDosage!));
+    // setDaySlots(selectedMedicinesArr[idx].medicineTimings);
+    setSelectedValue(selectedMedicinesArr![idx].medicineName!);
+    // setToBeTakenSlots(selectedMedicinesArr[idx].medicineToBeTaken);
+    setIsDialogOpen(true);
+    setShowDosage(true);
+    setIsUpdate(true);
   };
   useEffect(() => {
     if (idx >= 0) {
       setSelectedMedicines(selectedMedicines);
+      setSelectedMedicinesArr(selectedMedicinesArr);
     }
-  }, [selectedMedicines, idx]);
+  }, [selectedMedicines, idx, selectedMedicines]);
   function getSuggestionValue(suggestion: OptionType) {
     return suggestion.label;
   }
   useEffect(() => {
-    if (
-      props.casesheetInfo &&
-      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription !== null &&
-      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription!.length > 0
-    ) {
-      props!.casesheetInfo!.getCaseSheet!.caseSheetDetails!.medicinePrescription!.forEach(
-        (res: any) => {
-          const inputParams = {
-            id: res.medicineName.trim(),
-            value: res.medicineName,
-            name: res.medicineName,
-            times: Number(res.medicineConsumptionDurationInDays),
-            daySlots: res.medicineTimings.join(' ').toLowerCase(),
-            duration: `${Number(
-              res.medicineConsumptionDurationInDays
-            )} days ${res.medicineToBeTaken.join(' ').toLowerCase()}`,
-            selected: true,
-          };
-          const x = selectedMedicines;
-          x.push(inputParams);
-          setSelectedMedicines(x);
-        }
-      );
+    if (selectedMedicinesArr && selectedMedicinesArr!.length) {
+      selectedMedicinesArr!.forEach((res: any) => {
+        const inputParamsArr: any = {
+          medicineConsumptionDurationInDays: res.medicineConsumptionDurationInDays,
+          medicineDosage: res.medicineDosage,
+          medicineInstructions: res.medicineInstructions,
+          medicineTimings: res.medicineTimings,
+          medicineToBeTaken: res.medicineToBeTaken,
+          medicineName: res.medicineName,
+          id: res.id,
+        };
+        const inputParams: any = {
+          id: res.medicineName.trim(),
+          value: res.medicineName,
+          name: res.medicineName,
+          times: Number(res.medicineConsumptionDurationInDays),
+          daySlots: res.medicineTimings.join(' ').toLowerCase(),
+          duration: `${Number(
+            res.medicineConsumptionDurationInDays
+          )} days ${res.medicineToBeTaken.join(' ').toLowerCase()}`,
+          selected: true,
+        };
+        const xArr = selectedMedicinesArr;
+        xArr.push(inputParamsArr);
+        setSelectedMedicinesArr(xArr);
+        const x = selectedMedicines;
+        x.push(inputParams);
+        setSelectedMedicines(x);
+      });
     }
   }, []);
   useEffect(() => {
@@ -522,6 +592,15 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
             variant="contained"
             color="primary"
             key={`del ${index}`}
+            classes={{ root: classes.updateSymptom }}
+            onClick={() => updateMedicine(index)}
+          >
+            <img src={require('images/round_edit_24_px.svg')} alt="" />
+          </AphButton>
+          <AphButton
+            variant="contained"
+            color="primary"
+            key={`del ${index}`}
             classes={{ root: classes.deleteSymptom }}
             onClick={() => deletemedicine(index)}
           >
@@ -550,13 +629,13 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
     const daySlotsArr: any = [];
     const isTobeTakenSelected = toBeTakenSlots.filter(function(slot: SlotsObject) {
       if (slot.selected) {
-        toBeTakenSlotsArr.push(slot.value);
+        toBeTakenSlotsArr.push(slot.value.toUpperCase().replace(' ', '_'));
       }
       return slot.selected !== false;
     });
     const daySlotsSelected = daySlots.filter(function(slot: SlotsObject) {
       if (slot.selected) {
-        daySlotsArr.push(slot.value);
+        daySlotsArr.push(slot.value.toUpperCase());
       }
       return slot.selected !== false;
     });
@@ -577,8 +656,16 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
       //   medicineInstruction: medicineInstruction
       // }
       const slot1value = '';
-
-      const inputParams = {
+      const inputParamsArr: any = {
+        medicineConsumptionDurationInDays: consumptionDuration,
+        medicineDosage: tabletsCount,
+        medicineInstructions: medicineInstruction,
+        medicineTimings: daySlotsArr,
+        medicineToBeTaken: toBeTakenSlotsArr,
+        medicineName: selectedValue,
+        id: selectedValue.trim,
+      };
+      const inputParams: any = {
         id: selectedValue.trim(),
         value: selectedValue,
         name: selectedValue,
@@ -587,10 +674,43 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
         duration: `${consumptionDuration}  ${toBeTakenSlotsArr.join(',')}`,
         selected: true,
       };
-      const x = selectedMedicines;
-      x.push(inputParams);
-      setSelectedMedicines(x);
+      if (isUpdate) {
+        const xArr = selectedMedicinesArr;
+        xArr!.splice(idx, 1, inputParamsArr);
+        setSelectedMedicinesArr(xArr);
+        const x = selectedMedicines;
+        x.splice(idx, 1, inputParams);
+        setSelectedMedicines(x);
+      } else {
+        const xArr = selectedMedicinesArr;
+        xArr!.push(inputParamsArr);
+        setSelectedMedicinesArr(xArr);
+        const x = selectedMedicines;
+        x.push(inputParams);
+        setSelectedMedicines(x);
+      }
+
       setIsDialogOpen(false);
+      setIsUpdate(false);
+      setShowDosage(false);
+      const slots = toBeTakenSlots.map((slot: SlotsObject) => {
+        slot.selected = false;
+        return slot;
+      });
+      setToBeTakenSlots(slots);
+
+      const dayslots = daySlots.map((slot: SlotsObject) => {
+        slot.selected = false;
+        return slot;
+      });
+      setDaySlots(dayslots);
+
+      setMedicineInstruction('');
+      setConsumptionDuration('');
+      setTabletsCount(1);
+      // setDaySlots(selectedMedicinesArr[idx].medicineTimings);
+      setSelectedValue('');
+      // setToBeTakenSlots(selectedMedicinesArr[idx].medicineToBeTaken);
     }
   };
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
@@ -787,7 +907,7 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
                         <AphTextField
                           placeholder=""
                           value={consumptionDuration}
-                          onChange={(event) => {
+                          onChange={(event: any) => {
                             setConsumptionDuration(event.target.value);
                           }}
                           error={errorState.durationErr}
@@ -809,7 +929,7 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
                         <AphTextField
                           placeholder="search"
                           value={medicineInstruction}
-                          onChange={(event) => {
+                          onChange={(event: any) => {
                             setMedicineInstruction(event.target.value);
                           }}
                         />
@@ -828,14 +948,25 @@ export const MedicinePrescription: React.FC<CasesheetInfoProps> = (props) => {
                   >
                     Cancel
                   </AphButton>
-                  <AphButton
-                    color="primary"
-                    onClick={() => {
-                      addUpdateMedicines();
-                    }}
-                  >
-                    Add Medicine
-                  </AphButton>
+                  {isUpdate ? (
+                    <AphButton
+                      color="primary"
+                      onClick={() => {
+                        addUpdateMedicines();
+                      }}
+                    >
+                      Update Medicine
+                    </AphButton>
+                  ) : (
+                    <AphButton
+                      color="primary"
+                      onClick={() => {
+                        addUpdateMedicines();
+                      }}
+                    >
+                      Add Medicine
+                    </AphButton>
+                  )}
                 </div>
               </div>
             )}
