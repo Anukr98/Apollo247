@@ -94,7 +94,7 @@ const useStyles = makeStyles(() => ({
     alignItems: 'start',
     width: '100%',
     borderLeft: 'none',
-    paddingLeft: 15,
+    paddingLeft: 0,
   },
 }));
 
