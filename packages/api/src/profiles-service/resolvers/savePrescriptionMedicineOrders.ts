@@ -41,7 +41,7 @@ export const savePrescriptionMedicineOrderTypeDefs = gql`
 
   extend type Mutation {
     SavePrescriptionMedicineOrder(
-      PrescriptionMedicineInput: PrescriptionMedicineInput
+      prescriptionMedicineInput: PrescriptionMedicineInput
     ): SavePrescriptionMedicineOrderResult!
   }
 `;
@@ -62,7 +62,7 @@ type PrescriptionMedicinePaymentDetails = {
   amountPaid: number;
   paymentRefId: string;
   paymentStatus: string;
-  paymentDateTime: Date;
+  paymentDateTime?: Date;
 };
 
 type SavePrescriptionMedicineOrderResult = {
@@ -70,43 +70,43 @@ type SavePrescriptionMedicineOrderResult = {
   orderId: string;
 };
 
-type PrescriptionMedicineInputInputArgs = { PrescriptionMedicineInput: PrescriptionMedicineInput };
+type PrescriptionMedicineInputInputArgs = { prescriptionMedicineInput: PrescriptionMedicineInput };
 
 const SavePrescriptionMedicineOrder: Resolver<
   null,
   PrescriptionMedicineInputInputArgs,
   ProfilesServiceContext,
   SavePrescriptionMedicineOrderResult
-> = async (parent, { PrescriptionMedicineInput }, { profilesDb }) => {
+> = async (parent, { prescriptionMedicineInput }, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(PrescriptionMedicineInput.patientId);
+  const patientDetails = await patientRepo.findById(prescriptionMedicineInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
   const medicineOrderattrs: Partial<MedicineOrders> = {
     patient: patientDetails,
     orderType: MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION,
-    shopId: PrescriptionMedicineInput.shopId,
+    shopId: prescriptionMedicineInput.shopId,
     quoteDateTime: new Date(),
     status: MEDICINE_ORDER_STATUS.QUOTE,
-    deliveryType: PrescriptionMedicineInput.medicineDeliveryType,
-    quoteId: PrescriptionMedicineInput.quoteId,
-    appointmentId: PrescriptionMedicineInput.appointmentId,
-    prescriptionImageUrl: PrescriptionMedicineInput.prescriptionImageUrl,
+    deliveryType: prescriptionMedicineInput.medicineDeliveryType,
+    quoteId: prescriptionMedicineInput.quoteId,
+    appointmentId: prescriptionMedicineInput.appointmentId,
+    prescriptionImageUrl: prescriptionMedicineInput.prescriptionImageUrl,
     estimatedAmount: 0.0,
     devliveryCharges: 0.0,
   };
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
 
-  if (PrescriptionMedicineInput.payment.paymentType !== MEDICINE_ORDER_PAYMENT_TYPE.NO_PAYMENT) {
+  if (prescriptionMedicineInput.payment.paymentType !== MEDICINE_ORDER_PAYMENT_TYPE.NO_PAYMENT) {
     const paymentAttrs: Partial<MedicineOrderPayments> = {
       medicineOrders: saveOrder,
-      paymentDateTime: PrescriptionMedicineInput.payment.paymentDateTime,
-      paymentStatus: PrescriptionMedicineInput.payment.paymentStatus,
-      paymentType: PrescriptionMedicineInput.payment.paymentType,
-      amountPaid: PrescriptionMedicineInput.payment.amountPaid,
-      paymentRefId: PrescriptionMedicineInput.payment.paymentRefId,
+      paymentDateTime: prescriptionMedicineInput.payment.paymentDateTime,
+      paymentStatus: prescriptionMedicineInput.payment.paymentStatus,
+      paymentType: prescriptionMedicineInput.payment.paymentType,
+      amountPaid: prescriptionMedicineInput.payment.amountPaid,
+      paymentRefId: prescriptionMedicineInput.payment.paymentRefId,
     };
     await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
   }

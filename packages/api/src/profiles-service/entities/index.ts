@@ -205,10 +205,10 @@ export class MedicineOrderPayments extends BaseEntity {
   @Column()
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
 
-  @Column()
+  @Column({ nullable: true })
   paymentRefId: string;
 
-  @Column()
+  @Column({ nullable: true })
   paymentDateTime: Date;
 
   @Column()

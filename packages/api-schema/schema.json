@@ -6978,7 +6978,7 @@
             "description": null,
             "args": [
               {
-                "name": "PrescriptionMedicineInput",
+                "name": "prescriptionMedicineInput",
                 "description": null,
                 "type": {
                   "kind": "INPUT_OBJECT",
