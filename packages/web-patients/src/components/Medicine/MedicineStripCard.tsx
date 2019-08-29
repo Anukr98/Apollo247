@@ -328,8 +328,6 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
 
   const { medicines } = props;
 
-  console.log(medicines);
-
   const medicinesMarkup = () => {
     return medicines.map((medicineDetails, index) => {
       const medicineName = _startCase(_toLower(medicineDetails.name));
