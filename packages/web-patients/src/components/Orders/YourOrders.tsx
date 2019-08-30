@@ -163,7 +163,7 @@ export const YourOrders: React.FC = (props) => {
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 237px)'}>
           <div className={classes.medicineSection}>
             <div className={classes.sectionGroup}>
-              <Link className={classes.serviceType} to="/tests-medicines">
+              <Link className={classes.serviceType} to={clientRoutes.testsAndMedicine()}>
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_medicines.png')} alt="" />
                 </span>
@@ -174,7 +174,7 @@ export const YourOrders: React.FC = (props) => {
               </Link>
             </div>
             <div className={classes.sectionGroup}>
-              <Link className={classes.serviceType} to="/prescriptions">
+              <Link className={classes.serviceType} to={clientRoutes.prescriptionsLanding()}>
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_medicines.png')} alt="" />
                 </span>
@@ -190,10 +190,7 @@ export const YourOrders: React.FC = (props) => {
               </div>
             </div>
             <div className={classes.sectionGroup}>
-              <Link
-                className={`${classes.serviceType} ${classes.textVCenter}`}
-                to="/search-medicines"
-              >
+              <Link className={`${classes.serviceType} ${classes.textVCenter}`} to="#">
                 <span className={classes.serviceIcon}>
                   <img src={require('images/ic_schedule.svg')} alt="" />
                 </span>
