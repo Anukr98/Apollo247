@@ -78,12 +78,20 @@ const renderPrescriptions = () => {
       () => `${faker.commerce.product()} ${_random(1, 10)}%`
     );
     const frequency = faker.hacker.phrase();
-    const instructions = faker.random.boolean() ? faker.lorem.sentences(_random(1, 5)) : undefined;
+    const instructions = faker.random.boolean() ? faker.lorem.sentences(_random(2, 5)) : undefined;
     return { name, ingredients, frequency, instructions };
   };
 
   const prescriptions = _times(_random(1, 5), () => buildPrescription());
-  console.log(prescriptions);
+  prescriptions.forEach((prescription, index) => {
+    doc
+      .text('')
+      .moveDown()
+      .text(`${index + 1}. ${prescription.name}`)
+      .text(prescription.ingredients.join(', '))
+      .text(prescription.frequency);
+    if (prescription.instructions) doc.text(prescription.instructions);
+  });
 };
 
 renderHeader();
