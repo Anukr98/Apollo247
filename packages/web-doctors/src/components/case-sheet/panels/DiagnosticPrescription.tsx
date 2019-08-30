@@ -160,6 +160,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 600,
       fontSize: 14,
       color: '#02475b !important',
+      whiteSpace: 'normal',
       '&:focus': {
         backgroundColor: 'rgba(0,0,0,0.02)',
       },
@@ -167,6 +168,7 @@ const useStyles = makeStyles((theme: Theme) =>
         display: 'inline-block',
         width: '100%',
         textAlign: 'left',
+        whiteSpace: 'normal',
       },
     },
     btnAddDoctor: {
