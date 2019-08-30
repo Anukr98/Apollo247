@@ -166,7 +166,7 @@ export class MedicineOrderLineItems extends BaseEntity {
   @Column()
   medicineName: string;
 
-  @Column()
+  @Column({ nullable: true })
   mou: number;
 
   @Column('decimal', { precision: 5, scale: 2 })
