@@ -148,10 +148,13 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
-      fontWeight: theme.typography.fontWeightBold,
+      fontWeight: 600,
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
+      },
+      '& img': {
+        marginRight: 8,
       },
     },
     medicineHeading: {
@@ -788,7 +791,7 @@ export const MedicinePrescription: React.FC = () => {
             classes={{ root: classes.btnAddDoctor }}
             onClick={() => setIsDialogOpen(true)}
           >
-            <img src={require('images/ic_add.svg')} alt="" /> ADD Medicine
+            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
           </AphButton>
         </Grid>
         <Grid item xs={4}></Grid>
