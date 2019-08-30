@@ -44,11 +44,11 @@ export const AddDiagnostics: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="ADD DIAGNOSTICS"
+        headerText="ADD DIAGNOSTIC"
         rightIcons={[
           {
             icon: <Cancel />,
-            //onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => props.navigation.pop(),
           },
         ]}
       ></Header>

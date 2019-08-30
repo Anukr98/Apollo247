@@ -710,3 +710,10 @@ export const PhysicalIcon: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/round_video_consult_24_px.png')}
   />
 );
+export const Green: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/ic_add_green.png')}
+  />
+);

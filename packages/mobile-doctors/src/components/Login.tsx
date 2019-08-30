@@ -27,6 +27,7 @@ import { useAuth } from '../hooks/authHooks';
 import { NavigationEventSubscription } from 'react-navigation';
 import { TimeOutData } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { AuthContext } from '@aph/mobile-doctors/src/components/AuthProvider';
+
 // import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 const isMobileNumberValid = (phoneNumber: string) => true;
 

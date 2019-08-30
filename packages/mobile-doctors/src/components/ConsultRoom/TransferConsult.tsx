@@ -145,6 +145,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
   const [filterSpeciality, setfilterSpeciality] = useState<SearchDoctorAndSpecialty[] | null>([]);
   const [doctorsCard, setDoctorsCard] = useState<boolean>(false);
   const isEnabled = selectreason != 'Select a reason' && value.length > 0 && doctorvalue.length > 0;
+  const client = useApolloClient();
   const sysmptonsList = [
     {
       id: '1',
@@ -179,7 +180,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
         rightIcons={[
           {
             icon: <Cancel />,
-            //onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => props.navigation.pop(),
           },
         ]}
       ></Header>
@@ -197,10 +198,10 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
   const renderDropdownCard = () => (
     <View style={{ marginTop: 2 }}>
       <View style={styles.dropDownCardStyle}>
-        {sysmptonsList!.map((_doctor, i, array) => {
+        {filteredStarDoctors!.map((_doctor, i, array) => {
           //const doctor = _doctor!.associatedDoctor!;
 
-          const drName = ` ${_doctor.firstName}`;
+          const drName = ` ${_doctor.SearchDoctorAndSpecialty!.doctors}`;
 
           return (
             <TouchableOpacity
@@ -256,14 +257,12 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
       return;
     }
     // do api call
-    // client
-    //   .query<GetDoctorsForStarDoctorProgram, GetDoctorsForStarDoctorProgramVariables>({
-    //     query: GET_DOCTORS_FOR_STAR_DOCTOR_PROGRAM,
-    //     variables: { searchString: searchText.replace('Dr. ', '') },
-    //   })
-    getDoctorsForStarDoctorProgramData.data.getDoctorsForStarDoctorProgram!(
-      searchText.replace('Dr. ', '')
-    )
+    client
+      .query<SearchDoctorAndSpecialty, SearchDoctorAndSpecialtyVariables>({
+        query: SEARCH_DOCTOR_AND_SPECIALITY,
+        variables: { searchText: searchText },
+      })
+
       .then((_data) => {
         console.log('flitered array', _data.data.SearchDoctorAndSpecialty!.doctors);
         console.log('flitered array1', _data.data.SearchDoctorAndSpecialty!);
@@ -272,6 +271,11 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
         setFilteredStarDoctors(_data.data.SearchDoctorAndSpecialty!.doctors);
         setfilterSpeciality(_data.data.SearchDoctorAndSpecialty!.specialties);
         setDoctorsCard(!doctorsCard);
+        console.log('flitered array', _data);
+
+        // const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
+        // setFilteredStarDoctors(doctorProfile);
+        // setDoctorsCard(!doctorsCard);
       })
       .catch((e) => {
         console.log('Error occured while searching for Doctors', e);

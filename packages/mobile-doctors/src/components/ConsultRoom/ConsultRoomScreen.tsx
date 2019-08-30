@@ -25,10 +25,7 @@ import {
   VideoOnIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
-import {
-  CREATEAPPOINTMENTSESSION,
-  GET_JUNIOR_DOCTOR_CASESHEET,
-} from '@aph/mobile-doctors/src/graphql/profiles';
+import { CREATEAPPOINTMENTSESSION } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
@@ -41,7 +38,6 @@ import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
 import Pubnub from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { DeviceHelper } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import {
   Alert,
   Dimensions,
@@ -60,9 +56,9 @@ import {
 } from 'react-native';
 import MaterialTabs from 'react-native-material-tabs';
 import { NavigationScreenProps } from 'react-navigation';
-import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { GetJuniorDoctorCaseSheet } from '@aph/mobile-doctors/src/graphql/types/GetJuniorDoctorCaseSheet';
+import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
+//import ImagePicker from 'react-native-image-picker';
 
 const { height, width } = Dimensions.get('window');
 
@@ -110,7 +106,6 @@ export interface ConsultRoomScreenProps
     PatientInfoAll: PatientInfoData;
     AppId: string;
     Appintmentdatetime: string; //Date;
-    AppointmentStatus: string;
     // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   }> {
   // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
@@ -118,21 +113,20 @@ export interface ConsultRoomScreenProps
 
 export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [isDropdownVisible, setDropdownVisible] = useState(false);
-  const [dropdownShow, setDropdownShow] = useState(false);
   const [hideView, setHideView] = useState(false);
   const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [caseSheetIdData, setCaseSheetIdData] = useState<string>('');
   const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
   const AppId = props.navigation.getParam('AppId');
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
-
+  //console.log('hihihi', Appintmentdatetime);
+  const [dropdownShow, setDropdownShow] = useState(false);
   const channel = props.navigation.getParam('AppId');
 
   const doctorId = props.navigation.getParam('DoctorId');
 
   useEffect(() => {
+    console.log('AppointmentId', AppId);
     client
       .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
         mutation: CREATEAPPOINTMENTSESSION,
@@ -144,13 +138,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         },
       })
       .then((_data: any) => {
-        console.log('creat', _data);
+        console.log('createsession', _data);
+        console.log('sessionid', _data.data.createAppointmentSession.sessionId);
+        console.log('appointmentToken', _data.data.createAppointmentSession.appointmentToken);
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
-        setGetCaseshhetId(_data.data.createAppointmentSession.caseSheetId);
       })
       .catch((e: any) => {
-        console.log('Error occured while create session', e);
+        console.log('Error occured while adding Doctor', e);
       });
   }, []);
 
@@ -158,8 +153,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const flatListRef = useRef<FlatList<never> | undefined | null>();
+  const otSessionRef = React.createRef();
 
-  const otSessionRef = React.useRef<any>(null);
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(height - 185);
@@ -167,7 +162,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [apiKey, setapiKey] = useState<string>('');
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
-  const [getcasesheetId, setGetCaseshhetId] = useState<string>('');
   const [cameraPosition, setCameraPosition] = useState<string>('front');
   const [mute, setMute] = useState<boolean>(true);
   const [showVideo, setShowVideo] = useState<boolean>(true);
@@ -194,6 +188,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   });
 
   useEffect(() => {
+    console.log('PatientConsultTime'), PatientConsultTime;
     // setTimeout(() => {
     //   flatListRef.current && flatListRef.current!.scrollToEnd();
     // }, 1000);
@@ -239,7 +234,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [hideStatusBar, setHideStatusBar] = useState<boolean>(false);
   const [callTimer, setCallTimer] = useState<number>(0);
   const [callAccepted, setCallAccepted] = useState<boolean>(false);
-
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
 
   const startInterval = (timer: number) => {
@@ -248,8 +242,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       timer = timer - 1;
       stoppedTimer = timer;
       setRemainingTime(timer);
+      // console.log('descriptionTextStyle remainingTime', timer);
 
       if (timer == 0) {
+        // console.log('descriptionTextStyles remainingTime', timer);
         setRemainingTime(0);
         clearInterval(intervalId);
       }
@@ -262,7 +258,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       timer = timer + 1;
       stoppedTimer = timer;
       setCallTimer(timer);
+      // console.log('uptimer', timer);
+
       if (timer == 0) {
+        // console.log('uptimer', timer);
         setCallTimer(0);
         clearInterval(timerId);
       }
@@ -326,7 +325,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     },
     sessionConnected: (event: string) => {
       console.log('session stream sessionConnected!', event);
-      console.log('otSessionRef', otSessionRef);
     },
     sessionDisconnected: (event: string) => {
       console.log('session stream sessionDisconnected!', event);
@@ -348,6 +346,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     ssl: true,
   };
   const pubnub = new Pubnub(config);
+  // console.log('pubnub', pubnub);
 
   useEffect(() => {
     pubnub.subscribe({
@@ -432,7 +431,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         flatListRef.current! && flatListRef.current!.scrollToEnd();
       }, 200);
     };
-
+    const keyboardDidShow = (e: KeyboardEvent) => {
+      setHeightList(height - e.endCoordinates.height - 185);
+      setTimeout(() => {
+        flatListRef.current && flatListRef.current.scrollToEnd();
+      }, 200);
+    };
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', keyboardDidShow);
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', keyboardDidHide);
 
@@ -443,14 +447,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     };
   }, []);
 
-  const keyboardDidShow = (e: KeyboardEvent) => {
-    setHeightList(height - e.endCoordinates.height - 185);
-    setTimeout(() => {
-      flatListRef.current && flatListRef.current.scrollToEnd();
-    }, 200);
-  };
-
   const keyboardDidHide = () => {
+    console.log('Keyboard hide');
     setHeightList(height - 185);
   };
   let insertText: object[] = [];
@@ -906,9 +904,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           apiKey={'46401302'}
           sessionId={sessionId}
           token={token}
-          // sessionId={'2_MX40NjQwOTgzMn5-MTU2Njk3NTkyMjgxM35yK0YwQjhHUnhGS2k1dTM4eUpBbHFHY3p-UH4'}
+          // sessionId={'2_MX40NjM5MzU4Mn5-MTU2NTQzNzkyNTgwMX40Qm0rbEtFb3VVQytGZHVQdmR0NHAveG1-fg'}
           // token={
-          //   'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9NDAzMWJlZDA0NzAxMTIyMWU1NzU2OWI4MmEzYjg3YTI0N2VmZDkyYzpzZXNzaW9uX2lkPTJfTVg0ME5qUXdPVGd6TW41LU1UVTJOamszTlRreU1qZ3hNMzV5SzBZd1FqaEhVbmhHUzJrMWRUTTRlVXBCYkhGSFkzcC1VSDQmY3JlYXRlX3RpbWU9MTU2Njk3NTkzNiZub25jZT0wLjMwNjk1ODQ4MDE0NzM0MTczJnJvbGU9bW9kZXJhdG9yJmV4cGlyZV90aW1lPTE1Njk1Njc5MzUmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
+          //   'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9YmM2MzFhZTEwYWNlODBhZmNhNjMwNDIwOGRkNmZhYzkyMGU3ZjcyMDpzZXNzaW9uX2lkPTJfTVg0ME5qTTVNelU0TW41LU1UVTJOVFF6TnpreU5UZ3dNWDQwUW0wcmJFdEZiM1ZWUXl0R1pIVlFkbVIwTkhBdmVHMS1mZyZjcmVhdGVfdGltZT0xNTY1NDM3OTczJm5vbmNlPTAuNDc1MTYzNTI2Njc3MTIwMzYmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2ODAyOTk3MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
           // }
           eventHandlers={sessionEventHandlers}
           ref={otSessionRef}
@@ -1068,18 +1066,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 },
                 (status, response) => {}
               );
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: endCallMsg,
-                    id: props.navigation.getParam('DoctorId'),
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {}
-              );
             }}
           >
             <EndCallIcon style={{ width: 60, height: 60 }} />
@@ -1096,11 +1082,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <OTSession
               apiKey={'46401302'}
-              // sessionId={
-              //   '2_MX40NjQwOTgzMn5-MTU2Njk3NTkyMjgxM35yK0YwQjhHUnhGS2k1dTM4eUpBbHFHY3p-UH4'
-              // }
+              // sessionId={'2_MX40NjM5MzU4Mn5-MTU2NTQzNzkyNTgwMX40Qm0rbEtFb3VVQytGZHVQdmR0NHAveG1-fg'}
               // token={
-              //   'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9NDAzMWJlZDA0NzAxMTIyMWU1NzU2OWI4MmEzYjg3YTI0N2VmZDkyYzpzZXNzaW9uX2lkPTJfTVg0ME5qUXdPVGd6TW41LU1UVTJOamszTlRreU1qZ3hNMzV5SzBZd1FqaEhVbmhHUzJrMWRUTTRlVXBCYkhGSFkzcC1VSDQmY3JlYXRlX3RpbWU9MTU2Njk3NTkzNiZub25jZT0wLjMwNjk1ODQ4MDE0NzM0MTczJnJvbGU9bW9kZXJhdG9yJmV4cGlyZV90aW1lPTE1Njk1Njc5MzUmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
+              //   'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9YmM2MzFhZTEwYWNlODBhZmNhNjMwNDIwOGRkNmZhYzkyMGU3ZjcyMDpzZXNzaW9uX2lkPTJfTVg0ME5qTTVNelU0TW41LU1UVTJOVFF6TnpreU5UZ3dNWDQwUW0wcmJFdEZiM1ZWUXl0R1pIVlFkbVIwTkhBdmVHMS1mZyZjcmVhdGVfdGltZT0xNTY1NDM3OTczJm5vbmNlPTAuNDc1MTYzNTI2Njc3MTIwMzYmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2ODAyOTk3MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
               // }
               sessionId={sessionId}
               token={token}
@@ -1126,7 +1110,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               />
 
               <OTPublisher
-                style={publisherStyles}
+                style={{
+                  position: 'absolute',
+                  top: 44,
+                  right: 20,
+                  width: 112,
+                  height: 148,
+                  zIndex: 100,
+                  elevation: 1000,
+                  borderRadius: 30,
+                }}
                 properties={{
                   cameraPosition: cameraPosition,
                   publishVideo: showVideo,
@@ -1277,25 +1270,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               height: 2,
               backgroundColor: '#00b38e',
             });
-            setPipView(false);
             pubnub.publish(
               {
                 message: {
                   isTyping: true,
                   message: 'Video call ended',
                   duration: callTimerStarted,
-                  id: props.navigation.getParam('DoctorId'),
-                },
-                channel: channel,
-                storeInHistory: true,
-              },
-              (status, response) => {}
-            );
-            pubnub.publish(
-              {
-                message: {
-                  isTyping: true,
-                  message: endCallMsg,
                   id: props.navigation.getParam('DoctorId'),
                 },
                 channel: channel,
@@ -1418,7 +1398,32 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               <VideoOffIcon style={{ height: 60, width: 60 }} />
             )}
           </TouchableOpacity>
-
+          {/* <TouchableOpacity
+            onPress={async () => {
+              // Pick multiple files
+              try {
+                const results = await DocumentPicker.pickMultiple({
+                  type: [DocumentPicker.types.images],
+                });
+                for (const res of results) {
+                  console.log(
+                    res.uri,
+                    res.type, // mime type
+                    res.name,
+                    res.size
+                  );
+                }
+              } catch (err) {
+                if (DocumentPicker.isCancel(err)) {
+                  // User cancelled the picker, exit any dialogs or menus and move on
+                } else {
+                  throw err;
+                }
+              }
+            }}
+          >
+            <AttachmentIcon style={{ height: 60, width: 60 }} />
+          </TouchableOpacity> */}
           <TouchableOpacity
             onPress={() => {
               mute === true ? setMute(false) : setMute(true);
@@ -1456,18 +1461,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     isTyping: true,
                     message: 'Video call ended',
                     duration: callTimerStarted,
-                    id: props.navigation.getParam('DoctorId'),
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {}
-              );
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: endCallMsg,
                     id: props.navigation.getParam('DoctorId'),
                   },
                   channel: channel,
@@ -1539,6 +1532,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           <TouchableOpacity
             onPress={() => {
               if (!startConsult) {
+                console.log('consult not started');
                 Alert.alert('Apollo', 'Please start the consultation');
                 return;
               }
@@ -1593,6 +1587,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           <TouchableOpacity
             onPress={() => {
               if (!startConsult) {
+                console.log('consult not started');
                 Alert.alert('Apollo', 'Please start the consultation');
                 return;
               }
@@ -1673,16 +1668,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               right: 0,
               bottom: 0,
               elevation: 2000,
-            });
-            setPublisherStyles({
-              position: 'absolute',
-              top: 44,
-              right: 20,
-              width: 112,
-              height: 148,
-              zIndex: 100,
-              elevation: 1000,
-              borderRadius: 30,
             });
           }}
         >
@@ -1768,22 +1753,33 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   );
                 }}
                 onSubmitEditing={() => {
+                  console.log('on submit');
                   const textMessage = messageText.trim();
+
                   if (textMessage.length == 0) {
                     Alert.alert('Apollo', 'Please write something to send message.');
                     return;
                   }
                   send();
                 }}
+                // onKeyPress={(event) => {
+                //   console.log('event', event.nativeEvent.key);
+                //   if (event.nativeEvent.key == 'Enter') {
+                //   } else {
+                //     console.log('Something else Pressed');
+                //   }
+                // }}
               />
 
               <TouchableOpacity
                 onPress={async () => {
                   if (messageText.length == 0) {
+                    //Alert.alert('Apollo', 'Please write something to send');
                     setDropdownVisible(!isDropdownVisible);
                     return;
                   }
                   if (!startConsult) {
+                    console.log('consult not started');
                     Alert.alert('Apollo', 'Please start the consultation');
                     return;
                   }
@@ -1856,7 +1852,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         storeInHistory: true,
       },
       (status, response) => {
-        setActiveTabIndex(0);
+        setActiveTabIndex(1);
         setStartConsult(true);
         startInterval(timer);
       }
@@ -1886,6 +1882,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
 
+  // const getTimerText = () => {
+  //   const now = new Date();
+  //   const diff = moment.duration(moment(Appintmentdatetime).diff(now));
+  //   const diffInHours = diff.asHours();
+  //   console.log(now, Appintmentdatetime, diffInHours);
+  //   console.log('check', diff.days(), diff.hours(), diff.minutes());
+  //   if (diffInHours > 0 && diffInHours < 12)
+  //     return `Time to consult ${moment(new Date(0, 0, 0, diff.hours(), diff.minutes())).format(
+  //       'hh: mm'
+  //     )}`;
+  //   return '';
+  // };
   const getTimerText = () => {
     const now = new Date();
     const diff = moment.duration(moment(Appintmentdatetime).diff(now));
@@ -2001,7 +2009,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f4f5' }}>
+    <SafeAreaView style={{ flex: 1 }}>
       <StatusBar hidden={hideStatusBar} />
       {showHeaderView()}
       {dropdownShow ? renderDropdown() : null}

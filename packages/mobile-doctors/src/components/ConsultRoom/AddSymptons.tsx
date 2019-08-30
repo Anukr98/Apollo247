@@ -203,7 +203,16 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
           title="ADD SYMPTOM"
           style={styles.buttonendStyle}
           onPress={() => {
-            if (symptons == '' || since == '' || howOften == '' || severity == '') {
+            if (
+              symptons == '' ||
+              symptons.trim() == '' ||
+              since == '' ||
+              since.trim() == '' ||
+              howOften == '' ||
+              howOften.trim() == '' ||
+              severity == '' ||
+              severity.trim() == ''
+            ) {
               Alert.alert('Please enter all fields');
             } else {
               addSysmptonsList({

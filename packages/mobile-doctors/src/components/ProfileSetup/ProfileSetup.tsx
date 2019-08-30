@@ -8,7 +8,10 @@ import { ApploLogo, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icon
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
-import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  GET_DOCTOR_DETAILS,
+  SAVE_DOCTOR_DEVICE_TOKEN,
+} from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   GetDoctorDetails,
   GetDoctorDetails_getDoctorDetails,
@@ -29,10 +32,16 @@ import {
   Text,
   TextInput,
   View,
+  AsyncStorage,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
-import { DoctorType } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { DoctorType, DOCTOR_DEVICE_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import firebase, { RNFirebase } from 'react-native-firebase';
+import {
+  saveDoctorDeviceToken,
+  saveDoctorDeviceTokenVariables,
+} from '@aph/mobile-doctors/src/graphql/types/saveDoctorDeviceToken';
 //import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
 const isMobileNumberValid = (n: string) => true;
@@ -182,8 +191,73 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [isReloading, setReloading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
-  const { isDelegateLogin, setDoctorDetails: setDoctorDetailsToContext } = useAuth();
+  const { isDelegateLogin, setDoctorDetails: setDoctorDetailsToContext, doctorDetails } = useAuth();
+  const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
 
+  const fireBaseFCM = async () => {
+    const enabled = await firebase.messaging().hasPermission();
+    if (enabled) {
+      // user has permissions
+      console.log('enabled', enabled);
+    } else {
+      // user doesn't have permission
+      console.log('not enabled');
+      try {
+        await firebase.messaging().requestPermission();
+        console.log('authorized');
+
+        // User has authorised
+      } catch (error) {
+        // User has rejected permissions
+        console.log('not enabled error', error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    callDeviceTokenAPI();
+  });
+
+  const callDeviceTokenAPI = async () => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
+    firebase
+      .messaging()
+      .getToken()
+      .then((token) => {
+        console.log('token', token);
+        if (token !== deviceToken2.deviceToken) {
+          const input = {
+            deviceType: Platform.OS === 'ios' ? DOCTOR_DEVICE_TYPE.IOS : DOCTOR_DEVICE_TYPE.ANDROID,
+            deviceToken: token,
+            deviceOS: Platform.OS === 'ios' ? '' : '',
+            doctorId: doctorDetails ? doctorDetails.id : '',
+          };
+          console.log('input', input);
+
+          if (doctorDetails && !deviceTokenApICalled) {
+            setDeviceTokenApICalled(true);
+            client
+              .mutate<saveDoctorDeviceToken, saveDoctorDeviceTokenVariables>({
+                mutation: SAVE_DOCTOR_DEVICE_TOKEN,
+                variables: {
+                  SaveDoctorDeviceTokenInput: input,
+                },
+              })
+              .then((data: any) => {
+                console.log('APICALLED', data.data.saveDeviceToken.deviceToken);
+                AsyncStorage.setItem(
+                  'deviceToken',
+                  JSON.stringify(data.data.saveDeviceToken.deviceToken)
+                );
+              })
+              .catch((e: string) => {
+                console.log('Error occured while adding Doctor', e);
+              });
+          }
+        }
+      });
+  };
   useEffect(() => {
     setLoading(true);
     client

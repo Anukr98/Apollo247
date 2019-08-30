@@ -16,6 +16,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const styles = StyleSheet.create({
   container: {
@@ -153,196 +154,197 @@ export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
       >
         {showHeaderView()}
       </View>
-
-      <View
-        style={{
-          marginLeft: 16,
-          marginRight: 16,
-          marginTop: 16,
-          backgroundColor: '#ffffff',
-          borderRadius: 10,
-          shadowColor: '#000000',
-          shadowOffset: {
-            width: 0,
-            height: 5,
-          },
-          shadowRadius: 10,
-          shadowOpacity: 0.2,
-          elevation: 5,
-        }}
-      >
-        <Text style={styles.dosage}>Dosage</Text>
-        <View style={{ flexDirection: 'row', marginLeft: 16 }}>
-          {count == 0 ? (
-            <TouchableOpacity>
-              <View>
-                <Minus />
-              </View>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity onPress={() => setCount(count - 1)}>
-              <View>
-                <Minus />
-              </View>
-            </TouchableOpacity>
-          )}
-
-          <Text style={styles.countText}>
-            {count} tablet{count > 1 ? 's' : ''}
-          </Text>
-          <TouchableOpacity onPress={() => setCount(count + 1)}>
-            <View style={{ marginLeft: 10 }}>
-              <Plus />
-            </View>
-          </TouchableOpacity>
-        </View>
+      <KeyboardAwareScrollView bounces={false}>
         <View
           style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
             marginLeft: 16,
             marginRight: 16,
-            //marginBottom: 24,
-          }}
-        ></View>
-        <Text style={styles.dosage}>Time of the Day</Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginLeft: 16,
-            marginRight: 16,
-            //marginBottom: 24,
+            marginTop: 16,
+            backgroundColor: '#ffffff',
+            borderRadius: 10,
+            shadowColor: '#000000',
+            shadowOffset: {
+              width: 0,
+              height: 5,
+            },
+            shadowRadius: 10,
+            shadowOpacity: 0.2,
+            elevation: 5,
           }}
         >
-          {Object.keys(consultationType).map((key) => {
-            const data = consultationType[key];
-            return (
-              <ChipViewCard
-                title={data.title}
-                onChange={(isChecked) => {
-                  console.log({ key, isChecked });
-                  setConsultationType({
-                    ...consultationType,
-                    [key]: { isSelected: isChecked, title: data.title },
-                  });
-                }}
-                isChecked={consultationType[key].isSelected}
-              />
-            );
-          })}
-        </View>
-        <Text style={styles.dosage}>To be taken</Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            //justifyContent: 'space-between',
-            marginLeft: 16,
-            marginRight: 16,
-            padding: 10,
-            // marginBottom: 24,
-          }}
-        >
-          {Object.keys(medicneupdate).map((key) => {
-            const data = medicneupdate[key];
-            return (
-              <ChipViewCard
-                title={data.title}
-                onChange={(isChecked) => {
-                  console.log({ key, isChecked });
-                  setMedicineUpdate({
-                    ...medicneupdate,
-                    [key]: { isSelected: isChecked, title: data.title },
-                  });
-                }}
-                isChecked={medicneupdate[key].isSelected}
-              />
-            );
-          })}
-        </View>
-        <Text style={styles.dosage}>Duration of Consumption</Text>
+          <Text style={styles.dosage}>Dosage</Text>
+          <View style={{ flexDirection: 'row', marginLeft: 16 }}>
+            {count == 1 ? (
+              <TouchableOpacity>
+                <View>
+                  <Minus />
+                </View>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity onPress={() => setCount(count - 1)}>
+                <View>
+                  <Minus />
+                </View>
+              </TouchableOpacity>
+            )}
 
-        {/* <TextInput
+            <Text style={styles.countText}>
+              {count} tablet{count > 1 ? 's' : ''}
+            </Text>
+            <TouchableOpacity onPress={() => setCount(count + 1)}>
+              <View style={{ marginLeft: 10 }}>
+                <Plus />
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginLeft: 16,
+              marginRight: 16,
+              //marginBottom: 24,
+            }}
+          ></View>
+          <Text style={styles.dosage}>Time of the Day</Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginLeft: 16,
+              marginRight: 16,
+              //marginBottom: 24,
+            }}
+          >
+            {Object.keys(consultationType).map((key) => {
+              const data = consultationType[key];
+              return (
+                <ChipViewCard
+                  containerStyle={{ marginRight: 8 }}
+                  title={data.title}
+                  onChange={(isChecked) => {
+                    console.log({ key, isChecked });
+                    setConsultationType({
+                      ...consultationType,
+                      [key]: { isSelected: isChecked, title: data.title },
+                    });
+                  }}
+                  isChecked={consultationType[key].isSelected}
+                />
+              );
+            })}
+          </View>
+          <Text style={styles.dosage}>To be taken</Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              marginLeft: 16,
+              marginRight: 16,
+              padding: 10,
+            }}
+          >
+            {Object.keys(medicneupdate).map((key) => {
+              const data = medicneupdate[key];
+              return (
+                <ChipViewCard
+                  containerStyle={{ marginRight: 8 }}
+                  title={data.title}
+                  onChange={(isChecked) => {
+                    console.log({ key, isChecked });
+                    setMedicineUpdate({
+                      ...medicneupdate,
+                      [key]: { isSelected: isChecked, title: data.title },
+                    });
+                  }}
+                  isChecked={medicneupdate[key].isSelected}
+                />
+              );
+            })}
+          </View>
+          <Text style={styles.dosage}>Duration of Consumption</Text>
+
+          {/* <TextInput
             style={styles.inputStyle}
             value={duration}
             onChangeText={(duration) => setDuration(duration)}
             autoCorrect={true}
           /> */}
-        <TextInput
-          style={{
-            marginLeft: 16,
-            marginRight: 20,
-            ...theme.fonts.IBMPlexSansMedium(18),
-            width: '90%',
-            borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-            borderBottomWidth: 2,
-            marginBottom: 16,
+          <TextInput
+            style={{
+              marginLeft: 16,
+              marginRight: 20,
+              ...theme.fonts.IBMPlexSansMedium(18),
+              width: '90%',
+              borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+              borderBottomWidth: 2,
+              marginBottom: 16,
 
-            color: '#01475b',
-          }}
-          maxLength={20}
-          value={duration}
-          onChangeText={(duration) => setDuration(duration)}
-        />
+              color: '#01475b',
+            }}
+            maxLength={20}
+            value={duration}
+            onChangeText={(duration) => setDuration(duration)}
+          />
 
-        <Text style={styles.dosage}>Instructions (if any)</Text>
-        <TextInputComponent
-          placeholder="Enter instructions here.."
-          inputStyle={styles.inputView}
-          multiline={true}
-          value={value}
-          onChangeText={(value) => setValue(value)}
-          autoCorrect={true}
-        />
-      </View>
-      <View style={styles.footerButtonsContainer}>
-        <Button
-          title="CANCEL"
-          titleTextStyle={styles.buttonTextStyle}
-          variant="white"
-          style={[styles.buttonsaveStyle, { marginRight: 16 }]}
-          onPress={() => removeData()}
-        />
-        <Button
-          title="ADD MEDICINE "
-          style={styles.buttonendStyle}
-          onPress={() => {
-            if (count == 0 || value == '' || duration == '') {
-              Alert.alert('Please select all fields');
-            } else {
-              let dosagefianl = '';
-              console.log({
-                medicineName: props.navigation.getParam('Name'),
-                medicineDosage: count,
-                medicineToBeTaken: Object.keys(medicneupdate).filter(
-                  (time) => medicneupdate[time].isSelected
-                ),
-                medicineInstructions: value,
-                medicineTimings: Object.keys(consultationType).filter(
-                  (time) => consultationType[time].isSelected
-                ),
-                medicineConsumptionDurationInDays: duration,
-              });
-              if (count > 0) {
-                dosagefianl = count.toString().concat('tablets');
+          <Text style={styles.dosage}>Instructions (if any)</Text>
+          <TextInputComponent
+            placeholder="Enter instructions here.."
+            inputStyle={styles.inputView}
+            multiline={true}
+            value={value}
+            onChangeText={(value) => setValue(value)}
+            autoCorrect={true}
+          />
+        </View>
+        <View style={styles.footerButtonsContainer}>
+          <Button
+            title="CANCEL"
+            titleTextStyle={styles.buttonTextStyle}
+            variant="white"
+            style={[styles.buttonsaveStyle, { marginRight: 16 }]}
+            onPress={() => removeData()}
+          />
+          <Button
+            title="ADD MEDICINE "
+            style={styles.buttonendStyle}
+            onPress={() => {
+              if (count == 0 || duration == '') {
+                Alert.alert('Please select all fields');
+              } else {
+                let dosagefianl = '';
+                console.log({
+                  medicineName: props.navigation.getParam('Name'),
+                  medicineDosage: count,
+                  medicineToBeTaken: Object.keys(medicneupdate).filter(
+                    (time) => medicneupdate[time].isSelected
+                  ),
+                  medicineInstructions: value,
+                  medicineTimings: Object.keys(consultationType).filter(
+                    (time) => consultationType[time].isSelected
+                  ),
+                  medicineConsumptionDurationInDays: duration,
+                });
+                if (count > 0) {
+                  dosagefianl = count.toString().concat('tablets');
+                }
+                addMedicineList({
+                  medicineName: props.navigation.getParam('Name'),
+                  medicineDosage: dosagefianl,
+                  medicineToBeTaken: Object.keys(medicneupdate).filter(
+                    (time) => medicneupdate[time].isSelected
+                  ),
+                  medicineInstructions: value,
+                  medicineTimings: Object.keys(consultationType).filter(
+                    (time) => consultationType[time].isSelected
+                  ),
+                  medicineConsumptionDurationInDays: duration,
+                });
+                props.navigation.pop(2);
               }
-              addMedicineList({
-                medicineName: props.navigation.getParam('Name'),
-                medicineDosage: dosagefianl,
-                medicineToBeTaken: Object.keys(medicneupdate).filter(
-                  (time) => medicneupdate[time].isSelected
-                ),
-                medicineInstructions: value,
-                medicineTimings: Object.keys(consultationType).filter(
-                  (time) => consultationType[time].isSelected
-                ),
-                medicineConsumptionDurationInDays: duration,
-              });
-              props.navigation.pop(2);
-            }
-          }}
-        />
-      </View>
+            }}
+          />
+        </View>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };

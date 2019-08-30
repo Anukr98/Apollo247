@@ -116,6 +116,14 @@ export interface SaveDoctorDeviceTokenInput {
   deviceOS: string;
   doctorId: string;
 }
+
+export interface SaveDoctorDeviceTokenInput {
+  deviceType: DOCTOR_DEVICE_TYPE;
+  deviceToken: string;
+  deviceOS: string;
+  doctorId: string;
+}
+
 export interface UpdateCaseSheetInput {
   symptoms?: string | null;
   notes?: string | null;

@@ -33,6 +33,7 @@ import {
   ToogleOff,
   ToogleOn,
   UnSelected,
+  Green,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
@@ -88,6 +89,8 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import console = require('console');
 
 const styles = StyleSheet.create({
   casesheetView: {
@@ -501,7 +504,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [stepValue, setStepValue] = useState(3);
   const [diagnosisView, setDiagnosisView] = useState(false);
   const [date, setDate] = useState<Date>(new Date());
-  const [selectDate, setSelectDate] = useState<string>('dd/mm/yyyy');
+  const [selectDate, setSelectDate] = useState<string>('mm/dd/yyyy');
   const [calenderShow, setCalenderShow] = useState(false);
   const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
   const [symptonsData, setSymptonsData] = useState<any>([]);
@@ -565,7 +568,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         console.log('GET_JUNIOR_DOCTOR_CASESHEET', result);
         console.log('healthvallet', _data.data.getCaseSheet!.patientDetails!.healthVault!);
         setSymptonsData(_data.data.getCaseSheet!.caseSheetDetails!.symptoms);
-        // setGetSysmptonsListData(_data.data.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms);
+
         setFamilyValues(_data.data.getCaseSheet!.patientDetails!.familyHistory);
         setAllergiesData(_data.data.getCaseSheet!.patientDetails!.allergies!);
         setLifeStyleData(_data.data.getCaseSheet!.patientDetails!.lifeStyle);
@@ -581,20 +584,38 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           _data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription
         );
         setSwitchValue(_data.data.getCaseSheet!.caseSheetDetails!.followUp!);
+        if (_data.data.getCaseSheet!.caseSheetDetails!.followUpAfterInDays !== null) {
+          setSliderValue(2);
+        }
+        setSliderValue(parseInt(_data.data.getCaseSheet!.caseSheetDetails!.followUpAfterInDays!));
+        setValue(_data.data.getCaseSheet!.caseSheetDetails!.notes!);
+        if (_data.data.getCaseSheet!.caseSheetDetails!.followUpDate !== null) {
+          setSelectDate('dd/mm/yyyy');
+        } else {
+          const val = moment(_data.data.getCaseSheet!.caseSheetDetails!.followUpDate!).format(
+            'DD/MM/YYYY'
+          );
+          setSelectDate(val);
+        }
 
         setHealthWalletArrayData(_data.data.getCaseSheet!.patientDetails!.healthVault);
         setPastList(_data.data.getCaseSheet!.pastAppointments!);
-        setLoading(false);
-        setSysmptonsList(_data.data.getCaseSheet!.caseSheetDetails!
-          .symptoms! as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
-        setDiagonsisList(_data.data.getCaseSheet!.caseSheetDetails!
-          .diagnosis! as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
-        setDiagnosticPrescriptionDataList(_data.data.getCaseSheet!.caseSheetDetails!
-          .diagnosticPrescription! as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
-        setMedicineList(_data.data.getCaseSheet!.caseSheetDetails!
-          .medicinePrescription! as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
         const consultType = _data.data.getCaseSheet!.caseSheetDetails!.consultType! || '';
         setConsultationType(consultType as typeof consultationType);
+        setLoading(false);
+        try {
+          setSysmptonsList((_data.data.getCaseSheet!.caseSheetDetails!.symptoms! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
+          setDiagonsisList((_data.data.getCaseSheet!.caseSheetDetails!.diagnosis! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
+          setDiagnosticPrescriptionDataList((_data.data.getCaseSheet!.caseSheetDetails!
+            .diagnosticPrescription! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
+          setMedicineList((_data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription! ||
+            []) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
+        } catch (error) {
+          console.log({ error });
+        }
       })
       .catch((e) => {
         setLoading(false);
@@ -642,6 +663,16 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       followUpAfterInDays = 'custom';
     }
     console.log('followUpAfterInDays', followUpAfterInDays);
+    let followUpDateValue = '';
+    if (selectDate == 'mm/dd/yyyy') {
+      followUpDateValue = '';
+    } else {
+      followUpDateValue = new Date(selectDate).toUTCString();
+    }
+
+    console.log('followUpDateValue2', selectDate.replace(/\//g, '-'));
+    console.log('followUpDate', moment(new Date(selectDate)).format('YYYY-MM-DDTHH:mm:ss.sssZ'));
+    console.log('followUpDateValue', followUpDateValue);
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
         mutation: UPDATE_CASESHEET,
@@ -652,7 +683,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             diagnosis: JSON.stringify(getDiagonsisList()), //'[{"name":"Dr. CTDO 12.5/20MG TABLET","__typename":"Diagnosis"}]',
             diagnosticPrescription: JSON.stringify(getDiagnosticPrescriptionDataList()), //'[{"name":"Mayuri","__typename":"DiagnosticPrescription"}]',
             followUp: switchValue,
-            followUpDate: null,
+            followUpDate: followUpDateValue,
             followUpAfterInDays: followUpAfterInDays, //sliderValue.toString().concat('days'),
             otherInstructions: JSON.stringify(otherInstructionsData), //'[{"instruction":"Drink Plenty of Water"},{"instruction":"Use sunscreen every day"}]',
             medicinePrescription: JSON.stringify(getMedicineList()), //'[{"medicineName":"CTDO 6.25/40MG TABLET","medicineDosage":"2tablets","medicineToBeTaken":["BEFORE_FOOD"],"medicineInstructions":"Ccc","medicineTimings":["MORNING"],"medicineConsumptionDurationInDays":"Gg"}]',
@@ -676,6 +707,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       });
   };
   const endConsult = () => {
+    saveDetails();
     client
       .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
         mutation: END_APPOINTMENT_SESSION,
@@ -689,8 +721,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       })
       .then((_data) => {
         console.log('_data', _data);
-        setShowButtons(false);
-        props.onStopConsult();
+        //setShowButtons(false);
+        // props.onStopConsult();
       })
       .catch((e) => {
         console.log('Error occured while End casesheet', e);
@@ -713,35 +745,39 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       .clone()
       .local();
     const _consultEndTime = _consultStartTime.clone().add(15, 'minutes');
-    const isConsultInBetween = _now.isBetween(_consultStartTime, _consultEndTime);
+    const _consultSubtractTime = _consultStartTime.clone().subtract(15, 'minutes');
+
+    const isConsultInBetween = _now.isBetween(_consultSubtractTime, _consultEndTime);
     const diffBwConsultStartAndNowInMins = moment
-      .duration(moment(_consultStartTime).diff(_now))
+      .duration(moment(_consultSubtractTime).diff(_now))
       .asMinutes();
     const isAboutToStartWithinTenMinutes =
-      diffBwConsultStartAndNowInMins > 0 && diffBwConsultStartAndNowInMins < 10;
+      diffBwConsultStartAndNowInMins > 0 && diffBwConsultStartAndNowInMins < 25;
 
     if (isConsultInBetween) {
       setEnableConsultButton(true);
     } else if (isAboutToStartWithinTenMinutes) {
       // Start timer here and clear when consult time starts
+      console.log('timer started');
       const consultDisableInterval = setInterval(() => {
         if (moment(new Date()).isBetween(_consultStartTime, _consultEndTime)) {
           setEnableConsultButton(true);
           clearInterval(consultDisableInterval);
+          console.log('timer cleared');
         }
       }, 1000);
     }
   }, []);
 
   const renderButtonsView = () => {
-    console.log({ Appintmentdatetimeconsultpage });
+    //console.log({ Appintmentdatetimeconsultpage });
     return (
       <View style={{ backgroundColor: '#f0f4f5' }}>
         {showButtons == false ? (
           <View style={styles.footerButtonsContainersave}>
             <Button
               title="START CONSULT"
-              disabled={!enableConsultButton}
+              // disabled={!enableConsultButton}
               buttonIcon={<Start />}
               onPress={() => {
                 setShowButtons(true);
@@ -815,7 +851,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           >
             {allergiesData}
           </TextInput> */}
-          {allergiesData == null ? (
+          {allergiesData == null || [] ? (
             <Text style={styles.symptomsText}>No Data</Text>
           ) : (
             <Text style={styles.symptomsText}>{allergiesData}</Text>
@@ -860,7 +896,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       <View>
         <CollapseCard heading="Symptoms" collapse={show} onPress={() => setShow(!show)}>
           {symptonsData == null ? (
-            <Text style={styles.symptomsText}>No data</Text>
+            <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No data</Text>
           ) : (
             symptonsData.map((showdata: any) => {
               return (
@@ -873,11 +909,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           <GreenRemove />
                         </TouchableOpacity>
                       }
-                      days={`Since : ${showdata.since}`}
+                      days={`Since : ${showdata.since == null ? 'N/A' : showdata.since}`}
                       howoften={`How Often : ${
                         showdata.howOften == null ? 'N/A' : showdata.howOften
                       }`}
-                      seviarity={`Severity : ${showdata.severity}`}
+                      seviarity={`Severity :${
+                        showdata.severity == null ? 'N/A' : showdata.severity
+                      }`}
                     />
                   </View>
                 </View>
@@ -947,7 +985,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       >
         <Text style={[styles.familyText, { marginBottom: 12 }]}>Diagnostics</Text>
         {diagnosticPrescriptionData == null ? (
-          <Text>Nodata</Text>
+          <Text style={[styles.symptomsText, { textAlign: 'center' }]}>Nodata</Text>
         ) : (
           diagnosticPrescriptionData.map((showdata: any) => {
             return (
@@ -956,7 +994,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   diseaseName={showdata.name}
                   icon={
                     <TouchableOpacity onPress={() => removeDiagnosticPresecription(showdata.name)}>
-                      <DiagonisisRemove />
+                      <Green />
                     </TouchableOpacity>
                   }
                 />
@@ -987,7 +1025,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       >
         <Text style={[styles.familyText, { marginBottom: 12 }]}>Medicines</Text>
         {medicinePrescriptionData == null || medicinePrescriptionData.length == 0 ? (
-          <Text style={styles.symptomsText}>No Data</Text>
+          <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No Data</Text>
         ) : (
           medicinePrescriptionData.map((showdata: any, i) => {
             return (
@@ -1000,7 +1038,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         <View>{!pickData[showdata.id] ? <Selected /> : <Selected />}</View>
                       </TouchableOpacity>
                     }
-                    tabDesc={showdata.medicineInstructions}
+                    tabDesc={
+                      showdata.medicineInstructions +
+                      showdata.medicineDosage +
+                      ',' +
+                      showdata.medicineTimings +
+                      ',' +
+                      showdata.medicineToBeTaken
+                    }
                     containerStyle={{
                       borderRadius: 5,
                       backgroundColor: 'rgba(0, 0, 0, 0.02)',
@@ -1029,8 +1074,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         <CalendarView
           date={date}
           onPressDate={(date) => {
-            console.log('android cale', moment(date).format('DD/MM/YYYY'), 'DD/MM/YYYY');
-            setSelectDate(moment(date).format('DD/MM/YYYY'));
+            console.log('android cale', moment(date).format('MM/DD/YYYY'), 'MM/DD/YYYY');
+            setSelectDate(moment(date).format('MM/DD/YYYY'));
             setCalenderShow(!calenderShow);
             setShowStyles({
               marginLeft: 16,
@@ -1131,7 +1176,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           : styles.sliderText
                       }
                     >
-                      custom
+                      Custom
                     </Text>
                   </View>
                 </View>
@@ -1259,7 +1304,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             }}
           >
             {diagnosisData == null ? (
-              <Text style={styles.symptomsText}>NO Data</Text>
+              <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No Data</Text>
             ) : (
               diagnosisData.map((showdata: any, i) => {
                 return (
@@ -1300,7 +1345,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         >
           <Text style={[styles.familyText, { marginBottom: 12 }]}>Instructions to the patient</Text>
           {otherInstructionsData == null ? (
-            <Text style={styles.symptomsText}>No Data</Text>
+            <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No Data</Text>
           ) : (
             otherInstructionsData.map((showdata: any, i) => {
               return (
@@ -1349,22 +1394,28 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   multiline={true}
                   placeholderTextColor="rgba(2, 71, 91, 0.4)"
                   value={othervalue}
+                  maxLength={100}
                   onChangeText={(othervalue) => setOthervalue(othervalue)}
                 />
                 <TouchableOpacity
                   onPress={() => {
-                    setOtherInstructionsData([
-                      ...otherInstructionsData,
-                      {
-                        instruction: othervalue,
-                      },
-                    ]);
-                    setOtherInstructionsAdd(!otherInstructionsadd);
-                    renderOtherInstructionsView();
+                    if (othervalue == '') {
+                      Alert.alert('Please add other instructions');
+                    } else {
+                      setOtherInstructionsData([
+                        ...otherInstructionsData,
+                        {
+                          instruction: othervalue,
+                        },
+                      ]);
+                      setOtherInstructionsAdd(!otherInstructionsadd);
+                      setOthervalue('');
+                      renderOtherInstructionsView();
+                    }
                   }}
                 >
                   <View style={{ alignItems: 'flex-end', margin: 8 }}>
-                    <AddPlus />
+                    <Green />
                   </View>
                 </TouchableOpacity>
               </View>
@@ -1390,7 +1441,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           apmnt.caseSheet.map((_caseSheet: any, i) => {
             return (
               <View style={{ marginLeft: 16 }}>
-                {_caseSheet.symptoms == null ? (
+                {_caseSheet.symptoms == null || [] ? (
                   <Text style={styles.symptomsText}>No Data</Text>
                 ) : (
                   _caseSheet.symptoms.map((symptoms: any, i) => {
@@ -1462,7 +1513,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             Photos uploaded by the Patient
           </Text>
           {healthWalletArrayData.length == 0 ? (
-            <Text style={styles.symptomsText}>No Data</Text>
+            <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No Data</Text>
           ) : (
             healthWalletArrayData.map((showdata: any, i) => {
               return (
@@ -1491,39 +1542,44 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   };
   return (
     <View style={styles.casesheetView}>
-      <ScrollView bounces={false} style={{ zIndex: 1 }}>
-        {renderPatientImage()}
-        {renderBasicProfileDetails(PatientInfoData, AppId, Appintmentdatetimeconsultpage)}
-        {renderSymptonsView()}
-        {renderPatientHistoryLifestyle()}
-        {renderPatientHealthWallet()}
-        {renderJuniorDoctorNotes()}
-        {renderDiagnosisView()}
-        {renderMedicinePrescription()}
-        {renderDiagonisticPrescription()}
-        {renderFollowUpView()}
+      <KeyboardAwareScrollView style={{ flex: 1 }} bounces={false}>
+        <ScrollView bounces={false} style={{ zIndex: 1 }}>
+          <View style={{ height: 20, backgroundColor: '#f0f4f5' }}></View>
+          {renderPatientImage()}
+          {renderBasicProfileDetails(PatientInfoData, AppId, Appintmentdatetimeconsultpage)}
+          {renderSymptonsView()}
+          {renderPatientHistoryLifestyle()}
+          {renderPatientHealthWallet()}
+          {renderJuniorDoctorNotes()}
+          {renderDiagnosisView()}
+          {renderMedicinePrescription()}
+          {renderDiagonisticPrescription()}
+          {renderFollowUpView()}
 
-        <View style={{ zIndex: -1 }}>
-          {renderOtherInstructionsView()}
-          <View style={styles.underlineend} />
-          <View style={styles.inputBorderView}>
-            <Text style={styles.notes}>Personal Notes</Text>
-            <TextInputComponent
-              placeholder={string.LocalStrings.placeholder_message}
-              inputStyle={styles.inputView}
-              multiline={true}
-              value={value}
-              onChangeText={(value) => setValue(value)}
-              autoCorrect={true}
-            />
+          <View style={{ zIndex: -1 }}>
+            {renderOtherInstructionsView()}
+            <View style={styles.underlineend} />
+
+            <View style={styles.inputBorderView}>
+              <Text style={styles.notes}>Personal Notes</Text>
+              <TextInputComponent
+                placeholder={string.LocalStrings.placeholder_message}
+                inputStyle={styles.inputView}
+                multiline={true}
+                value={value}
+                onChangeText={(value) => setValue(value)}
+                autoCorrect={true}
+              />
+            </View>
+
+            {/* {renderButtonsView()} */}
+            {moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
+            stastus == 'IN_PROGRESS'
+              ? renderButtonsView()
+              : null}
           </View>
-          {/* {renderButtonsView()} */}
-          {moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
-          stastus == 'IN_PROGRESS'
-            ? renderButtonsView()
-            : null}
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 };

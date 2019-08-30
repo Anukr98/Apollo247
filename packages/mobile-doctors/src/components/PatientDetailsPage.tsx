@@ -96,6 +96,7 @@ const styles = StyleSheet.create({
   verticalLine: {
     flex: 1,
     width: 2,
+    marginLeft: 0,
   },
 });
 export interface PatientsProps extends NavigationScreenProps {}
@@ -190,7 +191,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
           style={[
             styles.verticalLine,
             {
-              backgroundColor: showTop ? '#0087ba' : '#ffffff',
+              backgroundColor: showTop ? '#02475b' : '#ffffff',
               //marginLeft: 15,
             },
           ]}
@@ -200,7 +201,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
           style={[
             styles.verticalLine,
             {
-              backgroundColor: showBottom ? '#0087ba' : '#ffffff',
+              backgroundColor: showBottom ? '#02475b' : '#ffffff',
               //marginLeft: 15,
             },
           ]}
@@ -212,11 +213,23 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
     status == 'past' ? (
       <PastAppointmentIcon />
     ) : status == 'missed' ? (
-      <View>
-        <MissedAppointmentIcon />
-      </View>
+      <View
+        style={{
+          width: 12,
+          height: 12,
+          borderRadius: 12 / 2,
+          backgroundColor: '#02475b',
+        }}
+      ></View>
     ) : status == 'next' ? (
-      <NextAppointmentIcon />
+      <View
+        style={{
+          width: 12,
+          height: 12,
+          borderRadius: 12 / 2,
+          backgroundColor: '#02475b',
+        }}
+      ></View>
     ) : (
       <UpComingIcon />
     );
@@ -355,9 +368,10 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                 >
                   {renderLeftTimeLineView(
                     _doctor.id,
-                    i == 0 ? false : true,
+                    i == 0 ? true : true,
                     i == array.length - 1 ? false : true
                   )}
+
                   <PastConsultCard doctorname={_doctor.name} />
                 </View>
               );

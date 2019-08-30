@@ -23,6 +23,7 @@ const styles = StyleSheet.create({
     marginRight: 20,
     marginBottom: 20,
     borderRadius: 4,
+    marginLeft: 0,
   },
   imageView: {
     margin: 12,
@@ -43,25 +44,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  seperatorline: {
-    flexDirection: 'row',
-    marginTop: 1,
-    borderBottomColor: '#02475b',
-    borderBottomWidth: 1,
-    marginRight: 16,
-    opacity: 0.05,
-  },
-  newtagWrapperStyle: {
-    position: 'absolute',
-    top: 4,
-    left: 0,
-    zIndex: 1,
-    shadowColor: colors.CARD_SHADOW_COLOR,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 10,
-  },
 });
 
 export interface CalendarCardProps {
@@ -70,7 +52,7 @@ export interface CalendarCardProps {
   timing?: string;
   image?: ImageSourcePropType;
   imageStyle?: StyleProp<ImageStyle>;
-  wayOfContact: 'clinic' | 'video';
+  wayOfContact?: 'clinic' | 'video';
 }
 
 export const PastConsultCard: React.FC<CalendarCardProps> = (props) => {

@@ -23,6 +23,7 @@ import {
   addDiagonsisList,
 } from '@aph/mobile-doctors/src/components/ApiCall';
 import { AxiosResponse } from 'axios';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 
 const styles = StyleSheet.create({
   container: {
@@ -200,6 +201,7 @@ export const AddCondition: React.FC<ProfileProps> = (props) => {
           </View>
         </View>
       </View>
+      {isLoading ? <Loader flex1 /> : null}
       <View style={{ marginTop: 10 }}>{renderSuggestionCard()}</View>
     </SafeAreaView>
   );

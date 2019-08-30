@@ -231,11 +231,6 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
         })
         .then((_data) => {
           const result = _data.data!.removeDelegateNumber;
-          const newDoctorDetails = {
-            ...doctorDetails,
-            ...{ delegateNumber: phoneNumber },
-          } as GetDoctorDetails_getDoctorDetails;
-          setDoctorDetails && setDoctorDetails(newDoctorDetails);
           console.log('updatedelegatenumber', result);
           if (result) {
             const newDoctorDetails = {
@@ -261,26 +256,24 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
         })
         .then((_data) => {
           const result = _data.data!.updateDelegateNumber;
-          const newDoctorDetails = {
-            ...doctorDetails,
-            ...{ delegateNumber: phoneNumber },
-          } as GetDoctorDetails_getDoctorDetails;
-          setDoctorDetails && setDoctorDetails(newDoctorDetails);
+
           console.log('updatedelegatenumber', result);
+          setPhoneNumber('');
           if (result) {
             const newDoctorDetails = {
               ...doctorDetails,
               ...{ delegateNumber: phoneNumber },
             } as GetDoctorDetails_getDoctorDetails;
             setDoctorDetails && setDoctorDetails(newDoctorDetails);
-            props.navigation.push(AppRoutes.TabBar);
+            Alert.alert('Successfully Updated Delegate Number');
+            props.navigation.goBack();
           }
         })
         .catch((e) => {
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding Delegate Number', errorMessage, error);
-          Alert.alert('Error', errorMessage);
+          Alert.alert('Error', errorMessage.mes);
         });
     }
   };
@@ -420,19 +413,20 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
 
         <View
           style={[
-            phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
+            phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputValidView,
+            { marginBottom: 16 },
           ]}
         >
-          <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
+          {/* <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text> */}
           <TextInput
             style={styles.inputStyle}
             keyboardType="numeric"
             maxLength={10}
             value={phoneNumber}
-            onChangeText={(value) => validateAndSetPhoneNumber(value)}
+            onChangeText={(phoneNumber) => validateAndSetPhoneNumber(phoneNumber)}
           />
         </View>
-        <Text
+        {/* <Text
           style={
             phoneNumber == '' || phoneNumberIsValid
               ? styles.bottomValidDescription
@@ -442,7 +436,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           {phoneNumber == '' || phoneNumberIsValid
             ? string.LocalStrings.otp_sent_to
             : string.LocalStrings.wrong_number}
-        </Text>
+        </Text> */}
       </View>
     );
   };
@@ -469,82 +463,86 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
   return (
     <SafeAreaView style={styles.container}>
       <View>{showHeaderView()}</View>
-      <ScrollView bounces={false}>
-        <SquareCardWithTitle title="Your Profile">
-          <View style={styles.cardView}>
-            <View style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}>
-              {profileData!.photoUrl ? (
-                // <Image
-                //   style={styles.imageview}
-                //   source={{
-                //     uri: profileData!.photoUrl,
-                //   }}
-                // />
-                <Image
-                  style={styles.imageview}
-                  source={require('@aph/mobile-doctors/src/images/doctor/doctor.png')}
-                />
-              ) : (
-                <Image
-                  style={styles.imageview}
-                  source={require('@aph/mobile-doctors/src/images/doctor/doctor.png')}
-                />
+      <KeyboardAwareScrollView bounces={false}>
+        <ScrollView bounces={false}>
+          <SquareCardWithTitle title="Your Profile">
+            <View style={styles.cardView}>
+              <View
+                style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}
+              >
+                {profileData!.photoUrl ? (
+                  // <Image
+                  //   style={styles.imageview}
+                  //   source={{
+                  //     uri: profileData!.photoUrl,
+                  //   }}
+                  // />
+                  <Image
+                    style={styles.imageview}
+                    source={require('@aph/mobile-doctors/src/images/doctor/doctor.png')}
+                  />
+                ) : (
+                  <Image
+                    style={styles.imageview}
+                    source={require('@aph/mobile-doctors/src/images/doctor/doctor.png')}
+                  />
+                )}
+              </View>
+              {profileData!.doctorType == 'STAR_APOLLO' ? (
+                <Star style={styles.starIconStyle}></Star>
+              ) : null}
+              <View style={styles.columnContainer}>
+                <Text style={[styles.drname]} numberOfLines={1}>
+                  {`Dr. ${profileData!.firstName} ${profileData!.lastName}`}
+                </Text>
+                <Text style={styles.drnametext}>
+                  {formatSpecialityAndExperience(
+                    profileData!.specialty.name,
+                    profileData!.experience || ''
+                  )}
+                </Text>
+                <View style={styles.understatusline} />
+              </View>
+              {profileRow('Education', profileData!.qualification!)}
+              {profileRow('Speciality', profileData!.specialty.name!)}
+              {profileRow('Services', profileData!.specialization || '')}
+              {profileRow(
+                'Awards',
+                (profileData!.awards || '')
+                  .replace('&amp;', '&')
+                  .replace(/<\/?[^>]+>/gi, '')
+                  .trim()
               )}
+              {profileRow('Speaks', (profileData!.languages || '').split(',').join(', '))}
+              {profileRow('MCI Number', profileData!.registrationNumber)}
+              {profileRow('In-person Consult Location', getFormattedLocation())}
             </View>
             {profileData!.doctorType == 'STAR_APOLLO' ? (
-              <Star style={styles.starIconStyle}></Star>
+              <AccountStarTeam
+                profileData={profileData}
+                scrollViewRef={props.scrollViewRef}
+                onReload={props.onReload}
+              />
             ) : null}
-            <View style={styles.columnContainer}>
-              <Text style={[styles.drname]} numberOfLines={1}>
-                {`Dr. ${profileData!.firstName} ${profileData!.lastName}`}
+            <View>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansSemiBold(16),
+                  letterSpacing: 0.06,
+                  color: '#02475b',
+                  marginLeft: 20,
+                  // marginBottom: 18,
+                }}
+              >
+                Secretary Login
               </Text>
-              <Text style={styles.drnametext}>
-                {formatSpecialityAndExperience(
-                  profileData!.specialty.name,
-                  profileData!.experience || ''
-                )}
-              </Text>
-              <View style={styles.understatusline} />
+              {renderMobilePhoneView()}
+              {renderHelpView()}
+              {renderButtonsView()}
             </View>
-            {profileRow('Education', profileData!.qualification!)}
-            {profileRow('Speciality', profileData!.specialty.name!)}
-            {profileRow('Services', profileData!.specialization || '')}
-            {profileRow(
-              'Awards',
-              (profileData!.awards || '')
-                .replace('&amp;', '&')
-                .replace(/<\/?[^>]+>/gi, '')
-                .trim()
-            )}
-            {profileRow('Speaks', (profileData!.languages || '').split(',').join(', '))}
-            {profileRow('MCI Number', profileData!.registrationNumber)}
-            {profileRow('In-person Consult Location', getFormattedLocation())}
-          </View>
-          {profileData!.doctorType == 'STAR_APOLLO' ? (
-            <AccountStarTeam
-              profileData={profileData}
-              scrollViewRef={props.scrollViewRef}
-              onReload={props.onReload}
-            />
-          ) : null}
-          <View>
-            <Text
-              style={{
-                ...theme.fonts.IBMPlexSansSemiBold(16),
-                letterSpacing: 0.06,
-                color: '#02475b',
-                marginLeft: 20,
-                // marginBottom: 18,
-              }}
-            >
-              Secretary Login
-            </Text>
-            {renderMobilePhoneView()}
-            {renderHelpView()}
-            {renderButtonsView()}
-          </View>
-        </SquareCardWithTitle>
-      </ScrollView>
+          </SquareCardWithTitle>
+        </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };
