@@ -7,7 +7,7 @@ import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl } from '@aph/universal/dist/aphRoutes';
-import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+// import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 
 export interface GatewayContext {
@@ -29,10 +29,30 @@ export type Resolver<Parent, Args, Context, Result> = (
 (async () => {
   const gateway = new ApolloGateway({
     serviceList: [
-      { name: 'profiles', url: `http://${process.env.PROFILES_SERVICE_HOST}/graphql` },
-      { name: 'doctors', url: `http://${process.env.DOCTORS_SERVICE_HOST}/graphql` },
-      { name: 'consults', url: `http://${process.env.CONSULTS_SERVICE_HOST}/graphql` },
-      { name: 'notifications', url: `http://${process.env.NOTIFICATIONS_SERVICE_HOST}/graphql` },
+      {
+        name: 'profiles',
+        url: `http://${process.env.PROFILES_SERVICE_HOST}${getPortStr(
+          process.env.PROFILES_SERVICE_PORT
+        )}/graphql`,
+      },
+      {
+        name: 'doctors',
+        url: `http://${process.env.DOCTORS_SERVICE_HOST}${getPorttStr(
+          process.env.DOCTORS_SERVICE_PORT
+        )}/graphql`,
+      },
+      {
+        name: 'consults',
+        url: `http://${process.env.CONSULTS_SERVICE_HOST}${getPorttStr(
+          process.env.CONSULTS_SERVICE_PORT
+        )}/graphql`,
+      },
+      {
+        name: 'notifications',
+        url: `http://${process.env.NOTIFICATIONS_SERVICE_HOST}${getPorttStr(
+          process.env.NOTIFICATIONS_SERVICE_PORT
+        )}/graphql`,
+      },
     ],
     buildService({ name, url }) {
       return new RemoteGraphQLDataSource({

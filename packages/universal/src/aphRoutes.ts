@@ -1,11 +1,12 @@
 const environment = process.env.NODE_ENV;
 
+export const getPortStr = (port: string) => (port === '80' || port === '443' ? '' : `:${port}`);
+
 const buildUrl = ({ application, port }: { application: string; port: string }) => {
   const protocol = process.env.USE_SSL === 'false' ? 'http' : 'https';
-  const portStr = port === '80' || port === '443' ? '' : `:${port}`;
   return environment === 'local'
-    ? `${protocol}://localhost${portStr}`
-    : `${protocol}://aph.${environment}.${application}.popcornapps.com${portStr}`;
+    ? `${protocol}://localhost${getPortStr(port)}`
+    : `${protocol}://aph.${environment}.${application}.popcornapps.com${getPortStr(port)}`;
 };
 
 export const apiBaseUrl = () => {
