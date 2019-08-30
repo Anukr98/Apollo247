@@ -7,9 +7,7 @@ import {
   MEDICINE_DELIVERY_TYPE,
   MEDICINE_ORDER_TYPE,
   MEDICINE_ORDER_STATUS,
-  MEDICINE_ORDER_PAYMENT_TYPE,
   MedicineOrderLineItems,
-  MedicineOrderPayments,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -35,22 +33,15 @@ export const saveMedicineOrderTypeDefs = gql`
     CART_ORDER
   }
 
-  enum MEDICINE_ORDER_PAYMENT_TYPE {
-    COD
-    ONLINE
-    NO_PAYMENT
-  }
-
   input MedicineCartInput {
     quoteId: String
     shopId: String
     estimatedAmount: Float
     patientId: ID!
     medicineDeliveryType: MEDICINE_DELIVERY_TYPE!
-    patinetAddressId: ID
+    patientAddressId: ID
     devliveryCharges: Float
     items: [MedicineCartItem]
-    payment: MedicinePaymentDetails
   }
 
   input MedicineCartItem {
@@ -62,22 +53,14 @@ export const saveMedicineOrderTypeDefs = gql`
     isPrescriptionNeeded: Int
     prescriptionImageUrl: String
     mou: Int
-    isMedicine: Int
-  }
-
-  input MedicinePaymentDetails {
-    paymentType: MEDICINE_ORDER_PAYMENT_TYPE
-    amountPaid: Float
-    paymentRefId: String
-    paymentStatus: String
-    paymentDateTime: DateTime
+    isMedicine: String
   }
 
   type SaveMedicineOrderResult {
-    status: String
     errorCode: Int
     errorMessage: String
     orderId: ID!
+    orderAutoId: Int!
   }
 
   extend type Mutation {
@@ -91,10 +74,9 @@ type MedicineCartInput = {
   estimatedAmount: number;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
-  patinetAddressId: string;
+  patientAddressId: string;
   devliveryCharges: number;
   items: MedicineCartItem[];
-  payment: MedicinePaymentDetails;
 };
 
 type MedicineCartItem = {
@@ -106,22 +88,14 @@ type MedicineCartItem = {
   isPrescriptionNeeded: number;
   prescriptionImageUrl: string;
   mou: number;
-  isMedicine: number;
-};
-
-type MedicinePaymentDetails = {
-  paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
-  amountPaid: number;
-  paymentRefId: string;
-  paymentStatus: string;
-  paymentDateTime: Date;
+  isMedicine: string;
 };
 
 type SaveMedicineOrderResult = {
-  status: string;
   errorCode: number;
   errorMessage: string;
   orderId: string;
+  orderAutoId: number;
 };
 
 type MedicineCartInputInputArgs = { MedicineCartInput: MedicineCartInput };
@@ -134,8 +108,7 @@ const SaveMedicineOrder: Resolver<
 > = async (parent, { MedicineCartInput }, { profilesDb }) => {
   console.log(MedicineCartInput, 'input');
   const errorCode = 0,
-    errorMessage = '',
-    status = 'Accepted';
+    errorMessage = '';
 
   if (!MedicineCartInput.items || MedicineCartInput.items.length == 0) {
     throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
@@ -168,21 +141,14 @@ const SaveMedicineOrder: Resolver<
       console.log(lineItemOrder);
     });
   }
-
-  if (MedicineCartInput.payment.paymentType !== MEDICINE_ORDER_PAYMENT_TYPE.NO_PAYMENT) {
-    const paymentAttrs: Partial<MedicineOrderPayments> = {
-      medicineOrders: saveOrder,
-      paymentDateTime: MedicineCartInput.payment.paymentDateTime,
-      paymentStatus: MedicineCartInput.payment.paymentStatus,
-      paymentType: MedicineCartInput.payment.paymentType,
-      amountPaid: MedicineCartInput.payment.amountPaid,
-      paymentRefId: MedicineCartInput.payment.paymentRefId,
-    };
-    await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
-  }
   console.log(saveOrder, 'save order');
 
-  return { status, errorCode, errorMessage, orderId: saveOrder.id };
+  return {
+    errorCode,
+    errorMessage,
+    orderId: saveOrder.id,
+    orderAutoId: saveOrder.orderAutoId,
+  };
 };
 
 export const saveMedicineOrderResolvers = {
