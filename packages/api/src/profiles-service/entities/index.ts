@@ -206,7 +206,7 @@ export class MedicineOrderPayments extends BaseEntity {
   amountPaid: number;
 
   @Column({ nullable: true })
-  bankTnxId: string;
+  bankTxnId: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;

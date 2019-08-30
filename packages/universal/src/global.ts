@@ -51,5 +51,8 @@ declare namespace NodeJS {
     PROFILES_DB_PORT: string;
     PROFILES_DB_USER: string;
     PROFILES_DB_PASSWORD: string;
+
+    NOTIFICATIONS_SERVICE_HOST: string;
+    NOTIFICATIONS_SERVICE_PORT: string;
   }
 }

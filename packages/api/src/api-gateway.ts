@@ -50,7 +50,7 @@ export type Resolver<Parent, Args, Context, Result> = (
       {
         name: 'notifications',
         url: `http://${process.env.NOTIFICATIONS_SERVICE_HOST}${getPortStr(
-          process.env.CONSULTS_SERVICE_PORT
+          process.env.NOTIFICATIONS_SERVICE_PORT ? process.env.NOTIFICATIONS_SERVICE_PORT : '80'
         )}/graphql`,
       },
     ],

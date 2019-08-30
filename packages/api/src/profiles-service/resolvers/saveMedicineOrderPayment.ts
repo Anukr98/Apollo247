@@ -84,7 +84,7 @@ const SaveMedicineOrderPayment: Resolver<
     paymentRefId: medicinePaymentInput.paymentRefId,
     responseCode: medicinePaymentInput.responseCode,
     responseMessage: medicinePaymentInput.responseMessage,
-    bankTnxId: medicinePaymentInput.bankTxnId,
+    bankTxnId: medicinePaymentInput.bankTxnId,
   };
   const savePaymentDetails = await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
 
