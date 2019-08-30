@@ -62,7 +62,6 @@ services:
       - profiles-service
       - doctors-service
       - consults-service
-      # - notifications-service
       - rabbitmq
       - storage
 
