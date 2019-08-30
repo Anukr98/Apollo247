@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Theme } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import { makeStyles } from '@material-ui/styles';
 import { OTSession, OTPublisher, OTStreams, OTSubscriber } from 'opentok-react';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -131,14 +132,21 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
-
+  const { patientDetails } = useContext(CaseSheetContext);
   return (
     <div className={classes.consult}>
       <div>
         <div className={props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''}>
           {!props.showVideoChat && (
             <div className={classes.timerCls}>
-              <div className={classes.patientName}>Seema Singh</div>
+              {patientDetails!.firstName &&
+                patientDetails!.firstName !== '' &&
+                patientDetails!.lastName &&
+                patientDetails!.lastName !== '' && (
+                  <div className={classes.patientName}>
+                    {patientDetails!.firstName + ' ' + patientDetails!.lastName}
+                  </div>
+                )}
               {props.isCallAccepted &&
                 ` ${
                   props.timerMinuts.toString().length < 2
