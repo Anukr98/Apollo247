@@ -54,13 +54,15 @@ export const saveMedicineOrderTypeDefs = gql`
   }
 
   input MedicineCartItem {
-    medicineSku: String
+    medicineSKU: String
     medicineName: String
     price: Float
     quantity: Int
     mrp: Float
     isPrescriptionNeeded: Int
     prescriptionImageUrl: String
+    mou: Int
+    isMedicine: Int
   }
 
   input MedicinePaymentDetails {
@@ -103,6 +105,8 @@ type MedicineCartItem = {
   mrp: number;
   isPrescriptionNeeded: number;
   prescriptionImageUrl: string;
+  mou: number;
+  isMedicine: number;
 };
 
 type MedicinePaymentDetails = {
@@ -158,7 +162,6 @@ const SaveMedicineOrder: Resolver<
     MedicineCartInput.items.map(async (item) => {
       const orderItemAttrs: Partial<MedicineOrderLineItems> = {
         medicineOrders: saveOrder,
-        medicineSKU: item.medicineSku,
         ...item,
       };
       const lineItemOrder = await medicineOrdersRepo.saveMedicineOrderLineItem(orderItemAttrs);

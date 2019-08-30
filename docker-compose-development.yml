@@ -30,9 +30,7 @@ services:
       while (
       (! curl -s http://${PROFILES_SERVICE_HOST}:${PROFILES_SERVICE_PORT}) ||
       (! curl -s http://${DOCTORS_SERVICE_HOST}:${DOCTORS_SERVICE_PORT}) ||
-      (! curl -s http://${CONSULTS_SERVICE_HOST}:${CONSULTS_SERVICE_PORT}) ||
-      (! curl -s http://${NOTIFICATIONS_SERVICE_HOST}:${NOTIFICATIONS_SERVICE_PORT})
-      ) > /dev/null;
+      (! curl -s http://${CONSULTS_SERVICE_HOST}:${CONSULTS_SERVICE_PORT})) > /dev/null;
       do echo waiting for services to start...; sleep 5;
       done;
       node api-gateway.bundle.js"

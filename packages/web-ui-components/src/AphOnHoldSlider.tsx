@@ -19,27 +19,28 @@ const useStyles = makeStyles((theme: Theme) => {
     rail: {
       height: 4,
       opacity: 0.5,
-      borderRadius: 2,
-      backgroundImage: 'linear-gradient(to right, #0087ba, #0087ba)',
+      backgroundColor: 'rgba(229,0,0,0.2)',
     },
     track: {
-      backgroundImage: 'linear-gradient(to right, #0087ba, #0087ba)',
+      backgroundColor: '#0087ba',
       height: 4,
-      borderRadius: 2,
     },
     mark: {
-      backgroundImage: 'linear-gradient(to right, #0087ba, #0087ba)',
+      backgroundColor: '#0087ba',
       display: 'none',
     },
     thumb: {
-      width: 20,
-      height: 20,
-      backgroundColor: '#00b38e',
-      marginTop: -8,
-      marginLeft: -8,
-      boxShadow: '0px 0px 0px 4px rgba(0,179,142,0.2)',
+      width: 28,
+      height: 28,
+      backgroundImage: 'url(' + require('images/ic_hold.svg') + ')',
+      backgroundSize: '100% 100%',
+      backgroundRepeat: 'no-repeat',
+      backgroundColor: 'transparent',
+      marginTop: -12,
+      marginLeft: -12,
+      boxShadow: 'none',
       '&:hover': {
-        boxShadow: '0px 0px 0px 4px rgba(0,179,142,0.2)',
+        boxShadow: 'none',
       },
     },
     markLabel: {
@@ -67,14 +68,23 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    disabled: {
+      '& span:last-child': {
+        display: 'none',
+      },
+      '& span:first-child': {
+        height: 2,
+        backgroundColor: 'rgba(2,71,91,0.1)',
+      },
+    },
   };
 });
 
-export const AphSlider: React.FC<SliderProps> = (props) => {
+export const AphOnHoldSlider: React.FC<SliderProps> = (props) => {
   const defaultClasses = useStyles({});
   const classes = props.classes || defaultClasses;
 
   return <Slider classes={classes} {...props} />;
 };
 
-export default AphSlider;
+export default AphOnHoldSlider;
