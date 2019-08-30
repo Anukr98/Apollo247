@@ -88,6 +88,9 @@ export class MedicineOrders extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ generated: 'increment' })
+  orderAutoId: number;
+
   @Column()
   orderType: MEDICINE_ORDER_TYPE;
 
@@ -151,7 +154,10 @@ export class MedicineOrderLineItems extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ default: 1 })
+  isMedicine: number;
+
+  @Column({ default: 0 })
   isPrescriptionNeeded: number;
 
   @Column()
@@ -159,6 +165,9 @@ export class MedicineOrderLineItems extends BaseEntity {
 
   @Column()
   medicineName: string;
+
+  @Column()
+  mou: number;
 
   @Column('decimal', { precision: 5, scale: 2 })
   mrp: number;
