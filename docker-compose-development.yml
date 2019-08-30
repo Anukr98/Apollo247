@@ -40,7 +40,6 @@ services:
       - profiles-service
       - doctors-service
       - consults-service
-      - notifications-service
       - nginx
 
   profiles-service:
