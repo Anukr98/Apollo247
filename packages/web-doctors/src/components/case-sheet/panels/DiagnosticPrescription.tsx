@@ -174,11 +174,14 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
-      fontWeight: theme.typography.fontWeightBold,
+      fontWeight: 600,
       // pointerEvents: 'none',
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
+      },
+      '& img': {
+        marginRight: 8,
       },
     },
   })
@@ -263,7 +266,7 @@ export const DiagnosticPrescription: React.FC = () => {
             color="primary"
             onClick={() => showAddConditionHandler(true)}
           >
-            <img src={require('images/ic_add.svg')} alt="" /> ADD CONDITION
+            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD CONDITION
           </AphButton>
         )}
         {showAddCondition && (

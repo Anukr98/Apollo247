@@ -43,6 +43,8 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '5px 0 0 0 !important',
         minHeight: 20,
         paddingBottom: 0,
+        paddingRight: 6,
+        paddingTop: 3,
       },
       '& div': {
         color: '#000',
@@ -64,6 +66,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         margin: '0 0 15px 0',
         maxWidth: '100%',
+        minWidth: 200,
       },
       '& h2': {
         fontSize: 20,
@@ -208,7 +211,7 @@ export const CaseSheet: React.FC = () => {
             className={classes.expandIcon}
           >
             <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Juniour Doctor's Notes</Typography>
+              <Typography variant="h3">Junior Doctor's Notes</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
               <DoctorsNotes />

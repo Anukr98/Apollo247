@@ -35,6 +35,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       display: 'flex',
       alignItems: 'center',
+      lineHeight: 1.86,
       [theme.breakpoints.down('xs')]: {
         position: 'fixed',
         zIndex: 2,

@@ -76,10 +76,13 @@ const useStyles = makeStyles((theme: Theme) => ({
     boxShadow: 'none',
     color: theme.palette.action.selected,
     fontSize: 14,
-    fontWeight: theme.typography.fontWeightBold,
+    fontWeight: 600,
     paddingLeft: 4,
     '&:hover': {
       backgroundColor: 'transparent',
+    },
+    '& img': {
+      marginRight: 8,
     },
   },
   deleteSymptom: {
@@ -196,6 +199,10 @@ const useStyles = makeStyles((theme: Theme) => ({
       margin: 0,
       fontWeight: 'normal',
     },
+  },
+  nodatafound: {
+    fontSize: 14,
+    margin: '10px 0 10px 4px',
   },
 }));
 interface errorObject {
@@ -354,7 +361,7 @@ export const Symptoms: React.FC = (props) => {
               ))}
           </List>
         ) : (
-          'NO data Found'
+          <div className={classes.nodatafound}>NO data Found</div>
         )}
 
         <AphButton
@@ -363,7 +370,7 @@ export const Symptoms: React.FC = (props) => {
           classes={{ root: classes.btnAddDoctor }}
           onClick={() => setIsDialogOpen(true)}
         >
-          <img src={require('images/ic_add.svg')} alt="" />
+          <img src={require('images/ic_dark_plus.svg')} alt="" />
           Add Symptom
         </AphButton>
 
