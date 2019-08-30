@@ -5,6 +5,7 @@ import React from 'react';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { MyProfile } from 'components/MyAccount/MyProfile';
 import { AddressBook } from 'components/MyAccount/AddressBook';
+import { useCurrentPatient } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -134,6 +135,8 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const MyAccount: React.FC = (props) => {
   const classes = useStyles();
+  const patient = useCurrentPatient();
+  if (!patient) return null;
 
   return (
     <div className={classes.root}>

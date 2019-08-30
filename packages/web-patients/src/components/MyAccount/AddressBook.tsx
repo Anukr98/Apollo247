@@ -5,6 +5,13 @@ import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { AddressCard } from 'components/MyAccount/AddressCard';
 import Scrollbars from 'react-custom-scrollbars';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import {
+  GetPatientAddressList,
+  GetPatientAddressListVariables,
+} from 'graphql/types/GetPatientAddressList';
+import { GET_PATIENT_ADDRESS_LIST } from 'graphql/profiles';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -76,9 +83,28 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const AddressBook: React.FC = (props) => {
+interface AddressBookProps {
+  patientId: string;
+}
+
+export const AddressBook: React.FC<AddressBookProps> = (props) => {
   const classes = useStyles();
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
+  const { currentPatient } = useAllCurrentPatients();
+
+  const { data, error, loading } = useQueryWithSkip<
+    GetPatientAddressList,
+    GetPatientAddressListVariables
+  >(GET_PATIENT_ADDRESS_LIST, {
+    variables: {
+      patientId: (currentPatient && currentPatient.id) || '', //No value exists in scope for the shorthand property 'patientId'. Either declare one or provide an initializer.ts(18004)
+    },
+  });
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error :(</div>;
+
+  const addresses = (data && data.getPatientAddressList.addressList) || [];
 
   return (
     <div className={classes.root}>
