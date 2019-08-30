@@ -355,13 +355,13 @@ export const HealthVault: React.FC = () => {
                       </Typography>
                     </Fragment>
                   }
-                  secondary={
-                    <Fragment>
-                      <Typography component="h6" variant="h6">
-                        {'5mb'} | {'2019-01-01T11:30'}
-                      </Typography>
-                    </Fragment>
-                  }
+                  // secondary={
+                  //   <Fragment>
+                  //     <Typography component="h6" variant="h6">
+                  //       {'5mb'} | {'2019-01-01T11:30'}
+                  //     </Typography>
+                  //   </Fragment>
+                  // }
                 />
               </ListItem>
             ))}

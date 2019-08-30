@@ -153,6 +153,6 @@ import { getConnection } from 'typeorm';
   });
 
   server.listen({ port: process.env.PROFILES_SERVICE_PORT }).then(({ url }) => {
-    console.log(`🚀 profiles-service ready (internal url: ${url})`);
+    console.log(`🚀 profiles-service ready`);
   });
 })();
