@@ -6,7 +6,7 @@ import * as firebaseAdmin from 'firebase-admin';
 import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { webPatientsBaseUrl, webDoctorsBaseUrl } from '@aph/universal/dist/aphRoutes';
+import { webPatientsBaseUrl, webDoctorsBaseUrl, getPortStr } from '@aph/universal/dist/aphRoutes';
 // import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 
@@ -37,19 +37,19 @@ export type Resolver<Parent, Args, Context, Result> = (
       },
       {
         name: 'doctors',
-        url: `http://${process.env.DOCTORS_SERVICE_HOST}${getPorttStr(
+        url: `http://${process.env.DOCTORS_SERVICE_HOST}${getPortStr(
           process.env.DOCTORS_SERVICE_PORT
         )}/graphql`,
       },
       {
         name: 'consults',
-        url: `http://${process.env.CONSULTS_SERVICE_HOST}${getPorttStr(
+        url: `http://${process.env.CONSULTS_SERVICE_HOST}${getPortStr(
           process.env.CONSULTS_SERVICE_PORT
         )}/graphql`,
       },
       {
         name: 'notifications',
-        url: `http://${process.env.NOTIFICATIONS_SERVICE_HOST}${getPorttStr(
+        url: `http://${process.env.NOTIFICATIONS_SERVICE_HOST}${getPortStr(
           process.env.NOTIFICATIONS_SERVICE_PORT
         )}/graphql`,
       },
