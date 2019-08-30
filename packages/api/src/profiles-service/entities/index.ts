@@ -70,6 +70,9 @@ export enum DEVICE_TYPE {
 //medicine orders starts
 @Entity()
 export class MedicineOrders extends BaseEntity {
+  @Column({ nullable: true })
+  appointmentId: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -93,6 +96,9 @@ export class MedicineOrders extends BaseEntity {
 
   @Column({ nullable: true })
   patinetAddressId: string;
+
+  @Column({ nullable: true })
+  prescriptionImageUrl: string;
 
   @Column({ type: 'timestamp' })
   quoteDateTime: Date;
@@ -158,7 +164,7 @@ export class MedicineOrderLineItems extends BaseEntity {
   mrp: number;
 
   @Column({ nullable: true })
-  prescriptionImage: string;
+  prescriptionImageUrl: string;
 
   @Column('decimal', { precision: 5, scale: 2 })
   price: number;
@@ -187,7 +193,7 @@ export class MedicineOrderLineItems extends BaseEntity {
 //medicine orders  payments start
 @Entity()
 export class MedicineOrderPayments extends BaseEntity {
-  @Column('decimal', { precision: 5, scale: 2 })
+  @Column('decimal', { precision: 5, scale: 2, nullable: true })
   amountPaid: number;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -199,10 +205,10 @@ export class MedicineOrderPayments extends BaseEntity {
   @Column()
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
 
-  @Column()
+  @Column({ nullable: true })
   paymentRefId: string;
 
-  @Column()
+  @Column({ nullable: true })
   paymentDateTime: Date;
 
   @Column()

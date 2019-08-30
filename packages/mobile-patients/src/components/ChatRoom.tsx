@@ -361,7 +361,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
 
     getHistory(0);
-    registerForPushNotification();
+    // registerForPushNotification();
 
     pubnub.addListener({
       status: (statusEvent) => {
@@ -1019,13 +1019,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               apiKey={'46401302'}
               sessionId={sessionId}
               token={token}
-              // apiKey={'46409832'}
-              // sessionId={
-              //   '2_MX40NjQwOTgzMn5-MTU2Njk3NTkyMjgxM35yK0YwQjhHUnhGS2k1dTM4eUpBbHFHY3p-UH4'
-              // }
-              // token={
-              //   'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9NDAzMWJlZDA0NzAxMTIyMWU1NzU2OWI4MmEzYjg3YTI0N2VmZDkyYzpzZXNzaW9uX2lkPTJfTVg0ME5qUXdPVGd6TW41LU1UVTJOamszTlRreU1qZ3hNMzV5SzBZd1FqaEhVbmhHUzJrMWRUTTRlVXBCYkhGSFkzcC1VSDQmY3JlYXRlX3RpbWU9MTU2Njk3NTkzNiZub25jZT0wLjMwNjk1ODQ4MDE0NzM0MTczJnJvbGU9bW9kZXJhdG9yJmV4cGlyZV90aW1lPTE1Njk1Njc5MzUmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
-              // }
               eventHandlers={sessionEventHandlers}
               ref={otSessionRef}
               options={{
@@ -1131,11 +1124,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           apiKey={'46401302'}
           sessionId={sessionId}
           token={token}
-          // apiKey={'46409832'}
-          // sessionId={'2_MX40NjQwOTgzMn5-MTU2Njk3NTkyMjgxM35yK0YwQjhHUnhGS2k1dTM4eUpBbHFHY3p-UH4'}
-          // token={
-          //   'T1==cGFydG5lcl9pZD00NjQwOTgzMiZzaWc9NDAzMWJlZDA0NzAxMTIyMWU1NzU2OWI4MmEzYjg3YTI0N2VmZDkyYzpzZXNzaW9uX2lkPTJfTVg0ME5qUXdPVGd6TW41LU1UVTJOamszTlRreU1qZ3hNMzV5SzBZd1FqaEhVbmhHUzJrMWRUTTRlVXBCYkhGSFkzcC1VSDQmY3JlYXRlX3RpbWU9MTU2Njk3NTkzNiZub25jZT0wLjMwNjk1ODQ4MDE0NzM0MTczJnJvbGU9bW9kZXJhdG9yJmV4cGlyZV90aW1lPTE1Njk1Njc5MzUmaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdD0='
-          // }
           eventHandlers={sessionEventHandlers}
           ref={otSessionRef}
           options={{
@@ -1413,6 +1401,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 },
                 (status, response) => {}
               );
+
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: endCallMsg,
+                    id: patientId,
+                  },
+                  channel: channel,
+                  storeInHistory: true,
+                },
+                (status, response) => {}
+              );
             }}
           >
             <EndCallIcon style={{ width: 60, height: 60 }} />
@@ -1464,6 +1465,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   isTyping: true,
                   message: 'Video call ended',
                   duration: callTimerStarted,
+                  id: patientId,
+                },
+                channel: channel,
+                storeInHistory: true,
+              },
+              (status, response) => {}
+            );
+
+            pubnub.publish(
+              {
+                message: {
+                  isTyping: true,
+                  message: endCallMsg,
                   id: patientId,
                 },
                 channel: channel,
@@ -1681,6 +1695,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     isTyping: true,
                     message: 'Video call ended',
                     duration: callTimerStarted,
+                    id: patientId,
+                  },
+                  channel: channel,
+                  storeInHistory: true,
+                },
+                (status, response) => {}
+              );
+
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: endCallMsg,
                     id: patientId,
                   },
                   channel: channel,
