@@ -38,4 +38,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         });
       });
   }
+
+  getMedicineOrderDetails(orderAutoId: number) {
+    return this.findOne({ where: { orderAutoId } });
+  }
 }

@@ -88,7 +88,7 @@ export class MedicineOrders extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ generated: 'increment' })
+  @Column({ generated: 'increment', type: 'bigint' })
   orderAutoId: number;
 
   @Column()
@@ -98,7 +98,7 @@ export class MedicineOrders extends BaseEntity {
   orderDateTime: Date;
 
   @Column({ nullable: true })
-  patinetAddressId: string;
+  patientAddressId: string;
 
   @Column({ nullable: true })
   prescriptionImageUrl: string;
@@ -154,8 +154,8 @@ export class MedicineOrderLineItems extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ default: 1 })
-  isMedicine: number;
+  @Column({ nullable: true })
+  isMedicine: string;
 
   @Column({ default: 0 })
   isPrescriptionNeeded: number;
@@ -205,6 +205,9 @@ export class MedicineOrderPayments extends BaseEntity {
   @Column('decimal', { precision: 5, scale: 2, nullable: true })
   amountPaid: number;
 
+  @Column({ nullable: true })
+  bankTnxId: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -221,7 +224,13 @@ export class MedicineOrderPayments extends BaseEntity {
   paymentDateTime: Date;
 
   @Column()
-  paymentStatus: String;
+  paymentStatus: string;
+
+  @Column({ nullable: true })
+  responseCode: string;
+
+  @Column()
+  responseMessage: string;
 
   @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderLineItems)
   medicineOrders: MedicineOrders;
