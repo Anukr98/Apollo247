@@ -323,18 +323,6 @@ export const ConsultTabs: React.FC = () => {
   }, [paramId, appointmentId]);
 
   const saveCasesheetAction = () => {
-    console.log(
-      JSON.stringify(symptoms),
-      JSON.stringify(diagnosis),
-      JSON.stringify(otherInstructions),
-      JSON.stringify(diagnosticPrescription),
-      JSON.stringify(medicinePrescription),
-      notes,
-      consultType[0],
-      followUp[0],
-      followUpAfterInDays[0],
-      followUpDate[0]
-    );
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
         mutation: UPDATE_CASESHEET,
@@ -405,7 +393,6 @@ export const ConsultTabs: React.FC = () => {
       .then((_data: any) => {
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
-        setappointmentDateTime(_data.data.createAppointmentSession.appointmentDateTime);
         setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
         setError('');
       })
