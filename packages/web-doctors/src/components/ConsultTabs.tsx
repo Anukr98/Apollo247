@@ -405,7 +405,7 @@ export const ConsultTabs: React.FC = () => {
       .then((_data: any) => {
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
-        setappointmentDateTime(_data.data.createAppointmentSession.appointmentDateTime);
+        //setappointmentDateTime(_data.data.createAppointmentSession.appointmentDateTime);
         setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
         setError('');
       })
