@@ -7,7 +7,8 @@ import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl } from '@aph/universal/dist/aphRoutes';
-//import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
+// import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+// import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 
 export interface GatewayContext {
   firebaseUid: string;
@@ -28,10 +29,30 @@ export type Resolver<Parent, Args, Context, Result> = (
 (async () => {
   const gateway = new ApolloGateway({
     serviceList: [
-      { name: 'profiles', url: `http://${process.env.PROFILES_SERVICE_HOST}/graphql` },
-      { name: 'doctors', url: `http://${process.env.DOCTORS_SERVICE_HOST}/graphql` },
-      { name: 'consults', url: `http://${process.env.CONSULTS_SERVICE_HOST}/graphql` },
-      { name: 'notifications', url: `http://${process.env.NOTIFICATIONS_SERVICE_HOST}/graphql` },
+      {
+        name: 'profiles',
+        url: `http://${process.env.PROFILES_SERVICE_HOST}${getPortStr(
+          process.env.PROFILES_SERVICE_PORT
+        )}/graphql`,
+      },
+      {
+        name: 'doctors',
+        url: `http://${process.env.DOCTORS_SERVICE_HOST}${getPorttStr(
+          process.env.DOCTORS_SERVICE_PORT
+        )}/graphql`,
+      },
+      {
+        name: 'consults',
+        url: `http://${process.env.CONSULTS_SERVICE_HOST}${getPorttStr(
+          process.env.CONSULTS_SERVICE_PORT
+        )}/graphql`,
+      },
+      {
+        name: 'notifications',
+        url: `http://${process.env.NOTIFICATIONS_SERVICE_HOST}${getPorttStr(
+          process.env.NOTIFICATIONS_SERVICE_PORT
+        )}/graphql`,
+      },
     ],
     buildService({ name, url }) {
       return new RemoteGraphQLDataSource({
@@ -113,25 +134,68 @@ export type Resolver<Parent, Args, Context, Result> = (
     console.log(`🚀 api gateway ready at ${url}`);
     console.log('allowed cors origins:', corsOrigins.join(','));
   });
-
-  /*console.log('------------------------MESSAGE QUEUE TEST----------------------------');
-
-  AphMqClient.connect();
-
-  type TestMessage = AphMqMessage<AphMqMessageTypes.TEST, { time: Date }>;
-  const testMessage: TestMessage = {
-    type: AphMqMessageTypes.TEST,
-    payload: {
-      time: new Date(),
-    },
-  };
-
-  console.log('sending message', testMessage);
-  AphMqClient.send(testMessage);
-
-  AphMqClient.onReceive<TestMessage>(AphMqMessageTypes.TEST, (receivedMessage) => {
-    console.log('received message!', receivedMessage.message);
-    console.log('accepting message');
-    receivedMessage.accept();
-  });*/
 })();
+
+// (async () => {
+//   console.log('------------------------STORAGE TEST----------------------------');
+//   const client = new AphStorageClient(
+//     process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+//     process.env.AZURE_STORAGE_CONTAINER_NAME
+//   );
+
+//   if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'development') {
+//     console.log('deleting container...');
+//     await client
+//       .deleteContainer()
+//       .then((res) => console.log(res))
+//       .catch((error) => console.log('error deleting', error));
+
+//     console.log('setting service properties...');
+//     await client
+//       .setServiceProperties()
+//       .then((res) => console.log(res))
+//       .catch((error) => console.log('error setting service properties', error));
+
+//     console.log('creating container...');
+//     await client
+//       .createContainer()
+//       .then((res) => console.log(res))
+//       .catch((error) => console.log('error creating', error));
+//   }
+
+//   console.log('testing storage connection...');
+//   await client
+//     .testStorageConnection()
+//     .then((res) => console.log(res))
+//     .catch((error) => console.log('error testing', error));
+
+//   const filePath = '/apollo-hospitals/README.md';
+//   console.log(`uploading ${filePath}`);
+//   const readmeBlob = await client.uploadFile({ name: 'README.md', filePath }).catch((error) => {
+//     throw error;
+//   });
+//   console.log('file saved!', readmeBlob.url);
+// })();
+
+// (async () => {
+//   console.log('------------------------MESSAGE QUEUE TEST----------------------------');
+
+//   AphMqClient.connect();
+
+//   type TestMessage = AphMqMessage<AphMqMessageTypes.TEST, { time: Date }>;
+//   const testMessage: TestMessage = {
+//     type: AphMqMessageTypes.TEST,
+//     payload: {
+//       time: new Date(),
+//     },
+//   };
+
+//   console.log('sending message', testMessage);
+//   AphMqClient.send(testMessage);
+
+//   AphMqClient.onReceive<TestMessage>(AphMqMessageTypes.TEST, (receivedMessage) => {
+//     console.log('received message!', receivedMessage.message);
+//     console.log('accepting message');
+//     receivedMessage.accept();
+//   });
+// })();

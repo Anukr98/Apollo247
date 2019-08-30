@@ -140,6 +140,6 @@ import { getConnection } from 'typeorm';
   });
 
   server.listen({ port: process.env.DOCTORS_SERVICE_PORT }).then(({ url }) => {
-    console.log(`🚀 doctors-service ready (internal url: ${url})`);
+    console.log(`🚀 doctors-service ready`);
   });
 })();

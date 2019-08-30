@@ -25,7 +25,7 @@ import { connect } from 'consults-service/database/connect';
   });
 
   server.listen({ port: process.env.NOTIFICATIONS_SERVICE_PORT }).then(({ url }) => {
-    console.log(`🚀 notifications-service ready (internal url: ${url})`);
+    console.log(`🚀 notifications-service ready`);
   });
 
   /*AphMqClient.connect();
