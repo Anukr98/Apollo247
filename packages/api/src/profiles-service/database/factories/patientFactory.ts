@@ -1,4 +1,4 @@
-import faker from 'faker/locale/en_IND'; //allegedly populates with Indian data
+import faker from 'faker/locale/en_IND'; //populates with Indian data
 import { Patient, PatientAddress } from 'profiles-service/entities';
 import { Relation } from 'profiles-service/entities';
 import { randomEnum } from 'helpers/factoryHelpers';
