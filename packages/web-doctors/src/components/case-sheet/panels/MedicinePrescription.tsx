@@ -91,9 +91,17 @@ const useStyles = makeStyles((theme: Theme) =>
       left: 0,
       right: 0,
       color: 'black',
+      boxShadow: 'none',
     },
     suggestion: {
       display: 'block',
+      overflow: 'hidden',
+      borderBottom: '1px solid rgba(2,71,91,0.1)',
+      '&:hover': {
+        '& div': {
+          backgroundColor: '#f0f4f5 !important',
+        },
+      },
     },
     suggestionsList: {
       margin: 0,
@@ -110,7 +118,7 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: '#f7f7f7',
       border: '1px solid rgba(2,71,91,0.1)',
       padding: '12px 40px 12px 12px',
-      maxWidth: 288,
+      maxWidth: 320,
       borderRadius: 5,
       position: 'relative',
       '& h5': {
@@ -158,7 +166,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: 500,
       lineHeight: 'normal',
-      color: 'rgba(2, 71, 91, 0.6)',
+      color: 'rgba(2, 71, 91, 0.6) !important',
       marginBottom: 12,
     },
     backArrow: {
@@ -172,7 +180,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     cross: {
       position: 'absolute',
-      right: 0,
+      right: -10,
       top: -9,
       fontSize: 18,
       color: '#02475b',
@@ -237,7 +245,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 16,
       color: '#02475b',
       fontWeight: 500,
-      marginBottom: 20,
+      marginBottom: 10,
       '& button': {
         border: '1px solid #00b38e',
         padding: '5px 10px',
@@ -247,6 +255,9 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 15,
         color: '#00b38e',
         backgroundColor: '#fff',
+        '&:focus': {
+          outline: 'none',
+        },
       },
     },
     tabletcontent: {
@@ -259,8 +270,9 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#fff !important',
     },
     helpText: {
-      paddingLeft: 20,
+      paddingLeft: 0,
       paddingRight: 20,
+      paddingBottom: 10,
     },
     medicineDilog: {
       '& .dialogBoxClose': {
@@ -275,13 +287,14 @@ const useStyles = makeStyles((theme: Theme) =>
     updateSymptom: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      top: 30,
-      right: 15,
+      top: 2,
+      right: 0,
       color: '#666666',
       position: 'absolute',
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
-      paddingLeft: 4,
+      minWidth: 30,
+      padding: '5px 10px',
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -289,13 +302,14 @@ const useStyles = makeStyles((theme: Theme) =>
     deleteSymptom: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      top: 0,
-      right: 15,
+      top: 2,
+      right: 30,
       color: '#666666',
       position: 'absolute',
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
-      paddingLeft: 4,
+      minWidth: 30,
+      padding: '5px 10px',
       '&:hover': {
         backgroundColor: 'transparent',
       },

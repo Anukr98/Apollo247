@@ -128,7 +128,6 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: 0,
       listStyleType: 'none',
       borderRadius: 10,
-      color: 'yellow',
     },
     divider: {
       height: theme.spacing(2),
@@ -141,13 +140,40 @@ const useStyles = makeStyles((theme: Theme) =>
         color: 'rgba(2, 71, 91, 0.6)',
         marginBottom: 12,
       },
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
+      },
+      // '& input': {
+      //   borderBottom: '2px solid #00b38e',
+      //   '&:hover': {
+      //     borderBottom: '2px solid #00b38e',
+      //   },
+      // },
+      '& input': {
+        borderBottom: '2px solid #00b38e',
+        '&:hover': {
+          borderBottom: '2px solid #00b38e',
+          '&:before': {
+            borderBottom: '2px solid #00b38e',
+          },
+        },
+        '&:before': {
+          borderBottom: '2px solid #00b38e',
+        },
+        '&:after': {
+          borderBottom: '2px solid #00b38e',
+        },
+      },
     },
     diagnosBtn: {
       border: '1px solid #00b38e',
       borderRadius: 16,
-      color: '#00b38e !important',
+      color: '#fff !important',
       fontWeight: 600,
-      backgroundColor: '#fff',
+      backgroundColor: '#00b38e',
       marginBottom: 15,
       marginRight: 16,
       fontSize: 14,
@@ -157,7 +183,7 @@ const useStyles = makeStyles((theme: Theme) =>
         position: 'absolute',
         right: 0,
         '& path': {
-          fill: '#00b38e',
+          fill: '#fff',
         },
       },
       '&:focus': {
