@@ -161,7 +161,7 @@ export const MyAccount: React.FC = (props) => {
               <MyProfile />
             </div>
             <div className={classes.rightSection}>
-              <AddressBook />
+              <AddressBook patientId={patient.id} />
             </div>
           </div>
         </div>

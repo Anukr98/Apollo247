@@ -54,7 +54,7 @@ export const UPDATE_PATIENT = gql`
 `;
 
 export const GET_PATIENT_ADDRESS_LIST = gql`
-  query getPatientAddressList($patientId: String) {
+  query GetPatientAddressList($patientId: String) {
     getPatientAddressList(patientId: $patientId) {
       addressList {
         id

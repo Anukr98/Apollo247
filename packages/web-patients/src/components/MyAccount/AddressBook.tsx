@@ -11,7 +11,6 @@ import {
   GetPatientAddressListVariables,
 } from 'graphql/types/GetPatientAddressList';
 import { GET_PATIENT_ADDRESS_LIST } from 'graphql/profiles';
-import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -90,14 +89,13 @@ interface AddressBookProps {
 export const AddressBook: React.FC<AddressBookProps> = (props) => {
   const classes = useStyles();
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
-  const { currentPatient } = useAllCurrentPatients();
 
   const { data, error, loading } = useQueryWithSkip<
     GetPatientAddressList,
     GetPatientAddressListVariables
   >(GET_PATIENT_ADDRESS_LIST, {
     variables: {
-      patientId: (currentPatient && currentPatient.id) || '', //No value exists in scope for the shorthand property 'patientId'. Either declare one or provide an initializer.ts(18004)
+      patientId: props.patientId,
     },
   });
 
@@ -114,7 +112,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
       </div>
       <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 322px)' }}>
         <div className={classes.sectionBody}>
-          <AddressCard />
+          <AddressCard addresses={addresses} />
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>

@@ -4,6 +4,7 @@ import React from 'react';
 import { AphDialogTitle, AphButton, AphDialog } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
+import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -50,9 +51,14 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const AddressCard: React.FC = (props) => {
+interface AddressCardProps {
+  addresses: Array<GetPatientAddressList_getPatientAddressList_addressList>;
+}
+
+export const AddressCard: React.FC<AddressCardProps> = (props) => {
   const classes = useStyles();
   const [isEditAddressDialogOpen, setIsEditAddressDialogOpen] = React.useState<boolean>(false);
+  console.log('THE PROPS ARE: ', props);
 
   const addressDivs = props.addresses.map((address) => {
     return (
