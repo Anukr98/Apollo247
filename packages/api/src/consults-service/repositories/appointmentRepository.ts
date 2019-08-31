@@ -285,10 +285,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       });
       results.andWhere('appointment.appointmentDateTime < :beforeNow', { beforeNow: new Date() });
     } else if (type == patientLogType.REGULAR) {
-      const monthStartDate = startOfMonth(new Date());
-      const monthendDate = endOfMonth(new Date());
-
-      console.log(monthStartDate, monthendDate, '-----------------');
       results.having('count(*) > 2');
       results.andWhere('appointment.appointmentDateTime > :monthStartDate', {
         monthStartDate: startOfMonth(new Date()),
