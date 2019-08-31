@@ -2,14 +2,13 @@ import React, { useState, useEffect, useContext } from 'react';
 import {
   Typography,
   Chip,
-  TextField,
   MenuItem,
   makeStyles,
   Theme,
   createStyles,
   Paper,
 } from '@material-ui/core';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphInput, AphTextField } from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -38,7 +37,7 @@ function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
 
   return (
-    <TextField
+    <AphTextField
       fullWidth
       InputProps={{
         inputRef: (node) => {
@@ -46,7 +45,7 @@ function renderInputComponent(inputProps: any) {
           inputRef(node);
         },
         classes: {
-          input: classes.input,
+          root: classes.inputRoot,
         },
       }}
       {...other}
@@ -146,12 +145,6 @@ const useStyles = makeStyles((theme: Theme) =>
       '&:after': {
         borderBottom: '2px solid #00b38e',
       },
-      // '& input': {
-      //   borderBottom: '2px solid #00b38e',
-      //   '&:hover': {
-      //     borderBottom: '2px solid #00b38e',
-      //   },
-      // },
       '& input': {
         borderBottom: '2px solid #00b38e',
         '&:hover': {
@@ -210,6 +203,28 @@ const useStyles = makeStyles((theme: Theme) =>
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
       marginTop: 2,
+    },
+    inputRoot: {
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '& input': {
+        fontSize: 16,
+        fontWeight: 500,
+        color: '#01475b',
+        paddingTop: 0,
+      },
+      '&:hover': {
+        '&:before': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+        '&:after': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+      },
     },
   })
 );
