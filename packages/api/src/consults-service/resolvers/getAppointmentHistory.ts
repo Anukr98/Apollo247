@@ -1,6 +1,11 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
+import {
+  STATUS,
+  APPOINTMENT_TYPE,
+  patientLogSort,
+  patientLogType,
+} from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
@@ -8,6 +13,18 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const getAppointmentHistoryTypeDefs = gql`
+  enum patientLogSort {
+    MOST_RECENT
+    NUMBER_OF_CONSULTS
+    PATIENT_NAME_A_TO_Z
+    PATIENT_NAME_Z_TO_A
+  }
+  enum patientLogType {
+    All
+    FOLLOW_UP
+    REGULAR
+  }
+
   extend type Patient @key(fields: "id") {
     id: ID! @external
   }
@@ -47,7 +64,7 @@ export const getAppointmentHistoryTypeDefs = gql`
     patientid: ID
     consultscount: String
     appointmentids: [String]
-    appointmenttimings: [DateTime]
+    appointmentdatetime: DateTime
     patientInfo: Patient @provides(fields: "id")
   }
 
@@ -55,7 +72,12 @@ export const getAppointmentHistoryTypeDefs = gql`
     getAppointmentHistory(appointmentHistoryInput: AppointmentHistoryInput): AppointmentResult!
     getDoctorAppointments(startDate: Date, endDate: Date): DoctorAppointmentResult
     getAppointmentData(appointmentId: String): DoctorAppointmentResult
-    getPatientLog: [PatientLog]
+    getPatientLog(
+      offset: Int
+      limit: Int
+      sortBy: patientLogSort
+      type: patientLogType
+    ): [PatientLog]
   }
 `;
 
@@ -149,21 +171,27 @@ type PatientLog = {
   patientid: string;
   consultscount: string;
   appointmentids: string[];
-  appointmenttimings: Date[];
+  appointmentdatetime: Date;
 };
 
-const getPatientLog: Resolver<null, {}, ConsultServiceContext, PatientLog[] | null> = async (
-  parent,
-  args,
-  { consultsDb, doctorsDb, mobileNumber }
-) => {
+const getPatientLog: Resolver<
+  null,
+  { offset?: number; limit?: number; sortBy: patientLogSort; type: patientLogType },
+  ConsultServiceContext,
+  PatientLog[] | null
+> = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointmentsHistory = await appointmentRepo.getAppointmentsGroupByPatient(doctordata.id);
-
+  const appointmentsHistory = await appointmentRepo.patientLog(
+    doctordata.id,
+    args.sortBy,
+    args.type,
+    args.offset,
+    args.limit
+  );
   return appointmentsHistory;
 };
 

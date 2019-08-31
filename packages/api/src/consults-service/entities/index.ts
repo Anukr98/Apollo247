@@ -13,6 +13,19 @@ import {
 import { IsDate } from 'class-validator';
 import { DoctorType } from 'doctors-service/entities';
 
+export enum patientLogSort {
+  MOST_RECENT = 'MOST_RECENT',
+  NUMBER_OF_CONSULTS = 'NUMBER_OF_CONSULTS',
+  PATIENT_NAME_A_TO_Z = 'PATIENT_NAME_A_TO_Z',
+  PATIENT_NAME_Z_TO_A = 'PATIENT_NAME_Z_TO_A',
+}
+
+export enum patientLogType {
+  ALL = 'ALL',
+  FOLLOW_UP = 'FOLLOW_UP',
+  REGULAR = 'REGULAR',
+}
+
 export enum APPOINTMENT_TYPE {
   ONLINE = 'ONLINE',
   PHYSICAL = 'PHYSICAL',
