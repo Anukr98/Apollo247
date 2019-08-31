@@ -39,11 +39,15 @@ export enum SEARCH_TYPE {
 
 export enum MEDICINE_ORDER_STATUS {
   QUOTE = 'QUOTE',
-  ORDERED = 'ORDERED',
+  ORDER_PLACED = 'ORDER_PLACED',
+  ORDER_VERIFIED = 'ORDER_VERIFIED',
   DELIVERED = 'DELIVERED',
   CANCELLED = 'CANCELLED',
-  ON_THE_WAY = 'ON_THE_WAY',
+  OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY',
   PICKEDUP = 'PICKEDUP',
+  RETURN_INITIATED = 'RETURN_INITIATED',
+  ITEMS_RETURNED = 'ITEMS_RETURNED',
+  RETURN_ACCEPTED = 'RETURN_ACCEPTED',
 }
 
 export enum MEDICINE_DELIVERY_TYPE {
@@ -70,6 +74,9 @@ export enum DEVICE_TYPE {
 //medicine orders starts
 @Entity()
 export class MedicineOrders extends BaseEntity {
+  @Column({ nullable: true })
+  appointmentId: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -85,6 +92,9 @@ export class MedicineOrders extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @PrimaryGeneratedColumn({ type: 'bigint' })
+  orderAutoId: number;
+
   @Column()
   orderType: MEDICINE_ORDER_TYPE;
 
@@ -92,7 +102,10 @@ export class MedicineOrders extends BaseEntity {
   orderDateTime: Date;
 
   @Column({ nullable: true })
-  patinetAddressId: string;
+  patientAddressId: string;
+
+  @Column({ nullable: true })
+  prescriptionImageUrl: string;
 
   @Column({ type: 'timestamp' })
   quoteDateTime: Date;
@@ -102,9 +115,6 @@ export class MedicineOrders extends BaseEntity {
 
   @Column({ nullable: true })
   shopId: string;
-
-  @Column()
-  status: MEDICINE_ORDER_STATUS;
 
   @Column({ nullable: true })
   updatedDate: Date;
@@ -133,6 +143,12 @@ export class MedicineOrders extends BaseEntity {
     (medicineOrderPayments) => medicineOrderPayments.medicineOrders
   )
   medicineOrderPayments: MedicineOrderPayments[];
+
+  @OneToMany(
+    (type) => MedicineOrdersStatus,
+    (medicineOrdersStatus) => medicineOrdersStatus.medicineOrders
+  )
+  medicineOrdersStatus: MedicineOrdersStatus[];
 }
 //medicine orders ends
 
@@ -145,7 +161,10 @@ export class MedicineOrderLineItems extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ nullable: true })
+  isMedicine: string;
+
+  @Column({ default: 0 })
   isPrescriptionNeeded: number;
 
   @Column()
@@ -154,11 +173,14 @@ export class MedicineOrderLineItems extends BaseEntity {
   @Column()
   medicineName: string;
 
+  @Column()
+  mou: number;
+
   @Column('decimal', { precision: 5, scale: 2 })
   mrp: number;
 
   @Column({ nullable: true })
-  prescriptionImage: string;
+  prescriptionImageUrl: string;
 
   @Column('decimal', { precision: 5, scale: 2 })
   price: number;
@@ -187,8 +209,11 @@ export class MedicineOrderLineItems extends BaseEntity {
 //medicine orders  payments start
 @Entity()
 export class MedicineOrderPayments extends BaseEntity {
-  @Column('decimal', { precision: 5, scale: 2 })
+  @Column('decimal', { precision: 5, scale: 2, nullable: true })
   amountPaid: number;
+
+  @Column({ nullable: true })
+  bankTxnId: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
@@ -199,14 +224,20 @@ export class MedicineOrderPayments extends BaseEntity {
   @Column()
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
 
-  @Column()
+  @Column({ nullable: true })
   paymentRefId: string;
 
-  @Column()
+  @Column({ nullable: true })
   paymentDateTime: Date;
 
   @Column()
-  paymentStatus: String;
+  paymentStatus: string;
+
+  @Column({ nullable: true })
+  responseCode: string;
+
+  @Column()
+  responseMessage: string;
 
   @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderLineItems)
   medicineOrders: MedicineOrders;
@@ -225,6 +256,39 @@ export class MedicineOrderPayments extends BaseEntity {
   }
 }
 //medicine orders payments ends
+
+//medicine orders status starts
+@Entity()
+export class MedicineOrdersStatus extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrdersStatus)
+  medicineOrders: MedicineOrders;
+
+  @Column()
+  orderStatus: MEDICINE_ORDER_STATUS;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp' })
+  statusDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//medicine orders status ends
 
 //patient device tokens starts
 @Entity()
