@@ -315,7 +315,7 @@ export const Cart: React.FC = (props) => {
   const disableSubmit = deliveryAddressId === '';
   const uploadPrescriptionRequired = cartItems.findIndex((v) => v.is_prescription_required === '1');
 
-  console.log(uploadPrescriptionRequired);
+  console.log(deliveryMode, deliveryAddressId, cartTotal, cartItems, uploadPrescriptionRequired);
 
   return (
     <div className={classes.root}>
@@ -410,7 +410,12 @@ export const Cart: React.FC = (props) => {
                   )}
                   {tabValue === 1 && (
                     <TabContainer>
-                      <StorePickUp />
+                      <StorePickUp
+                        updateDeliveryAddress={(deliveryAddressId) =>
+                          setDeliveryAddressId(deliveryAddressId)
+                        }
+                        pincode=""
+                      />
                     </TabContainer>
                   )}
                 </div>

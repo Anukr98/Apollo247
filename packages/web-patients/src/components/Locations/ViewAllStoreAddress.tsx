@@ -1,7 +1,9 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, FormControlLabel } from '@material-ui/core';
-import React from 'react';
+import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
+import React, { useState, useEffect } from 'react';
 import { AphRadio, AphTextField } from '@aph/web-ui-components';
+import { StoreAddresses } from 'components/Locations/StorePickUp';
+import axios, { AxiosError, Cancel } from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -61,47 +63,126 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ViewAllStoreAddress: React.FC = (props) => {
+interface ViewAllStoreAddressProps {
+  pincode: string;
+  stores: StoreAddresses[];
+  setStoreAddress: (storeAddressId: string) => void;
+}
+
+export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) => {
   const classes = useStyles();
+  const [pincode, setPincode] = React.useState<string>(props.pincode || '');
+  const [storeAddresses, setStoreAddresses] = React.useState<StoreAddresses[]>(props.stores || []);
+  const [storeAddressId, setStoreAddressId] = React.useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [pincodeError, setPincodeError] = useState<boolean>(false);
+
+  const getPharmacyAddresses = (pincode: string) => {
+    axios
+      .post(
+        process.env.PHARMACY_MED_PHARMACIES_LIST_URL,
+        { params: pincode },
+        {
+          headers: {
+            Authorization: process.env.PHARMACY_MED_AUTH_TOKEN,
+          },
+          transformRequest: [
+            (data, headers) => {
+              delete headers.common['Content-Type'];
+              return JSON.stringify(data);
+            },
+          ],
+        }
+      )
+      .then((result) => {
+        setTimeout(() => {
+          const stores = result.data.Stores ? result.data.Stores : [];
+          if (stores && stores[0] && stores[0].message !== 'Data Not Available') {
+            setTimeout(() => {}, 500);
+            setStoreAddresses(stores);
+          } else {
+            setStoreAddresses([]);
+            setPincodeError(true);
+          }
+          setLoading(false);
+        }, 1000);
+      })
+      .catch((thrown: AxiosError | Cancel) => {
+        alert('An error occurred while fetching Stores.');
+      });
+  };
+
+  useEffect(() => {
+    if (pincode.length === 6) {
+      setLoading(true);
+      getPharmacyAddresses(pincode);
+    }
+  }, [pincode]);
 
   return (
     <div className={classes.root}>
       <div className={classes.addressGroup}>
         <div className={classes.pinSearch}>
-          <AphTextField value="500033" placeholder="500033" />
+          <AphTextField
+            value={pincode}
+            placeholder="Enter Pincode"
+            inputProps={{
+              maxLength: 6,
+              type: 'text',
+            }}
+            onKeyPress={(e) => {
+              if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+            }}
+            onChange={(e) => {
+              const newPincode = e.target.value;
+              setPincode(e.target.value);
+              if (newPincode.length === 6) {
+                setLoading(true);
+                getPharmacyAddresses(newPincode);
+              } else if (newPincode === '') {
+                setStoreAddresses([]);
+                setPincodeError(false);
+              }
+            }}
+          />
         </div>
-        <div className={classes.sectionHeader}>Stores In This Region</div>
-        <ul>
-          <li>
-            <FormControlLabel
-              className={classes.radioLabel}
-              value="a"
-              control={<AphRadio color="primary" />}
-              checked
-              label="Apollo Pharmacy Plot No B/88, Opposite Andhra Bank, Jubilee Hills"
-            />
-          </li>
-          <li>
-            <FormControlLabel
-              className={classes.radioLabel}
-              value="b"
-              control={<AphRadio color="primary" />}
-              label="Apollo Pharmacy Plot No B/88, Opposite Andhra Bank, Jubilee Hills"
-            />
-          </li>
-          <li>
-            <FormControlLabel
-              className={classes.radioLabel}
-              value="b"
-              control={<AphRadio color="primary" />}
-              label="Apollo Pharmacy Plot No B/88, Opposite Andhra Bank, Jubilee Hills"
-            />
-          </li>
-        </ul>
-        <div className={classes.noAddress}>
-          Sorry! We’re working hard to get to this area! In the meantime, you can either pick up
-          from a nearby store, or change the pincode.
-        </div>
+
+        {storeAddresses.length > 0 ? (
+          <>
+            <div className={classes.sectionHeader}>Stores In This Region</div>
+            {loading ? (
+              <CircularProgress />
+            ) : (
+              <ul>
+                {storeAddresses.map((addressDetails, index) => {
+                  const storeAddress = addressDetails.address.replace(' -', ' ,');
+                  return (
+                    <li key={index}>
+                      <FormControlLabel
+                        checked={storeAddressId === addressDetails.storeid}
+                        className={classes.radioLabel}
+                        value={addressDetails.storeid}
+                        control={<AphRadio color="primary" />}
+                        label={storeAddress}
+                        onChange={() => {
+                          setStoreAddressId(addressDetails.storeid);
+                          props.setStoreAddress(addressDetails.storeid);
+                        }}
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </>
+        ) : null}
+
+        {pincodeError ? (
+          <div className={classes.noAddress}>
+            Sorry! We're working hard to get to this area! In the meantime, you can either pick up
+            from a nearby store, or change the pincode.
+          </div>
+        ) : null}
       </div>
     </div>
   );

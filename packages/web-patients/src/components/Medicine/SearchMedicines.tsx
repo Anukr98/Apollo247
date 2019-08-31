@@ -6,15 +6,10 @@ import Scrollbars from 'react-custom-scrollbars';
 import { AphTextField } from '@aph/web-ui-components';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
 import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
-import axios, { CancelTokenSource, AxiosError, Cancel } from 'axios';
+import axios, { AxiosError, Cancel } from 'axios';
 import FormHelperText from '@material-ui/core/FormHelperText';
-// import _debounce from 'lodash/debounce';
+import _debounce from 'lodash/debounce';
 import { MedicineCartItem } from 'components/MedicinesCartProvider';
-
-const apiDetails = {
-  url: 'http://uat.apollopharmacy.in/searchprd_api.php',
-  authToken: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
-}; // this must goes into environment later.
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -156,61 +151,12 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const SearchMedicines: React.FC = (props) => {
   const classes = useStyles();
-  // const [medicineName, setMedicineName] = useState<string>('');
   const [medicines, setMedicines] = useState<MedicineCartItem[]>([]);
   const [medicineCount, setMedicineCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [showError, setShowError] = useState<boolean>(false);
 
-  // const debouncedFunction = (medicineName: string) =>
-  //   _debounce(() => {
-  //     setMedicineName(medicineName);
-  //   }, 1000);
-
   const pastSearches: string[] = [];
-
-  // useEffect(() => {
-  //   const fetchMedicines = () => {
-  //     const source: CancelTokenSource = axios.CancelToken.source();
-  //     // source && source.cancel('Operation has been canceled.');
-  //     axios
-  //       .get(`${apiDetails.url}?params=${medicineName}`, {
-  //         cancelToken: source.token,
-  //         headers: {
-  //           Authorization: apiDetails.authToken,
-  //         },
-  //       })
-  //       .then((result) => {
-  //         const medicines = result.data.products ? result.data.products : [];
-  //         const medicineCount = result.data.product_count ? result.data.product_count : 0;
-  //         if (medicineCount === 0 && medicines.length === 0) {
-  //           setShowError(true);
-  //         } else {
-  //           setShowError(false);
-  //         }
-  //         setMedicines(medicines);
-  //         setMedicineCount(medicineCount);
-  //         setLoading(false);
-  //       })
-  //       .catch((thrown: AxiosError | Cancel) => {
-  //         if (axios.isCancel(thrown)) {
-  //           const cancel: Cancel = thrown;
-  //           console.log(cancel);
-  //         }
-  //       });
-  //   };
-
-  //   if (medicineName.length > 2) {
-  //     setLoading(true);
-  //     setTimeout(() => {
-  //       fetchMedicines();
-  //     }, 1000);
-  //   } else {
-  //     setShowError(false);
-  //     setMedicines([]);
-  //     setMedicineCount(0);
-  //   }
-  // }, [medicineName]);
 
   return (
     <div className={classes.root}>
@@ -286,47 +232,54 @@ export const SearchMedicines: React.FC = (props) => {
               autoFocus
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 const medicineName = e.target.value;
-                setMedicineCount(0);
-                setLoading(true);
                 if (medicineName.length > 2) {
-                  const source: CancelTokenSource = axios.CancelToken.source();
+                  // const source: CancelTokenSource = axios.CancelToken.source();
                   // source && source.cancel('Operation has been canceled.');
-                  axios
-                    .post(
-                      apiDetails.url,
-                      { params: medicineName },
-                      {
-                        cancelToken: source.token,
-                        headers: {
-                          Authorization: apiDetails.authToken,
-                        },
-                      }
-                    )
-                    .then((result) => {
-                      const medicines = result.data.products ? result.data.products : [];
-                      const medicineCount = result.data.product_count
-                        ? result.data.product_count
-                        : 0;
-                      if (medicineCount === 0 && medicines.length === 0) {
-                        setShowError(true);
-                      } else {
-                        setShowError(false);
-                      }
-                      setMedicines(medicines);
-                      setMedicineCount(medicineCount);
-                      setLoading(false);
-                    })
-                    .catch((thrown: AxiosError | Cancel) => {
-                      // if (axios.isCancel(thrown)) {
-                      //   const cancel: Cancel = thrown;
-                      //   console.log(cancel);
-                      // }
-                    });
-                  // source && source.cancel('Operation has been canceled.');
+                  _debounce(() => {
+                    setMedicineCount(0);
+                    setLoading(true);
+                    axios
+                      .post(
+                        process.env.PHARMACY_MED_SEARCH_URL,
+                        { params: medicineName },
+                        {
+                          // cancelToken: source.token,
+                          headers: {
+                            Authorization: process.env.PHARMACY_MED_AUTH_TOKEN,
+                          },
+                          transformRequest: [
+                            (data, headers) => {
+                              delete headers.common['Content-Type'];
+                              return JSON.stringify(data);
+                            },
+                          ],
+                        }
+                      )
+                      .then((result) => {
+                        const medicines = result.data.products ? result.data.products : [];
+                        const medicineCount = result.data.product_count
+                          ? result.data.product_count
+                          : 0;
+                        if (medicineCount === 0 && medicines.length === 0) {
+                          setShowError(true);
+                        } else {
+                          setShowError(false);
+                        }
+                        setMedicines(medicines);
+                        setMedicineCount(medicineCount);
+                        setLoading(false);
+                      })
+                      .catch((thrown: AxiosError | Cancel) => {
+                        if (axios.isCancel(thrown)) {
+                          // const cancel: Cancel = thrown;
+                          // console.log(cancel);
+                        }
+                      });
+                  }, 1500)();
                 } else {
                   setLoading(false);
+                  setMedicineCount(0);
                 }
-                // debouncedFunction(medicineName)();
               }}
               error={showError}
             />

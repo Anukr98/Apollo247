@@ -19,6 +19,7 @@ export interface MedicineCartItem {
   thumbnail: string;
   type_id: string;
   quantity: number;
+  mou: string;
 }
 
 export interface MedicineCartContextProps {

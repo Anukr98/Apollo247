@@ -45,5 +45,10 @@ declare namespace NodeJS {
     PROFILES_DB_PORT: string;
     PROFILES_DB_USER: string;
     PROFILES_DB_PASSWORD: string;
+
+    PHARMACY_MED_SEARCH_URL: string;
+    PHARMACY_MED_PRODUCT_INFO_URL: string;
+    PHARMACY_MED_PHARMACIES_LIST_URL: string;
+    PHARMACY_MED_AUTH_TOKEN: string;
   }
 }

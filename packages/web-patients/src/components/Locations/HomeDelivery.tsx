@@ -81,6 +81,12 @@ const useStyles = makeStyles((theme: Theme) => {
     shadowHide: {
       overflow: 'hidden',
     },
+    noAddress: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#0087ba',
+      paddingBottom: 10,
+    },
   };
 });
 
@@ -124,30 +130,38 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <ul>
-        {addressList.map((addressDetails, index) => {
-          const addressId = addressDetails.id;
-          const address = `${addressDetails.addressLine1} - ${addressDetails.zipcode}`;
-          showAddress++;
-          return showAddress < 3 ? (
-            <li key={index}>
-              <FormControlLabel
-                checked={deliveryAddressId === addressId}
-                className={classes.radioLabel}
-                value={addressId}
-                control={<AphRadio color="primary" />}
-                label={address}
-                onChange={() => {
-                  setDeliveryAddressId(addressId);
-                  updateDeliveryAddress(addressId);
-                }}
-              />
-            </li>
-          ) : (
-            ''
-          );
-        })}
-      </ul>
+      {addressList.length > 0 ? (
+        <ul>
+          {addressList.map((addressDetails, index) => {
+            const addressId = addressDetails.id;
+            const address = `${addressDetails.addressLine1} - ${addressDetails.zipcode}`;
+            showAddress++;
+            return showAddress < 3 ? (
+              <li key={index}>
+                <FormControlLabel
+                  checked={deliveryAddressId === addressId}
+                  className={classes.radioLabel}
+                  value={addressId}
+                  control={<AphRadio color="primary" />}
+                  label={address}
+                  onChange={() => {
+                    setDeliveryAddressId(addressId);
+                    updateDeliveryAddress(addressId);
+                  }}
+                />
+              </li>
+            ) : (
+              ''
+            );
+          })}
+        </ul>
+      ) : (
+        <div className={classes.noAddress}>
+          Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has
+          been the industry's standard dummy text ever since the 1500s....
+        </div>
+      )}
+
       <div className={classes.bottomActions}>
         <AphButton onClick={() => setIsAddAddressDialogOpen(true)}>Add new address</AphButton>
         {addressList.length > 2 ? (
