@@ -52,7 +52,7 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
     return props.data.map((item, index) => {
       // const title = props.showIcons ? item.title : item;
       return (
-        <TouchableOpacity
+        <TouchableOpacity activeOpacity={1}
           key={index}
           style={[
             styles.tabView,

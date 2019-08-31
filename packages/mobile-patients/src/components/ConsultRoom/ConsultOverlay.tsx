@@ -216,7 +216,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             alignItems: 'flex-end',
           }}
         >
-          <TouchableOpacity
+          <TouchableOpacity activeOpacity={1}
             onPress={() => props.setdisplayoverlay(false)}
             style={{
               marginTop: Platform.OS === 'ios' ? 38 : 14,
@@ -311,7 +311,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           }`}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
-            <TouchableOpacity
+            <TouchableOpacity activeOpacity={1}
               style={styles.gotItStyles}
               onPress={() => {
                 setshowSuccessPopUp(false);

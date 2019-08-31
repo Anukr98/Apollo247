@@ -68,7 +68,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         title={string.orders.urOrders}
         container={{ borderBottomWidth: 0 }}
         rightComponent={
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity activeOpacity={1} onPress={() => {}}>
             <More />
           </TouchableOpacity>
         }

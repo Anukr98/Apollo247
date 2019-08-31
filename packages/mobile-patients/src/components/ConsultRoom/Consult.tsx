@@ -264,6 +264,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const Popup = () => (
     <TouchableOpacity
+      activeOpacity={1}
       style={{
         paddingVertical: 9,
         position: 'absolute',
@@ -461,6 +462,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           return (
             <View style={{ width: 312 }}>
               <TouchableOpacity
+                activeOpacity={1}
                 style={[styles.doctorView]}
                 onPress={() => {
                   item.appointmentType === 'ONLINE'
@@ -548,13 +550,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       <View style={{ width: '100%' }}>
         <View style={styles.viewName}>
           <View style={{ alignItems: 'flex-end', marginTop: 20, height: 57 }}>
-            <TouchableOpacity onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+            >
               <ApolloLogo style={{}} />
             </TouchableOpacity>
           </View>
           <TouchableOpacity
-            onPress={() => setShowMenu(true)}
             activeOpacity={1}
+            onPress={() => setShowMenu(true)}
             style={{
               flexDirection: 'row',
               marginTop: 8,

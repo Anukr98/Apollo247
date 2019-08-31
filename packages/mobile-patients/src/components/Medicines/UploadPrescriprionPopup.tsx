@@ -121,7 +121,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           alignItems: 'flex-end',
         }}
       >
-        <TouchableOpacity
+        <TouchableOpacity activeOpacity={1}
           onPress={() => props.onClickClose()}
           style={{
             marginTop: Platform.OS === 'ios' ? 38 : 14,
@@ -222,16 +222,16 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
                 marginHorizontal: 13,
               }}
             >
-              <TouchableOpacity style={styles.cardContainer} onPress={onClickTakePhoto}>
+              <TouchableOpacity activeOpacity={1} style={styles.cardContainer} onPress={onClickTakePhoto}>
                 <CameraIcon />
                 <Text style={styles.yelloTextStyle}>TAKE A PHOTO</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.cardContainer} onPress={onClickGallery}>
+              <TouchableOpacity activeOpacity={1} style={styles.cardContainer} onPress={onClickGallery}>
                 <GalleryIcon />
                 <Text style={styles.yelloTextStyle}>{`CHOOSE\nFROM GALLERY`}</Text>
               </TouchableOpacity>
-              <TouchableOpacity
+              <TouchableOpacity activeOpacity={1}
                 style={styles.cardContainer}
                 onPress={() => {
                   props.navigation.navigate(AppRoutes.UploadPrescription);

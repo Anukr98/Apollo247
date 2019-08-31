@@ -88,7 +88,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <View style={styles.separatorStyle}>
         {arrayTest.map((serviceTitle, i) => (
           <View key={i} style={{}}>
-            <TouchableOpacity
+            <TouchableOpacity activeOpacity={1}
               key={i}
               onPress={() => {
                 if (i === 0) {
@@ -191,7 +191,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     <ApolloLogo />
                   </View>
                   <View style={{ flexDirection: 'row', marginTop: 16 }}>
-                    <TouchableOpacity onPress={() => props.navigation.navigate(AppRoutes.YourCart)}>
+                    <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.navigate(AppRoutes.YourCart)}>
                       <CartIcon style={{ right: 20 }} />
                     </TouchableOpacity>
                     <NotificationIcon />

@@ -94,7 +94,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           title={`ORDER #${orderId}`}
           container={{ borderBottomWidth: 0 }}
           rightComponent={
-            <TouchableOpacity onPress={() => {}}>
+            <TouchableOpacity activeOpacity={1} onPress={() => {}}>
               <More />
             </TouchableOpacity>
           }

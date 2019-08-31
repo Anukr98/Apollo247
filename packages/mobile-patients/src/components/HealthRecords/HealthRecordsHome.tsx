@@ -51,10 +51,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderFilter = () => {
     return (
       <View style={styles.filterViewStyle}>
-        <TouchableOpacity onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}>
+        <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}>
           <AddFileIcon />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setDisplayFilter(true)}>
+        <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>
           <Filter />
         </TouchableOpacity>
       </View>

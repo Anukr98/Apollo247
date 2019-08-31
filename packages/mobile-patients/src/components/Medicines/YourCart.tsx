@@ -176,7 +176,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         title={'YOUR CART'}
         rightComponent={
           <View>
-            <TouchableOpacity onPress={() => props.navigation.pop()}>
+            <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.pop()}>
               <Text
                 style={{
                   ...theme.fonts.IBMPlexSansSemiBold(13),
@@ -502,7 +502,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     return (
       <View>
         {renderLabel('TOTAL CHARGES')}
-        <TouchableOpacity
+        <TouchableOpacity activeOpacity={1}
           style={{
             ...theme.viewStyles.cardViewStyle,
             marginHorizontal: 20,

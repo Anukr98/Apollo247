@@ -114,7 +114,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const renderRow = (data: PickerImage, i: number) => {
     return (
       <View key={i} style={{}}>
-        <TouchableOpacity key={i} onPress={() => {}}>
+        <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
           <View
             style={{
               ...theme.viewStyles.cardViewStyle,
@@ -151,7 +151,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                   .pop()}
               />
             </View>
-            <TouchableOpacity
+            <TouchableOpacity activeOpacity={1}
               style={{
                 width: 40,
                 paddingHorizontal: 8,
@@ -192,7 +192,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
 
   const renderPrescriptionRow = (rowData: prescriptions, rowID: number) => {
     return (
-      <TouchableOpacity onPress={() => {}}>
+      <TouchableOpacity activeOpacity={1} onPress={() => {}}>
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,

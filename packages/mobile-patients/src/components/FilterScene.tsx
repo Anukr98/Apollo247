@@ -110,7 +110,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                 <Text style={styles.leftText}>{label}</Text>
                 {label === 'Availability' && (
                   <View style={{ flex: 1, alignItems: 'flex-end', marginRight: 20 }}>
-                    <TouchableOpacity onPress={() => setshowCalander(!showCalander)}>
+                    <TouchableOpacity activeOpacity={1} onPress={() => setshowCalander(!showCalander)}>
                       {showCalander ? <CalendarClose /> : <CalendarShow />}
                     </TouchableOpacity>
                   </View>
@@ -229,7 +229,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
         leftIcon={'close'}
         title="FILTERS"
         rightComponent={
-          <TouchableOpacity
+          <TouchableOpacity activeOpacity={1}
             onPress={() => {
               console.log(data, 'data1111111111');
               const filterData = data.map((obj) => {
