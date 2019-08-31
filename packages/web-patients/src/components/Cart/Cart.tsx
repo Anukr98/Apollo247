@@ -1,9 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, Tabs, Tab, Popover } from '@material-ui/core';
-import { Link } from 'react-router-dom';
 import Scrollbars from 'react-custom-scrollbars';
-import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
+import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
@@ -13,6 +12,7 @@ import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
 
 // import { MedicineCard } from 'components/Medicine/MedicineCard';
 // import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
@@ -57,6 +57,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       fontSize: 14,
       fontWeight: 500,
+      cursor: 'pointer',
     },
     textVCenter: {
       alignItems: 'center',
@@ -302,6 +303,7 @@ export const Cart: React.FC = (props) => {
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
   const { cartTotal, cartItems } = useShoppingCart();
+  const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
   const deliveryCharges = 30; // this must be retrieved from api later.
 
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
@@ -424,9 +426,9 @@ export const Cart: React.FC = (props) => {
                 <span>Total Charges</span>
               </div>
               <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
-                <Link
+                <div
+                  onClick={() => setIsApplyCouponDialogOpen(true)}
                   className={`${classes.serviceType} ${classes.textVCenter}`}
-                  to="/search-medicines"
                 >
                   <span className={classes.serviceIcon}>
                     <img src={require('images/ic_coupon.svg')} alt="" />
@@ -435,7 +437,7 @@ export const Cart: React.FC = (props) => {
                   <span className={classes.rightArrow}>
                     <img src={require('images/ic_arrow_right.svg')} alt="" />
                   </span>
-                </Link>
+                </div>
               </div>
               <div className={`${classes.sectionGroup}`}>
                 <div className={classes.priceSection}>
@@ -520,6 +522,11 @@ export const Cart: React.FC = (props) => {
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
         <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
         <UploadPrescription />
+      </AphDialog>
+      <AphDialog open={isApplyCouponDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsApplyCouponDialogOpen(false)} />
+        <AphDialogTitle>Apply Coupon</AphDialogTitle>
+        <ApplyCoupon />
       </AphDialog>
     </div>
   );

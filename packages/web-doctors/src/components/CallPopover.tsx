@@ -1,12 +1,12 @@
-import { Theme, Button, Modal, MenuItem, InputBase } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
 import React, { useState, useEffect } from 'react';
-import Popover from '@material-ui/core/Popover';
-import Paper from '@material-ui/core/Paper';
+import { makeStyles } from '@material-ui/styles';
+import { Theme, Button, Modal, MenuItem, InputBase, Popover, Paper } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Pubnub from 'pubnub';
 import moment from 'moment';
 import { AphSelect, AphTextField } from '@aph/web-ui-components';
+import { useAuth } from 'hooks/authHooks';
+import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -35,6 +35,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       display: 'flex',
       alignItems: 'center',
+      lineHeight: 1.86,
       [theme.breakpoints.down('xs')]: {
         position: 'fixed',
         zIndex: 2,
@@ -379,7 +380,7 @@ interface CallPopoverProps {
 }
 let intervalId: any;
 let stoppedTimer: number;
-let cda: any;
+
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -393,19 +394,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [reason, setReason] = React.useState(1);
   const [searchKeyWord, setSearchKeyword] = React.useState('');
   const [noteKeyword, setNoteKeyword] = React.useState('');
+  const {
+    currentPatient,
+  }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
 
   const [anchorElThreeDots, setAnchorElThreeDots] = React.useState(null);
-  //logic for before start counsult timer start
-  const dt1 = new Date(new Date().toISOString().substring(0, 16)); //today time
-  const dt2 = new Date(props.appointmentDateTime); // apointment time
-  const diff = dt2.getHours() - dt1.getHours();
-  const diff2 = dt2.getMinutes() - dt1.getMinutes();
-  const val = '0';
-  cda = diff
-    .toString()
-    .concat(':')
-    .concat(diff2.toString().length > 1 ? diff2.toString() : val.concat(diff2.toString()));
-
   const startInterval = (timer: number) => {
     const current = new Date();
     const consult = new Date(props.appointmentDateTime);
@@ -448,6 +441,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const disableday = disableconsult.getDate();
     let disablehour = disableconsult.getHours();
     let disableminute = disableconsult.getMinutes() + 15;
+    const minusTime = new Date(disableconsult.getTime() - 15 * 60000);
     const disablesecond = disableconsult.getSeconds();
     if (disableminute > 59) {
       const disablediff = disableminute - 60;
@@ -470,7 +464,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       ':' +
       disablesecond;
     const disableaddedTime = new Date(disableaddedMinutes);
-    if (disablecurrent >= disableconsult && disableaddedTime >= disablecurrent) {
+    if (
+      disablecurrent >= minusTime &&
+      disableaddedTime >= disablecurrent &&
+      sessionStorage.getItem('loggedInMobileNumber') !== currentPatient!.delegateNumber
+    ) {
       setStartAppointmentButton(false);
     } else {
       setStartAppointmentButton(true);
@@ -526,7 +524,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     return function cleanup() {
       pubnub.unsubscribe({ channels: [channel] });
     };
-  });
+  }, []);
 
   const onStartConsult = () => {
     const text = {
@@ -630,7 +628,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           ) : (
             <Button
               className={classes.consultButton}
-              //disabled={startAppointmentButton}
+              // disabled={startAppointmentButton}
               onClick={() => {
                 !startAppointment ? onStartConsult() : onStopConsult();
                 !startAppointment ? startInterval(900) : stopInterval();
@@ -880,16 +878,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
           <div className={classes.tabBody}>
             <p>Add a Note (Optional)</p>
-            {/* <AphTextField placeholder="search" /> */}
-            <InputBase fullWidth className={classes.textFieldColor} placeholder="Enter here.." />
-            {/* <AphTextField
-              classes={{ root: classes.searchInput }}
-              placeholder="Enter here...."
+            <InputBase
+              fullWidth
+              className={classes.textFieldColor}
+              placeholder="Enter here.."
               onChange={(e) => {
                 setNoteKeyword(e.target.value);
               }}
               value={noteKeyword}
-            /> */}
+            />
           </div>
           <div
             className={classes.tabFooter}

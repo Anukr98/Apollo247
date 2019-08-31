@@ -29,6 +29,7 @@
     "@types/graphql": "^14.2.1",
     "@types/graphql-iso-date": "^3.3.1",
     "@types/lodash": "^4.14.134",
+    "@types/uuid": "^3.4.5",
     "@typescript-eslint/eslint-plugin": "^1.9.0",
     "@typescript-eslint/parser": "^1.9.0",
     "apollo": "^2.16.0",
@@ -51,11 +52,13 @@
     "@aph/universal": "file:../universal",
     "@apollo/federation": "^0.6.4",
     "@apollo/gateway": "^0.6.12",
+    "@azure/storage-blob": "^10.4.0",
     "@types/node-fetch": "^2.3.7",
     "@types/opentok": "^2.3.5",
     "apollo-env": "^0.5.1",
     "apollo-server": "^2.6.3",
     "apollo-server-core": "^2.6.7",
+    "azure-storage": "^2.10.3",
     "class-validator": "^0.9.1",
     "date-fns": "^2.0.0-beta.2",
     "faker": "^4.1.0",
@@ -76,6 +79,7 @@
     "sequelize": "^5.8.10",
     "typeorm": "^0.2.18",
     "url": "^0.11.0",
+    "uuid": "^3.3.3",
     "validator": "^11.1.0"
   }
 }

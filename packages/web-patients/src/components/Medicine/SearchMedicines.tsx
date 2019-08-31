@@ -10,6 +10,7 @@ import axios, { AxiosError, Cancel } from 'axios';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import _debounce from 'lodash/debounce';
 import { MedicineCartItem } from 'components/MedicinesCartProvider';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -106,10 +107,22 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 30,
     },
     pinCode: {
-      width: 203,
+      width: 154,
+      position: 'relative',
+      '& input': {
+        textAlign: 'right',
+      },
+    },
+    pinLabel: {
+      position: 'absolute',
+      right: 0,
+      top: -8,
+      fontSize: 10,
+      fontWeight: 500,
+      color: '#02475b',
     },
     searchMedicine: {
-      width: 'calc(100% - 203px)',
+      width: 'calc(100% - 154px)',
       marginRight: 20,
       position: 'relative',
     },
@@ -164,7 +177,7 @@ export const SearchMedicines: React.FC = (props) => {
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 237px)'}>
           <div className={classes.medicineSection}>
             <div className={classes.sectionGroup}>
-              <Link className={classes.serviceType} to="/tests-medicines">
+              <Link className={classes.serviceType} to={clientRoutes.testsAndMedicine()}>
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_medicines.png')} alt="" />
                 </span>
@@ -175,7 +188,7 @@ export const SearchMedicines: React.FC = (props) => {
               </Link>
             </div>
             <div className={classes.sectionGroup}>
-              <Link className={classes.serviceType} to="/prescriptions">
+              <Link className={classes.serviceType} to={clientRoutes.prescriptionsLanding()}>
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_medicines.png')} alt="" />
                 </span>
@@ -191,10 +204,7 @@ export const SearchMedicines: React.FC = (props) => {
               </div>
             </div>
             <div className={classes.sectionGroup}>
-              <Link
-                className={`${classes.serviceType} ${classes.textVCenter}`}
-                to="/search-medicines"
-              >
+              <Link className={`${classes.serviceType} ${classes.textVCenter}`} to="#">
                 <span className={classes.serviceIcon}>
                   <img src={require('images/ic_schedule.svg')} alt="" />
                 </span>
@@ -207,7 +217,7 @@ export const SearchMedicines: React.FC = (props) => {
             <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
               <Link
                 className={`${classes.serviceType} ${classes.textVCenter}`}
-                to="/search-medicines"
+                to={clientRoutes.yourOrders()}
               >
                 <span className={classes.serviceIcon}>
                   <img src={require('images/ic_tablets.svg')} alt="" />
@@ -293,6 +303,7 @@ export const SearchMedicines: React.FC = (props) => {
             </div> */}
           </div>
           <div className={classes.pinCode}>
+            <label className={classes.pinLabel}>Delivery Pincode</label>
             <AphTextField
               placeholder="Enter Pincode"
               inputProps={{

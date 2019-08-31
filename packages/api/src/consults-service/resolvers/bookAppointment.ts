@@ -36,6 +36,7 @@ export const bookAppointmentTypeDefs = gql`
     appointmentType: APPOINTMENT_TYPE!
     hospitalId: ID
     status: STATUS!
+    patientName: String!
   }
 
   input BookAppointmentInput {
@@ -75,6 +76,7 @@ type AppointmentBooking = {
   appointmentType: APPOINTMENT_TYPE;
   hospitalId?: string;
   status: STATUS;
+  patientName: string;
 };
 
 type AppointmentInputArgs = { appointmentInput: BookAppointmentInput };
@@ -89,11 +91,6 @@ const bookAppointment: Resolver<
   console.log(appointmentInput.appointmentDateTime, 'input date time');
   console.log(appointmentInput.appointmentDateTime.toISOString(), 'iso string');
   console.log(new Date(appointmentInput.appointmentDateTime.toISOString()), 'iso to date');
-  const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
-    ...appointmentInput,
-    status: STATUS.PENDING,
-    appointmentDateTime: new Date(appointmentInput.appointmentDateTime.toISOString()),
-  };
 
   //check if patient id is valid
   const patient = patientsDb.getCustomRepository(PatientRepository);
@@ -143,6 +140,12 @@ const bookAppointment: Resolver<
   if (apptCount > 0) {
     throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
   }
+  const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
+    ...appointmentInput,
+    status: STATUS.PENDING,
+    patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
+    appointmentDateTime: new Date(appointmentInput.appointmentDateTime.toISOString()),
+  };
   const appointment = await appts.saveAppointment(appointmentAttrs);
   //message queue starts
   /*const doctorName = docDetails.firstName + '' + docDetails.lastName;

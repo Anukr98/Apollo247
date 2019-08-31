@@ -14,7 +14,8 @@ import {
 //import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components';
-import _isEmpty from 'lodash/isEmpty';
+
+import { isEmpty, debounce, trim } from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -76,10 +77,13 @@ const useStyles = makeStyles((theme: Theme) => ({
     boxShadow: 'none',
     color: theme.palette.action.selected,
     fontSize: 14,
-    fontWeight: theme.typography.fontWeightBold,
+    fontWeight: 600,
     paddingLeft: 4,
     '&:hover': {
       backgroundColor: 'transparent',
+    },
+    '& img': {
+      marginRight: 8,
     },
   },
   deleteSymptom: {
@@ -113,7 +117,8 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   cross: {
     position: 'absolute',
-    right: 0,
+    right: -5,
+    minWidth: 20,
     top: -9,
     fontSize: 18,
     color: '#02475b',
@@ -133,7 +138,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     fontSize: 16,
     color: '#02475b',
     fontWeight: 500,
-    marginBottom: 20,
+    marginBottom: 30,
     '& button': {
       border: '1px solid #00b38e',
       padding: '5px 10px',
@@ -144,9 +149,13 @@ const useStyles = makeStyles((theme: Theme) => ({
       color: '#00b38e',
       backgroundColor: '#fff',
     },
+    '& input': {
+      paddingTop: 0,
+      paddingBottom: 5,
+    },
   },
   helpText: {
-    paddingLeft: 20,
+    paddingLeft: 0,
     paddingRight: 20,
   },
   dialogActions: {
@@ -197,6 +206,13 @@ const useStyles = makeStyles((theme: Theme) => ({
       fontWeight: 'normal',
     },
   },
+  nodatafound: {
+    fontSize: 14,
+    margin: '10px 0 10px 4px',
+  },
+  symptomCaption: {
+    marginLeft: 20,
+  },
 }));
 interface errorObject {
   symptomError: boolean;
@@ -234,7 +250,7 @@ export const Symptoms: React.FC = (props) => {
     setIdx(sum);
   };
   const addUpdateSymptom = () => {
-    if (_isEmpty(symptom)) {
+    if (isEmpty(trim(symptom))) {
       setErrorState({
         ...errorState,
         symptomError: true,
@@ -242,7 +258,7 @@ export const Symptoms: React.FC = (props) => {
         howOfftenError: false,
         severityError: false,
       });
-    } else if (_isEmpty(since)) {
+    } else if (isEmpty(trim(since))) {
       setErrorState({
         ...errorState,
         symptomError: false,
@@ -250,7 +266,7 @@ export const Symptoms: React.FC = (props) => {
         howOfftenError: false,
         severityError: false,
       });
-    } else if (_isEmpty(howOften)) {
+    } else if (isEmpty(trim(howOften))) {
       setErrorState({
         ...errorState,
         symptomError: false,
@@ -258,7 +274,7 @@ export const Symptoms: React.FC = (props) => {
         howOfftenError: true,
         severityError: false,
       });
-    } else if (_isEmpty(severity)) {
+    } else if (isEmpty(severity)) {
       setErrorState({
         ...errorState,
         symptomError: false,
@@ -354,7 +370,7 @@ export const Symptoms: React.FC = (props) => {
               ))}
           </List>
         ) : (
-          'NO data Found'
+          <div className={classes.nodatafound}>No data Found</div>
         )}
 
         <AphButton
@@ -363,7 +379,7 @@ export const Symptoms: React.FC = (props) => {
           classes={{ root: classes.btnAddDoctor }}
           onClick={() => setIsDialogOpen(true)}
         >
-          <img src={require('images/ic_add.svg')} alt="" />
+          <img src={require('images/ic_dark_plus.svg')} alt="" />
           Add Symptom
         </AphButton>
 
@@ -413,7 +429,7 @@ export const Symptoms: React.FC = (props) => {
                           )}
                         </div>
                       </div>
-                      <div>
+                      <div className={classes.symptomCaption}>
                         <h6>Since?</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
@@ -435,7 +451,7 @@ export const Symptoms: React.FC = (props) => {
                           )}
                         </div>
                       </div>
-                      <div>
+                      <div className={classes.symptomCaption}>
                         <h6>How often?</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
@@ -457,7 +473,7 @@ export const Symptoms: React.FC = (props) => {
                           )}
                         </div>
                       </div>
-                      <div>
+                      <div className={classes.symptomCaption}>
                         <h6>Severity</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField

@@ -3,6 +3,7 @@ import {
   MedicineOrders,
   MedicineOrderLineItems,
   MedicineOrderPayments,
+  MedicineOrdersStatus,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -37,5 +38,13 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
           medicineOrderError,
         });
       });
+  }
+
+  getMedicineOrderDetails(orderAutoId: number) {
+    return this.findOne({ where: { orderAutoId } });
+  }
+
+  saveMedicineOrderStatus(orderStatusAttrs: Partial<MedicineOrdersStatus>) {
+    return MedicineOrdersStatus.create(orderStatusAttrs).save();
   }
 }

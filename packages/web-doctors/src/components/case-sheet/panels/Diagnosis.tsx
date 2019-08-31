@@ -115,6 +115,13 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     suggestion: {
       display: 'block',
+      overflow: 'hidden',
+      borderBottom: '1px solid rgba(2,71,91,0.1)',
+      '&:hover': {
+        '& div': {
+          backgroundColor: '#f0f4f5 !important',
+        },
+      },
     },
     suggestionsList: {
       margin: 0,
@@ -133,18 +140,50 @@ const useStyles = makeStyles((theme: Theme) =>
         color: 'rgba(2, 71, 91, 0.6)',
         marginBottom: 12,
       },
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
+      },
+      // '& input': {
+      //   borderBottom: '2px solid #00b38e',
+      //   '&:hover': {
+      //     borderBottom: '2px solid #00b38e',
+      //   },
+      // },
+      '& input': {
+        borderBottom: '2px solid #00b38e',
+        '&:hover': {
+          borderBottom: '2px solid #00b38e',
+          '&:before': {
+            borderBottom: '2px solid #00b38e',
+          },
+        },
+        '&:before': {
+          borderBottom: '2px solid #00b38e',
+        },
+        '&:after': {
+          borderBottom: '2px solid #00b38e',
+        },
+      },
     },
     diagnosBtn: {
       border: '1px solid #00b38e',
       borderRadius: 16,
-      color: '#00b38e',
+      color: '#fff !important',
       fontWeight: 600,
-      backgroundColor: '#fff',
+      backgroundColor: '#00b38e',
       marginBottom: 15,
       marginRight: 16,
+      fontSize: 14,
+      paddingRight: 30,
+      position: 'relative',
       '& svg': {
+        position: 'absolute',
+        right: 0,
         '& path': {
-          fill: '#00b38e',
+          fill: '#fff',
         },
       },
       '&:focus': {
@@ -157,11 +196,14 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
-      fontWeight: theme.typography.fontWeightBold,
+      fontWeight: 600,
       // pointerEvents: 'none',
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
+      },
+      '& img': {
+        marginRight: 8,
       },
     },
     searchpopup: {
@@ -251,7 +293,7 @@ export const Diagnosis: React.FC = () => {
           classes={{ root: classes.btnAddDoctor }}
           onClick={() => showAddConditionHandler(true)}
         >
-          <img src={require('images/ic_add.svg')} alt="" /> ADD CONDITION
+          <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD CONDITION
         </AphButton>
       )}
       {showAddCondition && (

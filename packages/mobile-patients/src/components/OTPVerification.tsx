@@ -258,11 +258,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       })
       .catch((error) => {
         console.log({ error });
-        setOnOtpClick(false);
         setTimeout(() => {
           if (isAuthChanged) {
             _removeFromStore();
+            setOnOtpClick(true);
           } else {
+            setOnOtpClick(false);
             setshowSpinner(false);
             // console.log('error', error);
             _storeTimerData(invalidOtpCount + 1);

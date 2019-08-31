@@ -11,9 +11,6 @@ import { DoctorSearchListing } from '@aph/mobile-patients/src/components/Consult
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { HealthRecords } from '@aph/mobile-patients/src/components/HealthRecords';
 import { AddRecord } from '@aph/mobile-patients/src/components/HealthRecords/AddRecord';
-import { ConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/ConsultDetails';
-import { HealthRecordsHome } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordsHome';
-import { RecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/RecordDetails';
 import { Login } from '@aph/mobile-patients/src/components/Login';
 import { AddAddress } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { ApplyCouponScene } from '@aph/mobile-patients/src/components/Medicines/ApplyCouponScene';
@@ -31,7 +28,6 @@ import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDeta
 import { OTPVerification } from '@aph/mobile-patients/src/components/OTPVerification';
 import { SignUp } from '@aph/mobile-patients/src/components/SignUp';
 import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
-import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomChecker';
 import { TabBar } from '@aph/mobile-patients/src/components/TabBar';
 import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';
 import {
@@ -40,6 +36,11 @@ import {
   NavigationRouteConfig,
   StackNavigatorConfig,
 } from 'react-navigation';
+import { HealthRecordsHome } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordsHome';
+import { ConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/ConsultDetails';
+import { RecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/RecordDetails';
+import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomChecker';
+import { CheckoutScene } from '@aph/mobile-patients/src/components/CheckoutScene';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -68,6 +69,7 @@ export enum AppRoutes {
   YourOrdersScene = 'YourOrdersScene',
   OrderDetailsScene = 'OrderDetailsScene',
   YourCart = 'YourCart',
+  CheckoutScene = 'CheckoutScene',
   AddAddress = 'AddAddress',
   SelectPrescription = 'SelectPrescription',
   UploadPrescription = 'UploadPrescription',
@@ -171,6 +173,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.YourOrdersScene]: {
     screen: YourOrdersScene,
+  },
+  [AppRoutes.CheckoutScene]: {
+    screen: CheckoutScene,
   },
   [AppRoutes.OrderDetailsScene]: {
     screen: OrderDetailsScene,

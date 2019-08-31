@@ -68,13 +68,22 @@ export class Appointment extends BaseEntity {
   doctorId: string;
 
   @Column({ nullable: true })
+  followUpParentId: string;
+
+  @Column({ nullable: true })
   hospitalId: string;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true, default: false })
+  isFollowUp: Boolean;
+
   @Column()
   patientId: string;
+
+  @Column()
+  patientName: String;
 
   @Column({ nullable: true })
   parentId: string;
