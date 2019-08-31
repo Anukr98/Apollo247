@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState, useContext } from 'react';
 import {
   Typography,
   List,
@@ -12,9 +12,10 @@ import {
   Card,
   CardContent,
 } from '@material-ui/core';
+import { Link } from 'react-router-dom';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
-import { relative } from 'path';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles(() => ({
   vaultContainer: {
@@ -93,7 +94,7 @@ const useStyles = makeStyles(() => ({
     alignItems: 'start',
     width: '100%',
     borderLeft: 'none',
-    paddingLeft: 15,
+    paddingLeft: 0,
   },
 }));
 
@@ -117,7 +118,16 @@ const theme = createMuiTheme({
     },
   },
 });
-
+const tempData = [
+  {
+    imageUrls: require('images/patient_01.png'),
+    reportUrl: 'images/pdftest.pdf',
+  },
+  {
+    imageUrls: require('images/patient_01.png'),
+    reportUrl: 'images/pdftest.pdf',
+  },
+];
 const photoData = [
   {
     fileName: 'image001.jpg',
@@ -272,7 +282,6 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
     </Card>
   );
 };
-
 export const HealthVault: React.FC = () => {
   const classes = useStyles();
   const ischild: boolean = false;
@@ -284,23 +293,32 @@ export const HealthVault: React.FC = () => {
             Photos uploaded by Patient
           </Typography>
           <List className={classes.listContainer}>
-            {photoData.map((item, idx) => (
-              <ListItem key={idx} className={classes.listItem}>
+            {/*patientDetails
+              patientDetails.healthVault &&
+              patientDetails.healthVault.length > 0 &&
+              patientDetails!.healthVault.map( */
+
+            tempData.map((healthVault: any, index: any) => (
+              <ListItem key={index} className={classes.listItem}>
                 <ListItemAvatar>
-                  <Avatar alt={item.fileName} src={item.thumbnail} className={classes.bigAvatar} />
+                  <Avatar
+                    alt={healthVault.imageUrls}
+                    src={healthVault.imageUrls}
+                    className={classes.bigAvatar}
+                  />
                 </ListItemAvatar>
                 <ListItemText
                   primary={
                     <Fragment>
                       <Typography component="h4" variant="h4" color="primary">
-                        {item.fileName}
+                        {'fileName'}
                       </Typography>
                     </Fragment>
                   }
                   secondary={
                     <Fragment>
                       <Typography component="h6" variant="h6">
-                        {item.size} | {format(new Date(item.timestamp), 'd MMM yyyy, h:mm a')}
+                        {'5MB'} | {'2019-01-01T11:30'}
                       </Typography>
                     </Fragment>
                   }
@@ -314,26 +332,36 @@ export const HealthVault: React.FC = () => {
             Reports
           </Typography>
           <List className={classes.listContainer}>
-            {reportData.map((item, idx) => (
-              <ListItem key={idx} className={classes.listItem}>
+            {/*patientDetails
+              patientDetails.healthVault &&
+              patientDetails.healthVault.length > 0 &&
+              patientDetails!.healthVault.map( */
+            tempData.map((healthVault: any, index: any) => (
+              <ListItem key={index} className={classes.listItem}>
                 <ListItemAvatar>
-                  <Avatar alt={item.fileName} src={item.thumbnail} className={classes.bigAvatar} />
+                  <Link to={'/images/pdftest.pdf'} target="_blank">
+                    <Avatar
+                      alt={healthVault.reportUrl}
+                      src={healthVault.reportUrl}
+                      className={classes.bigAvatar}
+                    />
+                  </Link>
                 </ListItemAvatar>
                 <ListItemText
                   primary={
                     <Fragment>
                       <Typography component="h4" variant="h4" color="primary">
-                        {item.fileName}
+                        {'fileName'}
                       </Typography>
                     </Fragment>
                   }
-                  secondary={
-                    <Fragment>
-                      <Typography component="h6" variant="h6">
-                        {item.size} | {format(new Date(item.timestamp), 'd MMM yyyy, h:mm a')}
-                      </Typography>
-                    </Fragment>
-                  }
+                  // secondary={
+                  //   <Fragment>
+                  //     <Typography component="h6" variant="h6">
+                  //       {'5mb'} | {'2019-01-01T11:30'}
+                  //     </Typography>
+                  //   </Fragment>
+                  // }
                 />
               </ListItem>
             ))}

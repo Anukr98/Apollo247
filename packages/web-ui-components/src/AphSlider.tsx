@@ -7,6 +7,7 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       color: '#0087ba',
+      verticalAlign: 'middle',
       '& span:nth-child(5)': {
         paddingLeft: 8,
       },

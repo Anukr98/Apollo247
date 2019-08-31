@@ -26,6 +26,7 @@ import {
 import { UserCard } from 'components/case-sheet/UserCard';
 //import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -42,6 +43,8 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '5px 0 0 0 !important',
         minHeight: 20,
         paddingBottom: 0,
+        paddingRight: 6,
+        paddingTop: 3,
       },
       '& div': {
         color: '#000',
@@ -63,6 +66,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         margin: '0 0 15px 0',
         maxWidth: '100%',
+        minWidth: 200,
       },
       '& h2': {
         fontSize: 20,
@@ -149,6 +153,7 @@ export const CaseSheet: React.FC = () => {
     e: React.ChangeEvent<{}>,
     isExpanded: boolean
   ) => setExpanded(isExpanded ? panelName : false);
+  const { setNotes } = useContext(CaseSheetContext);
 
   return (
     <div className={classes.container}>
@@ -206,7 +211,7 @@ export const CaseSheet: React.FC = () => {
             className={classes.expandIcon}
           >
             <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Juniour Doctor's Notes</Typography>
+              <Typography variant="h3">Junior Doctor's Notes</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
               <DoctorsNotes />
@@ -294,6 +299,13 @@ export const CaseSheet: React.FC = () => {
             fullWidth
             className={classes.textFieldColor}
             placeholder="What you enter here won’t be shown to the patient.."
+            onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                setNotes((e.target as HTMLInputElement).value.trim());
+
+                e.preventDefault();
+              }
+            }}
           />
         </Typography>
       </Box>

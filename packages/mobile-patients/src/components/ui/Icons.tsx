@@ -576,3 +576,19 @@ export const Invoice: React.FC<IconProps> = (props) => (
 export const AddFileIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_addfile.png')} />
 );
+
+export const Minus: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_minus.png')} />
+);
+
+export const Plus: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_plus.png')} />
+);
+
+export const OneApollo: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 76, height: 59 }}
+    {...props}
+    source={require('./icons/img_apolloone.png')}
+  />
+);

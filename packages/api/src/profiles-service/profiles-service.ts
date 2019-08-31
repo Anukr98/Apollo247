@@ -48,6 +48,14 @@ import {
   saveMedicineOrderTypeDefs,
   saveMedicineOrderResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrders';
+import {
+  savePrescriptionMedicineOrderTypeDefs,
+  savePrescriptionMedicineOrderResolvers,
+} from 'profiles-service/resolvers/savePrescriptionMedicineOrders';
+import {
+  saveMedicineOrderPaymentTypeDefs,
+  saveMedicineOrderPaymentResolvers,
+} from 'profiles-service/resolvers/saveMedicineOrderPayment';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 
@@ -133,10 +141,18 @@ import { getConnection } from 'typeorm';
         typeDefs: saveMedicineOrderTypeDefs,
         resolvers: saveMedicineOrderResolvers,
       },
+      {
+        typeDefs: savePrescriptionMedicineOrderTypeDefs,
+        resolvers: savePrescriptionMedicineOrderResolvers,
+      },
+      {
+        typeDefs: saveMedicineOrderPaymentTypeDefs,
+        resolvers: saveMedicineOrderPaymentResolvers,
+      },
     ]),
   });
 
   server.listen({ port: process.env.PROFILES_SERVICE_PORT }).then(({ url }) => {
-    console.log(`🚀 profiles-service ready (internal url: ${url})`);
+    console.log(`🚀 profiles-service ready`);
   });
 })();

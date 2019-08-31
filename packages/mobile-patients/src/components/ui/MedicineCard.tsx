@@ -6,12 +6,13 @@ import {
   MedicineIcon,
   MedicineRxIcon,
   RemoveIcon,
+  Minus,
+  Plus,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { DropDown, Option } from './DropDown';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -209,34 +210,23 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     return <TouchableOpacity onPress={onPress}>{item}</TouchableOpacity>;
   };
 
-  const renderUnitDropdownOptions = () => {
-    const MAX_UNITS = 5;
-    const options: Option[] = [...Array.from({ length: MAX_UNITS })].map(
-      (_, i) =>
-        ({
-          optionText: `${i + 1} UNIT`,
-          onPress: () => onChangeUnit(i + 1),
-        } as Option)
-    );
-    return (
-      <View style={{ zIndex: 1000, position: 'absolute' }}>
-        <DropDown options={options} />
-      </View>
-    );
-  };
-
   const renderUnitDropdownAndPrice = () => {
     return (
       <View style={styles.unitAndPriceView}>
-        <View style={styles.flexStyle}>
+        <View style={[styles.unitDropdownContainer, { marginRight: 6 }]}>
           <TouchableOpacity
             style={styles.unitDropdownContainer}
-            onPress={() => setDropDownVisible(!dropDownVisible)}
+            onPress={() => onChangeUnit(unit - 1)}
           >
-            <Text style={styles.unitAndRupeeText}>{`${unit} UNIT`}</Text>
-            <DropdownGreen style={{ marginRight: 7 }} />
+            <Minus />
           </TouchableOpacity>
-          {dropDownVisible && renderUnitDropdownOptions()}
+          <Text style={styles.unitAndRupeeText}>{`${unit} UNIT`}</Text>
+          <TouchableOpacity
+            style={styles.unitDropdownContainer}
+            onPress={() => onChangeUnit(unit + 1)}
+          >
+            <Plus />
+          </TouchableOpacity>
         </View>
         <View style={styles.verticalSeparator} />
         <View style={[styles.flexStyle, { alignItems: 'flex-end' }]}>
@@ -291,14 +281,6 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           ) : null}
         </View>
       </View>
-      {/* Don't show subscription functionality for now */}
-      {/* {isCardExpanded ? (
-        <>
-          <View style={[styles.separator, { marginBottom: 8 }]} />
-          {renderSubscription()}
-        </>
-      ) : null} */}
-      {/* {!isCardExpanded && <View style={{ height: 13 }} />} */}
       <View style={{ height: 13 }} />
     </TouchableOpacity>
   );

@@ -115,12 +115,20 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     suggestion: {
       display: 'block',
+      overflow: 'hidden',
+      borderBottom: '1px solid rgba(2,71,91,0.1)',
+      '&:hover': {
+        '& div': {
+          backgroundColor: '#f0f4f5 !important',
+        },
+      },
     },
     suggestionsList: {
       margin: 0,
       padding: 0,
       listStyleType: 'none',
       borderRadius: 10,
+      color: 'yellow',
     },
     divider: {
       height: theme.spacing(2),
@@ -137,12 +145,17 @@ const useStyles = makeStyles((theme: Theme) =>
     diagnosBtn: {
       border: '1px solid #00b38e',
       borderRadius: 16,
-      color: '#00b38e',
+      color: '#00b38e !important',
       fontWeight: 600,
       backgroundColor: '#fff',
       marginBottom: 15,
       marginRight: 16,
+      fontSize: 14,
+      paddingRight: 30,
+      position: 'relative',
       '& svg': {
+        position: 'absolute',
+        right: 0,
         '& path': {
           fill: '#00b38e',
         },
@@ -157,11 +170,14 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
-      fontWeight: theme.typography.fontWeightBold,
+      fontWeight: 600,
       // pointerEvents: 'none',
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
+      },
+      '& img': {
+        marginRight: 8,
       },
     },
     searchpopup: {
@@ -251,7 +267,7 @@ export const Diagnosis: React.FC = () => {
           classes={{ root: classes.btnAddDoctor }}
           onClick={() => showAddConditionHandler(true)}
         >
-          <img src={require('images/ic_add.svg')} alt="" /> ADD CONDITION
+          <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD CONDITION
         </AphButton>
       )}
       {showAddCondition && (

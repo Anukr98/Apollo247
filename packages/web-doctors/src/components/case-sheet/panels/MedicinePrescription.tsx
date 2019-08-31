@@ -9,21 +9,18 @@ import {
   Button,
   MenuItem,
   createStyles,
+  CircularProgress,
 } from '@material-ui/core';
 import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components';
-import deburr from 'lodash/deburr';
+import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
-import Autosuggest from 'react-autosuggest';
-import _isEmpty from 'lodash/isEmpty';
+import { isEmpty, debounce, trim, deburr } from 'lodash';
 import axios from 'axios';
-import _debounce from 'lodash/debounce';
-import { CircularProgress } from '@material-ui/core';
-import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const apiDetails = {
-  url: 'http://uat.apollopharmacy.in/searchprd_api.php',
+  url: 'http://13.126.95.18/searchprd_api.php',
   authToken: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
 }; // this must goes
 
@@ -148,10 +145,13 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
-      fontWeight: theme.typography.fontWeightBold,
+      fontWeight: 600,
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
+      },
+      '& img': {
+        marginRight: 8,
       },
     },
     medicineHeading: {
@@ -387,27 +387,7 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
   ]);
-  const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([
-    // {
-    //   id: '1',
-    //   value: 'Acetamenophen 1.5% w/w',
-    //   name: 'Acetamenophen 1.5% w/w',
-    //   times: 2,
-    //   daySlots: 'morning, night',
-    //   duration: '1 week',
-    //   selected: false,
-    // },
-    // {
-    //   id: '2',
-    //   value: 'Dextromethorphan (generic)',
-    //   name: 'Dextromethorphan (generic)',
-    //   times: 4,
-    //   daySlots: 'morning, afternoon, evening, night',
-    //   duration: '5 days after food',
-    //   selected: true,
-    // },
-  ]);
-  // const [selectedMedicinesArr, setSelectedMedicinesArr] = React.useState<MedicineObjectArr[]>([]);
+  const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([]);
 
   const [searchInput, setSearchInput] = useState('');
   function getSuggestions(value: string) {
@@ -438,6 +418,7 @@ export const MedicinePrescription: React.FC = () => {
         {
           headers: {
             Authorization: apiDetails.authToken,
+            Accept: '*/*',
           },
         }
       )
@@ -448,16 +429,9 @@ export const MedicinePrescription: React.FC = () => {
           data.label = res.name;
           FinalSearchdata.push(data);
         });
-        // FinalSearchdata.push(searchdata);
         suggestions = FinalSearchdata;
         setSearchInput(value);
         setLoading(false);
-
-        // suggestions: [
-        //   {
-        //     label: 'qwer',
-        //   },
-        // ];
       })
       .catch();
   };
@@ -472,9 +446,9 @@ export const MedicinePrescription: React.FC = () => {
   const updateMedicine = (idx: any) => {
     const slots = toBeTakenSlots.map((slot: SlotsObject) => {
       selectedMedicinesArr![idx].medicineToBeTaken!.map((selectedSlot: any) => {
-        const selectedValue = selectedSlot.replace(' ', '');
+        const selectedValue = selectedSlot.replace('_', '');
         if (selectedValue.toLowerCase() === slot.id) {
-          slot.selected = !slot.selected;
+          slot.selected = true;
         }
       });
       return slot;
@@ -484,20 +458,17 @@ export const MedicinePrescription: React.FC = () => {
     const dayslots = daySlots.map((slot: SlotsObject) => {
       selectedMedicinesArr![idx].medicineTimings!.map((selectedSlot: any) => {
         if (selectedSlot.toLowerCase() === slot.id) {
-          slot.selected = !slot.selected;
+          slot.selected = true;
         }
       });
       return slot;
     });
     setDaySlots(dayslots);
-    console.log(selectedMedicinesArr![idx].medicineTimings);
 
     setMedicineInstruction(selectedMedicinesArr![idx].medicineInstructions!);
     setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
     setTabletsCount(Number(selectedMedicinesArr![idx].medicineDosage!));
-    // setDaySlots(selectedMedicinesArr[idx].medicineTimings);
     setSelectedValue(selectedMedicinesArr![idx].medicineName!);
-    // setToBeTakenSlots(selectedMedicinesArr[idx].medicineToBeTaken);
     setIsDialogOpen(true);
     setShowDosage(true);
     setIsUpdate(true);
@@ -507,7 +478,7 @@ export const MedicinePrescription: React.FC = () => {
       setSelectedMedicines(selectedMedicines);
       setSelectedMedicinesArr(selectedMedicinesArr);
     }
-  }, [selectedMedicines, idx, selectedMedicines]);
+  }, [selectedMedicines, idx, selectedMedicinesArr]);
   function getSuggestionValue(suggestion: OptionType) {
     return suggestion.label;
   }
@@ -527,22 +498,24 @@ export const MedicinePrescription: React.FC = () => {
           id: res.medicineName.trim(),
           value: res.medicineName,
           name: res.medicineName,
-          times: Number(res.medicineConsumptionDurationInDays),
-          daySlots: res.medicineTimings.join(' ').toLowerCase(),
-          duration: `${Number(
-            res.medicineConsumptionDurationInDays
-          )} days ${res.medicineToBeTaken.join(' ').toLowerCase()}`,
+          times: res.medicineTimings.length,
+          daySlots: res.medicineTimings.join(' , ').toLowerCase(),
+          duration: `${Number(res.medicineConsumptionDurationInDays)} days ${toBeTaken(
+            res.medicineToBeTaken
+          )
+            .join(',')
+            .toLowerCase()}`,
           selected: true,
         };
-        const xArr = selectedMedicinesArr;
-        xArr.push(inputParamsArr);
-        setSelectedMedicinesArr(xArr);
+        // const xArr = selectedMedicinesArr;
+        // xArr!.push(inputParamsArr);
+        // setSelectedMedicinesArr(xArr);
         const x = selectedMedicines;
-        x.push(inputParams);
+        x!.push(inputParams);
         setSelectedMedicines(x);
       });
     }
-  }, []);
+  }, [selectedMedicinesArr]);
   useEffect(() => {
     if (searchInput.length > 2) {
       setSuggestions(getSuggestions(searchInput));
@@ -550,7 +523,7 @@ export const MedicinePrescription: React.FC = () => {
   }, [searchInput]);
 
   const daySlotsToggleAction = (slotId: string) => {
-    const slots = daySlots.map(function(slot: SlotsObject) {
+    const slots = daySlots.map((slot: SlotsObject) => {
       if (slotId === slot.id) {
         slot.selected = !slot.selected;
       }
@@ -560,7 +533,7 @@ export const MedicinePrescription: React.FC = () => {
   };
 
   const toBeTakenSlotsToggleAction = (slotId: string) => {
-    const slots = toBeTakenSlots.map(function(slot: SlotsObject) {
+    const slots = toBeTakenSlots.map((slot: SlotsObject) => {
       if (slotId === slot.id) {
         slot.selected = !slot.selected;
       }
@@ -627,13 +600,13 @@ export const MedicinePrescription: React.FC = () => {
   const addUpdateMedicines = () => {
     const toBeTakenSlotsArr: any = [];
     const daySlotsArr: any = [];
-    const isTobeTakenSelected = toBeTakenSlots.filter(function(slot: SlotsObject) {
+    const isTobeTakenSelected = toBeTakenSlots.filter((slot: SlotsObject) => {
       if (slot.selected) {
         toBeTakenSlotsArr.push(slot.value.toUpperCase().replace(' ', '_'));
       }
       return slot.selected !== false;
     });
-    const daySlotsSelected = daySlots.filter(function(slot: SlotsObject) {
+    const daySlotsSelected = daySlots.filter((slot: SlotsObject) => {
       if (slot.selected) {
         daySlotsArr.push(slot.value.toUpperCase());
       }
@@ -643,19 +616,10 @@ export const MedicinePrescription: React.FC = () => {
       setErrorState({ ...errorState, daySlotErr: true, tobeTakenErr: false, durationErr: false });
     } else if (isTobeTakenSelected.length === 0) {
       setErrorState({ ...errorState, tobeTakenErr: true, daySlotErr: false, durationErr: false });
-    } else if (_isEmpty(consumptionDuration)) {
+    } else if (isEmpty(trim(consumptionDuration)) || isNaN(Number(consumptionDuration))) {
       setErrorState({ ...errorState, durationErr: true, daySlotErr: false, tobeTakenErr: false });
     } else {
       setErrorState({ ...errorState, durationErr: false, daySlotErr: false, tobeTakenErr: false });
-
-      // const inputParams = {
-      //   caseSheetId: '1234',
-      //   tablets: tabletsCount,
-      //   daySlots: daySlots,
-      //   toBeTakenSlots: toBeTakenSlots,
-      //   medicineInstruction: medicineInstruction
-      // }
-      const slot1value = '';
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: consumptionDuration,
         medicineDosage: tabletsCount,
@@ -670,8 +634,8 @@ export const MedicinePrescription: React.FC = () => {
         value: selectedValue,
         name: selectedValue,
         times: daySlotsSelected.length,
-        daySlots: `${daySlotsArr.join(',')}`,
-        duration: `${consumptionDuration}  ${toBeTakenSlotsArr.join(',')}`,
+        daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
+        duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
         selected: true,
       };
       if (isUpdate) {
@@ -708,11 +672,18 @@ export const MedicinePrescription: React.FC = () => {
       setMedicineInstruction('');
       setConsumptionDuration('');
       setTabletsCount(1);
-      // setDaySlots(selectedMedicinesArr[idx].medicineTimings);
       setSelectedValue('');
-      // setToBeTakenSlots(selectedMedicinesArr[idx].medicineToBeTaken);
     }
   };
+  const toBeTaken = (value: any) => {
+    const arry: any = [];
+    value.map((slot: any) => {
+      const x = slot.replace('_', ' ').toLowerCase();
+      arry.push(x);
+    });
+    return arry;
+  };
+
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
     const tobeTakenitem = _tobeTakenitem!;
     return (
@@ -777,7 +748,7 @@ export const MedicinePrescription: React.FC = () => {
             classes={{ root: classes.btnAddDoctor }}
             onClick={() => setIsDialogOpen(true)}
           >
-            <img src={require('images/ic_add.svg')} alt="" /> ADD Medicine
+            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
           </AphButton>
         </Grid>
         <Grid item xs={4}></Grid>
@@ -902,7 +873,7 @@ export const MedicinePrescription: React.FC = () => {
                       )}
                     </div>
                     <div>
-                      <h6>Duration of Consumption</h6>
+                      <h6>Duration of Consumption(In days)</h6>
                       <div className={classes.numberTablets}>
                         <AphTextField
                           placeholder=""
@@ -918,7 +889,7 @@ export const MedicinePrescription: React.FC = () => {
                             component="div"
                             error={errorState.durationErr}
                           >
-                            Please Enter something
+                            Please Enter Duration in days(Number only)
                           </FormHelperText>
                         )}
                       </div>

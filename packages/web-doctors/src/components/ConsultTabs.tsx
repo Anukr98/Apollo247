@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Theme } from '@material-ui/core';
+import { Theme, Button, Modal } from '@material-ui/core';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
+import Paper from '@material-ui/core/Paper';
 import { CallPopover } from 'components/CallPopover';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
@@ -101,6 +102,87 @@ const useStyles = makeStyles((theme: Theme) => {
     block: {
       display: 'block',
     },
+    modalBox: {
+      maxWidth: 280,
+      height: 250,
+      margin: 'auto',
+      marginTop: 88,
+      backgroundColor: '#eeeeee',
+      position: 'relative',
+    },
+    modalPdfBox: {
+      maxWidth: '90%',
+      height: '80%',
+      margin: 'auto',
+      marginTop: 88,
+      backgroundColor: '#eeeeee',
+      position: 'relative',
+    },
+    tabHeader: {
+      height: 30,
+      borderTopLeftRadius: '10px',
+      borderTopRightRadius: '10px',
+    },
+    tabBody: {
+      height: 60,
+      marginTop: '10px',
+      paddingLeft: '15px',
+      paddingTop: '10px',
+      paddingRight: '15px',
+      /* padding: 15px; */
+
+      '& p': {
+        margin: 0,
+        width: 180,
+        fontSize: 16,
+        fontWeight: 700,
+        lineHeight: 1.4,
+        color: '#01475b',
+      },
+    },
+    tabPdfBody: {
+      height: '100%',
+      marginTop: '10px',
+      paddingLeft: '15px',
+      paddingTop: '10px',
+      paddingRight: '15px',
+      textAlign: 'center',
+      /* padding: 15px; */
+    },
+    cross: {
+      position: 'absolute',
+      right: 0,
+      top: '10px',
+      fontSize: '18px',
+      color: '#02475b',
+    },
+    consultButton: {
+      fontSize: 13,
+      fontWeight: theme.typography.fontWeightBold,
+      color: '#fff',
+      padding: '8px 16px',
+      backgroundColor: '#fc9916',
+      marginTop: 15,
+      marginBottom: 15,
+      width: '100%',
+      borderRadius: 10,
+      boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
+      '&:hover': {
+        backgroundColor: '#e28913',
+      },
+    },
+    cancelConsult: {
+      width: '100%',
+      fontSize: 13,
+      padding: '8px 16px',
+      fontWeight: theme.typography.fontWeightBold,
+      color: '#fc9916',
+      backgroundColor: '#fff',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      '&:hover': {
+        backgroundColor: '#fff',
+      },
+    },
   };
 });
 
@@ -124,6 +206,7 @@ export const ConsultTabs: React.FC = () => {
   const params = useParams<Params>();
   const paramId = params.id;
   const [loaded, setLoaded] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
@@ -145,6 +228,13 @@ export const ConsultTabs: React.FC = () => {
   const [medicinePrescription, setMedicinePrescription] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
+  const [notes, setNotes] = useState<string | null>(null);
+  const [consultType, setConsultType] = useState<string[]>([]);
+  const [followUp, setFollowUp] = useState<boolean[]>([]);
+  const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
+  const [followUpDate, setFollowUpDate] = useState<string[]>([]);
+  const [isPdfPopoverOpen, setIsPdfPopoverOpen] = useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   /* case sheet data*/
 
   useEffect(() => {
@@ -161,7 +251,7 @@ export const ConsultTabs: React.FC = () => {
         })
         .then((_data) => {
           setCasesheetInfo(_data.data);
-
+          setError('');
           _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
             ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
                 .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
@@ -182,6 +272,29 @@ export const ConsultTabs: React.FC = () => {
             ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
                 .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
             : setMedicinePrescription([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.notes
+            ? setNotes((_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string)
+            : setNotes('');
+          _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
+            ? setConsultType(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.consultType,
+              ] as unknown) as string[])
+            : setConsultType([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.followUp
+            ? setFollowUp(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
+              ] as unknown) as boolean[])
+            : setFollowUp([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
+            ? setFollowUpAfterInDays(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
+              ] as unknown) as string[])
+            : setFollowUpAfterInDays([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
+            ? setFollowUpDate(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
+              ] as unknown) as string[])
+            : setFollowUpDate([]);
           if (
             _data.data &&
             _data.data.getCaseSheet &&
@@ -196,6 +309,7 @@ export const ConsultTabs: React.FC = () => {
           }
         })
         .catch((e: any) => {
+          setError('Error occured in getcasesheet api');
           console.log('Error occured creating session', e);
         })
         .finally(() => {
@@ -209,27 +323,23 @@ export const ConsultTabs: React.FC = () => {
   }, [paramId, appointmentId]);
 
   const saveCasesheetAction = () => {
-    console.log(
-      JSON.stringify(symptoms),
-      JSON.stringify(diagnosis),
-      JSON.stringify(otherInstructions),
-      JSON.stringify(diagnosticPrescription),
-      JSON.stringify(medicinePrescription)
-    );
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
         mutation: UPDATE_CASESHEET,
         variables: {
           UpdateCaseSheetInput: {
-            symptoms: JSON.stringify(symptoms),
-            //notes: value,
-            diagnosis: JSON.stringify(diagnosis),
-            diagnosticPrescription: JSON.stringify(diagnosticPrescription),
-            //followUp: switchValue,
-            //followUpDate: selectDate,
-            //followUpAfterInDays: sliderValue,
-            otherInstructions: JSON.stringify(otherInstructions),
-            //medicinePrescription: JSON.stringify(medicinePrescription),
+            symptoms: diagnosis!.length > 0 ? JSON.stringify(symptoms) : null,
+            notes,
+            diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
+            diagnosticPrescription:
+              diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
+            followUp: followUp[0],
+            followUpDate: followUp[0] ? followUpDate[0] : null,
+            followUpAfterInDays: followUp[0] ? followUpAfterInDays[0] : null,
+            otherInstructions:
+              otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
+            medicinePrescription:
+              medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
             id: caseSheetId,
           },
         },
@@ -237,7 +347,7 @@ export const ConsultTabs: React.FC = () => {
       })
       .then((_data) => {
         console.log('_data', _data);
-        //const result = _data.data!.updateCaseSheet;
+        setIsPopoverOpen(true);
       })
       .catch((e) => {
         console.log('Error occured while update casesheet', e);
@@ -283,10 +393,11 @@ export const ConsultTabs: React.FC = () => {
       .then((_data: any) => {
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
-        setappointmentDateTime(_data.data.createAppointmentSession.appointmentDateTime);
         setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
+        setError('');
       })
       .catch((e: any) => {
+        setError('Error occured creating session');
         console.log('Error occured creating session', e);
       });
   };
@@ -303,7 +414,8 @@ export const ConsultTabs: React.FC = () => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      {loaded && (
+      {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
+      {loaded && error === '' && (
         <CaseSheetContext.Provider
           value={{
             loading: !loaded,
@@ -311,7 +423,8 @@ export const ConsultTabs: React.FC = () => {
             patientDetails: casesheetInfo!.getCaseSheet!.patientDetails,
             symptoms,
             setSymptoms,
-            notes: casesheetInfo!.getCaseSheet!.caseSheetDetails!.notes,
+            notes,
+            setNotes,
             diagnosis,
             setDiagnosis,
             otherInstructions,
@@ -320,6 +433,14 @@ export const ConsultTabs: React.FC = () => {
             setDiagnosticPrescription,
             medicinePrescription,
             setMedicinePrescription,
+            consultType,
+            setConsultType,
+            followUp,
+            setFollowUp,
+            followUpAfterInDays,
+            setFollowUpAfterInDays,
+            followUpDate,
+            setFollowUpDate,
           }}
         >
           <div className={classes.container}>
@@ -334,54 +455,117 @@ export const ConsultTabs: React.FC = () => {
             />
             <div>
               <div>
-                <Tabs
-                  value={tabValue}
-                  variant="fullWidth"
-                  classes={{
-                    root: classes.tabsRoot,
-                    indicator: classes.tabsIndicator,
-                  }}
-                  onChange={(e, newValue) => {
-                    setTabValue(newValue);
-                  }}
-                >
-                  <Tab
-                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                    label="Case Sheet"
-                  />
-                  <Tab
-                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                    label="Chat"
-                  />
-                </Tabs>
-              </div>
-              {/* {tabValue === 0 && ( */}
-              <TabContainer>
-                <div className={tabValue !== 0 ? classes.none : classes.block}>
-                  {casesheetInfo ? <CaseSheet /> : ''}
-                </div>
-              </TabContainer>
-              {/* )} */}
-              {/* {tabValue === 1 && ( */}
-              <TabContainer>
-                <div className={tabValue !== 1 ? classes.none : classes.block}>
-                  <div className={classes.chatContainer}>
-                    <ConsultRoom
-                      startConsult={startConsult}
-                      sessionId={sessionId}
-                      token={token}
-                      appointmentId={paramId}
-                      doctorId={doctorId}
-                      patientId={patientId}
+                <div>
+                  <Tabs
+                    value={tabValue}
+                    variant="fullWidth"
+                    classes={{
+                      root: classes.tabsRoot,
+                      indicator: classes.tabsIndicator,
+                    }}
+                    onChange={(e, newValue) => {
+                      setTabValue(newValue);
+                    }}
+                  >
+                    <Tab
+                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                      label="Case Sheet"
                     />
-                  </div>
+                    <Tab
+                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                      label="Chat"
+                    />
+                  </Tabs>
                 </div>
-              </TabContainer>
-              {/* )} */}
+                <TabContainer>
+                  <div className={tabValue !== 0 ? classes.none : classes.block}>
+                    {casesheetInfo ? <CaseSheet /> : ''}
+                  </div>
+                </TabContainer>
+                <TabContainer>
+                  <div className={tabValue !== 1 ? classes.none : classes.block}>
+                    <div className={classes.chatContainer}>
+                      <ConsultRoom
+                        startConsult={startConsult}
+                        sessionId={sessionId}
+                        token={token}
+                        appointmentId={paramId}
+                        doctorId={doctorId}
+                        patientId={patientId}
+                      />
+                    </div>
+                  </div>
+                </TabContainer>
+              </div>
             </div>
           </div>
         </CaseSheetContext.Provider>
       )}
+      <Modal
+        open={isPopoverOpen}
+        onClose={() => setIsPopoverOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={classes.modalBox}>
+          <div className={classes.tabHeader}>
+            <Button className={classes.cross}>
+              <img
+                src={require('images/ic_cross.svg')}
+                alt=""
+                onClick={() => setIsPopoverOpen(false)}
+              />
+            </Button>
+          </div>
+          <div className={classes.tabBody}>
+            <p>You,re ending your consult with Seema.</p>
+            <Button
+              className={classes.consultButton}
+              //disabled={startAppointmentButton}
+              onClick={() => {
+                setIsPopoverOpen(false);
+                setIsPdfPopoverOpen(true);
+              }}
+            >
+              PREVIEW PRESCRIPTION
+            </Button>
+            <Button
+              className={classes.cancelConsult}
+              onClick={() => {
+                setIsPopoverOpen(false);
+              }}
+            >
+              EDIT CASE SHEET
+            </Button>
+          </div>
+        </Paper>
+      </Modal>
+
+      <Modal
+        open={isPdfPopoverOpen}
+        onClose={() => setIsPdfPopoverOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={classes.modalPdfBox}>
+          <div className={classes.tabHeader}>
+            <Button className={classes.cross}>
+              <img
+                src={require('images/ic_cross.svg')}
+                alt=""
+                onClick={() => setIsPdfPopoverOpen(false)}
+              />
+            </Button>
+          </div>
+          <div className={classes.tabPdfBody}>
+            <iframe
+              src="http://www.africau.edu/images/default/sample.pdf"
+              width="80%"
+              height="450"
+            ></iframe>
+          </div>
+        </Paper>
+      </Modal>
     </div>
   );
 };
