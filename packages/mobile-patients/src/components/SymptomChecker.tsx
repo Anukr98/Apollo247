@@ -24,32 +24,9 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
   const [userName, setuserName] = useState<string>('');
 
   useEffect(() => {
-    // let userName =
-    //   currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
-    // userName = userName.toLowerCase();
     currentPatient && setuserName(currentPatient.firstName ? currentPatient.firstName : '');
     console.log('consult room', currentPatient);
   }, [currentPatient, userName, props.navigation.state.params]);
-
-  // const onSubmitClick = async () => {
-  //   const ss = await $Generator({ type: 'showSpeciality' });
-  //   console.log(ss, 'ssssss');
-  //   ss.then((e) => {
-  //     console.log(e, 'eeee');
-  //   });
-  // };
-
-  // const CustomShowDocComponent = $Generator({
-  //   type: 'showSpeciality',
-  //   componentProps: [
-  //     {
-  //       style: { fontFamily: 'IBMPlexSans-Medium', color: '#02475b', fontSize: 14 },
-  //       onPress: () => {
-  //         console.log('showSpeciality');
-  //       },
-  //     },
-  //   ],
-  // });
 
   return (
     <View style={{ flex: 1 }}>
