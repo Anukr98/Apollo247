@@ -22,6 +22,7 @@ import {
   MedicineOrderPayments,
   PatientDeviceTokens,
   PatientNotificationSettings,
+  MedicineOrdersStatus,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -39,6 +40,7 @@ export const connect = async () => {
         MedicineOrders,
         MedicineOrderLineItems,
         MedicineOrderPayments,
+        MedicineOrdersStatus,
         PatientDeviceTokens,
         PatientNotificationSettings,
       ],

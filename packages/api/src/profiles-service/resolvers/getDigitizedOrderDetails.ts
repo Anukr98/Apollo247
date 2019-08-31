@@ -93,7 +93,6 @@ const getDigitizedPrescription: Resolver<
     orderType: MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION,
     shopId: MedicineOrderInput.shopId,
     quoteDateTime: new Date(),
-    status: MEDICINE_ORDER_STATUS.QUOTE,
   };
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);

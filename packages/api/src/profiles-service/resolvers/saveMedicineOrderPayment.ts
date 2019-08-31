@@ -1,7 +1,12 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
-import { MEDICINE_ORDER_PAYMENT_TYPE, MedicineOrderPayments } from 'profiles-service/entities';
+import {
+  MEDICINE_ORDER_PAYMENT_TYPE,
+  MedicineOrderPayments,
+  MEDICINE_ORDER_STATUS,
+  MedicineOrdersStatus,
+} from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -30,6 +35,7 @@ export const saveMedicineOrderPaymentTypeDefs = gql`
     errorCode: Int
     errorMessage: String
     paymentOrderId: ID!
+    orderStatus: MEDICINE_ORDER_STATUS
   }
 
   extend type Mutation {
@@ -56,6 +62,7 @@ type SaveMedicineOrderResult = {
   errorCode: number;
   errorMessage: string;
   paymentOrderId: string;
+  orderStatus: MEDICINE_ORDER_STATUS;
 };
 
 type MedicinePaymentInputArgs = { medicinePaymentInput: MedicinePaymentInput };
@@ -87,8 +94,21 @@ const SaveMedicineOrderPayment: Resolver<
     bankTxnId: medicinePaymentInput.bankTxnId,
   };
   const savePaymentDetails = await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
+  if (savePaymentDetails) {
+    const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+      orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
+      medicineOrders: orderDetails,
+      statusDate: new Date(),
+    };
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs);
+  }
 
-  return { errorCode, errorMessage, paymentOrderId: savePaymentDetails.id };
+  return {
+    errorCode,
+    errorMessage,
+    paymentOrderId: savePaymentDetails.id,
+    orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
+  };
 };
 
 export const saveMedicineOrderPaymentResolvers = {
