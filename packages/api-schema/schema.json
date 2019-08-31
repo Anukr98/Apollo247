@@ -8973,6 +8973,18 @@
             },
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "orderAutoId",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "inputFields": null,
@@ -8995,7 +9007,13 @@
             "deprecationReason": null
           },
           {
-            "name": "ORDERED",
+            "name": "ORDER_PLACED",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ORDER_VERIFIED",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -9013,13 +9031,31 @@
             "deprecationReason": null
           },
           {
-            "name": "ON_THE_WAY",
+            "name": "OUT_FOR_DELIVERY",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
           },
           {
             "name": "PICKEDUP",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "RETURN_INITIATED",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ITEMS_RETURNED",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "RETURN_ACCEPTED",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -9179,6 +9215,18 @@
                 "name": "ID",
                 "ofType": null
               }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "orderStatus",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "ENUM",
+              "name": "MEDICINE_ORDER_STATUS",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null

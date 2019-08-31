@@ -6,7 +6,6 @@ import {
   MedicineOrders,
   MEDICINE_DELIVERY_TYPE,
   MEDICINE_ORDER_TYPE,
-  MEDICINE_ORDER_STATUS,
   MedicineOrderLineItems,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
@@ -16,11 +15,15 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 export const saveMedicineOrderTypeDefs = gql`
   enum MEDICINE_ORDER_STATUS {
     QUOTE
-    ORDERED
+    ORDER_PLACED
+    ORDER_VERIFIED
     DELIVERED
     CANCELLED
-    ON_THE_WAY
+    OUT_FOR_DELIVERY
     PICKEDUP
+    RETURN_INITIATED
+    ITEMS_RETURNED
+    RETURN_ACCEPTED
   }
 
   enum MEDICINE_DELIVERY_TYPE {
@@ -124,7 +127,6 @@ const SaveMedicineOrder: Resolver<
     orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
     shopId: MedicineCartInput.shopId,
     quoteDateTime: new Date(),
-    status: MEDICINE_ORDER_STATUS.QUOTE,
     devliveryCharges: MedicineCartInput.devliveryCharges,
     deliveryType: MedicineCartInput.medicineDeliveryType,
     quoteId: MedicineCartInput.quoteId,
@@ -141,7 +143,7 @@ const SaveMedicineOrder: Resolver<
       console.log(lineItemOrder);
     });
   }
-  console.log(saveOrder, 'save order');
+  //console.log(saveOrder, 'save order');
 
   return {
     errorCode,

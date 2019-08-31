@@ -39,11 +39,15 @@ export enum SEARCH_TYPE {
 
 export enum MEDICINE_ORDER_STATUS {
   QUOTE = 'QUOTE',
-  ORDERED = 'ORDERED',
+  ORDER_PLACED = 'ORDER_PLACED',
+  ORDER_VERIFIED = 'ORDER_VERIFIED',
   DELIVERED = 'DELIVERED',
   CANCELLED = 'CANCELLED',
-  ON_THE_WAY = 'ON_THE_WAY',
+  OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY',
   PICKEDUP = 'PICKEDUP',
+  RETURN_INITIATED = 'RETURN_INITIATED',
+  ITEMS_RETURNED = 'ITEMS_RETURNED',
+  RETURN_ACCEPTED = 'RETURN_ACCEPTED',
 }
 
 export enum MEDICINE_DELIVERY_TYPE {
@@ -88,7 +92,7 @@ export class MedicineOrders extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ generated: 'increment', type: 'bigint' })
+  @PrimaryGeneratedColumn({ type: 'bigint' })
   orderAutoId: number;
 
   @Column()
@@ -111,9 +115,6 @@ export class MedicineOrders extends BaseEntity {
 
   @Column({ nullable: true })
   shopId: string;
-
-  @Column()
-  status: MEDICINE_ORDER_STATUS;
 
   @Column({ nullable: true })
   updatedDate: Date;
@@ -142,6 +143,12 @@ export class MedicineOrders extends BaseEntity {
     (medicineOrderPayments) => medicineOrderPayments.medicineOrders
   )
   medicineOrderPayments: MedicineOrderPayments[];
+
+  @OneToMany(
+    (type) => MedicineOrdersStatus,
+    (medicineOrdersStatus) => medicineOrdersStatus.medicineOrders
+  )
+  medicineOrdersStatus: MedicineOrdersStatus[];
 }
 //medicine orders ends
 
@@ -249,6 +256,39 @@ export class MedicineOrderPayments extends BaseEntity {
   }
 }
 //medicine orders payments ends
+
+//medicine orders status starts
+@Entity()
+export class MedicineOrdersStatus extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrdersStatus)
+  medicineOrders: MedicineOrders;
+
+  @Column()
+  orderStatus: MEDICINE_ORDER_STATUS;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp' })
+  statusDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//medicine orders status ends
 
 //patient device tokens starts
 @Entity()
