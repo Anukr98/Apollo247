@@ -19,6 +19,12 @@ declare namespace NodeJS {
     RABBITMQ_PASSWORD: string;
     MESSAGE_QUEUE_QUEUE_NAME: string;
 
+    AZURE_STORAGE_EMULATOR_PORT: string;
+    AZURE_STORAGE_CONNECTION_STRING_API: string;
+    AZURE_STORAGE_CONNECTION_STRING_WEB_PATIENTS: string;
+    AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS: string;
+    AZURE_STORAGE_CONTAINER_NAME: string;
+
     WEB_PATIENTS_PORT: string;
     WEB_DOCTORS_PORT: string;
 
@@ -45,5 +51,8 @@ declare namespace NodeJS {
     PROFILES_DB_PORT: string;
     PROFILES_DB_USER: string;
     PROFILES_DB_PASSWORD: string;
+
+    NOTIFICATIONS_SERVICE_HOST: string;
+    NOTIFICATIONS_SERVICE_PORT: string;
   }
 }

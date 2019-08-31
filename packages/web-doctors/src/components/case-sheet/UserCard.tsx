@@ -39,13 +39,17 @@ export const UserCard: React.FC = () => {
   ) {
     userCardStrip.push(patientDetails!.patientAddress[0]!.city);
   }
+  const photoUrl =
+    patientDetails && patientDetails!.photoUrl && patientDetails!.photoUrl !== null
+      ? patientDetails!.photoUrl
+      : require('images/ic_patientchat.png');
   return loading && !patientDetails ? (
-    <div></div>
+    <div>loading....</div>
   ) : (
     <Card>
       <CardMedia
         component="img"
-        image={require('images/ic_patientchat.png')}
+        image={photoUrl}
         title={`${patientDetails!.firstName} ${patientDetails!.lastName}`}
       />
       <CardContent>
@@ -69,7 +73,7 @@ export const UserCard: React.FC = () => {
 
         <Typography variant="h6" color="textSecondary" component="h6">
           Appt ID:
-          {caseSheetId && caseSheetId !== '' && caseSheetId.slice(0, 5)}
+          {caseSheetId && caseSheetId !== '' && caseSheetId.slice(-5)}
         </Typography>
       </CardContent>
     </Card>

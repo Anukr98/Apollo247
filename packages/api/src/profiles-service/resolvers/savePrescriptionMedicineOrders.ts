@@ -9,6 +9,7 @@ import {
   MEDICINE_ORDER_STATUS,
   MEDICINE_ORDER_PAYMENT_TYPE,
   MedicineOrderPayments,
+  MedicineOrdersStatus,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -37,6 +38,7 @@ export const savePrescriptionMedicineOrderTypeDefs = gql`
   type SavePrescriptionMedicineOrderResult {
     status: MEDICINE_ORDER_STATUS
     orderId: ID!
+    orderAutoId: Int
   }
 
   extend type Mutation {
@@ -68,6 +70,7 @@ type PrescriptionMedicinePaymentDetails = {
 type SavePrescriptionMedicineOrderResult = {
   status: MEDICINE_ORDER_STATUS;
   orderId: string;
+  orderAutoId: number;
 };
 
 type PrescriptionMedicineInputInputArgs = { prescriptionMedicineInput: PrescriptionMedicineInput };
@@ -88,7 +91,6 @@ const SavePrescriptionMedicineOrder: Resolver<
     orderType: MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION,
     shopId: prescriptionMedicineInput.shopId,
     quoteDateTime: new Date(),
-    status: MEDICINE_ORDER_STATUS.QUOTE,
     deliveryType: prescriptionMedicineInput.medicineDeliveryType,
     quoteId: prescriptionMedicineInput.quoteId,
     appointmentId: prescriptionMedicineInput.appointmentId,
@@ -98,6 +100,15 @@ const SavePrescriptionMedicineOrder: Resolver<
   };
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
+
+  if (saveOrder) {
+    const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+      orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
+      medicineOrders: saveOrder,
+      statusDate: new Date(),
+    };
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs);
+  }
 
   if (
     prescriptionMedicineInput.payment &&
@@ -113,7 +124,11 @@ const SavePrescriptionMedicineOrder: Resolver<
     };
     await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
   }
-  return { status: MEDICINE_ORDER_STATUS.QUOTE, orderId: saveOrder.id };
+  return {
+    status: MEDICINE_ORDER_STATUS.ORDER_PLACED,
+    orderId: saveOrder.id,
+    orderAutoId: saveOrder.orderAutoId,
+  };
 };
 
 export const savePrescriptionMedicineOrderResolvers = {

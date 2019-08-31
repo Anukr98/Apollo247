@@ -9,17 +9,14 @@ import {
   Button,
   MenuItem,
   createStyles,
+  CircularProgress,
 } from '@material-ui/core';
 import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components';
-import deburr from 'lodash/deburr';
+import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
-import Autosuggest from 'react-autosuggest';
-import _isEmpty from 'lodash/isEmpty';
+import { isEmpty, debounce, trim, deburr } from 'lodash';
 import axios from 'axios';
-import _debounce from 'lodash/debounce';
-import { CircularProgress } from '@material-ui/core';
-import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const apiDetails = {
@@ -94,9 +91,17 @@ const useStyles = makeStyles((theme: Theme) =>
       left: 0,
       right: 0,
       color: 'black',
+      boxShadow: 'none',
     },
     suggestion: {
       display: 'block',
+      overflow: 'hidden',
+      borderBottom: '1px solid rgba(2,71,91,0.1)',
+      '&:hover': {
+        '& div': {
+          backgroundColor: '#f0f4f5 !important',
+        },
+      },
     },
     suggestionsList: {
       margin: 0,
@@ -113,7 +118,7 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: '#f7f7f7',
       border: '1px solid rgba(2,71,91,0.1)',
       padding: '12px 40px 12px 12px',
-      maxWidth: 288,
+      maxWidth: 320,
       borderRadius: 5,
       position: 'relative',
       '& h5': {
@@ -148,17 +153,20 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
-      fontWeight: theme.typography.fontWeightBold,
+      fontWeight: 600,
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
+      },
+      '& img': {
+        marginRight: 8,
       },
     },
     medicineHeading: {
       fontSize: 14,
       fontWeight: 500,
       lineHeight: 'normal',
-      color: 'rgba(2, 71, 91, 0.6)',
+      color: 'rgba(2, 71, 91, 0.6) !important',
       marginBottom: 12,
     },
     backArrow: {
@@ -172,7 +180,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     cross: {
       position: 'absolute',
-      right: 0,
+      right: -10,
       top: -9,
       fontSize: 18,
       color: '#02475b',
@@ -237,7 +245,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 16,
       color: '#02475b',
       fontWeight: 500,
-      marginBottom: 20,
+      marginBottom: 10,
       '& button': {
         border: '1px solid #00b38e',
         padding: '5px 10px',
@@ -247,6 +255,9 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 15,
         color: '#00b38e',
         backgroundColor: '#fff',
+        '&:focus': {
+          outline: 'none',
+        },
       },
     },
     tabletcontent: {
@@ -259,8 +270,9 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#fff !important',
     },
     helpText: {
-      paddingLeft: 20,
+      paddingLeft: 0,
       paddingRight: 20,
+      paddingBottom: 10,
     },
     medicineDilog: {
       '& .dialogBoxClose': {
@@ -275,13 +287,14 @@ const useStyles = makeStyles((theme: Theme) =>
     updateSymptom: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      top: 30,
-      right: 15,
+      top: 2,
+      right: 0,
       color: '#666666',
       position: 'absolute',
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
-      paddingLeft: 4,
+      minWidth: 30,
+      padding: '5px 10px',
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -289,13 +302,14 @@ const useStyles = makeStyles((theme: Theme) =>
     deleteSymptom: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      top: 0,
-      right: 15,
+      top: 2,
+      right: 30,
       color: '#666666',
       position: 'absolute',
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
-      paddingLeft: 4,
+      minWidth: 30,
+      padding: '5px 10px',
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -387,27 +401,7 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
   ]);
-  const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([
-    // {
-    //   id: '1',
-    //   value: 'Acetamenophen 1.5% w/w',
-    //   name: 'Acetamenophen 1.5% w/w',
-    //   times: 2,
-    //   daySlots: 'morning, night',
-    //   duration: '1 week',
-    //   selected: false,
-    // },
-    // {
-    //   id: '2',
-    //   value: 'Dextromethorphan (generic)',
-    //   name: 'Dextromethorphan (generic)',
-    //   times: 4,
-    //   daySlots: 'morning, afternoon, evening, night',
-    //   duration: '5 days after food',
-    //   selected: true,
-    // },
-  ]);
-  // const [selectedMedicinesArr, setSelectedMedicinesArr] = React.useState<MedicineObjectArr[]>([]);
+  const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([]);
 
   const [searchInput, setSearchInput] = useState('');
   function getSuggestions(value: string) {
@@ -449,16 +443,9 @@ export const MedicinePrescription: React.FC = () => {
           data.label = res.name;
           FinalSearchdata.push(data);
         });
-        // FinalSearchdata.push(searchdata);
         suggestions = FinalSearchdata;
         setSearchInput(value);
         setLoading(false);
-
-        // suggestions: [
-        //   {
-        //     label: 'qwer',
-        //   },
-        // ];
       })
       .catch();
   };
@@ -495,9 +482,7 @@ export const MedicinePrescription: React.FC = () => {
     setMedicineInstruction(selectedMedicinesArr![idx].medicineInstructions!);
     setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
     setTabletsCount(Number(selectedMedicinesArr![idx].medicineDosage!));
-    // setDaySlots(selectedMedicinesArr[idx].medicineTimings);
     setSelectedValue(selectedMedicinesArr![idx].medicineName!);
-    // setToBeTakenSlots(selectedMedicinesArr[idx].medicineToBeTaken);
     setIsDialogOpen(true);
     setShowDosage(true);
     setIsUpdate(true);
@@ -552,7 +537,7 @@ export const MedicinePrescription: React.FC = () => {
   }, [searchInput]);
 
   const daySlotsToggleAction = (slotId: string) => {
-    const slots = daySlots.map(function(slot: SlotsObject) {
+    const slots = daySlots.map((slot: SlotsObject) => {
       if (slotId === slot.id) {
         slot.selected = !slot.selected;
       }
@@ -562,7 +547,7 @@ export const MedicinePrescription: React.FC = () => {
   };
 
   const toBeTakenSlotsToggleAction = (slotId: string) => {
-    const slots = toBeTakenSlots.map(function(slot: SlotsObject) {
+    const slots = toBeTakenSlots.map((slot: SlotsObject) => {
       if (slotId === slot.id) {
         slot.selected = !slot.selected;
       }
@@ -629,13 +614,13 @@ export const MedicinePrescription: React.FC = () => {
   const addUpdateMedicines = () => {
     const toBeTakenSlotsArr: any = [];
     const daySlotsArr: any = [];
-    const isTobeTakenSelected = toBeTakenSlots.filter(function(slot: SlotsObject) {
+    const isTobeTakenSelected = toBeTakenSlots.filter((slot: SlotsObject) => {
       if (slot.selected) {
         toBeTakenSlotsArr.push(slot.value.toUpperCase().replace(' ', '_'));
       }
       return slot.selected !== false;
     });
-    const daySlotsSelected = daySlots.filter(function(slot: SlotsObject) {
+    const daySlotsSelected = daySlots.filter((slot: SlotsObject) => {
       if (slot.selected) {
         daySlotsArr.push(slot.value.toUpperCase());
       }
@@ -645,19 +630,10 @@ export const MedicinePrescription: React.FC = () => {
       setErrorState({ ...errorState, daySlotErr: true, tobeTakenErr: false, durationErr: false });
     } else if (isTobeTakenSelected.length === 0) {
       setErrorState({ ...errorState, tobeTakenErr: true, daySlotErr: false, durationErr: false });
-    } else if (_isEmpty(consumptionDuration) || isNaN(Number(consumptionDuration))) {
+    } else if (isEmpty(trim(consumptionDuration)) || isNaN(Number(consumptionDuration))) {
       setErrorState({ ...errorState, durationErr: true, daySlotErr: false, tobeTakenErr: false });
     } else {
       setErrorState({ ...errorState, durationErr: false, daySlotErr: false, tobeTakenErr: false });
-
-      // const inputParams = {
-      //   caseSheetId: '1234',
-      //   tablets: tabletsCount,
-      //   daySlots: daySlots,
-      //   toBeTakenSlots: toBeTakenSlots,
-      //   medicineInstruction: medicineInstruction
-      // }
-      const slot1value = '';
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: consumptionDuration,
         medicineDosage: tabletsCount,
@@ -710,9 +686,7 @@ export const MedicinePrescription: React.FC = () => {
       setMedicineInstruction('');
       setConsumptionDuration('');
       setTabletsCount(1);
-      // setDaySlots(selectedMedicinesArr[idx].medicineTimings);
       setSelectedValue('');
-      // setToBeTakenSlots(selectedMedicinesArr[idx].medicineToBeTaken);
     }
   };
   const toBeTaken = (value: any) => {
@@ -788,7 +762,7 @@ export const MedicinePrescription: React.FC = () => {
             classes={{ root: classes.btnAddDoctor }}
             onClick={() => setIsDialogOpen(true)}
           >
-            <img src={require('images/ic_add.svg')} alt="" /> ADD Medicine
+            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
           </AphButton>
         </Grid>
         <Grid item xs={4}></Grid>

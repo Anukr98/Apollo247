@@ -12,6 +12,6 @@
     "experimentalDecorators": true,
     "resolveJsonModule": true,
     "strict": true,
-    "lib": ["es5", "es6"]
+    "lib": ["es5", "es6"] // Normally we wouldn't add "dom" here, but: https://github.com/Azure/azure-sdk-for-js/issues/4379
   }
 }

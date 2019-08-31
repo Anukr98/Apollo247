@@ -23,6 +23,7 @@ import {
   MedicineOrders,
   MedicineOrderLineItems,
   MedicineOrderPayments,
+  MedicineOrdersStatus,
   PatientDeviceTokens,
   PatientNotificationSettings,
 } from 'profiles-service/entities';
@@ -73,6 +74,7 @@ export const connect = async () => {
         MedicineOrders,
         MedicineOrderLineItems,
         MedicineOrderPayments,
+        MedicineOrdersStatus,
         PatientDeviceTokens,
         PatientNotificationSettings,
       ],

@@ -6,7 +6,6 @@ import {
   MedicineOrders,
   MEDICINE_DELIVERY_TYPE,
   MEDICINE_ORDER_TYPE,
-  MEDICINE_ORDER_STATUS,
   MedicineOrderLineItems,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
@@ -93,7 +92,7 @@ const getDigitizedPrescription: Resolver<
     orderType: MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION,
     shopId: MedicineOrderInput.shopId,
     quoteDateTime: new Date(),
-    status: MEDICINE_ORDER_STATUS.QUOTE,
+    devliveryCharges: 0.0,
   };
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
