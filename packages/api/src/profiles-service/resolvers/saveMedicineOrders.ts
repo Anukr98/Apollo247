@@ -44,6 +44,7 @@ export const saveMedicineOrderTypeDefs = gql`
     medicineDeliveryType: MEDICINE_DELIVERY_TYPE!
     patientAddressId: ID
     devliveryCharges: Float
+    prescriptionImageUrl: String
     items: [MedicineCartItem]
   }
 
@@ -79,6 +80,7 @@ type MedicineCartInput = {
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   patientAddressId: string;
   devliveryCharges: number;
+  prescriptionImageUrl: string;
   items: MedicineCartItem[];
 };
 
@@ -130,6 +132,7 @@ const SaveMedicineOrder: Resolver<
     devliveryCharges: MedicineCartInput.devliveryCharges,
     deliveryType: MedicineCartInput.medicineDeliveryType,
     quoteId: MedicineCartInput.quoteId,
+    prescriptionImageUrl: MedicineCartInput.prescriptionImageUrl,
   };
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
