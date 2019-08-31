@@ -231,7 +231,6 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
       ) : (
         <CircularProgress />
       )}
-
       {!loading && !pincodeError && pincode.length === 6 ? (
         <div className={classes.bottomActions}>
           <AphButton

@@ -302,9 +302,14 @@ export const Cart: React.FC = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
-  const { cartTotal, cartItems } = useShoppingCart();
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
-  const deliveryCharges = 30; // this must be retrieved from api later.
+  const [couponCode, setCouponCode] = React.useState<string>('');
+
+  const { cartTotal, cartItems } = useShoppingCart();
+
+  // business rule defined if the total is greater than 200 no delivery charges.
+  // if the total is less than 200 +20 is added.
+  const deliveryCharges = cartTotal > 200 ? 0 : 20;
 
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
   const totalAmount = (cartTotal + deliveryCharges).toFixed(2);
@@ -317,7 +322,14 @@ export const Cart: React.FC = (props) => {
   const disableSubmit = deliveryAddressId === '';
   const uploadPrescriptionRequired = cartItems.findIndex((v) => v.is_prescription_required === '1');
 
-  console.log(deliveryMode, deliveryAddressId, cartTotal, cartItems, uploadPrescriptionRequired);
+  console.log(
+    deliveryMode,
+    deliveryAddressId,
+    cartTotal,
+    cartItems,
+    uploadPrescriptionRequired,
+    couponCode
+  );
 
   return (
     <div className={classes.root}>
@@ -426,18 +438,27 @@ export const Cart: React.FC = (props) => {
                 <span>Total Charges</span>
               </div>
               <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
-                <div
-                  onClick={() => setIsApplyCouponDialogOpen(true)}
-                  className={`${classes.serviceType} ${classes.textVCenter}`}
-                >
-                  <span className={classes.serviceIcon}>
-                    <img src={require('images/ic_coupon.svg')} alt="" />
-                  </span>
-                  <span className={classes.linkText}>Apply Coupon</span>
-                  <span className={classes.rightArrow}>
-                    <img src={require('images/ic_arrow_right.svg')} alt="" />
-                  </span>
-                </div>
+                {couponCode === '' ? (
+                  <div
+                    onClick={() => setIsApplyCouponDialogOpen(true)}
+                    className={`${classes.serviceType} ${classes.textVCenter}`}
+                  >
+                    <span className={classes.serviceIcon}>
+                      <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                    </span>
+                    <span className={classes.linkText}>Apply Coupon</span>
+                    <span className={classes.rightArrow}>
+                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                    </span>
+                  </div>
+                ) : (
+                  <div className={`${classes.serviceType} ${classes.textVCenter}`}>
+                    <span className={classes.serviceIcon}>
+                      <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                    </span>
+                    <span className={classes.linkText}>Coupon Applied</span>
+                  </div>
+                )}
               </div>
               <div className={`${classes.sectionGroup}`}>
                 <div className={classes.priceSection}>
@@ -448,7 +469,9 @@ export const Cart: React.FC = (props) => {
                     </div>
                     <div className={classes.priceRow}>
                       <span>Delivery Charges</span>
-                      <span className={classes.priceCol}>+ Rs. {deliveryCharges}</span>
+                      <span className={classes.priceCol}>
+                        {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '(+ Rs. 20) FREE'}
+                      </span>
                     </div>
                   </div>
                   <div className={classes.bottomSection}>
@@ -519,14 +542,22 @@ export const Cart: React.FC = (props) => {
           </div>
         </div>
       </Popover>
+
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
         <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
         <UploadPrescription />
       </AphDialog>
+
       <AphDialog open={isApplyCouponDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsApplyCouponDialogOpen(false)} />
         <AphDialogTitle>Apply Coupon</AphDialogTitle>
-        <ApplyCoupon />
+        <ApplyCoupon
+          setCouponCode={(couponCode: string) => setCouponCode(couponCode)}
+          close={(isApplyCouponDialogOpen: boolean) => {
+            setIsApplyCouponDialogOpen(isApplyCouponDialogOpen);
+          }}
+          cartValue={cartTotal}
+        />
       </AphDialog>
     </div>
   );

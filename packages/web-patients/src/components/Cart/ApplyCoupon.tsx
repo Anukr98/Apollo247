@@ -3,6 +3,7 @@ import { Theme, FormControlLabel } from '@material-ui/core';
 import React from 'react';
 import { AphRadio, AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
+import _each from 'lodash';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -85,8 +86,22 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ApplyCoupon: React.FC = (props) => {
+interface ApplyCouponProps {
+  setCouponCode: (couponCode: string) => void;
+  close: (isApplyCouponDialogOpen: boolean) => void;
+  cartValue: number;
+}
+
+export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const classes = useStyles();
+
+  const [selectCouponCode, setSelectCouponCode] = React.useState<string>('');
+  const availableCoupons = [
+    { couponCode: 'APMED10', couponDesc: 'Get 10% off on total bill on the order above Rs.199' },
+  ];
+
+  // set coupon id at cart.
+  props.setCouponCode(selectCouponCode);
 
   return (
     <div className={classes.shadowHide}>
@@ -96,47 +111,32 @@ export const ApplyCoupon: React.FC = (props) => {
             <div className={classes.root}>
               <div className={classes.addressGroup}>
                 <div className={classes.pinSearch}>
-                  <AphTextField value="APMED50" placeholder="APMED50" />
+                  <AphTextField value="APMED10" placeholder="APMED10" />
                 </div>
                 <div className={classes.sectionHeader}>Coupons For You</div>
                 <ul>
-                  <li>
-                    <FormControlLabel
-                      className={classes.radioLabel}
-                      value="a"
-                      control={<AphRadio color="primary" />}
-                      checked
-                      label={
-                        <span className={classes.couponCode}>
-                          MED50<span>Get 5% off on total bill by shopping for Rs. 500 or more</span>
-                        </span>
-                      }
-                    />
-                  </li>
-                  <li>
-                    <FormControlLabel
-                      className={classes.radioLabel}
-                      value="b"
-                      control={<AphRadio color="primary" />}
-                      label={
-                        <span className={classes.couponCode}>
-                          MED50<span>Get 5% off on total bill by shopping for Rs. 500 or more</span>
-                        </span>
-                      }
-                    />
-                  </li>
-                  <li>
-                    <FormControlLabel
-                      className={classes.radioLabel}
-                      value="b"
-                      control={<AphRadio color="primary" />}
-                      label={
-                        <span className={classes.couponCode}>
-                          MED50<span>Get 5% off on total bill by shopping for Rs. 500 or more</span>
-                        </span>
-                      }
-                    />
-                  </li>
+                  {availableCoupons.map((couponDetails, index) => {
+                    return (
+                      <li key={index}>
+                        <FormControlLabel
+                          className={classes.radioLabel}
+                          checked={couponDetails.couponCode === selectCouponCode}
+                          value={selectCouponCode}
+                          control={<AphRadio color="primary" />}
+                          label={
+                            <span className={classes.couponCode}>
+                              {couponDetails.couponCode}
+                              <span>{couponDetails.couponDesc}</span>
+                            </span>
+                          }
+                          onChange={() => {
+                            setSelectCouponCode(couponDetails.couponCode);
+                          }}
+                          disabled={props.cartValue < 200}
+                        />
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             </div>
@@ -144,10 +144,36 @@ export const ApplyCoupon: React.FC = (props) => {
         </Scrollbars>
       </div>
       <div className={classes.dialogActions}>
-        <AphButton color="primary" fullWidth>
+        <AphButton
+          color="primary"
+          fullWidth
+          onClick={() => {
+            props.close(false);
+          }}
+        >
           Done
         </AphButton>
       </div>
     </div>
   );
 };
+
+{
+  /* <li>
+                    <FormControlLabel
+                      className={classes.radioLabel}
+                      checked={couponId === defaultCouponId}
+                      value={defaultCouponId}
+                      control={<AphRadio color="primary" />}
+                      label={
+                        <span className={classes.couponCode}>
+                          {defaultCouponId}
+                          <span>Get 10% off on total bill on the order above Rs.199</span>
+                        </span>
+                      }
+                      onChange={() => {
+                        setCouponId(defaultCouponId);
+                      }}
+                    />
+                  </li> */
+}
