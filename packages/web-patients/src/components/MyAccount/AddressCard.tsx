@@ -53,30 +53,41 @@ const useStyles = makeStyles((theme: Theme) => {
 export const AddressCard: React.FC = (props) => {
   const classes = useStyles();
   const [isEditAddressDialogOpen, setIsEditAddressDialogOpen] = React.useState<boolean>(false);
+  const testProps = {
+    addresses: [
+      {
+        addressLine1: '48490 Prem Common',
+        addressLine2: 'Adigamouth',
+        zipcode: 'M7U 5W8',
+      },
+      {
+        addressLine1: '72938 Jones Street',
+        addressLine2: 'Mumbai',
+        zipcode: 'U9B 6H1',
+      },
+      {
+        addressLine1: '34305 Sharma Trail',
+        addressLine2: 'Kaurton',
+        zipcode: 'N4P 2U5',
+      },
+    ],
+  };
+
+  const addressDivs = testProps.addresses.map((address) => {
+    return (
+      <Grid item sm={6}>
+        <div className={classes.root} onClick={() => setIsEditAddressDialogOpen(true)}>
+          {address.addressLine1}
+          <br /> {address.addressLine2}
+          <br /> {address.zipcode}
+        </div>
+      </Grid>
+    );
+  });
 
   return (
     <Grid container spacing={2}>
-      <Grid item sm={6}>
-        <div className={classes.root} onClick={() => setIsEditAddressDialogOpen(true)}>
-          27/A, Kalpataru Enclave
-          <br /> Jubilee Hills
-          <br /> Hyderabad, Telangana — 500033
-        </div>
-      </Grid>
-      <Grid item sm={6}>
-        <div className={classes.root} onClick={() => setIsEditAddressDialogOpen(true)}>
-          27/A, Kalpataru Enclave
-          <br /> Jubilee Hills
-          <br /> Hyderabad, Telangana — 500033
-        </div>
-      </Grid>
-      <Grid item sm={6}>
-        <div className={classes.root} onClick={() => setIsEditAddressDialogOpen(true)}>
-          27/A, Kalpataru Enclave
-          <br /> Jubilee Hills
-          <br /> Hyderabad, Telangana — 500033
-        </div>
-      </Grid>
+      {addressDivs}
       <AphDialog open={isEditAddressDialogOpen} maxWidth="sm">
         <AphDialogTitle>
           Edit Address
