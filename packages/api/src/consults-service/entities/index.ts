@@ -21,7 +21,7 @@ export enum patientLogSort {
 }
 
 export enum patientLogType {
-  All = 'ALL',
+  ALL = 'ALL',
   FOLLOW_UP = 'FOLLOW_UP',
   REGULAR = 'REGULAR',
 }
