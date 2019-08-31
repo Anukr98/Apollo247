@@ -53,29 +53,10 @@ const useStyles = makeStyles((theme: Theme) => {
 export const AddressCard: React.FC = (props) => {
   const classes = useStyles();
   const [isEditAddressDialogOpen, setIsEditAddressDialogOpen] = React.useState<boolean>(false);
-  const testProps = {
-    addresses: [
-      {
-        addressLine1: '48490 Prem Common',
-        addressLine2: 'Adigamouth',
-        zipcode: 'M7U 5W8',
-      },
-      {
-        addressLine1: '72938 Jones Street',
-        addressLine2: 'Mumbai',
-        zipcode: 'U9B 6H1',
-      },
-      {
-        addressLine1: '34305 Sharma Trail',
-        addressLine2: 'Kaurton',
-        zipcode: 'N4P 2U5',
-      },
-    ],
-  };
 
-  const addressDivs = testProps.addresses.map((address) => {
+  const addressDivs = props.addresses.map((address) => {
     return (
-      <Grid item sm={6}>
+      <Grid item sm={6} key={address.id}>
         <div className={classes.root} onClick={() => setIsEditAddressDialogOpen(true)}>
           {address.addressLine1}
           <br /> {address.addressLine2}

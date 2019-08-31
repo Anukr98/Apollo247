@@ -110,7 +110,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.sectionHeader}>
         Address Book
-        <div className={classes.count}>03</div>
+        <div className={classes.count}>{String(addresses.length).padStart(2, '0')}</div>
       </div>
       <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 322px)' }}>
         <div className={classes.sectionBody}>
