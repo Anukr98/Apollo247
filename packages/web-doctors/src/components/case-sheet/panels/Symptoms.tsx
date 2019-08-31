@@ -14,7 +14,8 @@ import {
 //import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components';
-import _isEmpty from 'lodash/isEmpty';
+
+import { isEmpty, debounce, trim } from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -249,7 +250,7 @@ export const Symptoms: React.FC = (props) => {
     setIdx(sum);
   };
   const addUpdateSymptom = () => {
-    if (_isEmpty(symptom)) {
+    if (isEmpty(trim(symptom))) {
       setErrorState({
         ...errorState,
         symptomError: true,
@@ -257,7 +258,7 @@ export const Symptoms: React.FC = (props) => {
         howOfftenError: false,
         severityError: false,
       });
-    } else if (_isEmpty(since)) {
+    } else if (isEmpty(trim(since))) {
       setErrorState({
         ...errorState,
         symptomError: false,
@@ -265,7 +266,7 @@ export const Symptoms: React.FC = (props) => {
         howOfftenError: false,
         severityError: false,
       });
-    } else if (_isEmpty(howOften)) {
+    } else if (isEmpty(trim(howOften))) {
       setErrorState({
         ...errorState,
         symptomError: false,
@@ -273,7 +274,7 @@ export const Symptoms: React.FC = (props) => {
         howOfftenError: true,
         severityError: false,
       });
-    } else if (_isEmpty(severity)) {
+    } else if (isEmpty(severity)) {
       setErrorState({
         ...errorState,
         symptomError: false,

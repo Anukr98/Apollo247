@@ -47,6 +47,10 @@ Using jest. Run `npm run test`
 
 Each microservice's postgres databases is viewable through the web ui, `pgweb`. Run `docker-compose up pgweb`, navigate to http://localhost:8081, and type in the connection details for the database you want to view. The hostname is the name of the service as specified in `docker-compose.yml` (convention: `<service-name>-db`, eg `profiles-db`). Leave the database entry blank to view all databases for the chosen service, and once logged in, switch between them in the upper left corner (initially the internal `postgres` database will be selected, which is not very useful)
 
+## Storage emulator
+
+In local and development we use the [Azurite Storage Emulator](https://github.com/Azure/Azurite). To browse files uploaded locally, you should use the [Azure Storage Explorer](https://azure.microsoft.com/en-in/features/storage-explorer). Connection strings/keys can be found in the .env file.
+
 ## Troubleshooting
 
 ### General reset

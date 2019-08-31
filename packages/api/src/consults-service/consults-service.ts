@@ -107,6 +107,6 @@ import { getConnection } from 'typeorm';
   });
 
   server.listen({ port: process.env.CONSULTS_SERVICE_PORT }).then(({ url }) => {
-    console.log(`🚀 consults-service ready (internal url: ${url})`);
+    console.log(`🚀 consults-service ready`);
   });
 })();
