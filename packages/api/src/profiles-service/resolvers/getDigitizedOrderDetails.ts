@@ -6,7 +6,6 @@ import {
   MedicineOrders,
   MEDICINE_DELIVERY_TYPE,
   MEDICINE_ORDER_TYPE,
-  MEDICINE_ORDER_STATUS,
   MedicineOrderLineItems,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
