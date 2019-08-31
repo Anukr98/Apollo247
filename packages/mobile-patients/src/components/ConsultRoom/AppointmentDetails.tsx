@@ -1,9 +1,9 @@
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Location, More } from '@aph/mobile-patients/src/components/ui/Icons';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import { Button } from "@aph/mobile-patients/src/components/ui/Button";
+import { Header } from "@aph/mobile-patients/src/components/ui/Header";
+import { Location, More } from "@aph/mobile-patients/src/components/ui/Icons";
+import { StickyBottomComponent } from "@aph/mobile-patients/src/components/ui/StickyBottomComponent";
+import { theme } from "@aph/mobile-patients/src/theme/theme";
+import React, { useState } from "react";
 import {
   Image,
   SafeAreaView,
@@ -11,68 +11,68 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Dimensions,
-} from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
-import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+  Dimensions
+} from "react-native";
+import { NavigationScreenProps } from "react-navigation";
+import { AppRoutes } from "@aph/mobile-patients/src/components/NavigatorContainer";
+import { BottomPopUp } from "@aph/mobile-patients/src/components/ui/BottomPopUp";
+import { OverlayRescheduleView } from "@aph/mobile-patients/src/components/Consult/OverlayRescheduleView";
+import { useAllCurrentPatients } from "@aph/mobile-patients/src/hooks/authHooks";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   imageView: {
     width: 80,
-    marginLeft: 20,
+    marginLeft: 20
   },
   separatorStyle: {
     borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+    borderBottomColor: "rgba(2, 71, 91, 0.2)"
   },
   doctorNameStyle: {
     paddingTop: 8,
     paddingBottom: 2,
     ...theme.fonts.IBMPlexSansSemiBold(23),
-    color: theme.colors.LIGHT_BLUE,
+    color: theme.colors.LIGHT_BLUE
   },
   timeStyle: {
     paddingBottom: 20,
     ...theme.fonts.IBMPlexSansMedium(16),
-    color: theme.colors.SKY_BLUE,
+    color: theme.colors.SKY_BLUE
   },
   labelStyle: {
     ...theme.fonts.IBMPlexSansMedium(14),
     color: theme.colors.LIGHT_BLUE,
-    paddingBottom: 3.5,
+    paddingBottom: 3.5
   },
   descriptionStyle: {
     paddingTop: 7.5,
     paddingBottom: 16,
     ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SKY_BLUE,
+    color: theme.colors.SKY_BLUE
   },
   labelViewStyle: {
     paddingTop: 4,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between"
   },
   gotItStyles: {
     height: 60,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent"
   },
   gotItTextStyles: {
     paddingTop: 16,
-    ...theme.viewStyles.yellowTextStyle,
-  },
+    ...theme.viewStyles.yellowTextStyle
+  }
 });
 
 export interface AppointmentDetailsProps extends NavigationScreenProps {}
 
-export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => {
+export const AppointmentDetails: React.FC<AppointmentDetailsProps> = props => {
   const data = props.navigation.state.params!.data;
   const doctorDetails = data.doctorInfo;
-  console.log('doctorDetails', doctorDetails);
+  console.log("doctorDetails", doctorDetails);
 
   // console.log(
   //   props.navigation.state.params!.data,
@@ -87,7 +87,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     return (
       <View
         style={{
-          ...theme.viewStyles.container,
+          ...theme.viewStyles.container
         }}
       >
         <SafeAreaView style={{ flex: 1 }}>
@@ -96,6 +96,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             leftIcon="backArrow"
             rightComponent={
               <TouchableOpacity
+                activeOpacity={1}
                 onPress={() => {
                   setCancelAppointment(true);
                 }}
@@ -110,12 +111,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               backgroundColor: theme.colors.CARD_BG,
               paddingTop: 20,
               paddingHorizontal: 20,
-              ...theme.viewStyles.shadowStyle,
+              ...theme.viewStyles.shadowStyle
             }}
           >
             <View
               style={{
-                flexDirection: 'row',
+                flexDirection: "row"
               }}
             >
               <View style={{ flex: 1 }}>
@@ -123,13 +124,15 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   style={{
                     ...theme.fonts.IBMPlexSansMedium(12),
                     color: theme.colors.SEARCH_EDUCATION_COLOR,
-                    paddingBottom: 4,
+                    paddingBottom: 4
                   }}
                 >
                   #{data.id}
                 </Text>
                 <View style={styles.separatorStyle} />
-                <Text style={styles.doctorNameStyle}>Dr. {data.doctorInfo.firstName}</Text>
+                <Text style={styles.doctorNameStyle}>
+                  Dr. {data.doctorInfo.firstName}
+                </Text>
                 <Text style={styles.timeStyle}></Text>
                 <View style={styles.labelViewStyle}>
                   <Text style={styles.labelStyle}>Location</Text>
@@ -142,7 +145,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   data.doctorInfo.doctorHospital.length > 0 &&
                   data.doctorInfo.doctorHospital[0].facility
                     ? `${data.doctorInfo.doctorHospital[0].facility.streetLine1} ${data.doctorInfo.doctorHospital[0].facility.city}`
-                    : ''}
+                    : ""}
                 </Text>
                 <View style={styles.labelViewStyle}>
                   <Text style={styles.labelStyle}>Average Waiting Time</Text>
@@ -156,8 +159,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 <View style={styles.separatorStyle} />
                 <View
                   style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
+                    flexDirection: "row",
+                    justifyContent: "space-between"
                   }}
                 >
                   <Text style={styles.descriptionStyle}>Advance Paid</Text>
@@ -165,8 +168,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 </View>
                 <View
                   style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
+                    flexDirection: "row",
+                    justifyContent: "space-between"
                   }}
                 >
                   <Text style={styles.descriptionStyle}>Balance Remaining</Text>
@@ -179,7 +182,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                     source={{ uri: data.doctorInfo.photoUrl }}
                     style={{
                       width: 80,
-                      height: 80,
+                      height: 80
                     }}
                   />
                 )}
@@ -188,24 +191,24 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           </View>
           <StickyBottomComponent defaultBG style={{ paddingHorizontal: 0 }}>
             <Button
-              title={'RESCHEDULE'}
+              title={"RESCHEDULE"}
               style={{
                 flex: 0.5,
                 marginLeft: 20,
                 marginRight: 8,
-                backgroundColor: 'white',
+                backgroundColor: "white"
               }}
-              titleTextStyle={{ color: '#fc9916' }}
+              titleTextStyle={{ color: "#fc9916" }}
               onPress={() => {
                 setdisplayoverlay(true);
               }}
             />
             <Button
-              title={'FILL CASE SHEET'}
+              title={"FILL CASE SHEET"}
               style={{ flex: 0.5, marginRight: 20, marginLeft: 8 }}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.ChatRoom, {
-                  data: data,
+                  data: data
                 });
               }}
             />
@@ -214,14 +217,14 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         {cancelAppointment && (
           <View
             style={{
-              position: 'absolute',
+              position: "absolute",
               height: height,
               width: width,
               flex: 1,
               top: 0,
               left: 0,
               right: 0,
-              bottom: 0,
+              bottom: 0
             }}
           >
             <TouchableOpacity
@@ -230,7 +233,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               }}
             >
               <View
-                style={{ margin: 0, height: height, width: width, backgroundColor: 'transparent' }}
+                style={{
+                  margin: 0,
+                  height: height,
+                  width: width,
+                  backgroundColor: "transparent"
+                }}
               >
                 <TouchableOpacity
                   onPress={() => {
@@ -240,23 +248,23 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 >
                   <View
                     style={{
-                      backgroundColor: 'white',
+                      backgroundColor: "white",
                       width: 201,
                       height: 55,
                       marginLeft: width - 221,
                       marginTop: 64,
                       borderRadius: 10,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      ...theme.viewStyles.shadowStyle,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      ...theme.viewStyles.shadowStyle
                     }}
                   >
                     <Text
                       style={{
-                        backgroundColor: 'white',
-                        color: '#02475b',
+                        backgroundColor: "white",
+                        color: "#02475b",
                         ...theme.fonts.IBMPlexSansMedium(16),
-                        textAlign: 'center',
+                        textAlign: "center"
                       }}
                     >
                       Cancel Appointment
@@ -269,17 +277,17 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         )}
         {showCancelPopup && (
           <BottomPopUp
-            title={'Hi, Surj :)'}
+            title={"Hi, Surj :)"}
             description={
-              'Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full refund!'
+              "Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full refund!"
             }
           >
             <View
               style={{
-                flexDirection: 'row',
+                flexDirection: "row",
                 marginHorizontal: 20,
-                justifyContent: 'space-between',
-                alignItems: 'flex-end',
+                justifyContent: "space-between",
+                alignItems: "flex-end"
               }}
             >
               <View style={{ height: 60 }}>
@@ -290,7 +298,9 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                     setdisplayoverlay(true);
                   }}
                 >
-                  <Text style={styles.gotItTextStyles}>{'RESCHEDULE INSTEAD'}</Text>
+                  <Text style={styles.gotItTextStyles}>
+                    {"RESCHEDULE INSTEAD"}
+                  </Text>
                 </TouchableOpacity>
               </View>
               <View style={{ height: 60 }}>
@@ -300,7 +310,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                     setShowCancelPopup(false);
                   }}
                 >
-                  <Text style={styles.gotItTextStyles}>{'CANCEL CONSULT'}</Text>
+                  <Text style={styles.gotItTextStyles}>{"CANCEL CONSULT"}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -311,10 +321,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             setdisplayoverlay={() => setdisplayoverlay(false)}
             navigation={props.navigation}
             doctor={doctorDetails ? doctorDetails : null}
-            patientId={currentPatient ? currentPatient.id : ''}
-            clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
+            patientId={currentPatient ? currentPatient.id : ""}
+            clinics={
+              doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []
+            }
             doctorId={doctorDetails && doctorDetails.id}
-            renderTab={'Visit Clinic'}
+            renderTab={"Visit Clinic"}
           />
         )}
       </View>
