@@ -116,7 +116,8 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   cross: {
     position: 'absolute',
-    right: 0,
+    right: -5,
+    minWidth: 20,
     top: -9,
     fontSize: 18,
     color: '#02475b',
@@ -136,7 +137,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     fontSize: 16,
     color: '#02475b',
     fontWeight: 500,
-    marginBottom: 20,
+    marginBottom: 30,
     '& button': {
       border: '1px solid #00b38e',
       padding: '5px 10px',
@@ -147,9 +148,13 @@ const useStyles = makeStyles((theme: Theme) => ({
       color: '#00b38e',
       backgroundColor: '#fff',
     },
+    '& input': {
+      paddingTop: 0,
+      paddingBottom: 5,
+    },
   },
   helpText: {
-    paddingLeft: 20,
+    paddingLeft: 0,
     paddingRight: 20,
   },
   dialogActions: {
@@ -203,6 +208,9 @@ const useStyles = makeStyles((theme: Theme) => ({
   nodatafound: {
     fontSize: 14,
     margin: '10px 0 10px 4px',
+  },
+  symptomCaption: {
+    marginLeft: 20,
   },
 }));
 interface errorObject {
@@ -361,7 +369,7 @@ export const Symptoms: React.FC = (props) => {
               ))}
           </List>
         ) : (
-          <div className={classes.nodatafound}>NO data Found</div>
+          <div className={classes.nodatafound}>No data Found</div>
         )}
 
         <AphButton
@@ -420,7 +428,7 @@ export const Symptoms: React.FC = (props) => {
                           )}
                         </div>
                       </div>
-                      <div>
+                      <div className={classes.symptomCaption}>
                         <h6>Since?</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
@@ -442,7 +450,7 @@ export const Symptoms: React.FC = (props) => {
                           )}
                         </div>
                       </div>
-                      <div>
+                      <div className={classes.symptomCaption}>
                         <h6>How often?</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
@@ -464,7 +472,7 @@ export const Symptoms: React.FC = (props) => {
                           )}
                         </div>
                       </div>
-                      <div>
+                      <div className={classes.symptomCaption}>
                         <h6>Severity</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField

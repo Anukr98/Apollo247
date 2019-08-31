@@ -111,11 +111,19 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     suggestion: {
       display: 'block',
+      overflow: 'hidden',
+      borderBottom: '1px solid rgba(2,71,91,0.1)',
+      '&:hover': {
+        '& div': {
+          backgroundColor: '#f0f4f5 !important',
+        },
+      },
     },
     suggestionsList: {
       margin: 0,
       padding: 0,
       listStyleType: 'none',
+      borderRadius: 10,
     },
     divider: {
       height: theme.spacing(2),
@@ -186,6 +194,11 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
+    searchpopup: {
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
+      marginTop: 2,
+    },
   })
 );
 
@@ -244,7 +257,7 @@ export const DiagnosticPrescription: React.FC = () => {
     <Typography component="div" className={classes.contentContainer}>
       <Typography component="div" className={classes.column}>
         <Typography component="h5" variant="h5">
-          Diagnosed Medical Condition
+          Diagnostics
         </Typography>
         <Typography component="div" className={classes.listContainer}>
           {selectedValues !== null &&
@@ -255,7 +268,7 @@ export const DiagnosticPrescription: React.FC = () => {
                 key={idx}
                 label={item!.name}
                 onDelete={() => {}}
-                deleteIcon={<img src={require('images/ic_selected.svg')} alt="" />}
+                deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
               />
             ))}
         </Typography>
@@ -268,7 +281,7 @@ export const DiagnosticPrescription: React.FC = () => {
             color="primary"
             onClick={() => showAddConditionHandler(true)}
           >
-            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD CONDITION
+            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD DIAGNOSTICS
           </AphButton>
         )}
         {showAddCondition && (
@@ -297,7 +310,7 @@ export const DiagnosticPrescription: React.FC = () => {
               suggestion: classes.suggestion,
             }}
             renderSuggestionsContainer={(options) => (
-              <Paper {...options.containerProps} square>
+              <Paper {...options.containerProps} square className={classes.searchpopup}>
                 {options.children}
               </Paper>
             )}

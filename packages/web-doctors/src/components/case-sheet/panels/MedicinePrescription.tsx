@@ -248,7 +248,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 16,
       color: '#02475b',
       fontWeight: 500,
-      marginBottom: 20,
+      marginBottom: 10,
       '& button': {
         border: '1px solid #00b38e',
         padding: '5px 10px',
@@ -273,8 +273,9 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#fff !important',
     },
     helpText: {
-      paddingLeft: 20,
+      paddingLeft: 0,
       paddingRight: 20,
+      paddingBottom: 10,
     },
     medicineDilog: {
       '& .dialogBoxClose': {
