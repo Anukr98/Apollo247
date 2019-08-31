@@ -1,9 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, SafeAreaView, View, TouchableOpacity, Text, Switch } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { More } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import {
+  GET_NOTIFICATION_SETTINGS,
+  SAVE_NOTIFICATION_SETTINGS,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useQuery, useApolloClient } from 'react-apollo-hooks';
+import {
+  getPatientNotificationSettings,
+  getPatientNotificationSettings_getPatientNotificationSettings_notificationSettings,
+} from '@aph/mobile-patients/src/graphql/types/getPatientNotificationSettings';
+import {
+  savePatientNotificationSettings,
+  savePatientNotificationSettingsVariables,
+} from '@aph/mobile-patients/src/graphql/types/savePatientNotificationSettings';
 
 const styles = StyleSheet.create({
   textStyle: {
@@ -86,16 +100,94 @@ const NotificationArray: NotificationArray[] = [
 
 export interface NotificationSettingsProps extends NavigationScreenProps {}
 export const NotificationSettings: React.FC<NotificationSettingsProps> = (props) => {
+  const [notifications, setnotifications] = useState<
+    getPatientNotificationSettings_getPatientNotificationSettings_notificationSettings
+  >();
+  const [commissionNotification, setcommissionNotification] = useState<boolean>(false);
+  const [messageFromDoctorNotification, setmessageFromDoctorNotification] = useState<boolean>(
+    false
+  );
+
+  const [playNotificationSound, setplayNotificationSound] = useState<boolean>(false);
+  const [
+    reScheduleAndCancellationNotification,
+    setreScheduleAndCancellationNotification,
+  ] = useState<boolean>(false);
+  const [paymentNotification, setpaymentNotification] = useState<boolean>(false);
+  const [upcomingAppointmentReminders, setupcomingAppointmentReminders] = useState<boolean>(false);
+
+  const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
+
+  console.log(currentPatient);
+  const { data, error } = useQuery<getPatientNotificationSettings>(GET_NOTIFICATION_SETTINGS, {
+    variables: {
+      patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+    },
+  });
+  if (error) {
+    console.log('error', error);
+  } else {
+    console.log(data);
+    if (
+      data &&
+      data.getPatientNotificationSettings &&
+      data.getPatientNotificationSettings.notificationSettings &&
+      notifications !== data.getPatientNotificationSettings.notificationSettings
+    ) {
+      console.log(data, 'setnotifications');
+
+      setnotifications(data.getPatientNotificationSettings.notificationSettings);
+    }
+  }
+
+  const saveData = useCallback(() => {
+    client
+      .mutate<savePatientNotificationSettings, savePatientNotificationSettingsVariables>({
+        mutation: SAVE_NOTIFICATION_SETTINGS,
+        variables: {
+          notificationSettingsInput: {
+            patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+            commissionNotification,
+            messageFromDoctorNotification,
+            playNotificationSound,
+            reScheduleAndCancellationNotification,
+            paymentNotification,
+            upcomingAppointmentReminders,
+          },
+        },
+      })
+      .then(({ data }) => {
+        console.log(data, 'result');
+      })
+      .catch((error) => {
+        console.log('Error occured', { error });
+      });
+  }, [
+    client,
+    commissionNotification,
+    currentPatient,
+    messageFromDoctorNotification,
+    paymentNotification,
+    playNotificationSound,
+    reScheduleAndCancellationNotification,
+    upcomingAppointmentReminders,
+  ]);
+
+  useEffect(() => {
+    saveData();
+  }, [saveData]);
+
   const renderNotificationView = () => {
     return (
       <View style={styles.containerStyle}>
         {NotificationArray.map((serviceTitle, i) => (
           <View key={i} style={{}}>
-            <TouchableOpacity key={i} onPress={() => {}}>
+            <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
               <>
                 <View style={styles.viewRowStyle} key={i}>
                   <Text style={styles.textStyle}>{serviceTitle.title}</Text>
-                  <Switch />
+                  <Switch value={false} onValueChange={(value) => console.log(value)} />
                 </View>
                 {i + 1 !== NotificationArray.length && (
                   <View
@@ -123,7 +215,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
         leftIcon="backArrow"
         title="NOTIFICATION SETTINGS"
         rightComponent={
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity activeOpacity={1} onPress={() => {}}>
             <More />
           </TouchableOpacity>
         }

@@ -202,7 +202,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             <TextInputComponent label={'Date Of Birth'} noInput={true} />
             <View style={{ marginTop: -5 }}>
               <View style={{ paddingTop: 0, paddingBottom: 10 }}>
-                <TouchableOpacity
+                <TouchableOpacity activeOpacity={1}
                   style={styles.placeholderViewStyle}
                   onPress={() => {
                     Keyboard.dismiss();

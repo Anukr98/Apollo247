@@ -44,6 +44,7 @@ export interface CapsuleViewProps {
 export const CapsuleView: React.FC<CapsuleViewProps> = (props) => {
   return (
     <TouchableOpacity
+      activeOpacity={1}
       style={[styles.containerStyles, props.style, !props.isActive ? styles.disabledStyle : null]}
       // onPress={props.isActive ? () => {} : props.onPress}
       // activeOpacity={props.isActive ? 1 : 0.6}
@@ -55,7 +56,7 @@ export const CapsuleView: React.FC<CapsuleViewProps> = (props) => {
           props.titleTextStyle,
         ]}
       >
-        {props.title}
+        {props.title || 'hi'}
       </Text>
     </TouchableOpacity>
   );

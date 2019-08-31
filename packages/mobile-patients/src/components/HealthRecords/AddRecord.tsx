@@ -63,7 +63,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const renderImagesRow = (data: PickerImage, i: number) => {
     return (
-      <TouchableOpacity key={i} onPress={() => {}}>
+      <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,
@@ -96,7 +96,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 .pop()}
             </Text>
           </View>
-          <TouchableOpacity
+          <TouchableOpacity activeOpacity={1}
             style={{
               width: 40,
               paddingHorizontal: 8,

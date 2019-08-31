@@ -82,7 +82,7 @@ export const WeekView: ForwardRefExoticComponent<
     const isDiabled = props.minDate ? props.minDate >= new Date(item) : false;
 
     return (
-      <TouchableOpacity onPress={() => props.onTapDate(item)} style={[styles.viewStyle]}>
+      <TouchableOpacity activeOpacity={1} onPress={() => props.onTapDate(item)} style={[styles.viewStyle]}>
         <View
           style={{
             height: 32,

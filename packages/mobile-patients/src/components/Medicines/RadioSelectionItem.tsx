@@ -40,7 +40,7 @@ export interface RadioSelectionItemProps {
 
 export const RadioSelectionItem: React.FC<RadioSelectionItemProps> = (props) => {
   return (
-    <TouchableOpacity
+    <TouchableOpacity activeOpacity={1}
       onPress={() => props.onPress(!props.isSelected)}
       style={[styles.radioButtonContainer, props.containerStyle]}
     >

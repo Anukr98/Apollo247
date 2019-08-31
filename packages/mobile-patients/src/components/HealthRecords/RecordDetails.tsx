@@ -240,10 +240,10 @@ WBC: Within normal limits. No atypical WBCs/blasts seen`}</Text>
             leftIcon="backArrow"
             rightComponent={
               <View style={{ flexDirection: 'row' }}>
-                <TouchableOpacity style={{ marginRight: 20 }} onPress={() => {}}>
+                <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
                   <ShareGreen />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => {}}>
+                <TouchableOpacity activeOpacity={1} onPress={() => {}}>
                   <Download />
                 </TouchableOpacity>
               </View>
