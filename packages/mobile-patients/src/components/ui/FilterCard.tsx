@@ -92,7 +92,7 @@ export const FilterCard: React.FC<FilterCardProps> = (props) => {
             <Text style={styles.leftText}>{label}</Text>
             {label === 'Availability' && (
               <View style={{ flex: 1, alignItems: 'flex-end', marginRight: 20 }}>
-                <TouchableOpacity onPress={() => setshowCalander(!showCalander)}>
+                <TouchableOpacity activeOpacity={1} onPress={() => setshowCalander(!showCalander)}>
                   {showCalander ? <CalendarClose /> : <CalendarShow />}
                 </TouchableOpacity>
               </View>

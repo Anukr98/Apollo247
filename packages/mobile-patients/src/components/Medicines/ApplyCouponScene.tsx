@@ -146,7 +146,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
 
   const renderRadioButtonList = () => {
     return couponsArray.map((coupon, i) => (
-      <TouchableOpacity style={styles.radioButtonContainer} key={i}>
+      <TouchableOpacity activeOpacity={1} style={styles.radioButtonContainer} key={i}>
         {isSelected ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
         <View style={styles.radioButtonTitleDescContainer}>
           <Text style={styles.radioButtonTitle}>{coupon.code}</Text>

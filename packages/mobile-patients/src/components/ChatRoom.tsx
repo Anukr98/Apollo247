@@ -1213,7 +1213,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           backgroundColor: 'transparent',
         }}
       >
-        <TouchableOpacity
+        <TouchableOpacity activeOpacity={1}
           onPress={() => {
             changeAudioStyles();
           }}
@@ -1295,7 +1295,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             left: 20,
           }}
         >
-          <TouchableOpacity
+          <TouchableOpacity activeOpacity={1}
             onPress={() => {
               setChatReceived(false);
 
@@ -1357,10 +1357,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             width: width - 116,
           }}
         >
-          {/* <TouchableOpacity onPress={() => {}}>
+          {/* <TouchableOpacity activeOpacity={1} onPress={() => {}}>
             <SpeakerOn style={{ width: 60, height: 60 }} />
           </TouchableOpacity> */}
-          <TouchableOpacity
+          <TouchableOpacity activeOpacity={1}
             onPress={() => {
               mute === true ? setMute(false) : setMute(true);
             }}
@@ -1371,7 +1371,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <MuteIcon style={{ height: 60, width: 60 }} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity
+          <TouchableOpacity activeOpacity={1}
             onPress={() => {
               setIsAudioCall(false);
               stopTimer();
@@ -1435,14 +1435,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           justifyContent: 'space-between',
         }}
       >
-        <TouchableOpacity
+        <TouchableOpacity activeOpacity={1}
           onPress={() => {
             changeVideoStyles();
           }}
         >
           <FullScreenIcon style={{ width: 40, height: 40 }} />
         </TouchableOpacity>
-        <TouchableOpacity
+        <TouchableOpacity activeOpacity={1}
           onPress={() => {
             setIsCall(false);
             setMute(true);
@@ -1543,7 +1543,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           zIndex: 1000,
         }}
       >
-        <TouchableOpacity
+        <TouchableOpacity activeOpacity={1}
           onPress={() => {
             setTalkStyles({
               flex: 1,
@@ -1625,7 +1625,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             justifyContent: 'space-between',
           }}
         >
-          <TouchableOpacity
+          <TouchableOpacity activeOpacity={1}
             onPress={() => {
               cameraPosition === 'front' ? setCameraPosition('back') : setCameraPosition('front');
             }}
@@ -1636,7 +1636,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <FrontCameraIcon style={{ height: 60, width: 60 }} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity
+          <TouchableOpacity activeOpacity={1}
             onPress={() => {
               showVideo === true ? setShowVideo(false) : setShowVideo(true);
             }}
@@ -1647,7 +1647,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <VideoOffIcon style={{ height: 60, width: 60 }} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity
+          <TouchableOpacity activeOpacity={1}
             onPress={() => {
               mute === true ? setMute(false) : setMute(true);
             }}
@@ -1658,7 +1658,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <MuteIcon style={{ height: 60, width: 60 }} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity
+          <TouchableOpacity activeOpacity={1}
             onPress={() => {
               setIsCall(false);
               setMute(true);
@@ -1759,7 +1759,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           Incoming Call
         </Text>
-        <TouchableOpacity
+        <TouchableOpacity activeOpacity={1}
           style={{
             width: 40,
             height: 40,
@@ -1978,7 +1978,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   send();
                 }}
               />
-              <TouchableOpacity
+              <TouchableOpacity activeOpacity={1}
                 onPress={async () => {
                   if (messageText.length == 0) {
                     //Alert.alert('Apollo', 'Please write something to send');

@@ -2,7 +2,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { getDoctorDetailsById_getDoctorDetailsById_specialty } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Image,
   StyleProp,
@@ -14,7 +14,10 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../../theme/theme';
-import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
+import {
+  GetDoctorNextAvailableSlot,
+  GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots,
+} from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { useQuery } from 'react-apollo-hooks';
 import { NEXT_AVAILABLE_SLOT } from '@aph/mobile-patients/src/graphql/profiles';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
@@ -99,61 +102,120 @@ export interface DoctorCardProps extends NavigationScreenProps {
   onPress?: (doctorId: string) => void;
   displayButton?: boolean;
   style?: StyleProp<ViewStyle>;
+  doctorAvailalbeSlots?:
+    | (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[]
+    | null;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>();
   const [availableTime, setavailableTime] = useState<string>('');
 
-  const todayDate = new Date().toISOString().slice(0, 10);
-  const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
-    fetchPolicy: 'no-cache',
-    variables: {
-      DoctorNextAvailableSlotInput: {
-        doctorIds: props.rowData ? [props.rowData.id] : [],
-        availableDate: todayDate,
-      },
-    },
-  });
+  const [doctorAvailalbeSlots, setdoctorAvailalbeSlots] = useState<
+    (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[] | null
+  >([]);
+  const rowData = props.rowData;
 
-  if (availability.error) {
-    console.log('error', availability.error);
-  } else {
-    if (
-      availability &&
-      availability.data &&
-      availability.data.getDoctorNextAvailableSlot &&
-      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
-      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
-      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
-      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot &&
-      availableInMin === undefined
-    ) {
-      const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
-        .availableSlot;
-      console.log(nextSlot, 'nextSlot dd');
-      // const ISOFormat = nextSlot; //`${todayDate}T${nextSlot}:48.000Z`;
-      const formatedTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('HH:mm');
-      let timeDiff: number = 0;
-      const time = formatedTime.split(':');
-      const today: Date = new Date();
-      const date2: Date = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate(),
-        Number(time[0]),
-        Number(time[1])
-      );
-      if (date2 && today) {
-        timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+  const setAvailability = useCallback(
+    (
+      doctorAvailalbeSlots:
+        | (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[]
+        | null
+    ) => {
+      console.log(doctorAvailalbeSlots, 'doctorAvailalbeSlots', rowData);
+      const filterData = doctorAvailalbeSlots
+        ? doctorAvailalbeSlots.filter((item) => {
+            if (item && rowData) {
+              return item.doctorId === rowData.id;
+            }
+          })
+        : [];
+      console.log(filterData, 'filterData');
+      if (filterData.length > 0 && filterData[0]!.availableSlot) {
+        const nextSlot = filterData[0] ? filterData[0]!.availableSlot : ''; //availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
+
+        console.log(nextSlot, 'nextSlot dd');
+        // const ISOFormat = nextSlot; //`${todayDate}T${nextSlot}:48.000Z`;
+        const formatedTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('HH:mm');
+        let timeDiff: number = 0;
+        const time = formatedTime.split(':');
+        const today: Date = new Date();
+        const date2: Date = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          Number(time[0]),
+          Number(time[1])
+        );
+        if (date2 && today) {
+          timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+        }
+        if (timeDiff < 0) {
+          const availableTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('h:mm A');
+          setavailableTime(availableTime);
+        }
+        setavailableInMin(timeDiff);
       }
-      if (timeDiff < 0) {
-        const availableTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('h:mm A');
-        setavailableTime(availableTime);
-      }
-      setavailableInMin(timeDiff);
+    },
+    [rowData]
+  );
+
+  useEffect(() => {
+    if (props.doctorAvailalbeSlots && props.doctorAvailalbeSlots !== doctorAvailalbeSlots) {
+      setdoctorAvailalbeSlots(props.doctorAvailalbeSlots);
+      setAvailability(props.doctorAvailalbeSlots);
     }
-  }
+  }, [props.doctorAvailalbeSlots, doctorAvailalbeSlots, setAvailability]);
+
+  // const todayDate = new Date().toISOString().slice(0, 10);
+  // const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
+  //   fetchPolicy: 'no-cache',
+  //   variables: {
+  //     DoctorNextAvailableSlotInput: {
+  //       doctorIds: props.rowData ? [props.rowData.id] : [],
+  //       availableDate: todayDate,
+  //     },
+  //   },
+  // });
+
+  // if (availability.error) {
+  //   console.log('error', availability.error);
+  // } else {
+  //   if (
+  //     availability &&
+  //     availability.data &&
+  //     availability.data.getDoctorNextAvailableSlot &&
+  //     availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+  //     availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
+  //     availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+  //     availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot &&
+  //     availableInMin === undefined
+  //   ) {
+  //     const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
+  //       .availableSlot;
+  //     console.log(nextSlot, 'nextSlot dd');
+  //     // const ISOFormat = nextSlot; //`${todayDate}T${nextSlot}:48.000Z`;
+  //     const formatedTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('HH:mm');
+  //     let timeDiff: number = 0;
+  //     const time = formatedTime.split(':');
+  //     const today: Date = new Date();
+  //     const date2: Date = new Date(
+  //       today.getFullYear(),
+  //       today.getMonth(),
+  //       today.getDate(),
+  //       Number(time[0]),
+  //       Number(time[1])
+  //     );
+  //     if (date2 && today) {
+  //       timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+  //     }
+  //     if (timeDiff < 0) {
+  //       const availableTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('h:mm A');
+  //       setavailableTime(availableTime);
+  //     }
+  //     setavailableInMin(timeDiff);
+  //   }
+  // }
 
   const navigateToDetails = (id: string, params?: {}) => {
     props.navigation.navigate(AppRoutes.DoctorDetails, {
@@ -161,6 +223,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       ...params,
     });
   };
+
   const availabilityText = () => {
     if (availableInMin) {
       if (availableInMin === 0) {
@@ -177,7 +240,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     }
   };
 
-  const rowData = props.rowData;
   if (rowData) {
     return (
       <TouchableOpacity

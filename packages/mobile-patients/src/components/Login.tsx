@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     color: theme.colors.INPUT_TEXT,
     paddingRight: 6,
     lineHeight: 28,
-    paddingTop: Platform.OS === 'ios' ? 0 : 4,
+    paddingTop: Platform.OS === 'ios' ? 0 : 6,
     paddingBottom: Platform.OS === 'ios' ? 5 : 0,
   },
   inputStyle: {

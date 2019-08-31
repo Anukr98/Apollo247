@@ -90,7 +90,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           padding: 16,
         }}
       >
-        <TouchableOpacity
+        <TouchableOpacity activeOpacity={1}
           onPress={() => {
             setShowPopup(true);
           }}
@@ -137,7 +137,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   };
 
   const Popup = () => (
-    <TouchableOpacity
+    <TouchableOpacity activeOpacity={1}
       style={{
         paddingVertical: 9,
         position: 'absolute',

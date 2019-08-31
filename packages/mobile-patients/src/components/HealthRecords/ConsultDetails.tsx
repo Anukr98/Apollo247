@@ -77,44 +77,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     getCaseSheet_getCaseSheet_caseSheetDetails
   >();
 
-  // const client = useApolloClient();
-
-  // const fetchData = useCallback(() => {
-  //   client
-  //     .query<getCaseSheet>({
-  //       query: GET_CASESHEET_DETAILS,
-  //       fetchPolicy: 'no-cache',
-  //       variables: {
-  //         appointmentId: '9aed38c8-d330-40bf-b2cb-1caebffeb144',
-  //       },
-  //     })
-  //     .then(({ data: { getCaseSheet } }) => {
-  //       // set to context
-  //       console.log('getCaseSheet', getCaseSheet);
-  //       if (
-  //         getCaseSheet &&
-  //         getCaseSheet.caseSheetDetails &&
-  //         caseSheetDetails !== getCaseSheet.caseSheetDetails
-  //       ) {
-  //         setcaseSheetDetails(getCaseSheet.caseSheetDetails);
-  //       }
-  //     })
-  //     .catch((e) => {
-  //       const error = JSON.parse(JSON.stringify(e));
-  //       console.log(e, error);
-  //     });
-  // }, [client, caseSheetDetails]);
-
-  // useEffect(() => {
-  //   // fetchData();
-  // }, [fetchData]);
-
   const getData = useQuery<getCaseSheet>(GET_CASESHEET_DETAILS, {
     fetchPolicy: 'no-cache',
     variables: {
-      appointmentId: '9aed38c8-d330-40bf-b2cb-1caebffeb144',
+      appointmentId: 'c2d9a989-5763-4eb3-8923-0a3700441eef',
     },
   });
+  console.log(getData, 'getData');
 
   if (getData.data) {
     if (
@@ -124,7 +93,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       getData.data.getCaseSheet.caseSheetDetails &&
       caseSheetDetails !== getData.data.getCaseSheet.caseSheetDetails
     ) {
-      console.log(getData.data.getCaseSheet.caseSheetDetails);
+      console.log(getData.data.getCaseSheet.caseSheetDetails, 'caseSheetDetails');
       setcaseSheetDetails(getData.data.getCaseSheet.caseSheetDetails);
     }
   } else {
@@ -141,31 +110,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     consult_info: '03 Aug 2019, Online Consult',
     description: 'This is a follow-up consult to the Clinic Visit on 27 Jul 2019',
   };
-
-  const symptoms = [
-    {
-      label: 'Cold & Cough',
-      data: 'Since: Last 4 days\nHow Often: Throughout the day\nSeverity: Moderate',
-    },
-    {
-      label: 'Fever',
-      data: 'Since: Last 2 days\nHow Often: In the evening\nSeverity: High',
-    },
-    {
-      label: 'Nausea',
-      data: 'Since: Last 2 days\nHow Often: In the evening\nSeverity: High',
-    },
-  ];
-  const prescriptions = [
-    {
-      label: 'Sompraz-D Cap',
-      data: '1 Tab\n1 times a day(morning) for 7 days\nBefore food',
-    },
-    {
-      label: 'Redixin Plus Mouthwash',
-      data: 'Throat Gargles\n3 times a day(morning) for 5 days',
-    },
-  ];
 
   const followUp = [
     {
@@ -220,7 +164,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderSymptoms = () => {
-    if (caseSheetDetails && caseSheetDetails.symptoms)
+    if (caseSheetDetails && caseSheetDetails.symptoms && caseSheetDetails.symptoms.length > 0)
       return (
         <View
           style={{
@@ -234,15 +178,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           >
             <View style={styles.cardViewStyle}>
               {caseSheetDetails.symptoms.map((item) => {
-                if (item)
+                if (item && item.symptom)
                   return (
                     <View>
                       <View style={styles.labelViewStyle}>
                         <Text style={styles.labelStyle}>{item.symptom}</Text>
                       </View>
-                      <Text style={styles.dataTextStyle}>Since: {item.since}</Text>
-                      <Text style={styles.dataTextStyle}>How Often: {item.howOften}</Text>
-                      <Text style={styles.dataTextStyle}>Severity: {item.severity}</Text>
+                      <Text style={styles.dataTextStyle}>
+                        {`Since: ${item.since}\nHow Often: ${item.howOften}\nSeverity: ${item.severity}`}
+                      </Text>
                     </View>
                   );
               })}
@@ -253,100 +197,151 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderPrescriptions = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="PRESCRIPTION"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
-        >
-          <View style={styles.cardViewStyle}>
-            {prescriptions.map((item) => {
-              return (
-                <View>
-                  <View style={styles.labelViewStyle}>
-                    <Text style={styles.labelStyle}>{item.label}</Text>
-                  </View>
-                  <Text style={styles.dataTextStyle}>{item.data}</Text>
-                </View>
-              );
-            })}
-          </View>
-          <Text
-            style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
+    if (
+      caseSheetDetails &&
+      caseSheetDetails.medicinePrescription &&
+      caseSheetDetails.medicinePrescription.length > 0
+    )
+      return (
+        <View>
+          <CollapseCard
+            heading="PRESCRIPTION"
+            collapse={showPrescription}
+            onPress={() => setshowPrescription(!showPrescription)}
           >
-            {strings.health_records_home.order_medicine}
-          </Text>
-        </CollapseCard>
-      </View>
-    );
+            <View style={styles.cardViewStyle}>
+              {caseSheetDetails.medicinePrescription.map((item) => {
+                if (item)
+                  return (
+                    <View>
+                      <View style={styles.labelViewStyle}>
+                        <Text style={styles.labelStyle}>{item.medicineName}</Text>
+                      </View>
+                      <Text style={styles.dataTextStyle}>
+                        {item.medicineDosage}
+                        {item.medicineTimings
+                          ? `\n${
+                              item.medicineTimings.length
+                            } times a day (${item.medicineTimings.join(', ').toLowerCase()}) for ${
+                              item.medicineConsumptionDurationInDays
+                            } days\n`
+                          : ''}
+
+                        {item.medicineToBeTaken
+                          ? item.medicineToBeTaken
+                              .map(
+                                (item) =>
+                                  item &&
+                                  item
+                                    .split('_')
+                                    .join(' ')
+                                    .toLowerCase()
+                              )
+                              .join(', ')
+                          : ''}
+                      </Text>
+                    </View>
+                  );
+              })}
+              <Text
+                style={[
+                  theme.viewStyles.yellowTextStyle,
+                  { textAlign: 'right', paddingBottom: 16 },
+                ]}
+              >
+                {strings.health_records_home.order_medicine}
+              </Text>
+            </View>
+          </CollapseCard>
+        </View>
+      );
   };
 
   const renderDiagnosis = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="DIAGNOSIS"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
-        >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            <View>
-              <Text style={styles.labelStyle}>Acute Pharyngitis (unspecified)</Text>
+    if (caseSheetDetails && caseSheetDetails.diagnosis && caseSheetDetails.diagnosis.length > 0)
+      return (
+        <View>
+          <CollapseCard
+            heading="DIAGNOSIS"
+            collapse={showPrescription}
+            onPress={() => setshowPrescription(!showPrescription)}
+          >
+            <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
+              <View>
+                <Text style={styles.labelStyle}>
+                  {caseSheetDetails.diagnosis.map((item) => item && item.name).join(', ')}
+                </Text>
+              </View>
             </View>
-          </View>
-        </CollapseCard>
-      </View>
-    );
+          </CollapseCard>
+        </View>
+      );
   };
   const renderGenerealAdvice = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="GENERAL ADVICE"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
-        >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            <View>
-              <Text style={styles.labelStyle}>
-                {`1. Take adequate rest\n2. Take warm fluids / soft food, more frequently in small quantities\n3. Avoid cold / refrigerated food 4. Follow Prescription`}
-              </Text>
+    if (
+      caseSheetDetails &&
+      caseSheetDetails.otherInstructions &&
+      caseSheetDetails.otherInstructions.length > 0
+    )
+      return (
+        <View>
+          <CollapseCard
+            heading="GENERAL ADVICE"
+            collapse={showPrescription}
+            onPress={() => setshowPrescription(!showPrescription)}
+          >
+            <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
+              <View>
+                <Text style={styles.labelStyle}>
+                  {caseSheetDetails.otherInstructions
+                    .map((item, i) => {
+                      if (item && item.instruction !== '') {
+                        return `${i + 1}. ${item.instruction}`;
+                      }
+                    })
+                    .join('\n')}
+                </Text>
+              </View>
             </View>
-          </View>
-        </CollapseCard>
-      </View>
-    );
+          </CollapseCard>
+        </View>
+      );
   };
 
   const renderFollowUp = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="FOLLOW-UP"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
-        >
-          <View style={styles.cardViewStyle}>
-            {followUp.map((item) => {
-              return (
-                <View>
-                  <View style={styles.labelViewStyle}>
-                    <Text style={styles.labelStyle}>{item.label}</Text>
-                  </View>
-                  <Text style={styles.dataTextStyle}>{item.data}</Text>
-                </View>
-              );
-            })}
-          </View>
-          <Text
-            style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
+    if (caseSheetDetails && caseSheetDetails.followUp)
+      return (
+        <View>
+          <CollapseCard
+            heading="FOLLOW-UP"
+            collapse={showPrescription}
+            onPress={() => setshowPrescription(!showPrescription)}
           >
-            {strings.health_records_home.book_follow_up}
-          </Text>
-        </CollapseCard>
-      </View>
-    );
+            <View style={styles.cardViewStyle}>
+              <View>
+                <View style={styles.labelViewStyle}>
+                  <Text style={styles.labelStyle}>
+                    {caseSheetDetails.consultType === 'PHYSICAL'
+                      ? 'Clinic Visit'
+                      : 'Online Consult '}
+                  </Text>
+                </View>
+                <Text style={styles.dataTextStyle}>
+                  Recommended after {caseSheetDetails.followUpAfterInDays} days
+                </Text>
+              </View>
+              <Text
+                style={[
+                  theme.viewStyles.yellowTextStyle,
+                  { textAlign: 'right', paddingBottom: 16 },
+                ]}
+              >
+                {strings.health_records_home.book_follow_up}
+              </Text>
+            </View>
+          </CollapseCard>
+        </View>
+      );
   };
 
   const renderData = () => {
@@ -375,7 +370,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             title="PRESCRIPTION"
             leftIcon="backArrow"
             rightComponent={
-              <TouchableOpacity onPress={() => {}}>
+              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
                 <ShareGreen />
               </TouchableOpacity>
             }

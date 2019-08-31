@@ -355,7 +355,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     return (
       <View style={{ flexDirection: 'row' }}>
         {currentLocation === '' ? (
-          <TouchableOpacity onPress={() => fetchCurrentLocation()}>
+          <TouchableOpacity activeOpacity={1} onPress={() => fetchCurrentLocation()}>
             <LocationOff />
           </TouchableOpacity>
         ) : (
@@ -374,12 +374,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             >
               {currentLocation}
             </Text>
-            <TouchableOpacity onPress={() => setshowLocationpopup(true)}>
+            <TouchableOpacity activeOpacity={1} onPress={() => setshowLocationpopup(true)}>
               <LocationOn />
             </TouchableOpacity>
           </View>
         )}
-        <TouchableOpacity style={{ marginLeft: 20 }} onPress={() => setDisplayFilter(true)}>
+        <TouchableOpacity activeOpacity={1} style={{ marginLeft: 20 }} onPress={() => setDisplayFilter(true)}>
           <Filter />
         </TouchableOpacity>
       </View>

@@ -315,7 +315,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     return (
       <View style={{ marginTop: 10 }}>
         <View style={{ paddingTop: 5, paddingBottom: 10 }}>
-          <TouchableOpacity
+          <TouchableOpacity activeOpacity={1}
             onPress={() => {
               console.log('TouchableOpacity onpress');
               setShowPopup(!showPopup);

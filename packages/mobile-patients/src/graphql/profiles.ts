@@ -535,9 +535,8 @@ export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
 export const GET_NOTIFICATION_SETTINGS = gql`
   query getPatientNotificationSettings($patient: ID!) {
     getPatientNotificationSettings(patient: $patient) {
-      PatientNotificationSettings {
+      notificationSettings {
         id
-        patient
         commissionNotification
         messageFromDoctorNotification
         playNotificationSound
@@ -545,6 +544,16 @@ export const GET_NOTIFICATION_SETTINGS = gql`
         paymentNotification
         upcomingAppointmentReminders
       }
+    }
+  }
+`;
+
+export const SAVE_NOTIFICATION_SETTINGS = gql`
+  mutation savePatientNotificationSettings(
+    $notificationSettingsInput: SavePatientNotificationSettingsInput!
+  ) {
+    savePatientNotificationSettings(notificationSettingsInput: $notificationSettingsInput) {
+      status
     }
   }
 `;

@@ -66,7 +66,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             title="UPCOMING CLINIC VISIT"
             leftIcon="backArrow"
             rightComponent={
-              <TouchableOpacity onPress={() => {}}>
+              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
                 <More />
               </TouchableOpacity>
             }
