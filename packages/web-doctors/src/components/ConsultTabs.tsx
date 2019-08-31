@@ -441,6 +441,8 @@ export const ConsultTabs: React.FC = () => {
             setFollowUpAfterInDays,
             followUpDate,
             setFollowUpDate,
+            healthVault: casesheetInfo!.getCaseSheet!.patientDetails!.healthVault,
+            pastAppointments: casesheetInfo!.getCaseSheet!.pastAppointments,
           }}
         >
           <div className={classes.container}>
