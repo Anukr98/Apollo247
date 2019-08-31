@@ -5,6 +5,8 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+  GetCaseSheet_getCaseSheet_pastAppointments,
+  GetCaseSheet_getCaseSheet_patientDetails_healthVault,
 } from 'graphql/types/GetCaseSheet';
 import { createContext } from 'react';
 
@@ -58,6 +60,8 @@ export interface CaseSheetContextProps {
   setFollowUpAfterInDays: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
   followUpDate: string[];
   setFollowUpDate: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
+  healthVault: GetCaseSheet_getCaseSheet_patientDetails_healthVault[] | null;
+  pastAppointments: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
 }
 
 export const CaseSheetContext = createContext<CaseSheetContextProps>({
@@ -84,4 +88,6 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setFollowUpAfterInDays: () => {},
   followUpDate: [],
   setFollowUpDate: () => {},
+  healthVault: null,
+  pastAppointments: null,
 });

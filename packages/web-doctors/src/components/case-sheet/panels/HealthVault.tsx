@@ -118,39 +118,6 @@ const theme = createMuiTheme({
     },
   },
 });
-const tempData = [
-  {
-    imageUrls: require('images/patient_01.png'),
-    reportUrl: 'images/pdftest.pdf',
-  },
-  {
-    imageUrls: require('images/patient_01.png'),
-    reportUrl: 'images/pdftest.pdf',
-  },
-];
-const photoData = [
-  {
-    fileName: 'image001.jpg',
-    size: '5MB',
-    timestamp: '2019-08-05T11:05',
-    thumbnail: require('images/patient_01.png'),
-  },
-  {
-    fileName: 'image002.jpg',
-    size: '4.5MB',
-    timestamp: '2019-08-05T11:03',
-    thumbnail: require('images/patient_01.png'),
-  },
-];
-
-const reportData = [
-  {
-    fileName: 'bloodtest.pdf',
-    size: '5MB',
-    timestamp: '2019-08-05T11:05',
-    thumbnail: require('images/patient_01.png'),
-  },
-];
 
 const pastConsultationData = [
   {
@@ -285,6 +252,8 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 export const HealthVault: React.FC = () => {
   const classes = useStyles();
   const ischild: boolean = false;
+  const { healthVault, pastAppointments } = useContext(CaseSheetContext);
+
   return (
     <ThemeProvider theme={theme}>
       <Typography component="div" className={classes.vaultContainer}>
@@ -298,12 +267,12 @@ export const HealthVault: React.FC = () => {
               patientDetails.healthVault.length > 0 &&
               patientDetails!.healthVault.map( */
 
-            tempData.map((healthVault: any, index: any) => (
+            healthVault!.map((item, index) => (
               <ListItem key={index} className={classes.listItem}>
                 <ListItemAvatar>
                   <Avatar
-                    alt={healthVault.imageUrls}
-                    src={healthVault.imageUrls}
+                    alt={(item.imageUrls as unknown) as string}
+                    src={(item.imageUrls as unknown) as string}
                     className={classes.bigAvatar}
                   />
                 </ListItemAvatar>
@@ -311,14 +280,14 @@ export const HealthVault: React.FC = () => {
                   primary={
                     <Fragment>
                       <Typography component="h4" variant="h4" color="primary">
-                        {'fileName'}
+                        {item.imageUrls!.substr(item.imageUrls!.lastIndexOf('/') + 1)}
                       </Typography>
                     </Fragment>
                   }
                   secondary={
                     <Fragment>
                       <Typography component="h6" variant="h6">
-                        {'5MB'} | {'2019-01-01T11:30'}
+                        {/* {'5MB'} | {'2019-01-01T11:30'} */}
                       </Typography>
                     </Fragment>
                   }
@@ -336,13 +305,13 @@ export const HealthVault: React.FC = () => {
               patientDetails.healthVault &&
               patientDetails.healthVault.length > 0 &&
               patientDetails!.healthVault.map( */
-            tempData.map((healthVault: any, index: any) => (
+            healthVault!.map((item, index) => (
               <ListItem key={index} className={classes.listItem}>
                 <ListItemAvatar>
-                  <Link to={'/images/pdftest.pdf'} target="_blank">
+                  <Link to={(item.reportUrls as unknown) as string} target="_blank">
                     <Avatar
-                      alt={healthVault.reportUrl}
-                      src={healthVault.reportUrl}
+                      alt={(item.reportUrls as unknown) as string}
+                      src={(item.reportUrls as unknown) as string}
                       className={classes.bigAvatar}
                     />
                   </Link>
@@ -351,7 +320,7 @@ export const HealthVault: React.FC = () => {
                   primary={
                     <Fragment>
                       <Typography component="h4" variant="h4" color="primary">
-                        {'fileName'}
+                        {item.reportUrls!.substr(item.reportUrls!.lastIndexOf('/') + 1)}
                       </Typography>
                     </Fragment>
                   }
