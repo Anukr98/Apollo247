@@ -4,6 +4,7 @@ import {
   AppointmentSessions,
   CaseSheet,
   TransferAppointmentDetails,
+  RescheduleAppointmentDetails,
 } from 'consults-service/entities/';
 import {
   ConsultHours,
@@ -44,7 +45,13 @@ export const connect = async () => {
     },
     {
       name: 'consults-db',
-      entities: [Appointment, AppointmentSessions, CaseSheet, TransferAppointmentDetails],
+      entities: [
+        Appointment,
+        AppointmentSessions,
+        CaseSheet,
+        TransferAppointmentDetails,
+        RescheduleAppointmentDetails,
+      ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
       port: parseInt(process.env.CONSULTS_DB_PORT, 10),

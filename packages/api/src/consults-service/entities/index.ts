@@ -128,6 +128,12 @@ export class Appointment extends BaseEntity {
     (transferAppointmentDetails) => transferAppointmentDetails.appointment
   )
   transferAppointmentDetails: TransferAppointmentDetails[];
+
+  @OneToMany(
+    (type) => RescheduleAppointmentDetails,
+    (rescheduleAppointmentDetails) => rescheduleAppointmentDetails.appointment
+  )
+  rescheduleAppointmentDetails: RescheduleAppointmentDetails[];
 }
 //Appointment ends
 
@@ -290,3 +296,45 @@ export class TransferAppointmentDetails extends BaseEntity {
   }
 }
 //transfer apppointment ends
+
+//Reschedule-appointment starts
+@Entity()
+export class RescheduleAppointmentDetails extends BaseEntity {
+  @ManyToOne((type) => Appointment, (appointment) => appointment.rescheduleAppointmentDetails)
+  appointment: Appointment;
+
+  @Column()
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp' })
+  rescheduledDateTime: Date;
+
+  @Column({ type: 'text' })
+  rescheduleReason: string;
+
+  @Column()
+  rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE;
+
+  @Column({ nullable: true })
+  rescheduleInitiatedId: string;
+
+  @Column()
+  rescheduleStatus: TRANSFER_STATUS;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//Reschedule apppointment ends
