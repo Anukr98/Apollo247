@@ -80,6 +80,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  AsyncStorage,
 } from 'react-native';
 import { Slider } from 'react-native-elements';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
@@ -90,7 +91,8 @@ import {
   NavigationScreenProps,
 } from 'react-navigation';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import console = require('console');
+
+import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
 
 const styles = StyleSheet.create({
   casesheetView: {
@@ -480,7 +482,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const Appintmentdatetimeconsultpage = props.navigation.getParam('Appintmentdatetime');
   const AppId = props.navigation.getParam('AppId');
   const stastus = props.navigation.getParam('AppointmentStatus');
-
+  //const isDelegateLogin = props.navigation.getParam('DelegateNumberLoginSuccess');
   const [value, setValue] = useState<string>('');
   const [othervalue, setOthervalue] = useState<string>('');
   const [familyValues, setFamilyValues] = useState<any>([]);
@@ -520,7 +522,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const { isDelegateLogin, setIsDelegateLogin } = useAuth();
 
   const [consultationType, setConsultationType] = useState<'ONLINE' | 'PHYSICAL' | ''>('');
-
+  let Delegate = '';
   const [showstyles, setShowStyles] = useState<any>([
     {
       marginLeft: 16,
@@ -534,6 +536,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   ]);
   const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
+
+  console.log('isDelegateLogin', isDelegateLogin);
+  console.log('isDelegateLogin', isDelegateLogin);
 
   useEffect(() => {
     client
@@ -584,17 +589,19 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           _data.data.getCaseSheet!.caseSheetDetails!.medicinePrescription
         );
         setSwitchValue(_data.data.getCaseSheet!.caseSheetDetails!.followUp!);
-        if (_data.data.getCaseSheet!.caseSheetDetails!.followUpAfterInDays !== null) {
+        if (_data.data.getCaseSheet!.caseSheetDetails!.followUpAfterInDays! == null) {
           setSliderValue(2);
+        } else {
+          setSliderValue(parseInt(_data.data.getCaseSheet!.caseSheetDetails!.followUpAfterInDays!));
         }
-        setSliderValue(parseInt(_data.data.getCaseSheet!.caseSheetDetails!.followUpAfterInDays!));
+
         setValue(_data.data.getCaseSheet!.caseSheetDetails!.notes!);
-        if (_data.data.getCaseSheet!.caseSheetDetails!.followUpDate !== null) {
+        if (_data.data.getCaseSheet!.caseSheetDetails!.followUpDate! == null) {
           setSelectDate('dd/mm/yyyy');
         } else {
-          const val = moment(_data.data.getCaseSheet!.caseSheetDetails!.followUpDate!).format(
-            'DD/MM/YYYY'
-          );
+          const val = moment(
+            parseInt(_data.data.getCaseSheet!.caseSheetDetails!.followUpDate!)
+          ).format('DD/MM/YYYY');
           setSelectDate(val);
         }
 
@@ -660,18 +667,21 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     } else if (sliderValue == 8) {
       followUpAfterInDays = '7';
     } else {
-      followUpAfterInDays = 'custom';
+      followUpAfterInDays = '12';
     }
     console.log('followUpAfterInDays', followUpAfterInDays);
     let followUpDateValue = '';
     if (selectDate == 'mm/dd/yyyy') {
       followUpDateValue = '';
     } else {
-      followUpDateValue = new Date(selectDate).toUTCString();
+      followUpDateValue = moment(new Date(selectDate)).format('YYYY-MM-DD HH:mm:ss');
     }
-
+    console.log('selectDate', selectDate.replace(/\//g, '-'));
     console.log('followUpDateValue2', selectDate.replace(/\//g, '-'));
-    console.log('followUpDate', moment(new Date(selectDate)).format('YYYY-MM-DDTHH:mm:ss.sssZ'));
+    console.log(
+      'followUpDate',
+      moment(new Date(selectDate.replace(/\//g, '-'))).format('YYYY-MM-DD HH:mm:ss')
+    );
     console.log('followUpDateValue', followUpDateValue);
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
@@ -905,9 +915,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     <SymptonsCard
                       diseaseName={showdata.symptom}
                       icon={
-                        <TouchableOpacity onPress={() => removeSymptonData(showdata.symptom)}>
-                          <GreenRemove />
-                        </TouchableOpacity>
+                        isDelegateLogin ? null : (
+                          <TouchableOpacity onPress={() => removeSymptonData(showdata.symptom)}>
+                            <GreenRemove />
+                          </TouchableOpacity>
+                        )
                       }
                       days={`Since : ${showdata.since == null ? 'N/A' : showdata.since}`}
                       howoften={`How Often : ${
@@ -922,12 +934,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               );
             })
           )}
-          <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
-            <AddPlus />
-            <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddSymptons)}>
-              <Text style={styles.addDoctorText}>ADD SYMPTON</Text>
-            </TouchableOpacity>
-          </View>
+          {isDelegateLogin ? null : (
+            <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
+              <AddPlus />
+              <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddSymptons)}>
+                <Text style={styles.addDoctorText}>ADD SYMPTON</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </CollapseCard>
       </View>
     );
@@ -948,8 +962,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-  const renderJuniorDoctorNotes = () => {
-    if (isDelegateLogin) return null;
+  const renderJuniorDoctorNotes = (ss) => {
+    if (Delegate) return null;
     return (
       <View>
         <CollapseCard
@@ -993,21 +1007,27 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 <DiagnosicsCard
                   diseaseName={showdata.name}
                   icon={
-                    <TouchableOpacity onPress={() => removeDiagnosticPresecription(showdata.name)}>
-                      <Green />
-                    </TouchableOpacity>
+                    isDelegateLogin ? null : (
+                      <TouchableOpacity
+                        onPress={() => removeDiagnosticPresecription(showdata.name)}
+                      >
+                        <Green />
+                      </TouchableOpacity>
+                    )
                   }
                 />
               </View>
             );
           })
         )}
-        <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
-          <AddPlus />
-          <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddDiagnostics)}>
-            <Text style={styles.addDoctorText}>ADD DIAGNOSTICS</Text>
-          </TouchableOpacity>
-        </View>
+        {isDelegateLogin ? null : (
+          <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
+            <AddPlus />
+            <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddDiagnostics)}>
+              <Text style={styles.addDoctorText}>ADD DIAGNOSTICS</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </CollapseCard>
     );
   };
@@ -1034,9 +1054,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   <MedicalCard
                     diseaseName={showdata.medicineName}
                     icon={
-                      <TouchableOpacity onPress={() => passData(showdata)}>
-                        <View>{!pickData[showdata.id] ? <Selected /> : <Selected />}</View>
-                      </TouchableOpacity>
+                      isDelegateLogin ? null : (
+                        <TouchableOpacity onPress={() => passData(showdata)}>
+                          <View>{!pickData[showdata.id] ? <Selected /> : <Selected />}</View>
+                        </TouchableOpacity>
+                      )
                     }
                     tabDesc={
                       showdata.medicineInstructions +
@@ -1059,12 +1081,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             );
           })
         )}
-        <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 20 }}>
-          <AddPlus />
-          <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddMedicine)}>
-            <Text style={styles.addDoctorText}>ADD MEDICINE</Text>
-          </TouchableOpacity>
-        </View>
+        {isDelegateLogin ? null : (
+          <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 20 }}>
+            <AddPlus />
+            <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddMedicine)}>
+              <Text style={styles.addDoctorText}>ADD MEDICINE</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </CollapseCard>
     );
   };
@@ -1075,7 +1099,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           date={date}
           onPressDate={(date) => {
             console.log('android cale', moment(date).format('MM/DD/YYYY'), 'MM/DD/YYYY');
-            setSelectDate(moment(date).format('MM/DD/YYYY'));
+            setSelectDate(moment(date).format('YYYY-MM-DD'));
             setCalenderShow(!calenderShow);
             setShowStyles({
               marginLeft: 16,
@@ -1311,21 +1335,25 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   <DiagnosisCard
                     diseaseName={showdata.name}
                     icon={
-                      <TouchableOpacity onPress={() => removeDiagonsisValue(showdata.name)}>
-                        <DiagonisisRemove />
-                      </TouchableOpacity>
+                      isDelegateLogin ? null : (
+                        <TouchableOpacity onPress={() => removeDiagonsisValue(showdata.name)}>
+                          <DiagonisisRemove />
+                        </TouchableOpacity>
+                      )
                     }
                   />
                 );
               })
             )}
           </View>
-          <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
-            <AddPlus />
-            <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddCondition)}>
-              <Text style={styles.addDoctorText}>ADD CONDITION</Text>
-            </TouchableOpacity>
-          </View>
+          {isDelegateLogin ? null : (
+            <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
+              <AddPlus />
+              <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddCondition)}>
+                <Text style={styles.addDoctorText}>ADD CONDITION</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </CollapseCard>
       </View>
     );
@@ -1353,9 +1381,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   <DiagnosicsCard
                     diseaseName={showdata.instruction}
                     icon={
-                      <TouchableOpacity onPress={() => removeInstrution(showdata.instruction)}>
-                        <DiagonisisRemove />
-                      </TouchableOpacity>
+                      isDelegateLogin ? null : (
+                        <TouchableOpacity onPress={() => removeInstrution(showdata.instruction)}>
+                          <DiagonisisRemove />
+                        </TouchableOpacity>
+                      )
                     }
                   />
                 </View>
@@ -1420,7 +1450,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 </TouchableOpacity>
               </View>
             </View>
-          ) : (
+          ) : isDelegateLogin ? null : (
             <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
               <AddPlus />
               <TouchableOpacity onPress={() => setOtherInstructionsAdd(!otherInstructionsadd)}>
@@ -1550,7 +1580,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {renderSymptonsView()}
           {renderPatientHistoryLifestyle()}
           {renderPatientHealthWallet()}
-          {renderJuniorDoctorNotes()}
+
+          {isDelegateLogin ? null : renderJuniorDoctorNotes(Delegate)}
           {renderDiagnosisView()}
           {renderMedicinePrescription()}
           {renderDiagonisticPrescription()}

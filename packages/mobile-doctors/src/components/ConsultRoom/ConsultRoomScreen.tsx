@@ -106,6 +106,7 @@ export interface ConsultRoomScreenProps
     PatientInfoAll: PatientInfoData;
     AppId: string;
     Appintmentdatetime: string; //Date;
+    DelegateNumberLoginSuccess: boolean;
     // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   }> {
   // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
@@ -119,6 +120,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
   const AppId = props.navigation.getParam('AppId');
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
+  const delegateCheckValue = props.navigation.getParam('DelegateNumberLoginSuccess');
   //console.log('hihihi', Appintmentdatetime);
   const [dropdownShow, setDropdownShow] = useState(false);
   const channel = props.navigation.getParam('AppId');

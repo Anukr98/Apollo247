@@ -2,11 +2,15 @@ import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
 import { GetDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-import { setLoggedIn } from '@aph/mobile-doctors/src/helpers/localStorage';
+import {
+  setLoggedIn,
+  CheckDelegate,
+  getLocalData,
+} from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import React from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { Alert } from 'react-native';
+import { Alert, AsyncStorage } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { RNFirebase } from 'react-native-firebase';
 
@@ -33,13 +37,26 @@ export const OTPVerificationApiCall: React.FC<OTPVerificationApiCallProps> = (pr
       const userPhone: string = props.navigation.getParam('phoneNumber');
       const delegateNumber = data!.getDoctorDetails!.delegateNumber;
       console.log('OTPVerificationApiCall', { userPhone, delegateNumber });
-      if ((userPhone && userPhone.replace('+91', '')) == delegateNumber) {
+      // if ((userPhone && userPhone.replace('+91', '')) == delegateNumber) {
+      //   console.log('Logged in with delegate number', { userPhone, delegateNumber });
+      //   setIsDelegateLogin && setIsDelegateLogin(true);
+      //   console.log({ isDelegateLogin });
+      // }
+      if (userPhone == delegateNumber) {
         console.log('Logged in with delegate number', { userPhone, delegateNumber });
         setIsDelegateLogin && setIsDelegateLogin(true);
-        console.log({ isDelegateLogin });
+        CheckDelegate(true);
+        console.log({ isDelegateLogin }, 'Delegatelogin suscess');
+      } else {
+        setDoctorDetails && setDoctorDetails(data!.getDoctorDetails);
+        setDoctorDetails;
+        getLocalData()
+          .then((data) => {
+            console.log('OTPVerificationApiCalldata', data);
+          })
+          .catch(() => {});
+        CheckDelegate(false);
       }
-      setDoctorDetails && setDoctorDetails(data!.getDoctorDetails);
-      setDoctorDetails;
 
       setLoggedIn(true).finally(() => {
         props.navigation.dispatch(

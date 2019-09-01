@@ -7,7 +7,7 @@ import {
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Image,
   StyleSheet,
@@ -214,12 +214,24 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
   const client = useApolloClient();
   const profileData = props.navigation.getParam('ProfileData');
   console.log('p', profileData);
-  const [phoneNumber, setPhoneNumber] = useState<string>(profileData!.delegateNumber!);
+  const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const { doctorDetails, setDoctorDetails } = useAuth();
 
   console.log('doctorDetailsmy', doctorDetails);
 
+  useEffect(() => {
+    let value = profileData!.delegateNumber!;
+    // Remove all spaces
+    let mobile = value.replace(/ /g, '');
+
+    // If string starts with +, drop first 3 characters
+    if (value.slice(0, 1) == '+') {
+      mobile = mobile.substring(3);
+    }
+    console.log('mobile', mobile);
+    setPhoneNumber(mobile);
+  });
   const delegateNumberUpdate = (phoneNumber: string) => {
     console.log('delegateNumberUpdate', phoneNumber);
     if (phoneNumber.length == 0) {
@@ -251,7 +263,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
       client
         .mutate<UpdateDelegateNumber, UpdateDelegateNumberVariables>({
           mutation: UPDATE_DELEGATE_NUMBER,
-          variables: { delegateNumber: phoneNumber },
+          variables: { delegateNumber: '+91'.concat(phoneNumber) },
           fetchPolicy: 'no-cache',
         })
         .then((_data) => {
@@ -424,6 +436,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
             maxLength={10}
             value={phoneNumber}
             onChangeText={(phoneNumber) => validateAndSetPhoneNumber(phoneNumber)}
+            editable={true}
           />
         </View>
         {/* <Text

@@ -698,14 +698,14 @@ export const GreenRemove: React.FC<IconProps> = (props) => (
 
 export const InpersonIcon: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ height: 26, width: 26 }}
+    style={{ height: 20, width: 20 }}
     {...props}
     source={require('../../images/icons/round_clinic_consult_24_px.png')}
   />
 );
 export const PhysicalIcon: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ height: 26, width: 26 }}
+    style={{ height: 20, width: 20 }}
     {...props}
     source={require('../../images/icons/round_video_consult_24_px.png')}
   />

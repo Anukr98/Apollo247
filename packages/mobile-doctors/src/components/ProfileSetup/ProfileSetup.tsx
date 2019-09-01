@@ -16,7 +16,11 @@ import {
   GetDoctorDetails,
   GetDoctorDetails_getDoctorDetails,
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-import { setDoctorDetails, setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
+import {
+  setDoctorDetails,
+  setProfileFlowDone,
+  getLocalData,
+} from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -42,6 +46,7 @@ import {
   saveDoctorDeviceToken,
   saveDoctorDeviceTokenVariables,
 } from '@aph/mobile-doctors/src/graphql/types/saveDoctorDeviceToken';
+import console = require('console');
 //import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
 const isMobileNumberValid = (n: string) => true;
@@ -193,7 +198,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const client = useApolloClient();
   const { isDelegateLogin, setDoctorDetails: setDoctorDetailsToContext, doctorDetails } = useAuth();
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
-
+  console.log('isDelegateLogin', isDelegateLogin);
   const fireBaseFCM = async () => {
     const enabled = await firebase.messaging().hasPermission();
     if (enabled) {
