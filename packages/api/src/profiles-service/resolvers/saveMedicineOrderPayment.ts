@@ -100,7 +100,13 @@ const SaveMedicineOrderPayment: Resolver<
       medicineOrders: orderDetails,
       statusDate: new Date(),
     };
-    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs);
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
+    await medicineOrdersRepo.updateMedicineOrderDetails(
+      orderDetails.id,
+      orderDetails.orderAutoId,
+      new Date(),
+      MEDICINE_ORDER_STATUS.ORDER_PLACED
+    );
   }
 
   return {
