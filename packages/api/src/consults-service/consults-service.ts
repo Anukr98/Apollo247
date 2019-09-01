@@ -33,6 +33,10 @@ import {
   getPatinetAppointmentsResolvers,
   getPatinetAppointmentsTypeDefs,
 } from 'consults-service/resolvers/getPatientAppointments';
+import {
+  transferAppointmentTypeDefs,
+  transferAppointmentResolvers,
+} from 'consults-service/resolvers/transferAppointment';
 import { GraphQLDate, GraphQLDateTime, GraphQLTime } from 'graphql-iso-date';
 import gql from 'graphql-tag';
 import 'reflect-metadata';
@@ -102,6 +106,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: caseSheetTypeDefs,
         resolvers: caseSheetResolvers,
+      },
+      {
+        typeDefs: transferAppointmentTypeDefs,
+        resolvers: transferAppointmentResolvers,
       },
     ]),
   });
