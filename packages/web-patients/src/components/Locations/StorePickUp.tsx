@@ -119,11 +119,10 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
   const [storeAddresses, setStoreAddresses] = React.useState<StoreAddresses[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [pincodeError, setPincodeError] = useState<boolean>(false);
-
   const [isViewAllAddressDialogOpen, setIsViewAllAddressDialogOpen] = React.useState<boolean>(
     false
   );
-  const [pincode, setPincode] = useState<string>('');
+  const [pincode, setPincode] = useState<string>(props.pincode);
 
   let showAddress = 0;
 
@@ -184,6 +183,7 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
           onKeyPress={(e) => {
             if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
           }}
+          value={pincode}
           onChange={(e) => {
             const newPincode = e.target.value;
             setPincode(e.target.value);

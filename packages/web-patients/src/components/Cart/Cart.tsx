@@ -298,16 +298,17 @@ export const Cart: React.FC = (props) => {
   const mascotRef = useRef(null);
 
   const [tabValue, setTabValue] = useState<number>(0);
-  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
   const [couponCode, setCouponCode] = React.useState<string>('');
-
+  const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
+  const [paymentMethod, setPaymentMethod] = React.useState<string>('');
   const { cartTotal, cartItems } = useShoppingCart();
 
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
+  const disablePayButton = paymentMethod === '';
 
   // business rule defined if the total is greater than 200 no delivery charges.
   // if the total is less than 200 +20 is added.
@@ -331,7 +332,8 @@ export const Cart: React.FC = (props) => {
   //   cartTotal,
   //   cartItems,
   //   uploadPrescriptionRequired,
-  //   couponCode
+  //   couponCode,
+  //   paymentMethod
   // );
 
   return (
@@ -431,7 +433,7 @@ export const Cart: React.FC = (props) => {
                         updateDeliveryAddress={(deliveryAddressId) =>
                           setDeliveryAddressId(deliveryAddressId)
                         }
-                        pincode=""
+                        pincode={localStorage.getItem('dp') || ''}
                       />
                     </TabContainer>
                   )}
@@ -491,7 +493,7 @@ export const Cart: React.FC = (props) => {
           </Scrollbars>
           <div className={classes.checkoutBtn}>
             <AphButton
-              onClick={() => setIsDialogOpen(true)}
+              onClick={() => setCheckoutDialogOpen(true)}
               color="primary"
               fullWidth
               disabled={disableSubmit}
@@ -502,28 +504,39 @@ export const Cart: React.FC = (props) => {
           </div>
         </div>
       ) : null}
-      <AphDialog open={isDialogOpen} maxWidth="sm">
+
+      <AphDialog open={checkoutDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setCheckoutDialogOpen(false)} />
         <AphDialogTitle>Checkout</AphDialogTitle>
         <div className={classes.shadowHide}>
           <div className={classes.dialogContent}>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
               <div className={classes.customScrollBar}>
-                <Checkout />
+                <Checkout
+                  setPaymentMethod={(paymentMethod: string) => {
+                    setPaymentMethod(paymentMethod);
+                  }}
+                />
               </div>
             </Scrollbars>
           </div>
           <div className={classes.dialogActions}>
             <AphButton
-              onClick={() => setIsPopoverOpen(true)}
+              onClick={(e) => {
+                setIsPopoverOpen(true);
+                console.log(e);
+              }}
               color="primary"
               fullWidth
-              disabled={disableSubmit}
+              disabled={disablePayButton}
+              className={paymentMethod === '' ? classes.buttonDisable : ''}
             >
               Pay - RS. {totalAmount}
             </AphButton>
           </div>
         </div>
       </AphDialog>
+
       <Popover
         open={isPopoverOpen}
         anchorEl={mascotRef.current}

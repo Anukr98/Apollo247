@@ -1,9 +1,9 @@
 /** Acknowledgement: This work is based on the POC done by Kabir Sarin :) **/
 
 import React, { useState, createContext, useContext, useEffect } from 'react';
-import axios from 'axios';
 
-const quoteUrl = 'http://api.apollopharmacy.in/apollo_api.php?type=guest_quote';
+// import axios from 'axios';
+// const quoteUrl = 'http://api.apollopharmacy.in/apollo_api.php?type=guest_quote';
 
 export interface MedicineCartItem {
   description: string;
@@ -30,8 +30,6 @@ export interface MedicineCartContextProps {
     | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
     | null;
   cartTotal: number;
-  getQuoteId(): string | null;
-  getCartId(): number | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -40,12 +38,6 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   removeCartItem: null,
   updateCartItem: null,
   cartTotal: 0,
-  getQuoteId(): string {
-    return '';
-  },
-  getCartId(): number {
-    return 0;
-  },
 });
 
 export const MedicinesCartProvider: React.FC = (props) => {
@@ -57,30 +49,30 @@ export const MedicinesCartProvider: React.FC = (props) => {
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const newQuoteId = () => {
-    let quoteId = '';
-    axios
-      .post(quoteUrl)
-      .then((data) => {
-        if (data.data.quote_id) {
-          localStorage.setItem('quoteId', data.data.quote_id);
-          quoteId = data.data.quote_id;
-        }
-      })
-      .catch((err) => {
-        alert(err);
-      });
-    return quoteId;
-  };
+  // const newQuoteId = () => {
+  //   let quoteId = '';
+  //   axios
+  //     .post(quoteUrl)
+  //     .then((data) => {
+  //       if (data.data.quote_id) {
+  //         localStorage.setItem('quoteId', data.data.quote_id);
+  //         quoteId = data.data.quote_id;
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       alert(err);
+  //     });
+  //   return quoteId;
+  // };
 
-  const getQuoteId = () => {
-    if (localStorage.getItem('quoteId')) return localStorage.getItem('quoteId');
-    else return newQuoteId();
-  };
+  // const getQuoteId = () => {
+  //   if (localStorage.getItem('quoteId')) return localStorage.getItem('quoteId');
+  //   else return newQuoteId();
+  // };
 
-  const getCartId = () => {
-    return 0;
-  };
+  // const getCartId = () => {
+  //   return 0;
+  // };
 
   const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) => {
     setCartItems([...cartItems, itemToAdd]);
@@ -111,8 +103,8 @@ export const MedicinesCartProvider: React.FC = (props) => {
         removeCartItem,
         updateCartItem,
         cartTotal,
-        getQuoteId,
-        getCartId,
+        // getQuoteId,
+        // getCartId,
       }}
     >
       {props.children}
@@ -128,6 +120,6 @@ export const useShoppingCart = () => ({
   removeCartItem: useShoppingCartContext().removeCartItem!,
   updateCartItem: useShoppingCartContext().updateCartItem!,
   cartTotal: useShoppingCartContext().cartTotal,
-  quoteId: useShoppingCartContext().getQuoteId,
-  cartId: useShoppingCartContext().getCartId,
+  // quoteId: useShoppingCartContext().getQuoteId,
+  // cartId: useShoppingCartContext().getCartId,
 });
