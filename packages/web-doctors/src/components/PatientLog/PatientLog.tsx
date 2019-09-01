@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Theme, MenuItem } from '@material-ui/core';
 import { makeStyles, withStyles } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
@@ -11,6 +11,9 @@ import { Header } from 'components/Header';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { useAuth } from 'hooks/authHooks';
 import { AphSelect } from '@aph/web-ui-components';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GET_PATIENT_LOG } from 'graphql/profiles';
+import { GetPatientLog } from 'graphql/types/getPatientLog';
 
 const AntTabs = withStyles({
   root: {
@@ -205,17 +208,60 @@ export interface DoctorsProfileProps {}
 export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) => {
   const classes = useStyles();
   const [selectedTabIndex, setselectedTabIndex] = React.useState(0);
-  const [sortBY, setSortBy] = React.useState(1);
+  const [sortBy, setSortBy] = React.useState('PATIENT_NAME_A_TO_Z');
+  const [patientList, setPatientList] = React.useState([]);
+  const [loading, setLoading] = React.useState<boolean>(false);
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
-  const tabsArray = ['All', 'Follow Up', 'Regular'];
-  const tabsHtml = tabsArray.map((item, index) => {
+  const tabsArray: any = [
+    {
+      key: 'All',
+      value: 'All',
+    },
+    {
+      key: 'FOLLOW_UP',
+      value: 'Follow Up',
+    },
+    {
+      key: 'REGULAR',
+      value: 'Regular',
+    },
+  ];
+  const client = useApolloClient();
+  useEffect(() => {
+    setLoading(true);
+    const selectedTab = tabsArray[selectedTabIndex];
+    client
+      .query<GetPatientLog>({
+        query: GET_PATIENT_LOG,
+        fetchPolicy: 'no-cache',
+        variables: { limit: 10, offset: 0, sortBy: sortBy, type: selectedTab.key },
+      })
+      .then((_data: any) => {
+        setPatientList(
+          _data!.data!.getPatientLog && _data!.data!.getPatientLog !== null
+            ? _data!.data!.getPatientLog
+            : []
+        );
+        setLoading(false);
+      })
+      .catch((e: any) => {
+        //setError('Error occured in getcasesheet api');
+        console.log('Error occured creating session', e);
+        setLoading(false);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [selectedTabIndex, sortBy]);
+
+  const tabsHtml = tabsArray.map((item: any, index: number) => {
     return (
       <Tab
-        key={item}
+        key={index}
         className={selectedTabIndex === index ? classes.highlightActive : classes.highlightInactive}
-        label={item}
+        label={item.value}
         onClick={(e) => {
           setselectedTabIndex(index);
         }}
@@ -250,7 +296,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
               <span className={classes.sortByDropdown}>
                 <span className={classes.sortByTitle}>Sort by:</span>
                 <AphSelect
-                  value={sortBY}
+                  value={sortBy}
                   fullWidth
                   MenuProps={{
                     classes: { paper: classes.menuPopover },
@@ -264,10 +310,10 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                     },
                   }}
                   onChange={(e) => {
-                    setSortBy(e.target.value as number);
+                    setSortBy(e.target.value as string);
                   }}
                 >
-                  <MenuItem value={1} classes={{ selected: classes.menuSelected }}>
+                  <MenuItem value="MOST_RECENT" classes={{ selected: classes.menuSelected }}>
                     {/* <img
                       className={classes.checkImg}
                       src={require('images/ic_unselected.svg')}
@@ -275,33 +321,47 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                     /> */}
                     Most Recent
                   </MenuItem>
-                  <MenuItem value={2} classes={{ selected: classes.menuSelected }}>
+                  <MenuItem value="NUMBER_OF_CONSULTS" classes={{ selected: classes.menuSelected }}>
                     Number of Consults
                   </MenuItem>
-                  <MenuItem value={3} classes={{ selected: classes.menuSelected }}>
+                  <MenuItem
+                    value="PATIENT_NAME_A_TO_Z"
+                    classes={{ selected: classes.menuSelected }}
+                  >
                     Patient Name: A to Z
                   </MenuItem>
-                  <MenuItem value={4} classes={{ selected: classes.menuSelected }}>
+                  <MenuItem
+                    value="PATIENT_NAME_Z_TO_A"
+                    classes={{ selected: classes.menuSelected }}
+                  >
                     Patient Name: Z to A
                   </MenuItem>
                 </AphSelect>
               </span>
             </AppBar>
           )}
-          {selectedTabIndex === 0 && (
-            <TabContainer>
-              <AllPatient />
-            </TabContainer>
-          )}
-          {selectedTabIndex === 1 && (
-            <TabContainer>
-              <AllPatient />
-            </TabContainer>
-          )}
-          {selectedTabIndex === 2 && (
-            <TabContainer>
-              <AllPatient />
-            </TabContainer>
+          {loading ? (
+            <Typography variant="h4">
+              <span>Loading....</span>
+            </Typography>
+          ) : (
+            <div>
+              {selectedTabIndex === 0 && (
+                <TabContainer>
+                  <AllPatient patientData={patientList} />
+                </TabContainer>
+              )}
+              {selectedTabIndex === 1 && (
+                <TabContainer>
+                  <AllPatient patientData={patientList} />
+                </TabContainer>
+              )}
+              {selectedTabIndex === 2 && (
+                <TabContainer>
+                  <AllPatient patientData={patientList} />
+                </TabContainer>
+              )}
+            </div>
           )}
         </div>
       </div>

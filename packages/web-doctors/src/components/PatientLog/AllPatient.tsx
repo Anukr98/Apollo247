@@ -82,7 +82,9 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-interface HelpProps {}
+interface AllPatientProps {
+  patientData: any;
+}
 interface PatientObject {
   id: string;
   name: string;
@@ -90,83 +92,77 @@ interface PatientObject {
   numberOfConsult: number;
   lastConsultDate: string;
 }
-export const AllPatient: React.FC<HelpProps> = (props) => {
+export const AllPatient: React.FC<AllPatientProps> = (props) => {
   const classes = useStyles();
-  const patientsList: PatientObject[] = [
-    {
-      id: '1',
-      name: 'Seema singh',
-      avatar: 'images/ic_patientchat.png',
-      numberOfConsult: 2,
-      lastConsultDate: '17/7/2019',
-    },
-    {
-      id: '2',
-      name: 'Rahul Mehta',
-      avatar: 'images/ic_patientchat.png',
-      numberOfConsult: 5,
-      lastConsultDate: '21/7/2019',
-    },
-  ];
-  const patientsHtml = patientsList.map((_patient: PatientObject | null, index: number) => {
-    const patient = _patient!;
-    return (
-      <div key={patient.id}>
-        <Card
-          className={classes.card}
-          classes={{
-            root: 'cardRow',
-          }}
-        >
-          <CardContent>
-            <Grid item xs={12}>
-              <Grid item container spacing={2}>
-                <Grid item lg={3} sm={3} xs={3} key={1} container>
-                  <Grid sm={3} xs={2} key={5} item>
-                    <img
-                      alt={patient.name}
-                      src={require('images/ic_patientchat.png')}
-                      className={classes.bigAvatar}
-                    />
-                  </Grid>
-                  <Grid sm={9} xs={10} key={6} item className={classes.valign}>
-                    <div className={classes.section2}>
+  console.log(props.patientData);
+  const patientsList = props.patientData;
+  const patientsHtml =
+    patientsList.length > 0 ? (
+      patientsList.map((_patient: any | [], index: number) => {
+        const patient = _patient!;
+        const lastConsult = new Date(patient!.appointmentdatetime);
+        return (
+          <div key={patient.patientid}>
+            <Card
+              className={classes.card}
+              classes={{
+                root: 'cardRow',
+              }}
+            >
+              <CardContent>
+                <Grid item xs={12}>
+                  <Grid item container spacing={2}>
+                    <Grid item lg={3} sm={3} xs={3} key={1} container>
+                      <Grid sm={3} xs={2} key={5} item>
+                        <img
+                          alt={`${patient.patientInfo!.firstName} ${patient.patientInfo!.lastName}`}
+                          src={require('images/ic_patientchat.png')}
+                          className={classes.bigAvatar}
+                        />
+                      </Grid>
+                      <Grid sm={9} xs={10} key={6} item className={classes.valign}>
+                        <div className={classes.section2}>
+                          <Typography gutterBottom variant="body1" className={classes.mainHeading}>
+                            {`${patient.patientInfo!.firstName} ${patient.patientInfo!.lastName}`}
+                          </Typography>
+                        </div>
+                      </Grid>
+                    </Grid>
+                    <Grid lg={3} sm={3} xs={3} key={2} item className={classes.valign}>
                       <Typography gutterBottom variant="body1" className={classes.mainHeading}>
-                        {patient.name}
+                        {`Last Consult: ${lastConsult.getDate()}/${lastConsult.getMonth()}/${lastConsult.getFullYear()}`}
                       </Typography>
-                    </div>
+                    </Grid>
+                    <Grid lg={3} sm={3} xs={3} key={3} item className={classes.valign}>
+                      <Typography gutterBottom variant="body1" className={classes.mainHeading}>
+                        {patient.appointmentids.length} Consult
+                      </Typography>
+                    </Grid>
+                    <Grid lg={3} sm={3} xs={3} key={4} className={classes.valign} item>
+                      <span className={classes.chatSpan}>
+                        <IconButton aria-label="Navigate next" className={classes.chatIcon}>
+                          <MessageIcon />
+                        </IconButton>
+                        {/* <img src={require('images/ic_chat_circle.svg')} alt="msgicon" /> */}
+                        Chat
+                      </span>
+                      <div className={classes.section2}>
+                        <IconButton aria-label="Navigate next">
+                          <NavigateNextIcon />
+                        </IconButton>
+                      </div>
+                    </Grid>
                   </Grid>
                 </Grid>
-                <Grid lg={3} sm={3} xs={3} key={2} item className={classes.valign}>
-                  <Typography gutterBottom variant="body1" className={classes.mainHeading}>
-                    Last Consult: {patient.lastConsultDate}
-                  </Typography>
-                </Grid>
-                <Grid lg={3} sm={3} xs={3} key={3} item className={classes.valign}>
-                  <Typography gutterBottom variant="body1" className={classes.mainHeading}>
-                    {patient.numberOfConsult} Consult
-                  </Typography>
-                </Grid>
-                <Grid lg={3} sm={3} xs={3} key={4} className={classes.valign} item>
-                  <span className={classes.chatSpan}>
-                    <IconButton aria-label="Navigate next" className={classes.chatIcon}>
-                      <MessageIcon />
-                    </IconButton>
-                    {/* <img src={require('images/ic_chat_circle.svg')} alt="msgicon" /> */}
-                    Chat
-                  </span>
-                  <div className={classes.section2}>
-                    <IconButton aria-label="Navigate next">
-                      <NavigateNextIcon />
-                    </IconButton>
-                  </div>
-                </Grid>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      })
+    ) : (
+      <Typography variant="h4">
+        <span>No data found</span>
+      </Typography>
     );
-  });
   return <div>{patientsHtml}</div>;
 };
