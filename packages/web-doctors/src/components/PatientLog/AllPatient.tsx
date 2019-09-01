@@ -94,7 +94,6 @@ interface PatientObject {
 }
 export const AllPatient: React.FC<AllPatientProps> = (props) => {
   const classes = useStyles();
-  console.log(props.patientData);
   const patientsList = props.patientData;
   const patientsHtml =
     patientsList.length > 0 ? (
