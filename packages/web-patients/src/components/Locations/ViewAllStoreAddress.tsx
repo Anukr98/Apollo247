@@ -98,8 +98,9 @@ export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) =
         setTimeout(() => {
           const stores = result.data.Stores ? result.data.Stores : [];
           if (stores && stores[0] && stores[0].message !== 'Data Not Available') {
-            setTimeout(() => {}, 500);
-            setStoreAddresses(stores);
+            setTimeout(() => {
+              setStoreAddresses(stores);
+            }, 500);
           } else {
             setStoreAddresses([]);
             setPincodeError(true);

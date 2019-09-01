@@ -29,6 +29,10 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#01475b',
       },
     },
+    buttonDisable: {
+      backgroundColor: '#fed984',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2) !important',
+    },
     radioLabel: {
       margin: 0,
       fontSize: 14,
@@ -261,7 +265,12 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
             </Scrollbars>
           </div>
           <div className={classes.dialogActions}>
-            <AphButton color="primary" fullWidth>
+            <AphButton
+              color="primary"
+              fullWidth
+              disabled={storeAddressId === ''}
+              className={storeAddressId === '' ? classes.buttonDisable : ''}
+            >
               Done
             </AphButton>
           </div>
