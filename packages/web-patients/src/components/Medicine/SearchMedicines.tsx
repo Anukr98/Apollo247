@@ -168,8 +168,43 @@ export const SearchMedicines: React.FC = (props) => {
   const [medicineCount, setMedicineCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [showError, setShowError] = useState<boolean>(false);
+  const [pincodeError, setPincodeError] = useState<boolean>(false);
+  const [serviceAvailable, setServiceAvailable] = useState<boolean>(false);
+  const [servicePincode, setServicePincode] = useState<string>('');
 
   const pastSearches: string[] = [];
+
+  const getPharmacyAddresses = (pincode: string) => {
+    axios
+      .post(
+        process.env.PHARMACY_MED_PHARMACIES_LIST_URL,
+        { params: pincode },
+        {
+          headers: {
+            Authorization: process.env.PHARMACY_MED_AUTH_TOKEN,
+          },
+          transformRequest: [
+            (data, headers) => {
+              delete headers.common['Content-Type'];
+              return JSON.stringify(data);
+            },
+          ],
+        }
+      )
+      .then((result) => {
+        const storeCount = result.data.stores_count ? result.data.stores_count : 0;
+        if (storeCount > 0) {
+          setServiceAvailable(true);
+          setPincodeError(false);
+        } else {
+          setPincodeError(true);
+          setServiceAvailable(false);
+        }
+      })
+      .catch((thrown: AxiosError | Cancel) => {
+        alert('An error occurred while fetching Stores.');
+      });
+  };
 
   return (
     <div className={classes.root}>
@@ -239,7 +274,6 @@ export const SearchMedicines: React.FC = (props) => {
           <div className={classes.searchMedicine}>
             <AphTextField
               placeholder="Enter name of the medicine"
-              autoFocus
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 const medicineName = e.target.value;
                 if (medicineName.length > 2) {
@@ -291,13 +325,21 @@ export const SearchMedicines: React.FC = (props) => {
                   setMedicineCount(0);
                 }
               }}
-              error={showError}
+              error={showError || pincodeError}
+              disabled={!serviceAvailable}
             />
             {showError ? (
               <FormHelperText component="div" error={showError}>
                 Sorry, we couldn't find what you are looking for :(
               </FormHelperText>
             ) : null}
+
+            {pincodeError ? (
+              <FormHelperText component="div" error={pincodeError}>
+                Sorry, we are not serving in this location.
+              </FormHelperText>
+            ) : null}
+
             {/* <div className={classes.uploadPrescriptionBtn}>
               <img src={require('images/ic_prescription.svg')} alt="" />
             </div> */}
@@ -312,6 +354,16 @@ export const SearchMedicines: React.FC = (props) => {
               }}
               onKeyPress={(e) => {
                 if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+              }}
+              autoFocus
+              onChange={(e) => {
+                const currentPincode = e.target.value;
+                setServicePincode(currentPincode);
+                if (currentPincode.length === 6) {
+                  getPharmacyAddresses(currentPincode);
+                } else {
+                  setPincodeError(false);
+                }
               }}
             />
           </div>

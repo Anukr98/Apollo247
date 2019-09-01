@@ -157,23 +157,3 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
     </div>
   );
 };
-
-{
-  /* <li>
-                    <FormControlLabel
-                      className={classes.radioLabel}
-                      checked={couponId === defaultCouponId}
-                      value={defaultCouponId}
-                      control={<AphRadio color="primary" />}
-                      label={
-                        <span className={classes.couponCode}>
-                          {defaultCouponId}
-                          <span>Get 10% off on total bill on the order above Rs.199</span>
-                        </span>
-                      }
-                      onChange={() => {
-                        setCouponId(defaultCouponId);
-                      }}
-                    />
-                  </li> */
-}

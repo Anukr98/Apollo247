@@ -7,6 +7,7 @@ import {
   AphButton,
   AphTextField,
   AphDialogTitle,
+  AphDialogClose,
 } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { ViewAllStoreAddress } from 'components/Locations/ViewAllStoreAddress';
@@ -231,23 +232,16 @@ export const StorePickUp: React.FC<StorePickupProps> = (props) => {
       ) : (
         <CircularProgress />
       )}
-      {!loading && !pincodeError && pincode.length === 6 ? (
-        <div className={classes.bottomActions}>
-          <AphButton
-            onClick={() => setIsViewAllAddressDialogOpen(true)}
-            className={classes.viewAllBtn}
-          >
-            View All
-          </AphButton>
-        </div>
-      ) : null}
-      <AphDialog
-        open={isViewAllAddressDialogOpen}
-        maxWidth="sm"
-        onClose={() => {
-          setIsViewAllAddressDialogOpen(false);
-        }}
-      >
+      <div className={classes.bottomActions}>
+        <AphButton
+          onClick={() => setIsViewAllAddressDialogOpen(true)}
+          className={classes.viewAllBtn}
+        >
+          View All
+        </AphButton>
+      </div>
+      <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsViewAllAddressDialogOpen(false)} />
         <AphDialogTitle>
           <div className={classes.backArrow}>
             <img src={require('images/ic_back.svg')} alt="Store Pick Up" />

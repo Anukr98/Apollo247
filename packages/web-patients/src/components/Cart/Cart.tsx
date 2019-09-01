@@ -307,12 +307,15 @@ export const Cart: React.FC = (props) => {
 
   const { cartTotal, cartItems } = useShoppingCart();
 
+  const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
+
   // business rule defined if the total is greater than 200 no delivery charges.
   // if the total is less than 200 +20 is added.
-  const deliveryCharges = cartTotal > 200 ? 0 : 20;
-
-  const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
-  const totalAmount = (cartTotal + deliveryCharges).toFixed(2);
+  const discountAmount = couponCode !== '' ? parseFloat(((cartTotal * 10) / 100).toFixed(2)) : 0;
+  const grossValue = cartTotal - discountAmount;
+  const deliveryCharges = grossValue > 200 ? -20 : 20;
+  const totalAmount = (grossValue + deliveryCharges).toFixed(2);
+  const showGross = deliveryCharges < 0 || discountAmount > 0;
 
   // const cartItems = localStorage.getItem('cartItems')
   //   ? JSON.parse(localStorage.getItem('cartItems') || '')
@@ -322,14 +325,14 @@ export const Cart: React.FC = (props) => {
   const disableSubmit = deliveryAddressId === '';
   const uploadPrescriptionRequired = cartItems.findIndex((v) => v.is_prescription_required === '1');
 
-  console.log(
-    deliveryMode,
-    deliveryAddressId,
-    cartTotal,
-    cartItems,
-    uploadPrescriptionRequired,
-    couponCode
-  );
+  // console.log(
+  //   deliveryMode,
+  //   deliveryAddressId,
+  //   cartTotal,
+  //   cartItems,
+  //   uploadPrescriptionRequired,
+  //   couponCode
+  // );
 
   return (
     <div className={classes.root}>
@@ -477,7 +480,9 @@ export const Cart: React.FC = (props) => {
                   <div className={classes.bottomSection}>
                     <div className={classes.priceRow}>
                       <span>To Pay</span>
-                      <span className={classes.totalPrice}>Rs. {totalAmount}</span>
+                      <span className={classes.totalPrice}>
+                        {showGross ? `(${cartTotal.toFixed(2)})` : ''} Rs. {totalAmount}
+                      </span>
                     </div>
                   </div>
                 </div>

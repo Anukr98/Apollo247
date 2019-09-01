@@ -1,7 +1,13 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
 import React from 'react';
-import { AphRadio, AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
+import {
+  AphRadio,
+  AphButton,
+  AphDialog,
+  AphDialogTitle,
+  AphDialogClose,
+} from '@aph/web-ui-components';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
 
@@ -164,23 +170,16 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
       <div className={classes.bottomActions}>
         <AphButton onClick={() => setIsAddAddressDialogOpen(true)}>Add new address</AphButton>
-        {addressList.length > 2 ? (
-          <AphButton
-            onClick={() => setIsViewAllAddressDialogOpen(true)}
-            className={classes.viewAllBtn}
-          >
-            View All
-          </AphButton>
-        ) : null}
+        <AphButton
+          onClick={() => setIsViewAllAddressDialogOpen(true)}
+          className={classes.viewAllBtn}
+        >
+          View All
+        </AphButton>
       </div>
 
-      <AphDialog
-        open={isAddAddressDialogOpen}
-        maxWidth="sm"
-        onClose={() => {
-          setIsAddAddressDialogOpen(false);
-        }}
-      >
+      <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} />
         <AphDialogTitle>
           <div className={classes.backArrow}>
             <img src={require('images/ic_back.svg')} alt="" />
@@ -190,13 +189,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         <AddNewAddress />
       </AphDialog>
 
-      <AphDialog
-        open={isViewAllAddressDialogOpen}
-        maxWidth="sm"
-        onClose={() => {
-          setIsViewAllAddressDialogOpen(false);
-        }}
-      >
+      <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsViewAllAddressDialogOpen(false)} />
         <AphDialogTitle>
           <div className={classes.backArrow}>
             <img src={require('images/ic_back.svg')} alt="" />
