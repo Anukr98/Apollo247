@@ -52,6 +52,17 @@ export enum REQUEST_ROLES {
   PATIENT = 'PATIENT',
 }
 
+export enum TRANSFER_STATUS {
+  INITIATED = 'INITIATED',
+  COMPLETED = 'COMPLETED',
+  REJECTED = 'REJECTED',
+}
+
+export enum TRANSFER_INITIATED_TYPE {
+  DOCTOR = 'DOCTOR',
+  PATIENT = 'PATIENT',
+}
+
 //Appointment starts
 @Entity()
 export class Appointment extends BaseEntity {
@@ -111,6 +122,12 @@ export class Appointment extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+
+  @OneToMany(
+    (type) => TransferAppointmentDetails,
+    (transferAppointmentDetails) => transferAppointmentDetails.appointment
+  )
+  transferAppointmentDetails: TransferAppointmentDetails[];
 }
 //Appointment ends
 
@@ -224,5 +241,52 @@ export class CaseSheet extends BaseEntity {
     this.updatedDate = new Date();
   }
 }
-
 //case sheet ends
+
+//transfer-appointment starts
+@Entity()
+export class TransferAppointmentDetails extends BaseEntity {
+  @ManyToOne((type) => Appointment, (appointment) => appointment.transferAppointmentDetails)
+  appointment: Appointment;
+
+  @Column()
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'text' })
+  transferReason: string;
+
+  @Column({ nullable: true })
+  transferredDoctorId: string;
+
+  @Column()
+  transferInitiatedBy: TRANSFER_INITIATED_TYPE;
+
+  @Column({ nullable: true })
+  transferInitiatedId: string;
+
+  @Column({ nullable: true })
+  transferredSpecialtyId: string;
+
+  @Column({ nullable: true, type: 'text' })
+  transferNotes: string;
+
+  @Column()
+  transferStatus: TRANSFER_STATUS;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//transfer apppointment ends
