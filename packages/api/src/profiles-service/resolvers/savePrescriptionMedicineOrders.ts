@@ -8,7 +8,6 @@ import {
   MEDICINE_ORDER_TYPE,
   MEDICINE_ORDER_STATUS,
   MEDICINE_ORDER_PAYMENT_TYPE,
-  MedicineOrderPayments,
   MedicineOrdersStatus,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
@@ -97,35 +96,21 @@ const SavePrescriptionMedicineOrder: Resolver<
     prescriptionImageUrl: prescriptionMedicineInput.prescriptionImageUrl,
     estimatedAmount: 0.0,
     devliveryCharges: 0.0,
+    currentStatus: MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
   };
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
 
   if (saveOrder) {
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-      orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
+      orderStatus: MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
       medicineOrders: saveOrder,
       statusDate: new Date(),
     };
-    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs);
-  }
-
-  if (
-    prescriptionMedicineInput.payment &&
-    prescriptionMedicineInput.payment.paymentType !== MEDICINE_ORDER_PAYMENT_TYPE.NO_PAYMENT
-  ) {
-    const paymentAttrs: Partial<MedicineOrderPayments> = {
-      medicineOrders: saveOrder,
-      paymentDateTime: prescriptionMedicineInput.payment.paymentDateTime,
-      paymentStatus: prescriptionMedicineInput.payment.paymentStatus,
-      paymentType: prescriptionMedicineInput.payment.paymentType,
-      amountPaid: prescriptionMedicineInput.payment.amountPaid,
-      paymentRefId: prescriptionMedicineInput.payment.paymentRefId,
-    };
-    await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, saveOrder.orderAutoId);
   }
   return {
-    status: MEDICINE_ORDER_STATUS.ORDER_PLACED,
+    status: MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
     orderId: saveOrder.id,
     orderAutoId: saveOrder.orderAutoId,
   };

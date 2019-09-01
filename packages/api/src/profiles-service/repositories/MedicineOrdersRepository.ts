@@ -4,6 +4,7 @@ import {
   MedicineOrderLineItems,
   MedicineOrderPayments,
   MedicineOrdersStatus,
+  MEDICINE_ORDER_STATUS,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -44,7 +45,34 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     return this.findOne({ where: { orderAutoId } });
   }
 
-  saveMedicineOrderStatus(orderStatusAttrs: Partial<MedicineOrdersStatus>) {
+  saveMedicineOrderStatus(orderStatusAttrs: Partial<MedicineOrdersStatus>, orderAutoId: number) {
     return MedicineOrdersStatus.create(orderStatusAttrs).save();
+  }
+
+  getMedicineOrdersList(patient: String) {
+    return this.find({
+      where: { patient },
+      relations: ['medicineOrderLineItems', 'medicineOrderPayments', 'medicineOrdersStatus'],
+    });
+  }
+
+  getMedicineOrderById(patient: string, orderAutoId: number) {
+    return this.findOne({
+      where: { patient, orderAutoId },
+      relations: ['medicineOrderLineItems', 'medicineOrderPayments', 'medicineOrdersStatus'],
+    });
+  }
+
+  updateMedicineOrderStatus(orderAutoId: number, currentStatus: MEDICINE_ORDER_STATUS) {
+    return this.update(orderAutoId, { currentStatus });
+  }
+
+  updateMedicineOrderDetails(
+    id: string,
+    orderAutoId: number,
+    orderDateTime: Date,
+    currentStatus: MEDICINE_ORDER_STATUS
+  ) {
+    return this.update({ id, orderAutoId }, { orderDateTime, currentStatus });
   }
 }
