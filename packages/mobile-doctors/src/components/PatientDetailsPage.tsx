@@ -1,37 +1,27 @@
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
+import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
 import {
-  ApploLogo,
-  Chat,
-  Notification,
-  RoundIcon,
-  Up,
-  PatientPlaceHolderImage,
   BackArrow,
-  Video,
   PastAppointmentIcon,
-  MissedAppointmentIcon,
-  NextAppointmentIcon,
+  PatientPlaceHolderImage,
   UpComingIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { PatientCard } from '@aph/mobile-doctors/src/components/ui/PatientCard';
+import { GET_CASESHEET } from '@aph/mobile-doctors/src/graphql/profiles';
+import { GetCaseSheet } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState } from 'react';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
-  View,
-  TouchableOpacity,
   TextInput,
-  ScrollView,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import MaterialTabs from 'react-native-material-tabs';
 import { NavigationScreenProps } from 'react-navigation';
-import { _doctors } from '@aph/mobile-doctors/src/helpers/APIDummyData';
-import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
-import { PastConsultCard } from '@aph/mobile-doctors/src/components/ui/PastConsultCard';
-import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
 
 const styles = StyleSheet.create({
   shadowview: {
@@ -99,23 +89,45 @@ const styles = StyleSheet.create({
     marginLeft: 0,
   },
 });
-export interface PatientsProps extends NavigationScreenProps {}
+export interface PatientsProps
+  extends NavigationScreenProps<{
+    Appointments: string;
+  }> {}
 
 export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
+  const client = useApolloClient();
+  console.log('Appointments', props.navigation.getParam('Appointments'));
   const [patientHistoryshow, setpatientHistoryshow] = useState(false);
-  const [familyValues, setFamilyValues] = useState<string>(
-    'Father: Cardiac patient\nMother: Severe diabetes\nMarried, No kids'
-  );
 
-  const [allergiesData, setAllergiesData] = useState<string>('Paracetamol, Dairy, Dust');
-  const [lifeStyleData, setLifeStyleData] = useState<string>(
-    'Patient doesn’t smoke\nRecovered from chickenpox 6 months\nago'
-  );
+  const [familyValues, setFamilyValues] = useState<any>([]);
+  const [lifeStyleData, setLifeStyleData] = useState<any>([]);
+  const [allergiesData, setAllergiesData] = useState<string>('');
+  const [pastList, setPastList] = useState<any>([]);
   const _data = [
     { id: 'missed', name: 'Dr. Sanjeev Shah', speciality: '2 Consults', type: true },
     { id: 'missed', name: 'Dr. Sheetal Sharma', speciality: '2 Consults', type: false },
     { id: 'missed', name: 'Dr. Alok Mehta', speciality: '3 Consults', type: false },
   ];
+
+  useEffect(() => {
+    client
+      .query<GetCaseSheet>({
+        query: GET_CASESHEET,
+        fetchPolicy: 'no-cache',
+        variables: { appointmentId: props.navigation.getParam('Appointments') },
+      })
+      .then((_data) => {
+        const result = _data.data.getCaseSheet;
+        setFamilyValues(_data.data.getCaseSheet!.patientDetails!.familyHistory!);
+        setAllergiesData(_data.data.getCaseSheet!.patientDetails!.allergies!);
+        setLifeStyleData(_data.data.getCaseSheet!.patientDetails!.lifeStyle);
+        setPastList(_data.data.getCaseSheet!.pastAppointments!);
+      })
+      .catch((e) => {
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', error);
+      });
+  }, []);
   const renderFamilyDetails = () => {
     return (
       <View>
@@ -124,6 +136,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
           <TextInput
             style={styles.symptomsText}
             multiline={true}
+            editable={false}
             onChangeText={(familyValues) => setFamilyValues(familyValues)}
           >
             {familyValues}
@@ -141,6 +154,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
           <TextInput
             style={styles.symptomsText}
             multiline={true}
+            editable={false}
             onChangeText={(allergiesData) => setAllergiesData(allergiesData)}
           >
             {allergiesData}
@@ -157,6 +171,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
           <TextInput
             style={styles.symptomsText}
             multiline={true}
+            editable={false}
             onChangeText={(lifeStyleData) => setLifeStyleData(lifeStyleData)}
           >
             {lifeStyleData}
@@ -233,6 +248,75 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
     ) : (
       <UpComingIcon />
     );
+  const renderPastAppData = (apmnt: any) => {
+    return (
+      <View>
+        {apmnt == [] ? (
+          <Text style={styles.symptomsText}>No Data</Text>
+        ) : (
+          apmnt.caseSheet.map((_caseSheet: any, i) => {
+            return (
+              <View style={{ marginLeft: 16 }}>
+                {_caseSheet.symptoms == null || [] ? (
+                  <Text style={styles.symptomsText}>No Data</Text>
+                ) : (
+                  _caseSheet.symptoms.map((symptoms: any, i) => {
+                    return (
+                      <View
+                        style={{
+                          backgroundColor: '#ffffff',
+                          borderRadius: 5,
+                          borderStyle: 'solid',
+                          borderWidth: 1,
+                          borderColor: 'rgba(2, 71, 91, 0.15)',
+                          marginBottom: 16,
+                        }}
+                      >
+                        <View style={{ backgroundColor: 'white', flexDirection: 'row' }}>
+                          <Text
+                            style={{
+                              color: '#0087ba',
+                              ...theme.fonts.IBMPlexSansMedium(14),
+                              marginLeft: 14,
+                              marginBottom: 8,
+                              marginTop: 12,
+                              marginRight: 14,
+                            }}
+                          >
+                            {symptoms.symptom}
+                            {symptoms.howOften} {symptoms.since} {symptoms.severity}
+                          </Text>
+                        </View>
+                        <View>
+                          <Text
+                            style={{
+                              fontFamily: 'IBMPlexSans',
+                              fontSize: 10,
+                              fontWeight: '500',
+                              fontStyle: 'normal',
+                              lineHeight: 12,
+                              letterSpacing: 0,
+                              color: 'rgba(2, 71, 91, 0.6)',
+                              marginLeft: 14,
+                              marginBottom: 8,
+                            }}
+                          >
+                            {moment
+                              .unix(apmnt.appointmentDateTime / 1000)
+                              .format('DD MMM  hh:mm a')}
+                          </Text>
+                        </View>
+                      </View>
+                    );
+                  })
+                )}
+              </View>
+            );
+          })
+        )}
+      </View>
+    );
+  };
   return (
     <SafeAreaView style={[theme.viewStyles.container]}>
       <ScrollView bounces={false}>
@@ -356,7 +440,14 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
             Past Consultations
           </Text>
           <ScrollView bounces={false}>
-            {_data!.map((_doctor, i, array) => {
+            {pastList.map((apmnt: any, i) => {
+              return (
+                <View style={{ marginLeft: 16, marginRight: 20, marginBottom: 0 }}>
+                  {renderPastAppData(apmnt)}
+                </View>
+              );
+            })}
+            {/* {_data!.map((_doctor, i, array) => {
               return (
                 <View
                   style={{
@@ -375,7 +466,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                   <PastConsultCard doctorname={_doctor.name} />
                 </View>
               );
-            })}
+            })} */}
           </ScrollView>
         </View>
         {renderPatientHistoryLifestyle()}

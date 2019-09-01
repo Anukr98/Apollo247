@@ -190,6 +190,26 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
     }
   }
 `;
+export const GET_PATIENT_LOG = gql`
+  query getPatientLog($limit: Int, $offset: Int, $sortBy: patientLogSort, $type: patientLogType) {
+    getPatientLog(limit: $limit, offset: $offset, sortBy: $sortBy, type: $type) {
+      patientid
+      consultscount
+      appointmentids
+      appointmentdatetime
+      patientInfo {
+        firstName
+        dateOfBirth
+        id
+        emailAddress
+        mobileNumber
+        gender
+        uhid
+        photoUrl
+      }
+    }
+  }
+`;
 
 export const CREATEAPPOINTMENTSESSION = gql`
   mutation CreateAppointmentSession($createAppointmentSessionInput: CreateAppointmentSessionInput) {

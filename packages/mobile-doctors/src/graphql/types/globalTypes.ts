@@ -105,6 +105,19 @@ export enum WeekDay {
   WEDNESDAY = "WEDNESDAY",
 }
 
+export enum patientLogSort {
+  MOST_RECENT = "MOST_RECENT",
+  NUMBER_OF_CONSULTS = "NUMBER_OF_CONSULTS",
+  PATIENT_NAME_A_TO_Z = "PATIENT_NAME_A_TO_Z",
+  PATIENT_NAME_Z_TO_A = "PATIENT_NAME_Z_TO_A",
+}
+
+export enum patientLogType {
+  All = "All",
+  FOLLOW_UP = "FOLLOW_UP",
+  REGULAR = "REGULAR",
+}
+
 export interface CreateAppointmentSessionInput {
   appointmentId: string;
   requestRole: REQUEST_ROLES;
