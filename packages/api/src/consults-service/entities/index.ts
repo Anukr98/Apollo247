@@ -107,7 +107,7 @@ export class Appointment extends BaseEntity {
   patientId: string;
 
   @Column()
-  patientName: String;
+  patientName: string;
 
   @Column({ nullable: true })
   parentId: string;

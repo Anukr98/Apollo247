@@ -14,10 +14,9 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import { SendNotification } from 'consults-service/sendNotifications';
-import { MailMessage } from 'types/notificationMessageTypes';
+//import { SendNotification } from 'consults-service/sendNotifications';
+//import { MailMessage } from 'types/notificationMessageTypes';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { addMilliseconds, format } from 'date-fns';
 
 export const transferAppointmentTypeDefs = gql`
   enum TRANSFER_STATUS {
@@ -75,6 +74,7 @@ export const transferAppointmentTypeDefs = gql`
     hospitalId: ID
     status: STATUS!
     appointmentState: APPOINTMENT_STATE
+    patientName: String!
   }
 
   type TransferAppointmentResult {
@@ -136,6 +136,7 @@ type TransferAppointmentBooking = {
   status: STATUS;
   appointmentState: APPOINTMENT_STATE;
   parentId: string;
+  patientName: string;
 };
 
 type BookTransferAppointmentResult = {
@@ -203,6 +204,7 @@ const bookTransferAppointment: Resolver<
     appointmentState: APPOINTMENT_STATE.TRANSFER,
     parentId: apptDetails.id,
     appointmentDateTime: new Date(BookTransferAppointmentInput.appointmentDateTime.toISOString()),
+    patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
   };
   const appointment = await appointmentRepo.saveAppointment(appointmentAttrs);
 
@@ -254,14 +256,7 @@ const initiateTransferAppointment: Resolver<
   };
 
   const transferAppointment = await transferApptRepo.saveTransfer(transferAppointmentAttrs);
-  const istdate = addMilliseconds(appointment.appointmentDateTime, 19800000);
-  console.log('ist date', istdate.toString());
-  const sendMailContnet: MailMessage = {
-    subject: 'Your appointment was transferred',
-    toEmailMailId: 'sriram.kanchan@popcornapps.com',
-    mailContent: 'Hi, your appointment on ' + format(istdate, 'MMM dd, yyyy') + ' was transferred.',
-  };
-  SendNotification.sendEmail(sendMailContnet);
+
   return { transferAppointment };
 };
 
