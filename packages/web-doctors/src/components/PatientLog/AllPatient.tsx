@@ -100,7 +100,17 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
     patientsList.length > 0 ? (
       patientsList.map((_patient: any | [], index: number) => {
         const patient = _patient!;
-        const lastConsult = new Date(patient!.appointmentdatetime);
+        const lastConsult =
+          patient! &&
+          patient!.appointmentdatetime &&
+          patient!.appointmentdatetime !== null &&
+          patient!.appointmentdatetime !== ''
+            ? new Date(patient!.appointmentdatetime)
+            : '';
+        const photoUrl =
+          patient! && patient!.photoUrl && patient!.photoUrl !== null
+            ? patient!.photoUrl
+            : require('images/ic_patientchat.png');
         return (
           <div key={patient.patientid}>
             <Card
@@ -116,7 +126,7 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                       <Grid sm={3} xs={2} key={5} item>
                         <img
                           alt={`${patient.patientInfo!.firstName} ${patient.patientInfo!.lastName}`}
-                          src={require('images/ic_patientchat.png')}
+                          src={photoUrl}
                           className={classes.bigAvatar}
                         />
                       </Grid>
@@ -129,9 +139,16 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                       </Grid>
                     </Grid>
                     <Grid lg={3} sm={3} xs={3} key={2} item className={classes.valign}>
-                      <Typography gutterBottom variant="body1" className={classes.mainHeading}>
-                        {`Last Consult: ${lastConsult.getDate()}/${lastConsult.getMonth()}/${lastConsult.getFullYear()}`}
-                      </Typography>
+                      {lastConsult !== '' && (
+                        <Typography gutterBottom variant="body1" className={classes.mainHeading}>
+                          {`Last Consult: ${lastConsult.getDate()}/${lastConsult.getMonth()}/${lastConsult.getFullYear()}`}
+                        </Typography>
+                      )}
+                      {lastConsult === '' && (
+                        <Typography gutterBottom variant="body1" className={classes.mainHeading}>
+                          Last Consult: N/A
+                        </Typography>
+                      )}
                     </Grid>
                     <Grid lg={3} sm={3} xs={3} key={3} item className={classes.valign}>
                       <Typography gutterBottom variant="body1" className={classes.mainHeading}>

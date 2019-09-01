@@ -14,7 +14,40 @@ import { AphSelect } from '@aph/web-ui-components';
 import { useApolloClient } from 'react-apollo-hooks';
 import { GET_PATIENT_LOG } from 'graphql/profiles';
 import { GetPatientLog } from 'graphql/types/getPatientLog';
+import { patientLogSort, patientLogType } from 'graphql/types/globalTypes';
 
+const tabsArray: any = [
+  {
+    key: patientLogType.All,
+    value: 'All',
+  },
+  {
+    key: patientLogType.FOLLOW_UP,
+    value: 'Follow Up',
+  },
+  {
+    key: patientLogType.REGULAR,
+    value: 'Regular',
+  },
+];
+const sortByArray: any = [
+  {
+    key: patientLogSort.MOST_RECENT,
+    value: 'Most Recent',
+  },
+  {
+    key: patientLogSort.NUMBER_OF_CONSULTS,
+    value: 'Number of Consults',
+  },
+  {
+    key: patientLogSort.PATIENT_NAME_A_TO_Z,
+    value: 'Patient Name: A to Z',
+  },
+  {
+    key: patientLogSort.PATIENT_NAME_Z_TO_A,
+    value: 'Patient Name: Z to A',
+  },
+];
 const AntTabs = withStyles({
   root: {
     borderBottom: '1px solid #e8e8e8',
@@ -210,25 +243,13 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
   const [selectedTabIndex, setselectedTabIndex] = React.useState(0);
   const [sortBy, setSortBy] = React.useState('PATIENT_NAME_A_TO_Z');
   const [patientList, setPatientList] = React.useState([]);
+  const [offset, setOffset] = React.useState<number>(0);
   const [loading, setLoading] = React.useState<boolean>(false);
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
-  const tabsArray: any = [
-    {
-      key: 'All',
-      value: 'All',
-    },
-    {
-      key: 'FOLLOW_UP',
-      value: 'Follow Up',
-    },
-    {
-      key: 'REGULAR',
-      value: 'Regular',
-    },
-  ];
   const client = useApolloClient();
+  const limit = 10;
   useEffect(() => {
     setLoading(true);
     const selectedTab = tabsArray[selectedTabIndex];
@@ -236,7 +257,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
       .query<GetPatientLog>({
         query: GET_PATIENT_LOG,
         fetchPolicy: 'no-cache',
-        variables: { limit: 10, offset: 0, sortBy: sortBy, type: selectedTab.key },
+        variables: { limit: limit, offset: offset, sortBy: sortBy, type: selectedTab.key },
       })
       .then((_data: any) => {
         setPatientList(
@@ -313,29 +334,22 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                     setSortBy(e.target.value as string);
                   }}
                 >
-                  <MenuItem value="MOST_RECENT" classes={{ selected: classes.menuSelected }}>
-                    {/* <img
-                      className={classes.checkImg}
-                      src={require('images/ic_unselected.svg')}
-                      alt="chkUncheck"
-                    /> */}
-                    Most Recent
-                  </MenuItem>
-                  <MenuItem value="NUMBER_OF_CONSULTS" classes={{ selected: classes.menuSelected }}>
-                    Number of Consults
-                  </MenuItem>
-                  <MenuItem
-                    value="PATIENT_NAME_A_TO_Z"
-                    classes={{ selected: classes.menuSelected }}
-                  >
-                    Patient Name: A to Z
-                  </MenuItem>
-                  <MenuItem
-                    value="PATIENT_NAME_Z_TO_A"
-                    classes={{ selected: classes.menuSelected }}
-                  >
-                    Patient Name: Z to A
-                  </MenuItem>
+                  {sortByArray.map((item: any, index: number) => {
+                    return (
+                      <MenuItem
+                        key={item.key}
+                        value={item.key}
+                        classes={{ selected: classes.menuSelected }}
+                      >
+                        {/* <img
+                        className={classes.checkImg}
+                        src={require('images/ic_unselected.svg')}
+                        alt="chkUncheck"
+                      /> */}
+                        {item.value}
+                      </MenuItem>
+                    );
+                  })}
                 </AphSelect>
               </span>
             </AppBar>
