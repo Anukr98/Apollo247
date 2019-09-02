@@ -1,18 +1,23 @@
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { SAVE_PATIENT_ADDRESS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  savePatientAddress,
+  savePatientAddressVariables,
+} from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { GraphQLError } from 'graphql';
-import React, { useContext, useEffect, useState } from 'react';
-import { Alert, Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { AuthContext } from '../AuthProvider';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -56,10 +61,34 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [city, setcity] = useState<string>('');
   const [landMark, setlandMark] = useState<string>('');
   const [state, setstate] = useState<string>('');
-
-  const addAddress = useContext(AuthContext).addAddress;
-
   const [showPopup, setShowPopup] = useState<boolean>(false);
+  const { addAddress, setDeliveryAddressId } = useShoppingCart();
+  const client = useApolloClient();
+
+  const onSavePress = () => {
+    const addressInput = {
+      patientId: userId,
+      addressLine1: addressLine1,
+      addressLine2: '',
+      city: city,
+      state: state,
+      zipcode: pincode,
+      landmark: landMark,
+      mobileNumber: phoneNumber,
+    };
+    client
+      .mutate<savePatientAddress, savePatientAddressVariables>({
+        mutation: SAVE_PATIENT_ADDRESS,
+        variables: { PatientAddressInput: addressInput },
+      })
+      .then(({ data }) => {
+        const address = g(data, 'savePatientAddress', 'patientAddress');
+        addAddress && addAddress(address!);
+        setDeliveryAddressId && setDeliveryAddressId((address && address.id) || '');
+        props.navigation.goBack();
+      })
+      .catch((e: ReadonlyArray<GraphQLError>) => {});
+  };
 
   useEffect(() => {
     if (currentPatient) {
@@ -96,6 +125,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           onPress={() => {
             setShowPopup(true);
           }}
+          style={{ marginBottom: 8 }}
         >
           <View style={styles.placeholderViewStyle}>
             <Text style={[styles.placeholderTextStyle]}>{userName}</Text>
@@ -169,14 +199,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         }}
       >
         {allCurrentPatients &&
-          allCurrentPatients.map((item: GetCurrentPatients_getCurrentPatients_patients) => (
-            <View style={styles.textViewStyle}>
+          allCurrentPatients.map((item) => (
+            <View key={item.id} style={styles.textViewStyle}>
               <Text
                 style={styles.textStyle}
                 onPress={() => {
                   setuserName(item.firstName!);
                   setuserId(item.id);
-                  setShowPopup(false);
+                  setShowPopup(true);
                 }}
               >
                 {item.firstName}
@@ -186,27 +216,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       </View>
     </TouchableOpacity>
   );
-
-  const onSavePress = () => {
-    const addressInput = {
-      patientId: userId,
-      addressLine1: addressLine1,
-      addressLine2: '',
-      city: city,
-      state: state,
-      zipcode: pincode,
-      landmark: landMark,
-      mobileNumber: phoneNumber,
-    };
-    addAddress &&
-      addAddress(addressInput)
-        .then(() => {
-          props.navigation.goBack();
-        })
-        .catch((e: ReadonlyArray<GraphQLError>) => {
-          Alert.alert('Error', e[0].message);
-        });
-  };
 
   return (
     <View style={{ flex: 1 }}>

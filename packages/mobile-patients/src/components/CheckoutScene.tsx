@@ -1,9 +1,4 @@
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
-import { SafeAreaView, StyleProp, StyleSheet, Text, View, ViewStyle, Alert } from 'react-native';
-import { Slider } from 'react-native-elements';
-import { TouchableOpacity } from 'react-native-gesture-handler';
-import { NavigationScreenProps } from 'react-navigation';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -12,8 +7,21 @@ import {
   OneApollo,
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
-} from './ui/Icons';
-import { StickyBottomComponent } from './ui/StickyBottomComponent';
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import {
+  MedicineCartItem,
+  MEDICINE_ORDER_PAYMENT_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { SaveMedicineOrderVariables } from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrder';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import React, { useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { SafeAreaView, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { Slider } from 'react-native-elements';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -123,7 +131,70 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const [isOneApolloPayment, setOneApolloPayment] = useState(false);
   const [oneApolloCredits, setOneApolloCredits] = useState(0);
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
-  const MAX_SLIDER_VALUE = 360;
+
+  const {
+    deliveryAddressId,
+    storeId,
+    grandTotal,
+    deliveryCharges,
+    cartItems,
+    deliveryType,
+  } = useShoppingCart();
+  const { currentPatient } = useAllCurrentPatients();
+  const MAX_SLIDER_VALUE = grandTotal;
+  const client = useApolloClient();
+
+  const placeOrder = async () => {
+    const payment: SaveMedicineOrderVariables['MedicineCartInput']['payment'] = {};
+    if (!isCashOnDelivery) {
+      payment.paymentType = MEDICINE_ORDER_PAYMENT_TYPE.ONLINE;
+      payment.amountPaid = grandTotal;
+      payment.paymentDateTime = new Date().toString();
+      payment.paymentStatus = 'PAID';
+      payment.paymentRefId = (Math.random() * 100).toString().replace('.', '');
+    } else {
+      payment.paymentType = MEDICINE_ORDER_PAYMENT_TYPE.COD;
+    }
+    const order: SaveMedicineOrderVariables = {
+      MedicineCartInput: {
+        quoteId: null,
+        patientId: (currentPatient && currentPatient.id) || '',
+        shopId: storeId || null,
+        patinetAddressId: deliveryAddressId || null,
+        payment: payment,
+        medicineDeliveryType: deliveryType!,
+        devliveryCharges: deliveryCharges,
+        estimatedAmount: grandTotal,
+        items: cartItems.map(
+          (item) =>
+            ({
+              medicineSKU: item.id,
+              price: item.price,
+              medicineName: item.name,
+              quantity: item.quantity,
+              mrp: item.price,
+              // isPrescriptionNeeded: item.prescriptionRequired,
+              prescriptionImageUrl: null,
+              mou: parseInt(item.mou),
+              isMedicine: null,
+            } as MedicineCartItem)
+        ),
+      },
+    };
+    /*
+    client
+      .query<SaveMedicineOrder, SaveMedicineOrderVariables>({
+        query: SAVE_MEDICINE_ORDER,
+        variables: order,
+      })
+      .then(({ data: { SaveMedicineOrder } }) => {
+        console.log({ SaveMedicineOrder });
+      })
+      .catch((error) => {
+        console.log('Error occured', { error });
+      });
+    */
+  };
 
   const renderHeader = () => {
     return (
@@ -184,7 +255,9 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <View style={[styles.balanceAmountViewStyle, { marginHorizontal: 16 }]}>
         <Text style={styles.balanceAmountPayTextStyle}>{'Balance amount to pay'}</Text>
         <Text style={[styles.balanceAmountPayTextStyle, theme.fonts.IBMPlexSansSemiBold(14)]}>
-          {`Rs. ${360 - oneApolloCredits}`}
+          {`Rs. ${
+            MAX_SLIDER_VALUE - oneApolloCredits > -1 ? MAX_SLIDER_VALUE - oneApolloCredits : 0
+          }`}
         </Text>
       </View>
     );
@@ -296,7 +369,13 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const renderPayButton = () => {
     return (
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
-        <Button style={{ width: '66.66%' }} title={'PAY — RS. 160'} />
+        <Button
+          style={{ width: '66.66%' }}
+          title={`PAY — RS. ${grandTotal}`}
+          onPress={() => {
+            placeOrder();
+          }}
+        />
       </StickyBottomComponent>
     );
   };
@@ -304,7 +383,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       {renderHeader()}
-      {renderOneApolloAndHealthCreditsCard()}
+      {/* {renderOneApolloAndHealthCreditsCard()} */}
       {renderPaymentModesCard()}
       {renderPayButton()}
     </SafeAreaView>
