@@ -56,6 +56,10 @@ import {
   saveMedicineOrderPaymentTypeDefs,
   saveMedicineOrderPaymentResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrderPayment';
+import {
+  getMedicineOrdersListTypeDefs,
+  getMedicineOrdersListResolvers,
+} from 'profiles-service/resolvers/getMedicineOrdersList';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 
@@ -148,6 +152,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: saveMedicineOrderPaymentTypeDefs,
         resolvers: saveMedicineOrderPaymentResolvers,
+      },
+      {
+        typeDefs: getMedicineOrdersListTypeDefs,
+        resolvers: getMedicineOrdersListResolvers,
       },
     ]),
   });
