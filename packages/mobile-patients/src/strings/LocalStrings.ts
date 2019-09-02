@@ -3,6 +3,7 @@
 const common = {
   add: 'Add',
   availableNow: 'AVAILABLE NOW',
+  chooseDoctorHeaderText: 'Here are few doctors available for your appointment —',
 };
 
 const login = {

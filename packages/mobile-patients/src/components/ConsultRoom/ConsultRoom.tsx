@@ -514,6 +514,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 } else if (i == 1) {
                 } else if (i == 2) {
                 } else if (i == 3) {
+                  props.navigation.replace(AppRoutes.AzureUpload);
                 }
               }}
             >
