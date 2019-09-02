@@ -315,6 +315,219 @@ export const UPDATE_DELEGATE_NUMBER = gql`
   }
 `;
 
+export const GET_JUNIOR_DOCTOR_CASESHEET = gql`
+  query GetJuniorDoctorCaseSheet($appointmentId: String!) {
+    getJuniorDoctorCaseSheet(appointmentId: $appointmentId) {
+      patientDetails {
+        id
+        allergies
+        lifeStyle {
+          description
+        }
+        familyHistory {
+          description
+          relation
+        }
+        dateOfBirth
+        emailAddress
+        firstName
+        lastName
+        gender
+        mobileNumber
+        uhid
+        photoUrl
+        relation
+        healthVault {
+          imageUrls
+          reportUrls
+        }
+      }
+      caseSheetDetails {
+        id
+        medicinePrescription {
+          id
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineConsumptionDurationInDays
+        }
+        otherInstructions {
+          instruction
+        }
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+        }
+        diagnosis {
+          name
+        }
+        diagnosticPrescription {
+          name
+        }
+        followUp
+        followUpDate
+        followUpAfterInDays
+        consultType
+        notes
+      }
+    }
+  }
+`;
+
+export const GET_CASESHEET = gql`
+  query GetCaseSheet($appointmentId: String!) {
+    getCaseSheet(appointmentId: $appointmentId) {
+      patientDetails {
+        id
+        allergies
+        lifeStyle {
+          description
+        }
+        familyHistory {
+          description
+          relation
+        }
+        dateOfBirth
+        emailAddress
+        firstName
+        lastName
+        gender
+        mobileNumber
+        uhid
+        photoUrl
+        relation
+        healthVault {
+          imageUrls
+          reportUrls
+        }
+      }
+      caseSheetDetails {
+        id
+        medicinePrescription {
+          id
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineConsumptionDurationInDays
+        }
+        otherInstructions {
+          instruction
+        }
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+        }
+        diagnosis {
+          name
+        }
+        diagnosticPrescription {
+          name
+        }
+        followUp
+        followUpDate
+        followUpAfterInDays
+        consultType
+        notes
+      }
+      pastAppointments {
+        appointmentDateTime
+        appointmentState
+        doctorId
+        hospitalId
+        patientId
+        parentId
+        status
+        caseSheet {
+          consultType
+          appointment {
+            id
+          }
+          diagnosis {
+            name
+          }
+          diagnosticPrescription {
+            name
+          }
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+          }
+          followUpDate
+          followUpAfterInDays
+          followUp
+          medicinePrescription {
+            medicineName
+            medicineName
+            medicineTimings
+            medicineInstructions
+            medicineConsumptionDurationInDays
+          }
+          otherInstructions {
+            instruction
+          }
+        }
+      }
+    }
+  }
+`;
+export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
+  query SearchDoctorAndSpecialty($searchText: String!) {
+    SearchDoctorAndSpecialty(searchText: $searchText) {
+      doctors {
+        firstName
+        lastName
+        services
+        speciality
+        specialization
+        id
+      }
+      specialties {
+        id
+        name
+        image
+      }
+    }
+  }
+`;
+export const SAVE_DOCTOR_DEVICE_TOKEN = gql`
+  mutation saveDoctorDeviceToken($SaveDoctorDeviceTokenInput: SaveDoctorDeviceTokenInput!) {
+    saveDoctorDeviceToken(SaveDoctorDeviceTokenInput: $SaveDoctorDeviceTokenInput) {
+      deviceToken {
+        doctorId
+        deviceType
+        deviceOS
+        deviceToken
+      }
+    }
+  }
+`;
+
+export const INITIATE_TRANSFER_APPOINTMENT = gql`
+  mutation initiateTransferAppointment($TransferAppointmentInput: TransferAppointmentInput!) {
+    initiateTransferAppointment($TransferAppointmentInput: $TransferAppointmentInput!) {
+      transferAppointment {
+        id
+        appointmentId
+        transferStatus
+        transferReason
+        transferredDoctorId
+        transferredSpecialtyId
+        
+      }
+    }
+  }
+`;
+
 export const GET_PATIENTS = gql`
   query GetPatients {
     getPatients {

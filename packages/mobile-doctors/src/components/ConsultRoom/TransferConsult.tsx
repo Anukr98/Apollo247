@@ -19,6 +19,13 @@ import Highlighter from 'react-native-highlight-words';
 
 import { getDoctorsForStarDoctorProgram as getDoctorsForStarDoctorProgramData } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 import { DoctorProfile, Doctor } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { SEARCH_DOCTOR_AND_SPECIALITY } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  SearchDoctorAndSpecialty,
+  SearchDoctorAndSpecialtyVariables,
+  SearchDoctorAndSpecialty_SearchDoctorAndSpecialty,
+} from '@aph/mobile-doctors/src/graphql/types/SearchDoctorAndSpecialty';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const styles = StyleSheet.create({
   container: {
@@ -132,7 +139,10 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
   const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const [value, setValue] = useState<string>('');
   const [doctorvalue, setDoctorValue] = useState<string>('');
-  const [filteredStarDoctors, setFilteredStarDoctors] = useState<Doctor[] | null>([]);
+  const [filteredStarDoctors, setFilteredStarDoctors] = useState<SearchDoctorAndSpecialty[] | null>(
+    []
+  );
+  const [filterSpeciality, setfilterSpeciality] = useState<SearchDoctorAndSpecialty[] | null>([]);
   const [doctorsCard, setDoctorsCard] = useState<boolean>(false);
   const isEnabled = selectreason != 'Select a reason' && value.length > 0 && doctorvalue.length > 0;
   const sysmptonsList = [
@@ -175,11 +185,11 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
       ></Header>
     );
   };
-  const onPressDoctorSearchListItem = (text: string, id: string) => {
+  const onPressDoctorSearchListItem = (text: string) => {
     setDropdownOpen(false);
     setSelectReason(text);
   };
-  const onPressDoctorSearchListItemDoctor = (text: string, id: string) => {
+  const onPressDoctorSearchListItemDoctor = (text: string) => {
     setDoctorsCard(false);
     setDoctorValue(text);
   };
@@ -194,7 +204,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
 
           return (
             <TouchableOpacity
-              onPress={() => onPressDoctorSearchListItem(` ${_doctor.firstName}`, _doctor!.id)}
+              onPress={() => onPressDoctorSearchListItem(` ${_doctor.firstName}`)}
               style={{ marginHorizontal: 16 }}
               key={i}
             >
@@ -241,7 +251,8 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
     console.log(searchText);
     if (searchText == '') {
       setFilteredStarDoctors([]);
-      //setDoctorsCard(doctorsCard);
+      setfilterSpeciality([]);
+      setDoctorsCard(doctorsCard);
       return;
     }
     // do api call
@@ -254,13 +265,12 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
       searchText.replace('Dr. ', '')
     )
       .then((_data) => {
-        console.log('flitered array', _data);
-        // const doctorProfile =
-        //   (_data.data.getDoctorsForStarDoctorProgram &&
-        //     _data.data.getDoctorsForStarDoctorProgram.map((i) => i!.profile)) ||
-        //   [];
-        const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
-        setFilteredStarDoctors(doctorProfile);
+        console.log('flitered array', _data.data.SearchDoctorAndSpecialty!.doctors);
+        console.log('flitered array1', _data.data.SearchDoctorAndSpecialty!);
+
+        // const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
+        setFilteredStarDoctors(_data.data.SearchDoctorAndSpecialty!.doctors);
+        setfilterSpeciality(_data.data.SearchDoctorAndSpecialty!.specialties);
         setDoctorsCard(!doctorsCard);
       })
       .catch((e) => {
@@ -271,31 +281,80 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
   const renderSuggestionCardDoctor = () => (
     <View style={{ marginTop: 2 }}>
       <View style={styles.dropDownCardStyle}>
-        {filteredStarDoctors!.map((_doctor, i, array) => {
-          const drName = ` ${_doctor.firstName}`;
-
-          return (
-            <TouchableOpacity
-              onPress={() =>
-                onPressDoctorSearchListItemDoctor(` ${_doctor.firstName}`, _doctor!.id)
-              }
-              style={{ marginHorizontal: 16 }}
-              key={i}
-            >
-              {formatSuggestionsText(drName, '')}
-              {i < array!.length - 1 ? (
-                <View
-                  style={{
-                    marginTop: 8,
-                    marginBottom: 7,
-                    height: 1,
-                    opacity: 0.1,
-                  }}
-                />
-              ) : null}
-            </TouchableOpacity>
-          );
-        })}
+        <>
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(12),
+              color: '#02475b',
+              opacity: 0.3,
+              marginLeft: 16,
+              marginTop: 16,
+              marginBottom: 8,
+            }}
+          >
+            Doctor
+          </Text>
+          {filteredStarDoctors!.map((_doctor, i, array) => {
+            console.log('_doctor', _doctor);
+            const drName = ` ${_doctor.firstName + _doctor.lastName}`;
+            return (
+              <TouchableOpacity
+                onPress={() =>
+                  onPressDoctorSearchListItemDoctor(` ${_doctor.firstName + _doctor.lastName}`)
+                }
+                style={{ marginHorizontal: 16 }}
+                key={i}
+              >
+                {formatSuggestionsText(drName, '')}
+                {i < array!.length - 1 ? (
+                  <View
+                    style={{
+                      marginTop: 8,
+                      marginBottom: 7,
+                      height: 1,
+                      opacity: 0.1,
+                    }}
+                  />
+                ) : null}
+              </TouchableOpacity>
+            );
+          })}
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(12),
+              color: '#02475b',
+              opacity: 0.3,
+              marginLeft: 16,
+              marginTop: 16,
+              marginBottom: 8,
+            }}
+          >
+            Speciality
+          </Text>
+          {filterSpeciality!.map((_doctor, i, array) => {
+            console.log('_doctor', _doctor);
+            const drName = ` ${_doctor.name}`;
+            return (
+              <TouchableOpacity
+                onPress={() => onPressDoctorSearchListItemDoctor(` ${_doctor.name}`)}
+                style={{ marginHorizontal: 16 }}
+                key={i}
+              >
+                {formatSuggestionsText(drName, '')}
+                {i < array!.length - 1 ? (
+                  <View
+                    style={{
+                      marginTop: 8,
+                      marginBottom: 7,
+                      height: 1,
+                      opacity: 0.1,
+                    }}
+                  />
+                ) : null}
+              </TouchableOpacity>
+            );
+          })}
+        </>
       </View>
     </View>
   );

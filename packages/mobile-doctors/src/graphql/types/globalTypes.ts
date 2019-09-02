@@ -27,6 +27,11 @@ export enum ConsultType {
   PREFERRED = "PREFERRED",
 }
 
+export enum DOCTOR_DEVICE_TYPE {
+  ANDROID = "ANDROID",
+  IOS = "IOS",
+}
+
 export enum DoctorType {
   APOLLO = "APOLLO",
   PAYROLL = "PAYROLL",
@@ -44,6 +49,18 @@ export enum INVITEDSTATUS {
   NONE = "NONE",
   NOTAPPLICABLE = "NOTAPPLICABLE",
   REJECTED = "REJECTED",
+}
+
+export enum MEDICINE_TIMINGS {
+  EVENING = "EVENING",
+  MORNING = "MORNING",
+  NIGHT = "NIGHT",
+  NOON = "NOON",
+}
+
+export enum MEDICINE_TO_BE_TAKEN {
+  AFTER_FOOD = "AFTER_FOOD",
+  BEFORE_FOOD = "BEFORE_FOOD",
 }
 
 export enum REQUEST_ROLES {
@@ -68,7 +85,8 @@ export enum STATUS {
   COMPLETED = "COMPLETED",
   CONFIRMED = "CONFIRMED",
   IN_PROGRESS = "IN_PROGRESS",
-  MISSED = "MISSED",
+  NO_SHOW = "NO_SHOW",
+  PENDING = "PENDING",
 }
 
 export enum Salutation {
@@ -90,6 +108,13 @@ export enum WeekDay {
 export interface CreateAppointmentSessionInput {
   appointmentId: string;
   requestRole: REQUEST_ROLES;
+}
+
+export interface SaveDoctorDeviceTokenInput {
+  deviceType: DOCTOR_DEVICE_TYPE;
+  deviceToken: string;
+  deviceOS: string;
+  doctorId: string;
 }
 
 export interface UpdatePatientInput {
