@@ -756,7 +756,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         <div>
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatContainer}>
-              <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 342px' }}>
+              <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 346px' }}>
                 <div className={classes.customScroll}>
                   {messagessHtml}
                   <span id="scrollDiv"></span>
