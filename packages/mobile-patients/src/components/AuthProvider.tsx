@@ -27,6 +27,7 @@ import {
   savePatientAddress_savePatientAddress_patientAddress,
 } from '../graphql/types/savePatientAddress';
 import { PatientAddressInput } from '../graphql/types/globalTypes';
+import { AsyncStorage } from 'react-native';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
@@ -37,6 +38,7 @@ export interface AuthContextProps {
 
   currentPatientId: string | null;
   setCurrentPatientId: ((pid: string | null) => void) | null;
+  allPatients: object | null;
 
   sendOtp: ((phoneNumber: string) => Promise<unknown>) | null;
   sendOtpError: boolean;
@@ -80,6 +82,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
   addresses: [],
   selectedAddressId: '',
   setSelectedAddressId: null,
+
+  allPatients: null,
 });
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
@@ -135,6 +139,7 @@ export const AuthProvider: React.FC = (props) => {
     savePatientAddress_savePatientAddress_patientAddress[]
   >([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>('');
+  const [allPatients, setAllPatients] = useState<AuthContextProps['allPatients']>(null);
 
   const sendOtp = (phoneNumber: string) => {
     return new Promise(async (resolve, reject) => {
@@ -176,10 +181,16 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   const signOut = useCallback(() => {
-    auth.signOut();
-    setAuthToken('');
-    setCurrentPatientId(null);
-    console.log('authprovider signOut');
+    try {
+      auth.signOut();
+      setAuthToken('');
+      setCurrentPatientId(null);
+      setAllPatients(null);
+      AsyncStorage.setItem('userLoggedIn', 'false');
+      console.log('authprovider signOut');
+    } catch (error) {
+      console.log('signOut error', error);
+    }
   }, [auth]);
 
   useEffect(() => {
@@ -214,10 +225,14 @@ export const AuthProvider: React.FC = (props) => {
         setAuthToken(jwt);
 
         await apolloClient
-          .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
+          .query<GetCurrentPatients>({
+            query: GET_CURRENT_PATIENTS,
+            fetchPolicy: 'no-cache',
+          })
           .then((data) => {
             setSignInError(false);
             console.log('data', data);
+            setAllPatients(data);
           })
           .catch((error) => {
             setSignInError(true);
@@ -241,7 +256,7 @@ export const AuthProvider: React.FC = (props) => {
           .then(({ data: { getPatientAddressList: { addressList } } }) => {
             setAddresses(addressList!);
           })
-          .catch((e: ReadonlyArray<GraphQLError>) => {
+          .catch((e: GraphQLError[]) => {
             console.log({ e });
           });
     }, 3000);
@@ -253,12 +268,13 @@ export const AuthProvider: React.FC = (props) => {
         .mutate<savePatientAddress, savePatientAddressVariables>({
           mutation: SAVE_PATIENT_ADDRESS,
           variables: { PatientAddressInput: address },
+          fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
           setAddresses([data!.savePatientAddress!.patientAddress!, ...addresses]);
           res(data!.savePatientAddress!.patientAddress);
         })
-        .catch((e: ReadonlyArray<GraphQLError>) => {
+        .catch((e: GraphQLError[]) => {
           rej(e);
         });
     });
@@ -291,6 +307,8 @@ export const AuthProvider: React.FC = (props) => {
             addresses,
             selectedAddressId,
             setSelectedAddressId,
+
+            allPatients,
           }}
         >
           {props.children}

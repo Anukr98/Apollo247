@@ -3,6 +3,7 @@ package com.apollopatient;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.rnfs.RNFSPackage;
 import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 import com.learnium.RNDeviceInfo.RNDeviceInfo;
 import com.zxcpoiu.incallmanager.InCallManagerPackage;
@@ -38,6 +39,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RNFSPackage(),
             new AsyncStoragePackage(),
             new RNDeviceInfo(),
             new InCallManagerPackage(),

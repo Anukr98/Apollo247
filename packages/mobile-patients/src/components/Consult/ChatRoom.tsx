@@ -646,7 +646,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     ) {
       return null;
     }
-    if (rowData.id !== patientId) {
+    if (rowData.id === patientId) {
       leftComponent++;
       rightComponent = 0;
       return (
@@ -847,35 +847,57 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               )}
             </>
           ) : (
-            <View
-              style={{
-                backgroundColor: 'transparent',
-                width: 282,
-                borderRadius: 10,
-                marginVertical: 2,
-                alignSelf: 'flex-start',
-              }}
-            >
-              {leftComponent === 1 && (
+            <>
+              {rowData.message === 'Transfer' ? (
+                <View
+                  style={{ backgroundColor: '#0087ba', width: 244, height: 354, borderRadius: 10 }}
+                >
+                  <Text
+                    style={{ color: 'white', ...theme.fonts.IBMPlexSansMedium(15), lineHeight: 22 }}
+                  >
+                    Your appointment has been transferred to —
+                  </Text>
+                  <View style={{ marginVertical: 12, marginHorizontal: 16, borderRadius: 5 }}>
+                    <View style={{ backgroundColor: 'white', marginTop: 24, marginHorizontal: 0 }}>
+                      <Text
+                        style={{
+                          color: '#02475b',
+                          ...theme.fonts.IBMPlexSansMedium(18),
+                          marginLeft: 12,
+                          marginTop: 28,
+                        }}
+                      >
+                        Dr. Jayanth Reddy
+                      </Text>
+                      <Text
+                        style={{
+                          color: '#0087ba',
+                          ...theme.fonts.IBMPlexSansSemiBold(12),
+                          marginLeft: 12,
+                          marginTop: 4,
+                          letterSpacing: 0.3,
+                        }}
+                      >
+                        GENERAL PHYSICIAN | 7 YRS
+                      </Text>
+                    </View>
+                    <DoctorImage
+                      style={{ position: 'absolute', width: 48, height: 48, top: 0, right: 12 }}
+                    />
+                  </View>
+                </View>
+              ) : (
                 <View
                   style={{
-                    width: 32,
-                    height: 32,
-                    bottom: 0,
-                    position: 'absolute',
-                    left: 0,
+                    backgroundColor: 'transparent',
+                    width: 282,
+                    borderRadius: 10,
+                    marginVertical: 2,
+                    alignSelf: 'flex-start',
                   }}
                 >
-                  {appointmentData.doctorInfo.photoUrl ? (
-                    <Image
-                      source={{ uri: appointmentData.doctorInfo.photoUrl }}
-                      style={{
-                        width: 32,
-                        height: 32,
-                      }}
-                    />
-                  ) : (
-                    <DoctorImage
+                  {leftComponent === 1 && (
+                    <View
                       style={{
                         width: 32,
                         height: 32,
@@ -883,30 +905,50 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         position: 'absolute',
                         left: 0,
                       }}
-                    />
+                    >
+                      {appointmentData.doctorInfo.photoUrl ? (
+                        <Image
+                          source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                          style={{
+                            width: 32,
+                            height: 32,
+                          }}
+                        />
+                      ) : (
+                        <DoctorImage
+                          style={{
+                            width: 32,
+                            height: 32,
+                            bottom: 0,
+                            position: 'absolute',
+                            left: 0,
+                          }}
+                        />
+                      )}
+                    </View>
                   )}
+                  <View
+                    style={{
+                      backgroundColor: 'white',
+                      marginLeft: 38,
+                      borderRadius: 10,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: '#0087ba',
+                        paddingHorizontal: 16,
+                        paddingVertical: 12,
+                        ...theme.fonts.IBMPlexSansMedium(16),
+                        textAlign: 'left',
+                      }}
+                    >
+                      {rowData.message}
+                    </Text>
+                  </View>
                 </View>
               )}
-              <View
-                style={{
-                  backgroundColor: 'white',
-                  marginLeft: 38,
-                  borderRadius: 10,
-                }}
-              >
-                <Text
-                  style={{
-                    color: '#0087ba',
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    textAlign: 'left',
-                  }}
-                >
-                  {rowData.message}
-                </Text>
-              </View>
-            </View>
+            </>
           )}
         </View>
       );

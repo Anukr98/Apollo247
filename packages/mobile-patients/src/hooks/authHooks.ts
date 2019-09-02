@@ -23,7 +23,7 @@ export const useAuth = () => {
   const signOut = useAuthContext().signOut!;
 
   const analytics = useAnalytics();
-  // const callAuthProvider = useAuthContext().callAuthProvider!;
+  const allPatients = useAuthContext().allPatients!;
 
   return {
     verifyOtp,
@@ -39,7 +39,7 @@ export const useAuth = () => {
     signOut,
 
     analytics,
-    // callAuthProvider,
+    allPatients,
   };
 };
 
@@ -48,23 +48,30 @@ export const useCurrentPatient = () => useAllCurrentPatients().currentPatient;
 export const useAllCurrentPatients = () => {
   const isSigningIn = useAuthContext().isSigningIn;
   const hasAuthToken = useAuthContext().hasAuthToken;
-  const { loading, data, error } = useQuery<GetCurrentPatients>(GET_CURRENT_PATIENTS, {
-    skip: isSigningIn || !hasAuthToken,
-    fetchPolicy: 'no-cache',
-  });
+  const patientsArray = useAuthContext().allPatients;
+  console.log('patientsArray', patientsArray);
+
+  // const { loading, data, error } = useQuery<GetCurrentPatients>(GET_CURRENT_PATIENTS, {
+  //   skip: isSigningIn || !hasAuthToken,
+  //   fetchPolicy: 'no-cache',
+  // });
   // console.log('hasAuthToken', hasAuthToken);
   // console.log('hasAuthToken error', error);
+  // console.log('data', data);
 
   const setCurrentPatientId = useAuthContext().setCurrentPatientId!;
   const currentPatientId = useAuthContext().currentPatientId;
   const allCurrentPatients =
-    data && data.getCurrentPatients ? data.getCurrentPatients.patients : null;
+    patientsArray && patientsArray.data && patientsArray.data.getCurrentPatients
+      ? patientsArray.data.getCurrentPatients.patients
+      : null;
+
   const currentPatient = allCurrentPatients
     ? allCurrentPatients.find((patient) => patient.id === currentPatientId) || allCurrentPatients[0]
     : null;
 
-  // console.log('currentPatient', currentPatient);
-  // console.log('allCurrentPatients', allCurrentPatients);
+  console.log('currentPatient', currentPatient);
+  console.log('allCurrentPatients', allCurrentPatients);
   useEffect(() => {
     if (!currentPatientId) {
       const defaultCurrentPatient = allCurrentPatients
@@ -78,8 +85,8 @@ export const useAllCurrentPatients = () => {
   }, [allCurrentPatients, currentPatientId, setCurrentPatientId]);
 
   return {
-    loading,
-    error,
+    // loading,
+    // error,
     allCurrentPatients,
     currentPatient,
     setCurrentPatientId,

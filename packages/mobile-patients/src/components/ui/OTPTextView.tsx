@@ -11,6 +11,7 @@ import {
   TextInputProps,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
