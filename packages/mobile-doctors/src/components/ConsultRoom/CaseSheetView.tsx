@@ -787,7 +787,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <View style={styles.footerButtonsContainersave}>
             <Button
               title="START CONSULT"
-              // disabled={!enableConsultButton}
+              disabled={!enableConsultButton}
               buttonIcon={<Start />}
               onPress={() => {
                 setShowButtons(true);

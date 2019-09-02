@@ -198,10 +198,10 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
   const renderDropdownCard = () => (
     <View style={{ marginTop: 2 }}>
       <View style={styles.dropDownCardStyle}>
-        {filteredStarDoctors!.map((_doctor, i, array) => {
+        {sysmptonsList!.map((_doctor, i, array) => {
           //const doctor = _doctor!.associatedDoctor!;
 
-          const drName = ` ${_doctor.SearchDoctorAndSpecialty!.doctors}`;
+          const drName = ` ${_doctor.firstName!}`;
 
           return (
             <TouchableOpacity
@@ -271,11 +271,6 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
         setFilteredStarDoctors(_data.data.SearchDoctorAndSpecialty!.doctors);
         setfilterSpeciality(_data.data.SearchDoctorAndSpecialty!.specialties);
         setDoctorsCard(!doctorsCard);
-        console.log('flitered array', _data);
-
-        // const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
-        // setFilteredStarDoctors(doctorProfile);
-        // setDoctorsCard(!doctorsCard);
       })
       .catch((e) => {
         console.log('Error occured while searching for Doctors', e);

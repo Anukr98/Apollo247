@@ -566,6 +566,22 @@ export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
     }
   }
 `;
+
+export const INITIATE_TRANSFER_APPOINTMENT = gql`
+  mutation initiateTransferAppointment($TransferAppointmentInput: TransferAppointmentInput!) {
+    initiateTransferAppointment($TransferAppointmentInput: $TransferAppointmentInput!) {
+      transferAppointment {
+        id
+        appointmentId
+        transferStatus
+        transferReason
+        transferredDoctorId
+        transferredSpecialtyId
+        
+      }
+    }
+  }
+`;
 export const SAVE_DOCTOR_DEVICE_TOKEN = gql`
   mutation saveDoctorDeviceToken($SaveDoctorDeviceTokenInput: SaveDoctorDeviceTokenInput!) {
     saveDoctorDeviceToken(SaveDoctorDeviceTokenInput: $SaveDoctorDeviceTokenInput) {
