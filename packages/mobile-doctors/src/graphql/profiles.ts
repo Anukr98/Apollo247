@@ -511,7 +511,6 @@ export const SAVE_DOCTOR_DEVICE_TOKEN = gql`
     }
   }
 `;
-
 export const INITIATE_TRANSFER_APPOINTMENT = gql`
   mutation initiateTransferAppointment($TransferAppointmentInput: TransferAppointmentInput!) {
     initiateTransferAppointment($TransferAppointmentInput: $TransferAppointmentInput!) {
