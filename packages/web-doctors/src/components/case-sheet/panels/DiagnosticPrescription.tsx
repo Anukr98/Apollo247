@@ -23,7 +23,7 @@ interface OptionType {
   __typename: 'DiagnosticPrescription';
 }
 
-const suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [
+let suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [
   { name: 'Ultrasound', __typename: 'DiagnosticPrescription' },
   { name: 'Ultra-something else', __typename: 'DiagnosticPrescription' },
 ];
@@ -213,6 +213,14 @@ export const DiagnosticPrescription: React.FC = () => {
   useEffect(() => {
     if (idx >= 0) {
       setSelectedValues(selectedValues);
+      suggestions!.map((item, idx) => {
+        selectedValues!.map((val) => {
+          if (item!.name === val.name) {
+            const indexDelete = suggestions.indexOf(item);
+            suggestions!.splice(indexDelete, 1);
+          }
+        });
+      });
     }
   }, [selectedValues, idx]);
 
@@ -243,7 +251,14 @@ export const DiagnosticPrescription: React.FC = () => {
   };
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
   const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
-
+  const handleDelete = (item: any, idx: number) => {
+    console.log(item);
+    suggestions.splice(0, 0, item);
+    selectedValues!.splice(idx, 1);
+    setSelectedValues(selectedValues);
+    const sum = idx + Math.random();
+    setIdx(sum);
+  };
   const autosuggestProps = {
     renderInputComponent,
     suggestions: (stateSuggestions as unknown) as OptionType[],
@@ -267,7 +282,7 @@ export const DiagnosticPrescription: React.FC = () => {
                 className={classes.othersBtn}
                 key={idx}
                 label={item!.name}
-                onDelete={() => {}}
+                onDelete={() => handleDelete(item, idx)}
                 deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
               />
             ))}
@@ -290,6 +305,7 @@ export const DiagnosticPrescription: React.FC = () => {
               selectedValues!.push(suggestion);
               setSelectedValues(selectedValues);
               setShowAddCondition(false);
+              suggestions = suggestions.filter((val) => !selectedValues!.includes(val!));
               setState({
                 single: '',
                 popper: '',
