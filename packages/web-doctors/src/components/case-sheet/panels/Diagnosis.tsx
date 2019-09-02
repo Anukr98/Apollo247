@@ -29,7 +29,7 @@ interface OptionType {
   __typename: 'Diagnosis';
 }
 
-const suggestions: OptionType[] = [
+let suggestions: OptionType[] = [
   { name: 'Sore Throat', __typename: 'Diagnosis' },
   { name: 'Sorosis', __typename: 'Diagnosis' },
 ];
@@ -224,6 +224,16 @@ export const Diagnosis: React.FC = () => {
   useEffect(() => {
     if (idx >= 0) {
       setSelectedValues(selectedValues);
+      suggestions!.map((item, idx) => {
+        selectedValues!.map((val) => {
+          if (item.name === val.name) {
+            console.log(item, val);
+
+            const indexDelete = suggestions.indexOf(item);
+            suggestions!.splice(indexDelete, 1);
+          }
+        });
+      });
     }
   }, [selectedValues, idx]);
 
@@ -250,7 +260,9 @@ export const Diagnosis: React.FC = () => {
       [name]: newValue,
     });
   };
-  const handleDelete = (idx: number) => {
+  const handleDelete = (item: any, idx: number) => {
+    console.log(item);
+    suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
@@ -281,7 +293,7 @@ export const Diagnosis: React.FC = () => {
               className={classes.diagnosBtn}
               key={idx}
               label={item!.name}
-              onDelete={() => handleDelete(idx)}
+              onDelete={() => handleDelete(item, idx)}
               color="primary"
             />
           ))}
@@ -302,6 +314,7 @@ export const Diagnosis: React.FC = () => {
             selectedValues!.push(suggestion);
             setSelectedValues(selectedValues);
             setShowAddCondition(false);
+            suggestions = suggestions.filter((val) => !selectedValues!.includes(val));
             setState({
               single: '',
               popper: '',
