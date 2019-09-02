@@ -267,7 +267,6 @@ export const DiagnosticPrescription: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
-
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Typography component="div" className={classes.column}>
