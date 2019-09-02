@@ -54,6 +54,9 @@ import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHel
 import moment from 'moment';
 import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -163,6 +166,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [apiCalled, setApiCalled] = useState(false);
   const [userName, setuserName] = useState<string>('');
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
+  const [transferAccept, setTransferAccept] = useState<boolean>(false);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -850,15 +854,34 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             <>
               {rowData.message === 'Transfer' ? (
                 <View
-                  style={{ backgroundColor: '#0087ba', width: 244, height: 354, borderRadius: 10 }}
+                  style={{
+                    backgroundColor: '#0087ba',
+                    width: 244,
+                    height: 354,
+                    borderRadius: 10,
+                    ...theme.viewStyles.shadowStyle,
+                  }}
                 >
                   <Text
-                    style={{ color: 'white', ...theme.fonts.IBMPlexSansMedium(15), lineHeight: 22 }}
+                    style={{
+                      color: 'white',
+                      ...theme.fonts.IBMPlexSansMedium(15),
+                      lineHeight: 22,
+                      paddingHorizontal: 16,
+                      paddingTop: 12,
+                    }}
                   >
                     Your appointment has been transferred to —
                   </Text>
-                  <View style={{ marginVertical: 12, marginHorizontal: 16, borderRadius: 5 }}>
-                    <View style={{ backgroundColor: 'white', marginTop: 24, marginHorizontal: 0 }}>
+                  <View style={{ marginVertical: 12, marginHorizontal: 16 }}>
+                    <View
+                      style={{
+                        backgroundColor: 'white',
+                        marginTop: 24,
+                        marginHorizontal: 0,
+                        borderRadius: 5,
+                      }}
+                    >
                       <Text
                         style={{
                           color: '#02475b',
@@ -880,11 +903,82 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       >
                         GENERAL PHYSICIAN | 7 YRS
                       </Text>
+                      <View
+                        style={{
+                          marginHorizontal: 12,
+                          marginTop: 12,
+                          backgroundColor: '#02475b',
+                          opacity: 0.3,
+                          height: 1,
+                        }}
+                      />
+                      <Text
+                        style={{
+                          marginHorizontal: 12,
+                          marginTop: 11,
+                          ...theme.fonts.IBMPlexSansMedium(14),
+                          lineHeight: 20,
+                          color: '#02475b',
+                        }}
+                      >
+                        {`18th May, Monday\n9:00 am`}
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() => {
+                          props.navigation.navigate(AppRoutes.ChooseDoctor);
+                        }}
+                      >
+                        <Text
+                          style={{
+                            textAlign: 'right',
+                            color: '#fc9916',
+                            ...theme.fonts.IBMPlexSansBold(13),
+                            lineHeight: 24,
+                            marginHorizontal: 12,
+                            marginTop: 16,
+                            marginBottom: 12,
+                          }}
+                        >
+                          CHOOSE ANOTHER DOCTOR
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                     <DoctorImage
                       style={{ position: 'absolute', width: 48, height: 48, top: 0, right: 12 }}
                     />
                   </View>
+                  <StickyBottomComponent
+                    style={{
+                      paddingHorizontal: 0,
+                      backgroundColor: 'transparent',
+                      shadowColor: 'transparent',
+                    }}
+                  >
+                    <Button
+                      title={'RESCHEDULE'}
+                      style={{
+                        flex: 0.5,
+                        marginLeft: 16,
+                        marginRight: 5,
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderColor: '#fcb715',
+                      }}
+                      titleTextStyle={{ color: 'white' }}
+                      onPress={() => {}}
+                    />
+                    <Button
+                      title={'ACCEPT'}
+                      style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
+                      onPress={() => {
+                        setTransferAccept(true);
+
+                        setTimeout(() => {
+                          setTransferAccept(false);
+                        }, 1000);
+                      }}
+                    />
+                  </StickyBottomComponent>
                 </View>
               ) : (
                 <View
@@ -2093,6 +2187,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {onSubscribe && IncomingCallView()}
       {isCall && VideoCall()}
       {isAudioCall && AudioCall()}
+      {transferAccept && (
+        <BottomPopUp
+          title={'Please wait :)'}
+          description={'We’re taking you to Dr. Jayanth Reddy’s consult room.'}
+        />
+      )}
     </View>
   );
 };

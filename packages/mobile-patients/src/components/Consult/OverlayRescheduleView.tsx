@@ -1,12 +1,9 @@
-import { ConsultOnline } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultOnline';
+import { ConsultDoctorOnline } from '@aph/mobile-patients/src/components/Consult/ConsultDoctorOnline';
 import { ConsultPhysical } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPhysical';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { BOOK_APPOINTMENT, GET_AVAILABLE_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
@@ -17,18 +14,15 @@ import {
 import {
   APPOINTMENT_TYPE,
   BookAppointmentInput,
-  DoctorType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import moment from 'moment';
 import React, { useState } from 'react';
 import { Mutation } from 'react-apollo';
 import { useQuery } from 'react-apollo-hooks';
-import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { ConsultDoctorOnline } from '@aph/mobile-patients/src/components/Consult/ConsultDoctorOnline';
 
 const { width, height } = Dimensions.get('window');
 
