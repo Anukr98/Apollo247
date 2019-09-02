@@ -14,14 +14,34 @@ export interface MedicineProduct {
   status: number; // 1, 2 (1 = in-stock, 2= out-of-stock)
   thumbnail: string;
   type_id: string;
+  mou: string;
 }
 
-export interface CartItem {
+interface PharmaOverview {
+  generic: string;
+  Doseform: string;
+  Unit: string;
+  Strengh: string;
+  Overview:
+    | {
+        Caption: string;
+        CaptionDesc: string;
+      }[]
+    | string;
+}
+
+export interface MedicineProductDetails extends MedicineProduct {
+  PharmaOverview: PharmaOverview[];
+}
+
+export interface MedicineProductDetailsResponse {
+  productdp: MedicineProductDetails[];
+}
+
+export interface CartItem extends Partial<MedicineProduct> {
   item_id: number;
   sku: string;
   qty: number;
-  name: string;
-  price: number;
   product_type: string;
   quote_id: string;
   extension_attributes: {
@@ -93,9 +113,21 @@ export interface CartInfoResponse {
   grand_total: number;
 }
 
+export interface Store {
+  storeid: string;
+  storename: string;
+  address: string;
+  workinghrs: string;
+  phone: string;
+  city: string;
+  state: string;
+  message: string;
+}
+// 9f15bdd0fcd5423190c2e877ba0228A24
+//
 const AUTH_TOKEN = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
 
-const getQuoteId = async () =>
+export const getQuoteId = async () =>
   (await AsyncStorage.getItem('QUOTE_ID')) || (await generateAndSaveQuoteId()); // in-progress, need to optimize
 
 const getCartId = async () =>
@@ -134,22 +166,60 @@ export const generateQuoteIdApi = (): Promise<AxiosResponse<{ quote_id: string }
   return Axios.get(`http://api.apollopharmacy.in/apollo_api.php?type=guest_quote`);
 };
 
-export const getMedicineDetailsApi = (productSku: string) => {
-  return Axios.get(
-    `http://api.apollopharmacy.in/apollo_api.php?sku=${productSku}&type=product_desc`
+export const getMedicineDetailsApi = (
+  productSku: string
+): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
+  return Axios.post(
+    `http://13.126.95.18/searchpdp_api.php`,
+    { params: productSku },
+    {
+      headers: {
+        Authorization: AUTH_TOKEN,
+      },
+    }
   );
 };
 
 export const searchMedicineApi = (
   searchText: string
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
+  console.log({
+    AUTH_TOKEN,
+    url: 'http://13.126.95.18/searchprd_api.php',
+  });
+  // return Axios.post(
+  //   `http://uat.apollopharmacy.in/searchprd_api.php`,
+  //   { params: searchText },
+  //   {
+  //     headers: {
+  //       Authorization: AUTH_TOKEN,
+  //     },
+  //     transformRequest: [
+  //       (data, headers) => {
+  //         delete headers.common['Content-Type'];
+  //         return JSON.stringify(data);
+  //       },
+  //     ],
+  //   }
+  // );
+
   return Axios.post(
-    `http://uat.apollopharmacy.in/searchprd_api.php`,
+    // `http://uat.apollopharmacy.in/searchprd_api.php`,
+    `http://13.126.95.18/searchprd_api.php`,
     { params: searchText },
     {
       headers: {
         Authorization: AUTH_TOKEN,
+        'Content-Type': 'application/json',
       },
+      transformRequest: [
+        (data, headers) => {
+          // headers.common['Content-Type'];
+          console.log({ headers });
+          headers['Authorization'] = AUTH_TOKEN;
+          return JSON.stringify(data);
+        },
+      ],
     }
   );
 };
@@ -200,6 +270,42 @@ export const removeProductFromCartApi = async (
     {
       cartItem: {
         item_id: cartItemId,
+      },
+    }
+  );
+};
+
+export const searchPickupStoresApi = async (
+  pincode: string
+): Promise<AxiosResponse<{ Stores: Store[]; stores_count: number }>> => {
+  return Axios.post(
+    `http://13.126.95.18/searchpin_api.php`,
+    { params: pincode },
+    {
+      headers: {
+        Authorization: AUTH_TOKEN,
+      },
+    }
+  );
+};
+
+export const pinCodeServiceabilityApi = (
+  pinCode: string,
+  category: 'FMCG' | 'PHARMA'
+): Promise<AxiosResponse<{ Availability: boolean; catg: 'FMCG' | 'PHARMA' }>> => {
+  return Axios.post(
+    `http://uat.apollopharmacy.in/pincode_api.php`,
+    {
+      postalcode: pinCode,
+      skucategory: [
+        {
+          SKU: category,
+        },
+      ],
+    },
+    {
+      headers: {
+        Authorization: AUTH_TOKEN,
       },
     }
   );
