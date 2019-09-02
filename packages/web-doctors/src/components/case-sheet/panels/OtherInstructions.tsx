@@ -27,7 +27,7 @@ interface OptionType {
   __typename: 'OtherInstructions';
 }
 
-const suggestions: OptionType[] = [
+let suggestions: OptionType[] = [
   { instruction: 'Sore Throat', __typename: 'OtherInstructions' },
   { instruction: 'Sorosis', __typename: 'OtherInstructions' },
 ];
@@ -215,6 +215,14 @@ export const OtherInstructions: React.FC = () => {
   useEffect(() => {
     if (idx >= 0) {
       setSelectedValues(selectedValues);
+      suggestions!.map((item, idx) => {
+        selectedValues!.map((val) => {
+          if (item.instruction === val.instruction) {
+            const indexDelete = suggestions.indexOf(item);
+            suggestions!.splice(indexDelete, 1);
+          }
+        });
+      });
     }
   }, [selectedValues, idx]);
 
@@ -257,7 +265,9 @@ export const OtherInstructions: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
-  const handleDelete = (idx: number) => {
+  const handleDelete = (item: any, idx: number) => {
+    console.log(item);
+    suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
@@ -278,7 +288,7 @@ export const OtherInstructions: React.FC = () => {
                 className={classes.othersBtn}
                 key={idx}
                 label={item!.instruction}
-                onDelete={() => handleDelete(idx)}
+                onDelete={() => handleDelete(item, idx)}
                 deleteIcon={<img src={require('images/ic_selected.svg')} alt="" />}
               />
             ))}
@@ -301,6 +311,7 @@ export const OtherInstructions: React.FC = () => {
               selectedValues!.push(suggestion);
               setSelectedValues(selectedValues);
               setShowAddCondition(false);
+              suggestions = suggestions.filter((val) => !selectedValues!.includes(val));
               setState({
                 single: '',
                 popper: '',

@@ -724,7 +724,9 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
   const classes = useStyles();
   const doctorProfile = doctor;
   useEffect(() => {
-    const mobNumber = sessionStorage.getItem('mobileNumberSession');
+    const mobNumber = sessionStorage.getItem('mobileNumberSession')
+      ? sessionStorage.getItem('mobileNumberSession')
+      : doctor.delegateNumber;
     if (mobNumber) {
       setMobileNumber(mobNumber);
     } else if (mobNumber == null || (mobNumber && mobNumber.length == 0)) {
