@@ -115,6 +115,19 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    sectionHeader: {
+      color: '#02475b',
+      fontSize: 14,
+      fontWeight: 500,
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      paddingBottom: 10,
+      paddingTop: 10,
+      marginBottom: 20,
+      display: 'flex',
+      alignItems: 'center',
+      marginLeft: 20,
+      marginRight: 20,
+    },
   };
 });
 
@@ -160,7 +173,7 @@ export const ChatRoom: React.FC = (props) => {
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
             </a>
-            Consultation - Case #362079
+            Consult Room
           </div>
           <div className={classes.doctorListingSection}>
             <div className={classes.leftSection}>
@@ -173,6 +186,9 @@ export const ChatRoom: React.FC = (props) => {
               )}
             </div>
             <div className={classes.rightSection}>
+              <div className={classes.sectionHeader}>
+                <span>Case #362079 </span>
+              </div>
               {data && (
                 <ChatWindow
                   doctorDetails={data}
