@@ -4,6 +4,7 @@ import React from 'react';
 import { AphDialogTitle, AphButton, AphDialog } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
+import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -50,33 +51,30 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const AddressCard: React.FC = (props) => {
+interface AddressCardProps {
+  addresses: Array<GetPatientAddressList_getPatientAddressList_addressList>;
+}
+
+export const AddressCard: React.FC<AddressCardProps> = (props) => {
   const classes = useStyles();
   const [isEditAddressDialogOpen, setIsEditAddressDialogOpen] = React.useState<boolean>(false);
+  console.log('THE PROPS ARE: ', props);
+
+  const addressDivs = props.addresses.map((address) => {
+    return (
+      <Grid item sm={6} key={address.id}>
+        <div className={classes.root} onClick={() => setIsEditAddressDialogOpen(true)}>
+          {address.addressLine1}
+          <br /> {address.addressLine2}
+          <br /> {address.zipcode}
+        </div>
+      </Grid>
+    );
+  });
 
   return (
     <Grid container spacing={2}>
-      <Grid item sm={6}>
-        <div className={classes.root} onClick={() => setIsEditAddressDialogOpen(true)}>
-          27/A, Kalpataru Enclave
-          <br /> Jubilee Hills
-          <br /> Hyderabad, Telangana — 500033
-        </div>
-      </Grid>
-      <Grid item sm={6}>
-        <div className={classes.root} onClick={() => setIsEditAddressDialogOpen(true)}>
-          27/A, Kalpataru Enclave
-          <br /> Jubilee Hills
-          <br /> Hyderabad, Telangana — 500033
-        </div>
-      </Grid>
-      <Grid item sm={6}>
-        <div className={classes.root} onClick={() => setIsEditAddressDialogOpen(true)}>
-          27/A, Kalpataru Enclave
-          <br /> Jubilee Hills
-          <br /> Hyderabad, Telangana — 500033
-        </div>
-      </Grid>
+      {addressDivs}
       <AphDialog open={isEditAddressDialogOpen} maxWidth="sm">
         <AphDialogTitle>
           Edit Address
