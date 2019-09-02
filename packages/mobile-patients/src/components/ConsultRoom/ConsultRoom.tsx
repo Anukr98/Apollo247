@@ -692,6 +692,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </View>
         </BottomPopUp>
       )}
+      <BottomPopUp
+        title={string.common.greatPopup}
+        description={
+          'Your appointment with Dr. Jayanth has been scheduled for — 18th May, Monday, 12:00 pm'
+        }
+      >
+        <View style={{ height: 60, alignItems: 'flex-end' }}>
+          <TouchableOpacity style={styles.gotItStyles} onPress={() => {}}>
+            <Text style={styles.gotItTextStyles}>{string.home.welcome_popup.cta_label}</Text>
+          </TouchableOpacity>
+        </View>
+      </BottomPopUp>
       {showSpinner && <Spinner />}
     </View>
   );
