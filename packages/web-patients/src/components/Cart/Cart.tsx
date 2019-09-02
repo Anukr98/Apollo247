@@ -1,14 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, Tabs, Tab, Popover } from '@material-ui/core';
+import { Theme, Typography, Tabs, Tab } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
 import { Checkout } from 'components/Cart/Checkout';
-import { OrderSuccess } from 'components/Cart/OrderSuccess';
-import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -295,10 +293,8 @@ const TabContainer: React.FC = (props) => {
 
 export const Cart: React.FC = (props) => {
   const classes = useStyles();
-  const mascotRef = useRef(null);
 
   const [tabValue, setTabValue] = useState<number>(0);
-  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
@@ -522,10 +518,7 @@ export const Cart: React.FC = (props) => {
           </div>
           <div className={classes.dialogActions}>
             <AphButton
-              onClick={(e) => {
-                setIsPopoverOpen(true);
-                console.log(e);
-              }}
+              onClick={(e) => {}}
               color="primary"
               fullWidth
               disabled={disablePayButton}
@@ -536,30 +529,6 @@ export const Cart: React.FC = (props) => {
           </div>
         </div>
       </AphDialog>
-
-      <Popover
-        open={isPopoverOpen}
-        anchorEl={mascotRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
-            </div>
-            <OrderSuccess />
-            <OrderPlaced />
-          </div>
-        </div>
-      </Popover>
 
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
         <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
