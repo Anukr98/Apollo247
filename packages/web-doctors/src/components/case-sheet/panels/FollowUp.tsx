@@ -101,9 +101,9 @@ const useStyles = makeStyles(() => ({
     marginBottom: 10,
   },
   datepicker: {
-    borderBottom: '2px solid #00b38e',
+    // borderBottom: '2px solid #00b38e',
     '&:hover': {
-      borderBottom: '2px solid #00b38e',
+      // borderBottom: '2px solid #00b38e',
     },
     '& div': {
       '&:before': {
@@ -343,7 +343,6 @@ export const FollowUp: React.FC = () => {
                   <ThemeProvider theme={defaultMaterialTheme}>
                     <KeyboardDatePicker
                       disableToolbar
-                      className={classes.datepicker}
                       autoOk
                       placeholder="dd/mm/yyyy"
                       variant="inline"
