@@ -44,6 +44,9 @@ app.post('/paymed-response', (req, res) => {
   const date = new Date(new Date().toUTCString());
   const orderAutoId = payload.ORDERID;
 
+  /* make success and failure response */
+  const transactionStatus = payload.STATUS === 'TXN_FAILURE' ? 'failed' : 'success';
+
   /*save response in apollo24x7*/
   axios.defaults.headers.common['authorization'] = token;
   const requestJSON = {
@@ -69,7 +72,7 @@ app.post('/paymed-response', (req, res) => {
   axios
     .post(process.env.API_URL, requestJSON)
     .then((response) => {
-      const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${orderAutoId}&status=success`;
+      const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${orderAutoId}&status=${transactionStatus}`;
       res.redirect(redirectUrl);
     })
     .catch((error) => {

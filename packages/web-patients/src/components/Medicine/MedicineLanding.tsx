@@ -174,7 +174,7 @@ export const MedicineLanding: React.FC = (props) => {
             <div className={classes.mascotIcon}>
               <img src={require('images/ic_mascot.png')} alt="" />
             </div>
-            {orderStatus === 'failed' && <OrderFailed />}
+            {orderStatus === 'failed' && <OrderFailed close={() => setIsPopoverOpen(false)} />}
             {orderStatus === 'success' && <OrderPlaced orderId={orderId} />}
           </div>
         </div>

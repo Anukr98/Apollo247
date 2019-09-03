@@ -2,6 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography } from '@material-ui/core';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -37,7 +38,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const OrderFailed: React.FC = (props) => {
+interface OrderFailedProps {
+  close: () => void;
+}
+
+export const OrderFailed: React.FC<OrderFailedProps> = (props) => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
@@ -46,7 +51,15 @@ export const OrderFailed: React.FC = (props) => {
         <p>Your payment wasn’t successful due to bad network connectivity. Please try again.</p>
       </div>
       <div className={classes.actions}>
-        <AphButton type="submit" color="primary" classes={{ root: classes.button }}>
+        <AphButton
+          type="submit"
+          color="primary"
+          classes={{ root: classes.button }}
+          onClick={() => {
+            props.close();
+            window.location.href = clientRoutes.testsAndMedicine();
+          }}
+        >
           OK, GOT IT
         </AphButton>
       </div>
