@@ -1,7 +1,8 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Avatar } from '@material-ui/core';
 import React from 'react';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
+import { ChooseDoctor } from 'components/ChatRoom/ChooseDoctor';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -52,6 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const DoctorChatCard: React.FC = (props) => {
   const classes = useStyles();
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
 
   return (
     <div className={classes.root}>
@@ -63,8 +65,13 @@ export const DoctorChatCard: React.FC = (props) => {
         <div>9:00 am</div>
       </div>
       <div className={classes.cardActions}>
-        <AphButton>Choose Another Doctor</AphButton>
+        <AphButton onClick={() => setIsDialogOpen(true)}>Choose Another Doctor</AphButton>
       </div>
+      <AphDialog open={isDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsDialogOpen(false)} />
+        <AphDialogTitle>Choose Doctor</AphDialogTitle>
+        <ChooseDoctor />
+      </AphDialog>
     </div>
   );
 };
