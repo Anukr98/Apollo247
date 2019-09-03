@@ -7,6 +7,8 @@ import {
   MEDICINE_DELIVERY_TYPE,
   MEDICINE_ORDER_TYPE,
   MedicineOrderLineItems,
+  MEDICINE_ORDER_STATUS,
+  MedicineOrdersStatus,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -24,6 +26,7 @@ export const saveMedicineOrderTypeDefs = gql`
     RETURN_INITIATED
     ITEMS_RETURNED
     RETURN_ACCEPTED
+    PRESCRIPTION_UPLOADED
   }
 
   enum MEDICINE_DELIVERY_TYPE {
@@ -133,7 +136,9 @@ const SaveMedicineOrder: Resolver<
     deliveryType: MedicineCartInput.medicineDeliveryType,
     quoteId: MedicineCartInput.quoteId,
     prescriptionImageUrl: MedicineCartInput.prescriptionImageUrl,
+    currentStatus: MEDICINE_ORDER_STATUS.QUOTE,
   };
+
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
   if (saveOrder) {
@@ -145,6 +150,17 @@ const SaveMedicineOrder: Resolver<
       const lineItemOrder = await medicineOrdersRepo.saveMedicineOrderLineItem(orderItemAttrs);
       console.log(lineItemOrder);
     });
+
+    //save in order status table
+    const medicineOrderStatusAttrs: Partial<MedicineOrdersStatus> = {
+      medicineOrders: saveOrder,
+      orderStatus: MEDICINE_ORDER_STATUS.QUOTE,
+      statusDate: new Date(),
+    };
+    await medicineOrdersRepo.saveMedicineOrderStatus(
+      medicineOrderStatusAttrs,
+      saveOrder.orderAutoId
+    );
   }
   //console.log(saveOrder, 'save order');
 

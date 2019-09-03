@@ -48,7 +48,7 @@ function renderInputComponent(inputProps: any) {
           inputRef(node);
         },
         classes: {
-          input: classes.input,
+          root: classes.inputRoot,
         },
       }}
       {...other}
@@ -83,6 +83,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     input: {
       color: 'black',
+      paddingTop: 0,
     },
     suggestionsContainerOpen: {
       position: 'absolute',
@@ -245,7 +246,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 16,
       color: '#02475b',
       fontWeight: 500,
-      marginBottom: 10,
+      marginBottom: 20,
       '& button': {
         border: '1px solid #00b38e',
         padding: '5px 10px',
@@ -312,6 +313,28 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: '5px 10px',
       '&:hover': {
         backgroundColor: 'transparent',
+      },
+    },
+    inputRoot: {
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '& input': {
+        fontSize: 16,
+        fontWeight: 500,
+        color: '#01475b',
+        paddingTop: 0,
+      },
+      '&:hover': {
+        '&:before': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+        '&:after': {
+          borderBottom: '2px solid #00b38e !important',
+        },
       },
     },
   })
@@ -812,7 +835,7 @@ export const MedicinePrescription: React.FC = () => {
                       classes,
                       color: 'primary',
                       id: 'react-autosuggest-simple',
-                      placeholder: 'Search Instructions',
+                      placeholder: 'Search',
                       value: state.single,
 
                       onChange: handleChange('single'),

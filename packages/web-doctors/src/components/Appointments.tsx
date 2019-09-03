@@ -73,6 +73,18 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: theme.spacing(0, 2),
       color: '#0087ba',
       fontSize: 12,
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        bottom: 10,
+        left: 30,
+      },
+    },
+    videoIcomm: {
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        right: -88,
+        top: 5,
+      },
     },
     section2: {
       margin: '0 10px',
@@ -89,6 +101,7 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
     },
+
     subHeading: {
       color: '#ff748e',
       fontWeight: 700,
@@ -112,7 +125,10 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 20,
       lineHeight: '25px',
       [theme.breakpoints.between('sm', 'md')]: {
-        fontSize: 18,
+        fontSize: 15,
+      },
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 17,
       },
     },
     section3: {
@@ -121,11 +137,18 @@ const useStyles = makeStyles((theme: Theme) =>
     bigAvatar: {
       width: 60,
       height: 60,
+      [theme.breakpoints.down('xs')]: {
+        width: 40,
+        height: 40,
+      },
     },
     valign: {
       display: 'flex',
       alignItems: 'center',
       padding: '0 !important',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
     },
     bold: {
       fontWeight: 700,
@@ -133,6 +156,10 @@ const useStyles = makeStyles((theme: Theme) =>
     calendarContent: {
       backgroundColor: '#f7f7f7',
       paddingTop: 90,
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 0,
+        paddingRight: 5,
+      },
     },
     iconContainer: {
       '& text': {
@@ -146,6 +173,9 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
       color: '#0087ba',
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 8,
+      },
     },
     step: {
       marginTop: -8,
@@ -154,6 +184,9 @@ const useStyles = makeStyles((theme: Theme) =>
         marginTop: 0,
         marginLeft: 30,
         paddingLeft: 0,
+        [theme.breakpoints.down('xs')]: {
+          marginLeft: 20,
+        },
       },
       '&:last-child': {
         '& .stepContent': {
@@ -166,6 +199,9 @@ const useStyles = makeStyles((theme: Theme) =>
         borderRadius: '50%',
         marginTop: 0,
         marginLeft: 19,
+        [theme.breakpoints.down('xs')]: {
+          marginLeft: 10,
+        },
       },
       '& .cardRow': {
         border: '1px solid #0087ba',
@@ -361,7 +397,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                     <CardContent>
                       <Grid item xs={12}>
                         <Grid item container spacing={2}>
-                          <Grid item lg={5} sm={5} xs={4} key={1} container>
+                          <Grid item lg={5} sm={5} xs={12} key={1} container>
                             <Grid sm={3} xs={2} key={5} item>
                               <Avatar
                                 alt={appointment.details.patientName}
@@ -391,7 +427,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                             </Grid>
                           </Grid>
                           {!!appointment.details.checkups && !!appointment.details.checkups.length && (
-                            <Grid lg={5} sm={5} xs={5} key={2} item className={classes.valign}>
+                            <Grid lg={5} sm={5} xs={8} key={2} item className={classes.valign}>
                               <div className={classes.section1}>
                                 {(appointment.details.checkups.length > 3
                                   ? appointment.details.checkups.slice(0, 2)
@@ -416,7 +452,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                             </Grid>
                           )}
                           <Grid lg={2} sm={2} xs={3} key={3} className={classes.valign} item>
-                            <div className={classes.section2}>
+                            <div className={`${classes.section2} ${classes.videoIcomm}`}>
                               <IconButton aria-label="Video call">
                                 <img src={require('images/ic_video.svg')} alt="" />
                               </IconButton>

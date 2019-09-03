@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Theme } from '@material-ui/core';
 import { Calendar, momentLocalizer, ToolbarProps } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -10,7 +11,7 @@ import {
 import { addMinutes, format, startOfToday } from 'date-fns/esm';
 import { startOfMonth, endOfMonth } from 'date-fns';
 
-const useStyles = makeStyles(() => {
+const useStyles = makeStyles((theme: Theme) => {
   return {
     calendarContainer: {
       backgroundColor: '#f7f7f7',
@@ -18,6 +19,9 @@ const useStyles = makeStyles(() => {
       fontSize: 18,
       color: 'rgba(101, 143, 155, 0.6)',
       display: 'flex',
+      [theme.breakpoints.down('xs')]: {
+        position: 'relative',
+      },
     },
     calenderIcon: {
       cursor: 'pointer',
@@ -28,6 +32,14 @@ const useStyles = makeStyles(() => {
       boxShadow: '-4px 2px 10px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: '#fff',
       height: 76,
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        right: 35,
+        top: -60,
+        borderRadius: 0,
+        boxShadow: 'none',
+        backgroundColor: 'transparent',
+      },
       '& img': {
         margin: 'auto',
         width: 24,
@@ -41,6 +53,14 @@ const useStyles = makeStyles(() => {
       boxShadow: '-4px 2px 10px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: '#fff',
       height: 76,
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        right: 5,
+        top: -60,
+        borderRadius: 0,
+        boxShadow: 'none',
+        backgroundColor: 'transparent',
+      },
       '& img': {
         margin: 'auto',
       },
@@ -55,6 +75,9 @@ const useStyles = makeStyles(() => {
       boxShadow: '0px 2px 10px 0 rgba(0, 0, 0, 0.2)',
       height: 700,
       overflow: 'hidden',
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
       '& .rbc-toolbar': {
         backgroundColor: '#f7f7f7',
         padding: 24,

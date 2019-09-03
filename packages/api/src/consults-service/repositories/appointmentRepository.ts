@@ -5,6 +5,7 @@ import {
   STATUS,
   patientLogSort,
   patientLogType,
+  APPOINTMENT_STATE,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -311,5 +312,9 @@ export class AppointmentRepository extends Repository<Appointment> {
     }
 
     return results.getRawMany();
+  }
+
+  updateTransferState(id: string, appointmentState: APPOINTMENT_STATE) {
+    this.update(id, { appointmentState });
   }
 }

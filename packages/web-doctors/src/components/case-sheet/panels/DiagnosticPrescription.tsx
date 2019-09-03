@@ -3,7 +3,7 @@ import { Typography, Chip, Theme, MenuItem, Paper, TextField } from '@material-u
 import DoneIcon from '@material-ui/icons/Done';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import AddCircle from '@material-ui/icons/AddCircle';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphTextField } from '@aph/web-ui-components';
 import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -23,7 +23,7 @@ interface OptionType {
   __typename: 'DiagnosticPrescription';
 }
 
-const suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [
+let suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [
   { name: 'Ultrasound', __typename: 'DiagnosticPrescription' },
   { name: 'Ultra-something else', __typename: 'DiagnosticPrescription' },
 ];
@@ -32,7 +32,7 @@ function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
 
   return (
-    <TextField
+    <AphTextField
       fullWidth
       InputProps={{
         inputRef: (node) => {
@@ -40,7 +40,7 @@ function renderInputComponent(inputProps: any) {
           inputRef(node);
         },
         classes: {
-          input: classes.input,
+          root: classes.inputRoot,
         },
       }}
       {...other}
@@ -199,6 +199,28 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
       marginTop: 2,
     },
+    inputRoot: {
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '& input': {
+        fontSize: 16,
+        fontWeight: 500,
+        color: '#01475b',
+        paddingTop: 0,
+      },
+      '&:hover': {
+        '&:before': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+        '&:after': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+      },
+    },
   })
 );
 
@@ -213,6 +235,14 @@ export const DiagnosticPrescription: React.FC = () => {
   useEffect(() => {
     if (idx >= 0) {
       setSelectedValues(selectedValues);
+      suggestions!.map((item, idx) => {
+        selectedValues!.map((val) => {
+          if (item!.name === val.name) {
+            const indexDelete = suggestions.indexOf(item);
+            suggestions!.splice(indexDelete, 1);
+          }
+        });
+      });
     }
   }, [selectedValues, idx]);
 
@@ -243,7 +273,14 @@ export const DiagnosticPrescription: React.FC = () => {
   };
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
   const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
-
+  const handleDelete = (item: any, idx: number) => {
+    console.log(item);
+    suggestions.splice(0, 0, item);
+    selectedValues!.splice(idx, 1);
+    setSelectedValues(selectedValues);
+    const sum = idx + Math.random();
+    setIdx(sum);
+  };
   const autosuggestProps = {
     renderInputComponent,
     suggestions: (stateSuggestions as unknown) as OptionType[],
@@ -252,7 +289,6 @@ export const DiagnosticPrescription: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
-
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Typography component="div" className={classes.column}>
@@ -267,7 +303,7 @@ export const DiagnosticPrescription: React.FC = () => {
                 className={classes.othersBtn}
                 key={idx}
                 label={item!.name}
-                onDelete={() => {}}
+                onDelete={() => handleDelete(item, idx)}
                 deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
               />
             ))}
@@ -290,6 +326,7 @@ export const DiagnosticPrescription: React.FC = () => {
               selectedValues!.push(suggestion);
               setSelectedValues(selectedValues);
               setShowAddCondition(false);
+              suggestions = suggestions.filter((val) => !selectedValues!.includes(val!));
               setState({
                 single: '',
                 popper: '',

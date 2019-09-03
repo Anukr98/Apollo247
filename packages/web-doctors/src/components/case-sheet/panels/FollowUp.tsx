@@ -80,6 +80,16 @@ const useStyles = makeStyles(() => ({
         },
       },
     },
+    '& .MuiInput': {
+      borderBottom: '2px solid #00b38e',
+      '&:before': {
+        borderBottom: '2px solid #00b38e !important',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e !important',
+        borderBottomColor: '#00b38e !important',
+      },
+    },
     '&.markLabel': {
       color: '#02475b',
       fontSize: 12,
@@ -91,6 +101,10 @@ const useStyles = makeStyles(() => ({
     marginBottom: 10,
   },
   datepicker: {
+    // borderBottom: '2px solid #00b38e',
+    '&:hover': {
+      // borderBottom: '2px solid #00b38e',
+    },
     '& div': {
       '&:before': {
         // borderBottom: '#f7f7f7 !important',
@@ -104,7 +118,7 @@ const useStyles = makeStyles(() => ({
       color: 'rgba(2,71,91,0.5)',
       fontSize: 18,
       fontWeight: 500,
-      borderBottom: 'none',
+
       '&:hover': {
         // borderBottom: 'none',
         '&:before': {
@@ -329,7 +343,6 @@ export const FollowUp: React.FC = () => {
                   <ThemeProvider theme={defaultMaterialTheme}>
                     <KeyboardDatePicker
                       disableToolbar
-                      className={classes.datepicker}
                       autoOk
                       placeholder="dd/mm/yyyy"
                       variant="inline"
