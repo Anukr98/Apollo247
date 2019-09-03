@@ -92,7 +92,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const OrderPlaced: React.FC = (props) => {
+interface OrderPlacedProps {
+  orderId: string;
+}
+
+export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
   const classes = useStyles();
   return (
     <div className={classes.root}>

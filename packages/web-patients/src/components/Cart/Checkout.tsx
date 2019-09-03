@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, FormControlLabel } from '@material-ui/core';
-import React from 'react';
+import React, { useState } from 'react';
 import { AphRadio, AphSlider } from '@aph/web-ui-components';
 import { AphCheckbox } from 'components/AphCheckbox';
 
@@ -101,37 +101,45 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-const apolloPoints = [
-  {
-    value: 0,
-    label: '0',
-  },
-  {
-    value: 360,
-    label: '360',
-  },
-];
+// const apolloPoints = [
+//   {
+//     value: 0,
+//     label: '0',
+//   },
+//   {
+//     value: 360,
+//     label: '360',
+//   },
+// ];
 
-function valuetext(value: number) {
-  return `${value}`;
+// function valuetext(value: number) {
+//   return `${value}`;
+// }
+
+interface CheckOutProps {
+  setPaymentMethod: (paymentMethod: string) => void;
 }
 
-export const Checkout: React.FC = (props) => {
+export const Checkout: React.FC<CheckOutProps> = (props) => {
   const classes = useStyles();
+
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
 
   return (
     <div className={classes.root}>
-      <div className={classes.sectionHeader}>
-        Would you like to use Apollo Health Credits for this payment?
-      </div>
+      <div className={classes.sectionHeader}>How would you prefer to pay?</div>
       <div className={classes.checkoutType}>
         <ul>
           <li>
             <FormControlLabel
               className={classes.radioLabel}
-              value="a"
+              value="ONEAPOLLO"
               control={<AphCheckbox color="primary" />}
-              checked
+              checked={'ONEAPOLLO' === paymentMethod}
+              onChange={() => {
+                setPaymentMethod('ONEAPOLLO');
+                props.setPaymentMethod('ONEAPOLLO');
+              }}
               label={
                 <div className={classes.apolloOne}>
                   <span>
@@ -143,7 +151,7 @@ export const Checkout: React.FC = (props) => {
                 </div>
               }
             />
-            <div className={classes.slider}>
+            {/* <div className={classes.slider}>
               <AphSlider
                 defaultValue={20}
                 getAriaValueText={valuetext}
@@ -158,28 +166,38 @@ export const Checkout: React.FC = (props) => {
                 <span>Balance amount to pay</span>
                 <span className={classes.totalAmount}>Rs. 160</span>
               </div>
-            </div>
+            </div> */}
           </li>
         </ul>
       </div>
+
       <div className={classes.paymentsDisabled}>
-        <div className={classes.sectionHeader}>Pick a payment mode</div>
         <div className={classes.checkoutType}>
           <ul>
             <li>
               <FormControlLabel
                 className={classes.radioLabel}
-                value="b"
+                value="PAYTM"
+                checked={'PAYTM' === paymentMethod}
                 control={<AphRadio color="primary" />}
                 label="Pay Using Paytm"
+                onChange={() => {
+                  setPaymentMethod('PAYTM');
+                  props.setPaymentMethod('PAYTM');
+                }}
               />
             </li>
             <li>
               <FormControlLabel
                 className={classes.radioLabel}
-                value="b"
+                value="COD"
+                checked={'COD' === paymentMethod}
                 control={<AphRadio color="primary" />}
                 label="Cash On Delivery"
+                onChange={() => {
+                  setPaymentMethod('COD');
+                  props.setPaymentMethod('ONEAPOLLO');
+                }}
               />
             </li>
           </ul>

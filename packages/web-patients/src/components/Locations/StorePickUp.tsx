@@ -1,16 +1,17 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, FormControlLabel } from '@material-ui/core';
-import React from 'react';
+import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
+import React, { useEffect, useState } from 'react';
 import {
   AphDialog,
   AphRadio,
   AphButton,
   AphTextField,
   AphDialogTitle,
+  AphDialogClose,
 } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
-import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllStoreAddress } from 'components/Locations/ViewAllStoreAddress';
+import axios, { AxiosError, Cancel } from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -27,6 +28,10 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         color: '#01475b',
       },
+    },
+    buttonDisable: {
+      backgroundColor: '#fed984',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2) !important',
     },
     radioLabel: {
       margin: 0,
@@ -92,45 +97,146 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const StorePickUp: React.FC = (props) => {
+export interface StoreAddresses {
+  address: string;
+  city: string;
+  message: string;
+  phone: string;
+  state: string;
+  storeid: string;
+  storename: string;
+  workinghrs: string;
+}
+
+interface StorePickupProps {
+  pincode: string;
+  updateDeliveryAddress: (deliveryAddressId: string) => void;
+}
+
+export const StorePickUp: React.FC<StorePickupProps> = (props) => {
   const classes = useStyles();
-  const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
+  const [storeAddressId, setStoreAddressId] = React.useState<string>('');
+  const [storeAddresses, setStoreAddresses] = React.useState<StoreAddresses[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [pincodeError, setPincodeError] = useState<boolean>(false);
   const [isViewAllAddressDialogOpen, setIsViewAllAddressDialogOpen] = React.useState<boolean>(
     false
   );
+  const [pincode, setPincode] = useState<string>(props.pincode);
+
+  let showAddress = 0;
+
+  const getPharmacyAddresses = (pincode: string) => {
+    axios
+      .post(
+        process.env.PHARMACY_MED_PHARMACIES_LIST_URL,
+        { params: pincode },
+        {
+          headers: {
+            Authorization: process.env.PHARMACY_MED_AUTH_TOKEN,
+          },
+          transformRequest: [
+            (data, headers) => {
+              delete headers.common['Content-Type'];
+              return JSON.stringify(data);
+            },
+          ],
+        }
+      )
+      .then((result) => {
+        setTimeout(() => {
+          const stores = result.data.Stores ? result.data.Stores : [];
+          if (stores && stores[0] && stores[0].message !== 'Data Not Available') {
+            setTimeout(() => {}, 500);
+            setStoreAddresses(stores);
+          } else {
+            setStoreAddresses([]);
+            setPincodeError(true);
+          }
+          setLoading(false);
+        }, 1000);
+      })
+      .catch((thrown: AxiosError | Cancel) => {
+        alert('An error occurred while fetching Stores.');
+      });
+  };
+
+  useEffect(() => {
+    if (pincode.length === 6) {
+      setLoading(true);
+      getPharmacyAddresses(pincode);
+    }
+  }, [pincode]);
+
+  //set store address in cart.
+  props.updateDeliveryAddress(storeAddressId);
 
   return (
     <div className={classes.root}>
       <div className={classes.searchAddress}>
-        <AphTextField value="500033" />
+        <AphTextField
+          placeholder="Enter Pincode"
+          inputProps={{
+            maxLength: 6,
+            type: 'text',
+          }}
+          onKeyPress={(e) => {
+            if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+          }}
+          value={pincode}
+          onChange={(e) => {
+            const newPincode = e.target.value;
+            setPincode(e.target.value);
+            if (newPincode.length === 6) {
+              setLoading(true);
+              getPharmacyAddresses(newPincode);
+            } else if (newPincode === '') {
+              setStoreAddresses([]);
+              setPincodeError(false);
+            }
+          }}
+          autoFocus
+        />
       </div>
-      <ul>
-        <li>
-          <FormControlLabel
-            className={classes.radioLabel}
-            value="a"
-            control={<AphRadio color="primary" />}
-            checked
-            label="Apollo Pharmacy
-            Plot No B/88, Opposite Andhra Bank, Jubilee Hills"
-          />
-        </li>
-        <li>
-          <FormControlLabel
-            className={classes.radioLabel}
-            value="b"
-            control={<AphRadio color="primary" />}
-            label="Apollo Pharmacy
-            Plot No B/88, Opposite Andhra Bank, Jubilee Hills"
-          />
-        </li>
-      </ul>
-      <div className={classes.noAddress}>
-        Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from
-        a nearby store, or change the pincode.
-      </div>
+
+      {!loading ? (
+        <ul>
+          {storeAddresses.length > 0 ? (
+            storeAddresses.map((addressDetails, index) => {
+              const storeAddress = addressDetails.address.replace(' -', ' ,');
+              showAddress++;
+              return showAddress < 3 ? (
+                <li key={index}>
+                  <FormControlLabel
+                    checked={storeAddressId === addressDetails.storeid}
+                    className={classes.radioLabel}
+                    value={addressDetails.storeid}
+                    control={<AphRadio color="primary" />}
+                    label={storeAddress}
+                    onChange={() => {
+                      setStoreAddressId(addressDetails.storeid);
+                    }}
+                  />
+                </li>
+              ) : (
+                ''
+              );
+            })
+          ) : (
+            <>
+              {pincodeError && (
+                <div className={classes.noAddress}>
+                  Sorry! We're working hard to get to this area! In the meantime, you can either
+                  pick up from a nearby store, or change the pincode.
+                </div>
+              )}
+            </>
+          )}
+        </ul>
+      ) : (
+        <CircularProgress />
+      )}
       <div className={classes.bottomActions}>
-        <AphButton onClick={() => setIsAddAddressDialogOpen(true)}>Add new address</AphButton>
         <AphButton
           onClick={() => setIsViewAllAddressDialogOpen(true)}
           className={classes.viewAllBtn}
@@ -138,32 +244,11 @@ export const StorePickUp: React.FC = (props) => {
           View All
         </AphButton>
       </div>
-      <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
-        <AphDialogTitle>
-          <div className={classes.backArrow}>
-            <img src={require('images/ic_back.svg')} alt="" />
-          </div>
-          Add New Address
-        </AphDialogTitle>
-        <div className={classes.shadowHide}>
-          <div className={classes.dialogContent}>
-            <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
-              <div className={classes.customScrollBar}>
-                <AddNewAddress />
-              </div>
-            </Scrollbars>
-          </div>
-          <div className={classes.dialogActions}>
-            <AphButton color="primary" fullWidth>
-              Save & Use
-            </AphButton>
-          </div>
-        </div>
-      </AphDialog>
       <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsViewAllAddressDialogOpen(false)} />
         <AphDialogTitle>
           <div className={classes.backArrow}>
-            <img src={require('images/ic_back.svg')} alt="" />
+            <img src={require('images/ic_back.svg')} alt="Store Pick Up" />
           </div>
           Store Pick Up
         </AphDialogTitle>
@@ -171,12 +256,21 @@ export const StorePickUp: React.FC = (props) => {
           <div className={classes.dialogContent}>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
               <div className={classes.customScrollBar}>
-                <ViewAllStoreAddress />
+                <ViewAllStoreAddress
+                  pincode={pincode}
+                  stores={storeAddresses}
+                  setStoreAddress={(storeAddressId) => setStoreAddressId(storeAddressId)}
+                />
               </div>
             </Scrollbars>
           </div>
           <div className={classes.dialogActions}>
-            <AphButton color="primary" fullWidth>
+            <AphButton
+              color="primary"
+              fullWidth
+              disabled={storeAddressId === ''}
+              className={storeAddressId === '' ? classes.buttonDisable : ''}
+            >
               Done
             </AphButton>
           </div>
