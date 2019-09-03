@@ -32,7 +32,6 @@ export const transferAppointmentTypeDefs = gql`
 
   enum APPOINTMENT_STATE {
     NEW
-    FOLLOW_UP
     TRANSFER
     RESCHEDULE
   }
