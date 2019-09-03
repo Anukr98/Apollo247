@@ -529,11 +529,23 @@ export const INITIATE_TRANSFER_APPONITMENT = gql`
     initiateTransferAppointment(TransferAppointmentInput: $TransferAppointmentInput) {
       transferAppointment {
         id
-        appointmentId
         transferStatus
         transferReason
         transferredDoctorId
         transferredSpecialtyId
+      }
+      doctorNextSlot
+    }
+  }
+`;
+export const INITIATE_RESCHDULE_APPONITMENT = gql`
+  mutation InitiateRescheduleAppointment($RescheduleAppointmentInput: RescheduleAppointmentInput!) {
+    initiateRescheduleAppointment(RescheduleAppointmentInput: $RescheduleAppointmentInput) {
+      rescheduleAppointment {
+        id
+        rescheduleStatus
+        rescheduleReason
+        rescheduledDateTime
       }
     }
   }

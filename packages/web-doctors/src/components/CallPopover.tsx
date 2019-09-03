@@ -16,7 +16,15 @@ import {
   SearchDoctorAndSpecialty,
   SearchDoctorAndSpecialtyVariables,
 } from 'graphql/types/SearchDoctorAndSpecialty';
-import { INITIATE_TRANSFER_APPONITMENT, SEARCH_DOCTOR_AND_SPECIALITY } from 'graphql/profiles';
+import {
+  InitiateRescheduleAppointment,
+  InitiateRescheduleAppointmentVariables,
+} from 'graphql/types/InitiateRescheduleAppointment';
+import {
+  INITIATE_TRANSFER_APPONITMENT,
+  SEARCH_DOCTOR_AND_SPECIALITY,
+  INITIATE_RESCHDULE_APPONITMENT,
+} from 'graphql/profiles';
 import { TRANSFER_INITIATED_TYPE } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -489,41 +497,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
   };
   const client = useApolloClient();
-  const transferConsultAction = () => {
-    client
-      .mutate<InitiateTransferAppointment, InitiateTransferAppointmentVariables>({
-        mutation: INITIATE_TRANSFER_APPONITMENT,
-        variables: {
-          TransferAppointmentInput: {
-            appointmentId: props.appointmentId,
-            transferInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
-            transferInitiatedId: props.doctorId,
-            transferredDoctorId: 'c4c0f83e-7b8b-4033-8ab7-ab49b07d5771',
-            transferredSpecialtyId: '',
-            transferReason: reason,
-            transferNotes: noteKeyword,
-          },
-        },
-      })
-      .then((_data: any) => {
-        console.log(_data);
-        // const transferObject: any = {
-        //   cardType: 'transfer',
-        //   appointmentId: props.appointmentId,
-        //   transferDateTime: '2019/09/04',
-        //   photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_3.png',
-        //   doctorId: 'c4c0f83e-7b8b-4033-8ab7-ab49b07d5771',
-        //   specialtyId: '',
-        //   doctorName: 'Sudheer Kumar',
-        //   experience: '5 Yrs',
-        //   specilty: 'Neurology',
-        // };
-        //setIsTransferPopoverOpen(false);
-      })
-      .catch((e: any) => {
-        console.log('Error occured while searching for Initiate transfera apppointment', e);
-      });
-  };
   const doctorSpeciality = (searchText: string) => {
     client
       .query<SearchDoctorAndSpecialty, SearchDoctorAndSpecialtyVariables>({
@@ -567,10 +540,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   }
   const openThreeDots = Boolean(anchorElThreeDots);
   const idThreeDots = openThreeDots ? 'simple-three-dots' : undefined;
-  const resheduleCosult = () => {};
-
   const startConsult = '^^#startconsult';
   const stopConsult = '^^#stopconsult';
+  const transferconsult = '^^#transferconsult';
+  const rescheduleconsult = '^^#rescheduleconsult';
   const channel = props.appointmentId;
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
@@ -625,7 +598,87 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       (status, response) => {}
     );
   };
-
+  const transferConsultAction = () => {
+    client
+      .mutate<InitiateTransferAppointment, InitiateTransferAppointmentVariables>({
+        mutation: INITIATE_TRANSFER_APPONITMENT,
+        variables: {
+          TransferAppointmentInput: {
+            appointmentId: props.appointmentId,
+            transferInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+            transferInitiatedId: props.doctorId,
+            transferredDoctorId: 'ee6e2ab4-5417-4bd0-8808-0964c3192a86',
+            transferredSpecialtyId: '',
+            transferReason: reason,
+            transferNotes: noteKeyword,
+          },
+        },
+      })
+      .then((_data: any) => {
+        console.log(_data!.data!.initiateTransferAppointment!.doctorNextSlot);
+        const transferObject: any = {
+          appointmentId: props.appointmentId,
+          transferDateTime: _data!.data!.initiateTransferAppointment!.doctorNextSlot,
+          photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_3.png',
+          doctorId: 'ee6e2ab4-5417-4bd0-8808-0964c3192a86',
+          specialtyId: '',
+          doctorName: 'Sudheer Kumar',
+          experience: '5 Yrs',
+          specilty: 'Neurology',
+        };
+        pubnub.publish(
+          {
+            message: {
+              id: props.doctorId,
+              message: transferconsult,
+            },
+            channel: channel,
+            storeInHistory: true,
+            meta: transferObject,
+          },
+          (status, response) => {}
+        );
+        //setIsTransferPopoverOpen(false);
+      })
+      .catch((e: any) => {
+        console.log('Error occured while searching for Initiate transfera apppointment', e);
+      });
+  };
+  const rescheduleConsultAction = () => {
+    // do api call
+    //setIsLoading(true);
+    client
+      .mutate<InitiateRescheduleAppointment, InitiateRescheduleAppointmentVariables>({
+        mutation: INITIATE_RESCHDULE_APPONITMENT,
+        variables: {
+          RescheduleAppointmentInput: {
+            appointmentId: props.appointmentId,
+            rescheduleReason: reason,
+            rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+            rescheduleInitiatedId: props.doctorId,
+            rescheduledDateTime: '2019-09-09T09:00:00.000Z',
+            autoSelectSlot: 0,
+          },
+        },
+      })
+      .then((_data) => {
+        //setIsLoading(false);
+        console.log('data', _data);
+        //Alert.alert('Success', 'Reschdule Successfully');
+      })
+      .catch((e) => {
+        //setIsLoading(false);
+        console.log('Error occured while searching for Initiate reschdule apppointment', e);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log(
+          'Error occured while searching for Initiate reschdule apppointment',
+          errorMessage,
+          error
+        );
+        //Alert.alert('Error', errorMessage);
+      });
+  };
   const getTimerText = () => {
     const now = new Date();
     const diff = moment.duration(
@@ -874,7 +927,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               className={classes.ResheduleCosultButton}
               onClick={() => {
                 setIsPopoverOpen(false);
-                resheduleCosult();
+                rescheduleConsultAction;
               }}
             >
               Reshedule Consult
