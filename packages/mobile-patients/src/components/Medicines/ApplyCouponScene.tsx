@@ -1,3 +1,4 @@
+import { Coupon, useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -7,7 +8,7 @@ import {
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
@@ -74,32 +75,48 @@ const styles = StyleSheet.create({
   },
 });
 
-const couponsArray = [
+interface CouponExtension extends Coupon {
+  description: string;
+}
+
+const couponsArray: CouponExtension[] = [
   {
-    code: 'MED50',
-    description: 'Get 5% off on total bill by shopping for Rs. 500 or more',
-  },
-  {
-    code: 'MED50',
-    description: 'Get 5% off on total bill by shopping for Rs. 500 or more',
-  },
-  {
-    code: 'MED50',
-    description: 'Get 5% off on total bill by shopping for Rs. 500 or more',
+    code: 'MED10',
+    description: 'Get 10% off on total bill by shopping for Rs. 500 or more',
+    type: 'unlimited',
+    discountPercentage: 10,
+    minCartValue: 500,
   },
 ];
 
 export interface ApplyCouponSceneProps extends NavigationScreenProps {}
 
 export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
-  const [coupon, setCoupon] = useState<string>('');
-  const [isSelected, setSelected] = useState<boolean>(false);
-  const [isValidCoupon, setValidCoupon] = useState<boolean>(true);
+  const [couponText, setCouponText] = useState<string>('');
+  const [isValidCoupon, setValidCoupon] = useState<boolean>(false);
+  const { setCoupon, coupon: cartCoupon, cartTotal } = useShoppingCart();
+
+  const applyCoupon = ({ code, minCartValue, discountPercentage, type }: CouponExtension) => {
+    setCoupon && setCoupon({ code, discountPercentage, minCartValue, type });
+    props.navigation.goBack();
+  };
 
   const renderBottomButtons = () => {
     return (
       <View style={styles.bottonButtonContainer}>
-        <Button disabled={!(coupon.length == 6)} title="APPLY COUPON" style={{ flex: 1 }} />
+        <Button
+          disabled={!(couponText.length > 3)}
+          title="APPLY COUPON"
+          onPress={() => {
+            const foundCoupon = couponsArray.find((coupon) => coupon.code == couponText);
+            if (foundCoupon) {
+              applyCoupon(foundCoupon);
+            } else {
+              setValidCoupon(false);
+            }
+          }}
+          style={{ flex: 1 }}
+        />
       </View>
     );
   };
@@ -107,28 +124,32 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const renderInputWithValidation = () => {
     return (
       <View style={{ paddingBottom: 24 }}>
-        {coupon.length == 6 && isValidCoupon && (
+        {/*
+        {isValidCoupon && (
           <View style={styles.tickIconContainer}>
-            <RadioButtonIcon /> {/* Change to tick icon once it's uploaded in assets */}
+            <RadioButtonIcon /> Change to tick icon once it's uploaded in assets
           </View>
-        )}
+        )}*/}
         <TextInputComponent
-          value={coupon}
-          onChangeText={(text) => setCoupon(text)}
+          value={couponText}
+          onChangeText={(text) => {
+            !isValidCoupon && setValidCoupon(true);
+            setCouponText(text);
+          }}
           textInputprops={{
-            ...(!isValidCoupon ? { selectionColor: '#e50000' } : {}),
+            ...(!isValidCoupon && couponText.length > 0 ? { selectionColor: '#e50000' } : {}),
             maxLength: 6,
             autoFocus: true,
           }}
           inputStyle={[
             styles.couponInputStyle,
-            !isValidCoupon ? { borderBottomColor: '#e50000' } : {},
+            !isValidCoupon && couponText.length > 0 ? { borderBottomColor: '#e50000' } : {},
           ]}
           conatinerstyles={{ paddingBottom: 0 }}
           placeholder={'Enter coupon code'}
           autoCorrect={false}
         />
-        {!isValidCoupon ? (
+        {!isValidCoupon && couponText.length > 0 ? (
           <Text style={styles.inputValidationStyle}>{'Invalid Coupon Code'}</Text>
         ) : null}
       </View>
@@ -146,8 +167,20 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
 
   const renderRadioButtonList = () => {
     return couponsArray.map((coupon, i) => (
-      <TouchableOpacity style={styles.radioButtonContainer} key={i}>
-        {isSelected ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+      <TouchableOpacity
+        style={styles.radioButtonContainer}
+        key={i}
+        onPress={() => {
+          if (cartTotal < coupon.minCartValue)
+            Alert.alert('Error', `Minimum cart value must be ${coupon.minCartValue} or more.`);
+          else applyCoupon(coupon);
+        }}
+      >
+        {coupon.code == (cartCoupon && cartCoupon.code) ? (
+          <RadioButtonIcon />
+        ) : (
+          <RadioButtonUnselectedIcon />
+        )}
         <View style={styles.radioButtonTitleDescContainer}>
           <Text style={styles.radioButtonTitle}>{coupon.code}</Text>
           <Text style={styles.radioButtonDesc}>{coupon.description}</Text>

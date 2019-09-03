@@ -27,6 +27,7 @@ export interface AuthContextProps {
   signInError: boolean;
   isSigningIn: boolean;
   hasAuthToken: boolean;
+  authToken: string;
   signOut: (() => Promise<void>) | null;
 
   isLoginPopupVisible: boolean;
@@ -48,6 +49,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
   signInError: false,
   isSigningIn: true,
   hasAuthToken: false,
+  authToken: '',
   signOut: null,
 
   isLoginPopupVisible: false,
@@ -229,6 +231,7 @@ export const AuthProvider: React.FC = (props) => {
             isVerifyingOtp,
 
             hasAuthToken,
+            authToken,
             isSigningIn,
             signInError,
             signOut,
