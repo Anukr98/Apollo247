@@ -59,8 +59,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
   analytics: null,
 
-  allPatients: null,
   getPatientApiCall: null,
+  allPatients: null,
 });
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
