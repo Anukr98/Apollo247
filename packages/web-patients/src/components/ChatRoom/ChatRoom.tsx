@@ -259,7 +259,6 @@ export const ChatRoom: React.FC = (props) => {
           </div>
         </div>
       </div>
-      {/* 
       <Popover
         open={isPopoverOpen}
         anchorEl={mascotRef.current}
@@ -282,7 +281,6 @@ export const ChatRoom: React.FC = (props) => {
           </div>
         </div>
       </Popover>
-      */}
     </div>
   );
 };
