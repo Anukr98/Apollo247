@@ -1,76 +1,70 @@
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { DropDown } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
+  AddAttachmentIcon,
   BackCameraIcon,
+  ChatCallIcon,
   ChatIcon,
+  ChatWithNotification,
   DoctorCall,
   DoctorImage,
   EndCallIcon,
   FrontCameraIcon,
   FullScreenIcon,
+  Loader,
+  MissedCallIcon,
   MuteIcon,
   PickCallIcon,
-  SpeakerOn,
   UnMuteIcon,
   VideoOffIcon,
   VideoOnIcon,
-  AddAttachmentIcon,
-  ChatWithNotification,
-  ChatCallIcon,
-  MissedCallIcon,
-  Loader,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  UPDATE_APPOINTMENT_SESSION,
   BOOK_APPOINTMENT_TRANSFER,
+  UPDATE_APPOINTMENT_SESSION,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  bookTransferAppointment,
+  bookTransferAppointmentVariables,
+} from '@aph/mobile-patients/src/graphql/types/bookTransferAppointment';
+import { BookTransferAppointmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
   updateAppointmentSessionVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateAppointmentSession';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
 import Pubnub from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
+  Alert,
+  AsyncStorage,
   Dimensions,
   FlatList,
+  Image,
   Keyboard,
+  KeyboardAvoidingView,
+  KeyboardEvent,
+  NativeModules,
+  Platform,
   SafeAreaView,
   StatusBar,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
-  Platform,
-  KeyboardAvoidingView,
-  KeyboardEvent,
-  AsyncStorage,
-  Image,
-  NativeModules,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
 import DocumentPicker from 'react-native-document-picker';
-import { DropDown } from '@aph/mobile-patients/src/components/ui/DropDown';
 import InCallManager from 'react-native-incall-manager';
-import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import moment from 'moment';
-import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
-import { Mutation } from 'react-apollo';
-import {
-  bookTransferAppointment,
-  bookTransferAppointmentVariables,
-} from '@aph/mobile-patients/src/graphql/types/bookTransferAppointment';
-import {
-  BookAppointmentInput,
-  APPOINTMENT_TYPE,
-  BookTransferAppointmentInput,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { NavigationScreenProps } from 'react-navigation';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -83,7 +77,7 @@ export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
   const appointmentData = props.navigation.state.params!.data;
-  // console.log('appointmentData', appointmentData);
+  console.log('appointmentData', appointmentData);
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
