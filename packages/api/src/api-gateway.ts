@@ -7,7 +7,7 @@ import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl, getPortStr } from '@aph/universal/src/aphRoutes';
-// import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 
 export interface GatewayContext {
@@ -136,46 +136,46 @@ export type Resolver<Parent, Args, Context, Result> = (
   });
 })();
 
-// (async () => {
-//   console.log('------------------------STORAGE TEST----------------------------');
-//   const client = new AphStorageClient(
-//     process.env.AZURE_STORAGE_CONNECTION_STRING_API,
-//     process.env.AZURE_STORAGE_CONTAINER_NAME
-//   );
+//(async () => {
+//console.log('------------------------STORAGE TEST----------------------------');
+// const client = new AphStorageClient(
+//   process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+//   process.env.AZURE_STORAGE_CONTAINER_NAME
+// );
 
-//   if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'development') {
-//     console.log('deleting container...');
-//     await client
-//       .deleteContainer()
-//       .then((res) => console.log(res))
-//       .catch((error) => console.log('error deleting', error));
-
-//     console.log('setting service properties...');
-//     await client
-//       .setServiceProperties()
-//       .then((res) => console.log(res))
-//       .catch((error) => console.log('error setting service properties', error));
-
-//     console.log('creating container...');
-//     await client
-//       .createContainer()
-//       .then((res) => console.log(res))
-//       .catch((error) => console.log('error creating', error));
-//   }
-
-//   console.log('testing storage connection...');
+// if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'development') {
+//   console.log('deleting container...');
 //   await client
-//     .testStorageConnection()
+//     .deleteContainer()
 //     .then((res) => console.log(res))
-//     .catch((error) => console.log('error testing', error));
+//     .catch((error) => console.log('error deleting', error));
 
-//   const filePath = '/apollo-hospitals/README.md';
-//   console.log(`uploading ${filePath}`);
-//   const readmeBlob = await client.uploadFile({ name: 'README.md', filePath }).catch((error) => {
-//     throw error;
-//   });
-//   console.log('file saved!', readmeBlob.url);
-// })();
+//   console.log('setting service properties...');
+//   await client
+//     .setServiceProperties()
+//     .then((res) => console.log(res))
+//     .catch((error) => console.log('error setting service properties', error));
+
+//   console.log('creating container...');
+//   await client
+//     .createContainer()
+//     .then((res) => console.log(res))
+//     .catch((error) => console.log('error creating', error));
+// }
+
+// console.log('testing storage connection...');
+// await client
+//   .testStorageConnection()
+//   .then((res) => console.log(res))
+//   .catch((error) => console.log('error testing', error));
+
+// const filePath = '/apollo-hospitals/README.md';
+// console.log(`uploading ${filePath}`);
+// const readmeBlob = await client.uploadFile({ name: 'README.md', filePath }).catch((error) => {
+//   throw error;
+// });
+// console.log('file saved!', readmeBlob.url);
+//})();
 
 // (async () => {
 //   console.log('------------------------MESSAGE QUEUE TEST----------------------------');

@@ -8591,6 +8591,43 @@
             "deprecationReason": null
           },
           {
+            "name": "uploadFile",
+            "description": null,
+            "args": [
+              {
+                "name": "fileType",
+                "description": null,
+                "type": {
+                  "kind": "ENUM",
+                  "name": "UPLOAD_FILE_TYPES",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "base64FileInput",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "UploadFileResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "updateDelegateNumber",
             "description": null,
             "args": [
@@ -10680,6 +10717,64 @@
             "type": {
               "kind": "ENUM",
               "name": "MEDICINE_ORDER_STATUS",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "UPLOAD_FILE_TYPES",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "JPG",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PNG",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "JPEG",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PDF",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "UploadFileResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "filePath",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
               "ofType": null
             },
             "isDeprecated": false,
