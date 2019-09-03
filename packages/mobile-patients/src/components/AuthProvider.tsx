@@ -1,8 +1,4 @@
-import {
-  GET_CURRENT_PATIENTS,
-  GET_PATIENT_ADDRESS_LIST,
-  SAVE_PATIENT_ADDRESS,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_CURRENT_PATIENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 // import { apiRoutes } from '@aph/universal/dist/aphRoutes';
@@ -15,19 +11,8 @@ import _isEmpty from 'lodash/isEmpty';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
-import firebase, { RNFirebase } from 'react-native-firebase';
-import {
-  getPatientAddressList,
-  getPatientAddressListVariables,
-} from '../graphql/types/getPatientAddressList';
-import { GraphQLError } from 'graphql';
-import {
-  savePatientAddress,
-  savePatientAddressVariables,
-  savePatientAddress_savePatientAddress_patientAddress,
-} from '../graphql/types/savePatientAddress';
-import { PatientAddressInput } from '../graphql/types/globalTypes';
 import { AsyncStorage } from 'react-native';
+import firebase, { RNFirebase } from 'react-native-firebase';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
@@ -53,11 +38,6 @@ export interface AuthContextProps {
   signOut: (() => void) | null;
 
   hasAuthToken: boolean;
-
-  addresses: savePatientAddress_savePatientAddress_patientAddress[];
-  addAddress: ((address: PatientAddressInput) => Promise<unknown>) | null;
-  selectedAddressId: string;
-  setSelectedAddressId: ((id: string) => void) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -77,11 +57,6 @@ export const AuthContext = React.createContext<AuthContextProps>({
   signOut: null,
 
   analytics: null,
-
-  addAddress: null,
-  addresses: [],
-  selectedAddressId: '',
-  setSelectedAddressId: null,
 
   allPatients: null,
 });
@@ -135,10 +110,6 @@ export const AuthProvider: React.FC = (props) => {
 
   const auth = firebase.auth();
 
-  const [addresses, setAddresses] = useState<
-    savePatientAddress_savePatientAddress_patientAddress[]
-  >([]);
-  const [selectedAddressId, setSelectedAddressId] = useState<string>('');
   const [allPatients, setAllPatients] = useState<AuthContextProps['allPatients']>(null);
 
   const sendOtp = (phoneNumber: string) => {
@@ -243,43 +214,6 @@ export const AuthProvider: React.FC = (props) => {
     });
   }, [auth, signOut]);
 
-  useEffect(() => {
-    setTimeout(() => {
-      !isSigningIn &&
-        currentPatientId &&
-        apolloClient
-          .query<getPatientAddressList, getPatientAddressListVariables>({
-            query: GET_PATIENT_ADDRESS_LIST,
-            variables: { patientId: currentPatientId },
-            fetchPolicy: 'no-cache',
-          })
-          .then(({ data: { getPatientAddressList: { addressList } } }) => {
-            setAddresses(addressList!);
-          })
-          .catch((e: GraphQLError[]) => {
-            console.log({ e });
-          });
-    }, 3000);
-  }, [isSigningIn, currentPatientId]);
-
-  const addAddress = (address: PatientAddressInput) => {
-    return new Promise((res, rej) => {
-      apolloClient
-        .mutate<savePatientAddress, savePatientAddressVariables>({
-          mutation: SAVE_PATIENT_ADDRESS,
-          variables: { PatientAddressInput: address },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data }) => {
-          setAddresses([data!.savePatientAddress!.patientAddress!, ...addresses]);
-          res(data!.savePatientAddress!.patientAddress);
-        })
-        .catch((e: GraphQLError[]) => {
-          rej(e);
-        });
-    });
-  };
-
   return (
     <ApolloProvider client={apolloClient}>
       <ApolloHooksProvider client={apolloClient}>
@@ -302,11 +236,6 @@ export const AuthProvider: React.FC = (props) => {
 
             analytics,
             hasAuthToken,
-
-            addAddress,
-            addresses,
-            selectedAddressId,
-            setSelectedAddressId,
 
             allPatients,
           }}

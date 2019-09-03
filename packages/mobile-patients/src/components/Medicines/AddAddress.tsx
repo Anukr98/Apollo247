@@ -87,7 +87,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         setDeliveryAddressId && setDeliveryAddressId((address && address.id) || '');
         props.navigation.goBack();
       })
-      .catch((e: ReadonlyArray<GraphQLError>) => {});
+      .catch((e: GraphQLError[]) => {});
   };
 
   useEffect(() => {
@@ -134,7 +134,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         </TouchableOpacity>
         <TextInputComponent
           value={phoneNumber}
-          onChangeText={(phoneNumber) => setphoneNumber(phoneNumber)}
+          onChangeText={(phoneNumber) =>
+            /^[6-9]{1}\d{0,9}$/.test(phoneNumber) && setphoneNumber(phoneNumber)
+          }
           placeholder={'Phone Number'}
           maxLength={10}
         />
@@ -181,7 +183,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         zIndex: 3,
         backgroundColor: 'transparent',
       }}
-      onPress={() => setShowPopup(false)}
+      onPress={() => setShowPopup(true)}
     >
       <View
         style={{

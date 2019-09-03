@@ -116,7 +116,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           setshowSpinner(false);
           setAddresses && setAddresses(addressList!);
         })
-        .catch((e: ReadonlyArray<GraphQLError>) => {
+        .catch((e: GraphQLError[]) => {
           setshowSpinner(false);
           console.log({ e });
         });
