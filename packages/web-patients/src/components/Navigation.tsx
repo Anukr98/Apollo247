@@ -69,16 +69,6 @@ export const Navigation: React.FC = (props) => {
   const currentPath = window.location.pathname;
   const { cartItems } = useShoppingCart();
 
-  let cartCountToShow = 0;
-
-  if (cartItems.length === 0) {
-    cartCountToShow = localStorage.getItem('cartItems')
-      ? JSON.parse(localStorage.getItem('cartItems') || '').length
-      : 0;
-  } else {
-    cartCountToShow = cartItems.length;
-  }
-
   return (
     <div className={classes.appNavigation} data-cypress="Navigation">
       <Link
@@ -112,7 +102,7 @@ export const Navigation: React.FC = (props) => {
       >
         <span>
           <img src={require('images/ic_cart.svg')} alt="Shopping Cart" />
-          <span className={classes.itemCount}>{cartCountToShow}</span>
+          <span className={classes.itemCount}>{cartItems.length || 0}</span>
         </span>
       </Link>
       <Link to="/" className={`${classes.iconLink}`}>

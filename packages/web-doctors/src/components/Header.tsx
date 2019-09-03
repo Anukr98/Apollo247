@@ -179,13 +179,13 @@ export const Header: React.FC = (props) => {
                         }}
                         src={require('images/ic_help.svg')}
                       />
-                      <span>
+                      {/* <span>
                         <img
                           className={classes.userActiveDark}
                           onClick={() => setIsDialogOpen(true)}
                           src={require('images/ic_account.svg')}
                         />
-                      </span>
+                      </span> */}
                     </div>
                   ) : (
                     <div>
@@ -224,13 +224,13 @@ export const Header: React.FC = (props) => {
                           />
                         </Link>
                       </span>
-                      <span>
+                      {/* <span>
                         <img
                           className={classes.userActiveDark}
                           onClick={() => setIsDialogOpen(true)}
                           src={require('images/ic_account.svg')}
                         />
-                      </span>
+                      </span> */}
                     </div>
                   )
                 ) : (

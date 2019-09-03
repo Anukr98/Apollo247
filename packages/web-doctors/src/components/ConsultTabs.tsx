@@ -321,7 +321,6 @@ export const ConsultTabs: React.FC = () => {
       document.cookie = cookieStr + ';path=/;';
     };
   }, [paramId, appointmentId]);
-
   const saveCasesheetAction = () => {
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
@@ -441,6 +440,8 @@ export const ConsultTabs: React.FC = () => {
             setFollowUpAfterInDays,
             followUpDate,
             setFollowUpDate,
+            healthVault: casesheetInfo!.getCaseSheet!.patientDetails!.healthVault,
+            pastAppointments: casesheetInfo!.getCaseSheet!.pastAppointments,
           }}
         >
           <div className={classes.container}>

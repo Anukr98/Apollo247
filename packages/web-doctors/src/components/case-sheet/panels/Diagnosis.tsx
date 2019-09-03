@@ -2,14 +2,13 @@ import React, { useState, useEffect, useContext } from 'react';
 import {
   Typography,
   Chip,
-  TextField,
   MenuItem,
   makeStyles,
   Theme,
   createStyles,
   Paper,
 } from '@material-ui/core';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphInput, AphTextField } from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -29,7 +28,7 @@ interface OptionType {
   __typename: 'Diagnosis';
 }
 
-const suggestions: OptionType[] = [
+let suggestions: OptionType[] = [
   { name: 'Sore Throat', __typename: 'Diagnosis' },
   { name: 'Sorosis', __typename: 'Diagnosis' },
 ];
@@ -38,7 +37,7 @@ function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
 
   return (
-    <TextField
+    <AphTextField
       fullWidth
       InputProps={{
         inputRef: (node) => {
@@ -46,7 +45,7 @@ function renderInputComponent(inputProps: any) {
           inputRef(node);
         },
         classes: {
-          input: classes.input,
+          root: classes.inputRoot,
         },
       }}
       {...other}
@@ -146,12 +145,6 @@ const useStyles = makeStyles((theme: Theme) =>
       '&:after': {
         borderBottom: '2px solid #00b38e',
       },
-      // '& input': {
-      //   borderBottom: '2px solid #00b38e',
-      //   '&:hover': {
-      //     borderBottom: '2px solid #00b38e',
-      //   },
-      // },
       '& input': {
         borderBottom: '2px solid #00b38e',
         '&:hover': {
@@ -211,6 +204,28 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
       marginTop: 2,
     },
+    inputRoot: {
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '& input': {
+        fontSize: 16,
+        fontWeight: 500,
+        color: '#01475b',
+        paddingTop: 0,
+      },
+      '&:hover': {
+        '&:before': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+        '&:after': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+      },
+    },
   })
 );
 
@@ -224,6 +239,16 @@ export const Diagnosis: React.FC = () => {
   useEffect(() => {
     if (idx >= 0) {
       setSelectedValues(selectedValues);
+      suggestions!.map((item, idx) => {
+        selectedValues!.map((val) => {
+          if (item.name === val.name) {
+            console.log(item, val);
+
+            const indexDelete = suggestions.indexOf(item);
+            suggestions!.splice(indexDelete, 1);
+          }
+        });
+      });
     }
   }, [selectedValues, idx]);
 
@@ -250,7 +275,9 @@ export const Diagnosis: React.FC = () => {
       [name]: newValue,
     });
   };
-  const handleDelete = (idx: number) => {
+  const handleDelete = (item: any, idx: number) => {
+    console.log(item);
+    suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
@@ -281,7 +308,7 @@ export const Diagnosis: React.FC = () => {
               className={classes.diagnosBtn}
               key={idx}
               label={item!.name}
-              onDelete={() => handleDelete(idx)}
+              onDelete={() => handleDelete(item, idx)}
               color="primary"
             />
           ))}
@@ -302,6 +329,7 @@ export const Diagnosis: React.FC = () => {
             selectedValues!.push(suggestion);
             setSelectedValues(selectedValues);
             setShowAddCondition(false);
+            suggestions = suggestions.filter((val) => !selectedValues!.includes(val));
             setState({
               single: '',
               popper: '',

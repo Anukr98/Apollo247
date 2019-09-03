@@ -22,7 +22,7 @@ import { CaseSheetContext } from 'context/CaseSheetContext';
 const apiDetails = {
   url: 'http://13.126.95.18/searchprd_api.php',
   authToken: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
-}; // this must goes
+};
 
 interface OptionType {
   label: string;
@@ -48,7 +48,7 @@ function renderInputComponent(inputProps: any) {
           inputRef(node);
         },
         classes: {
-          input: classes.input,
+          root: classes.inputRoot,
         },
       }}
       {...other}
@@ -83,6 +83,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     input: {
       color: 'black',
+      paddingTop: 0,
     },
     suggestionsContainerOpen: {
       position: 'absolute',
@@ -115,12 +116,13 @@ const useStyles = makeStyles((theme: Theme) =>
       textAlign: 'left',
       color: theme.palette.text.secondary,
       marginBottom: 12,
-      backgroundColor: '#f7f7f7',
+      backgroundColor: 'rgba(0,0,0,0.02)',
       border: '1px solid rgba(2,71,91,0.1)',
       padding: '12px 40px 12px 12px',
       maxWidth: 320,
       borderRadius: 5,
       position: 'relative',
+      boxShadow: 'none',
       '& h5': {
         fontSize: 14,
         color: '#02475b',
@@ -191,6 +193,8 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
       position: 'relative',
       textAlign: 'right',
+      fontSize: 14,
+      fontWeight: 600,
       '& button': {
         borderRadius: 10,
         minwidth: 130,
@@ -245,7 +249,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 16,
       color: '#02475b',
       fontWeight: 500,
-      marginBottom: 10,
+      marginBottom: 20,
       '& button': {
         border: '1px solid #00b38e',
         padding: '5px 10px',
@@ -268,6 +272,7 @@ const useStyles = makeStyles((theme: Theme) =>
     activeBtn: {
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
+      fontWeight: 600,
     },
     helpText: {
       paddingLeft: 0,
@@ -312,6 +317,28 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: '5px 10px',
       '&:hover': {
         backgroundColor: 'transparent',
+      },
+    },
+    inputRoot: {
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '& input': {
+        fontSize: 16,
+        fontWeight: 500,
+        color: '#02475b',
+        paddingTop: 0,
+      },
+      '&:hover': {
+        '&:before': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+        '&:after': {
+          borderBottom: '2px solid #00b38e !important',
+        },
       },
     },
   })
@@ -812,7 +839,7 @@ export const MedicinePrescription: React.FC = () => {
                       classes,
                       color: 'primary',
                       id: 'react-autosuggest-simple',
-                      placeholder: 'Search Instructions',
+                      placeholder: 'Search',
                       value: state.single,
 
                       onChange: handleChange('single'),

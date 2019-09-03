@@ -91,13 +91,14 @@ let didBlurSubscription: NavigationEventSubscription;
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const { analytics, sendOtp, isSendingOtp } = useAuth();
+  const { analytics, sendOtp, isSendingOtp, signOut } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
     fireBaseFCM();
-  }, [, analytics]);
+    signOut();
+  }, [, analytics, signOut]);
 
   const fireBaseFCM = async () => {
     const enabled = await firebase.messaging().hasPermission();

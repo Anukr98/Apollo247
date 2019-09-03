@@ -146,21 +146,21 @@ const getYyMmDd = (ddmmyyyy: string) => {
   return `${splitString[2]}-${splitString[1]}-${splitString[0]}`;
 };
 
-const getAutoSlot = () => {
-  const nearestFiveMinutes = Math.ceil(new Date().getMinutes() / 5) * 5;
+// const getAutoSlot = () => {
+//   const nearestFiveMinutes = Math.ceil(new Date().getMinutes() / 5) * 5;
 
-  let nearestHours = new Date().getHours();
-  let nearestFifteenMinutes = 0;
+//   let nearestHours = new Date().getHours();
+//   let nearestFifteenMinutes = 0;
 
-  if (nearestFiveMinutes > 5 && nearestFiveMinutes <= 15) nearestFifteenMinutes = 15;
-  if (nearestFiveMinutes > 15 && nearestFiveMinutes <= 30) nearestFifteenMinutes = 30;
-  if (nearestFiveMinutes > 30 && nearestFiveMinutes <= 45) nearestFifteenMinutes = 45;
-  if (nearestFiveMinutes > 45 && nearestFifteenMinutes <= 60) {
-    nearestFifteenMinutes = 0;
-    nearestHours++;
-  }
-  return `${nearestHours}:${nearestFifteenMinutes > 9 ? nearestFifteenMinutes : '00'}`;
-};
+//   if (nearestFiveMinutes > 5 && nearestFiveMinutes <= 15) nearestFifteenMinutes = 15;
+//   if (nearestFiveMinutes > 15 && nearestFiveMinutes <= 30) nearestFifteenMinutes = 30;
+//   if (nearestFiveMinutes > 30 && nearestFiveMinutes <= 45) nearestFifteenMinutes = 45;
+//   if (nearestFiveMinutes > 45 && nearestFifteenMinutes <= 60) {
+//     nearestFifteenMinutes = 0;
+//     nearestHours++;
+//   }
+//   return `${nearestHours}:${nearestFifteenMinutes > 9 ? nearestFifteenMinutes : '00'}`;
+// };
 
 interface OnlineConsultProps {
   doctorDetails: DoctorDetails;

@@ -17,6 +17,7 @@ export const useAuth = () => {
   const isSendingOtp = useAuthContext().isSendingOtp;
 
   const hasAuthToken = useAuthContext().hasAuthToken;
+  const authToken = useAuthContext().authToken;
   const isSigningIn = useAuthContext().isSigningIn;
   const signInError = useAuthContext().signInError;
   const isSignedIn = useAllCurrentPatients().allCurrentPatients != null;
@@ -32,6 +33,7 @@ export const useAuth = () => {
     isSendingOtp,
 
     hasAuthToken,
+    authToken,
     isSigningIn,
     signInError,
     isSignedIn,

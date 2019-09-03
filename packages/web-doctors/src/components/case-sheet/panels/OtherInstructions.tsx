@@ -3,7 +3,7 @@ import { Typography, Chip, Theme, MenuItem, Paper, TextField } from '@material-u
 import DoneIcon from '@material-ui/icons/Done';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import AddCircle from '@material-ui/icons/AddCircle';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphTextField } from '@aph/web-ui-components';
 import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -27,7 +27,7 @@ interface OptionType {
   __typename: 'OtherInstructions';
 }
 
-const suggestions: OptionType[] = [
+let suggestions: OptionType[] = [
   { instruction: 'Sore Throat', __typename: 'OtherInstructions' },
   { instruction: 'Sorosis', __typename: 'OtherInstructions' },
 ];
@@ -38,7 +38,7 @@ function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
 
   return (
-    <TextField
+    <AphTextField
       fullWidth
       InputProps={{
         inputRef: (node) => {
@@ -46,7 +46,7 @@ function renderInputComponent(inputProps: any) {
           inputRef(node);
         },
         classes: {
-          input: classes.input,
+          root: classes.inputRoot,
         },
       }}
       {...other}
@@ -202,6 +202,28 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
       marginTop: 2,
     },
+    inputRoot: {
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '& input': {
+        fontSize: 16,
+        fontWeight: 500,
+        color: '#01475b',
+        paddingTop: 0,
+      },
+      '&:hover': {
+        '&:before': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+        '&:after': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+      },
+    },
   })
 );
 
@@ -215,6 +237,14 @@ export const OtherInstructions: React.FC = () => {
   useEffect(() => {
     if (idx >= 0) {
       setSelectedValues(selectedValues);
+      suggestions!.map((item, idx) => {
+        selectedValues!.map((val) => {
+          if (item.instruction === val.instruction) {
+            const indexDelete = suggestions.indexOf(item);
+            suggestions!.splice(indexDelete, 1);
+          }
+        });
+      });
     }
   }, [selectedValues, idx]);
 
@@ -257,7 +287,9 @@ export const OtherInstructions: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
-  const handleDelete = (idx: number) => {
+  const handleDelete = (item: any, idx: number) => {
+    console.log(item);
+    suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
@@ -278,8 +310,8 @@ export const OtherInstructions: React.FC = () => {
                 className={classes.othersBtn}
                 key={idx}
                 label={item!.instruction}
-                onDelete={() => handleDelete(idx)}
-                deleteIcon={<img src={require('images/ic_selected.svg')} alt="" />}
+                onDelete={() => handleDelete(item, idx)}
+                deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
               />
             ))}
         </Typography>
@@ -301,6 +333,7 @@ export const OtherInstructions: React.FC = () => {
               selectedValues!.push(suggestion);
               setSelectedValues(selectedValues);
               setShowAddCondition(false);
+              suggestions = suggestions.filter((val) => !selectedValues!.includes(val));
               setState({
                 single: '',
                 popper: '',

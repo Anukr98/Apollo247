@@ -5,6 +5,7 @@ import {
   STATUS,
   patientLogSort,
   patientLogType,
+  APPOINTMENT_STATE,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -65,6 +66,18 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getPatientAppointments(doctorId: string, patientId: string) {
     return this.find({ where: { doctorId, patientId, appointmentDateTime: LessThan(new Date()) } });
+  }
+
+  getPatientPastAppointments(patientId: string, offset?: number, limit?: number) {
+    return this.find({
+      where: { patientId, appointmentDateTime: LessThan(new Date()) },
+      relations: ['caseSheet'],
+      skip: offset,
+      take: limit,
+      order: {
+        appointmentDateTime: 'DESC',
+      },
+    });
   }
 
   getDoctorAppointments(doctorId: string, startDate: Date, endDate: Date) {
@@ -311,5 +324,9 @@ export class AppointmentRepository extends Repository<Appointment> {
     }
 
     return results.getRawMany();
+  }
+
+  updateTransferState(id: string, appointmentState: APPOINTMENT_STATE) {
+    this.update(id, { appointmentState });
   }
 }

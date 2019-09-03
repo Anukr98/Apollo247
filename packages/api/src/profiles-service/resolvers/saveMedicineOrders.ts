@@ -7,10 +7,13 @@ import {
   MEDICINE_DELIVERY_TYPE,
   MEDICINE_ORDER_TYPE,
   MedicineOrderLineItems,
+  MEDICINE_ORDER_STATUS,
+  MedicineOrdersStatus,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
 
 export const saveMedicineOrderTypeDefs = gql`
   enum MEDICINE_ORDER_STATUS {
@@ -24,6 +27,8 @@ export const saveMedicineOrderTypeDefs = gql`
     RETURN_INITIATED
     ITEMS_RETURNED
     RETURN_ACCEPTED
+    PRESCRIPTION_UPLOADED
+    ORDER_FAILED
   }
 
   enum MEDICINE_DELIVERY_TYPE {
@@ -123,6 +128,13 @@ const SaveMedicineOrder: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+  const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+  const patientAddressDetails = await patientAddressRepo.findById(
+    MedicineCartInput.patientAddressId
+  );
+  if (!patientAddressDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+  }
   const medicineOrderattrs: Partial<MedicineOrders> = {
     patient: patientDetails,
     estimatedAmount: MedicineCartInput.estimatedAmount,
@@ -133,7 +145,10 @@ const SaveMedicineOrder: Resolver<
     deliveryType: MedicineCartInput.medicineDeliveryType,
     quoteId: MedicineCartInput.quoteId,
     prescriptionImageUrl: MedicineCartInput.prescriptionImageUrl,
+    currentStatus: MEDICINE_ORDER_STATUS.QUOTE,
+    patientAddressId: MedicineCartInput.patientAddressId,
   };
+
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
   if (saveOrder) {
@@ -145,6 +160,17 @@ const SaveMedicineOrder: Resolver<
       const lineItemOrder = await medicineOrdersRepo.saveMedicineOrderLineItem(orderItemAttrs);
       console.log(lineItemOrder);
     });
+
+    //save in order status table
+    const medicineOrderStatusAttrs: Partial<MedicineOrdersStatus> = {
+      medicineOrders: saveOrder,
+      orderStatus: MEDICINE_ORDER_STATUS.QUOTE,
+      statusDate: new Date(),
+    };
+    await medicineOrdersRepo.saveMedicineOrderStatus(
+      medicineOrderStatusAttrs,
+      saveOrder.orderAutoId
+    );
   }
   //console.log(saveOrder, 'save order');
 

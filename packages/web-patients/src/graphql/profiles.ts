@@ -52,3 +52,21 @@ export const UPDATE_PATIENT = gql`
     }
   }
 `;
+
+export const GET_PATIENT_ADDRESS_LIST = gql`
+  query GetPatientAddressList($patientId: String) {
+    getPatientAddressList(patientId: $patientId) {
+      addressList {
+        id
+        addressLine1
+        addressLine2
+        city
+        state
+        zipcode
+        landmark
+        createdDate
+        updatedDate
+      }
+    }
+  }
+`;

@@ -48,6 +48,8 @@ export enum MEDICINE_ORDER_STATUS {
   RETURN_INITIATED = 'RETURN_INITIATED',
   ITEMS_RETURNED = 'ITEMS_RETURNED',
   RETURN_ACCEPTED = 'RETURN_ACCEPTED',
+  PRESCRIPTION_UPLOADED = 'PRESCRIPTION_UPLOADED',
+  ORDER_FAILED = 'ORDER_FAILED',
 }
 
 export enum MEDICINE_DELIVERY_TYPE {
@@ -76,6 +78,9 @@ export enum DEVICE_TYPE {
 export class MedicineOrders extends BaseEntity {
   @Column({ nullable: true })
   appointmentId: string;
+
+  @Column({ nullable: true })
+  currentStatus: MEDICINE_ORDER_STATUS;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
@@ -239,7 +244,7 @@ export class MedicineOrderPayments extends BaseEntity {
   @Column()
   responseMessage: string;
 
-  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderLineItems)
+  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderPayments)
   medicineOrders: MedicineOrders;
 
   @Column({ nullable: true })

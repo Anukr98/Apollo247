@@ -28,6 +28,8 @@ import {
 } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 
 const { width, height } = Dimensions.get('window');
 
@@ -139,6 +141,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: 'rgba(2, 71, 91, 0.3)',
   },
+  gotItStyles: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+  },
+  gotItTextStyles: {
+    paddingTop: 16,
+    ...theme.viewStyles.yellowTextStyle,
+  },
 });
 
 export interface ConsultProps extends NavigationScreenProps {}
@@ -153,6 +164,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     getPatinetAppointments_getPatinetAppointments_patinetAppointments[]
   >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [showSchdulesView, setShowSchdulesView] = useState<boolean>(false);
 
   useEffect(() => {
     let userName =
@@ -165,8 +177,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   useEffect(() => {
     async function fetchData() {
-      const userLoggedIn = await AsyncStorage.getItem('gotIt');
-      if (userLoggedIn == 'true') {
+      const showSchduledPopup = await AsyncStorage.getItem('showSchduledPopup');
+      if (showSchduledPopup == 'true') {
+        setShowSchdulesView(true);
       }
     }
     fetchData();
@@ -239,18 +252,20 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         }}
       >
         {allCurrentPatients &&
-          allCurrentPatients.map((profile, i) => (
-            <View style={styles.textViewStyle} key={i}>
-              <Text
-                style={styles.textStyle}
-                onPress={() => {
-                  setShowMenu(false);
-                }}
-              >
-                {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : ''}
-              </Text>
-            </View>
-          ))}
+          allCurrentPatients.map(
+            (profile: GetCurrentPatients_getCurrentPatients_patients, i: number) => (
+              <View style={styles.textViewStyle} key={i}>
+                <Text
+                  style={styles.textStyle}
+                  onPress={() => {
+                    setShowMenu(false);
+                  }}
+                >
+                  {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : ''}
+                </Text>
+              </View>
+            )
+          )}
 
         <Text
           style={{
@@ -399,11 +414,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             <View style={{ width: 312 }}>
               <TouchableOpacity
                 style={[styles.doctorView]}
-                onPress={() =>
-                  props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                    data: item,
-                  })
-                }
+                onPress={() => {
+                  item.appointmentType === 'ONLINE'
+                    ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                        data: item,
+                      })
+                    : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                        data: item,
+                      });
+                }}
               >
                 <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
                   <View style={{ flexDirection: 'row' }}>
@@ -577,6 +596,24 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           </View>
         </ScrollView>
       </SafeAreaView>
+      {showSchdulesView && (
+        <BottomPopUp
+          title={'Hi! :)'}
+          description={`Your appointment with Dr. Simran \nhas been rescheduled for — 18th May, Monday, 12:00 pm\n\nYou have 2 free reschedules left.`}
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={styles.gotItStyles}
+              onPress={() => {
+                AsyncStorage.setItem('showSchduledPopup', 'false');
+                setShowSchdulesView(false);
+              }}
+            >
+              <Text style={styles.gotItTextStyles}>{string.home.welcome_popup.cta_label}</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
       {showSpinner && <Spinner />}
     </View>
   );

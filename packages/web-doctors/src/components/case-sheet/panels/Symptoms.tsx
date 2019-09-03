@@ -249,6 +249,21 @@ export const Symptoms: React.FC = (props) => {
     const sum = idx + Math.random();
     setIdx(sum);
   };
+  const clearField = () => {
+    setSeverity('');
+    setSymptom('');
+    setHowOften('');
+    setSeverity('');
+  };
+  const clearError = () => {
+    setErrorState({
+      ...errorState,
+      symptomError: false,
+      sinceError: false,
+      howOfftenError: false,
+      severityError: false,
+    });
+  };
   const addUpdateSymptom = () => {
     if (isEmpty(trim(symptom))) {
       setErrorState({
@@ -302,6 +317,8 @@ export const Symptoms: React.FC = (props) => {
       x!.push(inputParams);
       setSymptoms(x);
       setIsDialogOpen(false);
+      clearField();
+      clearError();
     }
   };
   useEffect(() => {
@@ -397,7 +414,9 @@ export const Symptoms: React.FC = (props) => {
                   src={require('images/ic_cross.svg')}
                   alt=""
                   onClick={() => {
+                    clearError();
                     setIsDialogOpen(false);
+                    clearField();
                   }}
                 />
               </Button>
@@ -413,6 +432,7 @@ export const Symptoms: React.FC = (props) => {
                           <AphTextField
                             placeholder=""
                             value={symptom}
+                            inputProps={{ maxLength: 30 }}
                             onChange={(event) => {
                               setSymptom(event.target.value);
                             }}
@@ -435,6 +455,7 @@ export const Symptoms: React.FC = (props) => {
                           <AphTextField
                             placeholder=""
                             value={since}
+                            inputProps={{ maxLength: 30 }}
                             onChange={(event) => {
                               setSince(event.target.value);
                             }}
@@ -457,6 +478,7 @@ export const Symptoms: React.FC = (props) => {
                           <AphTextField
                             placeholder=""
                             value={howOften}
+                            inputProps={{ maxLength: 30 }}
                             onChange={(event) => {
                               setHowOften(event.target.value);
                             }}
@@ -478,6 +500,7 @@ export const Symptoms: React.FC = (props) => {
                         <div className={classes.numberTablets}>
                           <AphTextField
                             placeholder=""
+                            inputProps={{ maxLength: 30 }}
                             value={severity}
                             onChange={(event) => {
                               setSeverity(event.target.value);
@@ -503,6 +526,8 @@ export const Symptoms: React.FC = (props) => {
                       color="primary"
                       onClick={() => {
                         setIsDialogOpen(false);
+                        clearField();
+                        clearError();
                       }}
                     >
                       Cancel
