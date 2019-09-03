@@ -13,6 +13,7 @@ export interface SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors {
   services: string | null;
   speciality: string;
   specialization: string | null;
+  id: string;
 }
 
 export interface SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_specialties {

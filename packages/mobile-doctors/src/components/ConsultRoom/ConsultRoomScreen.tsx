@@ -1994,7 +1994,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               optionText: 'Transfer Consult',
               onPress: () => {
                 setDropdownShow(false);
-                props.navigation.push(AppRoutes.TransferConsult);
+                props.navigation.push(AppRoutes.TransferConsult, {
+                  AppointmentId: props.navigation.getParam('AppId'),
+                });
               },
             },
             {
