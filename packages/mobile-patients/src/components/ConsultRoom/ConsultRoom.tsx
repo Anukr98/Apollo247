@@ -274,7 +274,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const Popup = () => (
-    <TouchableOpacity activeOpacity={1}
+    <TouchableOpacity
+      activeOpacity={1}
       style={{
         paddingVertical: 9,
         position: 'absolute',
@@ -506,7 +507,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       >
         {tabBarOptions.map((tabBarOptions, i) => (
           <View key={i}>
-            <TouchableOpacity activeOpacity={1}
+            <TouchableOpacity
+              activeOpacity={1}
               key={i}
               onPress={() => {
                 if (i === 0) {
@@ -574,11 +576,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <View style={{ width: '100%', height: Platform.OS === 'ios' ? 436 : 446 }}>
             <View style={styles.viewName}>
               <View style={{ alignItems: 'flex-end', marginTop: 20, height: 57 }}>
-                <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.replace(AppRoutes.TabBar)}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => props.navigation.replace(AppRoutes.TabBar)}
+                >
                   <ApolloLogo style={{ right: 20 }} />
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity activeOpacity={1}
+              <TouchableOpacity
                 onPress={() => setShowMenu(true)}
                 activeOpacity={1}
                 style={{
@@ -609,7 +614,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <View>
             {arrayTest.map((serviceTitle, i) => (
               <View key={i} style={{}}>
-                <TouchableOpacity activeOpacity={1}
+                <TouchableOpacity
+                  activeOpacity={1}
                   key={i}
                   onPress={() => {
                     if (i === 0) {
@@ -680,7 +686,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           description={string.home.welcome_popup.description}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
-            <TouchableOpacity activeOpacity={1}
+            <TouchableOpacity
+              activeOpacity={1}
               style={styles.gotItStyles}
               onPress={() => {
                 AsyncStorage.setItem('gotIt', 'true');

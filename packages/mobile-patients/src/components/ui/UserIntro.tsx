@@ -86,7 +86,8 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
   }, [currentPatient, userName]);
 
   const Popup = () => (
-    <TouchableOpacity activeOpacity={1}
+    <TouchableOpacity
+      activeOpacity={1}
       style={{
         paddingVertical: 9,
         position: 'absolute',
@@ -166,9 +167,9 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
     <View>
       <View style={[styles.viewName, props.style]}>
         {props.children}
-        <TouchableOpacity activeOpacity={1}
-          onPress={() => setShowMenu(true)}
+        <TouchableOpacity
           activeOpacity={1}
+          onPress={() => setShowMenu(true)}
           style={{
             flexDirection: 'row',
             // marginTop: 18,
