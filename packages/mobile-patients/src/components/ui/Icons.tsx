@@ -592,3 +592,19 @@ export const OneApollo: React.FC<IconProps> = (props) => (
     source={require('./icons/img_apolloone.png')}
   />
 );
+
+export const PhysicalConsult: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('./icons/ic_clinicvisit.png')}
+  />
+);
+
+export const Loader: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 76, width: 26 }}
+    {...props}
+    source={require('./icons/ic_loader.png')}
+  />
+);

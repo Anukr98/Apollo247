@@ -38,6 +38,7 @@ export interface AuthContextProps {
   signOut: (() => void) | null;
 
   hasAuthToken: boolean;
+  getPatientApiCall: (() => void) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -59,6 +60,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
   analytics: null,
 
   allPatients: null,
+  getPatientApiCall: null,
 });
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
@@ -195,24 +197,28 @@ export const AuthProvider: React.FC = (props) => {
         authStateRegistered = false;
         setAuthToken(jwt);
 
-        await apolloClient
-          .query<GetCurrentPatients>({
-            query: GET_CURRENT_PATIENTS,
-            fetchPolicy: 'no-cache',
-          })
-          .then((data) => {
-            setSignInError(false);
-            console.log('data', data);
-            setAllPatients(data);
-          })
-          .catch((error) => {
-            setSignInError(true);
-            console.log('error', error);
-          });
+        getPatientApiCall();
       }
       setIsSigningIn(false);
     });
   }, [auth, signOut]);
+
+  const getPatientApiCall = async () => {
+    await apolloClient
+      .query<GetCurrentPatients>({
+        query: GET_CURRENT_PATIENTS,
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        setSignInError(false);
+        console.log('getPatientApiCall', data);
+        setAllPatients(data);
+      })
+      .catch((error) => {
+        setSignInError(true);
+        console.log('error', error);
+      });
+  };
 
   return (
     <ApolloProvider client={apolloClient}>
@@ -238,6 +244,7 @@ export const AuthProvider: React.FC = (props) => {
             hasAuthToken,
 
             allPatients,
+            getPatientApiCall,
           }}
         >
           {props.children}
