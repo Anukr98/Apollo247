@@ -24,7 +24,7 @@ const assetsDir = path.resolve(`/Users/sarink/Projects/apollo-hospitals/packages
 const loadAsset = (file: string) => path.resolve(assetsDir, file);
 
 export const rxPdfDataToRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument => {
-  const margin = 25;
+  const margin = 35;
 
   const doc = new PDFDocument({ margin });
 
@@ -35,38 +35,33 @@ export const rxPdfDataToRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocume
       .lineTo(doc.page.width - margin, y)
       .lineWidth(1)
       .opacity(0.7)
-      .stroke()
-      .moveTo(origPos.x, origPos.y);
+      .stroke();
+    // .moveTo(origPos.x, origPos.y);
   };
 
-  const headerEndY = 140;
+  const headerEndY = 120;
 
   const renderHeader = () => {
     const logo = loadAsset('apollo-logo.png');
     doc.image(logo, margin, margin / 2, { height: 85 });
 
     doc
-      .text(faker.phone.phoneNumber('#### ### ###'), 400, margin)
+      .text('1860 500 1066', 320, margin)
       .text('Apollo Hospitals')
-      .text(`${faker.address.streetAddress()}`)
-      .text(`${faker.address.streetName()}, ${faker.address.streetName()}`)
-      .text(faker.address.city())
-      .text(
-        `${faker.address.city()}, ${faker.address.stateAbbr()} ${faker.address.zipCode('######')}`
-      );
+      .text('No. 1, Old No. 28, , Platform Road Near Mantri')
+      .text('Square Mall, Hotel Swathi, Sheshadripuram')
+      .text('Bangalore, KA 560020');
 
     drawHorizontalDivider(headerEndY)
-      .text('', margin, headerEndY)
-      .text(`Date - ${format(faker.date.recent(), 'dd/MM/yy')}`, { align: 'right' });
-  };
-
-  const renderPrescriptionsHeader = () => {
-    const rx = loadAsset('rx-icon.png');
-    doc.image(rx, margin, 200, { width: 35 });
-    doc.text('Prescription', margin, 250, { underline: true });
+      .moveDown()
+      .moveDown()
+      .text(`DATE - ${format(faker.date.recent(), 'dd/MM/yy')}`, { align: 'right' });
   };
 
   const renderPrescriptions = (prescriptions: RxPdfData['prescriptions']) => {
+    const rx = loadAsset('rx-icon.png');
+    doc.image(rx, margin, headerEndY + 40, { width: 35 });
+    doc.text('Prescription', margin, headerEndY + 100, { underline: true });
     prescriptions.forEach((prescription, index) => {
       doc
         .text('')
@@ -78,9 +73,13 @@ export const rxPdfDataToRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocume
     });
   };
 
+  const renderFooter = () => {
+    return doc;
+  };
+
   renderHeader();
-  renderPrescriptionsHeader();
   renderPrescriptions(rxPdfData.prescriptions);
+  renderFooter();
 
   doc.end();
 
