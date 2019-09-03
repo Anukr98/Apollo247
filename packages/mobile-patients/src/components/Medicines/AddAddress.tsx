@@ -11,6 +11,8 @@ import { Alert, Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-n
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { AuthContext } from '../AuthProvider';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -167,7 +169,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         }}
       >
         {allCurrentPatients &&
-          allCurrentPatients.map((item) => (
+          allCurrentPatients.map((item: GetCurrentPatients_getCurrentPatients_patients) => (
             <View style={styles.textViewStyle}>
               <Text
                 style={styles.textStyle}

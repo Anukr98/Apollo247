@@ -12,12 +12,14 @@ import {
   TouchableOpacity,
   View,
   Dimensions,
+  AsyncStorage,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { ReschedulePopUp } from '@aph/mobile-patients/src/components/Consult/ReschedulePopUp';
 
 const { width, height } = Dimensions.get('window');
 
@@ -67,9 +69,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface AppointmentDetailsProps extends NavigationScreenProps {}
+export interface AppointmentOnlineDetailsProps extends NavigationScreenProps {}
 
-export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => {
+export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> = (props) => {
   const data = props.navigation.state.params!.data;
   const doctorDetails = data.doctorInfo;
   console.log('doctorDetails', doctorDetails);
@@ -81,7 +83,20 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const [cancelAppointment, setCancelAppointment] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [resheduleoverlay, setResheduleoverlay] = useState<boolean>(false);
+
   const { currentPatient } = useAllCurrentPatients();
+
+  const acceptChange = () => {
+    console.log('acceptChange');
+    setResheduleoverlay(false);
+    AsyncStorage.setItem('showSchduledPopup', 'true');
+    props.navigation.goBack();
+  };
+
+  const reshedulePopUpMethod = () => {
+    setdisplayoverlay(true), setResheduleoverlay(false);
+  };
 
   if (data.doctorInfo)
     return (
@@ -92,7 +107,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       >
         <SafeAreaView style={{ flex: 1 }}>
           <Header
-            title="UPCOMING CLINIC VISIT"
+            title="UPCOMING ONLINE VISIT"
             leftIcon="backArrow"
             rightComponent={
               <TouchableOpacity
@@ -130,28 +145,11 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 </Text>
                 <View style={styles.separatorStyle} />
                 <Text style={styles.doctorNameStyle}>Dr. {data.doctorInfo.firstName}</Text>
-                <Text style={styles.timeStyle}></Text>
-                <View style={styles.labelViewStyle}>
-                  <Text style={styles.labelStyle}>Location</Text>
-                  <Location />
-                </View>
-                <View style={styles.separatorStyle} />
-                <Text style={styles.descriptionStyle}>
-                  {data.doctorInfo &&
-                  data.doctorInfo.doctorHospital &&
-                  data.doctorInfo.doctorHospital.length > 0 &&
-                  data.doctorInfo.doctorHospital[0].facility
-                    ? `${data.doctorInfo.doctorHospital[0].facility.streetLine1} ${data.doctorInfo.doctorHospital[0].facility.city}`
-                    : ''}
-                </Text>
-                <View style={styles.labelViewStyle}>
-                  <Text style={styles.labelStyle}>Average Waiting Time</Text>
-                </View>
-                <View style={styles.separatorStyle} />
-                <Text style={styles.descriptionStyle}>40 mins</Text>
+                <Text style={styles.timeStyle}>Today, 6:30 pm</Text>
+
                 <View style={styles.labelViewStyle}>
                   <Text style={styles.labelStyle}>Payment</Text>
-                  <Text style={theme.viewStyles.yellowTextStyle}>INVOICE</Text>
+                  <Text style={theme.viewStyles.yellowTextStyle}>BILL</Text>
                 </View>
                 <View style={styles.separatorStyle} />
                 <View
@@ -160,16 +158,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                     justifyContent: 'space-between',
                   }}
                 >
-                  <Text style={styles.descriptionStyle}>Advance Paid</Text>
-                  <Text style={styles.descriptionStyle}>200</Text>
-                </View>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <Text style={styles.descriptionStyle}>Balance Remaining</Text>
+                  <Text style={styles.descriptionStyle}>Amount Paid</Text>
                   <Text style={styles.descriptionStyle}>299</Text>
                 </View>
               </View>
@@ -197,7 +186,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               }}
               titleTextStyle={{ color: '#fc9916' }}
               onPress={() => {
-                setdisplayoverlay(true);
+                setResheduleoverlay(true);
               }}
             />
             <Button
@@ -287,7 +276,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   style={styles.gotItStyles}
                   onPress={() => {
                     setShowCancelPopup(false);
-                    setdisplayoverlay(true);
+                    setResheduleoverlay(true);
                   }}
                 >
                   <Text style={styles.gotItTextStyles}>{'RESCHEDULE INSTEAD'}</Text>
@@ -314,7 +303,20 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             patientId={currentPatient ? currentPatient.id : ''}
             clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
             doctorId={doctorDetails && doctorDetails.id}
-            renderTab={'Visit Clinic'}
+            renderTab={'Consult Online'}
+          />
+        )}
+        {resheduleoverlay && doctorDetails && (
+          <ReschedulePopUp
+            setResheduleoverlay={() => setResheduleoverlay(false)}
+            navigation={props.navigation}
+            doctor={doctorDetails ? doctorDetails : null}
+            patientId={currentPatient ? currentPatient.id : ''}
+            clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
+            doctorId={doctorDetails && doctorDetails.id}
+            isbelowthree={true}
+            setdisplayoverlay={() => reshedulePopUpMethod()}
+            acceptChange={() => acceptChange()}
           />
         )}
       </View>
