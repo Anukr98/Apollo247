@@ -311,7 +311,7 @@ export const OtherInstructions: React.FC = () => {
                 key={idx}
                 label={item!.instruction}
                 onDelete={() => handleDelete(item, idx)}
-                deleteIcon={<img src={require('ic_cancel_green.svg')} alt="" />}
+                deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
               />
             ))}
         </Typography>
