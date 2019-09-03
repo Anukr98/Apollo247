@@ -497,8 +497,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           TransferAppointmentInput: {
             appointmentId: props.appointmentId,
             transferInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
-            transferInitiatedId: '',
-            transferredDoctorId: '',
+            transferInitiatedId: props.doctorId,
+            transferredDoctorId: 'c4c0f83e-7b8b-4033-8ab7-ab49b07d5771',
             transferredSpecialtyId: '',
             transferReason: reason,
             transferNotes: noteKeyword,
@@ -507,6 +507,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       })
       .then((_data: any) => {
         console.log(_data);
+        // const transferObject: any = {
+        //   cardType: 'transfer',
+        //   appointmentId: props.appointmentId,
+        //   transferDateTime: '2019/09/04',
+        //   photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_3.png',
+        //   doctorId: 'c4c0f83e-7b8b-4033-8ab7-ab49b07d5771',
+        //   specialtyId: '',
+        //   doctorName: 'Sudheer Kumar',
+        //   experience: '5 Yrs',
+        //   specilty: 'Neurology',
+        // };
         //setIsTransferPopoverOpen(false);
       })
       .catch((e: any) => {
@@ -786,7 +797,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     setIsTransferPopoverOpen(true);
                   }}
                 >
-                  TransferConsult
+                  Transfer Consult
                 </li>
                 <li
                   onClick={() => {
