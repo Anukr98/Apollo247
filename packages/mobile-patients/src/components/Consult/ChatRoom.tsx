@@ -17,8 +17,12 @@ import {
   ChatWithNotification,
   ChatCallIcon,
   MissedCallIcon,
+  Loader,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { UPDATE_APPOINTMENT_SESSION } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  UPDATE_APPOINTMENT_SESSION,
+  BOOK_APPOINTMENT,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   updateAppointmentSession,
   updateAppointmentSessionVariables,
@@ -57,6 +61,12 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { Mutation } from 'react-apollo';
+import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
+import {
+  BookAppointmentInput,
+  APPOINTMENT_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -69,7 +79,7 @@ export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
   const appointmentData = props.navigation.state.params!.data;
-  // console.log('appointmentData', appointmentData);
+  console.log('appointmentData', appointmentData);
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
@@ -167,6 +177,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [userName, setuserName] = useState<string>('');
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
   const [transferAccept, setTransferAccept] = useState<boolean>(false);
+  const [transferDcotorName, setTransferDcotorName] = useState<string>('');
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -177,9 +188,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const typingMsg = '^^#typing';
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
+  const transferConsultMsg = '^^#transferconsult';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
+  const doctorId = appointmentData.doctorInfo.id;
 
   let intervalId: NodeJS.Timeout;
   let stoppedTimer: number;
@@ -449,6 +462,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       (status, res) => {
         // const start = res.startTimeToken;
         const msgs = res.messages;
+        console.log('msgs', msgs);
 
         const newmessage: { message: string }[] = [];
 
@@ -470,7 +484,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           insertText = newmessage;
           setMessages(newmessage as []);
           console.log('newmessage', newmessage);
-
           if (msgs.length == 100) {
             console.log('hihihihihi');
             // getHistory(start);
@@ -852,7 +865,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </>
           ) : (
             <>
-              {rowData.message === 'Transfer' ? (
+              {rowData.message === transferConsultMsg ? (
                 <View
                   style={{
                     backgroundColor: '#0087ba',
@@ -890,7 +903,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                           marginTop: 28,
                         }}
                       >
-                        Dr. Jayanth Reddy
+                        Dr. {rowData.transferInfo.doctorName}
                       </Text>
                       <Text
                         style={{
@@ -901,7 +914,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                           letterSpacing: 0.3,
                         }}
                       >
-                        GENERAL PHYSICIAN | 7 YRS
+                        {rowData.transferInfo.specilty} | {rowData.transferInfo.experience}
                       </Text>
                       <View
                         style={{
@@ -921,7 +934,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                           color: '#02475b',
                         }}
                       >
-                        {`18th May, Monday\n9:00 am`}
+                        {moment
+                          .utc(rowData.transferInfo.transferDateTime)
+                          .local()
+                          .format('Do MMMM, dddd \nhh:mm a')}
                       </Text>
                       <TouchableOpacity
                         onPress={() => {
@@ -943,9 +959,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         </Text>
                       </TouchableOpacity>
                     </View>
-                    <DoctorImage
-                      style={{ position: 'absolute', width: 48, height: 48, top: 0, right: 12 }}
-                    />
+                    {rowData.transferInfo.photoUrl &&
+                    rowData.transferInfo.photoUrl.match(
+                      /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/
+                    ) ? (
+                      <Image
+                        source={{ uri: rowData.transferInfo.photoUrl }}
+                        style={{ position: 'absolute', width: 48, height: 48, top: 0, right: 12 }}
+                      />
+                    ) : (
+                      <DoctorImage
+                        style={{ position: 'absolute', width: 48, height: 48, top: 0, right: 12 }}
+                      />
+                    )}
                   </View>
                   <StickyBottomComponent
                     style={{
@@ -967,17 +993,43 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       titleTextStyle={{ color: 'white' }}
                       onPress={() => {}}
                     />
-                    <Button
-                      title={'ACCEPT'}
-                      style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
-                      onPress={() => {
-                        setTransferAccept(true);
-
-                        setTimeout(() => {
-                          setTransferAccept(false);
-                        }, 1000);
-                      }}
-                    />
+                    <Mutation<bookAppointment> mutation={BOOK_APPOINTMENT}>
+                      {(mutate, { loading, data, error }) => (
+                        <Button
+                          title={'ACCEPT'}
+                          style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
+                          onPress={() => {
+                            const appointmentInput: BookAppointmentInput = {
+                              patientId: patientId,
+                              doctorId: rowData.transferInfo.doctorId,
+                              appointmentDateTime: rowData.transferInfo.transferDateTime, //appointmentDate,
+                              appointmentType:
+                                appointmentData.appointmentType === 'ONLINE'
+                                  ? APPOINTMENT_TYPE.ONLINE
+                                  : APPOINTMENT_TYPE.PHYSICAL,
+                              hospitalId: rowData.transferInfo.hospitalDoctorId,
+                            };
+                            console.log(appointmentInput, 'appointmentInput');
+                            mutate({
+                              variables: {
+                                bookAppointment: appointmentInput,
+                              },
+                            });
+                          }}
+                        >
+                          {data
+                            ? (console.log('bookAppointment data', data),
+                              setTransferAccept(true),
+                              setTransferDcotorName(rowData.transferInfo.doctorName),
+                              setTimeout(() => {
+                                setTransferAccept(false);
+                              }, 1000))
+                            : null}
+                          {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
+                          {error ? console.log('bookAppointment error', error) : null}
+                        </Button>
+                      )}
+                    </Mutation>
                   </StickyBottomComponent>
                 </View>
               ) : (
@@ -2190,8 +2242,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {transferAccept && (
         <BottomPopUp
           title={'Please wait :)'}
-          description={'We’re taking you to Dr. Jayanth Reddy’s consult room.'}
-        />
+          description={`We’re taking you to Dr. ${transferDcotorName}'s consult room.`}
+        >
+          <Loader
+            style={{
+              marginTop: 19,
+              marginBottom: 21,
+              marginLeft: width - 96,
+              width: 76,
+              height: 26,
+              resizeMode: 'contain',
+            }}
+          />
+        </BottomPopUp>
       )}
     </View>
   );

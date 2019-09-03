@@ -2,7 +2,12 @@ import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
-import { DoctorPlaceholder, DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  DoctorPlaceholder,
+  DropdownGreen,
+  PhysicalConsult,
+  OnlineConsult,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GET_PATIENT_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -150,6 +155,14 @@ const styles = StyleSheet.create({
   gotItTextStyles: {
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
+  },
+  prepareForConsult: {
+    ...theme.viewStyles.yellowTextStyle,
+    ...theme.fonts.IBMPlexSansBold(13),
+    textAlign: 'right',
+    paddingHorizontal: 15,
+    paddingTop: 11,
+    paddingBottom: 16,
   },
 });
 
@@ -487,9 +500,22 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         {item.doctorInfo ? ` | ${item.doctorInfo.experience} YRS` : ''}
                       </Text>
                       <View style={styles.separatorStyle} />
-                      <Text style={styles.consultTextStyles}>
-                        {item.appointmentType === 'ONLINE' ? 'Online' : 'Physical'} Consultation
-                      </Text>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                        }}
+                      >
+                        <Text style={styles.consultTextStyles}>
+                          {item.appointmentType === 'ONLINE' ? 'Online' : 'Physical'} Consultation
+                        </Text>
+                        {item.appointmentType === 'ONLINE' ? (
+                          <OnlineConsult style={{ marginTop: 13, height: 15, width: 15 }} />
+                        ) : (
+                          <PhysicalConsult style={{ marginTop: 13, height: 15, width: 15 }} />
+                        )}
+                      </View>
                       <View style={styles.separatorStyle} />
                       <View
                         style={{
@@ -509,6 +535,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       </View>
                     </View>
                   </View>
+                  <View style={[styles.separatorStyle, { marginHorizontal: 16 }]} />
+                  <Text style={styles.prepareForConsult}>{string.common.prepareForConsult}</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -614,8 +642,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               marginTop:
                 consultations.length > 0
                   ? Platform.OS === 'ios'
-                    ? 116
-                    : 126
+                    ? 170
+                    : 180
                   : Platform.OS === 'ios'
                   ? 16
                   : 26,
