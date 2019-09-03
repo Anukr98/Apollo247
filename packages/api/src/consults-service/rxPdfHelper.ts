@@ -78,33 +78,45 @@ export const rxPdfDataToRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocume
         .font('Helvetica-Bold')
         .fontSize(10)
         .text(`${index + 1}. ${prescription.name.toUpperCase()}`, margin)
-        .moveDown(0.5);
+        .moveDown(0.4);
 
       const detailIndentX = margin + 30;
 
-      doc
-        .font('Helvetica-Oblique')
-        .fontSize(8)
-        .text(prescription.ingredients.join(', '), detailIndentX)
-        .moveDown(0.5);
+      if (prescription.ingredients.length > 0) {
+        doc
+          .font('Helvetica-Oblique')
+          .fontSize(8)
+          .text(prescription.ingredients.join(', '), detailIndentX)
+          .moveDown(0.4);
+      }
 
       doc
         .font('Helvetica-Bold')
         .fontSize(9)
         .text(prescription.frequency, detailIndentX)
-        .moveDown(0.5);
+        .moveDown(0.4);
 
       if (prescription.instructions) {
         doc
           .font('Helvetica-Oblique')
           .fontSize(10)
           .text(prescription.instructions, detailIndentX)
-          .moveDown(0.5);
+          .moveDown(0.4);
       }
     });
+    doc.font('Helvetica').fontSize(10);
   };
 
   const renderFooter = () => {
+    doc
+      .fontSize(8)
+      .text(
+        'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital',
+        margin,
+        doc.page.height - 70,
+        { align: 'center' }
+      );
+    drawHorizontalDivider(doc.page.height - 55);
     return doc;
   };
 
@@ -145,7 +157,6 @@ export const caseSheetToRxPdfData = (
   const caseSheetMedicinePrescription = JSON.parse(
     caseSheet.medicinePrescription
   ) as CaseSheetMedicinePrescription[];
-  console.log(caseSheetMedicinePrescription);
 
   const prescriptions = caseSheetMedicinePrescription.map((csRx) => {
     const name = csRx.medicineName;
@@ -163,7 +174,7 @@ export const caseSheetToRxPdfData = (
 
 const fakeCaseSheet = {
   medicinePrescription: JSON.stringify(
-    _times(_random(4, 6), () => ({
+    _times(_random(2, 5), () => ({
       id: uuid(),
       medicineName: faker.commerce.productName(),
       medicineConsumptionDurationInDays: _random(3, 20),
