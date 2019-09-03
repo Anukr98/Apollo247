@@ -2,10 +2,61 @@ import PDFDocument from 'pdfkit';
 import faker from 'faker';
 import fs from 'fs';
 import path from 'path';
-import _sample from 'lodash/sample';
 import _times from 'lodash/times';
 import _random from 'lodash/random';
 import { format } from 'date-fns';
+import { Gender } from 'profiles-service/entities';
+import { randomEnum } from 'helpers/factoryHelpers';
+
+// interface DiagnosticPrescription {
+//   name: String;
+// }
+
+// enum MEDICINE_TIMINGS {
+//   EVENING = 'EVENING',
+//   MORNING = 'MORNING',
+//   NIGHT = 'NIGHT',
+//   NOON = 'NOON',
+// }
+
+// enum MEDICINE_TO_BE_TAKEN {
+//   AFTER_FOOD = 'AFTER_FOOD',
+//   BEFORE_FOOD = 'BEFORE_FOOD',
+// }
+
+// interface MedicinePrescription {
+//   medicineConsumptionDurationInDays: String;
+//   medicineDosage: String;
+//   medicineInstructions: String;
+//   medicineTimings: [MEDICINE_TIMINGS];
+//   medicineToBeTaken: [MEDICINE_TO_BE_TAKEN];
+//   medicineName: String;
+//   id: String;
+// }
+
+interface RxPdfPrescription {
+  name: string;
+  ingredients: string[];
+  frequency: string;
+  instructions?: string;
+}
+
+interface RxPdfInput {
+  prescriptions: RxPdfPrescription[];
+}
+
+const rxPdfInput: RxPdfInput = {
+  prescriptions: _times(_random(1, 5), () => {
+    const name = faker.commerce.productName();
+    const ingredients = _times(
+      _random(1, 5),
+      () => `${faker.commerce.product()} ${_random(1, 10)}%`
+    );
+    const frequency = faker.hacker.phrase();
+    const instructions = faker.random.boolean() ? faker.lorem.sentences(_random(2, 5)) : undefined;
+    return { name, ingredients, frequency, instructions };
+  }),
+};
 
 const dir = (file: string) =>
   path.resolve(`/Users/sarink/Projects/apollo-hospitals/packages/api/src/pdf/${file}`);
@@ -18,7 +69,7 @@ doc.pipe(fs.createWriteStream(dir('output.pdf')));
 
 const drawHorizontalDivider = (y: number) => {
   const origPos = { x: doc.x, y: doc.y };
-  doc
+  return doc
     .moveTo(margin, y)
     .lineTo(doc.page.width - margin, y)
     .lineWidth(1)
@@ -43,18 +94,9 @@ const renderHeader = () => {
       `${faker.address.city()}, ${faker.address.stateAbbr()} ${faker.address.zipCode('######')}`
     );
 
-  drawHorizontalDivider(headerEndY);
-};
-
-const renderPatientInfo = () => {
-  doc
+  drawHorizontalDivider(headerEndY)
     .text('', margin, headerEndY)
-    .moveDown()
-    .text(`Name - ${faker.name.findName()}`)
-    .moveUp()
-    .text(`Date - ${format(faker.date.recent(), 'dd/MM/yy')}`, { align: 'right' })
-    .text(`Age - ${faker.random.number({ min: 1, max: 120 })}`)
-    .text(`Sex - ${_sample(['Male', 'Female', 'Other'])}`);
+    .text(`Date - ${format(faker.date.recent(), 'dd/MM/yy')}`, { align: 'right' });
 };
 
 const renderPrescriptionsHeader = () => {
@@ -63,26 +105,7 @@ const renderPrescriptionsHeader = () => {
   doc.text('Prescription', margin, 250, { underline: true });
 };
 
-const renderPrescriptions = () => {
-  interface Prescription {
-    name: string;
-    ingredients: string[];
-    frequency: string;
-    instructions?: string;
-  }
-
-  const buildPrescription = (): Prescription => {
-    const name = faker.commerce.productName();
-    const ingredients = _times(
-      _random(1, 5),
-      () => `${faker.commerce.product()} ${_random(1, 10)}%`
-    );
-    const frequency = faker.hacker.phrase();
-    const instructions = faker.random.boolean() ? faker.lorem.sentences(_random(2, 5)) : undefined;
-    return { name, ingredients, frequency, instructions };
-  };
-
-  const prescriptions = _times(_random(1, 5), () => buildPrescription());
+const renderPrescriptions = (prescriptions: RxPdfPrescription[]) => {
   prescriptions.forEach((prescription, index) => {
     doc
       .text('')
@@ -95,8 +118,7 @@ const renderPrescriptions = () => {
 };
 
 renderHeader();
-renderPatientInfo();
 renderPrescriptionsHeader();
-renderPrescriptions();
+renderPrescriptions(rxPdfInput.prescriptions);
 
 doc.end();
