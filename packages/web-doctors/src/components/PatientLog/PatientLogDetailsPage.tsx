@@ -7,13 +7,12 @@ import {
   ExpansionPanelSummary,
   ExpansionPanelDetails,
 } from '@material-ui/core';
-
 import { useApolloClient } from 'react-apollo-hooks';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { useParams } from 'hooks/routerHooks';
 import { GET_CASESHEET } from 'graphql/profiles';
 import { GetCaseSheet_getCaseSheet_patientDetails } from 'graphql/types/GetCaseSheet';
-
+import { LifeStyle } from 'components/case-sheet/panels';
 import { PastConsultation } from 'components/PatientLog/PatientDetailPanels/PastConsultation';
 import { PatientDetailsUserCard } from 'components/PatientLog/PatientDetailsUserCard';
 //import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
@@ -184,16 +183,18 @@ export const PatientLogDetailsPage: React.FC = () => {
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
-          {/* Patient History & Lifestyle */}
+          {/* Patient History & Lifestyle Panel */}
           <ExpansionPanel
-            expanded={expanded === 'otherInstructions'}
-            onChange={handlePanelExpansion('otherInstructions')}
+            expanded={expanded === 'lifestyle'}
+            onChange={handlePanelExpansion('lifestyle')}
             className={classes.expandIcon}
           >
             <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Patient History & Lifestyle</Typography>
+              <Typography variant="h3">Patient History &amp; Lifestyle</Typography>
             </ExpansionPanelSummary>
-            <ExpansionPanelDetails></ExpansionPanelDetails>
+            <ExpansionPanelDetails>
+              <LifeStyle />
+            </ExpansionPanelDetails>
           </ExpansionPanel>
           {/* Patient Health Vault */}
           <ExpansionPanel className={classes.expandIcon}>

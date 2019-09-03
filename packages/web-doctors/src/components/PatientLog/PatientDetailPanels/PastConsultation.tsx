@@ -1,21 +1,16 @@
-import React, { Fragment, useState, useContext } from 'react';
+import React from 'react';
 import {
   Typography,
   List,
   ListItem,
-  ListItemAvatar,
-  Avatar,
-  ListItemText,
   createMuiTheme,
   Grid,
   IconButton,
   Card,
   CardContent,
 } from '@material-ui/core';
-import { Link } from 'react-router-dom';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
-import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles(() => ({
   vaultContainer: {
