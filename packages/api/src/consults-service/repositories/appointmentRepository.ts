@@ -68,6 +68,18 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.find({ where: { doctorId, patientId, appointmentDateTime: LessThan(new Date()) } });
   }
 
+  getPatientPastAppointments(patientId: string, offset?: number, limit?: number) {
+    return this.find({
+      where: { patientId, appointmentDateTime: LessThan(new Date()) },
+      relations: ['caseSheet'],
+      skip: offset,
+      take: limit,
+      order: {
+        appointmentDateTime: 'DESC',
+      },
+    });
+  }
+
   getDoctorAppointments(doctorId: string, startDate: Date, endDate: Date) {
     return this.find({
       where: { doctorId, appointmentDateTime: Between(startDate, endDate) },
