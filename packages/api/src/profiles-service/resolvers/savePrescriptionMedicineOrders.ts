@@ -122,7 +122,7 @@ const SavePrescriptionMedicineOrder: Resolver<
     const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
     const patientAddressDetails = await patientAddressRepo.findById(saveOrder.patientAddressId);
     if (!patientAddressDetails) {
-      throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
     }
     const medicineOrderPharma = {
       tpdetails: {
