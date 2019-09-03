@@ -3,8 +3,12 @@ import PDFDocument from 'pdfkit';
 import path from 'path';
 import faker from 'faker';
 import fs from 'fs';
-import _times from 'lodash/times';
+import _capitalize from 'lodash/capitalize';
 import _random from 'lodash/random';
+import _sample from 'lodash/sample';
+import _times from 'lodash/times';
+import { CaseSheet } from 'consults-service/entities';
+import uuid from 'uuid/v4';
 
 export interface RxPdfData {
   prescriptions: {
@@ -83,18 +87,61 @@ export const rxPdfDataToRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocume
   return doc;
 };
 
-const rxPdfData = {
-  prescriptions: _times(_random(1, 5), () => {
-    const name = faker.commerce.productName();
-    const ingredients = _times(
-      _random(1, 5),
-      () => `${faker.commerce.product()} ${_random(1, 10)}%`
-    );
-    const frequency = faker.hacker.phrase();
-    const instructions = faker.random.boolean() ? faker.lorem.sentences(_random(2, 5)) : undefined;
-    return { name, ingredients, frequency, instructions };
-  }),
+enum MEDICINE_TIMINGS {
+  EVENING = 'EVENING',
+  MORNING = 'MORNING',
+  NIGHT = 'NIGHT',
+  NOON = 'NOON',
+}
+
+enum MEDICINE_TO_BE_TAKEN {
+  AFTER_FOOD = 'AFTER_FOOD',
+  BEFORE_FOOD = 'BEFORE_FOOD',
+}
+
+type CaseSheetMedicinePrescription = {
+  medicineConsumptionDurationInDays: string;
+  medicineDosage: string;
+  medicineInstructions: string;
+  medicineTimings: [MEDICINE_TIMINGS];
+  medicineToBeTaken: [MEDICINE_TO_BE_TAKEN];
+  medicineName: string;
+  id: string;
 };
+
+export const caseSheetToRxPdfData = (
+  caseSheet: Partial<CaseSheet> & { medicinePrescription: CaseSheet['medicinePrescription'] }
+): RxPdfData => {
+  const caseSheetMedicinePrescription = JSON.parse(
+    caseSheet.medicinePrescription
+  ) as CaseSheetMedicinePrescription[];
+  console.log(caseSheetMedicinePrescription);
+
+  const prescriptions = caseSheetMedicinePrescription.map((csRx) => {
+    const name = csRx.medicineName;
+    const ingredients = ['Ingredients unknown'];
+    const timings = csRx.medicineTimings.map(_capitalize).join(', ');
+    const frequency = `${csRx.medicineDosage} (${timings}) for ${csRx.medicineConsumptionDurationInDays} days`;
+    const instructions = csRx.medicineInstructions;
+    return { name, ingredients, frequency, instructions };
+  });
+  return { prescriptions };
+};
+
+const fakeCaseSheet = {
+  medicinePrescription: JSON.stringify(
+    _times(_random(1, 6), () => ({
+      id: uuid(),
+      medicineName: faker.commerce.productName(),
+      medicineConsumptionDurationInDays: _random(3, 20),
+      medicineDosage: `${_random(1, 2)} times/day`,
+      medicineInstructions: faker.random.boolean ? faker.lorem.sentences(_random(1, 5)) : null,
+      medicineTimings: [_sample(['EVENING', 'MORNING', 'NIGHT', 'NOON'])],
+      medicineToBeTaken: _sample(['AFTER_FOOD', 'BEFORE_FOOD']),
+    }))
+  ),
+};
+const rxPdfData = caseSheetToRxPdfData(fakeCaseSheet);
 const rxPdfDoc = rxPdfDataToRxPdfDocument(rxPdfData);
 const file = path.resolve(__dirname, assetsDir, 'rxPdfDoc.pdf');
 rxPdfDoc.pipe(fs.createWriteStream(file));
