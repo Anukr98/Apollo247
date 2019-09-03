@@ -124,7 +124,6 @@ export interface Store {
   message: string;
 }
 // 9f15bdd0fcd5423190c2e877ba0228A24
-//
 const AUTH_TOKEN = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
 
 export const getQuoteId = async () =>
@@ -183,26 +182,6 @@ export const getMedicineDetailsApi = (
 export const searchMedicineApi = (
   searchText: string
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
-  console.log({
-    AUTH_TOKEN,
-    url: 'http://13.126.95.18/searchprd_api.php',
-  });
-  // return Axios.post(
-  //   `http://uat.apollopharmacy.in/searchprd_api.php`,
-  //   { params: searchText },
-  //   {
-  //     headers: {
-  //       Authorization: AUTH_TOKEN,
-  //     },
-  //     transformRequest: [
-  //       (data, headers) => {
-  //         delete headers.common['Content-Type'];
-  //         return JSON.stringify(data);
-  //       },
-  //     ],
-  //   }
-  // );
-
   return Axios.post(
     // `http://uat.apollopharmacy.in/searchprd_api.php`,
     `http://13.126.95.18/searchprd_api.php`,
@@ -212,14 +191,6 @@ export const searchMedicineApi = (
         Authorization: AUTH_TOKEN,
         'Content-Type': 'application/json',
       },
-      transformRequest: [
-        (data, headers) => {
-          // headers.common['Content-Type'];
-          console.log({ headers });
-          headers['Authorization'] = AUTH_TOKEN;
-          return JSON.stringify(data);
-        },
-      ],
     }
   );
 };
