@@ -39,6 +39,15 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorImage: {
       borderRadius: '5px 5px 0 0',
       overflow: 'hidden',
+      position: 'relative',
+    },
+    moreProfileActions: {
+      position: 'absolute',
+      right: 10,
+      top: 10,
+      '& img': {
+        verticalAlign: 'middle',
+      },
     },
     doctorInfo: {
       padding: '20px 5px 0 20px',
@@ -250,6 +259,22 @@ const useStyles = makeStyles((theme: Theme) => {
     hideMore: {
       display: 'none',
     },
+    canelAppointmentBtn: {
+      position: 'absolute',
+      right: 10,
+      top: 10,
+      '& button': {
+        fontSize: 16,
+        fontWeight: 500,
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.4)',
+        borderRadius: 10,
+        textTransform: 'none',
+        backgroundColor: theme.palette.common.white,
+        color: '#02475b',
+        minWidth: 200,
+        justifyContent: 'left',
+      },
+    },
   };
 });
 
@@ -404,6 +429,12 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             src={profileImage !== null ? profileImage : 'https://via.placeholder.com/328x138'}
             alt={firstName}
           />
+          <div className={classes.moreProfileActions}>
+            <img src={require('images/ic_more.svg')} alt="" />
+          </div>
+          <div className={classes.canelAppointmentBtn}>
+            <AphButton>Cancel Appointment</AphButton>
+          </div>
         </div>
         <div className={classes.doctorInfo}>
           <div className={classes.doctorName}>{`Dr. ${_startCase(_toLower(firstName))} ${_startCase(

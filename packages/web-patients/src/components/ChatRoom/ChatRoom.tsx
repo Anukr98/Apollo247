@@ -1,7 +1,8 @@
-import { Theme } from '@material-ui/core';
+import { Theme, Popover } from '@material-ui/core';
+import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ChatWindow } from 'components/ChatRoom/ChatWindow';
 import { ConsultDoctorProfile } from 'components/ChatRoom/ConsultDoctorProfile';
@@ -14,6 +15,7 @@ import {
 } from 'graphql/types/GetDoctorDetailsById';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import { ChatMessage } from 'components/ChatRoom/ChatMessage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -115,6 +117,63 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    sectionHeader: {
+      color: '#02475b',
+      fontSize: 14,
+      fontWeight: 500,
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      paddingBottom: 10,
+      paddingTop: 10,
+      marginBottom: 20,
+      display: 'flex',
+      alignItems: 'center',
+      marginLeft: 20,
+      marginRight: 20,
+    },
+    headerActions: {
+      marginLeft: 'auto',
+      display: 'flex',
+      '& a': {
+        display: 'inline-block',
+        '& img': {
+          verticalAlign: 'middle',
+        },
+      },
+      '& a:last-child': {
+        marginLeft: 40,
+      },
+    },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
   };
 });
 
@@ -127,6 +186,8 @@ export const ChatRoom: React.FC = (props) => {
   const appointmentId = params.appointmentId;
   const doctorId = params.doctorId;
   const { isSignedIn } = useAuth();
+  const mascotRef = useRef(null);
+  const [isPopoverOpen] = React.useState<boolean>(true);
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorDetailsById,
@@ -160,7 +221,7 @@ export const ChatRoom: React.FC = (props) => {
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
             </a>
-            Consultation - Case #362079
+            Consult Room
           </div>
           <div className={classes.doctorListingSection}>
             <div className={classes.leftSection}>
@@ -173,6 +234,17 @@ export const ChatRoom: React.FC = (props) => {
               )}
             </div>
             <div className={classes.rightSection}>
+              <div className={classes.sectionHeader}>
+                <span>Case #362079 </span>
+                <div className={classes.headerActions}>
+                  <Link to="#">
+                    <img src={require('images/ic_casesheet.svg')} alt="" />
+                  </Link>
+                  <Link to="#">
+                    <img src={require('images/ic_followup.svg')} alt="" />
+                  </Link>
+                </div>
+              </div>
               {data && (
                 <ChatWindow
                   doctorDetails={data}
@@ -187,6 +259,28 @@ export const ChatRoom: React.FC = (props) => {
           </div>
         </div>
       </div>
+      <Popover
+        open={isPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <ChatMessage />
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };
