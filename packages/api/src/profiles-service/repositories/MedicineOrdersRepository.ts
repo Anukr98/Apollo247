@@ -42,11 +42,30 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   }
 
   getMedicineOrderDetails(orderAutoId: number) {
-    return this.findOne({ where: { orderAutoId } });
+    return this.findOne({
+      where: { orderAutoId },
+      relations: ['patient', 'medicineOrderLineItems'],
+    });
   }
 
   saveMedicineOrderStatus(orderStatusAttrs: Partial<MedicineOrdersStatus>, orderAutoId: number) {
     return MedicineOrdersStatus.create(orderStatusAttrs).save();
+  }
+
+  findByPatientId(patient: string, offset?: number, limit?: number) {
+    return this.find({
+      where: { patient },
+      relations: ['medicineOrderLineItems', 'medicineOrderPayments'],
+      skip: offset,
+      take: limit,
+      order: {
+        orderDateTime: 'DESC',
+      },
+    }).catch((error) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDERS_ERROR, undefined, {
+        error,
+      });
+    });
   }
 
   getMedicineOrdersList(patient: String) {

@@ -90,6 +90,17 @@ export enum Salutation {
   MRS = "MRS",
 }
 
+export enum TRANSFER_INITIATED_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
+export enum TRANSFER_STATUS {
+  COMPLETED = "COMPLETED",
+  INITIATED = "INITIATED",
+  REJECTED = "REJECTED",
+}
+
 export enum WeekDay {
   FRIDAY = "FRIDAY",
   MONDAY = "MONDAY",
@@ -121,6 +132,25 @@ export interface CreateAppointmentSessionInput {
 export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;
+}
+
+export interface RescheduleAppointmentInput {
+  appointmentId: string;
+  rescheduleReason: string;
+  rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE;
+  rescheduleInitiatedId: string;
+  rescheduledDateTime?: any | null;
+  autoSelectSlot?: number | null;
+}
+
+export interface TransferAppointmentInput {
+  appointmentId: string;
+  transferReason: string;
+  transferredDoctorId?: string | null;
+  transferredSpecialtyId?: string | null;
+  transferNotes?: string | null;
+  transferInitiatedBy?: TRANSFER_INITIATED_TYPE | null;
+  transferInitiatedId: string;
 }
 
 export interface UpdateCaseSheetInput {

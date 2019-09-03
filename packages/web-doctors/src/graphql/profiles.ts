@@ -505,3 +505,49 @@ export const GET_PATIENT_LOG = gql`
     }
   }
 `;
+export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
+  query SearchDoctorAndSpecialty($searchText: String!) {
+    SearchDoctorAndSpecialty(searchText: $searchText) {
+      doctors {
+        firstName
+        lastName
+        services
+        speciality
+        specialization
+        id
+        photoUrl
+      }
+      specialties {
+        id
+        name
+        image
+      }
+    }
+  }
+`;
+export const INITIATE_TRANSFER_APPONITMENT = gql`
+  mutation InitiateTransferAppointment($TransferAppointmentInput: TransferAppointmentInput!) {
+    initiateTransferAppointment(TransferAppointmentInput: $TransferAppointmentInput) {
+      transferAppointment {
+        id
+        transferStatus
+        transferReason
+        transferredDoctorId
+        transferredSpecialtyId
+      }
+      doctorNextSlot
+    }
+  }
+`;
+export const INITIATE_RESCHDULE_APPONITMENT = gql`
+  mutation InitiateRescheduleAppointment($RescheduleAppointmentInput: RescheduleAppointmentInput!) {
+    initiateRescheduleAppointment(RescheduleAppointmentInput: $RescheduleAppointmentInput) {
+      rescheduleAppointment {
+        id
+        rescheduleStatus
+        rescheduleReason
+        rescheduledDateTime
+      }
+    }
+  }
+`;

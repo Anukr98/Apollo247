@@ -22,7 +22,7 @@ import { CaseSheetContext } from 'context/CaseSheetContext';
 const apiDetails = {
   url: 'http://13.126.95.18/searchprd_api.php',
   authToken: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
-}; // this must goes
+};
 
 interface OptionType {
   label: string;
@@ -116,12 +116,13 @@ const useStyles = makeStyles((theme: Theme) =>
       textAlign: 'left',
       color: theme.palette.text.secondary,
       marginBottom: 12,
-      backgroundColor: '#f7f7f7',
+      backgroundColor: 'rgba(0,0,0,0.02)',
       border: '1px solid rgba(2,71,91,0.1)',
       padding: '12px 40px 12px 12px',
       maxWidth: 320,
       borderRadius: 5,
       position: 'relative',
+      boxShadow: 'none',
       '& h5': {
         fontSize: 14,
         color: '#02475b',
@@ -192,6 +193,8 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
       position: 'relative',
       textAlign: 'right',
+      fontSize: 14,
+      fontWeight: 600,
       '& button': {
         borderRadius: 10,
         minwidth: 130,
@@ -269,6 +272,7 @@ const useStyles = makeStyles((theme: Theme) =>
     activeBtn: {
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
+      fontWeight: 600,
     },
     helpText: {
       paddingLeft: 0,
@@ -325,7 +329,7 @@ const useStyles = makeStyles((theme: Theme) =>
       '& input': {
         fontSize: 16,
         fontWeight: 500,
-        color: '#01475b',
+        color: '#02475b',
         paddingTop: 0,
       },
       '&:hover': {

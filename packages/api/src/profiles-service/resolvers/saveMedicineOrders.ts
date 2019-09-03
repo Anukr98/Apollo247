@@ -13,6 +13,7 @@ import {
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
 
 export const saveMedicineOrderTypeDefs = gql`
   enum MEDICINE_ORDER_STATUS {
@@ -27,6 +28,7 @@ export const saveMedicineOrderTypeDefs = gql`
     ITEMS_RETURNED
     RETURN_ACCEPTED
     PRESCRIPTION_UPLOADED
+    ORDER_FAILED
   }
 
   enum MEDICINE_DELIVERY_TYPE {
@@ -126,6 +128,13 @@ const SaveMedicineOrder: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+  const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+  const patientAddressDetails = await patientAddressRepo.findById(
+    MedicineCartInput.patientAddressId
+  );
+  if (!patientAddressDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+  }
   const medicineOrderattrs: Partial<MedicineOrders> = {
     patient: patientDetails,
     estimatedAmount: MedicineCartInput.estimatedAmount,
@@ -137,6 +146,7 @@ const SaveMedicineOrder: Resolver<
     quoteId: MedicineCartInput.quoteId,
     prescriptionImageUrl: MedicineCartInput.prescriptionImageUrl,
     currentStatus: MEDICINE_ORDER_STATUS.QUOTE,
+    patientAddressId: MedicineCartInput.patientAddressId,
   };
 
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);

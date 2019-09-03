@@ -17,6 +17,7 @@ import isToday from 'date-fns/isToday';
 import { STATUS } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -32,9 +33,11 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       borderRadius: 10,
-      display: 'flex',
       padding: 16,
       position: 'relative',
+    },
+    consultCardWrap: {
+      display: 'flex',
     },
     doctorAvatar: {
       width: 80,
@@ -74,12 +77,18 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     consultaitonType: {
+      display: 'flex',
+      alignItems: 'center',
       fontSize: 12,
       fontWeight: 500,
       color: '#02475b',
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
       marginTop: 8,
       paddingTop: 5,
+      '& span:last-child': {
+        marginLeft: 'auto',
+        cursor: 'pointer',
+      },
     },
     appointBooked: {
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
@@ -139,6 +148,25 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     disableLink: {
       pointerEvents: 'none',
+    },
+    cardBottomActons: {
+      borderTop: '0.5px solid rgba(2,71,91,0.6)',
+      paddingTop: 10,
+      marginTop: 10,
+      textAlign: 'right',
+      '& button': {
+        border: 'none',
+        backgroundColor: 'transparent',
+        color: '#fc9916',
+        boxShadow: 'none',
+        padding: 0,
+      },
+    },
+    noteText: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#02475b',
+      opacity: 0.6,
     },
   };
 });
@@ -244,42 +272,59 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                     }
                   >
                     <div className={classes.consultCard}>
-                      <div className={classes.startDoctor}>
-                        <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
-                        {appointmentDetails.doctorInfo &&
-                        appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO ? (
-                          <span>
-                            <img src={require('images/ic_star.svg')} alt="" />
-                          </span>
-                        ) : null}
+                      <div className={classes.consultCardWrap}>
+                        <div className={classes.startDoctor}>
+                          <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
+                          {appointmentDetails.doctorInfo &&
+                          appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO ? (
+                            <span>
+                              <img src={require('images/ic_star.svg')} alt="" />
+                            </span>
+                          ) : null}
+                        </div>
+                        <div className={classes.doctorInfo}>
+                          <div
+                            className={`${classes.availability} ${
+                              difference <= 15 ? classes.availableNow : ''
+                            }`}
+                          >
+                            {difference <= 15
+                              ? `Available in ${difference} mins`
+                              : otherDateMarkup(appointmentTime)}
+                          </div>
+                          <div className={classes.doctorName}>{`Dr. ${_startCase(
+                            _toLower(firstName)
+                          )} ${_startCase(_toLower(lastName))}`}</div>
+                          <div className={classes.doctorType}>
+                            {specialization}
+                            <span className={classes.doctorExp}>{experience} YRS</span>
+                          </div>
+                          <div className={classes.consultaitonType}>
+                            <span>
+                              {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+                                ? 'Online Consultation'
+                                : 'Clinic Visit'}
+                            </span>
+                            <span>
+                              {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
+                                <img src={require('images/ic_onlineconsult.svg')} alt="" />
+                              ) : (
+                                <img src={require('images/ic_clinicvisit.svg')} alt="" />
+                              )}
+                            </span>
+                          </div>
+                          <div className={classes.appointBooked}>
+                            <ul>
+                              <li>Fever</li>
+                              <li>Cough &amp; Cold</li>
+                            </ul>
+                          </div>
+                        </div>
                       </div>
-                      <div className={classes.doctorInfo}>
-                        <div
-                          className={`${classes.availability} ${
-                            difference <= 15 ? classes.availableNow : ''
-                          }`}
-                        >
-                          {difference <= 15
-                            ? `Available in ${difference} mins`
-                            : otherDateMarkup(appointmentTime)}
-                        </div>
-                        <div className={classes.doctorName}>{`Dr. ${_startCase(
-                          _toLower(firstName)
-                        )} ${_startCase(_toLower(lastName))}`}</div>
-                        <div className={classes.doctorType}>
-                          {specialization}
-                          <span className={classes.doctorExp}>{experience} YRS</span>
-                        </div>
-                        <div className={classes.consultaitonType}>
-                          {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
-                            ? 'Online Consultation'
-                            : 'Clinic Visit'}
-                        </div>
-                        <div className={classes.appointBooked}>
-                          <ul>
-                            <li>Fever</li>
-                            <li>Cough &amp; Cold</li>
-                          </ul>
+                      <div className={classes.cardBottomActons}>
+                        <AphButton>Start Consult</AphButton>
+                        <div className={classes.noteText}>
+                          You are entitled to 1 free follow-up!
                         </div>
                       </div>
                     </div>

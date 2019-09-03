@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, MenuItem } from '@material-ui/core';
-import React from 'react';
+import { Theme, Typography, MenuItem, Popover } from '@material-ui/core';
+import React, { useRef } from 'react';
 import { Header } from 'components/Header';
 import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { ThingsToDo } from 'components/ConsultRoom/ThingsToDo';
@@ -21,6 +21,7 @@ import _isEmpty from 'lodash/isEmpty';
 import { useAuth } from 'hooks/authHooks';
 import { STATUS } from 'graphql/types/globalTypes';
 import isToday from 'date-fns/isToday';
+import { TransferConsultMessage } from 'components/ConsultRoom/TransferConsultMessage';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -133,6 +134,37 @@ const useStyles = makeStyles((theme: Theme) => {
     noConsultations: {
       paddingBottom: 0,
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
   };
 });
 
@@ -143,6 +175,8 @@ export const ConsultRoom: React.FC = (props) => {
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const currentDate = new Date().toISOString().substring(0, 10);
   const { isSignedIn } = useAuth();
+  const mascotRef = useRef(null);
+  const [isPopoverOpen] = React.useState<boolean>(true);
 
   const { data, loading, error } = useQueryWithSkip<
     GetPatientAppointments,
@@ -278,6 +312,28 @@ export const ConsultRoom: React.FC = (props) => {
           </div>
         </div>
       </div>
+      <Popover
+        open={isPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <TransferConsultMessage />
+          </div>
+        </div>
+      </Popover>
     </div>
   ) : (
     <LinearProgress />
