@@ -167,9 +167,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                     backgroundColor: 'white',
                   }}
                   titleTextStyle={{ color: '#fc9916' }}
-                  onPress={() => {
-                    props.setdisplayoverlay(true);
-                  }}
+                  onPress={() => props.setdisplayoverlay()}
                 />
                 <Button
                   title={'ACCEPT'}

@@ -692,7 +692,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </View>
         </BottomPopUp>
       )}
-      <BottomPopUp
+      {/* <BottomPopUp
         title={string.common.greatPopup}
         description={
           'Your appointment with Dr. Jayanth has been scheduled for — 18th May, Monday, 12:00 pm'
@@ -703,7 +703,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <Text style={styles.gotItTextStyles}>{string.home.welcome_popup.cta_label}</Text>
           </TouchableOpacity>
         </View>
-      </BottomPopUp>
+      </BottomPopUp> */}
       {showSpinner && <Spinner />}
     </View>
   );

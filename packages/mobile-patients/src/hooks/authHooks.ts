@@ -1,8 +1,8 @@
 import { useContext, useEffect } from 'react';
 import { AuthContext } from '@aph/mobile-patients/src/components/AuthProvider';
-import { useQuery } from 'react-apollo-hooks';
-import { GetCurrentPatients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { GET_CURRENT_PATIENTS } from '@aph/mobile-patients/src/graphql/profiles';
+// import { useQuery } from 'react-apollo-hooks';
+// import { GetCurrentPatients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+// import { GET_CURRENT_PATIENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const useAuthContext = () => useContext(AuthContext);
@@ -46,8 +46,8 @@ export const useAuth = () => {
 export const useCurrentPatient = () => useAllCurrentPatients().currentPatient;
 
 export const useAllCurrentPatients = () => {
-  const isSigningIn = useAuthContext().isSigningIn;
-  const hasAuthToken = useAuthContext().hasAuthToken;
+  // const isSigningIn = useAuthContext().isSigningIn;
+  // const hasAuthToken = useAuthContext().hasAuthToken;
   const patientsArray = useAuthContext().allPatients;
   console.log('patientsArray', patientsArray);
 
@@ -70,8 +70,8 @@ export const useAllCurrentPatients = () => {
     ? allCurrentPatients.find((patient) => patient.id === currentPatientId) || allCurrentPatients[0]
     : null;
 
-  console.log('currentPatient', currentPatient);
-  console.log('allCurrentPatients', allCurrentPatients);
+  // console.log('currentPatient', currentPatient);
+  // console.log('allCurrentPatients', allCurrentPatients);
   useEffect(() => {
     if (!currentPatientId) {
       const defaultCurrentPatient = allCurrentPatients

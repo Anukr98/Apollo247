@@ -29,6 +29,7 @@ import {
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 
 const { width, height } = Dimensions.get('window');
 
@@ -251,18 +252,20 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         }}
       >
         {allCurrentPatients &&
-          allCurrentPatients.map((profile, i) => (
-            <View style={styles.textViewStyle} key={i}>
-              <Text
-                style={styles.textStyle}
-                onPress={() => {
-                  setShowMenu(false);
-                }}
-              >
-                {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : ''}
-              </Text>
-            </View>
-          ))}
+          allCurrentPatients.map(
+            (profile: GetCurrentPatients_getCurrentPatients_patients, i: number) => (
+              <View style={styles.textViewStyle} key={i}>
+                <Text
+                  style={styles.textStyle}
+                  onPress={() => {
+                    setShowMenu(false);
+                  }}
+                >
+                  {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : ''}
+                </Text>
+              </View>
+            )
+          )}
 
         <Text
           style={{

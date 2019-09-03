@@ -94,6 +94,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     props.navigation.goBack();
   };
 
+  const reshedulePopUpMethod = () => {
+    setdisplayoverlay(true), setResheduleoverlay(false);
+  };
+
   if (data.doctorInfo)
     return (
       <View
@@ -311,9 +315,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
             doctorId={doctorDetails && doctorDetails.id}
             isbelowthree={true}
-            setdisplayoverlay={() => {
-              setdisplayoverlay(true), setResheduleoverlay(false);
-            }}
+            setdisplayoverlay={() => reshedulePopUpMethod()}
             acceptChange={() => acceptChange()}
           />
         )}

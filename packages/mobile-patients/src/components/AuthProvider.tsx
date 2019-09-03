@@ -7,7 +7,7 @@ import { GetCurrentPatients } from '@aph/mobile-patients/src/graphql/types/GetCu
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 // import { apiRoutes } from '@aph/universal/dist/aphRoutes';
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory';
-import { ApolloClient } from 'apollo-client';
+import { ApolloClient, ApolloQueryResult } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
 import { onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
@@ -38,7 +38,7 @@ export interface AuthContextProps {
 
   currentPatientId: string | null;
   setCurrentPatientId: ((pid: string | null) => void) | null;
-  allPatients: object | null;
+  allPatients: ApolloQueryResult<GetCurrentPatients> | null;
 
   sendOtp: ((phoneNumber: string) => Promise<unknown>) | null;
   sendOtpError: boolean;
