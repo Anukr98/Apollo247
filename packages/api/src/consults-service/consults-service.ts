@@ -41,6 +41,10 @@ import {
   rescheduleAppointmentTypeDefs,
   rescheduleAppointmentResolvers,
 } from 'consults-service/resolvers/rescheduleAppointment';
+import {
+  getPatientConsultsAndPrescriptionsTypeDefs,
+  getPatientConsultsAndPrescriptionsResolvers,
+} from 'consults-service/resolvers/getPatientPastConsultsAndPrescriptions';
 import { GraphQLDate, GraphQLDateTime, GraphQLTime } from 'graphql-iso-date';
 import gql from 'graphql-tag';
 import 'reflect-metadata';
@@ -118,6 +122,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: rescheduleAppointmentTypeDefs,
         resolvers: rescheduleAppointmentResolvers,
+      },
+      {
+        typeDefs: getPatientConsultsAndPrescriptionsTypeDefs,
+        resolvers: getPatientConsultsAndPrescriptionsResolvers,
       },
     ]),
   });

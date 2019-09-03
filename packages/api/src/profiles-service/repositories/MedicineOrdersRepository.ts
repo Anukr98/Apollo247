@@ -52,6 +52,22 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     return MedicineOrdersStatus.create(orderStatusAttrs).save();
   }
 
+  findByPatientId(patient: string, offset?: number, limit?: number) {
+    return this.find({
+      where: { patient },
+      relations: ['medicineOrderLineItems', 'medicineOrderPayments'],
+      skip: offset,
+      take: limit,
+      order: {
+        orderDateTime: 'DESC',
+      },
+    }).catch((error) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDERS_ERROR, undefined, {
+        error,
+      });
+    });
+  }
+
   getMedicineOrdersList(patient: String) {
     return this.find({
       where: { patient },
