@@ -42,14 +42,18 @@ export const rxPdfDataToRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocume
   const headerEndY = 120;
 
   const renderHeader = () => {
-    const logo = loadAsset('apollo-logo.png');
-    doc.image(logo, margin, margin / 2, { height: 85 });
+    doc.image(loadAsset('apollo-logo.png'), margin, margin / 2, { height: 85 });
 
     doc
-      .text('1860 500 1066', 320, margin)
+      .fontSize(9.5)
+      .text('1860 500 1066', 370, margin)
+      .moveDown(0.5)
       .text('Apollo Hospitals')
+      .moveDown(0.5)
       .text('No. 1, Old No. 28, , Platform Road Near Mantri')
+      .moveDown(0.5)
       .text('Square Mall, Hotel Swathi, Sheshadripuram')
+      .moveDown(0.5)
       .text('Bangalore, KA 560020');
 
     drawHorizontalDivider(headerEndY)
@@ -60,16 +64,43 @@ export const rxPdfDataToRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocume
 
   const renderPrescriptions = (prescriptions: RxPdfData['prescriptions']) => {
     const rx = loadAsset('rx-icon.png');
-    doc.image(rx, margin, headerEndY + 40, { width: 35 });
-    doc.text('Prescription', margin, headerEndY + 100, { underline: true });
+    doc
+      .image(rx, margin, headerEndY + 40, { width: 35 })
+      .fillColor('blue')
+      .font('Helvetica-Bold')
+      .fontSize(10)
+      .text('PRESCRIPTION', margin, headerEndY + 100);
+
     prescriptions.forEach((prescription, index) => {
+      doc.fillColor('black').moveDown();
+
       doc
-        .text('')
-        .moveDown()
-        .text(`${index + 1}. ${prescription.name}`)
-        .text(prescription.ingredients.join(', '))
-        .text(prescription.frequency);
-      if (prescription.instructions) doc.text(prescription.instructions);
+        .font('Helvetica-Bold')
+        .fontSize(10)
+        .text(`${index + 1}. ${prescription.name.toUpperCase()}`, margin)
+        .moveDown(0.5);
+
+      const detailIndentX = margin + 30;
+
+      doc
+        .font('Helvetica-Oblique')
+        .fontSize(8)
+        .text(prescription.ingredients.join(', '), detailIndentX)
+        .moveDown(0.5);
+
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(9)
+        .text(prescription.frequency, detailIndentX)
+        .moveDown(0.5);
+
+      if (prescription.instructions) {
+        doc
+          .font('Helvetica-Oblique')
+          .fontSize(10)
+          .text(prescription.instructions, detailIndentX)
+          .moveDown(0.5);
+      }
     });
   };
 
@@ -118,7 +149,10 @@ export const caseSheetToRxPdfData = (
 
   const prescriptions = caseSheetMedicinePrescription.map((csRx) => {
     const name = csRx.medicineName;
-    const ingredients = ['Ingredients unknown'];
+    const ingredients = _times(
+      _random(0, 3),
+      () => `${faker.commerce.productName().toLowerCase()} ${_random(1, 4)}%`
+    );
     const timings = csRx.medicineTimings.map(_capitalize).join(', ');
     const frequency = `${csRx.medicineDosage} (${timings}) for ${csRx.medicineConsumptionDurationInDays} days`;
     const instructions = csRx.medicineInstructions;
@@ -129,7 +163,7 @@ export const caseSheetToRxPdfData = (
 
 const fakeCaseSheet = {
   medicinePrescription: JSON.stringify(
-    _times(_random(1, 6), () => ({
+    _times(_random(4, 6), () => ({
       id: uuid(),
       medicineName: faker.commerce.productName(),
       medicineConsumptionDurationInDays: _random(3, 20),
