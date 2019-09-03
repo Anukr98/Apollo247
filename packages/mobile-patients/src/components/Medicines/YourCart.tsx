@@ -1,5 +1,9 @@
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  ShoppingCartItem,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ArrowRight, CouponIcon, MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -8,22 +12,33 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { GET_PATIENT_ADDRESS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  CartInfoResponse,
-  CartItem,
-  getCartInfo,
-  MedicineProduct,
-  removeProductFromCartApi,
-  setLocalCartInfo,
-  incOrDecProductCountToCartApi,
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import {
+  pinCodeServiceabilityApi,
+  searchPickupStoresApi,
+  Store,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useContext, useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
-import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { AuthContext } from '../AuthProvider';
 import { AxiosResponse } from 'axios';
+import { GraphQLError } from 'graphql';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -56,42 +71,58 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: theme.colors.SHERPA_BLUE,
   },
+  rowSpaceBetweenStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
 });
-
-interface MedicineCardState {
-  // subscriptionStatus: 'already-subscribed' | 'subscribed-now' | 'unsubscribed';
-  isCardExpanded: boolean;
-  isAddedToCart: boolean;
-  unit: number;
-  price: number;
-}
 
 export interface YourCartProps extends NavigationScreenProps {}
 
 export const YourCart: React.FC<YourCartProps> = (props) => {
   const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
-  const [selectedHomeDelivery, setselectedHomeDelivery] = useState<string>('');
-  const [medicineList, setMedicineList] = useState<CartItem[]>([]);
-  const [cartDetails, setcartDetails] = useState<CartInfoResponse>();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const [medicineCardStatus, setMedicineCardStatus] = useState<{
-    [sku: string]: MedicineCardState;
-  }>({});
-
   const { currentPatient } = useAllCurrentPatients();
-  const addressList = useContext(AuthContext).addresses;
-  const selectedAddressId = useContext(AuthContext).selectedAddressId;
-  const setSelectedAddressId = useContext(AuthContext).setSelectedAddressId;
-  const totalItemsPrices = Object.keys(medicineCardStatus).map(
-    (sku) => medicineCardStatus[sku].price * medicineCardStatus[sku].unit
-  );
-  const grandTotal =
-    totalItemsPrices.length > 0
-      ? totalItemsPrices.reduce((accumulator, currentValue) => accumulator + currentValue)
-      : 0;
+  const currentPatientId = currentPatient && currentPatient!.id;
+  const client = useApolloClient();
+  const {
+    updateCartItem,
+    removeCartItem,
+    cartItems,
+    setAddresses,
+    addresses,
+    setDeliveryAddressId,
+    deliveryAddressId,
+    storeId,
+    setStoreId,
+    deliveryCharges,
+    cartTotal,
+    couponDiscount,
+    grandTotal,
+    coupon,
+    uploadPrescriptionRequired,
+  } = useShoppingCart();
 
   useEffect(() => {
+    currentPatientId &&
+      client
+        .query<getPatientAddressList, getPatientAddressListVariables>({
+          query: GET_PATIENT_ADDRESS_LIST,
+          variables: { patientId: currentPatientId },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data: { getPatientAddressList: { addressList } } }) => {
+          setshowSpinner(false);
+          setAddresses && setAddresses(addressList!);
+        })
+        .catch((e: GraphQLError[]) => {
+          setshowSpinner(false);
+          console.log({ e });
+        });
+  }, [currentPatientId]);
+
+  /*  useEffect(() => {
     getCartInfo()
       .then((cartInfo) => {
         setcartDetails(cartInfo);
@@ -102,7 +133,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               isAddedToCart: true,
               isCardExpanded: true,
               unit: item.qty,
-              price: item.price,
+              price: item.price!,
             };
           });
         setMedicineCardStatus({
@@ -112,10 +143,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         setMedicineList(cartInfo.items);
         setshowSpinner(false);
       })
-      .catch(() => {
+      .catch((e) => {
+        Alert.alert(JSON.stringify({ e }));
         setshowSpinner(false);
       });
-  }, []);
+  }, []);*/
 
   const showGenericALert = (e: { response: AxiosResponse }) => {
     const error = e && e.response && e.response.data.message;
@@ -123,72 +155,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     Alert.alert('Error', error || 'Unknown error occurred.');
   };
 
-  const onPressRemoveFromCart = async (medicine: MedicineProduct) => {
-    console.log({ id: medicine.id });
-    let cartItemId = 0;
-    let cartInfo: CartInfoResponse | null = null;
-    try {
-      cartInfo = await getCartInfo();
-      const cartItem = cartInfo.items.find((cartItem) => cartItem.sku == medicine.sku);
-      cartItemId = (cartItem && cartItem.item_id) || 0;
-    } catch (error) {
-      console.log(error);
+  const onUpdateCartItem = ({ id }: ShoppingCartItem, unit: number) => {
+    if (!(unit < 1)) {
+      updateCartItem && updateCartItem({ id, quantity: unit });
     }
-    if (!cartItemId) {
-      Alert.alert('Error', 'Item does not exist in cart');
-      return;
-    }
-    removeProductFromCartApi(cartItemId)
-      .then(({ data }) => {
-        console.log('onPressRemoveFromCar', data);
-        const cloneOfMedicineCardStatus = { ...medicineCardStatus };
-        delete cloneOfMedicineCardStatus[medicine.sku];
-        setMedicineCardStatus(cloneOfMedicineCardStatus);
-        // remove from local cart
-        const cartItems = cartInfo!.items.filter((item) => item.item_id != cartItemId);
-        setLocalCartInfo({ ...cartInfo!, items: cartItems });
-        setcartDetails({ ...cartInfo!, items: cartItems });
-      })
-      .catch((e) => {
-        showGenericALert(e);
-      });
   };
 
-  const onChangeUnitFromCart = async (medicine: MedicineProduct, unit: number) => {
-    if (unit < 1) {
-      return;
-    }
-    console.log({ id: medicine.id });
-    let cartItemId = 0;
-    let cartInfo: CartInfoResponse | null = null;
-    try {
-      cartInfo = await getCartInfo();
-      const cartItem = cartInfo.items.find((cartItem) => cartItem.sku == medicine.sku);
-      cartItemId = (cartItem && cartItem.item_id) || 0;
-    } catch (error) {
-      console.log(error);
-    }
-    if (!cartItemId) {
-      Alert.alert('Error', 'Item does not exist in cart');
-      return;
-    }
-    incOrDecProductCountToCartApi(medicine.sku, cartItemId, unit)
-      .then(({ data }) => {
-        console.log('onChangeUnitFromCart', data);
-        setMedicineCardStatus({
-          ...medicineCardStatus,
-          [medicine.sku]: {
-            ...medicineCardStatus[medicine.sku],
-            unit: data.qty,
-            price: data.price,
-          },
-        });
-        const cartItems = cartInfo!.items.map((item) => (item.item_id != cartItemId ? item : data));
-        setLocalCartInfo({ ...cartInfo!, items: cartItems });
-      })
-      .catch((e) => {
-        showGenericALert(e);
-      });
+  const onRemoveCartItem = ({ id }: ShoppingCartItem) => {
+    removeCartItem && removeCartItem(id);
   };
 
   const renderHeader = () => {
@@ -229,13 +203,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderItemsInCart = () => {
-    const cartItemsCount = Object.keys(medicineCardStatus).length || 0;
-    const _cartItemsCount =
-      cartItemsCount < 10 && cartItemsCount > 0 ? `0${cartItemsCount}` : cartItemsCount.toString();
+    const cartItemsCount = cartItems.length > 10 ? `${cartItems.length}` : `0${cartItems.length}`;
     return (
       <View>
-        {renderLabel('ITEMS IN YOUR CART', _cartItemsCount)}
-        {medicineList.map((medicine, index, array) => {
+        {renderLabel('ITEMS IN YOUR CART', cartItemsCount)}
+        {cartItems.map((medicine, index, array) => {
           const medicineCardContainerStyle = [
             { marginBottom: 8, marginHorizontal: 20 },
             index == 0 ? { marginTop: 20 } : {},
@@ -243,38 +215,32 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           ];
           return (
             <MedicineCard
-              personName={
-                currentPatient && currentPatient.firstName ? currentPatient.firstName : ''
-              }
+              // personName={
+              //   currentPatient && currentPatient.firstName ? currentPatient.firstName : ''
+              // }
               containerStyle={medicineCardContainerStyle}
-              key={medicine.sku}
+              key={medicine.id}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-                  sku: medicine.sku,
+                  sku: medicine.id,
                   title: medicine.name,
                 });
               }}
-              medicineName={medicine.name}
-              price={medicine.price}
-              unit={
-                (medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].unit) || 1
-              }
+              medicineName={medicine.name!}
+              price={medicine.price!}
+              unit={medicine.quantity}
               onPressAdd={() => {}}
               onPressRemove={() => {
-                onPressRemoveFromCart((medicine as unknown) as MedicineProduct);
+                onRemoveCartItem(medicine);
               }}
               onChangeUnit={(unit) => {
-                onChangeUnitFromCart((medicine as unknown) as MedicineProduct, unit);
+                onUpdateCartItem(medicine, unit);
               }}
-              isCardExpanded={
-                medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].isCardExpanded
-              }
+              isCardExpanded={true}
               isInStock={true}
-              isPrescriptionRequired={/*medicine.is_prescription_required == '1'*/ false} //solve this problem by maintaing a state in cart
-              subscriptionStatus={
-                // (medicineCardStatus[medicine.sku] && medicineCardStatus[medicine.sku].subscriptionStatus) ||
-                'unsubscribed'
-              }
+              isPrescriptionRequired={medicine.prescriptionRequired}
+              subscriptionStatus={'unsubscribed'}
+              packOfCount={parseInt(medicine.mou || '0')}
               onChangeSubscription={() => {}}
               onEditPress={() => {}}
               onAddSubscriptionPress={() => {}}
@@ -286,43 +252,70 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderUploadPrescription = () => {
-    return (
-      <View>
-        {renderLabel('UPLOAD PRESCRIPTION')}
-        <View
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            marginHorizontal: 20,
-            marginTop: 15,
-            marginBottom: 24,
-          }}
-        >
-          <Text
+    if (uploadPrescriptionRequired) {
+      return (
+        <View>
+          {renderLabel('UPLOAD PRESCRIPTION')}
+          <View
             style={{
-              ...theme.fonts.IBMPlexSansMedium(16),
-              lineHeight: 24,
-              color: theme.colors.SKY_BLUE,
-              padding: 16,
-            }}
-          >{`Some of your medicines require prescription to make a purchase.\nPlease upload the necessary prescriptions.`}</Text>
-          <Text
-            style={{
-              ...styles.yellowTextStyle,
-              paddingTop: 0,
-              textAlign: 'right',
+              ...theme.viewStyles.cardViewStyle,
+              marginHorizontal: 20,
+              marginTop: 15,
+              marginBottom: 24,
             }}
           >
-            UPLOAD
-          </Text>
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansMedium(16),
+                lineHeight: 24,
+                color: theme.colors.SKY_BLUE,
+                padding: 16,
+              }}
+            >
+              {`Some of your medicines require prescription to make a purchase.\nPlease upload the necessary prescriptions.`}
+            </Text>
+            <Text
+              style={{
+                ...styles.yellowTextStyle,
+                paddingTop: 0,
+                textAlign: 'right',
+              }}
+            >
+              UPLOAD
+            </Text>
+          </View>
         </View>
-      </View>
-    );
+      );
+    }
+  };
+
+  const [checkingServicability, setCheckingServicability] = useState(false);
+
+  const checkServicability = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+    setCheckingServicability(true);
+    pinCodeServiceabilityApi(address.zipcode!, 'PHARMA')
+      .then(({ data: { Availability } }) => {
+        console.log({ Availability });
+        setCheckingServicability(false);
+        if (Availability) {
+          // setDeliveryType && setDeliveryType(MEDICINE_DELIVERY_TYPE.HOME_DELIVERY);
+          setDeliveryAddressId && setDeliveryAddressId(address.id);
+        } else {
+          Alert.alert(
+            'Error',
+            'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
+          );
+        }
+      })
+      .catch((e) => {
+        setCheckingServicability(false);
+        console.log({ e });
+      });
   };
 
   const renderHomeDelivery = () => {
-    const selectedAddressIndex =
-      addressList && addressList.findIndex((address) => address.id == selectedAddressId);
-    const addressListLength = addressList && addressList.length;
+    const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
+    const addressListLength = addresses.length;
     const spliceStartIndex =
       selectedAddressIndex == addressListLength - 1
         ? selectedAddressIndex - 1
@@ -331,35 +324,38 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
     return (
       <View
-        style={{
-          marginTop: 8,
-          marginHorizontal: 16,
-        }}
+        style={{ marginTop: 8, marginHorizontal: 16 }}
+        pointerEvents={checkingServicability ? 'none' : 'auto'}
       >
-        {addressList &&
-          addressList.slice(startIndex, startIndex + 2).map((item, index) => {
-            console.log({ item, i: item.id }, item.id === selectedAddressId);
-            return (
-              <RadioSelectionItem
-                key={item.id}
-                title={`${item.addressLine1}, ${item.addressLine2}\n${item.landmark}\n${item.city}, ${item.state} - ${item.zipcode}`}
-                isSelected={selectedAddressId == item.id}
-                onPress={() => {
-                  setSelectedAddressId && setSelectedAddressId(item.id);
-                }}
-                containerStyle={{
-                  marginTop: 16,
-                }}
-                hideSeparator={index + 1 === addressList.length}
-              />
-            );
-          })}
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}
-        >
+        {checkingServicability ? (
+          <View
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              alignSelf: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <ActivityIndicator size="large" color="green" />
+          </View>
+        ) : null}
+        {addresses.slice(startIndex, startIndex + 2).map((item, index, array) => {
+          console.log({ item, i: item.id }, item.id === deliveryAddressId);
+          return (
+            <RadioSelectionItem
+              key={item.id}
+              title={`${item.addressLine1}, ${item.addressLine2}\n${item.landmark}\n${item.city}, ${item.state} - ${item.zipcode}`}
+              isSelected={deliveryAddressId == item.id}
+              onPress={() => {
+                checkServicability(item);
+              }}
+              containerStyle={{ marginTop: 16 }}
+              hideSeparator={index + 1 === array.length}
+            />
+          );
+        })}
+        <View style={styles.rowSpaceBetweenStyle}>
           <Text
             style={styles.yellowTextStyle}
             onPress={() => props.navigation.navigate(AppRoutes.AddAddress)}
@@ -367,7 +363,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             ADD NEW ADDRESS
           </Text>
           <View>
-            {addressList && addressList.length > 2 && (
+            {addresses.length > 2 && (
               <Text
                 style={styles.yellowTextStyle}
                 onPress={() => props.navigation.navigate(AppRoutes.SelectDeliveryAddress)}
@@ -381,34 +377,86 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
+  const [storePinCode, setStorePinCode] = useState<string>('');
+  const [storePickUpList, setStorePickUpList] = useState<Store[]>([]);
+  const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
+  const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
+
+  const fetchStorePickup = (pincode: string) => {
+    if (isValidPinCode(pincode)) {
+      setStorePinCode(pincode);
+      if (pincode.length == 6) {
+        setStorePickUpLoading(true);
+        searchPickupStoresApi(pincode)
+          .then(({ data: { Stores, stores_count } }) => {
+            setStorePickUpLoading(false);
+            setStorePickUpList(stores_count > 0 ? Stores : []);
+          })
+          .catch((e) => {
+            console.log({ e });
+            setStorePickUpLoading(false);
+          });
+      } else {
+        setStorePickUpList([]);
+        // setDeliveryType && setDeliveryType(MEDICINE_DELIVERY_TYPE.STORE_PICK_UP);
+        setStoreId && setStoreId('');
+      }
+    }
+  };
+
   const renderStorePickup = () => {
+    const selectedStoreIndex = storePickUpList.findIndex(({ storeid }) => storeid == storeId);
+    const storesLength = storePickUpList.length;
+    const spliceStartIndex =
+      selectedStoreIndex == storesLength - 1 ? selectedStoreIndex - 1 : selectedStoreIndex;
+    const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
+
     return (
-      <View
-        style={{
-          margin: 16,
-          marginTop: 20,
-        }}
-      >
-        <TextInputComponent />
-        {[...addressList].slice(0, 2).map((item, index: number) => (
-          <RadioSelectionItem
-            title={item.addressLine1!}
-            isSelected={selectedHomeDelivery === item.id}
-            onPress={() => setselectedHomeDelivery(item.id)}
-            containerStyle={{
-              marginTop: 16,
+      <View style={{ margin: 16, marginTop: 20 }}>
+        <TextInputComponent
+          value={`${storePinCode}`}
+          maxLength={6}
+          onChangeText={(pincode) => fetchStorePickup(pincode)}
+          placeholder={'Enter Pincode'}
+        />
+        {storePickUpLoading && <ActivityIndicator color="green" size="large" />}
+        {!storePickUpLoading && storePinCode.length == 6 && storePickUpList.length == 0 && (
+          <Text
+            style={{
+              paddingTop: 10,
+              ...theme.fonts.IBMPlexSansMedium(16),
+              lineHeight: 24,
+              color: '#0087ba',
             }}
-            hideSeparator={index + 1 === addressList.length}
+          >
+            Sorry! We’re working hard to get to this area! In the meantime, you can either pick up
+            from a nearby store, or change the pincode.
+          </Text>
+        )}
+
+        {[...storePickUpList].slice(startIndex, startIndex + 2).map((store, index, array) => (
+          <RadioSelectionItem
+            key={store.storeid}
+            title={`${store.storename}\n${store.address}`}
+            isSelected={storeId === store.storeid}
+            onPress={() => {
+              // setDeliveryType && setDeliveryType(MEDICINE_DELIVERY_TYPE.STORE_PICK_UP);
+              setStoreId && setStoreId(store.storeid);
+            }}
+            containerStyle={{ marginTop: 16 }}
+            hideSeparator={index == array.length - 1}
           />
         ))}
         <View>
-          {addressList.length > 2 && (
+          {storePickUpList.length > 2 && (
             <Text
-              style={{
-                ...styles.yellowTextStyle,
-                textAlign: 'right',
-              }}
-              onPress={() => props.navigation.navigate(AppRoutes.StorPickupScene)}
+              style={{ ...styles.yellowTextStyle, textAlign: 'right' }}
+              onPress={() =>
+                props.navigation.navigate(AppRoutes.StorPickupScene, {
+                  pincode: storePinCode,
+                  stores: storePickUpList,
+                })
+              }
             >
               VIEW ALL
             </Text>
@@ -428,13 +476,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             marginHorizontal: 20,
             marginTop: 16,
             marginBottom: 24,
-            overflow: 'hidden',
           }}
         >
           <TabsComponent
             style={{
-              //   ...theme.viewStyles.cardViewStyle,
               borderRadius: 0,
+              borderTopRightRadius: 10,
+              borderTopLeftRadius: 10,
               borderBottomWidth: 0.5,
               borderBottomColor: 'rgba(2, 71, 91, 0.2)',
             }}
@@ -476,14 +524,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               paddingLeft: 16,
             }}
           >
-            Apply Coupon
+            {!coupon ? 'Apply Coupon' : `${coupon.code} Applied`}
           </Text>
-          <View
-            style={{
-              flex: 1,
-              alignItems: 'flex-end',
-            }}
-          >
+          <View style={{ flex: 1, alignItems: 'flex-end' }}>
             <ArrowRight />
           </View>
         </TouchableOpacity>
@@ -496,41 +539,32 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             padding: 16,
           }}
         >
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}
-          >
+          <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>Subtotal</Text>
-            <Text style={styles.blueTextStyle}>Rs. {grandTotal}</Text>
+            <Text style={styles.blueTextStyle}>Rs. {cartTotal}</Text>
           </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}
-          >
+          {couponDiscount > 0 && (
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={styles.blueTextStyle}>Discount</Text>
+              <Text style={styles.blueTextStyle}>- Rs. {couponDiscount}</Text>
+            </View>
+          )}
+          <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>Delivery Charges</Text>
-            <Text style={styles.blueTextStyle}>+ Rs. {0}</Text>
+            <Text style={styles.blueTextStyle}>+ Rs. {deliveryCharges}</Text>
           </View>
           <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}
-          >
+          <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>To Pay </Text>
             <Text style={[styles.blueTextStyle, { ...theme.fonts.IBMPlexSansBold }]}>
-              {' '}
-              Rs. {grandTotal}{' '}
+              Rs. {grandTotal}
             </Text>
           </View>
         </View>
       </View>
     );
   };
+
   const medicineSuggestions = [
     {
       name: 'Metformin 500mg',
@@ -605,23 +639,27 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
+  const disableProceedToPay = !(cartItems.length > 0 && !!(deliveryAddressId || storeId));
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
-        <ScrollView>
+        <ScrollView bounces={false}>
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
             {renderUploadPrescription()}
             {renderDelivery()}
             {renderTotalCharges()}
-            {renderMedicineSuggestions()}
+            {/* {renderMedicineSuggestions()} */}
           </View>
           <View style={{ height: 70 }} />
         </ScrollView>
         <StickyBottomComponent defaultBG>
           <Button
-            title={`PROCEED TO PAY — RS. ${grandTotal}`}
+            disabled={disableProceedToPay}
+            title={`PROCEED TO PAY — RS. ${cartTotal}`}
+            onPress={() => props.navigation.navigate(AppRoutes.CheckoutScene)}
             style={{ flex: 1, marginHorizontal: 40 }}
           />
         </StickyBottomComponent>
