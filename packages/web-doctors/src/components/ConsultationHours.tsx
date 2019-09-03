@@ -107,7 +107,7 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 300,
       margin: theme.spacing(1),
       '&:hover': {
-        backgroundColor: '#fcb716',
+        backgroundColor: '#fc9916',
       },
     },
     backButton: {
