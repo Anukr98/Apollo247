@@ -17,6 +17,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 //import { SendNotification } from 'consults-service/sendNotifications';
 //import { MailMessage } from 'types/notificationMessageTypes';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { format } from 'date-fns';
 
 export const transferAppointmentTypeDefs = gql`
   enum TRANSFER_STATUS {
@@ -78,6 +79,7 @@ export const transferAppointmentTypeDefs = gql`
 
   type TransferAppointmentResult {
     transferAppointment: TransferAppointment
+    doctorNextSlot: String
   }
 
   type BookTransferAppointmentResult {
@@ -95,6 +97,7 @@ export const transferAppointmentTypeDefs = gql`
 
 type TransferAppointmentResult = {
   transferAppointment: TransferAppointment;
+  doctorNextSlot: string;
 };
 
 type TransferAppointmentInput = {
@@ -227,7 +230,11 @@ const initiateTransferAppointment: Resolver<
   if (!appointment) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
-  if (appointment.status !== STATUS.PENDING && appointment.status !== STATUS.CONFIRMED) {
+  if (
+    appointment.status !== STATUS.PENDING &&
+    appointment.status !== STATUS.CONFIRMED &&
+    appointment.status !== STATUS.IN_PROGRESS
+  ) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
@@ -255,8 +262,13 @@ const initiateTransferAppointment: Resolver<
   };
 
   const transferAppointment = await transferApptRepo.saveTransfer(transferAppointmentAttrs);
-
-  return { transferAppointment };
+  let slot = '';
+  slot = await appointmentRepo.getDoctorNextAvailSlot(TransferAppointmentInput.transferredDoctorId);
+  const curDate = format(new Date(), 'yyyy-MM-dd');
+  if (slot != '') {
+    slot = `${curDate}T${slot}:00.000Z`;
+  }
+  return { transferAppointment, doctorNextSlot: slot };
 };
 
 export const transferAppointmentResolvers = {
