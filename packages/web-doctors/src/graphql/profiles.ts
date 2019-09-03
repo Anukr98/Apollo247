@@ -515,6 +515,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
         speciality
         specialization
         id
+        photoUrl
       }
       specialties {
         id

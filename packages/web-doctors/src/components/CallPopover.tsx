@@ -385,6 +385,28 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    doctorSearch: {
+      position: 'relative',
+      display: 'block',
+      padding: 10,
+      height: 170,
+      zIndex: 9,
+      backgroundColor: '#eeeeee',
+      '& ul': {
+        listStyleType: 'none',
+        paddingLeft: 0,
+        '& li': {
+          paddingLeft: 10,
+          '&:hover': {
+            backgroundColor: '#bbbaba',
+            cursor: 'pointer',
+          },
+        },
+      },
+      '& p': {
+        borderBottom: '1px solid #01475b',
+      },
+    },
   };
 });
 
@@ -399,7 +421,16 @@ interface CallPopoverProps {
 }
 let intervalId: any;
 let stoppedTimer: number;
-
+let transferObject: any = {
+  appointmentId: '',
+  transferDateTime: '',
+  photoUrl: '',
+  doctorId: '',
+  specialtyId: '',
+  doctorName: '',
+  experience: '5 Yrs',
+  specilty: '',
+};
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -413,9 +444,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [reason, setReason] = useState<string>('Reason 01');
   const [searchKeyWord, setSearchKeyword] = React.useState('');
   const [noteKeyword, setNoteKeyword] = React.useState('');
+  const [isDoctorOrSpeciality, setIsDoctorOrSpeciality] = useState(false);
   const [filteredStarDoctors, setFilteredStarDoctors] = useState<any>([]);
   const [filterSpeciality, setFilterSpeciality] = useState<any>([]);
-
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
@@ -503,18 +534,50 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         query: SEARCH_DOCTOR_AND_SPECIALITY,
         variables: { searchText: searchText },
       })
-
       .then((_data) => {
-        console.log('flitered array', _data.data.SearchDoctorAndSpecialty!.doctors);
-        console.log('flitered array1', _data.data.SearchDoctorAndSpecialty!);
         setFilteredStarDoctors(_data.data.SearchDoctorAndSpecialty!.doctors);
         setFilterSpeciality(_data.data.SearchDoctorAndSpecialty!.specialties);
+        if (
+          _data!.data!.SearchDoctorAndSpecialty!.doctors!.length > 0 ||
+          _data!.data!.SearchDoctorAndSpecialty!.specialties!.length > 0
+        ) {
+          setIsDoctorOrSpeciality(true);
+        }
         //setDoctorsCard(!doctorsCard);
       })
       .catch((e) => {
         console.log('Error occured while searching for Doctors', e);
         //Alert.alert('Error', 'Error occured while searching for Doctors');
       });
+  };
+  const handleSpecialityClick = (value: any) => {
+    console.log(value);
+    setIsDoctorOrSpeciality(false);
+    setSearchKeyword(value.name);
+    transferObject = {
+      appointmentId: props.appointmentId,
+      transferDateTime: '',
+      photoUrl: value.image,
+      doctorId: '',
+      specialtyId: value.id,
+      doctorName: '',
+      experience: '',
+      specilty: value.name,
+    };
+  };
+  const handleDoctorClick = (value: any) => {
+    setIsDoctorOrSpeciality(false);
+    setSearchKeyword(value.firstName + ' ' + value.lastName);
+    transferObject = {
+      appointmentId: props.appointmentId,
+      transferDateTime: '',
+      photoUrl: value.photoUrl,
+      doctorId: value.id,
+      specialtyId: '',
+      doctorName: value.firstName + ' ' + value.lastName,
+      experience: '5 Yrs',
+      specilty: value.speciality,
+    };
   };
   setInterval(startConstultCheck, 1000);
   const stopInterval = () => {
@@ -599,6 +662,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     );
   };
   const transferConsultAction = () => {
+    console.log(transferObject);
     client
       .mutate<InitiateTransferAppointment, InitiateTransferAppointmentVariables>({
         mutation: INITIATE_TRANSFER_APPONITMENT,
@@ -607,34 +671,24 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             appointmentId: props.appointmentId,
             transferInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
             transferInitiatedId: props.doctorId,
-            transferredDoctorId: 'ee6e2ab4-5417-4bd0-8808-0964c3192a86',
-            transferredSpecialtyId: '',
+            transferredDoctorId: transferObject.doctorId,
+            transferredSpecialtyId: transferObject.specialtyId,
             transferReason: reason,
             transferNotes: noteKeyword,
           },
         },
       })
       .then((_data: any) => {
-        console.log(_data!.data!.initiateTransferAppointment!.doctorNextSlot);
-        const transferObject: any = {
-          appointmentId: props.appointmentId,
-          transferDateTime: _data!.data!.initiateTransferAppointment!.doctorNextSlot,
-          photoUrl: 'https://dev.popcornapps.com/apolloImages/doctors/doctor_c_3.png',
-          doctorId: 'ee6e2ab4-5417-4bd0-8808-0964c3192a86',
-          specialtyId: '',
-          doctorName: 'Sudheer Kumar',
-          experience: '5 Yrs',
-          specilty: 'Neurology',
-        };
+        transferObject.transferDateTime = _data!.data!.initiateTransferAppointment!.doctorNextSlot;
         pubnub.publish(
           {
             message: {
               id: props.doctorId,
               message: transferconsult,
+              transferInfo: transferObject,
             },
             channel: channel,
             storeInHistory: true,
-            meta: transferObject,
           },
           (status, response) => {}
         );
@@ -993,12 +1047,51 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               placeholder="Search doctors or specialities"
               onChange={(e) => {
                 setSearchKeyword(e.target.value);
-                doctorSpeciality(e.target.value);
+                if (e.target.value.length > 2) {
+                  doctorSpeciality(e.target.value);
+                }
               }}
               value={searchKeyWord}
             />
+            {isDoctorOrSpeciality && searchKeyWord.length > 2 && (
+              <span className={classes.doctorSearch}>
+                <p>Doctor(s)</p>
+                {filteredStarDoctors!.length > 0 ? (
+                  <ul>
+                    {filteredStarDoctors!.map((item: any, idx: any) => (
+                      <li
+                        key={idx}
+                        onClick={() => {
+                          handleDoctorClick(item);
+                        }}
+                      >
+                        {item.firstName} {item.lastName}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  'No Doctors found'
+                )}
+                <p> Speciality(s)</p>
+                {filterSpeciality!.length > 0 ? (
+                  <ul>
+                    {filterSpeciality!.map((item: any, idx: any) => (
+                      <li
+                        key={idx}
+                        onClick={() => {
+                          handleSpecialityClick(item);
+                        }}
+                      >
+                        {item.name}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  'No Speciality found'
+                )}
+              </span>
+            )}
           </div>
-
           <div className={classes.tabBody}>
             <p>Add a Note (Optional)</p>
             <InputBase
