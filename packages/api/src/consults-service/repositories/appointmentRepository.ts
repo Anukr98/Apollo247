@@ -329,4 +329,8 @@ export class AppointmentRepository extends Repository<Appointment> {
   updateTransferState(id: string, appointmentState: APPOINTMENT_STATE) {
     this.update(id, { appointmentState });
   }
+
+  checkDoctorAppointmentByDate(doctorId: string, appointmentDateTime: Date) {
+    return this.count({ where: { doctorId, appointmentDateTime } });
+  }
 }
