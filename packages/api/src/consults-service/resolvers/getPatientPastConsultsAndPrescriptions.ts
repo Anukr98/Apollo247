@@ -29,6 +29,7 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
     ITEMS_RETURNED
     RETURN_ACCEPTED
     PRESCRIPTION_UPLOADED
+    ORDER_FAILED
   }
 
   input PatientConsultsAndOrdersInput {
