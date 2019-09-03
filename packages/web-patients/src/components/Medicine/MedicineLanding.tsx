@@ -3,7 +3,7 @@ import { Theme, Tabs, Tab, Typography, Popover } from '@material-ui/core';
 import React, { useState, useRef } from 'react';
 import { Header } from 'components/Header';
 import { SearchMedicines } from 'components/Medicine/SearchMedicines';
-import { OrderSuccess } from 'components/Cart/OrderSuccess';
+import { OrderFailed } from 'components/Cart/OrderFailed';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -105,11 +105,16 @@ export const MedicineLanding: React.FC = (props) => {
   const queryParams = new URLSearchParams(location.search);
   const mascotRef = useRef(null);
 
-  const orderId = queryParams.get('orderId') || '';
+  const orderId = queryParams.get('orderAutoId') || '';
   const orderStatus = queryParams.get('status') || '';
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(orderId !== '');
+
+  if (parseInt(orderId, 10) > 0 && orderStatus === 'success') {
+    localStorage.removeItem('cartItems');
+    localStorage.removeItem('dp');
+  }
 
   // console.log(orderId, status);
 
@@ -169,8 +174,8 @@ export const MedicineLanding: React.FC = (props) => {
             <div className={classes.mascotIcon}>
               <img src={require('images/ic_mascot.png')} alt="" />
             </div>
-            {orderStatus === 'failed' && <OrderSuccess />}
-            {orderStatus === 'success' && <OrderPlaced />}
+            {orderStatus === 'failed' && <OrderFailed />}
+            {orderStatus === 'success' && <OrderPlaced orderId={orderId} />}
           </div>
         </div>
       </Popover>

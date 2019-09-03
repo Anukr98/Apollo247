@@ -70,7 +70,7 @@ app.post('/paymed-response', (req, res) => {
     .post(process.env.API_URL, requestJSON)
     .then((response) => {
       const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${orderAutoId}&status=success`;
-      res.redirect(process.env.PORTAL_URL);
+      res.redirect(redirectUrl);
     })
     .catch((error) => {
       console.log('error', error);

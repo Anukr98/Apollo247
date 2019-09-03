@@ -37,7 +37,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const OrderSuccess: React.FC = (props) => {
+export const OrderFailed: React.FC = (props) => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
