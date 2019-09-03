@@ -112,7 +112,7 @@ const SaveMedicineOrderPayment: Resolver<
   const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
   const patientAddressDetails = await patientAddressRepo.findById(orderDetails.patientAddressId);
   if (!patientAddressDetails) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
   }
 
   const orderLineItems: PharmaLineItem[] = [];
