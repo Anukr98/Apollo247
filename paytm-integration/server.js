@@ -44,39 +44,37 @@ app.post('/paymed-response', (req, res) => {
   const date = new Date(new Date().toUTCString());
   const orderAutoId = payload.ORDERID;
 
-  console.log('payload is....', payload);
-
-  // save response in apollo24x7
-  // axios.defaults.headers.common['authorization'] = token;
-  // const requestJSON = {
-  //   query:
-  //     'mutation { SaveMedicineOrderPayment(medicinePaymentInput: { orderId: "0", orderAutoId: ' +
-  //     orderAutoId +
-  //     ', paymentType: ONLINE, amountPaid: ' +
-  //     payload.TXNAMOUNT +
-  //     ', paymentRefId: "' +
-  //     payload.TXNID +
-  //     '", paymentStatus: "' +
-  //     payload.STATUS +
-  //     '", paymentDateTime: "' +
-  //     date +
-  //     '", responseCode: "' +
-  //     payload.RESPCODE +
-  //     '", responseMessage: "' +
-  //     payload.RESPMSG +
-  //     '", bankTxnId: "' +
-  //     payload.BANKTXNID +
-  //     '" }){ errorCode, errorMessage, paymentOrderId, orderStatus }}',
-  // };
-  // console.log(requestJSON);
-  // axios
-  //   .post(process.env.API_URL, requestJSON)
-  //   .then((response) => {
-  //     res.redirect(process.env.PORTAL_URL);
-  //   })
-  //   .catch((error) => {
-  //     console.log('error', error);
-  //   });
+  /*save response in apollo24x7*/
+  axios.defaults.headers.common['authorization'] = token;
+  const requestJSON = {
+    query:
+      'mutation { SaveMedicineOrderPayment(medicinePaymentInput: { orderId: "0", orderAutoId: ' +
+      orderAutoId +
+      ', paymentType: ONLINE, amountPaid: ' +
+      payload.TXNAMOUNT +
+      ', paymentRefId: "' +
+      payload.TXNID +
+      '", paymentStatus: "' +
+      payload.STATUS +
+      '", paymentDateTime: "' +
+      date +
+      '", responseCode: "' +
+      payload.RESPCODE +
+      '", responseMessage: "' +
+      payload.RESPMSG +
+      '", bankTxnId: "' +
+      payload.BANKTXNID +
+      '" }){ errorCode, errorMessage, paymentOrderId, orderStatus }}',
+  };
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${orderAutoId}&status=success`;
+      res.redirect(process.env.PORTAL_URL);
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
 });
 
 app.listen(PORT, () => {

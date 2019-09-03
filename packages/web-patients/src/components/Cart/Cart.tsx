@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, Tabs, Tab } from '@material-ui/core';
+import { Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
@@ -11,6 +11,11 @@ import { UploadPrescription } from 'components/Prescriptions/UploadPrescription'
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
+import { SAVE_MEDICINE_ORDER } from 'graphql/medicines';
+import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
+import { Mutation } from 'react-apollo';
+import { MEDICINE_DELIVERY_TYPE } from 'graphql/types/globalTypes';
+import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 
 // import { MedicineCard } from 'components/Medicine/MedicineCard';
 // import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
@@ -301,7 +306,11 @@ export const Cart: React.FC = (props) => {
   const [couponCode, setCouponCode] = React.useState<string>('');
   const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
   const [paymentMethod, setPaymentMethod] = React.useState<string>('');
+  const [mutationLoading, setMutationLoading] = useState(false);
+
   const { cartTotal, cartItems } = useShoppingCart();
+  const { currentPatient } = useAllCurrentPatients();
+  const { authToken } = useAuth();
 
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
   const disablePayButton = paymentMethod === '';
@@ -321,6 +330,25 @@ export const Cart: React.FC = (props) => {
 
   const disableSubmit = deliveryAddressId === '';
   const uploadPrescriptionRequired = cartItems.findIndex((v) => v.is_prescription_required === '1');
+
+  const cartItemsForApi =
+    cartItems.length > 0
+      ? cartItems.map((cartItemDetails) => {
+          return {
+            medicineSKU: cartItemDetails.sku,
+            medicineName: cartItemDetails.name,
+            price: cartItemDetails.price,
+            quantity: cartItemDetails.quantity,
+            mrp: cartItemDetails.price,
+            isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
+            prescriptionImageUrl: '',
+            mou: parseInt(cartItemDetails.mou, 10),
+            isMedicine: cartItemDetails.is_prescription_required ? '1' : '0',
+          };
+        })
+      : [];
+
+  // console.log('cart items for api........', typeof cartItemsForApi, cartItemsForApi);
 
   // console.log(
   //   deliveryMode,
@@ -493,7 +521,7 @@ export const Cart: React.FC = (props) => {
               color="primary"
               fullWidth
               disabled={disableSubmit}
-              className={disableSubmit ? classes.buttonDisable : ''}
+              className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
             >
               Proceed to pay — RS. {totalAmount}
             </AphButton>
@@ -517,15 +545,52 @@ export const Cart: React.FC = (props) => {
             </Scrollbars>
           </div>
           <div className={classes.dialogActions}>
-            <AphButton
-              onClick={(e) => {}}
-              color="primary"
-              fullWidth
-              disabled={disablePayButton}
-              className={paymentMethod === '' ? classes.buttonDisable : ''}
+            <Mutation<SaveMedicineOrder, SaveMedicineOrderVariables>
+              mutation={SAVE_MEDICINE_ORDER}
+              variables={{
+                medicineCartInput: {
+                  quoteId: '',
+                  shopId: deliveryMode === 'HOME' ? '' : deliveryAddressId,
+                  estimatedAmount: parseFloat(totalAmount),
+                  patientAddressId: deliveryMode === 'HOME' ? deliveryAddressId : '',
+                  devliveryCharges: 0,
+                  prescriptionImageUrl: '',
+                  medicineDeliveryType:
+                    deliveryMode === 'HOME'
+                      ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+                      : MEDICINE_DELIVERY_TYPE.STORE_PICK_UP,
+                  patientId: currentPatient ? currentPatient.id : '',
+                  items: cartItemsForApi,
+                },
+              }}
+              onCompleted={(apiResponse) => {
+                const orderAutoId = apiResponse.SaveMedicineOrder.orderAutoId;
+                // redirect to payment Gateway
+                if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
+                  const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&orderAutoId=${orderAutoId}&token=${authToken}`;
+                  window.location.href = pgUrl;
+                }
+              }}
+              onError={(errorResponse) => {
+                alert(errorResponse);
+                setMutationLoading(false);
+              }}
             >
-              Pay - RS. {totalAmount}
-            </AphButton>
+              {(mutate) => (
+                <AphButton
+                  onClick={(e) => {
+                    setMutationLoading(true);
+                    mutate();
+                  }}
+                  color="primary"
+                  fullWidth
+                  disabled={disablePayButton}
+                  className={paymentMethod === '' || mutationLoading ? classes.buttonDisable : ''}
+                >
+                  {mutationLoading ? <CircularProgress /> : `Pay - RS. ${totalAmount}`}
+                </AphButton>
+              )}
+            </Mutation>
           </div>
         </div>
       </AphDialog>
