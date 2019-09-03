@@ -42,7 +42,10 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   }
 
   getMedicineOrderDetails(orderAutoId: number) {
-    return this.findOne({ where: { orderAutoId } });
+    return this.findOne({
+      where: { orderAutoId },
+      relations: ['patient', 'medicineOrderLineItems'],
+    });
   }
 
   saveMedicineOrderStatus(orderStatusAttrs: Partial<MedicineOrdersStatus>, orderAutoId: number) {

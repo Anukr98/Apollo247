@@ -27,6 +27,7 @@ export const saveMedicineOrderTypeDefs = gql`
     ITEMS_RETURNED
     RETURN_ACCEPTED
     PRESCRIPTION_UPLOADED
+    ORDER_FAILED
   }
 
   enum MEDICINE_DELIVERY_TYPE {
