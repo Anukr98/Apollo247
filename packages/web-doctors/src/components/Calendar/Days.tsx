@@ -1,32 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
+import { Theme } from '@material-ui/core';
 import { startOfWeek, endOfWeek, eachDayOfInterval, getDate, getDay, isToday } from 'date-fns';
 import { getTime } from 'date-fns/esm';
 
 const days: string[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
-const useStyles = makeStyles({
-  reset: {
-    margin: 0,
-    padding: 0,
-    width: '100%',
-    '& li': {
-      fontSize: 14,
-      fontWeight: 500,
+const useStyles = makeStyles((theme: Theme) => {
+  return {
+    reset: {
+      margin: 0,
+      padding: 0,
+      width: '100%',
+      '& li': {
+        fontSize: 14,
+        fontWeight: 500,
+      },
     },
-  },
-  days: {
-    display: 'inline-block',
-    width: '10%',
-  },
-  day: {
-    display: 'block',
-  },
-  date: {
-    display: 'block',
-    fontSize: 22,
-    fontWeight: 500,
-  },
+    days: {
+      display: 'inline-block',
+      width: '10%',
+    },
+    day: {
+      display: 'block',
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 12,
+      },
+    },
+    date: {
+      display: 'block',
+      fontSize: 22,
+      fontWeight: 500,
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 14,
+      },
+    },
+  };
 });
 
 export interface DaysProps {

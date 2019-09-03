@@ -1,104 +1,143 @@
 import React, { useState } from 'react';
 import { MonthList } from './MonthList';
+import { Theme } from '@material-ui/core';
 import { Days } from './Days';
 import { makeStyles } from '@material-ui/styles';
 import { addWeeks, subWeeks, startOfWeek, startOfDay } from 'date-fns';
 import { startOfToday } from 'date-fns/esm';
 
-const useStyles = makeStyles({
-  float: {
-    display: 'inline-block',
-  },
-  container: {
-    display: 'flex',
-    'flex-wrap': 'nowrap',
-    'justify-content': 'space-between',
-    boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-  },
-  daysList: {
-    width: '75%',
-    display: 'inline-block',
-    verticalAlign: 'middle',
-    '& li': {
-      width: '14%',
-      padding: '15px 0 10px 0',
-      cursor: 'pointer',
-      '&.highlight': {
-        backgroundColor: '#00b38e',
-        color: '#fff',
-        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.5)',
-        fontWeight: 600,
+const useStyles = makeStyles((theme: Theme) => {
+  return {
+    float: {
+      display: 'inline-block',
+    },
+    container: {
+      display: 'flex',
+      'flex-wrap': 'nowrap',
+      'justify-content': 'space-between',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+    },
+    daysList: {
+      width: '75%',
+      display: 'inline-block',
+      verticalAlign: 'middle',
+      [theme.breakpoints.down('xs')]: {
+        width: '95%',
+      },
+      '& li': {
+        width: '14%',
+        padding: '15px 0 10px 0',
+        cursor: 'pointer',
+        '&.highlight': {
+          backgroundColor: '#00b38e',
+          color: '#fff',
+          boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.5)',
+          fontWeight: 600,
+        },
       },
     },
-  },
-  weekView: {
-    backgroundColor: '#fff',
-    borderRadius: '10px',
-    width: '82%',
-    margin: 'auto',
-    padding: '0 15px',
-    textAlign: 'center',
-    marginLeft: 25,
-    boxShadow: '-10px 2px 10px 0 rgba(0, 0, 0, 0.1)',
-  },
-  monthPopup: {
-    fontSize: 21,
-    display: 'inline-block',
-    width: '15%',
-  },
-  prevBtn: {
-    width: '8%',
-    display: 'inline-block',
-    fontWeight: 600,
-    fontSize: 25,
-    color: '#658f9b',
-    cursor: 'pointer',
-    verticalAlign: 'middle',
-    '& img': {
-      width: 30,
-      marginTop: 8,
-    },
-  },
-  nextBtn: {
-    width: '4%',
-    display: 'inline-block',
-    fontWeight: 600,
-    fontSize: 25,
-    color: '#658f9b',
-    cursor: 'pointer',
-    verticalAlign: 'middle',
-    '& img': {
-      width: 30,
-      marginTop: 8,
-    },
-  },
-  calendarContainer: {
-    display: 'flex',
-  },
-  calenderIcon: {
-    cursor: 'pointer',
-    width: '7%',
-    display: 'flex',
-    borderRadius: '10px',
-    textAlign: 'center',
-    boxShadow: '-4px 2px 10px 0 rgba(0, 0, 0, 0.1)',
-    backgroundColor: '#fff',
-    '& img': {
+    weekView: {
+      backgroundColor: '#fff',
+      borderRadius: '10px',
+      width: '82%',
       margin: 'auto',
-      width: 24,
+      padding: '0 15px',
+      textAlign: 'center',
+      marginLeft: 25,
+      boxShadow: '-10px 2px 10px 0 rgba(0, 0, 0, 0.1)',
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        marginLeft: 5,
+        position: 'relative',
+      },
     },
-  },
-  moreIcon: {
-    width: '7%',
-    display: 'flex',
-    borderRadius: '10px',
-    textAlign: 'center',
-    boxShadow: '-4px 2px 10px 0 rgba(0, 0, 0, 0.1)',
-    backgroundColor: '#fff',
-    '& img': {
-      margin: 'auto',
+    monthPopup: {
+      fontSize: 21,
+      display: 'inline-block',
+      width: '15%',
     },
-  },
+    prevBtn: {
+      width: '8%',
+      display: 'inline-block',
+      fontWeight: 600,
+      fontSize: 25,
+      color: '#658f9b',
+      cursor: 'pointer',
+      verticalAlign: 'middle',
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        left: 0,
+        top: 10,
+        // display: 'none',
+      },
+      '& img': {
+        width: 30,
+        marginTop: 8,
+      },
+    },
+    nextBtn: {
+      width: '4%',
+      display: 'inline-block',
+      fontWeight: 600,
+      fontSize: 25,
+      color: '#658f9b',
+      cursor: 'pointer',
+      verticalAlign: 'middle',
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        right: 15,
+        top: 10,
+      },
+      '& img': {
+        width: 30,
+        marginTop: 8,
+      },
+    },
+    calendarContainer: {
+      display: 'flex',
+      [theme.breakpoints.down('xs')]: {
+        padding: '15px 0',
+      },
+    },
+    calenderIcon: {
+      cursor: 'pointer',
+      width: '7%',
+      display: 'flex',
+      borderRadius: '10px',
+      textAlign: 'center',
+      boxShadow: '-4px 2px 10px 0 rgba(0, 0, 0, 0.1)',
+      backgroundColor: '#fff',
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        right: 35,
+        top: -35,
+        borderRadius: 0,
+        boxShadow: 'none',
+      },
+      '& img': {
+        margin: 'auto',
+        width: 24,
+      },
+    },
+    moreIcon: {
+      width: '7%',
+      display: 'flex',
+      borderRadius: '10px',
+      textAlign: 'center',
+      boxShadow: '-4px 2px 10px 0 rgba(0, 0, 0, 0.1)',
+      backgroundColor: '#fff',
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        right: 5,
+        top: -35,
+        borderRadius: 0,
+        boxShadow: 'none',
+      },
+      '& img': {
+        margin: 'auto',
+      },
+    },
+  };
 });
 
 export interface CalendarStripProps {

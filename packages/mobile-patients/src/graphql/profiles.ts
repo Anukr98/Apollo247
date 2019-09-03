@@ -531,3 +531,14 @@ export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
     }
   }
 `;
+
+export const SAVE_MEDICINE_ORDER = gql`
+  mutation SaveMedicineOrder($MedicineCartInput: MedicineCartInput!) {
+    SaveMedicineOrder(MedicineCartInput: $MedicineCartInput) {
+      status
+      errorCode
+      errorMessage
+      orderId
+    }
+  }
+`;

@@ -34,6 +34,31 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum MEDICINE_DELIVERY_TYPE {
+  HOME_DELIVERY = "HOME_DELIVERY",
+  STORE_PICK_UP = "STORE_PICK_UP",
+}
+
+export enum MEDICINE_ORDER_PAYMENT_TYPE {
+  COD = "COD",
+  NO_PAYMENT = "NO_PAYMENT",
+  ONLINE = "ONLINE",
+}
+
+export enum MEDICINE_ORDER_STATUS {
+  CANCELLED = "CANCELLED",
+  DELIVERED = "DELIVERED",
+  ITEMS_RETURNED = "ITEMS_RETURNED",
+  ORDER_PLACED = "ORDER_PLACED",
+  ORDER_VERIFIED = "ORDER_VERIFIED",
+  OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
+  PICKEDUP = "PICKEDUP",
+  PRESCRIPTION_UPLOADED = "PRESCRIPTION_UPLOADED",
+  QUOTE = "QUOTE",
+  RETURN_ACCEPTED = "RETURN_ACCEPTED",
+  RETURN_INITIATED = "RETURN_INITIATED",
+}
+
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
@@ -117,6 +142,43 @@ export interface FilterDoctorInput {
   gender?: (Gender | null)[] | null;
   language?: (string | null)[] | null;
   location?: string | null;
+}
+
+export interface MedicineCartInput {
+  quoteId?: string | null;
+  shopId?: string | null;
+  estimatedAmount?: number | null;
+  patientId: string;
+  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  patientAddressId?: string | null;
+  devliveryCharges?: number | null;
+  prescriptionImageUrl?: string | null;
+  items?: (MedicineCartItem | null)[] | null;
+}
+
+export interface MedicineCartItem {
+  medicineSKU?: string | null;
+  medicineName?: string | null;
+  price?: number | null;
+  quantity?: number | null;
+  mrp?: number | null;
+  isPrescriptionNeeded?: number | null;
+  prescriptionImageUrl?: string | null;
+  mou?: number | null;
+  isMedicine?: string | null;
+}
+
+export interface MedicinePaymentInput {
+  orderId?: string | null;
+  orderAutoId?: number | null;
+  paymentType?: MEDICINE_ORDER_PAYMENT_TYPE | null;
+  amountPaid?: number | null;
+  paymentRefId?: string | null;
+  paymentStatus?: string | null;
+  paymentDateTime?: any | null;
+  responseCode?: string | null;
+  responseMessage?: string | null;
+  bankTxnId?: string | null;
 }
 
 export interface PatientAddressInput {

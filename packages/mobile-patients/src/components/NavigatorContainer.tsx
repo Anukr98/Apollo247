@@ -1,7 +1,7 @@
 import { AddressBook } from '@aph/mobile-patients/src/components/Account/AddressBook';
 import { MyAccount } from '@aph/mobile-patients/src/components/Account/MyAccount';
 import { NotificationSettings } from '@aph/mobile-patients/src/components/Account/NotificationSettings';
-import { ChatRoom } from '@aph/mobile-patients/src/components/ChatRoom';
+import { ChatRoom } from '@aph/mobile-patients/src/components/Consult/ChatRoom';
 import { AppointmentDetails } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentDetails';
 import { Consult } from '@aph/mobile-patients/src/components/ConsultRoom/Consult';
 import { ConsultRoom } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultRoom';
@@ -30,6 +30,9 @@ import { SignUp } from '@aph/mobile-patients/src/components/SignUp';
 import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
 import { TabBar } from '@aph/mobile-patients/src/components/TabBar';
 import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';
+import { AzureUpload } from '@aph/mobile-patients/src/components/AzureUpload';
+import { AppointmentOnlineDetails } from '@aph/mobile-patients/src/components/Consult/AppointmentOnlineDetails';
+import { ChooseDoctor } from '@aph/mobile-patients/src/components/Consult/ChooseDoctor';
 import {
   createAppContainer,
   createStackNavigator,
@@ -81,6 +84,9 @@ export enum AppRoutes {
   AddressBook = 'AddressBook',
   NotificationSettings = 'NotificationSettings',
   AddRecord = 'AddRecord',
+  AzureUpload = 'AzureUpload',
+  AppointmentOnlineDetails = 'AppointmentOnlineDetails',
+  ChooseDoctor = 'ChooseDoctor',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -215,6 +221,15 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.AddRecord]: {
     screen: AddRecord,
+  },
+  [AppRoutes.AzureUpload]: {
+    screen: AzureUpload,
+  },
+  [AppRoutes.AppointmentOnlineDetails]: {
+    screen: AppointmentOnlineDetails,
+  },
+  [AppRoutes.ChooseDoctor]: {
+    screen: ChooseDoctor,
   },
 };
 

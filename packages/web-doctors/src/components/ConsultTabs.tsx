@@ -321,7 +321,6 @@ export const ConsultTabs: React.FC = () => {
       document.cookie = cookieStr + ';path=/;';
     };
   }, [paramId, appointmentId]);
-
   const saveCasesheetAction = () => {
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({

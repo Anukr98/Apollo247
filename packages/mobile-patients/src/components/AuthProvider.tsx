@@ -1,13 +1,9 @@
-import {
-  GET_CURRENT_PATIENTS,
-  GET_PATIENT_ADDRESS_LIST,
-  SAVE_PATIENT_ADDRESS,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_CURRENT_PATIENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 // import { apiRoutes } from '@aph/universal/dist/aphRoutes';
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory';
-import { ApolloClient } from 'apollo-client';
+import { ApolloClient, ApolloQueryResult } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
 import { onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
@@ -15,18 +11,8 @@ import _isEmpty from 'lodash/isEmpty';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
+import { AsyncStorage } from 'react-native';
 import firebase, { RNFirebase } from 'react-native-firebase';
-import {
-  getPatientAddressList,
-  getPatientAddressListVariables,
-} from '../graphql/types/getPatientAddressList';
-import { GraphQLError } from 'graphql';
-import {
-  savePatientAddress,
-  savePatientAddressVariables,
-  savePatientAddress_savePatientAddress_patientAddress,
-} from '../graphql/types/savePatientAddress';
-import { PatientAddressInput } from '../graphql/types/globalTypes';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
@@ -37,6 +23,7 @@ export interface AuthContextProps {
 
   currentPatientId: string | null;
   setCurrentPatientId: ((pid: string | null) => void) | null;
+  allPatients: ApolloQueryResult<GetCurrentPatients> | null;
 
   sendOtp: ((phoneNumber: string) => Promise<unknown>) | null;
   sendOtpError: boolean;
@@ -51,11 +38,6 @@ export interface AuthContextProps {
   signOut: (() => void) | null;
 
   hasAuthToken: boolean;
-
-  addresses: savePatientAddress_savePatientAddress_patientAddress[];
-  addAddress: ((address: PatientAddressInput) => Promise<unknown>) | null;
-  selectedAddressId: string;
-  setSelectedAddressId: ((id: string) => void) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -76,10 +58,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
   analytics: null,
 
-  addAddress: null,
-  addresses: [],
-  selectedAddressId: '',
-  setSelectedAddressId: null,
+  allPatients: null,
 });
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
@@ -131,10 +110,7 @@ export const AuthProvider: React.FC = (props) => {
 
   const auth = firebase.auth();
 
-  const [addresses, setAddresses] = useState<
-    savePatientAddress_savePatientAddress_patientAddress[]
-  >([]);
-  const [selectedAddressId, setSelectedAddressId] = useState<string>('');
+  const [allPatients, setAllPatients] = useState<AuthContextProps['allPatients']>(null);
 
   const sendOtp = (phoneNumber: string) => {
     return new Promise(async (resolve, reject) => {
@@ -176,10 +152,16 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   const signOut = useCallback(() => {
-    auth.signOut();
-    setAuthToken('');
-    setCurrentPatientId(null);
-    console.log('authprovider signOut');
+    try {
+      auth.signOut();
+      setAuthToken('');
+      setCurrentPatientId(null);
+      setAllPatients(null);
+      AsyncStorage.setItem('userLoggedIn', 'false');
+      console.log('authprovider signOut');
+    } catch (error) {
+      console.log('signOut error', error);
+    }
   }, [auth]);
 
   useEffect(() => {
@@ -214,10 +196,14 @@ export const AuthProvider: React.FC = (props) => {
         setAuthToken(jwt);
 
         await apolloClient
-          .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
+          .query<GetCurrentPatients>({
+            query: GET_CURRENT_PATIENTS,
+            fetchPolicy: 'no-cache',
+          })
           .then((data) => {
             setSignInError(false);
             console.log('data', data);
+            setAllPatients(data);
           })
           .catch((error) => {
             setSignInError(true);
@@ -227,42 +213,6 @@ export const AuthProvider: React.FC = (props) => {
       setIsSigningIn(false);
     });
   }, [auth, signOut]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      !isSigningIn &&
-        currentPatientId &&
-        apolloClient
-          .query<getPatientAddressList, getPatientAddressListVariables>({
-            query: GET_PATIENT_ADDRESS_LIST,
-            variables: { patientId: currentPatientId },
-            fetchPolicy: 'no-cache',
-          })
-          .then(({ data: { getPatientAddressList: { addressList } } }) => {
-            setAddresses(addressList!);
-          })
-          .catch((e: ReadonlyArray<GraphQLError>) => {
-            console.log({ e });
-          });
-    }, 3000);
-  }, [isSigningIn, currentPatientId]);
-
-  const addAddress = (address: PatientAddressInput) => {
-    return new Promise((res, rej) => {
-      apolloClient
-        .mutate<savePatientAddress, savePatientAddressVariables>({
-          mutation: SAVE_PATIENT_ADDRESS,
-          variables: { PatientAddressInput: address },
-        })
-        .then(({ data }) => {
-          setAddresses([data!.savePatientAddress!.patientAddress!, ...addresses]);
-          res(data!.savePatientAddress!.patientAddress);
-        })
-        .catch((e: ReadonlyArray<GraphQLError>) => {
-          rej(e);
-        });
-    });
-  };
 
   return (
     <ApolloProvider client={apolloClient}>
@@ -287,10 +237,7 @@ export const AuthProvider: React.FC = (props) => {
             analytics,
             hasAuthToken,
 
-            addAddress,
-            addresses,
-            selectedAddressId,
-            setSelectedAddressId,
+            allPatients,
           }}
         >
           {props.children}
