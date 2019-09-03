@@ -252,9 +252,9 @@ export const Symptoms: React.FC = (props) => {
   const clearField = () => {
     setSeverity('');
     setSymptom('');
-    setHowOften('')
-    setSeverity('')
-  }
+    setHowOften('');
+    setSeverity('');
+  };
   const clearError = () => {
     setErrorState({
       ...errorState,
@@ -263,7 +263,7 @@ export const Symptoms: React.FC = (props) => {
       howOfftenError: false,
       severityError: false,
     });
-  }
+  };
   const addUpdateSymptom = () => {
     if (isEmpty(trim(symptom))) {
       setErrorState({
@@ -320,7 +320,6 @@ export const Symptoms: React.FC = (props) => {
       clearField();
       clearError();
     }
-
   };
   useEffect(() => {
     if (idx >= 0) {
@@ -388,8 +387,8 @@ export const Symptoms: React.FC = (props) => {
               ))}
           </List>
         ) : (
-            <div className={classes.nodatafound}>No data Found</div>
-          )}
+          <div className={classes.nodatafound}>No data Found</div>
+        )}
 
         <AphButton
           variant="contained"
@@ -529,7 +528,6 @@ export const Symptoms: React.FC = (props) => {
                         setIsDialogOpen(false);
                         clearField();
                         clearError();
-
                       }}
                     >
                       Cancel
