@@ -11,7 +11,10 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { DOCTOR_SPECIALITY_BY_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  DOCTOR_SPECIALITY_BY_FILTERS,
+  NEXT_AVAILABLE_SLOT,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDoctorsBySpecialtyAndFilters,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
@@ -37,6 +40,10 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import {
+  GetDoctorNextAvailableSlot,
+  GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots,
+} from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 
 const styles = StyleSheet.create({
   topView: {
@@ -128,6 +135,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [locationSearchList, setlocationSearchList] = useState<string[]>([]);
+  const [doctorAvailalbeSlots, setdoctorAvailalbeSlots] = useState<
+    (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[] | null
+  >([]);
+  const [doctorIds, setdoctorIds] = useState<(string | null)[]>([]);
 
   const [scrollY] = useState(new Animated.Value(0));
   const { currentPatient } = useAllCurrentPatients();
@@ -146,6 +157,36 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       console.log(err);
     }
   };
+  console.log(doctorIds, 'doctorIds fetchNextSlots');
+  const todayDate = new Date().toISOString().slice(0, 10);
+  const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
+    fetchPolicy: 'no-cache',
+    variables: {
+      DoctorNextAvailableSlotInput: {
+        doctorIds: doctorIds,
+        availableDate: todayDate,
+      },
+    },
+  });
+
+  if (availability.error) {
+    console.log('error', availability.error);
+  } else {
+    console.log('doctorIds fetchNextSlots result', availability);
+    if (
+      availability &&
+      availability.data &&
+      availability.data.getDoctorNextAvailableSlot &&
+      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+      doctorAvailalbeSlots !== availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
+      console.log(
+        availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots,
+        'doctorIds fetchNextSlots doctorAvailalbeSlots'
+      );
+      setdoctorAvailalbeSlots(availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots);
+    }
+  }
 
   useEffect(() => {
     console.log('didmout');
@@ -273,6 +314,21 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       data.getDoctorsBySpecialtyAndFilters.doctors &&
       doctorsList !== data.getDoctorsBySpecialtyAndFilters.doctors
     ) {
+      const ids = data.getDoctorsBySpecialtyAndFilters.doctors
+        ? data.getDoctorsBySpecialtyAndFilters.doctors.map((item) => item && item.id)
+        : [];
+      const prevIds = [...doctorIds];
+      if (ids !== prevIds) {
+        prevIds.push(...ids);
+        setdoctorIds(prevIds);
+      }
+
+      console.log(
+        doctorIds,
+        'doctorIds otherDoctors',
+        data.getDoctorsBySpecialtyAndFilters.doctors
+      );
+
       setDoctorsList(data.getDoctorsBySpecialtyAndFilters.doctors);
       setshowSpinner(false);
     }
@@ -379,7 +435,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             </TouchableOpacity>
           </View>
         )}
-        <TouchableOpacity activeOpacity={1} style={{ marginLeft: 20 }} onPress={() => setDisplayFilter(true)}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={{ marginLeft: 20 }}
+          onPress={() => setDisplayFilter(true)}
+        >
           <Filter />
         </TouchableOpacity>
       </View>
@@ -402,7 +462,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const renderSearchDoctorResultsRow = (
     rowData: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null
   ) => {
-    if (rowData) return <DoctorCard rowData={rowData} navigation={props.navigation} />;
+    if (rowData)
+      return (
+        <DoctorCard
+          rowData={rowData}
+          navigation={props.navigation}
+          doctorAvailalbeSlots={doctorAvailalbeSlots}
+        />
+      );
     return null;
   };
   const consultionType = (id: string, filter: ConsultMode) => {

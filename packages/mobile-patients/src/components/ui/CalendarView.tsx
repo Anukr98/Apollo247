@@ -43,7 +43,8 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
           borderBottomColor: 'rgba(2, 71, 91, 0.3)',
         }}
       >
-        <TouchableOpacity activeOpacity={1}
+        <TouchableOpacity
+          activeOpacity={1}
           onPress={() => {
             props.calendarType == CALENDAR_TYPE.WEEK
               ? weekViewRef.current && weekViewRef.current.getPreviousWeek()
@@ -67,7 +68,8 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
             {moment(calendarDate).format('MMM YYYY')}
           </Text>
           {props.calendarType == CALENDAR_TYPE.WEEK ? (
-            <TouchableOpacity activeOpacity={1}
+            <TouchableOpacity
+              activeOpacity={1}
               onPress={() => {
                 setCalendarDate(props.date);
                 props.onCalendarTypeChanged && props.onCalendarTypeChanged(CALENDAR_TYPE.MONTH);
@@ -76,7 +78,8 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
               <DropdownBlueDown />
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity activeOpacity={1}
+            <TouchableOpacity
+              activeOpacity={1}
               onPress={() => {
                 setCalendarDate(props.date);
                 props.onCalendarTypeChanged && props.onCalendarTypeChanged(CALENDAR_TYPE.WEEK);
@@ -86,7 +89,8 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
             </TouchableOpacity>
           )}
         </View>
-        <TouchableOpacity activeOpacity={1}
+        <TouchableOpacity
+          activeOpacity={1}
           onPress={() => {
             props.calendarType == CALENDAR_TYPE.WEEK
               ? weekViewRef.current && weekViewRef.current.getNextWeek()
@@ -189,14 +193,15 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
             backgroundColor: theme.colors.CLEAR,
           };
     return (
-      <TouchableOpacity activeOpacity={1}
+      <TouchableOpacity
+        activeOpacity={1}
         onPress={() => {
           if (day.state !== 'disabled') {
             props.onPressDate(dayDate);
             setCalendarDate(dayDate);
           }
         }}
-        activeOpacity={day.state === 'disabled' ? 1 : 0}
+        // activeOpacity={day.state === 'disabled' ? 1 : 0}
         style={dayViewStyle}
       >
         <Text style={dayTextStyle}>{dayDate.getDate()}</Text>
