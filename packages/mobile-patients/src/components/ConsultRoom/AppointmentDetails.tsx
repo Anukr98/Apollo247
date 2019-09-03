@@ -3,10 +3,23 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Location, More } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React from 'react';
-import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import {
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Dimensions,
+} from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   imageView: {
@@ -44,16 +57,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  gotItStyles: {
+    height: 60,
+    backgroundColor: 'transparent',
+  },
+  gotItTextStyles: {
+    paddingTop: 16,
+    ...theme.viewStyles.yellowTextStyle,
+  },
 });
 
 export interface AppointmentDetailsProps extends NavigationScreenProps {}
 
 export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => {
   const data = props.navigation.state.params!.data;
-  console.log(
-    props.navigation.state.params!.data,
-    data.doctorInfo.doctorHospital[0].facility.streetLine1
-  );
+  const doctorDetails = data.doctorInfo;
+  console.log('doctorDetails', doctorDetails);
+
+  // console.log(
+  //   props.navigation.state.params!.data,
+  //   data.doctorInfo.doctorHospital[0].facility.streetLine1
+  // );
+  const [cancelAppointment, setCancelAppointment] = useState<boolean>(false);
+  const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
+  const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const { currentPatient } = useAllCurrentPatients();
+
   if (data.doctorInfo)
     return (
       <View
@@ -66,7 +95,11 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             title="UPCOMING CLINIC VISIT"
             leftIcon="backArrow"
             rightComponent={
-              <TouchableOpacity onPress={() => {}}>
+              <TouchableOpacity
+                onPress={() => {
+                  setCancelAppointment(true);
+                }}
+              >
                 <More />
               </TouchableOpacity>
             }
@@ -153,10 +186,23 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               </View>
             </View>
           </View>
-          <StickyBottomComponent defaultBG>
+          <StickyBottomComponent defaultBG style={{ paddingHorizontal: 0 }}>
+            <Button
+              title={'RESCHEDULE'}
+              style={{
+                flex: 0.5,
+                marginLeft: 20,
+                marginRight: 8,
+                backgroundColor: 'white',
+              }}
+              titleTextStyle={{ color: '#fc9916' }}
+              onPress={() => {
+                setdisplayoverlay(true);
+              }}
+            />
             <Button
               title={'FILL CASE SHEET'}
-              style={{ flex: 1, marginHorizontal: 40 }}
+              style={{ flex: 0.5, marginRight: 20, marginLeft: 8 }}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.ChatRoom, {
                   data: data,
@@ -165,6 +211,112 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             />
           </StickyBottomComponent>
         </SafeAreaView>
+        {cancelAppointment && (
+          <View
+            style={{
+              position: 'absolute',
+              height: height,
+              width: width,
+              flex: 1,
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}
+          >
+            <TouchableOpacity
+              onPress={() => {
+                setCancelAppointment(false);
+              }}
+            >
+              <View
+                style={{ margin: 0, height: height, width: width, backgroundColor: 'transparent' }}
+              >
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowCancelPopup(true);
+                    setCancelAppointment(false);
+                  }}
+                >
+                  <View
+                    style={{
+                      backgroundColor: 'white',
+                      width: 201,
+                      height: 55,
+                      marginLeft: width - 221,
+                      marginTop: 64,
+                      borderRadius: 10,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      ...theme.viewStyles.shadowStyle,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        backgroundColor: 'white',
+                        color: '#02475b',
+                        ...theme.fonts.IBMPlexSansMedium(16),
+                        textAlign: 'center',
+                      }}
+                    >
+                      Cancel Appointment
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </View>
+        )}
+        {showCancelPopup && (
+          <BottomPopUp
+            title={'Hi, Surj :)'}
+            description={
+              'Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full refund!'
+            }
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                marginHorizontal: 20,
+                justifyContent: 'space-between',
+                alignItems: 'flex-end',
+              }}
+            >
+              <View style={{ height: 60 }}>
+                <TouchableOpacity
+                  style={styles.gotItStyles}
+                  onPress={() => {
+                    setShowCancelPopup(false);
+                    setdisplayoverlay(true);
+                  }}
+                >
+                  <Text style={styles.gotItTextStyles}>{'RESCHEDULE INSTEAD'}</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={{ height: 60 }}>
+                <TouchableOpacity
+                  style={styles.gotItStyles}
+                  onPress={() => {
+                    setShowCancelPopup(false);
+                  }}
+                >
+                  <Text style={styles.gotItTextStyles}>{'CANCEL CONSULT'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </BottomPopUp>
+        )}
+        {displayoverlay && doctorDetails && (
+          <OverlayRescheduleView
+            setdisplayoverlay={() => setdisplayoverlay(false)}
+            navigation={props.navigation}
+            doctor={doctorDetails ? doctorDetails : null}
+            patientId={currentPatient ? currentPatient.id : ''}
+            clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
+            doctorId={doctorDetails && doctorDetails.id}
+            renderTab={'Visit Clinic'}
+          />
+        )}
       </View>
     );
   return null;

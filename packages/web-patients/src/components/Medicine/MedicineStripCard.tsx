@@ -8,7 +8,7 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import _unescape from 'lodash/unescape';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
-
+import axios from 'axios';
 // import { AphCheckbox } from 'components/AphCheckbox';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -328,8 +328,6 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
 
   const { medicines } = props;
 
-  console.log(medicines);
-
   const medicinesMarkup = () => {
     return medicines.map((medicineDetails, index) => {
       const medicineName = _startCase(_toLower(medicineDetails.name));
@@ -346,6 +344,7 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
       const status = medicineDetails.status;
       const thumbnail = medicineDetails.thumbnail;
       const typeId = medicineDetails.type_id;
+      const mou = medicineDetails.mou;
 
       // console.log(medicineName, isPrescriptionRequired);
       // console.log(selectedPackedQty[index], medicineDetails.quantity);
@@ -372,7 +371,7 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
               <div className={classes.medicineName}>
                 {medicineName}
                 <div className={`${classes.tabInfo} ${!isInStock ? classes.errorColor : ''}`}>
-                  {isInStock ? 'Pack Of 10' : 'Out Of Stock'}
+                  {isInStock ? (mou ? `Pack Of ${mou}` : '') : 'Out Of Stock'}
                 </div>
               </div>
             </div>
@@ -384,6 +383,20 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                   onClick={() => {
                     setIsPopoverOpen(true);
                     if (isPrescriptionRequired) setpopoverPrescriptionIcon(true);
+                    axios
+                      .post(
+                        process.env.PHARMACY_MED_PRODUCT_INFO_URL,
+                        { params: medicineSku },
+                        {
+                          headers: {
+                            Authorization: process.env.PHARMACY_MED_AUTH_TOKEN,
+                          },
+                        }
+                      )
+                      .then((result) => {
+                        console.log('........', result);
+                      });
+
                     setpopoverItemName(medicineName);
                     setPopoverContent(medicineDescription);
                   }}
@@ -423,6 +436,7 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                       thumbnail: thumbnail,
                       type_id: typeId,
                       quantity: selectedPackedQty[index],
+                      mou: mou,
                     });
                   }}
                   key={_uniqueId('dropdown_')}
@@ -475,6 +489,7 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                           thumbnail: thumbnail,
                           type_id: typeId,
                           quantity: selectedPackedQty[index],
+                          mou: mou,
                         });
                       }}
                     >

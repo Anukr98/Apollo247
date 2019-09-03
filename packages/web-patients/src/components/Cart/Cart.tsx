@@ -1,18 +1,21 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, Tabs, Tab, Popover } from '@material-ui/core';
+import { Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
 import { Checkout } from 'components/Cart/Checkout';
-import { OrderSuccess } from 'components/Cart/OrderSuccess';
-import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
+import { SAVE_MEDICINE_ORDER } from 'graphql/medicines';
+import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
+import { Mutation } from 'react-apollo';
+import { MEDICINE_DELIVERY_TYPE } from 'graphql/types/globalTypes';
+import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 
 // import { MedicineCard } from 'components/Medicine/MedicineCard';
 // import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
@@ -295,25 +298,67 @@ const TabContainer: React.FC = (props) => {
 
 export const Cart: React.FC = (props) => {
   const classes = useStyles();
-  const mascotRef = useRef(null);
 
   const [tabValue, setTabValue] = useState<number>(0);
-  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
-  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
-  const { cartTotal, cartItems } = useShoppingCart();
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
-  const deliveryCharges = 30; // this must be retrieved from api later.
+  const [couponCode, setCouponCode] = React.useState<string>('');
+  const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
+  const [paymentMethod, setPaymentMethod] = React.useState<string>('');
+  const [mutationLoading, setMutationLoading] = useState(false);
+
+  const { cartTotal, cartItems } = useShoppingCart();
+  const { currentPatient } = useAllCurrentPatients();
+  const { authToken } = useAuth();
 
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
-  const totalAmount = (cartTotal + deliveryCharges).toFixed(2);
+  const disablePayButton = paymentMethod === '';
+
+  // business rule defined if the total is greater than 200 no delivery charges.
+  // if the total is less than 200 +20 is added.
+  const discountAmount = couponCode !== '' ? parseFloat(((cartTotal * 10) / 100).toFixed(2)) : 0;
+  const grossValue = cartTotal - discountAmount;
+  const deliveryCharges = grossValue > 200 ? -20 : 20;
+  const totalAmount = (grossValue + deliveryCharges).toFixed(2);
+  const showGross = deliveryCharges < 0 || discountAmount > 0;
 
   // const cartItems = localStorage.getItem('cartItems')
   //   ? JSON.parse(localStorage.getItem('cartItems') || '')
   //   : [];
+  // console.log(cartItems);
 
   const disableSubmit = deliveryAddressId === '';
+  const uploadPrescriptionRequired = cartItems.findIndex((v) => v.is_prescription_required === '1');
+
+  const cartItemsForApi =
+    cartItems.length > 0
+      ? cartItems.map((cartItemDetails) => {
+          return {
+            medicineSKU: cartItemDetails.sku,
+            medicineName: cartItemDetails.name,
+            price: cartItemDetails.price,
+            quantity: cartItemDetails.quantity,
+            mrp: cartItemDetails.price,
+            isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
+            prescriptionImageUrl: '',
+            mou: parseInt(cartItemDetails.mou, 10),
+            isMedicine: cartItemDetails.is_prescription_required ? '1' : '0',
+          };
+        })
+      : [];
+
+  // console.log('cart items for api........', typeof cartItemsForApi, cartItemsForApi);
+
+  // console.log(
+  //   deliveryMode,
+  //   deliveryAddressId,
+  //   cartTotal,
+  //   cartItems,
+  //   uploadPrescriptionRequired,
+  //   couponCode,
+  //   paymentMethod
+  // );
 
   return (
     <div className={classes.root}>
@@ -337,24 +382,28 @@ export const Cart: React.FC = (props) => {
             {cartItems.length > 0 ? (
               <>
                 <MedicineStripCard medicines={cartItems} />
-                <div className={classes.sectionHeader}>
-                  <span>Upload Prescription</span>
-                  <span className={classes.count}>
-                    <AphButton
-                      onClick={() => setIsUploadPreDialogOpen(true)}
-                      className={classes.presUploadBtn}
-                    >
-                      Upload
-                    </AphButton>
-                  </span>
-                </div>
-                <div className={classes.uploadPrescription}>
-                  <div className={classes.noPrescriptionUpload}>
-                    Some of your medicines require prescription to make a purchase. Please upload
-                    the necessary prescriptions.
-                  </div>
-                  {/* <EPrescriptionCard /> */}
-                </div>
+                {uploadPrescriptionRequired >= 0 ? (
+                  <>
+                    <div className={classes.sectionHeader}>
+                      <span>Upload Prescription</span>
+                      <span className={classes.count}>
+                        <AphButton
+                          onClick={() => setIsUploadPreDialogOpen(true)}
+                          className={classes.presUploadBtn}
+                        >
+                          Upload
+                        </AphButton>
+                      </span>
+                    </div>
+                    <div className={classes.uploadPrescription}>
+                      <div className={classes.noPrescriptionUpload}>
+                        Some of your medicines require prescription to make a purchase. Please
+                        upload the necessary prescriptions.
+                      </div>
+                      {/* <EPrescriptionCard /> */}
+                    </div>
+                  </>
+                ) : null}
               </>
             ) : null}
 
@@ -404,7 +453,12 @@ export const Cart: React.FC = (props) => {
                   )}
                   {tabValue === 1 && (
                     <TabContainer>
-                      <StorePickUp />
+                      <StorePickUp
+                        updateDeliveryAddress={(deliveryAddressId) =>
+                          setDeliveryAddressId(deliveryAddressId)
+                        }
+                        pincode={localStorage.getItem('dp') || ''}
+                      />
                     </TabContainer>
                   )}
                 </div>
@@ -413,18 +467,27 @@ export const Cart: React.FC = (props) => {
                 <span>Total Charges</span>
               </div>
               <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
-                <div
-                  onClick={() => setIsApplyCouponDialogOpen(true)}
-                  className={`${classes.serviceType} ${classes.textVCenter}`}
-                >
-                  <span className={classes.serviceIcon}>
-                    <img src={require('images/ic_coupon.svg')} alt="" />
-                  </span>
-                  <span className={classes.linkText}>Apply Coupon</span>
-                  <span className={classes.rightArrow}>
-                    <img src={require('images/ic_arrow_right.svg')} alt="" />
-                  </span>
-                </div>
+                {couponCode === '' ? (
+                  <div
+                    onClick={() => setIsApplyCouponDialogOpen(true)}
+                    className={`${classes.serviceType} ${classes.textVCenter}`}
+                  >
+                    <span className={classes.serviceIcon}>
+                      <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                    </span>
+                    <span className={classes.linkText}>Apply Coupon</span>
+                    <span className={classes.rightArrow}>
+                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                    </span>
+                  </div>
+                ) : (
+                  <div className={`${classes.serviceType} ${classes.textVCenter}`}>
+                    <span className={classes.serviceIcon}>
+                      <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                    </span>
+                    <span className={classes.linkText}>Coupon Applied</span>
+                  </div>
+                )}
               </div>
               <div className={`${classes.sectionGroup}`}>
                 <div className={classes.priceSection}>
@@ -435,13 +498,17 @@ export const Cart: React.FC = (props) => {
                     </div>
                     <div className={classes.priceRow}>
                       <span>Delivery Charges</span>
-                      <span className={classes.priceCol}>+ Rs. {deliveryCharges}</span>
+                      <span className={classes.priceCol}>
+                        {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '(+ Rs. 20) FREE'}
+                      </span>
                     </div>
                   </div>
                   <div className={classes.bottomSection}>
                     <div className={classes.priceRow}>
                       <span>To Pay</span>
-                      <span className={classes.totalPrice}>Rs. {totalAmount}</span>
+                      <span className={classes.totalPrice}>
+                        {showGross ? `(${cartTotal.toFixed(2)})` : ''} Rs. {totalAmount}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -450,70 +517,99 @@ export const Cart: React.FC = (props) => {
           </Scrollbars>
           <div className={classes.checkoutBtn}>
             <AphButton
-              onClick={() => setIsDialogOpen(true)}
+              onClick={() => setCheckoutDialogOpen(true)}
               color="primary"
               fullWidth
               disabled={disableSubmit}
-              className={disableSubmit ? classes.buttonDisable : ''}
+              className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
             >
               Proceed to pay — RS. {totalAmount}
             </AphButton>
           </div>
         </div>
       ) : null}
-      <AphDialog open={isDialogOpen} maxWidth="sm">
+
+      <AphDialog open={checkoutDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setCheckoutDialogOpen(false)} />
         <AphDialogTitle>Checkout</AphDialogTitle>
         <div className={classes.shadowHide}>
           <div className={classes.dialogContent}>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
               <div className={classes.customScrollBar}>
-                <Checkout />
+                <Checkout
+                  setPaymentMethod={(paymentMethod: string) => {
+                    setPaymentMethod(paymentMethod);
+                  }}
+                />
               </div>
             </Scrollbars>
           </div>
           <div className={classes.dialogActions}>
-            <AphButton
-              onClick={() => setIsPopoverOpen(true)}
-              color="primary"
-              fullWidth
-              disabled={disableSubmit}
+            <Mutation<SaveMedicineOrder, SaveMedicineOrderVariables>
+              mutation={SAVE_MEDICINE_ORDER}
+              variables={{
+                medicineCartInput: {
+                  quoteId: '',
+                  shopId: deliveryMode === 'HOME' ? '' : deliveryAddressId,
+                  estimatedAmount: parseFloat(totalAmount),
+                  patientAddressId: deliveryMode === 'HOME' ? deliveryAddressId : '',
+                  devliveryCharges: 0,
+                  prescriptionImageUrl: '',
+                  medicineDeliveryType:
+                    deliveryMode === 'HOME'
+                      ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+                      : MEDICINE_DELIVERY_TYPE.STORE_PICK_UP,
+                  patientId: currentPatient ? currentPatient.id : '',
+                  items: cartItemsForApi,
+                },
+              }}
+              onCompleted={(apiResponse) => {
+                const orderAutoId = apiResponse.SaveMedicineOrder.orderAutoId;
+                // redirect to payment Gateway
+                if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
+                  const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&orderAutoId=${orderAutoId}&token=${authToken}`;
+                  window.location.href = pgUrl;
+                }
+              }}
+              onError={(errorResponse) => {
+                alert(errorResponse);
+                setMutationLoading(false);
+              }}
             >
-              Pay - RS. {totalAmount}
-            </AphButton>
+              {(mutate) => (
+                <AphButton
+                  onClick={(e) => {
+                    setMutationLoading(true);
+                    mutate();
+                  }}
+                  color="primary"
+                  fullWidth
+                  disabled={disablePayButton}
+                  className={paymentMethod === '' || mutationLoading ? classes.buttonDisable : ''}
+                >
+                  {mutationLoading ? <CircularProgress /> : `Pay - RS. ${totalAmount}`}
+                </AphButton>
+              )}
+            </Mutation>
           </div>
         </div>
       </AphDialog>
-      <Popover
-        open={isPopoverOpen}
-        anchorEl={mascotRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
-            </div>
-            <OrderSuccess />
-            <OrderPlaced />
-          </div>
-        </div>
-      </Popover>
+
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
         <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
         <UploadPrescription />
       </AphDialog>
+
       <AphDialog open={isApplyCouponDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsApplyCouponDialogOpen(false)} />
         <AphDialogTitle>Apply Coupon</AphDialogTitle>
-        <ApplyCoupon />
+        <ApplyCoupon
+          setCouponCode={(couponCode: string) => setCouponCode(couponCode)}
+          close={(isApplyCouponDialogOpen: boolean) => {
+            setIsApplyCouponDialogOpen(isApplyCouponDialogOpen);
+          }}
+          cartValue={cartTotal}
+        />
       </AphDialog>
     </div>
   );

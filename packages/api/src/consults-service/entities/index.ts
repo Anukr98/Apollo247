@@ -42,7 +42,6 @@ export enum STATUS {
 
 export enum APPOINTMENT_STATE {
   NEW = 'NEW',
-  FOLLOW_UP = 'FOLLOW_UP',
   TRANSFER = 'TRANSFER',
   RESCHEDULE = 'RESCHEDULE',
 }

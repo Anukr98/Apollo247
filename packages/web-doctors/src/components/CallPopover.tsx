@@ -7,6 +7,17 @@ import moment from 'moment';
 import { AphSelect, AphTextField } from '@aph/web-ui-components';
 import { useAuth } from 'hooks/authHooks';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  InitiateTransferAppointment,
+  InitiateTransferAppointmentVariables,
+} from 'graphql/types/InitiateTransferAppointment';
+import {
+  SearchDoctorAndSpecialty,
+  SearchDoctorAndSpecialtyVariables,
+} from 'graphql/types/SearchDoctorAndSpecialty';
+import { INITIATE_TRANSFER_APPONITMENT, SEARCH_DOCTOR_AND_SPECIALITY } from 'graphql/profiles';
+import { TRANSFER_INITIATED_TYPE } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -391,9 +402,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [startAppointmentButton, setStartAppointmentButton] = React.useState<boolean>(true);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isTransferPopoverOpen, setIsTransferPopoverOpen] = useState<boolean>(false);
-  const [reason, setReason] = React.useState(1);
+  const [reason, setReason] = useState<string>('Reason 01');
   const [searchKeyWord, setSearchKeyword] = React.useState('');
   const [noteKeyword, setNoteKeyword] = React.useState('');
+  const [filteredStarDoctors, setFilteredStarDoctors] = useState<any>([]);
+  const [filterSpeciality, setFilterSpeciality] = useState<any>([]);
+
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
@@ -473,6 +487,50 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     } else {
       setStartAppointmentButton(true);
     }
+  };
+  const client = useApolloClient();
+  const transferConsultAction = () => {
+    client
+      .mutate<InitiateTransferAppointment, InitiateTransferAppointmentVariables>({
+        mutation: INITIATE_TRANSFER_APPONITMENT,
+        variables: {
+          TransferAppointmentInput: {
+            appointmentId: props.appointmentId,
+            transferInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+            transferInitiatedId: '',
+            transferredDoctorId: '',
+            transferredSpecialtyId: '',
+            transferReason: reason,
+            transferNotes: noteKeyword,
+          },
+        },
+      })
+      .then((_data: any) => {
+        console.log(_data);
+        //setIsTransferPopoverOpen(false);
+      })
+      .catch((e: any) => {
+        console.log('Error occured while searching for Initiate transfera apppointment', e);
+      });
+  };
+  const doctorSpeciality = (searchText: string) => {
+    client
+      .query<SearchDoctorAndSpecialty, SearchDoctorAndSpecialtyVariables>({
+        query: SEARCH_DOCTOR_AND_SPECIALITY,
+        variables: { searchText: searchText },
+      })
+
+      .then((_data) => {
+        console.log('flitered array', _data.data.SearchDoctorAndSpecialty!.doctors);
+        console.log('flitered array1', _data.data.SearchDoctorAndSpecialty!);
+        setFilteredStarDoctors(_data.data.SearchDoctorAndSpecialty!.doctors);
+        setFilterSpeciality(_data.data.SearchDoctorAndSpecialty!.specialties);
+        //setDoctorsCard(!doctorsCard);
+      })
+      .catch((e) => {
+        console.log('Error occured while searching for Doctors', e);
+        //Alert.alert('Error', 'Error occured while searching for Doctors');
+      });
   };
   setInterval(startConstultCheck, 1000);
   const stopInterval = () => {
@@ -777,19 +835,19 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 },
               }}
               onChange={(e) => {
-                setReason(e.target.value as number);
+                setReason(e.target.value as string);
               }}
             >
-              <MenuItem value={1} classes={{ selected: classes.menuSelected }}>
+              <MenuItem value="Reason 01" classes={{ selected: classes.menuSelected }}>
                 Reason 01
               </MenuItem>
-              <MenuItem value={2} classes={{ selected: classes.menuSelected }}>
+              <MenuItem value="Reason 02" classes={{ selected: classes.menuSelected }}>
                 Reason 02
               </MenuItem>
-              <MenuItem value={3} classes={{ selected: classes.menuSelected }}>
+              <MenuItem value="Reason 03" classes={{ selected: classes.menuSelected }}>
                 Reason 03
               </MenuItem>
-              <MenuItem value={4} classes={{ selected: classes.menuSelected }}>
+              <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
                 Other
               </MenuItem>
             </AphSelect>
@@ -847,19 +905,19 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 },
               }}
               onChange={(e) => {
-                setReason(e.target.value as number);
+                setReason(e.target.value as string);
               }}
             >
-              <MenuItem value={1} classes={{ selected: classes.menuSelected }}>
+              <MenuItem value="Reason 01" classes={{ selected: classes.menuSelected }}>
                 Reason 01
               </MenuItem>
-              <MenuItem value={2} classes={{ selected: classes.menuSelected }}>
+              <MenuItem value="Reason 02" classes={{ selected: classes.menuSelected }}>
                 Reason 02
               </MenuItem>
-              <MenuItem value={3} classes={{ selected: classes.menuSelected }}>
+              <MenuItem value="Reason 03" classes={{ selected: classes.menuSelected }}>
                 Reason 03
               </MenuItem>
-              <MenuItem value={4} classes={{ selected: classes.menuSelected }}>
+              <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
                 Other
               </MenuItem>
             </AphSelect>
@@ -871,6 +929,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               placeholder="Search doctors or specialities"
               onChange={(e) => {
                 setSearchKeyword(e.target.value);
+                doctorSpeciality(e.target.value);
               }}
               value={searchKeyWord}
             />
@@ -898,8 +957,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             <Button
               className={classes.ResheduleCosultButton}
               onClick={() => {
-                setIsTransferPopoverOpen(false);
-                resheduleCosult();
+                //setIsTransferPopoverOpen(false);
+                //resheduleCosult();
+                transferConsultAction();
               }}
             >
               Transfer Consult

@@ -1,7 +1,13 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
 import React from 'react';
-import { AphRadio, AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
+import {
+  AphRadio,
+  AphButton,
+  AphDialog,
+  AphDialogTitle,
+  AphDialogClose,
+} from '@aph/web-ui-components';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
 
@@ -81,6 +87,12 @@ const useStyles = makeStyles((theme: Theme) => {
     shadowHide: {
       overflow: 'hidden',
     },
+    noAddress: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#0087ba',
+      paddingBottom: 10,
+    },
   };
 });
 
@@ -124,49 +136,50 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <ul>
-        {addressList.map((addressDetails, index) => {
-          const addressId = addressDetails.id;
-          const address = `${addressDetails.addressLine1} - ${addressDetails.zipcode}`;
-          showAddress++;
-          return showAddress < 3 ? (
-            <li key={index}>
-              <FormControlLabel
-                checked={deliveryAddressId === addressId}
-                className={classes.radioLabel}
-                value={addressId}
-                control={<AphRadio color="primary" />}
-                label={address}
-                onChange={() => {
-                  setDeliveryAddressId(addressId);
-                  updateDeliveryAddress(addressId);
-                }}
-              />
-            </li>
-          ) : (
-            ''
-          );
-        })}
-      </ul>
+      {addressList.length > 0 ? (
+        <ul>
+          {addressList.map((addressDetails, index) => {
+            const addressId = addressDetails.id;
+            const address = `${addressDetails.addressLine1} - ${addressDetails.zipcode}`;
+            showAddress++;
+            return showAddress < 3 ? (
+              <li key={index}>
+                <FormControlLabel
+                  checked={deliveryAddressId === addressId}
+                  className={classes.radioLabel}
+                  value={addressId}
+                  control={<AphRadio color="primary" />}
+                  label={address}
+                  onChange={() => {
+                    setDeliveryAddressId(addressId);
+                    updateDeliveryAddress(addressId);
+                  }}
+                />
+              </li>
+            ) : (
+              ''
+            );
+          })}
+        </ul>
+      ) : (
+        <div className={classes.noAddress}>
+          Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has
+          been the industry's standard dummy text ever since the 1500s....
+        </div>
+      )}
+
       <div className={classes.bottomActions}>
         <AphButton onClick={() => setIsAddAddressDialogOpen(true)}>Add new address</AphButton>
-        {addressList.length > 2 ? (
-          <AphButton
-            onClick={() => setIsViewAllAddressDialogOpen(true)}
-            className={classes.viewAllBtn}
-          >
-            View All
-          </AphButton>
-        ) : null}
+        <AphButton
+          onClick={() => setIsViewAllAddressDialogOpen(true)}
+          className={classes.viewAllBtn}
+        >
+          View All
+        </AphButton>
       </div>
 
-      <AphDialog
-        open={isAddAddressDialogOpen}
-        maxWidth="sm"
-        onClose={() => {
-          setIsAddAddressDialogOpen(false);
-        }}
-      >
+      <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} />
         <AphDialogTitle>
           <div className={classes.backArrow}>
             <img src={require('images/ic_back.svg')} alt="" />
@@ -176,13 +189,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         <AddNewAddress />
       </AphDialog>
 
-      <AphDialog
-        open={isViewAllAddressDialogOpen}
-        maxWidth="sm"
-        onClose={() => {
-          setIsViewAllAddressDialogOpen(false);
-        }}
-      >
+      <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsViewAllAddressDialogOpen(false)} />
         <AphDialogTitle>
           <div className={classes.backArrow}>
             <img src={require('images/ic_back.svg')} alt="" />
