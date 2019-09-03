@@ -505,3 +505,18 @@ export const GET_PATIENT_LOG = gql`
     }
   }
 `;
+
+export const INITIATE_TRANSFER_APPONITMENT = gql`
+  mutation InitiateTransferAppointment($TransferAppointmentInput: TransferAppointmentInput!) {
+    initiateTransferAppointment(TransferAppointmentInput: $TransferAppointmentInput) {
+      transferAppointment {
+        id
+        appointmentId
+        transferStatus
+        transferReason
+        transferredDoctorId
+        transferredSpecialtyId
+      }
+    }
+  }
+`;
