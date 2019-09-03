@@ -20,6 +20,7 @@ export interface initiateTransferAppointment_initiateTransferAppointment_transfe
 export interface initiateTransferAppointment_initiateTransferAppointment {
   __typename: "TransferAppointmentResult";
   transferAppointment: initiateTransferAppointment_initiateTransferAppointment_transferAppointment | null;
+  doctorNextSlot: string | null;
 }
 
 export interface initiateTransferAppointment {

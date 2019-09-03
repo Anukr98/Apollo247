@@ -10,6 +10,9 @@ import {
   setDiagonsisList,
   setMedicineList,
   setSysmptonsList,
+  addOtherList,
+  getOtherList,
+  setOtherList,
 } from '@aph/mobile-doctors/src/components/ApiCall';
 import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
 import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
@@ -57,6 +60,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { REQUEST_ROLES, STATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
@@ -962,7 +966,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-  const renderJuniorDoctorNotes = (ss) => {
+  const renderJuniorDoctorNotes = () => {
     if (Delegate) return null;
     return (
       <View>
@@ -993,7 +997,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const renderDiagonisticPrescription = () => {
     return (
       <CollapseCard
-        heading="Diagonistic Prescription"
+        heading="Diagnoistic Prescription"
         collapse={diagonisticPrescription}
         onPress={() => setdiagonisticPrescription(!diagonisticPrescription)}
       >
@@ -1431,6 +1435,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   onPress={() => {
                     if (othervalue == '') {
                       Alert.alert('Please add other instructions');
+                    } else if (
+                      otherInstructionsData.find((item: any) => item.instruction == othervalue)
+                    ) {
+                      Alert.alert('This instruction already added');
                     } else {
                       setOtherInstructionsData([
                         ...otherInstructionsData,
@@ -1438,6 +1446,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           instruction: othervalue,
                         },
                       ]);
+
                       setOtherInstructionsAdd(!otherInstructionsadd);
                       setOthervalue('');
                       renderOtherInstructionsView();
@@ -1581,7 +1590,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {renderPatientHistoryLifestyle()}
           {renderPatientHealthWallet()}
 
-          {isDelegateLogin ? null : renderJuniorDoctorNotes(Delegate)}
+          {isDelegateLogin ? null : renderJuniorDoctorNotes()}
           {renderDiagnosisView()}
           {renderMedicinePrescription()}
           {renderDiagonisticPrescription()}

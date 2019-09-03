@@ -84,9 +84,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   buttonTextStyle: {
-    ...theme.fonts.IBMPlexSansBold(13),
+    ...theme.fonts.IBMPlexSansBold(14),
     textAlign: 'center',
-    color: '#890000',
+    color: '#fc9916',
   },
 });
 
@@ -191,11 +191,24 @@ export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
             <Text style={styles.countText}>
               {count} tablet{count > 1 ? 's' : ''}
             </Text>
-            <TouchableOpacity onPress={() => setCount(count + 1)}>
+            {count == 5 ? (
+              <TouchableOpacity>
+                <View>
+                  <Plus />
+                </View>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity onPress={() => setCount(count + 1)}>
+                <View>
+                  <Plus />
+                </View>
+              </TouchableOpacity>
+            )}
+            {/* <TouchableOpacity onPress={() => setCount(count + 1)}>
               <View style={{ marginLeft: 10 }}>
                 <Plus />
               </View>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
           <View
             style={{

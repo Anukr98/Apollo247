@@ -557,7 +557,9 @@ export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
         services
         speciality
         specialization
+        photoUrl
         id
+        experience
       }
       specialties {
         id
@@ -642,6 +644,20 @@ export const INITIATE_TRANSFER_APPONITMENT = gql`
         transferReason
         transferredDoctorId
         transferredSpecialtyId
+      }
+      doctorNextSlot
+    }
+  }
+`;
+
+export const INITIATE_RESCHDULE_APPONITMENT = gql`
+  mutation initiateRescheduleAppointment($RescheduleAppointmentInput: RescheduleAppointmentInput!) {
+    initiateRescheduleAppointment(RescheduleAppointmentInput: $RescheduleAppointmentInput) {
+      rescheduleAppointment {
+        id
+        rescheduleStatus
+        rescheduleReason
+        rescheduledDateTime
       }
     }
   }

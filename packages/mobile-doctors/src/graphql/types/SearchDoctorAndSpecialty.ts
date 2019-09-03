@@ -13,7 +13,9 @@ export interface SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors {
   services: string | null;
   speciality: string;
   specialization: string | null;
+  photoUrl: string | null;
   id: string;
+  experience: string | null;
 }
 
 export interface SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_specialties {

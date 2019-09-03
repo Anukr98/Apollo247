@@ -18,6 +18,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     marginLeft: 16,
     marginTop: 16,
+    letterSpacing: 0.02,
   },
   footerButtonsContainer: {
     // zIndex: -1,
@@ -138,58 +139,63 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
           maxLength={20}
           value={symptons}
         />
+        <View style={{ marginLeft: 40 }}>
+          <Text style={styles.medicineText}>Since?</Text>
+          <TextInput
+            style={{
+              marginLeft: 16,
+              marginRight: 20,
+              ...theme.fonts.IBMPlexSansMedium(16),
+              width: '90%',
+              borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+              borderBottomWidth: 1,
+              marginBottom: 16,
 
-        <Text style={styles.medicineText}>Since?</Text>
-        <TextInput
-          style={{
-            marginLeft: 16,
-            marginRight: 20,
-            ...theme.fonts.IBMPlexSansMedium(18),
-            width: '90%',
-            borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-            borderBottomWidth: 1,
-            marginBottom: 16,
+              color: '#01475b',
+            }}
+            onChangeText={(since) => setSince(since)}
+            maxLength={20}
+            value={since}
+          />
+        </View>
+        <View style={{ marginLeft: 40 }}>
+          <Text style={styles.medicineText}>How Often?</Text>
+          <TextInput
+            style={{
+              marginLeft: 16,
+              marginRight: 20,
+              ...theme.fonts.IBMPlexSansMedium(16),
+              width: '90%',
+              borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+              borderBottomWidth: 1,
+              marginBottom: 16,
 
-            color: '#01475b',
-          }}
-          onChangeText={(since) => setSince(since)}
-          maxLength={20}
-          value={since}
-        />
-        <Text style={styles.medicineText}>How Often?</Text>
-        <TextInput
-          style={{
-            marginLeft: 16,
-            marginRight: 20,
-            ...theme.fonts.IBMPlexSansMedium(18),
-            width: '90%',
-            borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-            borderBottomWidth: 1,
-            marginBottom: 16,
+              color: '#01475b',
+            }}
+            onChangeText={(howOften) => setHowOffen(howOften)}
+            maxLength={20}
+            value={howOften}
+          />
+        </View>
+        <View style={{ marginLeft: 40 }}>
+          <Text style={styles.medicineText}>Severity?</Text>
+          <TextInput
+            style={{
+              marginLeft: 16,
+              marginRight: 20,
+              ...theme.fonts.IBMPlexSansMedium(16),
+              width: '90%',
+              borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+              borderBottomWidth: 1,
+              marginBottom: 16,
 
-            color: '#01475b',
-          }}
-          onChangeText={(howOften) => setHowOffen(howOften)}
-          maxLength={20}
-          value={howOften}
-        />
-        <Text style={styles.medicineText}>Severity?</Text>
-        <TextInput
-          style={{
-            marginLeft: 16,
-            marginRight: 20,
-            ...theme.fonts.IBMPlexSansMedium(18),
-            width: '90%',
-            borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-            borderBottomWidth: 1,
-            marginBottom: 16,
-
-            color: '#01475b',
-          }}
-          onChangeText={(severity) => setSeverity(severity)}
-          maxLength={20}
-          value={severity}
-        />
+              color: '#01475b',
+            }}
+            onChangeText={(severity) => setSeverity(severity)}
+            maxLength={20}
+            value={severity}
+          />
+        </View>
       </View>
       <View style={styles.footerButtonsContainer}>
         <Button

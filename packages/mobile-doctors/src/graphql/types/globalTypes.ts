@@ -139,6 +139,15 @@ export interface EndAppointmentSessionInput {
   status: STATUS;
 }
 
+export interface RescheduleAppointmentInput {
+  appointmentId: string;
+  rescheduleReason: string;
+  rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE;
+  rescheduleInitiatedId: string;
+  rescheduledDateTime?: any | null;
+  autoSelectSlot?: number | null;
+}
+
 export interface SaveDoctorDeviceTokenInput {
   deviceType: DOCTOR_DEVICE_TYPE;
   deviceToken: string;

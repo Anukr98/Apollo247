@@ -164,23 +164,15 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   isNewPatient={isNewPatient(i.patientInfo!.id)}
                   onPress={(doctorId, patientId, PatientInfo, appointmentTime, appId) => {
                     console.log('appppp', appId);
-                    getLocalData()
-                      .then((localData) => {
-                        console.log('lo', localData.checkDelegate!);
-                        props.navigation.push(AppRoutes.ConsultRoomScreen, {
-                          DoctorId: doctorId,
-                          PatientId: patientId,
-                          PatientConsultTime: null,
-                          PatientInfoAll: PatientInfo,
-                          AppId: appId,
-                          Appintmentdatetime: i.appointmentDateTime, //getDateFormat(i.appointmentDateTime),
-                          AppointmentStatus: i.status,
-                          DelegateNumberLoginSuccess: localData.checkDelegate!,
-                        });
-                      })
-                      .catch((_) => {
-                        //props.navigation.push(AppRoutes.OnBoardingPage);
-                      });
+                    props.navigation.push(AppRoutes.ConsultRoomScreen, {
+                      DoctorId: doctorId,
+                      PatientId: patientId,
+                      PatientConsultTime: null,
+                      PatientInfoAll: PatientInfo,
+                      AppId: appId,
+                      Appintmentdatetime: i.appointmentDateTime, //getDateFormat(i.appointmentDateTime),
+                      AppointmentStatus: i.status,
+                    });
                   }}
                   doctorname={i.patientInfo!.firstName || ''}
                   timing={formatTiming(i.appointmentDateTime)}
