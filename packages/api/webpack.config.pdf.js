@@ -2,11 +2,11 @@ const makeWebpackConfig = require('./webpack-make-config');
 
 module.exports = makeWebpackConfig({
   nodemonPluginArgs: {
-    script: 'dist/pdf.bundle.js',
+    script: 'dist/rxPdfHelper.bundle.js',
   },
   webpackConfigOptions: {
     entry: {
-      pdf: 'pdf.ts',
+      rxPdfHelper: 'consults-service/rxPdfHelper.ts',
     },
   },
 });

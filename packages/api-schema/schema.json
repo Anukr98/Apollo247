@@ -8731,17 +8731,25 @@
             "deprecationReason": null
           },
           {
-            "name": "patientId",
+            "name": "estimatedAmount",
             "description": null,
             "args": [],
             "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "ID",
-                "ofType": null
-              }
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "prescriptionImageUrl",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -15772,11 +15780,7 @@
       {
         "name": "include",
         "description": "Directs the executor to include this field or fragment only when the `if` argument is true.",
-        "locations": [
-          "FIELD",
-          "FRAGMENT_SPREAD",
-          "INLINE_FRAGMENT"
-        ],
+        "locations": ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
         "args": [
           {
             "name": "if",
@@ -15797,11 +15801,7 @@
       {
         "name": "skip",
         "description": "Directs the executor to skip this field or fragment when the `if` argument is true.",
-        "locations": [
-          "FIELD",
-          "FRAGMENT_SPREAD",
-          "INLINE_FRAGMENT"
-        ],
+        "locations": ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
         "args": [
           {
             "name": "if",
@@ -15822,10 +15822,7 @@
       {
         "name": "deprecated",
         "description": "Marks an element of a GraphQL schema as no longer supported.",
-        "locations": [
-          "FIELD_DEFINITION",
-          "ENUM_VALUE"
-        ],
+        "locations": ["FIELD_DEFINITION", "ENUM_VALUE"],
         "args": [
           {
             "name": "reason",
@@ -15842,10 +15839,7 @@
       {
         "name": "key",
         "description": "",
-        "locations": [
-          "OBJECT",
-          "INTERFACE"
-        ],
+        "locations": ["OBJECT", "INTERFACE"],
         "args": [
           {
             "name": "fields",
@@ -15866,26 +15860,19 @@
       {
         "name": "extends",
         "description": "",
-        "locations": [
-          "OBJECT"
-        ],
+        "locations": ["OBJECT"],
         "args": []
       },
       {
         "name": "external",
         "description": "",
-        "locations": [
-          "OBJECT",
-          "FIELD_DEFINITION"
-        ],
+        "locations": ["OBJECT", "FIELD_DEFINITION"],
         "args": []
       },
       {
         "name": "requires",
         "description": "",
-        "locations": [
-          "FIELD_DEFINITION"
-        ],
+        "locations": ["FIELD_DEFINITION"],
         "args": [
           {
             "name": "fields",
@@ -15906,9 +15893,7 @@
       {
         "name": "provides",
         "description": "",
-        "locations": [
-          "FIELD_DEFINITION"
-        ],
+        "locations": ["FIELD_DEFINITION"],
         "args": [
           {
             "name": "fields",

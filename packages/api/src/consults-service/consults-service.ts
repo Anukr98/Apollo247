@@ -61,6 +61,7 @@ import { GraphQLDate, GraphQLDateTime, GraphQLTime } from 'graphql-iso-date';
 import gql from 'graphql-tag';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
+import { rxPdfTypeDefs, rxPdfResolvers } from 'consults-service/resolvers/rxPdf';
 
 (async () => {
   await connect();
@@ -150,6 +151,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: bookFollowUpAppointmentTypeDefs,
         resolvers: bookFollowUpAppointmentResolvers,
+      },
+      {
+        typeDefs: rxPdfTypeDefs,
+        resolvers: rxPdfResolvers,
       },
     ]),
   });
