@@ -14,6 +14,9 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'sticky',
       top: 64,
       zIndex: 99,
+      [theme.breakpoints.down('xs')]: {
+        padding: '15px 0',
+      },
     },
   };
 });

@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme: Theme) => {
     welcome: {
       paddingTop: 65,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 78,
+        paddingTop: 70,
       },
     },
     headerSticky: {
@@ -55,6 +55,9 @@ const useStyles = makeStyles((theme: Theme) => {
     tabHeading: {
       padding: '30px 40px 20px 40px',
       backgroundColor: theme.palette.secondary.contrastText,
+      [theme.breakpoints.down('xs')]: {
+        padding: '30px 15px 50px 15px',
+      },
       '& h1': {
         display: 'flex',
         paddingTop: 12,
@@ -82,6 +85,10 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 75,
       right: 16,
       borderRadius: 17,
+      [theme.breakpoints.down('xs')]: {
+        top: 10,
+        right: 5,
+      },
       '& button': {
         padding: '6px 33px',
         height: 36,
@@ -90,11 +97,16 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 14,
         fontWeight: 600,
         textTransform: 'capitalize',
+        [theme.breakpoints.down('xs')]: {
+          padding: '0px 33px',
+          height: 30,
+        },
       },
     },
     customeSelect: {
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
+      [theme.breakpoints.down('xs')]: {},
       '&:first-child': {
         borderRadius: '17px !important',
       },

@@ -1,9 +1,24 @@
 import { EntityRepository, Repository, Between, MoreThan, LessThan, Brackets } from 'typeorm';
-import { Appointment, AppointmentSessions, STATUS } from 'consults-service/entities';
+import {
+  Appointment,
+  AppointmentSessions,
+  STATUS,
+  patientLogSort,
+  patientLogType,
+  APPOINTMENT_STATE,
+} from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format, addMinutes, differenceInMinutes, addDays } from 'date-fns';
+import {
+  format,
+  addMinutes,
+  differenceInMinutes,
+  addDays,
+  subDays,
+  startOfMonth,
+  endOfMonth,
+} from 'date-fns';
 import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 
 @EntityRepository(Appointment)
@@ -249,19 +264,57 @@ export class AppointmentRepository extends Repository<Appointment> {
     this.update(id, { status, apolloAppointmentId });
   }
 
-  getAppointmentsGroupByPatient(doctorId: string) {
-    // select "patientId",count(*),ARRAY_AGG("appointmentDateTime" ORDER BY "appointmentDateTime" desc) as consultDates,ARRAY_AGG("id" ORDER BY "appointmentDateTime" desc) as appointmentIDs from appointment  group by "patientId"
-
+  patientLog(
+    doctorId: string,
+    sortBy: patientLogSort,
+    type: patientLogType,
+    offset?: number,
+    limit?: number
+  ) {
     const results = this.createQueryBuilder('appointment')
-      .select('appointment.patientId as patientId')
+      .select([
+        'appointment.patientId as patientId',
+        'max("appointmentDateTime") as appointmentDateTime',
+        'ARRAY_AGG("id" order by appointment.appointmentDateTime desc ) as appointmentids',
+      ])
       .addSelect('COUNT(*) AS consultsCount')
-      .addSelect(
-        'ARRAY_AGG("appointmentDateTime" ORDER BY "appointmentDateTime" desc) as appointmentTimings'
-      )
-      .addSelect('ARRAY_AGG("id" ORDER BY "appointmentDateTime" desc) as appointmentIDs')
-      .where('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .groupBy('appointment.patientId')
-      .getRawMany();
-    return results;
+      .where('appointment.doctorId = :doctorId', { doctorId: doctorId });
+
+    if (type == patientLogType.FOLLOW_UP) {
+      results.andWhere('appointment.appointmentDateTime > :tenDays', {
+        tenDays: subDays(new Date(), 10),
+      });
+      results.andWhere('appointment.appointmentDateTime < :beforeNow', { beforeNow: new Date() });
+    } else if (type == patientLogType.REGULAR) {
+      results.having('count(*) > 2');
+      results.andWhere('appointment.appointmentDateTime > :monthStartDate', {
+        monthStartDate: startOfMonth(new Date()),
+      });
+      results.andWhere('appointment.appointmentDateTime < :monthendDate', {
+        monthendDate: endOfMonth(new Date()),
+      });
+    } else {
+      results.andWhere('appointment.appointmentDateTime < :beforeNow', { beforeNow: new Date() });
+    }
+
+    results.groupBy('appointment.patientId');
+    results.offset(offset);
+    results.limit(limit);
+
+    if (sortBy == patientLogSort.PATIENT_NAME_A_TO_Z) {
+      results.orderBy('min("patientName")', 'ASC');
+    } else if (sortBy == patientLogSort.PATIENT_NAME_Z_TO_A) {
+      results.orderBy('min("patientName")', 'DESC');
+    } else if (sortBy == patientLogSort.NUMBER_OF_CONSULTS) {
+      results.orderBy('count(*)', 'DESC');
+    } else {
+      results.orderBy('max("appointmentDateTime")', 'DESC');
+    }
+
+    return results.getRawMany();
+  }
+
+  updateTransferState(id: string, appointmentState: APPOINTMENT_STATE) {
+    this.update(id, { appointmentState });
   }
 }

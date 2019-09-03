@@ -5,6 +5,12 @@ import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { AddressCard } from 'components/MyAccount/AddressCard';
 import Scrollbars from 'react-custom-scrollbars';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import {
+  GetPatientAddressList,
+  GetPatientAddressListVariables,
+} from 'graphql/types/GetPatientAddressList';
+import { GET_PATIENT_ADDRESS_LIST } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -76,19 +82,37 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const AddressBook: React.FC = (props) => {
+interface AddressBookProps {
+  patientId: string;
+}
+
+export const AddressBook: React.FC<AddressBookProps> = (props) => {
   const classes = useStyles();
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
+
+  const { data, error, loading } = useQueryWithSkip<
+    GetPatientAddressList,
+    GetPatientAddressListVariables
+  >(GET_PATIENT_ADDRESS_LIST, {
+    variables: {
+      patientId: props.patientId,
+    },
+  });
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error :(</div>;
+
+  const addresses = (data && data.getPatientAddressList.addressList) || [];
 
   return (
     <div className={classes.root}>
       <div className={classes.sectionHeader}>
         Address Book
-        <div className={classes.count}>03</div>
+        <div className={classes.count}>{String(addresses.length).padStart(2, '0')}</div>
       </div>
       <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 322px)' }}>
         <div className={classes.sectionBody}>
-          <AddressCard />
+          <AddressCard addresses={addresses} />
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
