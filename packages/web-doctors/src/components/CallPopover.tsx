@@ -488,8 +488,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       setStartAppointmentButton(true);
     }
   };
+  const client = useApolloClient();
   const transferConsultAction = () => {
-    const client = useApolloClient();
     client
       .mutate<InitiateTransferAppointment, InitiateTransferAppointmentVariables>({
         mutation: INITIATE_TRANSFER_APPONITMENT,
@@ -514,7 +514,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       });
   };
   const doctorSpeciality = (searchText: string) => {
-    const client = useApolloClient();
     client
       .query<SearchDoctorAndSpecialty, SearchDoctorAndSpecialtyVariables>({
         query: SEARCH_DOCTOR_AND_SPECIALITY,
@@ -930,6 +929,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               placeholder="Search doctors or specialities"
               onChange={(e) => {
                 setSearchKeyword(e.target.value);
+                doctorSpeciality(e.target.value);
               }}
               value={searchKeyWord}
             />
