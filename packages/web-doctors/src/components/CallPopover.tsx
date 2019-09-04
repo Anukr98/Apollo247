@@ -431,6 +431,7 @@ let transferObject: any = {
   experience: '5 Yrs',
   specilty: '',
   facilityId: '',
+  transferId: '',
 };
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
@@ -550,7 +551,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       });
   };
   const handleSpecialityClick = (value: any) => {
-    console.log(value);
     setIsDoctorOrSpeciality(false);
     setSearchKeyword(value.name);
     transferObject = {
@@ -563,10 +563,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       experience: '',
       specilty: value.name,
       facilityId: '',
+      transferId: '',
     };
   };
   const handleDoctorClick = (value: any) => {
-    console.log(value);
     setIsDoctorOrSpeciality(false);
     setSearchKeyword(value.firstName + ' ' + value.lastName);
     transferObject = {
@@ -579,6 +579,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       experience: value.experience,
       specilty: value.speciality,
       facilityId: value!.doctorHospital[0]!.facility.id,
+      transferId: '',
     };
   };
   setInterval(startConstultCheck, 1000);
@@ -664,7 +665,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     );
   };
   const transferConsultAction = () => {
-    console.log(transferObject);
     client
       .mutate<InitiateTransferAppointment, InitiateTransferAppointmentVariables>({
         mutation: INITIATE_TRANSFER_APPONITMENT,
@@ -682,6 +682,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       })
       .then((_data: any) => {
         transferObject.transferDateTime = _data!.data!.initiateTransferAppointment!.doctorNextSlot;
+        transferObject.transferId = _data!.data!.initiateTransferAppointment!.transferAppointment!.id;
+        console.log(transferObject);
         pubnub.publish(
           {
             message: {
@@ -954,7 +956,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   horizontal: 'right',
                 },
               }}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 setReason(e.target.value as string);
               }}
             >
@@ -1024,7 +1026,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   horizontal: 'right',
                 },
               }}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 setReason(e.target.value as string);
               }}
             >
@@ -1047,7 +1049,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             <AphTextField
               classes={{ root: classes.searchInput }}
               placeholder="Search doctors or specialities"
-              onChange={(e) => {
+              onChange={(e: any) => {
                 setSearchKeyword(e.target.value);
                 if (e.target.value.length > 2) {
                   doctorSpeciality(e.target.value);
