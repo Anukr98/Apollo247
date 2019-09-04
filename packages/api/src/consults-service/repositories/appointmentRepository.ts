@@ -6,6 +6,7 @@ import {
   patientLogSort,
   patientLogType,
   APPOINTMENT_STATE,
+  TRANSFER_INITIATED_TYPE,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -341,5 +342,13 @@ export class AppointmentRepository extends Repository<Appointment> {
     appointmentState: APPOINTMENT_STATE
   ) {
     return this.update(id, { appointmentDateTime, rescheduleCount, appointmentState });
+  }
+
+  cancelAppointment(id: string, cancelledBy: TRANSFER_INITIATED_TYPE, cancelledById: string) {
+    return this.update(id, { status: STATUS.CANCELLED, cancelledBy, cancelledById }).catch(
+      (cancelError) => {
+        throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
+      }
+    );
   }
 }
