@@ -19,15 +19,15 @@ import { differenceInYears } from 'date-fns';
 export const saveMedicineOrderPaymentTypeDefs = gql`
   enum MEDICINE_ORDER_PAYMENT_TYPE {
     COD
-    ONLINE
+    CASHLESS
     NO_PAYMENT
   }
 
   input MedicinePaymentInput {
-    orderId: String
-    orderAutoId: Int
-    paymentType: MEDICINE_ORDER_PAYMENT_TYPE
-    amountPaid: Float
+    orderId: String!
+    orderAutoId: Int!
+    paymentType: MEDICINE_ORDER_PAYMENT_TYPE!
+    amountPaid: Float!
     paymentRefId: String
     paymentStatus: String
     paymentDateTime: DateTime
@@ -57,7 +57,7 @@ type MedicinePaymentInput = {
   amountPaid: number;
   paymentRefId: string;
   paymentStatus: string;
-  paymentDateTime: Date;
+  paymentDateTime?: Date;
   responseCode: string;
   responseMessage: string;
   bankTxnId: string;
@@ -89,6 +89,9 @@ const SaveMedicineOrderPayment: Resolver<
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
+  if (medicinePaymentInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {
+    medicinePaymentInput.paymentDateTime = new Date();
+  }
   const paymentAttrs: Partial<MedicineOrderPayments> = {
     medicineOrders: orderDetails,
     paymentDateTime: medicinePaymentInput.paymentDateTime,
@@ -107,13 +110,19 @@ const SaveMedicineOrderPayment: Resolver<
 
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.findById(orderDetails.patient.id);
+  let deliveryCity = '',
+    deliveryZipcode = '';
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
-  const patientAddressDetails = await patientAddressRepo.findById(orderDetails.patientAddressId);
-  if (!patientAddressDetails) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+  if (orderDetails.patientAddressId !== '' && orderDetails.patientAddressId !== null) {
+    const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+    const patientAddressDetails = await patientAddressRepo.findById(orderDetails.patientAddressId);
+    if (!patientAddressDetails) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+    }
+    deliveryCity = patientAddressDetails.city;
+    deliveryZipcode = patientAddressDetails.zipcode;
   }
 
   const orderLineItems: PharmaLineItem[] = [];
@@ -140,11 +149,11 @@ const SaveMedicineOrderPayment: Resolver<
   }
   const medicineOrderPharma = {
     tpdetails: {
-      OrderId: '123456224',
-      ShopId: 91905,
-      ShippingMethod: 'Home Delivery',
+      OrderId: orderDetails.orderAutoId,
+      ShopId: orderDetails.shopId,
+      ShippingMethod: orderDetails.deliveryType.replace('_', ' '),
       RequestType: 'CART',
-      PaymentMethod: 'CASHLESS',
+      PaymentMethod: medicinePaymentInput.paymentType,
       VendorName: '*****',
       DotorName: 'Apollo',
       OrderType: 'Pharma',
@@ -154,12 +163,12 @@ const SaveMedicineOrderPayment: Resolver<
       OrderDate: new Date(),
       CustomerDetails: {
         MobileNo: patientDetails.mobileNumber.substr(3),
-        Comm_addr: patientAddressDetails.city,
-        Del_addr: patientAddressDetails.city,
+        Comm_addr: deliveryCity,
+        Del_addr: deliveryCity,
         FirstName: patientDetails.firstName,
         LastName: patientDetails.lastName,
-        City: patientAddressDetails.city,
-        PostCode: patientAddressDetails.zipcode,
+        City: deliveryCity,
+        PostCode: deliveryZipcode,
         MailId: patientDetails.emailAddress,
         Age: Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth)),
         CardNo: null,
@@ -167,7 +176,7 @@ const SaveMedicineOrderPayment: Resolver<
       },
       PaymentDetails: {
         TotalAmount: medicinePaymentInput.amountPaid,
-        PaymentSource: 'CASHLESS',
+        PaymentSource: medicinePaymentInput.paymentType,
         PaymentStatus: medicinePaymentInput.paymentStatus,
         PaymentOrderId: medicinePaymentInput.paymentRefId,
       },

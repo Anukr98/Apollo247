@@ -1964,7 +1964,7 @@
             "deprecationReason": null
           },
           {
-            "name": "STORE_PICK_UP",
+            "name": "STORE_PICKUP",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -2363,7 +2363,7 @@
             "deprecationReason": null
           },
           {
-            "name": "ONLINE",
+            "name": "CASHLESS",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -10799,9 +10799,13 @@
             "name": "patientAddressId",
             "description": null,
             "type": {
-              "kind": "SCALAR",
-              "name": "ID",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "ID",
+                "ofType": null
+              }
             },
             "defaultValue": null
           },
@@ -11277,9 +11281,13 @@
             "name": "orderId",
             "description": null,
             "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
             },
             "defaultValue": null
           },
@@ -11287,9 +11295,13 @@
             "name": "orderAutoId",
             "description": null,
             "type": {
-              "kind": "SCALAR",
-              "name": "Int",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
             },
             "defaultValue": null
           },
@@ -11297,9 +11309,13 @@
             "name": "paymentType",
             "description": null,
             "type": {
-              "kind": "ENUM",
-              "name": "MEDICINE_ORDER_PAYMENT_TYPE",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "ENUM",
+                "name": "MEDICINE_ORDER_PAYMENT_TYPE",
+                "ofType": null
+              }
             },
             "defaultValue": null
           },
@@ -11307,9 +11323,13 @@
             "name": "amountPaid",
             "description": null,
             "type": {
-              "kind": "SCALAR",
-              "name": "Float",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Float",
+                "ofType": null
+              }
             },
             "defaultValue": null
           },

@@ -9,7 +9,7 @@ import { MedicineOrdersRepository } from 'profiles-service/repositories/Medicine
 export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
   enum MEDICINE_DELIVERY_TYPE {
     HOME_DELIVERY
-    STORE_PICK_UP
+    STORE_PICKUP
   }
 
   enum MEDICINE_ORDER_TYPE {
