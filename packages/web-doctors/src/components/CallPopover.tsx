@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Button, Modal, MenuItem, InputBase, Popover, Paper } from '@material-ui/core';
+import {
+  Theme,
+  Button,
+  Modal,
+  MenuItem,
+  InputBase,
+  Popover,
+  Paper,
+  FormHelperText,
+} from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Pubnub from 'pubnub';
 import moment from 'moment';
+import { isEmpty, debounce, trim } from 'lodash';
 import { AphSelect, AphTextField } from '@aph/web-ui-components';
 import { useAuth } from 'hooks/authHooks';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
@@ -13,10 +23,18 @@ import {
   InitiateTransferAppointmentVariables,
 } from 'graphql/types/InitiateTransferAppointment';
 import {
-  SearchDoctorAndSpecialty,
-  SearchDoctorAndSpecialtyVariables,
-} from 'graphql/types/SearchDoctorAndSpecialty';
-import { INITIATE_TRANSFER_APPONITMENT, SEARCH_DOCTOR_AND_SPECIALITY } from 'graphql/profiles';
+  SearchDoctorAndSpecialtyByName,
+  SearchDoctorAndSpecialtyByNameVariables,
+} from 'graphql/types/SearchDoctorAndSpecialtyByName';
+import {
+  InitiateRescheduleAppointment,
+  InitiateRescheduleAppointmentVariables,
+} from 'graphql/types/InitiateRescheduleAppointment';
+import {
+  INITIATE_TRANSFER_APPONITMENT,
+  SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
+  INITIATE_RESCHDULE_APPONITMENT,
+} from 'graphql/profiles';
 import { TRANSFER_INITIATED_TYPE } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -34,6 +52,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     helpWrap: {
       paddingBottom: 0,
+    },
+    helpText: {
+      paddingLeft: 0,
+      paddingRight: 20,
     },
     breadcrumbs: {
       marginLeft: 20,
@@ -377,9 +399,35 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    doctorSearch: {
+      position: 'relative',
+      display: 'block',
+      padding: 10,
+      height: 170,
+      zIndex: 9,
+      backgroundColor: '#eeeeee',
+      '& ul': {
+        listStyleType: 'none',
+        paddingLeft: 0,
+        '& li': {
+          paddingLeft: 10,
+          '&:hover': {
+            backgroundColor: '#bbbaba',
+            cursor: 'pointer',
+          },
+        },
+      },
+      '& p': {
+        borderBottom: '1px solid #01475b',
+      },
+    },
   };
 });
 
+interface errorObject {
+  reasonError: boolean;
+  searchError: boolean;
+}
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
@@ -391,7 +439,18 @@ interface CallPopoverProps {
 }
 let intervalId: any;
 let stoppedTimer: number;
-
+let transferObject: any = {
+  appointmentId: '',
+  transferDateTime: '',
+  photoUrl: '',
+  doctorId: '',
+  specialtyId: '',
+  doctorName: '',
+  experience: '5 Yrs',
+  specilty: '',
+  facilityId: '',
+  transferId: '',
+};
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -405,14 +464,32 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [reason, setReason] = useState<string>('Reason 01');
   const [searchKeyWord, setSearchKeyword] = React.useState('');
   const [noteKeyword, setNoteKeyword] = React.useState('');
+  const [isDoctorOrSpeciality, setIsDoctorOrSpeciality] = useState(false);
   const [filteredStarDoctors, setFilteredStarDoctors] = useState<any>([]);
   const [filterSpeciality, setFilterSpeciality] = useState<any>([]);
-
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
 
   const [anchorElThreeDots, setAnchorElThreeDots] = React.useState(null);
+  const [selectedDoctor, setSelectedDoctor] = useState<any>('');
+  const [errorState, setErrorState] = React.useState<errorObject>({
+    reasonError: false,
+    searchError: false,
+  });
+  const clearError = () => {
+    setErrorState({
+      ...errorState,
+      searchError: false,
+      reasonError: false,
+    });
+  };
+  const clearTransferField = () => {
+    setSelectedDoctor('');
+    setSearchKeyword('');
+    setReason('');
+    clearError();
+  };
   const startInterval = (timer: number) => {
     const current = new Date();
     const consult = new Date(props.appointmentDateTime);
@@ -489,48 +566,62 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
   };
   const client = useApolloClient();
-  const transferConsultAction = () => {
-    client
-      .mutate<InitiateTransferAppointment, InitiateTransferAppointmentVariables>({
-        mutation: INITIATE_TRANSFER_APPONITMENT,
-        variables: {
-          TransferAppointmentInput: {
-            appointmentId: props.appointmentId,
-            transferInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
-            transferInitiatedId: '',
-            transferredDoctorId: '',
-            transferredSpecialtyId: '',
-            transferReason: reason,
-            transferNotes: noteKeyword,
-          },
-        },
-      })
-      .then((_data: any) => {
-        console.log(_data);
-        //setIsTransferPopoverOpen(false);
-      })
-      .catch((e: any) => {
-        console.log('Error occured while searching for Initiate transfera apppointment', e);
-      });
-  };
   const doctorSpeciality = (searchText: string) => {
     client
-      .query<SearchDoctorAndSpecialty, SearchDoctorAndSpecialtyVariables>({
-        query: SEARCH_DOCTOR_AND_SPECIALITY,
+      .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
+        query: SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
         variables: { searchText: searchText },
       })
-
       .then((_data) => {
-        console.log('flitered array', _data.data.SearchDoctorAndSpecialty!.doctors);
-        console.log('flitered array1', _data.data.SearchDoctorAndSpecialty!);
-        setFilteredStarDoctors(_data.data.SearchDoctorAndSpecialty!.doctors);
-        setFilterSpeciality(_data.data.SearchDoctorAndSpecialty!.specialties);
-        //setDoctorsCard(!doctorsCard);
+        setFilteredStarDoctors(_data.data.SearchDoctorAndSpecialtyByName!.doctors);
+        setFilterSpeciality(_data.data.SearchDoctorAndSpecialtyByName!.specialties);
+        if (
+          _data!.data!.SearchDoctorAndSpecialtyByName!.doctors!.length > 0 ||
+          _data!.data!.SearchDoctorAndSpecialtyByName!.specialties!.length > 0
+        ) {
+          setIsDoctorOrSpeciality(true);
+        }
       })
       .catch((e) => {
         console.log('Error occured while searching for Doctors', e);
-        //Alert.alert('Error', 'Error occured while searching for Doctors');
       });
+  };
+  const handleSpecialityClick = (value: any) => {
+    setIsDoctorOrSpeciality(false);
+    setSearchKeyword(value.name);
+    setSelectedDoctor(value.name);
+    transferObject = {
+      appointmentId: props.appointmentId,
+      transferDateTime: '',
+      photoUrl: value.image,
+      doctorId: '',
+      specialtyId: value.id,
+      doctorName: '',
+      experience: '',
+      specilty: value.name,
+      facilityId: '',
+      transferId: '',
+    };
+    clearError();
+  };
+  const handleDoctorClick = (value: any) => {
+    console.log(value);
+    setIsDoctorOrSpeciality(false);
+    setSearchKeyword(value.firstName + ' ' + value.lastName);
+    setSelectedDoctor(value.firstName + ' ' + value.lastName);
+    transferObject = {
+      appointmentId: props.appointmentId,
+      transferDateTime: '',
+      photoUrl: value.photoUrl,
+      doctorId: value.id,
+      specialtyId: value.speciality.id,
+      doctorName: value.firstName + ' ' + value.lastName,
+      experience: value.experience,
+      specilty: value.speciality.name,
+      facilityId: value!.doctorHospital[0]!.facility.id,
+      transferId: '',
+    };
+    clearError();
   };
   setInterval(startConstultCheck, 1000);
   const stopInterval = () => {
@@ -556,10 +647,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   }
   const openThreeDots = Boolean(anchorElThreeDots);
   const idThreeDots = openThreeDots ? 'simple-three-dots' : undefined;
-  const resheduleCosult = () => {};
-
   const startConsult = '^^#startconsult';
   const stopConsult = '^^#stopconsult';
+  const transferconsult = '^^#transferconsult';
+  const rescheduleconsult = '^^#rescheduleconsult';
   const channel = props.appointmentId;
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
@@ -614,7 +705,128 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       (status, response) => {}
     );
   };
-
+  const transferConsultAction = () => {
+    if (isEmpty(reason)) {
+      setErrorState({
+        ...errorState,
+        reasonError: true,
+        searchError: false,
+      });
+    } else if (isEmpty(selectedDoctor)) {
+      setErrorState({
+        ...errorState,
+        reasonError: false,
+        searchError: true,
+      });
+    } else {
+      setErrorState({
+        ...errorState,
+        reasonError: false,
+        searchError: false,
+      });
+      client
+        .mutate<InitiateTransferAppointment, InitiateTransferAppointmentVariables>({
+          mutation: INITIATE_TRANSFER_APPONITMENT,
+          variables: {
+            TransferAppointmentInput: {
+              appointmentId: props.appointmentId,
+              transferInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+              transferInitiatedId: props.doctorId,
+              transferredDoctorId: transferObject.doctorId,
+              transferredSpecialtyId: transferObject.specialtyId,
+              transferReason: reason,
+              transferNotes: noteKeyword,
+            },
+          },
+        })
+        .then((_data: any) => {
+          transferObject.transferDateTime = _data!.data!.initiateTransferAppointment!.doctorNextSlot;
+          transferObject.transferId = _data!.data!.initiateTransferAppointment!.transferAppointment!.id;
+          console.log(transferObject);
+          pubnub.publish(
+            {
+              message: {
+                id: props.doctorId,
+                message: transferconsult,
+                transferInfo: transferObject,
+              },
+              channel: channel,
+              storeInHistory: true,
+            },
+            (status, response) => {}
+          );
+          clearTransferField();
+          setIsTransferPopoverOpen(false);
+        })
+        .catch((e: any) => {
+          console.log('Error occured while searching for Initiate transfer apppointment', e);
+          const error = JSON.parse(JSON.stringify(e));
+          const errorMessage = error && error.message;
+          console.log(
+            'Error occured while searching for Initiate transfer apppointment',
+            errorMessage,
+            error
+          );
+          alert(errorMessage);
+        });
+    }
+  };
+  const rescheduleConsultAction = () => {
+    // do api call
+    //setIsLoading(true);
+    client
+      .mutate<InitiateRescheduleAppointment, InitiateRescheduleAppointmentVariables>({
+        mutation: INITIATE_RESCHDULE_APPONITMENT,
+        variables: {
+          RescheduleAppointmentInput: {
+            appointmentId: props.appointmentId,
+            rescheduleReason: reason,
+            rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+            rescheduleInitiatedId: props.doctorId,
+            rescheduledDateTime: '2019-09-09T09:00:00.000Z',
+            autoSelectSlot: 0,
+          },
+        },
+      })
+      .then((_data) => {
+        //setIsLoading(false);
+        console.log('data', _data);
+        const reschduleObject: any = {
+          appointmentId: props.appointmentId,
+          transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
+            .rescheduledDateTime,
+          doctorId: props.doctorId,
+          reschduleCount: _data!.data!.initiateRescheduleAppointment!.rescheduleCount,
+          reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
+        };
+        console.log('reschduleObject', reschduleObject);
+        pubnub.publish(
+          {
+            message: {
+              id: props.doctorId,
+              message: rescheduleconsult,
+              transferInfo: reschduleObject,
+            },
+            channel: channel, //chanel
+            storeInHistory: true,
+          },
+          (status, response) => {}
+        );
+        setIsPopoverOpen(false);
+      })
+      .catch((e) => {
+        //setIsLoading(false);
+        console.log('Error occured while searching for Initiate reschdule apppointment', e);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log(
+          'Error occured while searching for Initiate reschdule apppointment',
+          errorMessage,
+          error
+        );
+        alert(errorMessage);
+      });
+  };
   const getTimerText = () => {
     const now = new Date();
     const diff = moment.duration(
@@ -779,14 +991,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           >
             <Paper className={classes.dotPaper}>
               <ul className={classes.popOverUL}>
-                <li>Share Case Sheet</li>
+                {/* <li>Share Case Sheet</li> */}
                 <li
                   onClick={() => {
                     handleCloseThreeDots();
                     setIsTransferPopoverOpen(true);
                   }}
                 >
-                  TransferConsult
+                  Transfer Consult
                 </li>
                 <li
                   onClick={() => {
@@ -834,7 +1046,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   horizontal: 'right',
                 },
               }}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 setReason(e.target.value as string);
               }}
             >
@@ -852,18 +1064,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </MenuItem>
             </AphSelect>
           </div>
-          <div
-            className={classes.tabFooter}
-            onClick={() => {
-              setIsPopoverOpen(false);
-            }}
-          >
+          <div className={classes.tabFooter}>
             <Button className={classes.cancelConsult}>Cancel</Button>
             <Button
               className={classes.ResheduleCosultButton}
               onClick={() => {
-                setIsPopoverOpen(false);
-                resheduleCosult();
+                rescheduleConsultAction();
               }}
             >
               Reshedule Consult
@@ -884,7 +1090,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <img
                 src={require('images/ic_cross.svg')}
                 alt=""
-                onClick={() => setIsTransferPopoverOpen(false)}
+                onClick={() => {
+                  clearTransferField();
+                  setIsTransferPopoverOpen(false);
+                }}
               />
             </Button>
           </div>
@@ -904,9 +1113,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   horizontal: 'right',
                 },
               }}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 setReason(e.target.value as string);
               }}
+              error={errorState.reasonError}
             >
               <MenuItem value="Reason 01" classes={{ selected: classes.menuSelected }}>
                 Reason 01
@@ -921,20 +1131,80 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 Other
               </MenuItem>
             </AphSelect>
+            {errorState.reasonError && (
+              <FormHelperText
+                className={classes.helpText}
+                component="div"
+                error={errorState.reasonError}
+              >
+                Please select reason
+              </FormHelperText>
+            )}
           </div>
           <div className={classes.tabBody}>
             <p>Whom do you want to transfer this consult to?</p>
             <AphTextField
               classes={{ root: classes.searchInput }}
               placeholder="Search doctors or specialities"
-              onChange={(e) => {
+              onChange={(e: any) => {
                 setSearchKeyword(e.target.value);
-                doctorSpeciality(e.target.value);
+                if (e.target.value.length > 2) {
+                  doctorSpeciality(e.target.value);
+                }
+                setSelectedDoctor('');
+                clearError();
               }}
               value={searchKeyWord}
+              error={errorState.searchError}
             />
+            {errorState.searchError && (
+              <FormHelperText
+                className={classes.helpText}
+                component="div"
+                error={errorState.searchError}
+              >
+                Please select doctor or speciality
+              </FormHelperText>
+            )}
+            {isDoctorOrSpeciality && searchKeyWord.length > 2 && (
+              <span className={classes.doctorSearch}>
+                <p>Doctor(s)</p>
+                {filteredStarDoctors!.length > 0 ? (
+                  <ul>
+                    {filteredStarDoctors!.map((item: any, idx: any) => (
+                      <li
+                        key={idx}
+                        onClick={() => {
+                          handleDoctorClick(item);
+                        }}
+                      >
+                        {item.firstName} {item.lastName}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  'No Doctors found'
+                )}
+                <p> Speciality(s)</p>
+                {filterSpeciality!.length > 0 ? (
+                  <ul>
+                    {filterSpeciality!.map((item: any, idx: any) => (
+                      <li
+                        key={idx}
+                        onClick={() => {
+                          handleSpecialityClick(item);
+                        }}
+                      >
+                        {item.name}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  'No Speciality found'
+                )}
+              </span>
+            )}
           </div>
-
           <div className={classes.tabBody}>
             <p>Add a Note (Optional)</p>
             <InputBase
@@ -947,13 +1217,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               value={noteKeyword}
             />
           </div>
-          <div
-            className={classes.tabFooter}
-            onClick={() => {
-              setIsTransferPopoverOpen(false);
-            }}
-          >
-            <Button className={classes.cancelConsult}>Cancel</Button>
+          <div className={classes.tabFooter}>
+            <Button
+              className={classes.cancelConsult}
+              onClick={() => {
+                setIsTransferPopoverOpen(false);
+                clearTransferField();
+              }}
+            >
+              Cancel
+            </Button>
             <Button
               className={classes.ResheduleCosultButton}
               onClick={() => {

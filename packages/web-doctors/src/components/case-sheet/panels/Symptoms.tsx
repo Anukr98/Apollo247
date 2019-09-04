@@ -253,7 +253,7 @@ export const Symptoms: React.FC = (props) => {
     setSeverity('');
     setSymptom('');
     setHowOften('');
-    setSeverity('');
+    setSince('');
   };
   const clearError = () => {
     setErrorState({
