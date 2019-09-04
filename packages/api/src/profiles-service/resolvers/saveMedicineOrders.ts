@@ -116,7 +116,6 @@ const SaveMedicineOrder: Resolver<
   ProfilesServiceContext,
   SaveMedicineOrderResult
 > = async (parent, { MedicineCartInput }, { profilesDb }) => {
-  console.log(MedicineCartInput, 'input');
   const errorCode = 0,
     errorMessage = '';
 
@@ -175,7 +174,6 @@ const SaveMedicineOrder: Resolver<
       saveOrder.orderAutoId
     );
   }
-  console.log(saveOrder, 'save order');
 
   return {
     errorCode,
