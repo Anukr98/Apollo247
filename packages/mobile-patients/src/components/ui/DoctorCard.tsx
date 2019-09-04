@@ -261,12 +261,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View style={styles.imageView}>
               {/* {rowData.image} */}
               {rowData.photoUrl &&
-                rowData.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && (
-                  <Image
-                    style={{ width: 80, height: 80, borderRadius: 40 }}
-                    source={{ uri: rowData.photoUrl }}
-                  />
-                )}
+              rowData.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) ? (
+                <Image
+                  style={{ width: 80, height: 80, borderRadius: 40 }}
+                  source={{ uri: rowData.photoUrl }}
+                />
+              ) : null}
 
               {/* {rowData.isStarDoctor ? (
               <Star style={{ height: 28, width: 28, position: 'absolute', top: 66, left: 30 }} />

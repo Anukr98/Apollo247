@@ -223,7 +223,8 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const renderOneApollo = (
     <View style={styles.healthCreditsRowStyle}>
-      <TouchableOpacity activeOpacity={1}
+      <TouchableOpacity
+        activeOpacity={1}
         style={{ marginRight: 16 }}
         onPress={() => setOneApolloPayment(!isOneApolloPayment)}
       >

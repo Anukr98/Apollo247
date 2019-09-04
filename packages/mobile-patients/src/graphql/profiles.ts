@@ -535,7 +535,6 @@ export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
 export const SAVE_MEDICINE_ORDER = gql`
   mutation SaveMedicineOrder($MedicineCartInput: MedicineCartInput!) {
     SaveMedicineOrder(MedicineCartInput: $MedicineCartInput) {
-      status
       errorCode
       errorMessage
       orderId
@@ -565,6 +564,92 @@ export const SAVE_NOTIFICATION_SETTINGS = gql`
   ) {
     savePatientNotificationSettings(notificationSettingsInput: $notificationSettingsInput) {
       status
+    }
+  }
+`;
+
+export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
+  query getPatientPastConsultsAndPrescriptions(
+    $consultsAndOrdersInput: PatientConsultsAndOrdersInput
+  ) {
+    getPatientPastConsultsAndPrescriptions(consultsAndOrdersInput: $consultsAndOrdersInput) {
+      consults {
+        id
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        appointmentState
+        hospitalId
+        isFollowUp
+        followUpParentId
+        followUpTo
+        bookingDate
+        caseSheet {
+          consultType
+          diagnosis {
+            name
+          }
+          diagnosticPrescription {
+            name
+          }
+          doctorId
+          followUp
+          followUpAfterInDays
+          followUpDate
+          id
+          medicinePrescription {
+            medicineConsumptionDurationInDays
+            medicineDosage
+            medicineInstructions
+            medicineTimings
+            medicineToBeTaken
+            medicineName
+            id
+          }
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+          }
+        }
+        displayId
+        status
+        doctorInfo {
+          id
+          salutation
+          firstName
+          lastName
+          experience
+          city
+          photoUrl
+          qualification
+          specialty {
+            name
+            image
+          }
+        }
+      }
+      medicineOrders {
+        id
+        orderDateTime
+        quoteDateTime
+        deliveryType
+        currentStatus
+        orderType
+        estimatedAmount
+        prescriptionImageUrl
+        shopId
+        medicineOrderLineItems {
+          medicineSku
+          medicineName
+          price
+          quantity
+          mrp
+          id
+        }
+      }
     }
   }
 `;

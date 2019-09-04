@@ -6,6 +6,12 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum APPOINTMENT_STATE {
+  NEW = "NEW",
+  RESCHEDULE = "RESCHEDULE",
+  TRANSFER = "TRANSFER",
+}
+
 export enum APPOINTMENT_TYPE {
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
@@ -32,6 +38,31 @@ export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
   OTHER = "OTHER",
+}
+
+export enum MEDICINE_DELIVERY_TYPE {
+  HOME_DELIVERY = "HOME_DELIVERY",
+  STORE_PICK_UP = "STORE_PICK_UP",
+}
+
+export enum MEDICINE_ORDER_STATUS {
+  CANCELLED = "CANCELLED",
+  DELIVERED = "DELIVERED",
+  ITEMS_RETURNED = "ITEMS_RETURNED",
+  ORDER_FAILED = "ORDER_FAILED",
+  ORDER_PLACED = "ORDER_PLACED",
+  ORDER_VERIFIED = "ORDER_VERIFIED",
+  OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
+  PICKEDUP = "PICKEDUP",
+  PRESCRIPTION_UPLOADED = "PRESCRIPTION_UPLOADED",
+  QUOTE = "QUOTE",
+  RETURN_ACCEPTED = "RETURN_ACCEPTED",
+  RETURN_INITIATED = "RETURN_INITIATED",
+}
+
+export enum MEDICINE_ORDER_TYPE {
+  CART_ORDER = "CART_ORDER",
+  UPLOAD_PRESCRIPTION = "UPLOAD_PRESCRIPTION",
 }
 
 export enum MEDICINE_TIMINGS {
@@ -131,6 +162,30 @@ export interface FilterDoctorInput {
   location?: string | null;
 }
 
+export interface MedicineCartInput {
+  quoteId?: string | null;
+  shopId?: string | null;
+  estimatedAmount?: number | null;
+  patientId: string;
+  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  patientAddressId?: string | null;
+  devliveryCharges?: number | null;
+  prescriptionImageUrl?: string | null;
+  items?: (MedicineCartItem | null)[] | null;
+}
+
+export interface MedicineCartItem {
+  medicineSKU?: string | null;
+  medicineName?: string | null;
+  price?: number | null;
+  quantity?: number | null;
+  mrp?: number | null;
+  isPrescriptionNeeded?: number | null;
+  prescriptionImageUrl?: string | null;
+  mou?: number | null;
+  isMedicine?: string | null;
+}
+
 export interface PatientAddressInput {
   patientId: string;
   addressLine1: string;
@@ -145,6 +200,12 @@ export interface PatientAddressInput {
 export interface PatientAppointmentsInput {
   patientId: string;
   appointmentDate: any;
+}
+
+export interface PatientConsultsAndOrdersInput {
+  patient: string;
+  offset?: number | null;
+  limit?: number | null;
 }
 
 export interface Range {

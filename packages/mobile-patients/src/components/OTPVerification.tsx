@@ -352,7 +352,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
         <View style={{ height: 56, justifyContent: 'center', paddingLeft: 20 }}>
-          <TouchableOpacity activeOpacity={1}
+          <TouchableOpacity
+            activeOpacity={1}
             style={{ height: 25, width: 25, justifyContent: 'center' }}
             onPress={() => {
               props.navigation.goBack();
