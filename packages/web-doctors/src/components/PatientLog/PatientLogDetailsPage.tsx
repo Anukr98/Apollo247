@@ -179,11 +179,6 @@ export const PatientLogDetailsPage: React.FC = () => {
       });
   }, [appointmentId]);
 
-  console.log(
-    casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.pastAppointments
-  );
-  console.log(pastAppointments);
-
   return (
     <div className={classes.container}>
       <div className={classes.caseSheet}>
