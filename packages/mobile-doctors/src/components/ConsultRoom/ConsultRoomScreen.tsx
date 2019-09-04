@@ -434,20 +434,24 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
       const newmessage: object[] = [];
 
-      res.messages.forEach((element, index) => {
-        newmessage[index] = element.entry;
-      });
-      console.log('res', res.messages);
+      try {
+        res.messages.forEach((element, index) => {
+          newmessage[index] = element.entry;
+        });
+        console.log('res', res.messages);
 
-      if (messages.length !== newmessage.length) {
-        console.log('set saved');
-        insertText = newmessage;
+        if (messages.length !== newmessage.length) {
+          console.log('set saved');
+          insertText = newmessage;
 
-        setMessages(newmessage as []);
-        if (!isCall || !isAudioCall) {
-          console.log('chat icon', chatReceived);
-          setChatReceived(true);
+          setMessages(newmessage as []);
+          if (!isCall || !isAudioCall) {
+            console.log('chat icon', chatReceived);
+            setChatReceived(true);
+          }
         }
+      } catch (error) {
+        console.log('chat error', error);
       }
     });
   };
@@ -1850,7 +1854,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         storeInHistory: true,
       },
       (status, response) => {
-        setActiveTabIndex(1);
+        setActiveTabIndex(0);
         setStartConsult(true);
         startInterval(timer);
       }

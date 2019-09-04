@@ -33,6 +33,9 @@ import {
   Start,
   ToogleOff,
   ToogleOn,
+  RoundCallIcon,
+  RoundVideoIcon,
+  ClosePopup,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
@@ -80,6 +83,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Dimensions,
 } from 'react-native';
 import { Slider } from 'react-native-elements';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
@@ -90,6 +94,8 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
+const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   casesheetView: {
@@ -532,10 +538,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     },
   ]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [showPopUp, setShowPopUp] = useState<boolean>(false);
   const client = useApolloClient();
-
-  console.log('isDelegateLogin', isDelegateLogin);
-  console.log('isDelegateLogin', isDelegateLogin);
 
   useEffect(() => {
     // client
@@ -646,6 +650,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   }, []);
 
   const saveDetails = () => {
+    setLoading(true);
     setShowButtons(true);
     console.log('symptonsData', JSON.stringify(JSON.stringify(getSysmptonsList())));
     console.log('junior notes', value);
@@ -680,32 +685,38 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       moment(new Date(selectDate.replace(/\//g, '-'))).format('YYYY-MM-DD HH:mm:ss')
     );
     console.log('followUpDateValue', followUpDateValue);
+
+    const input = {
+      symptoms: JSON.stringify(getSysmptonsList()),
+      notes: value,
+      diagnosis: JSON.stringify(getDiagonsisList()), //'[{"name":"Dr. CTDO 12.5/20MG TABLET","__typename":"Diagnosis"}]',
+      diagnosticPrescription: JSON.stringify(getDiagnosticPrescriptionDataList()), //'[{"name":"Mayuri","__typename":"DiagnosticPrescription"}]',
+      followUp: switchValue,
+      followUpDate: followUpDateValue,
+      followUpAfterInDays: followUpAfterInDays, //sliderValue.toString().concat('days'),
+      otherInstructions: JSON.stringify(otherInstructionsData), //'[{"instruction":"Drink Plenty of Water"},{"instruction":"Use sunscreen every day"}]',
+      medicinePrescription: JSON.stringify(getMedicineList()), //'[{"medicineName":"CTDO 6.25/40MG TABLET","medicineDosage":"2tablets","medicineToBeTaken":["BEFORE_FOOD"],"medicineInstructions":"Ccc","medicineTimings":["MORNING"],"medicineConsumptionDurationInDays":"Gg"}]',
+      id: getcasesheetId,
+    };
+    console.log('input', input);
+
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
         mutation: UPDATE_CASESHEET,
         variables: {
-          UpdateCaseSheetInput: {
-            symptoms: JSON.stringify(getSysmptonsList()),
-            notes: value,
-            diagnosis: JSON.stringify(getDiagonsisList()), //'[{"name":"Dr. CTDO 12.5/20MG TABLET","__typename":"Diagnosis"}]',
-            diagnosticPrescription: JSON.stringify(getDiagnosticPrescriptionDataList()), //'[{"name":"Mayuri","__typename":"DiagnosticPrescription"}]',
-            followUp: switchValue,
-            followUpDate: followUpDateValue,
-            followUpAfterInDays: followUpAfterInDays, //sliderValue.toString().concat('days'),
-            otherInstructions: JSON.stringify(otherInstructionsData), //'[{"instruction":"Drink Plenty of Water"},{"instruction":"Use sunscreen every day"}]',
-            medicinePrescription: JSON.stringify(getMedicineList()), //'[{"medicineName":"CTDO 6.25/40MG TABLET","medicineDosage":"2tablets","medicineToBeTaken":["BEFORE_FOOD"],"medicineInstructions":"Ccc","medicineTimings":["MORNING"],"medicineConsumptionDurationInDays":"Gg"}]',
-            id: getcasesheetId,
-          },
+          UpdateCaseSheetInput: input,
         },
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        setLoading(false);
         console.log('_data', _data);
         const result = _data.data!.updateCaseSheet;
         console.log('UpdateCaseSheetData', result);
         Alert.alert('UpdateCaseSheet', 'SuccessFully Updated');
       })
       .catch((e) => {
+        setLoading(false);
         console.log('Error occured while update casesheet', e);
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
@@ -714,6 +725,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       });
   };
   const endConsult = () => {
+    setLoading(true);
     saveDetails();
     client
       .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
@@ -727,11 +739,16 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        setLoading(false);
+        setShowPopUp(true);
         console.log('_data', _data);
+
         //setShowButtons(false);
         // props.onStopConsult();
       })
       .catch((e) => {
+        setLoading(false);
+        setShowPopUp(false);
         console.log('Error occured while End casesheet', e);
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
@@ -1041,11 +1058,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             const str = String(showdata.medicineTimings)
               .toLowerCase()
               .split(',');
-            console.log('str', str);
+
             const str1 = String(showdata.medicineToBeTaken)
               .toLowerCase()
               .split(',');
-            console.log('str1', str1);
+
             return (
               <View>
                 <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
@@ -1584,6 +1601,116 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
+  const CallPopUp = () => {
+    return (
+      <View
+        style={{
+          flex: 1,
+          left: 0,
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: width,
+          backgroundColor: 'transparent',
+          position: 'absolute',
+          elevation: 2000,
+        }}
+      >
+        <View
+          style={{
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+            width: width,
+            backgroundColor: 'black',
+            position: 'absolute',
+            opacity: 0.41,
+          }}
+        ></View>
+        <View
+          style={{
+            marginHorizontal: 40,
+            marginTop: 112,
+            height: 289,
+            borderRadius: 10,
+            backgroundColor: 'white',
+          }}
+        >
+          <TouchableOpacity onPress={() => setShowPopUp(false)} style={{ height: 40 }}>
+            <ClosePopup
+              style={{ width: 24, height: 24, top: 16, position: 'absolute', right: 16 }}
+            />
+          </TouchableOpacity>
+
+          <Text
+            style={{
+              marginHorizontal: 20,
+              marginTop: 21,
+              color: '#02475b',
+              ...theme.fonts.IBMPlexSansSemiBold(20),
+            }}
+          >
+            How do you want to talk to the patient?
+          </Text>
+          <TouchableOpacity onPress={() => {}}>
+            <View
+              style={{
+                marginHorizontal: 20,
+                marginTop: 32,
+                backgroundColor: '#fc9916',
+                height: 40,
+                borderRadius: 5,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <View style={{ flexDirection: 'row' }}>
+                <RoundCallIcon style={{ width: 24, height: 24 }} />
+                <Text
+                  style={{
+                    marginLeft: 8,
+                    color: 'white',
+                    lineHeight: 24,
+                    ...theme.fonts.IBMPlexSansBold(13),
+                  }}
+                >
+                  AUDIO CALL
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {}}>
+            <View
+              style={{
+                marginHorizontal: 20,
+                marginTop: 12,
+                backgroundColor: '#fc9916',
+                height: 40,
+                borderRadius: 5,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <View style={{ flexDirection: 'row' }}>
+                <RoundVideoIcon style={{ width: 24, height: 24 }} />
+                <Text
+                  style={{
+                    marginLeft: 8,
+                    color: 'white',
+                    lineHeight: 24,
+                    ...theme.fonts.IBMPlexSansBold(13),
+                  }}
+                >
+                  VIDEO CALL
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
   return (
     <View style={styles.casesheetView}>
       <KeyboardAwareScrollView style={{ flex: 1 }} bounces={false}>
@@ -1616,13 +1743,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 autoCorrect={true}
               />
             </View>
-
+            {loading ? <Loader flex1 /> : null}
             {/* {renderButtonsView()} */}
             {moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
             stastus == 'IN_PROGRESS'
               ? renderButtonsView()
               : null}
           </View>
+          {showPopUp && CallPopUp()}
         </ScrollView>
       </KeyboardAwareScrollView>
     </View>

@@ -574,10 +574,12 @@ export const SAVE_DOCTOR_DEVICE_TOKEN = gql`
   mutation saveDoctorDeviceToken($SaveDoctorDeviceTokenInput: SaveDoctorDeviceTokenInput!) {
     saveDoctorDeviceToken(SaveDoctorDeviceTokenInput: $SaveDoctorDeviceTokenInput) {
       deviceToken {
-        doctorId
+        id
         deviceType
         deviceOS
         deviceToken
+        createdDate
+        updatedDate
       }
     }
   }
@@ -699,6 +701,14 @@ export const SEARCH_DIAGNOSIS = gql`
     searchDiagnosis(searchString: $searchString) {
       name
       id
+    }
+  }
+`;
+
+export const SEARCH_DIAGNOSTIC = gql`
+  query searchDiagnostic($searchString: String!) {
+    searchDiagnostic(searchString: $searchString) {
+      itemname
     }
   }
 `;

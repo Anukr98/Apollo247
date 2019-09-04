@@ -46,7 +46,7 @@ import {
   saveDoctorDeviceToken,
   saveDoctorDeviceTokenVariables,
 } from '@aph/mobile-doctors/src/graphql/types/saveDoctorDeviceToken';
-import console = require('console');
+
 //import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
 const isMobileNumberValid = (n: string) => true;
@@ -252,14 +252,14 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
                 },
               })
               .then((data: any) => {
-                console.log('APICALLED', data.data.saveDeviceToken.deviceToken);
+                console.log('APICALLED', data.data.saveDoctorDeviceToken.deviceToken.deviceToken);
                 AsyncStorage.setItem(
                   'deviceToken',
-                  JSON.stringify(data.data.saveDeviceToken.deviceToken)
+                  JSON.stringify(data.data.saveDoctorDeviceToken.deviceToken.deviceToken)
                 );
               })
               .catch((e: string) => {
-                console.log('Error occured while adding Doctor', e);
+                console.log('Error occured while calling device token', e);
               });
           }
         }
