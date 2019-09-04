@@ -17,6 +17,13 @@ export type DiagnosisJson = {
 };
 
 export const caseSheetTypeDefs = gql`
+  enum DoctorType {
+    APOLLO
+    PAYROLL
+    STAR_APOLLO
+    JUNIOR
+  }
+
   enum Gender {
     MALE
     FEMALE
@@ -78,6 +85,7 @@ export const caseSheetTypeDefs = gql`
     diagnosis: [Diagnosis]
     diagnosticPrescription: [DiagnosticPrescription]
     doctorId: String
+    doctorType: DoctorType
     followUp: Boolean
     followUpAfterInDays: String
     followUpDate: String
@@ -365,7 +373,9 @@ const searchDiagnosis: Resolver<
   ConsultServiceContext,
   DiagnosisJson[]
 > = async (parent, args, { consultsDb }) => {
-  const result = DiagnosisData.filter((obj) => obj.name.match(args.searchString.toLowerCase()));
+  const result = DiagnosisData.filter((obj) =>
+    obj.name.toLowerCase().startsWith(args.searchString.toLowerCase())
+  );
   return result;
 };
 

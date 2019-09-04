@@ -60,6 +60,10 @@ import {
   getMedicineOrdersListTypeDefs,
   getMedicineOrdersListResolvers,
 } from 'profiles-service/resolvers/getMedicineOrdersList';
+import {
+  addPatientMedicalRecordTypeDefs,
+  addPatientMedicalRecordResolvers,
+} from 'profiles-service/resolvers/addMedicalRecord';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 
@@ -156,6 +160,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: getMedicineOrdersListTypeDefs,
         resolvers: getMedicineOrdersListResolvers,
+      },
+      {
+        typeDefs: addPatientMedicalRecordTypeDefs,
+        resolvers: addPatientMedicalRecordResolvers,
       },
     ]),
   });

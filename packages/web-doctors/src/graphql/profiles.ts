@@ -525,6 +525,34 @@ export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
     }
   }
 `;
+export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
+  query SearchDoctorAndSpecialtyByName($searchText: String!) {
+    SearchDoctorAndSpecialtyByName(searchText: $searchText) {
+      doctors {
+        firstName
+        lastName
+        specialty {
+          name
+        }
+        specialization
+        photoUrl
+        id
+        experience
+        doctorHospital {
+          facility {
+            id
+            name
+          }
+        }
+      }
+      specialties {
+        id
+        name
+        image
+      }
+    }
+  }
+`;
 export const INITIATE_TRANSFER_APPONITMENT = gql`
   mutation InitiateTransferAppointment($TransferAppointmentInput: TransferAppointmentInput!) {
     initiateTransferAppointment(TransferAppointmentInput: $TransferAppointmentInput) {
@@ -548,6 +576,14 @@ export const INITIATE_RESCHDULE_APPONITMENT = gql`
         rescheduleReason
         rescheduledDateTime
       }
+    }
+  }
+`;
+export const SEARCH_DIAGNOSIS = gql`
+  query SearchDiagnosis($searchString: String!) {
+    searchDiagnosis(searchString: $searchString) {
+      name
+      id
     }
   }
 `;
