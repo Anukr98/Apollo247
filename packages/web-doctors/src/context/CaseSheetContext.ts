@@ -14,7 +14,7 @@ import { createContext } from 'react';
 export interface CaseSheetContextProps {
   loading: boolean;
   patientDetails: GetCaseSheet_getCaseSheet_patientDetails | null;
-  appointmentInfo: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment | null,
+  appointmentInfo: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment | null;
   caseSheetId: string | null;
   symptoms: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null;
   setSymptoms:
