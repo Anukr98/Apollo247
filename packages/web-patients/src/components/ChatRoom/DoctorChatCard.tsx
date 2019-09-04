@@ -3,6 +3,7 @@ import { Theme, Avatar } from '@material-ui/core';
 import React from 'react';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 import { ChooseDoctor } from 'components/ChatRoom/ChooseDoctor';
+import { format } from 'date-fns';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -50,19 +51,30 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-
-export const DoctorChatCard: React.FC = (props) => {
+interface DoctorChatCardProps {
+  transferData: any;
+}
+export const DoctorChatCard: React.FC<DoctorChatCardProps> = (props) => {
   const classes = useStyles();
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
 
+  const transferDate = props.transferData.transferDateTime
+    ? format(new Date(props.transferData.transferDateTime), 'Do MMMM, dddd')
+    : '';
+  const transferTime = props.transferData.transferDateTime
+    ? format(new Date(props.transferData.transferDateTime), 'h:mm a')
+    : '';
+  //('h:mm a')
   return (
     <div className={classes.root}>
       <Avatar alt="" src={require('images/doctordp_01.png')} className={classes.avatar} />
-      <div className={classes.doctorName}>Dr. Jayanth Reddy</div>
-      <div className={classes.doctorInfo}>General Physician | 7 YRS</div>
+      <div className={classes.doctorName}>Dr. {props.transferData.doctorName}</div>
+      <div className={classes.doctorInfo}>
+        {props.transferData.specilty} | {props.transferData.experience}
+      </div>
       <div className={classes.dateTime}>
-        <div>18th May, Monday</div>
-        <div>9:00 am</div>
+        <div>{transferDate}</div>
+        <div>{transferTime}</div>
       </div>
       <div className={classes.cardActions}>
         <AphButton onClick={() => setIsDialogOpen(true)}>Choose Another Doctor</AphButton>
