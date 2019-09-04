@@ -25,6 +25,8 @@ export const useAuth = () => {
   const analytics = useAnalytics();
   const allPatients = useAuthContext().allPatients!;
 
+  const getPatientApiCall = useAuthContext().getPatientApiCall!;
+
   return {
     verifyOtp,
     verifyOtpError,
@@ -40,6 +42,8 @@ export const useAuth = () => {
 
     analytics,
     allPatients,
+
+    getPatientApiCall,
   };
 };
 
