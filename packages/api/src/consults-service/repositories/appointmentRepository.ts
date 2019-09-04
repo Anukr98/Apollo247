@@ -83,6 +83,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   getDoctorAppointments(doctorId: string, startDate: Date, endDate: Date) {
     return this.find({
       where: { doctorId, appointmentDateTime: Between(startDate, endDate) },
+      relations: ['caseSheet'],
       order: { appointmentDateTime: 'DESC' },
     });
   }
