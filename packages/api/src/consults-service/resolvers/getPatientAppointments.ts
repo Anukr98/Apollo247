@@ -14,6 +14,7 @@ export const getPatinetAppointmentsTypeDefs = gql`
     hospitalId: ID
     status: STATUS!
     bookingDate: DateTime
+    rescheduleCount: Int
     doctorInfo: DoctorDetails @provides(fields: "id")
   }
 
@@ -54,6 +55,7 @@ type PatinetAppointments = {
   appointmentType: APPOINTMENT_TYPE;
   hospitalId?: string;
   status: STATUS;
+  rescheduleCount: number;
   bookingDate: Date;
 };
 

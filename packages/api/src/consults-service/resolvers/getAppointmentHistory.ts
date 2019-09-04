@@ -42,6 +42,7 @@ export const getAppointmentHistoryTypeDefs = gql`
     hospitalId: ID
     status: STATUS!
     bookingDate: DateTime
+    rescheduleCount: Int
     patientInfo: Patient @provides(fields: "id")
     doctorInfo: Profile @provides(fields: "id")
   }
@@ -99,6 +100,7 @@ type AppointmentHistory = {
   hospitalId?: string;
   status: STATUS;
   bookingDate: Date;
+  rescheduleCount: number;
 };
 
 type AppointmentInputArgs = { appointmentHistoryInput: AppointmentHistoryInput };
