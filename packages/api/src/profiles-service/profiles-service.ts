@@ -64,6 +64,10 @@ import {
   addPatientMedicalRecordTypeDefs,
   addPatientMedicalRecordResolvers,
 } from 'profiles-service/resolvers/addMedicalRecord';
+import {
+  getPatientMedicalRecordsTypeDefs,
+  getPatientMedicalRecordsResolvers,
+} from 'profiles-service/resolvers/getPatientMedicalRecords';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 
@@ -164,6 +168,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: addPatientMedicalRecordTypeDefs,
         resolvers: addPatientMedicalRecordResolvers,
+      },
+      {
+        typeDefs: getPatientMedicalRecordsTypeDefs,
+        resolvers: getPatientMedicalRecordsResolvers,
       },
     ]),
   });
