@@ -42,24 +42,26 @@ export interface CapsuleViewProps {
 }
 
 export const CapsuleView: React.FC<CapsuleViewProps> = (props) => {
-  return (
-    <TouchableOpacity
-      activeOpacity={1}
-      style={[styles.containerStyles, props.style, !props.isActive ? styles.disabledStyle : null]}
-      // onPress={props.isActive ? () => {} : props.onPress}
-      // activeOpacity={props.isActive ? 1 : 0.6}
-    >
-      <Text
-        style={[
-          styles.titleTextStyle,
-          !props.isActive ? styles.disabledTextStyle : null,
-          props.titleTextStyle,
-        ]}
+  if (props.title)
+    return (
+      <TouchableOpacity
+        activeOpacity={1}
+        style={[styles.containerStyles, props.style, !props.isActive ? styles.disabledStyle : null]}
+        // onPress={props.isActive ? () => {} : props.onPress}
+        // activeOpacity={props.isActive ? 1 : 0.6}
       >
-        {props.title || 'hi'}
-      </Text>
-    </TouchableOpacity>
-  );
+        <Text
+          style={[
+            styles.titleTextStyle,
+            !props.isActive ? styles.disabledTextStyle : null,
+            props.titleTextStyle,
+          ]}
+        >
+          {props.title}
+        </Text>
+      </TouchableOpacity>
+    );
+  return null;
 };
 
 CapsuleView.defaultProps = {

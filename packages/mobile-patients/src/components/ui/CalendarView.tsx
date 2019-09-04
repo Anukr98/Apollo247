@@ -23,6 +23,8 @@ export interface CalendarViewProps {
   calendarType?: CALENDAR_TYPE;
   onCalendarTypeChanged?: (type: CALENDAR_TYPE) => void;
   minDate?: Date;
+  showWeekView?: boolean;
+  styles?: StyleProp<ViewStyle>;
 }
 
 export const CalendarView: React.FC<CalendarViewProps> = (props) => {
@@ -67,26 +69,30 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
           >
             {moment(calendarDate).format('MMM YYYY')}
           </Text>
-          {props.calendarType == CALENDAR_TYPE.WEEK ? (
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                setCalendarDate(props.date);
-                props.onCalendarTypeChanged && props.onCalendarTypeChanged(CALENDAR_TYPE.MONTH);
-              }}
-            >
-              <DropdownBlueDown />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                setCalendarDate(props.date);
-                props.onCalendarTypeChanged && props.onCalendarTypeChanged(CALENDAR_TYPE.WEEK);
-              }}
-            >
-              <DropdownBlueUp />
-            </TouchableOpacity>
+          {props.showWeekView && (
+            <>
+              {props.calendarType == CALENDAR_TYPE.WEEK ? (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    setCalendarDate(props.date);
+                    props.onCalendarTypeChanged && props.onCalendarTypeChanged(CALENDAR_TYPE.MONTH);
+                  }}
+                >
+                  <DropdownBlueDown />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    setCalendarDate(props.date);
+                    props.onCalendarTypeChanged && props.onCalendarTypeChanged(CALENDAR_TYPE.WEEK);
+                  }}
+                >
+                  <DropdownBlueUp />
+                </TouchableOpacity>
+              )}
+            </>
           )}
         </View>
         <TouchableOpacity
@@ -265,14 +271,21 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
 
   return (
     <View
-      style={{
-        ...theme.viewStyles.cardContainer,
-        backgroundColor: theme.colors.CARD_BG,
-      }}
+      style={[
+        {
+          ...theme.viewStyles.cardContainer,
+          backgroundColor: theme.colors.CARD_BG,
+        },
+        props.styles,
+      ]}
     >
       {renderCalendarMothYearAndControls()}
       {renderWeekDays()}
       {props.calendarType == CALENDAR_TYPE.WEEK ? renderWeekCalendar() : renderMonthCalendar()}
     </View>
   );
+};
+
+CalendarView.defaultProps = {
+  showWeekView: true,
 };
