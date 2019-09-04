@@ -125,7 +125,7 @@ export const caseSheetTypeDefs = gql`
   }
 
   type DiagnosticPrescription {
-    name: String
+    itemname: String
   }
 
   type MedicinePrescription {

@@ -207,7 +207,7 @@ const useStyles = makeStyles((theme: Theme) =>
         borderBottom: '2px solid #00b38e',
       },
       '& input': {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 500,
         color: '#01475b',
         paddingTop: 0,
@@ -336,7 +336,7 @@ export const DiagnosticPrescription: React.FC = () => {
             inputProps={{
               classes,
               id: 'react-autosuggest-simple',
-              placeholder: 'Search Diagnostics',
+              placeholder: 'Search Diagnostic',
               value: state.single,
               onChange: handleChange('single'),
             }}

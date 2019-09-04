@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) => {
     headerSticky: {
       position: 'fixed',
       width: '100%',
-      zIndex: 99,
+      zIndex: 9999,
       top: 0,
     },
     container: {
@@ -327,13 +327,13 @@ export const ConsultTabs: React.FC = () => {
         mutation: UPDATE_CASESHEET,
         variables: {
           UpdateCaseSheetInput: {
-            symptoms: diagnosis!.length > 0 ? JSON.stringify(symptoms) : null,
+            symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
             notes,
             diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
             diagnosticPrescription:
               diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
             followUp: followUp[0],
-            followUpDate: followUp[0] ? followUpDate[0] : null,
+            followUpDate: followUp[0] ? followUpDate[0] : '',
             followUpAfterInDays: followUp[0] ? followUpAfterInDays[0] : null,
             otherInstructions:
               otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,

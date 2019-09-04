@@ -143,7 +143,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     btnContainer: {
-      borderTop: 'solid 2px rgba(101,143,155,0.2)',
       marginTop: 0,
       paddingTop: 10,
       textAlign: 'right',
@@ -239,6 +238,24 @@ const useStyles = makeStyles((theme: Theme) => {
     pointerNone: {
       pointerEvents: 'none',
     },
+    helpTxt: {
+      borderTop: 'solid 2px rgba(101,143,155,0.2)',
+      color: '#0087ba',
+      fontSize: 16,
+      width: '100%',
+      lineHeight: 1.38,
+      fontWeight: 500,
+    },
+    orange: {
+      color: '#fc9916',
+      fontWeight: 700,
+    },
+    navLeftIcon: {
+      position: 'relative',
+      top: 5,
+      width: 'auto',
+      marginRight: 10,
+    },
   };
 });
 interface FeesProps {
@@ -312,7 +329,9 @@ export const FeesTab: React.FC<FeesProps> = (props) => {
                     <div className={classes.topBorder}>
                       <Grid container alignItems="flex-start" spacing={0}>
                         <Grid item lg={12} sm={12} xs={12}>
-                          <div className={classes.accountDetailsHeading}>Account Holder’s Name</div>
+                          <div className={classes.accountDetailsHeading}>
+                            Account Holder’s Name
+                          </div>
                           <Typography variant="h5" className={classes.accountDetails}>
                             {data.bankAccount[0]!.accountHolderName}
                           </Typography>
@@ -337,7 +356,10 @@ export const FeesTab: React.FC<FeesProps> = (props) => {
             </Grid>
           </Grid>
         )}
-
+      <div className={classes.helpTxt}>
+        <img alt="" src={require('images/ic_info.svg')} className={classes.navLeftIcon} />
+        Call <span className={classes.orange}>1800 - 3455 - 3455 </span>to make any changes
+      </div>
       <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
         <Grid item lg={12} sm={12} xs={12}>
           <AphButton
