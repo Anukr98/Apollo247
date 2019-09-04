@@ -1,7 +1,11 @@
-import React from 'react';
+/* acknowledgement: file upload mechanism to Azure Blob is based on the POC done by Kabir Sarin */
+
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import { PrescriptionFormat } from 'components/Cart/Cart';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -122,8 +126,20 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const UploadPrescription: React.FC = (props) => {
+const client = new AphStorageClient(
+  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_PATIENTS,
+  process.env.AZURE_STORAGE_CONTAINER_NAME
+);
+
+interface UploadPrescriptionProps {
+  setPrescriptionUrls: (prescription: PrescriptionFormat) => void;
+  closeDialog: () => void;
+}
+
+export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
   const classes = useStyles();
+  const [isUploading, setIsUploading] = useState(false);
+
   return (
     <div className={classes.root}>
       <div className={classes.orderSteps}>
@@ -141,12 +157,40 @@ export const UploadPrescription: React.FC = (props) => {
           <div className={classes.customScrollBar}>
             <div className={classes.uploadSection}>
               <div className={classes.uploadCard}>
-                <input accept="image/*" id="icon-button-file" type="file" />
-                <label htmlFor="icon-button-file">
-                  <img src={require('images/ic_gallery.svg')} alt="" />
-                  <p>Choose from gallery</p>
-                </label>
+                {/* <input accept="image/*" id="icon-button-file" type="file" /> */}
+                <input
+                  type="file"
+                  onChange={async (e) => {
+                    setIsUploading(false);
+                    const files = e.currentTarget.files;
+                    const file = files && files.length > 0 ? files[0] : null;
+                    if (file) {
+                      setIsUploading(true);
+                      const aphBlob = await client.uploadBrowserFile({ file }).catch((error) => {
+                        alert('File Upload Error....Please try again after sometime');
+                        throw error;
+                      });
+                      props.setPrescriptionUrls({
+                        imageUrl: aphBlob.url,
+                        name: aphBlob.name,
+                      });
+                      setIsUploading(false);
+                      props.closeDialog();
+                    }
+                  }}
+                  id="icon-button-file"
+                />
+
+                {isUploading ? (
+                  <CircularProgress />
+                ) : (
+                  <label htmlFor="icon-button-file">
+                    <img src={require('images/ic_gallery.svg')} alt="" />
+                    <p>Choose from gallery</p>
+                  </label>
+                )}
               </div>
+
               <div className={classes.uploadCard}>
                 <img src={require('images/ic_prescription.svg')} alt="" />
                 <p>Select from E-Prescription</p>
