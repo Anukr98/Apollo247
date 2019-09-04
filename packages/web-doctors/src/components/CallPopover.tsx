@@ -13,16 +13,16 @@ import {
   InitiateTransferAppointmentVariables,
 } from 'graphql/types/InitiateTransferAppointment';
 import {
-  SearchDoctorAndSpecialty,
-  SearchDoctorAndSpecialtyVariables,
-} from 'graphql/types/SearchDoctorAndSpecialty';
+  SearchDoctorAndSpecialtyByName,
+  SearchDoctorAndSpecialtyByNameVariables,
+} from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import {
   InitiateRescheduleAppointment,
   InitiateRescheduleAppointmentVariables,
 } from 'graphql/types/InitiateRescheduleAppointment';
 import {
   INITIATE_TRANSFER_APPONITMENT,
-  SEARCH_DOCTOR_AND_SPECIALITY,
+  SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
   INITIATE_RESCHDULE_APPONITMENT,
 } from 'graphql/profiles';
 import { TRANSFER_INITIATED_TYPE } from 'graphql/types/globalTypes';
@@ -430,6 +430,7 @@ let transferObject: any = {
   doctorName: '',
   experience: '5 Yrs',
   specilty: '',
+  facilityId: '',
 };
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
@@ -530,24 +531,22 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const client = useApolloClient();
   const doctorSpeciality = (searchText: string) => {
     client
-      .query<SearchDoctorAndSpecialty, SearchDoctorAndSpecialtyVariables>({
-        query: SEARCH_DOCTOR_AND_SPECIALITY,
+      .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
+        query: SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
         variables: { searchText: searchText },
       })
       .then((_data) => {
-        setFilteredStarDoctors(_data.data.SearchDoctorAndSpecialty!.doctors);
-        setFilterSpeciality(_data.data.SearchDoctorAndSpecialty!.specialties);
+        setFilteredStarDoctors(_data.data.SearchDoctorAndSpecialtyByName!.doctors);
+        setFilterSpeciality(_data.data.SearchDoctorAndSpecialtyByName!.specialties);
         if (
-          _data!.data!.SearchDoctorAndSpecialty!.doctors!.length > 0 ||
-          _data!.data!.SearchDoctorAndSpecialty!.specialties!.length > 0
+          _data!.data!.SearchDoctorAndSpecialtyByName!.doctors!.length > 0 ||
+          _data!.data!.SearchDoctorAndSpecialtyByName!.specialties!.length > 0
         ) {
           setIsDoctorOrSpeciality(true);
         }
-        //setDoctorsCard(!doctorsCard);
       })
       .catch((e) => {
         console.log('Error occured while searching for Doctors', e);
-        //Alert.alert('Error', 'Error occured while searching for Doctors');
       });
   };
   const handleSpecialityClick = (value: any) => {
@@ -563,9 +562,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       doctorName: '',
       experience: '',
       specilty: value.name,
+      facilityId: '',
     };
   };
   const handleDoctorClick = (value: any) => {
+    console.log(value);
     setIsDoctorOrSpeciality(false);
     setSearchKeyword(value.firstName + ' ' + value.lastName);
     transferObject = {
@@ -575,8 +576,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       doctorId: value.id,
       specialtyId: '',
       doctorName: value.firstName + ' ' + value.lastName,
-      experience: '5 Yrs',
+      experience: value.experience,
       specilty: value.speciality,
+      facilityId: value!.doctorHospital[0]!.facility.id,
     };
   };
   setInterval(startConstultCheck, 1000);
