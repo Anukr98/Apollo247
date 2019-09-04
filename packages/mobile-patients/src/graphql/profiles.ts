@@ -708,3 +708,53 @@ export const GET_MEDICAL_RECORD = gql`
     }
   }
 `;
+
+export const BOOK_APPOINTMENT_TRANSFER = gql`
+  mutation bookTransferAppointment($BookTransferAppointmentInput: BookTransferAppointmentInput!) {
+    bookTransferAppointment(BookTransferAppointmentInput: $BookTransferAppointmentInput) {
+      appointment {
+        id
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        hospitalId
+        status
+        appointmentState
+        patientName
+      }
+    }
+  }
+`;
+
+export const CHOOSE_DOCTOR = gql`
+  query getAvailableDoctors($ChooseDoctorInput: ChooseDoctorInput!) {
+    getAvailableDoctors(ChooseDoctorInput: $ChooseDoctorInput) {
+      availalbeDoctors {
+        doctorId
+        doctorPhoto
+        doctorLastName
+        doctorFirstName
+        availableSlot
+      }
+    }
+  }
+`;
+
+export const BOOK_APPOINTMENT_RESCHEDULE = gql`
+  mutation bookRescheduleAppointment(
+    $bookRescheduleAppointmentInput: BookRescheduleAppointmentInput!
+  ) {
+    bookRescheduleAppointment(bookRescheduleAppointmentInput: $bookRescheduleAppointmentInput) {
+      appointmentDetails {
+        appointmentType
+        id
+        doctorId
+        appointmentState
+        appointmentDateTime
+        status
+        patientId
+      }
+    }
+  }
+`;
