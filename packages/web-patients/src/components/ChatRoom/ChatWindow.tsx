@@ -15,6 +15,7 @@ import {
 import { useMutation } from 'react-apollo-hooks';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import { DoctorChatCard } from 'components/ChatRoom/DoctorChatCard';
+//import { string } from 'prop-types';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -299,6 +300,7 @@ interface MessagesObjectProps {
   username: string;
   text: string;
   duration: string;
+  transferInfo: any;
 }
 
 interface ChatWindowProps {
@@ -315,6 +317,8 @@ interface AutoMessageStrings {
   acceptcallMsg: string;
   startConsult: string;
   stopConsult: string;
+  transferConsult: string;
+  rescheduleconsult: string;
 }
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
@@ -396,6 +400,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     acceptcallMsg: '^^callme`accept^^',
     startConsult: '^^#startconsult',
     stopConsult: '^^#stopconsult',
+    transferConsult: '^^#transferconsult',
+    rescheduleconsult: '^^#rescheduleconsult',
   };
 
   const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
@@ -467,6 +473,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
+        console.log(message);
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
         resetMessagesAction();
@@ -478,7 +485,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           message.message.message !== autoMessageStrings.stopcallMsg &&
           message.message.message !== autoMessageStrings.acceptcallMsg &&
           message.message.message !== autoMessageStrings.startConsult &&
-          message.message.message !== autoMessageStrings.stopConsult
+          message.message.message !== autoMessageStrings.stopConsult &&
+          message.message.message !== autoMessageStrings.transferConsult &&
+          message.message.message !== autoMessageStrings.rescheduleconsult
         ) {
           setIsNewMsg(true);
         }
@@ -584,6 +593,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     );
   };
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
+    console.log(rowData);
     if (
       rowData.id === patientId &&
       rowData.message !== autoMessageStrings.videoCallMsg &&
@@ -647,6 +657,25 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 />
               </span>
             )}
+            {rowData.message === autoMessageStrings.transferConsult && (
+              <div className={classes.doctorChatWindow}>
+                <div className={`${classes.doctorChatBubble} ${classes.blueBubble}`}>
+                  Your appointment has been transferred to —
+                  <DoctorChatCard transferData={rowData.transferInfo} />
+                  <div className={classes.bubbleActions}>
+                    <AphButton>Reschedule</AphButton>
+                    <AphButton className={classes.viewButton}>Accept</AphButton>
+                  </div>
+                </div>
+                <div className={classes.doctorImg}>
+                  <Avatar
+                    alt=""
+                    src={require('images/ic_chat_bot.svg')}
+                    className={classes.avatar}
+                  />
+                </div>
+              </div>
+            )}
             {rowData.duration === '00 : 00' ? (
               <span className={classes.missCall}>
                 <img src={require('images/ic_missedcall.svg')} />
@@ -665,9 +694,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 </div>
               </div>
             ) : (
-              <div>
-                <span>{rowData.message}</span>
-              </div>
+              rowData.message !== autoMessageStrings.transferConsult &&
+              rowData.message !== autoMessageStrings.rescheduleconsult && (
+                <div>
+                  <span>{rowData.message}</span>
+                </div>
+              )
             )}
           </div>
         </div>
@@ -775,7 +807,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 <div className={classes.customScroll}>
                   {messagessHtml}
                   <span id="scrollDiv"></span>
-                  <div className={classes.doctorChatWindow}>
+                  {/* <div className={classes.doctorChatWindow}>
                     <div className={classes.doctorChatBubble}>You will be better soon, Surj.</div>
                     <div className={classes.doctorImg}>
                       <Avatar
@@ -784,8 +816,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         className={classes.avatar}
                       />
                     </div>
-                  </div>
-                  <div className={classes.doctorChatWindow}>
+                  </div> */}
+                  {/* <div className={classes.doctorChatWindow}>
                     <div className={`${classes.doctorChatBubble} ${classes.blueBubble}`}>
                       Hello Surj, Hope your consultation went well… Here is your prescription.
                       <div className={classes.bubbleActions}>
@@ -827,8 +859,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         className={classes.avatar}
                       />
                     </div>
-                  </div>
-                  <div className={classes.doctorChatWindow}>
+                  </div> */}
+                  {/* <div className={classes.doctorChatWindow}>
                     <div className={`${classes.doctorChatBubble} ${classes.blueBubble}`}>
                       Your appointment has been transferred to —
                       <DoctorChatCard />
@@ -844,7 +876,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         className={classes.avatar}
                       />
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </Scrollbars>
             </div>
