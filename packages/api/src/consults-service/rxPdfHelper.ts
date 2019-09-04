@@ -29,14 +29,25 @@ export const rxPdfDataToRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocume
   const doc = new PDFDocument({ margin });
 
   const drawHorizontalDivider = (y: number) => {
-    const origPos = { x: doc.x, y: doc.y };
     return doc
       .moveTo(margin, y)
       .lineTo(doc.page.width - margin, y)
       .lineWidth(1)
       .opacity(0.7)
       .stroke();
-    // .moveTo(origPos.x, origPos.y);
+  };
+
+  const setY = (y: number) => {
+    const up = doc.y > y;
+    if (up) while (doc.y > y) doc.moveUp(0.01);
+    else while (doc.y < y) doc.moveDown(0.01);
+    return doc;
+  };
+
+  const pageBreak = () => {
+    doc.flushPages();
+    setY(doc.page.height);
+    return doc;
   };
 
   const headerEndY = 120;
@@ -74,6 +85,10 @@ export const rxPdfDataToRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocume
     prescriptions.forEach((prescription, index) => {
       doc.fillColor('black').moveDown();
 
+      if (doc.y > doc.page.height - 150) {
+        pageBreak();
+      }
+
       doc
         .font('Helvetica-Bold')
         .fontSize(10)
@@ -108,26 +123,30 @@ export const rxPdfDataToRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocume
   };
 
   const renderFooter = () => {
+    const disclaimerText =
+      'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital';
     doc
+      .font('Helvetica')
       .fontSize(8)
-      .text(
-        'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital',
-        margin,
-        doc.page.height - 70,
-        { align: 'center' }
-      );
+      .text(disclaimerText, margin, doc.page.height - 70, { align: 'center' });
     drawHorizontalDivider(doc.page.height - 55);
     return doc;
   };
 
+  doc.on('pageAdded', () => {
+    renderFooter();
+    renderHeader();
+  });
+  renderFooter();
   renderHeader();
   renderPrescriptions(rxPdfData.prescriptions);
-  renderFooter();
 
   doc.end();
 
   return doc;
 };
+
+/////////////////////////////////////////////////////////////////////////////////////
 
 enum MEDICINE_TIMINGS {
   EVENING = 'EVENING',
@@ -174,7 +193,7 @@ export const caseSheetToRxPdfData = (
 
 const fakeCaseSheet = {
   medicinePrescription: JSON.stringify(
-    _times(_random(2, 5), () => ({
+    _times(_random(3, 15), () => ({
       id: uuid(),
       medicineName: faker.commerce.productName(),
       medicineConsumptionDurationInDays: _random(3, 20),
