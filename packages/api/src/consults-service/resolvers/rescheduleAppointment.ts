@@ -5,6 +5,7 @@ import {
   APPOINTMENT_STATE,
   TRANSFER_STATUS,
   TRANSFER_INITIATED_TYPE,
+  STATUS,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -44,6 +45,7 @@ export const rescheduleAppointmentTypeDefs = gql`
 
   type RescheduleAppointmentResult {
     rescheduleAppointment: RescheduleAppointment
+    rescheduleCount: Int
   }
 
   type BookRescheduleAppointmentResult {
@@ -62,6 +64,7 @@ export const rescheduleAppointmentTypeDefs = gql`
 
 type RescheduleAppointmentResult = {
   rescheduleAppointment: RescheduleAppointment;
+  rescheduleCount: number;
 };
 
 type RescheduleAppointment = {
@@ -114,6 +117,10 @@ const initiateRescheduleAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
+  if (appointment.status !== STATUS.PENDING && appointment.status !== STATUS.CONFIRMED) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
+
   if (RescheduleAppointmentInput.autoSelectSlot == 1) {
     RescheduleAppointmentInput.rescheduledDateTime = new Date();
   }
@@ -127,7 +134,7 @@ const initiateRescheduleAppointment: Resolver<
 
   const rescheduleAppointment = await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
 
-  return { rescheduleAppointment };
+  return { rescheduleAppointment, rescheduleCount: appointment.rescheduleCount };
 };
 
 const bookRescheduleAppointment: Resolver<
