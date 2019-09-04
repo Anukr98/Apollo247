@@ -12,7 +12,6 @@ import {
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { GetCaseSheet_getCaseSheet_pastAppointments } from 'graphql/types/GetCaseSheet';
-import { Symptoms } from 'components/case-sheet/panels';
 
 const useStyles = makeStyles(() => ({
   vaultContainer: {
@@ -260,8 +259,6 @@ export const PastConsultation: React.FC<pastConsultationProps> = (props) => {
   const pastAppointments = props.pastAppointments;
   const classes = useStyles();
   const ischild: boolean = false;
-  console.log('PastConsultation');
-  console.log(pastAppointments);
 
   return (
     <ThemeProvider theme={theme}>

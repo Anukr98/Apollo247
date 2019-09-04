@@ -107,6 +107,24 @@ const useStyles = makeStyles((theme: Theme) => {
         minWidth: 140,
       },
     },
+    helpTxt: {
+      borderTop: 'solid 2px rgba(101,143,155,0.2)',
+      color: '#0087ba',
+      fontSize: 16,
+      width: '100%',
+      lineHeight: 1.38,
+      fontWeight: 500,
+    },
+    orange: {
+      color: '#fc9916',
+      fontWeight: 700,
+    },
+    navLeftIcon: {
+      position: 'relative',
+      top: 5,
+      width: 'auto',
+      marginRight: 10,
+    },
     backButton: {
       minWidth: 120,
       fontSize: 15,
@@ -137,7 +155,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     btnContainer: {
-      borderTop: 'solid 2px rgba(101,143,155,0.2)',
       marginTop: 0,
       paddingTop: 10,
       textAlign: 'right',
@@ -335,19 +352,11 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
           {data && data.consultHours && data.consultHours.length && (
             <ConsultationHours values={data} />
           )}
-          {!showOperatingHoursForm && (
-            <div className={classes.addDocter}>
-              <AphButton
-                variant="contained"
-                color="primary"
-                className={`${classes.btnAddDoctor} ${classes.pointerNone}`}
-                onClick={() => setShowOperatingHoursForm(!showOperatingHoursForm)}
-              >
-                + ADD CONSULTATION HOURS
-              </AphButton>
-            </div>
-          )}
         </Grid>
+        <div className={classes.helpTxt}>
+          <img alt="" src={require('images/ic_info.svg')} className={classes.navLeftIcon} />
+          Call <span className={classes.orange}>1800 - 3455 - 3455 </span>to make any changes
+        </div>
       </Grid>
       <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
         <Grid item lg={12} sm={12} xs={12}>
