@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme: Theme) => {
     navLeftIcon: {
       position: 'relative',
       top: 5,
-      height: 20,
+      width: 'auto',
       marginRight: 10,
     },
     tabContent: {
