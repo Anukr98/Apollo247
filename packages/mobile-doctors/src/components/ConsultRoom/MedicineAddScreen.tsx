@@ -204,11 +204,6 @@ export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
                 </View>
               </TouchableOpacity>
             )}
-            {/* <TouchableOpacity onPress={() => setCount(count + 1)}>
-              <View style={{ marginLeft: 10 }}>
-                <Plus />
-              </View>
-            </TouchableOpacity> */}
           </View>
           <View
             style={{
@@ -337,8 +332,10 @@ export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
                   ),
                   medicineConsumptionDurationInDays: duration,
                 });
-                if (count > 0) {
+                if (count > 1) {
                   dosagefianl = count.toString().concat('tablets');
+                } else {
+                  dosagefianl = count.toString().concat('tablet');
                 }
                 addMedicineList({
                   medicineName: props.navigation.getParam('Name'),

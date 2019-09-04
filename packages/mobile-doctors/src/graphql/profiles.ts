@@ -659,6 +659,7 @@ export const INITIATE_RESCHDULE_APPONITMENT = gql`
         rescheduleReason
         rescheduledDateTime
       }
+      rescheduleCount
     }
   }
 `;

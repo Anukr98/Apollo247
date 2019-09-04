@@ -34,6 +34,7 @@ export enum DOCTOR_DEVICE_TYPE {
 
 export enum DoctorType {
   APOLLO = "APOLLO",
+  JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   STAR_APOLLO = "STAR_APOLLO",
 }

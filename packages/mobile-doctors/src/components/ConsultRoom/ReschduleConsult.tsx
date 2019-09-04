@@ -281,13 +281,8 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
           appointmentId: props.navigation.getParam('AppointmentId'),
           transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
             .rescheduledDateTime,
-          // photoUrl: photourl,
-          // doctorId: doctorId,
-          // specialtyId: specialityId,
-          // doctorName: doctorvalue,
-          // experience: experience + ' Yrs',
-          // specilty: doctorSpeciality,
-          // hospitalDoctorId: hospitalId,
+          doctorId: oldDoctorId,
+          reschduleCount: _data!.data!.initiateRescheduleAppointment!.rescheduleCount,
           reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
         };
         pubnub.publish(

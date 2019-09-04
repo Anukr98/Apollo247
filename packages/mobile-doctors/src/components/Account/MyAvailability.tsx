@@ -75,7 +75,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="AVAILIBILITY"
+        headerText="AVAILABILITY"
         rightIcons={[
           {
             icon: <RoundIcon />,

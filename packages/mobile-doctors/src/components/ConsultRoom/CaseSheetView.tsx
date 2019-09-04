@@ -56,6 +56,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { REQUEST_ROLES, STATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
@@ -537,23 +538,23 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   console.log('isDelegateLogin', isDelegateLogin);
 
   useEffect(() => {
-    client
-      .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
-        mutation: CREATEAPPOINTMENTSESSION,
-        variables: {
-          createAppointmentSessionInput: {
-            appointmentId: AppId,
-            requestRole: REQUEST_ROLES.DOCTOR,
-          },
-        },
-      })
-      .then((_data: any) => {
-        console.log('creat', _data);
-        setGetCaseshhetId(_data.data.createAppointmentSession.caseSheetId);
-      })
-      .catch((e: any) => {
-        console.log('Error occured while create session', e);
-      });
+    // client
+    //   .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+    //     mutation: CREATEAPPOINTMENTSESSION,
+    //     variables: {
+    //       createAppointmentSessionInput: {
+    //         appointmentId: AppId,
+    //         requestRole: REQUEST_ROLES.DOCTOR,
+    //       },
+    //     },
+    //   })
+    //   .then((_data: any) => {
+    //     console.log('creat', _data);
+    //     setGetCaseshhetId(_data.data.createAppointmentSession.caseSheetId);
+    //   })
+    //   .catch((e: any) => {
+    //     console.log('Error occured while create session', e);
+    //   });
   }, []);
 
   useEffect(() => {
@@ -786,6 +787,23 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               disabled={!enableConsultButton}
               buttonIcon={<Start />}
               onPress={() => {
+                client
+                  .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+                    mutation: CREATEAPPOINTMENTSESSION,
+                    variables: {
+                      createAppointmentSessionInput: {
+                        appointmentId: AppId,
+                        requestRole: REQUEST_ROLES.DOCTOR,
+                      },
+                    },
+                  })
+                  .then((_data: any) => {
+                    console.log('creat', _data);
+                    setGetCaseshhetId(_data.data.createAppointmentSession.caseSheetId);
+                  })
+                  .catch((e: any) => {
+                    console.log('Error occured while create session', e);
+                  });
                 setShowButtons(true);
                 props.onStartConsult();
               }}
@@ -879,21 +897,19 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View>
         <CollapseCard heading="Symptoms" collapse={show} onPress={() => setShow(!show)}>
-          {symptonsData == null ? (
+          {symptonsData == null || symptonsData.length == 0 ? (
             <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No data</Text>
           ) : (
-            symptonsData.map((showdata: any) => {
+            symptonsData.map((showdata: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms) => {
               return (
                 <View>
                   <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
                     <SymptonsCard
                       diseaseName={showdata.symptom}
                       icon={
-                        isDelegateLogin ? null : (
-                          <TouchableOpacity onPress={() => removeSymptonData(showdata.symptom)}>
-                            <GreenRemove />
-                          </TouchableOpacity>
-                        )
+                        <TouchableOpacity onPress={() => removeSymptonData(showdata.symptom)}>
+                          {isDelegateLogin ? null : <GreenRemove />}
+                        </TouchableOpacity>
                       }
                       days={`Since : ${showdata.since == null ? 'N/A' : showdata.since}`}
                       howoften={`How Often : ${
@@ -912,7 +928,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
               <AddPlus />
               <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.AddSymptons)}>
-                <Text style={styles.addDoctorText}>ADD SYMPTON</Text>
+                <Text style={styles.addDoctorText}>ADD SYMPTOM</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -975,24 +991,24 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         {diagnosticPrescriptionData == null ? (
           <Text style={[styles.symptomsText, { textAlign: 'center' }]}>Nodata</Text>
         ) : (
-          diagnosticPrescriptionData.map((showdata: any) => {
-            return (
-              <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
-                <DiagnosicsCard
-                  diseaseName={showdata.name}
-                  icon={
-                    isDelegateLogin ? null : (
+          diagnosticPrescriptionData.map(
+            (showdata: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription) => {
+              return (
+                <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
+                  <DiagnosicsCard
+                    diseaseName={showdata.name}
+                    icon={
                       <TouchableOpacity
                         onPress={() => removeDiagnosticPresecription(showdata.name)}
                       >
-                        <Green />
+                        {isDelegateLogin ? null : <Green />}
                       </TouchableOpacity>
-                    )
-                  }
-                />
-              </View>
-            );
-          })
+                    }
+                  />
+                </View>
+              );
+            }
+          )
         )}
         {isDelegateLogin ? null : (
           <View style={{ flexDirection: 'row', marginBottom: 19, marginLeft: 16 }}>
@@ -1022,6 +1038,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No Data</Text>
         ) : (
           medicinePrescriptionData.map((showdata: any, i) => {
+            const str = String(showdata.medicineTimings)
+              .toLowerCase()
+              .split(',');
+            console.log('str', str);
+            const str1 = String(showdata.medicineToBeTaken)
+              .toLowerCase()
+              .split(',');
+            console.log('str1', str1);
             return (
               <View>
                 <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
@@ -1038,9 +1062,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       showdata.medicineInstructions +
                       showdata.medicineDosage +
                       ',' +
-                      showdata.medicineTimings +
+                      showdata.medicineTimings.length +
+                      ' times a day' +
+                      '(' +
+                      str +
+                      ')' +
                       ',' +
-                      showdata.medicineToBeTaken
+                      'for ' +
+                      showdata.medicineConsumptionDurationInDays +
+                      '' +
+                      ' ' +
+                      str1
                     }
                     containerStyle={{
                       borderRadius: 5,
@@ -1293,7 +1325,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <Text style={[styles.familyText, { marginBottom: 0 }]}>Diagnosed Medical Condition</Text>
           <View
             style={{
-              flexDirection: 'row',
+              // flexDirection: 'row',
               justifyContent: 'space-between',
               marginLeft: 16,
               marginRight: 16,
@@ -1332,9 +1364,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-  const removeInstrution = (item) => {
+  const removeInstrution = (item: string | null) => {
     console.log('item', item);
-    const list = otherInstructionsData.filter((other) => other.instruction != item);
+    const list = otherInstructionsData.filter(
+      (other: GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions) =>
+        other.instruction != item
+    );
     setOtherInstructionsData(list);
   };
   const renderOtherInstructionsView = () => {
@@ -1349,22 +1384,22 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {otherInstructionsData == null ? (
             <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No Data</Text>
           ) : (
-            otherInstructionsData.map((showdata: any, i) => {
-              return (
-                <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
-                  <DiagnosicsCard
-                    diseaseName={showdata.instruction}
-                    icon={
-                      isDelegateLogin ? null : (
+            otherInstructionsData.map(
+              (showdata: GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions, i: any) => {
+                return (
+                  <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
+                    <DiagnosicsCard
+                      diseaseName={showdata.instruction}
+                      icon={
                         <TouchableOpacity onPress={() => removeInstrution(showdata.instruction)}>
-                          <DiagonisisRemove />
+                          {isDelegateLogin ? null : <DiagonisisRemove />}
                         </TouchableOpacity>
-                      )
-                    }
-                  />
-                </View>
-              );
-            })
+                      }
+                    />
+                  </View>
+                );
+              }
+            )
           )}
           {otherInstructionsadd ? (
             <View>
@@ -1403,7 +1438,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 />
                 <TouchableOpacity
                   onPress={() => {
-                    if (othervalue == '') {
+                    if (othervalue == '' || othervalue.trim() == '') {
                       Alert.alert('Please add other instructions');
                     } else if (
                       otherInstructionsData.find((item: any) => item.instruction == othervalue)

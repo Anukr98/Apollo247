@@ -40,6 +40,7 @@ import {
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 import { RemoveDelegateNumber } from '@aph/mobile-doctors/src/graphql/types/RemoveDelegateNumber';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 
 const styles = StyleSheet.create({
   container: {
@@ -214,28 +215,29 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
   const client = useApolloClient();
   const profileData = props.navigation.getParam('ProfileData');
   console.log('p', profileData);
-  const [phoneNumber, setPhoneNumber] = useState<string>('');
+  const [phoneNumber, setPhoneNumber] = useState<string>(profileData!.delegateNumber!.substring(3));
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const { doctorDetails, setDoctorDetails } = useAuth();
-
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   console.log('doctorDetailsmy', doctorDetails);
 
-  useEffect(() => {
-    let value = profileData!.delegateNumber!;
-    // Remove all spaces
-    let mobile = value.replace(/ /g, '');
+  // useEffect(() => {
+  //   let value = profileData!.delegateNumber!;
+  //   // Remove all spaces
+  //   let mobile = value.replace(/ /g, '');
 
-    // If string starts with +, drop first 3 characters
-    if (value.slice(0, 1) == '+') {
-      mobile = mobile.substring(3);
-    }
-    console.log('mobile', mobile);
-    setPhoneNumber(mobile);
-  });
+  //   // If string starts with +, drop first 3 characters
+  //   if (value.slice(0, 1) == '+') {
+  //     mobile = mobile.substring(3);
+  //   }
+  //   console.log('mobile', mobile);
+  //   setPhoneNumber(mobile);
+  // });
   const delegateNumberUpdate = (phoneNumber: string) => {
     console.log('delegateNumberUpdate', phoneNumber);
     if (phoneNumber.length == 0) {
       // Alert.alert('Please add Delegate Number');
+      setIsLoading(true);
       client
         .mutate<RemoveDelegateNumber>({
           mutation: REMOVE_DELEGATE_NUMBER,
@@ -245,6 +247,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           const result = _data.data!.removeDelegateNumber;
           console.log('updatedelegatenumber', result);
           if (result) {
+            setIsLoading(false);
             const newDoctorDetails = {
               ...doctorDetails,
               ...{ delegateNumber: phoneNumber },
@@ -254,12 +257,14 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           }
         })
         .catch((e) => {
+          setIsLoading(false);
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding Delegate Number', errorMessage, error);
           Alert.alert('Error', errorMessage);
         });
     } else {
+      setIsLoading(true);
       client
         .mutate<UpdateDelegateNumber, UpdateDelegateNumberVariables>({
           mutation: UPDATE_DELEGATE_NUMBER,
@@ -268,7 +273,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
         })
         .then((_data) => {
           const result = _data.data!.updateDelegateNumber;
-
+          setIsLoading(false);
           console.log('updatedelegatenumber', result);
           setPhoneNumber('');
           if (result) {
@@ -282,10 +287,11 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           }
         })
         .catch((e) => {
+          setIsLoading(false);
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding Delegate Number', errorMessage, error);
-          Alert.alert('Error', errorMessage.mes);
+          Alert.alert('Error', errorMessage);
         });
     }
   };
@@ -462,6 +468,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
             title="CANCEL"
             titleTextStyle={styles.buttonTextStyle}
             variant="white"
+            onPress={() => props.navigation.pop()}
             style={[styles.buttonsaveStyle, { marginRight: 16 }]}
           />
           <Button
@@ -551,6 +558,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
               </Text>
               {renderMobilePhoneView()}
               {renderHelpView()}
+              {isLoading ? <Loader flex1 /> : null}
               {renderButtonsView()}
             </View>
           </SquareCardWithTitle>

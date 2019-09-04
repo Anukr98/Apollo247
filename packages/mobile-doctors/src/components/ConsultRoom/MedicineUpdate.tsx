@@ -13,6 +13,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const styles = StyleSheet.create({
   container: {
@@ -189,154 +190,155 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
       >
         {showHeaderView()}
       </View>
-
-      <View
-        style={{
-          marginLeft: 16,
-          marginRight: 16,
-          marginTop: 16,
-          backgroundColor: '#ffffff',
-          borderRadius: 10,
-          shadowColor: '#000000',
-          shadowOffset: {
-            width: 0,
-            height: 5,
-          },
-          shadowRadius: 10,
-          shadowOpacity: 0.2,
-          elevation: 5,
-        }}
-      >
-        <Text style={styles.dosage}>Dosage</Text>
-        <View style={{ flexDirection: 'row', marginLeft: 16 }}>
-          <TouchableOpacity onPress={() => setCount(count - 1)}>
-            <View>
-              <Minus />
-            </View>
-          </TouchableOpacity>
-          <Text style={styles.countText}>
-            {count} tablet{count > 1 ? 's' : ''}
-          </Text>
-          <TouchableOpacity onPress={() => setCount(count + 1)}>
-            <View style={{ marginLeft: 10 }}>
-              <Plus />
-            </View>
-          </TouchableOpacity>
-        </View>
+      <KeyboardAwareScrollView bounces={false}>
         <View
           style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
             marginLeft: 16,
             marginRight: 16,
-            //marginBottom: 24,
-          }}
-        ></View>
-        <Text style={styles.dosage}>Time of the Day</Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginLeft: 16,
-            marginRight: 16,
+            marginTop: 16,
+            backgroundColor: '#ffffff',
+            borderRadius: 10,
+            shadowColor: '#000000',
+            shadowOffset: {
+              width: 0,
+              height: 5,
+            },
+            shadowRadius: 10,
+            shadowOpacity: 0.2,
+            elevation: 5,
           }}
         >
-          {Object.keys(medicineTimings).map((key) => {
-            const title = medicineTimings[key];
-            return (
-              <ChipViewCard
-                key={key}
-                title={title}
-                onChange={(isChecked) => {
-                  console.log({ key, isChecked });
-                  setConsultationType({
-                    ...consultationType,
-                    [key]: { isSelected: isChecked, title: title },
-                  });
-                }}
-                isChecked={!!(consultationType[key] && consultationType[key].isSelected)}
-              />
-            );
-          })}
-        </View>
-        <Text style={styles.dosage}>To be taken</Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            marginLeft: 16,
-            marginRight: 16,
-          }}
-        >
-          {Object.keys(medicineToBeTaken).map((key) => {
-            const title = medicineToBeTaken[key];
-            return (
-              <ChipViewCard
-                containerStyle={{ marginRight: 8 }}
-                key={key}
-                title={title}
-                onChange={(isChecked) => {
-                  console.log({ key, isChecked });
-                  setMedicineUpdate({
-                    ...medicneupdate,
-                    [key]: { isSelected: isChecked, title: title },
-                  });
-                }}
-                isChecked={!!(medicneupdate[key] && medicneupdate[key].isSelected)}
-              />
-            );
-          })}
-        </View>
-        <Text style={styles.dosage}>Duration of Consumption</Text>
-        <View style={[styles.inputValidView]}>
-          <TextInput
-            style={styles.inputStyle}
-            value={duration}
-            onChangeText={(duration) => setDuration(duration)}
+          <Text style={styles.dosage}>Dosage</Text>
+          <View style={{ flexDirection: 'row', marginLeft: 16 }}>
+            <TouchableOpacity onPress={() => setCount(count - 1)}>
+              <View>
+                <Minus />
+              </View>
+            </TouchableOpacity>
+            <Text style={styles.countText}>
+              {count} tablet{count > 1 ? 's' : ''}
+            </Text>
+            <TouchableOpacity onPress={() => setCount(count + 1)}>
+              <View style={{ marginLeft: 10 }}>
+                <Plus />
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginLeft: 16,
+              marginRight: 16,
+              //marginBottom: 24,
+            }}
+          ></View>
+          <Text style={styles.dosage}>Time of the Day</Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginLeft: 16,
+              marginRight: 16,
+            }}
+          >
+            {Object.keys(medicineTimings).map((key) => {
+              const title = medicineTimings[key];
+              return (
+                <ChipViewCard
+                  key={key}
+                  title={title}
+                  onChange={(isChecked) => {
+                    console.log({ key, isChecked });
+                    setConsultationType({
+                      ...consultationType,
+                      [key]: { isSelected: isChecked, title: title },
+                    });
+                  }}
+                  isChecked={!!(consultationType[key] && consultationType[key].isSelected)}
+                />
+              );
+            })}
+          </View>
+          <Text style={styles.dosage}>To be taken</Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              marginLeft: 16,
+              marginRight: 16,
+            }}
+          >
+            {Object.keys(medicineToBeTaken).map((key) => {
+              const title = medicineToBeTaken[key];
+              return (
+                <ChipViewCard
+                  containerStyle={{ marginRight: 8 }}
+                  key={key}
+                  title={title}
+                  onChange={(isChecked) => {
+                    console.log({ key, isChecked });
+                    setMedicineUpdate({
+                      ...medicneupdate,
+                      [key]: { isSelected: isChecked, title: title },
+                    });
+                  }}
+                  isChecked={!!(medicneupdate[key] && medicneupdate[key].isSelected)}
+                />
+              );
+            })}
+          </View>
+          <Text style={styles.dosage}>Duration of Consumption</Text>
+          <View style={[styles.inputValidView]}>
+            <TextInput
+              style={styles.inputStyle}
+              value={duration}
+              onChangeText={(duration) => setDuration(duration)}
+              autoCorrect={true}
+            />
+          </View>
+          <Text style={styles.dosage}>Instructions (if any)</Text>
+          <TextInputComponent
+            placeholder="Enter instructions here.."
+            inputStyle={styles.inputView}
+            multiline={true}
+            value={value}
+            onChangeText={(value) => setValue(value)}
             autoCorrect={true}
           />
         </View>
-        <Text style={styles.dosage}>Instructions (if any)</Text>
-        <TextInputComponent
-          placeholder="Enter instructions here.."
-          inputStyle={styles.inputView}
-          multiline={true}
-          value={value}
-          onChangeText={(value) => setValue(value)}
-          autoCorrect={true}
-        />
-      </View>
-      <View style={styles.footerButtonsContainer}>
-        <Button
-          title="DELETE"
-          titleTextStyle={styles.buttonTextStyle}
-          variant="white"
-          style={[styles.buttonsaveStyle, { marginRight: 16 }]}
-          onPress={() => removeData()}
-        />
-        <Button
-          title="UPDATE"
-          style={styles.buttonendStyle}
-          onPress={() => {
-            let dosagefianl = '';
-            if (count > 0) {
-              dosagefianl = count.toString().concat('tablets');
-            }
-            updateMedicineList({
-              medicineName: medicine.medicineName,
-              medicineDosage: dosagefianl,
-              medicineToBeTaken: (Object.keys(medicneupdate).filter(
-                (m) => medicneupdate[m].isSelected
-              ) as unknown) as MEDICINE_TO_BE_TAKEN,
-              medicineInstructions: value,
-              medicineTimings: Object.keys(consultationType).filter(
-                (m) => consultationType[m].isSelected
-              ),
-              medicineConsumptionDurationInDays: duration,
-            });
-            props.navigation.goBack();
-          }}
-        />
-      </View>
+        <View style={styles.footerButtonsContainer}>
+          <Button
+            title="DELETE"
+            titleTextStyle={styles.buttonTextStyle}
+            variant="white"
+            style={[styles.buttonsaveStyle, { marginRight: 16 }]}
+            onPress={() => removeData()}
+          />
+          <Button
+            title="UPDATE"
+            style={styles.buttonendStyle}
+            onPress={() => {
+              let dosagefianl = '';
+              if (count > 0) {
+                dosagefianl = count.toString().concat('tablets');
+              }
+              updateMedicineList({
+                medicineName: medicine.medicineName,
+                medicineDosage: dosagefianl,
+                medicineToBeTaken: (Object.keys(medicneupdate).filter(
+                  (m) => medicneupdate[m].isSelected
+                ) as unknown) as MEDICINE_TO_BE_TAKEN,
+                medicineInstructions: value,
+                medicineTimings: Object.keys(consultationType).filter(
+                  (m) => consultationType[m].isSelected
+                ),
+                medicineConsumptionDurationInDays: duration,
+              });
+              props.navigation.goBack();
+            }}
+          />
+        </View>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };

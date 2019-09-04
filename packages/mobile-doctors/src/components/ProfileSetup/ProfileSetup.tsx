@@ -199,11 +199,13 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const { isDelegateLogin, setDoctorDetails: setDoctorDetailsToContext, doctorDetails } = useAuth();
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
   console.log('isDelegateLogin', isDelegateLogin);
+
   const fireBaseFCM = async () => {
     const enabled = await firebase.messaging().hasPermission();
     if (enabled) {
       // user has permissions
       console.log('enabled', enabled);
+      callDeviceTokenAPI();
     } else {
       // user doesn't have permission
       console.log('not enabled');
@@ -220,7 +222,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   };
 
   useEffect(() => {
-    callDeviceTokenAPI();
+    fireBaseFCM();
   });
 
   const callDeviceTokenAPI = async () => {

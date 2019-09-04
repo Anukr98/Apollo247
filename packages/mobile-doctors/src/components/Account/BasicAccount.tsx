@@ -170,7 +170,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
             <AvailabilityIcon />
-            <Text style={styles.headingText}>Availibility</Text>
+            <Text style={styles.headingText}>Availability</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
             </View>

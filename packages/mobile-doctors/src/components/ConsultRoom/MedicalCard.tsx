@@ -37,6 +37,7 @@ const styles = StyleSheet.create({
     color: '#02475b',
     marginBottom: 14,
     marginLeft: 12,
+    marginRight: 12,
   },
 });
 

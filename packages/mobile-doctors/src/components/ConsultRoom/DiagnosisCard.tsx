@@ -10,6 +10,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 1,
     marginTop: 12,
+    flexWrap: 'wrap',
   },
 
   doctorNameStyles: {

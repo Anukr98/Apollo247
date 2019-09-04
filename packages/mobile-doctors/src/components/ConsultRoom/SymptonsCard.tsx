@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
 
 export interface CapsuleViewProps {
   containerStyle?: StyleProp<ViewStyle>;
-  diseaseName?: string;
+  diseaseName?: string | null;
   icon?: Element;
   days?: string;
   howoften?: string;
