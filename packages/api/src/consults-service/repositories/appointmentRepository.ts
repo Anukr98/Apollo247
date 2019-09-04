@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Between, MoreThan, LessThan, Brackets } from 'typeorm';
+import { EntityRepository, Repository, Between, MoreThan, LessThan, Brackets, Not } from 'typeorm';
 import {
   Appointment,
   AppointmentSessions,
@@ -35,7 +35,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   checkIfAppointmentExist(doctorId: string, appointmentDateTime: Date) {
-    return this.count({ where: { doctorId, appointmentDateTime } });
+    return this.count({ where: { doctorId, appointmentDateTime, status: Not(STATUS.CANCELLED) } });
   }
 
   findByDateDoctorId(doctorId: string, appointmentDate: Date) {
@@ -66,12 +66,23 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getPatientAppointments(doctorId: string, patientId: string) {
-    return this.find({ where: { doctorId, patientId, appointmentDateTime: LessThan(new Date()) } });
+    return this.find({
+      where: {
+        doctorId,
+        patientId,
+        appointmentDateTime: LessThan(new Date()),
+        status: Not(STATUS.CANCELLED),
+      },
+    });
   }
 
   getPatientPastAppointments(patientId: string, offset?: number, limit?: number) {
     return this.find({
-      where: { patientId, appointmentDateTime: LessThan(new Date()) },
+      where: {
+        patientId,
+        appointmentDateTime: LessThan(new Date()),
+        status: Not(STATUS.CANCELLED),
+      },
       relations: ['caseSheet'],
       skip: offset,
       take: limit,
@@ -83,7 +94,11 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getDoctorAppointments(doctorId: string, startDate: Date, endDate: Date) {
     return this.find({
-      where: { doctorId, appointmentDateTime: Between(startDate, endDate) },
+      where: {
+        doctorId,
+        appointmentDateTime: Between(startDate, endDate),
+        status: Not(STATUS.CANCELLED),
+      },
       order: { appointmentDateTime: 'DESC' },
     });
   }
@@ -98,7 +113,12 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getPastAppointments(doctorId: string, patientId: string) {
     return this.find({
-      where: { doctorId, patientId, appointmentDateTime: LessThan(new Date()) },
+      where: {
+        doctorId,
+        patientId,
+        appointmentDateTime: LessThan(new Date()),
+        status: Not(STATUS.CANCELLED),
+      },
       relations: ['caseSheet'],
     });
   }
@@ -151,12 +171,20 @@ export class AppointmentRepository extends Repository<Appointment> {
     const inputStartDate = format(addDays(appointmentDateTime, -1), 'yyyy-MM-dd');
     console.log(inputStartDate, 'inputStartDate get patient date appointments');
     const startDate = new Date(inputStartDate + 'T18:30');
-    return this.find({ where: { patientId, appointmentDateTime: Between(startDate, endDate) } });
+    return this.find({
+      where: {
+        patientId,
+        appointmentDateTime: Between(startDate, endDate),
+        status: Not(STATUS.CANCELLED),
+      },
+    });
   }
 
   getPatinetUpcomingAppointments(patientId: string) {
     const startDate = new Date();
-    return this.find({ where: { patientId, appointmentDateTime: MoreThan(startDate) } });
+    return this.find({
+      where: { patientId, appointmentDateTime: MoreThan(startDate), status: Not(STATUS.CANCELLED) },
+    });
   }
 
   getPatientAndDoctorsAppointments(patientId: string, doctorIds: string[]) {
@@ -179,7 +207,11 @@ export class AppointmentRepository extends Repository<Appointment> {
     const curDate = new Date();
     const curEndDate = new Date(format(new Date(), 'yyyy-MM-dd').toString() + 'T18:29');
     return this.find({
-      where: { doctorId, appointmentDateTime: Between(curDate, curEndDate) },
+      where: {
+        doctorId,
+        appointmentDateTime: Between(curDate, curEndDate),
+        status: Not(STATUS.CANCELLED),
+      },
       order: { appointmentDateTime: 'ASC' },
     }).then((appts) => {
       if (appts && appts.length > 0) {
