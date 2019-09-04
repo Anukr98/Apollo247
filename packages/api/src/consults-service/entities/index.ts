@@ -111,6 +111,9 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true })
   parentId: string;
 
+  @Column({ default: 0 })
+  rescheduleCount: number;
+
   @Column()
   status: STATUS;
 
