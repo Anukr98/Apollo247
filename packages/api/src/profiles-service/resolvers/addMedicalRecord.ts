@@ -93,8 +93,7 @@ const addPatientMedicalRecord: Resolver<
 
   const medicalRecordRepo = profilesDb.getCustomRepository(MedicalRecordsRepository);
   const medicalRecord = await medicalRecordRepo.addMedicalRecord(addMedicalRecordAttrs);
-  console.log(addMedicalRecordInput.medicalRecordParameters);
-  console.log('length', addMedicalRecordInput.medicalRecordParameters!.length);
+
   if (
     medicalRecord &&
     addMedicalRecordInput.medicalRecordParameters &&
