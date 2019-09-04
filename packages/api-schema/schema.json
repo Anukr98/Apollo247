@@ -6733,7 +6733,7 @@
         "description": null,
         "fields": [
           {
-            "name": "name",
+            "name": "itemname",
             "description": null,
             "args": [],
             "type": {
