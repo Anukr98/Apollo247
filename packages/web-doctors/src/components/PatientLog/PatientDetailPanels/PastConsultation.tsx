@@ -12,6 +12,7 @@ import {
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { GetCaseSheet_getCaseSheet_pastAppointments } from 'graphql/types/GetCaseSheet';
+import { Symptoms } from 'components/case-sheet/panels';
 
 const useStyles = makeStyles(() => ({
   vaultContainer: {
@@ -115,55 +116,6 @@ const theme = createMuiTheme({
   },
 });
 
-const pastConsultationData = [
-  {
-    timestamp: '2019-06-27T18:30',
-    symptoms: ['Fever', 'Back Pain', 'Cough'],
-    isOnline: true,
-    child: [
-      {
-        timestamp: '2019-07-02T18:30',
-        isFree: true,
-        isOnline: true,
-        isFollowup: true,
-      },
-    ],
-  },
-  {
-    timestamp: '2019-03-03T10:30',
-    symptoms: ['Headache', 'Vomiting'],
-    isOnline: false,
-  },
-  {
-    timestamp: '2018-12-09T10:30',
-    symptoms: ['Chest Pain', 'Breathlessness', 'Cough', 'Something Else'],
-    isOnline: false,
-    child: [
-      {
-        timestamp: '2018-12-15T12:30',
-        isFree: true,
-        isOnline: true,
-        isFollowup: true,
-      },
-      {
-        timestamp: '2019-01-01T11:30',
-        isFree: false,
-        isOnline: true,
-        isFollowup: true,
-      },
-    ],
-  },
-];
-
-interface PastAppointmentData {
-  timestamp: string;
-  symptoms?: string[];
-  isOnline: boolean;
-  isFree?: boolean;
-  isFollowup?: boolean;
-  child?: PastAppointmentData[];
-}
-
 interface PastAppointmentProps {
   data: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
   isChild: boolean;
@@ -217,27 +169,84 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
                 </div>
               </Grid>
             </Grid>
-            {/*   {!!data.symptoms && !!data.symptoms.length && (
-              <Grid lg={6} sm={6} xs={5} key={2} item>
-                <div className={classes.stepperHeading}>
-                  {(data.symptoms.length > 3 ? data.symptoms.slice(0, 2) : data.symptoms).join(
-                    ', '
-                  )}
-                  {data.symptoms.length > 3 && (
-                    <Typography gutterBottom variant="body1" component="span">
-                      {`, +${data.symptoms.length - 2}`}
-                    </Typography>
-                  )}
+
+            {data &&
+            data.caseSheet &&
+            (data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType == 'JUNIOR')
+              ? data &&
+                data.caseSheet &&
+                data.caseSheet.length > 0 &&
+                !!data.caseSheet[1]!.symptoms &&
+                !!data.caseSheet[1]!.symptoms.length && (
+                  <Grid lg={6} sm={6} xs={5} key={2} item>
+                    <div className={classes.stepperHeading}>
+                      {(data.caseSheet[1]!.symptoms.length > 3
+                        ? data.caseSheet[1]!.symptoms.slice(0, 2).map((data) => data!.symptom)
+                        : data.caseSheet[1]!.symptoms.map((data) => data!.symptom)
+                      ).join(', ')}
+                      {data.caseSheet[0]!.symptoms!.length > 3 && (
+                        <Typography gutterBottom variant="body1" component="span">
+                          {`, +${data.caseSheet[1]!.symptoms.length - 2}`}
+                        </Typography>
+                      )}
+                    </div>
+                  </Grid>
+                )
+              : data &&
+                data.caseSheet &&
+                data.caseSheet.length > 0 &&
+                !!data.caseSheet[0]!.symptoms &&
+                !!data.caseSheet[0]!.symptoms.length && (
+                  <Grid lg={6} sm={6} xs={5} key={2} item>
+                    <div className={classes.stepperHeading}>
+                      {(data.caseSheet[0]!.symptoms.length > 3
+                        ? data.caseSheet[0]!.symptoms.slice(0, 2).map((data) => data!.symptom)
+                        : data.caseSheet[0]!.symptoms.map((data) => data!.symptom)
+                      ).join(', ')}
+                      {data.caseSheet[0]!.symptoms!.length > 3 && (
+                        <Typography gutterBottom variant="body1" component="span">
+                          {`, +${data.caseSheet[0]!.symptoms.length - 2}`}
+                        </Typography>
+                      )}
+                    </div>
+                  </Grid>
+                )}
+            {data &&
+            data.caseSheet &&
+            (data.caseSheet.length > 1 &&
+              data.caseSheet[1] &&
+              data.caseSheet[1]!.doctorType == 'JUNIOR') ? (
+              <Grid lg={1} sm={1} xs={3} key={3} item>
+                <div>
+                  <IconButton aria-label="Video call" className={classes.videoIcon}>
+                    {data &&
+                    data.caseSheet &&
+                    data.caseSheet.length > 1 &&
+                    data.caseSheet[1]!.consultType === 'ONLINE' ? (
+                      <img src={require('images/ic_video.svg')} alt="" />
+                    ) : (
+                      <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
+                    )}
+                  </IconButton>
                 </div>
               </Grid>
-            )} */}
-            <Grid lg={1} sm={1} xs={3} key={3} item>
-              <div>
-                <IconButton aria-label="Video call" className={classes.videoIcon}>
-                  <img src={require('images/ic_video.svg')} alt="" />
-                </IconButton>
-              </div>
-            </Grid>
+            ) : (
+              <Grid lg={1} sm={1} xs={3} key={3} item>
+                <div>
+                  <IconButton aria-label="Video call" className={classes.videoIcon}>
+                    {data &&
+                    data.caseSheet &&
+                    data.caseSheet.length > 0 &&
+                    data.caseSheet[0] &&
+                    data.caseSheet[0]!.consultType === 'ONLINE' ? (
+                      <img src={require('images/ic_video.svg')} alt="" />
+                    ) : (
+                      <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
+                    )}
+                  </IconButton>
+                </div>
+              </Grid>
+            )}
           </Grid>
         </Grid>
       </CardContent>
