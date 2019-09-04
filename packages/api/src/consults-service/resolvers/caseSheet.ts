@@ -10,10 +10,33 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { Patient } from 'profiles-service/entities';
 import { DiagnosisData } from 'consults-service/data/diagnosis';
+import { DiagnosticData } from 'consults-service/data/diagnostics';
 
 export type DiagnosisJson = {
   name: string;
   id: string;
+};
+
+export type DiagnosticJson = {
+  itemid: string;
+  itemname: string;
+  itemcode: string;
+  ItemAliasName: string;
+  FromAgeInDays: number;
+  ToAgeInDays: number;
+  Gender: string;
+  LabName: string;
+  LabCode: string;
+  LabID: number;
+  Rate: number;
+  ScheduleRate: number;
+  FromDate: string;
+  ToDate: string;
+  ItemType: string;
+  TestInPackage: number;
+  NABL_CAP: string;
+  ItemRemarks: string;
+  Discounted: string;
 };
 
 export const caseSheetTypeDefs = gql`
@@ -189,6 +212,28 @@ export const caseSheetTypeDefs = gql`
     id: String
   }
 
+  type DiagnosticJson {
+    itemid: String
+    itemname: String
+    itemcode: String
+    ItemAliasName: String
+    FromAgeInDays: Int
+    ToAgeInDays: Int
+    Gender: String
+    LabName: String
+    LabCode: String
+    LabID: Int
+    Rate: Int
+    ScheduleRate: Int
+    FromDate: String
+    ToDate: String
+    ItemType: String
+    TestInPackage: String
+    NABL_CAP: String
+    ItemRemarks: String
+    Discounted: String
+  }
+
   extend type Mutation {
     createCaseSheet(CaseSheetInput: CaseSheetInput): CaseSheet
     updateCaseSheet(UpdateCaseSheetInput: UpdateCaseSheetInput): CaseSheet
@@ -198,6 +243,7 @@ export const caseSheetTypeDefs = gql`
     getJuniorDoctorCaseSheet(appointmentId: String): CaseSheetFullDetails
     getCaseSheet(appointmentId: String): CaseSheetFullDetails
     searchDiagnosis(searchString: String): [DiagnosisJson]
+    searchDiagnostic(searchString: String): [DiagnosticJson]
   }
 `;
 
@@ -379,11 +425,23 @@ const searchDiagnosis: Resolver<
   return result;
 };
 
+const searchDiagnostic: Resolver<
+  null,
+  { searchString: string },
+  ConsultServiceContext,
+  DiagnosticJson[]
+> = async (parent, args, { consultsDb }) => {
+  const result = DiagnosticData.filter((obj) =>
+    obj.itemname.toLowerCase().startsWith(args.searchString.toLowerCase())
+  );
+  return result;
+};
+
 export const caseSheetResolvers = {
   Mutation: {
     createCaseSheet,
     updateCaseSheet,
   },
 
-  Query: { getJuniorDoctorCaseSheet, getCaseSheet, searchDiagnosis },
+  Query: { getJuniorDoctorCaseSheet, getCaseSheet, searchDiagnosis, searchDiagnostic },
 };
