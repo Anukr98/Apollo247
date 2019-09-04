@@ -11,15 +11,7 @@ import {
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import {
-  format,
-  addMinutes,
-  differenceInMinutes,
-  addDays,
-  subDays,
-  startOfMonth,
-  endOfMonth,
-} from 'date-fns';
+import { format, addMinutes, differenceInMinutes, addDays, subDays } from 'date-fns';
 import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 
 @EntityRepository(Appointment)
@@ -332,12 +324,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       results.andWhere('appointment.appointmentDateTime < :beforeNow', { beforeNow: new Date() });
     } else if (type == patientLogType.REGULAR) {
       results.having('count(*) > 2');
-      results.andWhere('appointment.appointmentDateTime > :monthStartDate', {
-        monthStartDate: startOfMonth(new Date()),
-      });
-      results.andWhere('appointment.appointmentDateTime < :monthendDate', {
-        monthendDate: endOfMonth(new Date()),
-      });
     } else {
       results.andWhere('appointment.appointmentDateTime < :beforeNow', { beforeNow: new Date() });
     }

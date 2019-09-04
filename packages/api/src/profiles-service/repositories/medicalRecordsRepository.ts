@@ -17,14 +17,16 @@ export class MedicalRecordsRepository extends Repository<MedicalRecords> {
 
   findByPatientId(patientId: string, offset?: number, limit?: number) {
     return this.createQueryBuilder('medicalRecords')
+      .leftJoinAndSelect('medicalRecords.medicalRecordParameters', 'medicalRecordParameters')
+      .leftJoinAndSelect('medicalRecords.patient', 'patient')
       .where('medicalRecords.patient = :patientId', { patientId })
       .orderBy('medicalRecords.testDate', 'DESC')
-      .offset(offset)
-      .limit(limit)
+      .skip(offset)
+      .take(limit)
       .getMany()
-      .catch((getSearchError) => {
+      .catch((getRecordsError) => {
         throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR, undefined, {
-          getSearchError,
+          getRecordsError,
         });
       });
   }
