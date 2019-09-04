@@ -602,6 +602,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       facilityId: '',
       transferId: '',
     };
+    clearError();
   };
   const handleDoctorClick = (value: any) => {
     setIsDoctorOrSpeciality(false);
@@ -619,6 +620,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       facilityId: value!.doctorHospital[0]!.facility.id,
       transferId: '',
     };
+    clearError();
   };
   setInterval(startConstultCheck, 1000);
   const stopInterval = () => {
@@ -1125,6 +1127,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 if (e.target.value.length > 2) {
                   doctorSpeciality(e.target.value);
                 }
+                setSelectedDoctor('');
+                clearError();
               }}
               value={searchKeyWord}
               error={errorState.searchError}
