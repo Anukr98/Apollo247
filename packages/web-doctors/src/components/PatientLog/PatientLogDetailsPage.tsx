@@ -11,8 +11,11 @@ import { useApolloClient } from 'react-apollo-hooks';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { useParams } from 'hooks/routerHooks';
 import { GET_CASESHEET } from 'graphql/profiles';
-import { GetCaseSheet_getCaseSheet_patientDetails } from 'graphql/types/GetCaseSheet';
-import { LifeStyle } from 'components/case-sheet/panels';
+import {
+  GetCaseSheet_getCaseSheet_patientDetails,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
+} from 'graphql/types/GetCaseSheet';
+import { PatientDetailLifeStyle } from 'components/PatientLog/PatientDetailPanels/PatientDetailLifeStyle';
 import { PastConsultation } from 'components/PatientLog/PatientDetailPanels/PastConsultation';
 import { PatientDetailsUserCard } from 'components/PatientLog/PatientDetailsUserCard';
 //import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
@@ -145,6 +148,9 @@ export const PatientLogDetailsPage: React.FC = () => {
     patientDetails,
     setPatientDetails,
   ] = useState<GetCaseSheet_getCaseSheet_patientDetails | null>(null);
+  const [diagnosis, setDiagnosis] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null
+  >(null);
   const handlePanelExpansion = (panelName: string) => (
     e: React.ChangeEvent<{}>,
     isExpanded: boolean
@@ -163,6 +169,10 @@ export const PatientLogDetailsPage: React.FC = () => {
           ? setPatientDetails((_data!.data!.getCaseSheet!
               .patientDetails! as unknown) as GetCaseSheet_getCaseSheet_patientDetails)
           : setPatientDetails(null);
+        _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
+          ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
+              .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
+          : setDiagnosis([]);
       });
   }, [appointmentId]);
 
@@ -193,7 +203,7 @@ export const PatientLogDetailsPage: React.FC = () => {
               <Typography variant="h3">Patient History &amp; Lifestyle</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <LifeStyle />
+              <PatientDetailLifeStyle patientDetails={patientDetails} />
             </ExpansionPanelDetails>
           </ExpansionPanel>
           {/* Patient Health Vault */}
