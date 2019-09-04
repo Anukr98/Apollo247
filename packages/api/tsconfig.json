@@ -8,5 +8,5 @@
     "strictPropertyInitialization": false, // https://github.com/typeorm/typeorm/issues/2797
     "lib": ["es5", "es6", "dom"] // Normally we wouldn't add "dom" here, but: https://github.com/Azure/azure-sdk-for-js/issues/4379
   },
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist", "data"]
 }

@@ -109,7 +109,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const [backPressCount, setbackPressCount] = useState<number>(0);
 
-  const { signOut } = useAuth();
+  const { signOut, getPatientApiCall } = useAuth();
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' ' ? false : value == '' || /^[a-zA-Z ]+$/.test(value) ? true : false;
@@ -326,6 +326,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                 {data
                   ? (setVerifyingPhoneNumber(false),
                     console.log('data', data.updatePatient.patient),
+                    getPatientApiCall(),
                     AsyncStorage.setItem('userLoggedIn', 'true'),
                     AsyncStorage.setItem('signUp', 'false'),
                     AsyncStorage.setItem('gotIt', 'false'),

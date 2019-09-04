@@ -9,8 +9,21 @@ import { AphError } from 'AphError';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { Patient } from 'profiles-service/entities';
+import { DiagnosisData } from 'consults-service/data/diagnosis';
+
+export type DiagnosisJson = {
+  name: string;
+  id: string;
+};
 
 export const caseSheetTypeDefs = gql`
+  enum DoctorType {
+    APOLLO
+    PAYROLL
+    STAR_APOLLO
+    JUNIOR
+  }
+
   enum Gender {
     MALE
     FEMALE
@@ -72,6 +85,7 @@ export const caseSheetTypeDefs = gql`
     diagnosis: [Diagnosis]
     diagnosticPrescription: [DiagnosticPrescription]
     doctorId: String
+    doctorType: DoctorType
     followUp: Boolean
     followUpAfterInDays: String
     followUpDate: String
@@ -169,6 +183,12 @@ export const caseSheetTypeDefs = gql`
     medicinePrescription: String
     id: String
   }
+
+  type DiagnosisJson {
+    name: String
+    id: String
+  }
+
   extend type Mutation {
     createCaseSheet(CaseSheetInput: CaseSheetInput): CaseSheet
     updateCaseSheet(UpdateCaseSheetInput: UpdateCaseSheetInput): CaseSheet
@@ -177,6 +197,7 @@ export const caseSheetTypeDefs = gql`
   extend type Query {
     getJuniorDoctorCaseSheet(appointmentId: String): CaseSheetFullDetails
     getCaseSheet(appointmentId: String): CaseSheetFullDetails
+    searchDiagnosis(searchString: String): [DiagnosisJson]
   }
 `;
 
@@ -346,11 +367,21 @@ const updateCaseSheet: Resolver<
   return getUpdatedCaseSheet;
 };
 
+const searchDiagnosis: Resolver<
+  null,
+  { searchString: string },
+  ConsultServiceContext,
+  DiagnosisJson[]
+> = async (parent, args, { consultsDb }) => {
+  const result = DiagnosisData.filter((obj) => obj.name.match(args.searchString.toLowerCase()));
+  return result;
+};
+
 export const caseSheetResolvers = {
   Mutation: {
     createCaseSheet,
     updateCaseSheet,
   },
 
-  Query: { getJuniorDoctorCaseSheet, getCaseSheet },
+  Query: { getJuniorDoctorCaseSheet, getCaseSheet, searchDiagnosis },
 };

@@ -260,7 +260,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     consultForm: {
       fontSize: 14,
-      color: 'rgba(2,71,91,0.5)',
+      color: 'rgba(2,71,91,0.5) !important',
       fontWeight: theme.typography.fontWeightMedium,
     },
     pointerNone: {

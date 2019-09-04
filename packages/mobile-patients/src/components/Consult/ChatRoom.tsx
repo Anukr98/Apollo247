@@ -650,7 +650,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     ) {
       return null;
     }
-    if (rowData.id === patientId) {
+    if (rowData.id !== patientId) {
       leftComponent++;
       rightComponent = 0;
       return (

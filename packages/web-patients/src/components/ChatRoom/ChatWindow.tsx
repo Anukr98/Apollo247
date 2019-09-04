@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Theme, Button } from '@material-ui/core';
+import { Link } from 'react-router-dom';
+import { Theme, Button, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphInput } from '@aph/web-ui-components';
+import { AphInput, AphButton } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import { ChatVideo } from 'components/ChatRoom/ChatVideo';
 import Scrollbars from 'react-custom-scrollbars';
@@ -13,6 +14,7 @@ import {
 } from 'graphql/types/UpdateAppointmentSession';
 import { useMutation } from 'react-apollo-hooks';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import { DoctorChatCard } from 'components/ChatRoom/DoctorChatCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -198,6 +200,95 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     none: {
       display: 'none',
+    },
+    doctorChatWindow: {
+      position: 'relative',
+      paddingLeft: 38,
+      marginBottom: 10,
+    },
+    doctorChatBubble: {
+      borderRadius: 10,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.15)',
+      backgroundColor: theme.palette.common.white,
+      fontSize: 15,
+      fontWeight: 500,
+      color: '#0087ba',
+      padding: '12px 16px',
+      width: 245,
+    },
+    doctorImg: {
+      position: 'absolute',
+      left: 0,
+      bottom: 0,
+    },
+    avatar: {
+      width: 32,
+      height: 32,
+      '& img': {
+        verticalAlign: 'middle',
+      },
+    },
+    blueBubble: {
+      backgroundColor: '#0087ba',
+      color: theme.palette.common.white,
+      marginBottom: 5,
+    },
+    bubbleActions: {
+      display: 'flex',
+      paddingTop: 20,
+      '& button': {
+        width: 'calc(50% - 5px)',
+        marginRight: 5,
+        boxShadow: 'none',
+        border: '2px solid #fcb715',
+        borderRadius: 10,
+        fontSize: 13,
+        padding: 7,
+        '&:hover': {
+          backgroundColor: 'transparent',
+        },
+      },
+      '& a': {
+        textTransform: 'uppercase',
+        width: 'calc(50% - 5px)',
+        marginLeft: 5,
+        display: 'block',
+        fontSize: 13,
+        backgroundColor: '#fcb716',
+        padding: 10,
+        height: 40,
+        borderRadius: 10,
+        textAlign: 'center',
+      },
+    },
+    viewButton: {
+      width: 'calc(50% - 5px)',
+      marginLeft: 5,
+      display: 'block',
+      fontSize: 13,
+      backgroundColor: '#fcb716',
+      padding: 10,
+      height: 40,
+      borderRadius: 10,
+      marginRight: 0,
+      '&:hover': {
+        backgroundColor: '#fcb716 !important',
+      },
+    },
+    borderSection: {
+      fontSize: 15,
+      fontWeight: 600,
+      paddingTop: 9,
+      paddingBottom: 9,
+      borderTop: '1px dashed rgba(255,255,255,0.5)',
+      borderBottom: '1px dashed rgba(255,255,255,0.5)',
+      marginTop: 10,
+    },
+    changeSlotBtn: {
+      width: 'calc(65% - 5px) !important',
+    },
+    acceptBtn: {
+      width: 'calc(35% - 5px) !important',
     },
   };
 });
@@ -680,10 +771,80 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         <div>
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatContainer}>
-              <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 290px' }}>
+              <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 346px' }}>
                 <div className={classes.customScroll}>
                   {messagessHtml}
                   <span id="scrollDiv"></span>
+                  <div className={classes.doctorChatWindow}>
+                    <div className={classes.doctorChatBubble}>You will be better soon, Surj.</div>
+                    <div className={classes.doctorImg}>
+                      <Avatar
+                        alt=""
+                        src={require('images/doctordp_01.png')}
+                        className={classes.avatar}
+                      />
+                    </div>
+                  </div>
+                  <div className={classes.doctorChatWindow}>
+                    <div className={`${classes.doctorChatBubble} ${classes.blueBubble}`}>
+                      Hello Surj, Hope your consultation went well… Here is your prescription.
+                      <div className={classes.bubbleActions}>
+                        <AphButton>Download</AphButton>
+                        <Link to="#">View</Link>
+                      </div>
+                    </div>
+                    <div className={`${classes.doctorChatBubble} ${classes.blueBubble}`}>
+                      I’ve also scheduled a <b>free follow-up</b> for you —
+                      <div className={classes.borderSection}>
+                        <div>18th May, Monday</div>
+                        <div>12:00 pm</div>
+                      </div>
+                      <div className={classes.bubbleActions}>
+                        <AphButton>Reschedule</AphButton>
+                      </div>
+                    </div>
+                    <div className={`${classes.doctorChatBubble} ${classes.blueBubble}`}>
+                      Since you hace already rescheduled 3 times with Dr. Simran, we will consider
+                      this a new paid appointment.
+                    </div>
+                    <div className={`${classes.doctorChatBubble} ${classes.blueBubble}`}>
+                      Next slot for Dr. Simran is available on —
+                      <div className={classes.borderSection}>
+                        <div>19th May, Tuesday</div>
+                        <div>12:00 pm</div>
+                      </div>
+                      <div className={classes.bubbleActions}>
+                        <AphButton className={classes.changeSlotBtn}>Change Slot</AphButton>
+                        <Link className={classes.acceptBtn} to="#">
+                          Accept
+                        </Link>
+                      </div>
+                    </div>
+                    <div className={classes.doctorImg}>
+                      <Avatar
+                        alt=""
+                        src={require('images/ic_chat_bot.svg')}
+                        className={classes.avatar}
+                      />
+                    </div>
+                  </div>
+                  <div className={classes.doctorChatWindow}>
+                    <div className={`${classes.doctorChatBubble} ${classes.blueBubble}`}>
+                      Your appointment has been transferred to —
+                      <DoctorChatCard />
+                      <div className={classes.bubbleActions}>
+                        <AphButton>Reschedule</AphButton>
+                        <AphButton className={classes.viewButton}>Accept</AphButton>
+                      </div>
+                    </div>
+                    <div className={classes.doctorImg}>
+                      <Avatar
+                        alt=""
+                        src={require('images/ic_chat_bot.svg')}
+                        className={classes.avatar}
+                      />
+                    </div>
+                  </div>
                 </div>
               </Scrollbars>
             </div>

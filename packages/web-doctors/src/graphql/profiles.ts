@@ -515,6 +515,35 @@ export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
         speciality
         specialization
         id
+        photoUrl
+      }
+      specialties {
+        id
+        name
+        image
+      }
+    }
+  }
+`;
+export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
+  query SearchDoctorAndSpecialtyByName($searchText: String!) {
+    SearchDoctorAndSpecialtyByName(searchText: $searchText) {
+      doctors {
+        firstName
+        lastName
+        specialty {
+          name
+        }
+        specialization
+        photoUrl
+        id
+        experience
+        doctorHospital {
+          facility {
+            id
+            name
+          }
+        }
       }
       specialties {
         id
@@ -529,12 +558,32 @@ export const INITIATE_TRANSFER_APPONITMENT = gql`
     initiateTransferAppointment(TransferAppointmentInput: $TransferAppointmentInput) {
       transferAppointment {
         id
-        appointmentId
         transferStatus
         transferReason
         transferredDoctorId
         transferredSpecialtyId
       }
+      doctorNextSlot
+    }
+  }
+`;
+export const INITIATE_RESCHDULE_APPONITMENT = gql`
+  mutation InitiateRescheduleAppointment($RescheduleAppointmentInput: RescheduleAppointmentInput!) {
+    initiateRescheduleAppointment(RescheduleAppointmentInput: $RescheduleAppointmentInput) {
+      rescheduleAppointment {
+        id
+        rescheduleStatus
+        rescheduleReason
+        rescheduledDateTime
+      }
+    }
+  }
+`;
+export const SEARCH_DIAGNOSIS = gql`
+  query SearchDiagnosis($searchString: String!) {
+    searchDiagnosis(searchString: $searchString) {
+      name
+      id
     }
   }
 `;
