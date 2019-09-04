@@ -12,6 +12,7 @@ import {
 //import { AppointmentPayload } from 'types/appointmentTypes';
 //import { bookAppointmentApollo } from 'notifications-service/bookAppointmentApollo';
 import { connect } from 'consults-service/database/connect';
+//import fetch from 'node-fetch';
 
 (async () => {
   await connect();
@@ -39,4 +40,14 @@ import { connect } from 'consults-service/database/connect';
     bookAppointmentApollo.book(receivedMessage.message);
     receivedMessage.accept();
   });*/
+
+  /*const resp = await fetch(
+    'http://bulkpush.mytoday.com/BulkSms/SingleMsgApi?feedid=370454&username=7993961498&password=popcorn123$$&To=8019677178&Text=Hellocheck'
+  );
+  console.log(resp, 'sms resp');
+
+  const resp1 = await fetch(
+    'http://bulkpush.mytoday.com/BulkSms/SingleMsgApi?feedid=370454&username=7993961498&password=popcorn123$$&To=9657585411&Text=Hellocheck'
+  );
+  console.log(resp1, 'sms resp');*/
 })();
