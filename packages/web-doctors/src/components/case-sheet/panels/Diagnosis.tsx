@@ -24,12 +24,10 @@ interface OptionType {
   __typename: 'Diagnosis';
 }
 
-let suggestions: OptionType[] = [
-
-];
+let suggestions: OptionType[] = [];
 
 function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => { }, ref, ...other } = inputProps;
+  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
 
   return (
     <AphTextField
@@ -67,8 +65,6 @@ function renderSuggestion(
     </MenuItem>
   );
 }
-
-
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -249,7 +245,7 @@ export const Diagnosis: React.FC = () => {
       })
       .then((_data: any) => {
         console.log(_data!.data!.searchDiagnosis!);
-        suggestions = _data!.data!.searchDiagnosis!
+        suggestions = _data!.data!.searchDiagnosis!;
         setSearchInput(value);
       })
       .catch((e) => {
@@ -264,16 +260,16 @@ export const Diagnosis: React.FC = () => {
     return inputLength === 0
       ? []
       : suggestions.filter((suggestion) => {
-        const keep =
-          count < 5 && suggestion.name.slice(0, inputLength).toLowerCase() === inputValue;
+          const keep =
+            count < 5 && suggestion.name.slice(0, inputLength).toLowerCase() === inputValue;
 
-        if (keep) {
-          count += 1;
-        }
+          if (keep) {
+            count += 1;
+          }
 
-        return keep;
-      });
-  }
+          return keep;
+        });
+  };
 
   function getSuggestionValue(suggestion: OptionType) {
     return suggestion.name;
