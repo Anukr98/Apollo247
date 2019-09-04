@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import {
   Theme,
@@ -35,7 +35,8 @@ import {
   SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
   INITIATE_RESCHDULE_APPONITMENT,
 } from 'graphql/profiles';
-import { TRANSFER_INITIATED_TYPE } from 'graphql/types/globalTypes';
+import { TRANSFER_INITIATED_TYPE, STATUS } from 'graphql/types/globalTypes';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -453,6 +454,7 @@ let transferObject: any = {
 };
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
+  const { loading, appointmentInfo, caseSheetId } = useContext(CaseSheetContext);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -470,7 +472,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
-
+  console.log(appointmentInfo!.status);
   const [anchorElThreeDots, setAnchorElThreeDots] = React.useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState<any>('');
   const [errorState, setErrorState] = React.useState<errorObject>({
@@ -898,7 +900,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           ) : (
             <Button
               className={classes.consultButton}
-              // disabled={startAppointmentButton}
+              disabled={
+                startAppointmentButton ||
+                (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                  appointmentInfo!.status !== STATUS.PENDING)
+              }
               onClick={() => {
                 !startAppointment ? onStartConsult() : onStopConsult();
                 !startAppointment ? startInterval(900) : stopInterval();

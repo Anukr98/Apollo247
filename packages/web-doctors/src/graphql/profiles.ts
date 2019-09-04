@@ -321,7 +321,7 @@ export const GET_JUNIOR_DOCTOR_CASESHEET = gql`
           name
         }
         diagnosticPrescription {
-          name
+          itemname
         }
         followUp
         followUpDate
@@ -368,6 +368,7 @@ export const GET_CASESHEET = gql`
         appointment {
           id
           appointmentDateTime
+          status
         }
         medicinePrescription {
           id
@@ -391,7 +392,7 @@ export const GET_CASESHEET = gql`
           name
         }
         diagnosticPrescription {
-          name
+          itemname
         }
         followUp
         followUpDate
@@ -415,7 +416,7 @@ export const GET_CASESHEET = gql`
             name
           }
           diagnosticPrescription {
-            name
+            itemname
           }
           symptoms {
             symptom
@@ -452,7 +453,7 @@ export const UPDATE_CASESHEET = gql`
         name
       }
       diagnosticPrescription {
-        name
+        itemname
       }
       doctorId
       followUp
@@ -587,6 +588,13 @@ export const SEARCH_DIAGNOSIS = gql`
     searchDiagnosis(searchString: $searchString) {
       name
       id
+    }
+  }
+`;
+export const SEARCH_DIAGNOSTIC = gql`
+  query SearchDiagnostic($searchString: String!) {
+    searchDiagnostic(searchString: $searchString) {
+      itemname
     }
   }
 `;

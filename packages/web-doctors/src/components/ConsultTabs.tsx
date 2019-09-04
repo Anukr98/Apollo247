@@ -20,7 +20,12 @@ import {
 } from 'graphql/types/EndAppointmentSession';
 import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
 
-import { CREATE_APPOINTMENT_SESSION, GET_CASESHEET, UPDATE_CASESHEET } from 'graphql/profiles';
+import {
+  CREATE_APPOINTMENT_SESSION,
+  GET_CASESHEET,
+  UPDATE_CASESHEET,
+  END_APPOINTMENT_SESSION,
+} from 'graphql/profiles';
 import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
@@ -29,7 +34,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetCaseSheet';
-import { REQUEST_ROLES } from 'graphql/types/globalTypes';
+import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { useAuth } from 'hooks/authHooks';
@@ -354,29 +359,27 @@ export const ConsultTabs: React.FC = () => {
   };
 
   const endConsultAction = () => {
-    //     client
-    // .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
-    // mutation: END_APPOINTMENT_SESSION,
-    // variables: {
-    // endAppointmentSessionInput: {
-    // appointmentId: appointmentId,
-    // status: STATUS.COMPLETED,
-    // },
-    // },
-    // fetchPolicy: 'no-cache',
-    // })
-    // .then((_data) => {
-    // console.log('_data', _data);
-    // setShowButtons(false);
-    // props.onStopConsult();
-    // })
-    // .catch((e) => {
-    // console.log('Error occured while End casesheet', e);
-    // const error = JSON.parse(JSON.stringify(e));
-    // const errorMessage = error && error.message;
-    // console.log('Error occured while End casesheet', errorMessage, error);
-    // Alert.alert('Error', errorMessage);
-    // });
+    client
+      .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
+        mutation: END_APPOINTMENT_SESSION,
+        variables: {
+          endAppointmentSessionInput: {
+            appointmentId: appointmentId,
+            status: STATUS.COMPLETED,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        console.log('_data', _data);
+      })
+      .catch((e) => {
+        console.log('Error occured while End casesheet', e);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while End casesheet', errorMessage, error);
+        alert(errorMessage);
+      });
   };
   const createSessionAction = () => {
     client
@@ -420,6 +423,7 @@ export const ConsultTabs: React.FC = () => {
             loading: !loaded,
             caseSheetId: appointmentId,
             patientDetails: casesheetInfo!.getCaseSheet!.patientDetails,
+            appointmentInfo: casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment,
             symptoms,
             setSymptoms,
             notes,
