@@ -13,25 +13,18 @@ import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import deburr from 'lodash/deburr';
-// import {
-//   GetJuniorDoctorCaseSheet,
-//   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis,
-// } from 'graphql/types/GetJuniorDoctorCaseSheet';
-import {
-  GetCaseSheet,
-  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis,
-} from 'graphql/types/GetCaseSheet';
+import { useApolloClient } from 'react-apollo-hooks';
+import { SearchDiagnosis, SearchDiagnosisVariables } from 'graphql/types/SearchDiagnosis';
+import { SEARCH_DIAGNOSIS } from 'graphql/profiles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
 interface OptionType {
   name: string;
+  id: '';
   __typename: 'Diagnosis';
 }
 
-let suggestions: OptionType[] = [
-  { name: 'Sore Throat', __typename: 'Diagnosis' },
-  { name: 'Sorosis', __typename: 'Diagnosis' },
-];
+let suggestions: OptionType[] = [];
 
 function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -71,29 +64,6 @@ function renderSuggestion(
       </div>
     </MenuItem>
   );
-}
-
-function getSuggestions(value: string) {
-  const inputValue = deburr(value.trim()).toLowerCase();
-  const inputLength = inputValue.length;
-  let count = 0;
-
-  return inputLength === 0
-    ? []
-    : suggestions.filter((suggestion) => {
-        const keep =
-          count < 5 && suggestion.name.slice(0, inputLength).toLowerCase() === inputValue;
-
-        if (keep) {
-          count += 1;
-        }
-
-        return keep;
-      });
-}
-
-function getSuggestionValue(suggestion: OptionType) {
-  return suggestion.name;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -232,9 +202,11 @@ const useStyles = makeStyles((theme: Theme) =>
 export const Diagnosis: React.FC = () => {
   const classes = useStyles();
   const [idx, setIdx] = React.useState();
+  const [searchInput, setSearchInput] = useState('');
   const { diagnosis: selectedValues, setDiagnosis: setSelectedValues } = useContext(
     CaseSheetContext
   );
+  const client = useApolloClient();
 
   useEffect(() => {
     if (idx >= 0) {
@@ -265,11 +237,56 @@ export const Diagnosis: React.FC = () => {
   const handleSuggestionsClearRequested = () => {
     setSuggestions([]);
   };
+  const fetchDignosis = async (value: string) => {
+    client
+      .query<SearchDiagnosis, any>({
+        query: SEARCH_DIAGNOSIS,
+        variables: { searchString: value },
+      })
+      .then((_data: any) => {
+        console.log(_data!.data!.searchDiagnosis!);
+        suggestions = _data!.data!.searchDiagnosis!;
+        setSearchInput(value);
+      })
+      .catch((e) => {
+        console.log('Error occured while searching for Doctors', e);
+      });
+  };
+  const getSuggestions = (value: string) => {
+    const inputValue = deburr(value.trim()).toLowerCase();
+    const inputLength = inputValue.length;
+    let count = 0;
 
+    return inputLength === 0
+      ? []
+      : suggestions.filter((suggestion) => {
+          const keep =
+            count < 5 && suggestion.name.slice(0, inputLength).toLowerCase() === inputValue;
+
+          if (keep) {
+            count += 1;
+          }
+
+          return keep;
+        });
+  };
+
+  function getSuggestionValue(suggestion: OptionType) {
+    return suggestion.name;
+  }
+
+  useEffect(() => {
+    if (searchInput.length > 2) {
+      setSuggestions(getSuggestions(searchInput));
+    }
+  }, [searchInput]);
   const handleChange = (name: keyof typeof state) => (
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
+    if (newValue.length > 2) {
+      fetchDignosis(newValue);
+    }
     setState({
       ...state,
       [name]: newValue,
@@ -294,7 +311,6 @@ export const Diagnosis: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
-
   return (
     <Typography component="div" className={classes.mainContainer}>
       <Typography component="h4" variant="h4">
