@@ -13,7 +13,8 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import fetch from 'node-fetch';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
-import { PharmaLineItem, PharmaResponse } from 'types/medicineOrderTypes';
+import { PharmaLineItem, PharmaResponse, PrescriptionUrl } from 'types/medicineOrderTypes';
+import { differenceInYears } from 'date-fns';
 
 export const saveMedicineOrderPaymentTypeDefs = gql`
   enum MEDICINE_ORDER_PAYMENT_TYPE {
@@ -116,6 +117,7 @@ const SaveMedicineOrderPayment: Resolver<
   }
 
   const orderLineItems: PharmaLineItem[] = [];
+  const orderPrescriptionUrl: PrescriptionUrl[] = [];
   orderDetails.medicineOrderLineItems.map((item) => {
     const lineItem = {
       ItemID: item.medicineSKU,
@@ -127,6 +129,15 @@ const SaveMedicineOrderPayment: Resolver<
     };
     orderLineItems.push(lineItem);
   });
+  const prescriptionImages = orderDetails.prescriptionImageUrl.split(',');
+  if (prescriptionImages.length > 0) {
+    prescriptionImages.map((imageUrl) => {
+      const url = {
+        url: imageUrl,
+      };
+      orderPrescriptionUrl.push(url);
+    });
+  }
   const medicineOrderPharma = {
     tpdetails: {
       OrderId: '123456224',
@@ -150,7 +161,7 @@ const SaveMedicineOrderPayment: Resolver<
         City: patientAddressDetails.city,
         PostCode: patientAddressDetails.zipcode,
         MailId: patientDetails.emailAddress,
-        Age: 30,
+        Age: Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth)),
         CardNo: null,
         PatientName: patientDetails.firstName,
       },
@@ -161,14 +172,7 @@ const SaveMedicineOrderPayment: Resolver<
         PaymentOrderId: medicinePaymentInput.paymentRefId,
       },
       ItemDetails: orderLineItems,
-      PrescUrl: [
-        {
-          url: 'http://13.126.95.18/pub/media/medicine_prescription/beauty.png',
-        },
-        {
-          url: 'http://13.126.95.19/pub/media/medicine_prescription/beauty.png',
-        },
-      ],
+      PrescUrl: orderPrescriptionUrl,
     },
   };
 
