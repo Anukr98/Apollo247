@@ -5,6 +5,7 @@ import {
   APPOINTMENT_TYPE,
   patientLogSort,
   patientLogType,
+  CaseSheet,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -42,6 +43,7 @@ export const getAppointmentHistoryTypeDefs = gql`
     hospitalId: ID
     status: STATUS!
     bookingDate: DateTime
+    caseSheet: [CaseSheet]
     rescheduleCount: Int
     patientInfo: Patient @provides(fields: "id")
     doctorInfo: Profile @provides(fields: "id")
@@ -100,6 +102,7 @@ type AppointmentHistory = {
   hospitalId?: string;
   status: STATUS;
   bookingDate: Date;
+  caseSheet: CaseSheet[];
   rescheduleCount: number;
 };
 

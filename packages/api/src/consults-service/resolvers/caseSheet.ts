@@ -17,6 +17,13 @@ export type DiagnosisJson = {
 };
 
 export const caseSheetTypeDefs = gql`
+  enum DoctorType {
+    APOLLO
+    PAYROLL
+    STAR_APOLLO
+    JUNIOR
+  }
+
   enum Gender {
     MALE
     FEMALE
@@ -78,6 +85,7 @@ export const caseSheetTypeDefs = gql`
     diagnosis: [Diagnosis]
     diagnosticPrescription: [DiagnosticPrescription]
     doctorId: String
+    doctorType: DoctorType
     followUp: Boolean
     followUpAfterInDays: String
     followUpDate: String
