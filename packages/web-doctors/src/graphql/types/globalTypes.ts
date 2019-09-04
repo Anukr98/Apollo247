@@ -29,6 +29,7 @@ export enum ConsultType {
 
 export enum DoctorType {
   APOLLO = "APOLLO",
+  JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   STAR_APOLLO = "STAR_APOLLO",
 }
