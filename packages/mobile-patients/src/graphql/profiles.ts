@@ -592,3 +592,89 @@ export const SAVE_NOTIFICATION_SETTINGS = gql`
     }
   }
 `;
+
+export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
+  query getPatientPastConsultsAndPrescriptions(
+    $consultsAndOrdersInput: PatientConsultsAndOrdersInput
+  ) {
+    getPatientPastConsultsAndPrescriptions(consultsAndOrdersInput: $consultsAndOrdersInput) {
+      consults {
+        id
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        appointmentState
+        hospitalId
+        isFollowUp
+        followUpParentId
+        followUpTo
+        bookingDate
+        caseSheet {
+          consultType
+          diagnosis {
+            name
+          }
+          diagnosticPrescription {
+            name
+          }
+          doctorId
+          followUp
+          followUpAfterInDays
+          followUpDate
+          id
+          medicinePrescription {
+            medicineConsumptionDurationInDays
+            medicineDosage
+            medicineInstructions
+            medicineTimings
+            medicineToBeTaken
+            medicineName
+            id
+          }
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+          }
+        }
+        displayId
+        status
+        doctorInfo {
+          id
+          salutation
+          firstName
+          lastName
+          experience
+          city
+          photoUrl
+          qualification
+          specialty {
+            name
+            image
+          }
+        }
+      }
+      medicineOrders {
+        id
+        orderDateTime
+        quoteDateTime
+        deliveryType
+        currentStatus
+        orderType
+        estimatedAmount
+        prescriptionImageUrl
+        shopId
+        medicineOrderLineItems {
+          medicineSku
+          medicineName
+          price
+          quantity
+          mrp
+          id
+        }
+      }
+    }
+  }
+`;

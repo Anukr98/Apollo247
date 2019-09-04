@@ -18,6 +18,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -62,10 +63,13 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [landMark, setlandMark] = useState<string>('');
   const [state, setstate] = useState<string>('');
   const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
+
   const { addAddress, setDeliveryAddressId } = useShoppingCart();
   const client = useApolloClient();
 
   const onSavePress = () => {
+    setshowSpinner(true);
     const addressInput = {
       patientId: userId,
       addressLine1: addressLine1,
@@ -82,6 +86,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         variables: { PatientAddressInput: addressInput },
       })
       .then(({ data }) => {
+        setshowSpinner(false);
         const address = g(data, 'savePatientAddress', 'patientAddress');
         addAddress && addAddress(address!);
         setDeliveryAddressId && setDeliveryAddressId((address && address.id) || '');
@@ -121,7 +126,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           padding: 16,
         }}
       >
-        <TouchableOpacity activeOpacity={1}
+        <TouchableOpacity
+          activeOpacity={1}
           onPress={() => {
             setShowPopup(true);
           }}
@@ -172,7 +178,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   };
 
   const Popup = () => (
-    <TouchableOpacity activeOpacity={1}
+    <TouchableOpacity
+      activeOpacity={1}
       style={{
         paddingVertical: 9,
         position: 'absolute',
@@ -234,6 +241,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           ></Button>
         </StickyBottomComponent>
         {showPopup && Popup()}
+        {showSpinner && <Spinner />}
       </SafeAreaView>
     </View>
   );

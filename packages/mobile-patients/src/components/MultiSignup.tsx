@@ -192,7 +192,8 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             <Text style={styles.idTextStyle}>{allCurrentPatients.gender} | 01 January 1987</Text>
             <View style={{ marginTop: 10 }}>
               <View style={{ paddingTop: 5, paddingBottom: 10 }}>
-                <TouchableOpacity activeOpacity={1}
+                <TouchableOpacity
+                  activeOpacity={1}
                   // style={styles.placeholderViewStyle}
                   onPress={() => {
                     setShowPopup(true);
@@ -272,7 +273,8 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   ];
 
   const Popup = () => (
-    <TouchableOpacity activeOpacity={1}
+    <TouchableOpacity
+      activeOpacity={1}
       style={{
         paddingVertical: 9,
         position: 'absolute',

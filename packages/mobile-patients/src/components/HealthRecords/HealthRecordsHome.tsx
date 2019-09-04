@@ -18,6 +18,11 @@ import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
+import { getPatientPastConsultsAndPrescriptions } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
+import { GET_PAST_CONSULTS_PRESCRIPTIONS } from '@aph/mobile-patients/src/graphql/profiles';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import moment from 'moment';
+import { useQuery } from 'react-apollo-hooks';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -48,10 +53,64 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
 
+  const { currentPatient } = useAllCurrentPatients();
+
+  const { data, error } = useQuery<getPatientPastConsultsAndPrescriptions>(
+    GET_PAST_CONSULTS_PRESCRIPTIONS,
+    {
+      fetchPolicy: 'no-cache',
+      variables: {
+        consultsAndOrdersInput: {
+          patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+      },
+    }
+  );
+  if (error) {
+    console.log('error', JSON.stringify(error));
+  } else {
+    console.log('getPatientPastConsultsAndPrescriptions', data);
+    const array = {};
+    if (
+      data &&
+      data.getPatientPastConsultsAndPrescriptions &&
+      data.getPatientPastConsultsAndPrescriptions
+    ) {
+      data.getPatientPastConsultsAndPrescriptions.consults &&
+        data.getPatientPastConsultsAndPrescriptions.consults.forEach((item) => {
+          if (item) array[moment(item.appointmentDateTime).format('YYYY-MM-DD')] = [];
+        });
+      data.getPatientPastConsultsAndPrescriptions.medicineOrders &&
+        data.getPatientPastConsultsAndPrescriptions.medicineOrders.forEach((item) => {
+          if (item) array[moment(item.quoteDateTime).format('YYYY-MM-DD')] = [];
+        });
+      data.getPatientPastConsultsAndPrescriptions.consults &&
+        data.getPatientPastConsultsAndPrescriptions.consults.forEach((item) => {
+          if (item)
+            array[moment(item.appointmentDateTime).format('YYYY-MM-DD')] = [
+              ...array[moment(item.appointmentDateTime).format('YYYY-MM-DD')],
+              item,
+            ];
+        });
+      data.getPatientPastConsultsAndPrescriptions.medicineOrders &&
+        data.getPatientPastConsultsAndPrescriptions.medicineOrders.forEach((item) => {
+          if (item)
+            array[moment(item.quoteDateTime).format('YYYY-MM-DD')] = [
+              ...array[moment(item.quoteDateTime).format('YYYY-MM-DD')],
+              item,
+            ];
+        });
+    }
+    console.log(array, 'array');
+  }
+
   const renderFilter = () => {
     return (
       <View style={styles.filterViewStyle}>
-        <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}
+        >
           <AddFileIcon />
         </TouchableOpacity>
         <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>

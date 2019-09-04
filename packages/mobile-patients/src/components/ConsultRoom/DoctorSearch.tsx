@@ -191,7 +191,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     },
   });
   if (newData.error) {
-    console.log('newData.error', newData.error);
+    console.log('newData.error', JSON.stringify(newData.error));
   } else {
     console.log('newData.data doctor', newData.data);
     // let doctorIds: (string | null)[] = [];
