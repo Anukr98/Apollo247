@@ -991,7 +991,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           >
             <Paper className={classes.dotPaper}>
               <ul className={classes.popOverUL}>
-                <li>Share Case Sheet</li>
+                {/* <li>Share Case Sheet</li> */}
                 <li
                   onClick={() => {
                     handleCloseThreeDots();
