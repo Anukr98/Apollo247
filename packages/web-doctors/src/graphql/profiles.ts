@@ -321,7 +321,7 @@ export const GET_JUNIOR_DOCTOR_CASESHEET = gql`
           name
         }
         diagnosticPrescription {
-          name
+          itemname
         }
         followUp
         followUpDate

@@ -87,7 +87,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis {
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
-  name: string | null;
+  itemname: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
@@ -113,7 +113,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis 
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
-  name: string | null;
+  itemname: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_symptoms {

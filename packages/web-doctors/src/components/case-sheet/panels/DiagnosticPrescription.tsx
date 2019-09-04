@@ -10,7 +10,7 @@ import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SEARCH_DIAGNOSTIC } from 'graphql/profiles';
-import { SearchDiagnostic } from 'graphql/types/SearchDiagnostics';
+import { SearchDiagnostic } from 'graphql/types/SearchDiagnostic';
 // import {
 //   GetJuniorDoctorCaseSheet,
 //   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,

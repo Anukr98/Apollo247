@@ -8,7 +8,6 @@
 
 export interface SearchDiagnostic_searchDiagnostic {
   __typename: "DiagnosticJson";
-  itemid: string | null;
   itemname: string | null;
 }
 
