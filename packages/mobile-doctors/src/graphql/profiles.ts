@@ -662,3 +662,32 @@ export const INITIATE_RESCHDULE_APPONITMENT = gql`
     }
   }
 `;
+
+export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
+  query SearchDoctorAndSpecialtyByName($searchText: String!) {
+    SearchDoctorAndSpecialtyByName(searchText: $searchText) {
+      doctors {
+        firstName
+        lastName
+        specialty {
+          name
+        }
+        specialization
+        photoUrl
+        id
+        experience
+        doctorHospital {
+          facility {
+            id
+            name
+          }
+        }
+      }
+      specialties {
+        id
+        name
+        image
+      }
+    }
+  }
+`;

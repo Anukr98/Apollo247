@@ -28,6 +28,16 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 
+import Pubnub from 'pubnub';
+
+const rescheduleconsult = '^^#rescheduleconsult';
+const config: Pubnub.PubnubConfig = {
+  subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
+  publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
+  ssl: true,
+};
+const pubnub = new Pubnub(config);
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -267,7 +277,31 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
       .then((_data) => {
         setIsLoading(false);
         console.log('data', _data);
-        Alert.alert('Success', 'Reschdule Successfully');
+        const reschduleObject: any = {
+          appointmentId: props.navigation.getParam('AppointmentId'),
+          transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
+            .rescheduledDateTime,
+          // photoUrl: photourl,
+          // doctorId: doctorId,
+          // specialtyId: specialityId,
+          // doctorName: doctorvalue,
+          // experience: experience + ' Yrs',
+          // specilty: doctorSpeciality,
+          // hospitalDoctorId: hospitalId,
+          reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
+        };
+        pubnub.publish(
+          {
+            message: {
+              id: oldDoctorId,
+              message: rescheduleconsult,
+              transferInfo: reschduleObject,
+            },
+            channel: props.navigation.getParam('AppointmentId'), //chanel
+            storeInHistory: true,
+          },
+          (status, response) => {}
+        );
         props.navigation.push(AppRoutes.Appointments);
       })
       .catch((e) => {

@@ -21,6 +21,7 @@ import Pubnub from 'pubnub';
 import {
   SEARCH_DOCTOR_AND_SPECIALITY,
   INITIATE_TRANSFER_APPONITMENT,
+  SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   SearchDoctorAndSpecialty,
@@ -39,6 +40,12 @@ import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import {
+  SearchDoctorAndSpecialtyByName,
+  SearchDoctorAndSpecialtyByNameVariables,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties,
+} from '@aph/mobile-doctors/src/graphql/types/SearchDoctorAndSpecialtyByName';
 //import { doctorDetails } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
@@ -165,13 +172,14 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
   const [experience, setExperience] = useState<string | null>('');
   const [photourl, setPhotourl] = useState<string | null>('');
   const [filteredStarDoctors, setFilteredStarDoctors] = useState<
-    (SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors | null)[] | null
+    (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors | null)[] | null
   >([]);
   const [filterSpeciality, setfilterSpeciality] = useState<
-    (SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_specialties | null)[] | null
+    (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties | null)[] | null
   >([]);
   const [doctorsCard, setDoctorsCard] = useState<boolean>(false);
   const [doctorid, setDoctorId] = useState<string>('');
+  const [hospitalId, setHospitalId] = useState<string>('');
   const [specialityId, setSpecialityId] = useState<string>('');
   const [oldDoctorId, setOldDoctorId] = useState<string>('');
   const isEnabled = selectreason != 'Select a reason' && value.length > 0 && doctorvalue.length > 0;
@@ -243,15 +251,17 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
     id: string,
     specilty: string,
     ex: string | null,
-    photo: string | null
+    photo: string | null,
+    hospitalId: string
   ) => {
-    console.log('id', id);
+    console.log('hospitalId', hospitalId);
     setDoctorsCard(false);
     setDoctorValue(text);
     setDoctorSpeciality(specilty);
     setExperience(ex);
     setPhotourl(photo);
     setDoctorId(id);
+    setHospitalId(hospitalId);
   };
 
   const onPressDoctorSearchListItemSpeciality = (text: string, id: string, imageurl: string) => {
@@ -326,22 +336,25 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
     }
     // do api call
     client
-      .query<SearchDoctorAndSpecialty, SearchDoctorAndSpecialtyVariables>({
-        query: SEARCH_DOCTOR_AND_SPECIALITY,
+      .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
+        query: SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
         variables: { searchText: searchText },
       })
 
       .then((_data) => {
-        console.log('flitered array', _data.data.SearchDoctorAndSpecialty!.doctors);
-        console.log('flitered array1', _data.data.SearchDoctorAndSpecialty!);
+        console.log('flitered array', _data.data.SearchDoctorAndSpecialtyByName!.doctors);
+        console.log('flitered array1', _data.data.SearchDoctorAndSpecialtyByName!);
         // const doctorProfile = _data.map((i: DoctorProfile) => i.profile);
-        setFilteredStarDoctors(_data.data.SearchDoctorAndSpecialty!.doctors);
-        setfilterSpeciality(_data.data.SearchDoctorAndSpecialty!.specialties);
+        setFilteredStarDoctors(_data.data.SearchDoctorAndSpecialtyByName!.doctors);
+        setfilterSpeciality(_data.data.SearchDoctorAndSpecialtyByName!.specialties);
         setDoctorsCard(!doctorsCard);
       })
       .catch((e) => {
         console.log('Error occured while searching for Doctors', e);
-        //Alert.alert('Error', 'Error occured while searching for Doctors');
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while searching for Doctors', errorMessage, error);
+        Alert.alert('Error', errorMessage);
       });
   };
   const renderSuggestionCardDoctor = () => (
@@ -362,21 +375,23 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
           </Text>
           {filteredStarDoctors!.map(
             (
-              _doctor: SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors | null,
+              _doctor: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors | null,
               i,
               array
             ) => {
               console.log('_doctor', _doctor);
               const drName = _doctor!.firstName + _doctor!.lastName;
+
               return (
                 <TouchableOpacity
                   onPress={() =>
                     onPressDoctorSearchListItemDoctor(
                       _doctor!.firstName + _doctor!.lastName,
                       _doctor!.id,
-                      _doctor!.speciality,
+                      _doctor!.specialty.name,
                       _doctor!.experience,
-                      _doctor!.photoUrl
+                      _doctor!.photoUrl,
+                      _doctor!.doctorHospital[0].facility.id
                     )
                   }
                   style={{ marginHorizontal: 16 }}
@@ -411,7 +426,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
           </Text>
           {filterSpeciality!.map(
             (
-              _doctor: SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_specialties | null,
+              _doctor: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties | null,
               i,
               array
             ) => {
@@ -477,6 +492,8 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
           doctorName: doctorvalue,
           experience: experience + ' Yrs',
           specilty: doctorSpeciality,
+          hospitalDoctorId: hospitalId,
+          transferId: _data!.data!.initiateTransferAppointment!.transferAppointment!.id,
         };
         pubnub.publish(
           {
