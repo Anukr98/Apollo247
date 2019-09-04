@@ -24,9 +24,9 @@ export const addPatientMedicalRecordTypeDefs = gql`
   }
 
   input AddMedicalRecordParametersInput {
-    parameterName: String
+    parameterName: String!
     unit: String
-    result: Float
+    result: Float!
     minimum: Float
     maximum: Float
   }
