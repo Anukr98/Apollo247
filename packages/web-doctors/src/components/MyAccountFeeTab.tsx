@@ -31,6 +31,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& h5': {
         padding: '5px 5px 3px 20px',
+        fontWeight: 500,
       },
       '& h6': {
         color: '#658f9b',
@@ -228,7 +229,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       display: 'inline-block',
       width: '25%',
-      fontWeight: 500,
+      fontWeight: 'normal',
     },
     topBorder: {
       borderTop: 'solid 1px rgba(101,143,155,0.2)',
@@ -252,7 +253,7 @@ const useStyles = makeStyles((theme: Theme) => {
     navLeftIcon: {
       position: 'relative',
       top: 5,
-      height: 20,
+      width: 'auto',
       marginRight: 10,
     },
   };
@@ -335,19 +336,19 @@ export const MyAccountFeeTab: React.FC<FeesProps> = (props) => {
                       <Grid container alignItems="flex-start" spacing={0}>
                         <Grid item lg={12} sm={12} xs={12}>
                           <div className={classes.accountDetailsHeading}>Account Holder’s Name</div>
-                          <Typography variant="h5" className={classes.accountDetails}>
+                          <Typography className={classes.accountDetails}>
                             {data.bankAccount[0]!.accountHolderName}
                           </Typography>
                         </Grid>
                         <Grid item lg={12} sm={12} xs={12}>
                           <div className={classes.accountDetailsHeading}>IFSC Code</div>
-                          <Typography variant="h5" className={classes.accountDetails}>
+                          <Typography className={classes.accountDetails}>
                             {data.bankAccount![0]!.IFSCcode}
                           </Typography>
                         </Grid>
                         <Grid item lg={12} sm={12} xs={12}>
                           <div className={classes.accountDetailsHeading}>Account Type</div>
-                          <Typography variant="h5" className={classes.accountDetails}>
+                          <Typography className={classes.accountDetails}>
                             {data.bankAccount![0]!.accountType}
                           </Typography>
                         </Grid>

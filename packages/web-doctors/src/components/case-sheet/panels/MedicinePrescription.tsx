@@ -108,6 +108,9 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: 0,
       padding: 0,
       listStyleType: 'none',
+      color: '#02475b',
+      fontSize: 18,
+      fontWeight: 500,
     },
     root: {
       flexGrow: 1,
@@ -199,7 +202,12 @@ const useStyles = makeStyles((theme: Theme) =>
         borderRadius: 10,
         minwidth: 130,
         padding: '8px 20px',
+        fontSize: 14,
+        fontWeight: 600,
       },
+    },
+    updateBtn: {
+      backgroundColor: '#fc9916 !important',
     },
     cancelBtn: {
       fontSize: 14,
@@ -327,7 +335,7 @@ const useStyles = makeStyles((theme: Theme) =>
         borderBottom: '2px solid #00b38e',
       },
       '& input': {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: 500,
         color: '#02475b',
         paddingTop: 0,
@@ -939,7 +947,6 @@ export const MedicinePrescription: React.FC = () => {
                       <h6>Instructions (if any)</h6>
                       <div className={classes.numberTablets}>
                         <AphTextField
-                          placeholder="search"
                           value={medicineInstruction}
                           onChange={(event: any) => {
                             setMedicineInstruction(event.target.value);
@@ -972,6 +979,7 @@ export const MedicinePrescription: React.FC = () => {
                   ) : (
                     <AphButton
                       color="primary"
+                      className={classes.updateBtn}
                       onClick={() => {
                         addUpdateMedicines();
                       }}
