@@ -254,46 +254,46 @@ export const ConsultTabs: React.FC = () => {
           setError('');
           _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
             ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
-                .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
+              .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
             : setDiagnosis([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.symptoms
             ? setSymptoms((_data!.data!.getCaseSheet!.caseSheetDetails!
-                .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[])
+              .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[])
             : setSymptoms([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.otherInstructions
             ? setOtherInstructions((_data!.data!.getCaseSheet!.caseSheetDetails!
-                .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[])
+              .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[])
             : setOtherInstructions([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
             ? setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-                .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[])
+              .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[])
             : setDiagnosticPrescription([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.medicinePrescription
             ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-                .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
+              .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
             : setMedicinePrescription([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.notes
             ? setNotes((_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string)
             : setNotes('');
           _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
-                _data!.data!.getCaseSheet!.caseSheetDetails!.consultType,
-              ] as unknown) as string[])
+              _data!.data!.getCaseSheet!.caseSheetDetails!.consultType,
+            ] as unknown) as string[])
             : setConsultType([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.followUp
             ? setFollowUp(([
-                _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
-              ] as unknown) as boolean[])
+              _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
+            ] as unknown) as boolean[])
             : setFollowUp([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
             ? setFollowUpAfterInDays(([
-                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
-              ] as unknown) as string[])
+              _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
+            ] as unknown) as string[])
             : setFollowUpAfterInDays([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
             ? setFollowUpDate(([
-                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
-              ] as unknown) as string[])
+              _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
+            ] as unknown) as string[])
             : setFollowUpDate([]);
           if (
             _data.data &&
@@ -327,13 +327,13 @@ export const ConsultTabs: React.FC = () => {
         mutation: UPDATE_CASESHEET,
         variables: {
           UpdateCaseSheetInput: {
-            symptoms: diagnosis!.length > 0 ? JSON.stringify(symptoms) : null,
+            symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
             notes,
             diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
             diagnosticPrescription:
               diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
             followUp: followUp[0],
-            followUpDate: followUp[0] ? followUpDate[0] : null,
+            followUpDate: followUp[0] ? followUpDate[0] : '',
             followUpAfterInDays: followUp[0] ? followUpAfterInDays[0] : null,
             otherInstructions:
               otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
