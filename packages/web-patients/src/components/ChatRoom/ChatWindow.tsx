@@ -14,6 +14,7 @@ import {
 } from 'graphql/types/UpdateAppointmentSession';
 import { useMutation } from 'react-apollo-hooks';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import { DoctorChatCard } from 'components/ChatRoom/DoctorChatCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -258,6 +259,20 @@ const useStyles = makeStyles((theme: Theme) => {
         height: 40,
         borderRadius: 10,
         textAlign: 'center',
+      },
+    },
+    viewButton: {
+      width: 'calc(50% - 5px)',
+      marginLeft: 5,
+      display: 'block',
+      fontSize: 13,
+      backgroundColor: '#fcb716',
+      padding: 10,
+      height: 40,
+      borderRadius: 10,
+      marginRight: 0,
+      '&:hover': {
+        backgroundColor: '#fcb716 !important',
       },
     },
     borderSection: {
@@ -803,6 +818,23 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         <Link className={classes.acceptBtn} to="#">
                           Accept
                         </Link>
+                      </div>
+                    </div>
+                    <div className={classes.doctorImg}>
+                      <Avatar
+                        alt=""
+                        src={require('images/ic_chat_bot.svg')}
+                        className={classes.avatar}
+                      />
+                    </div>
+                  </div>
+                  <div className={classes.doctorChatWindow}>
+                    <div className={`${classes.doctorChatBubble} ${classes.blueBubble}`}>
+                      Your appointment has been transferred to —
+                      <DoctorChatCard />
+                      <div className={classes.bubbleActions}>
+                        <AphButton>Reschedule</AphButton>
+                        <AphButton className={classes.viewButton}>Accept</AphButton>
                       </div>
                     </div>
                     <div className={classes.doctorImg}>

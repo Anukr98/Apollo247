@@ -11,7 +11,6 @@ import { TransferAppointmentInput, TRANSFER_STATUS } from "./globalTypes";
 export interface InitiateTransferAppointment_initiateTransferAppointment_transferAppointment {
   __typename: "TransferAppointment";
   id: string;
-  appointmentId: string;
   transferStatus: TRANSFER_STATUS;
   transferReason: string;
   transferredDoctorId: string | null;
@@ -21,6 +20,7 @@ export interface InitiateTransferAppointment_initiateTransferAppointment_transfe
 export interface InitiateTransferAppointment_initiateTransferAppointment {
   __typename: "TransferAppointmentResult";
   transferAppointment: InitiateTransferAppointment_initiateTransferAppointment_transferAppointment | null;
+  doctorNextSlot: string | null;
 }
 
 export interface InitiateTransferAppointment {
