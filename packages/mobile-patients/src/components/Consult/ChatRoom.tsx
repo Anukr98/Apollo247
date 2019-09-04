@@ -21,7 +21,7 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   UPDATE_APPOINTMENT_SESSION,
-  BOOK_APPOINTMENT,
+  BOOK_APPOINTMENT_TRANSFER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   updateAppointmentSession,
@@ -62,10 +62,14 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Mutation } from 'react-apollo';
-import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
+import {
+  bookTransferAppointment,
+  bookTransferAppointmentVariables,
+} from '@aph/mobile-patients/src/graphql/types/bookTransferAppointment';
 import {
   BookAppointmentInput,
   APPOINTMENT_TYPE,
+  BookTransferAppointmentInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const { ExportDeviceToken } = NativeModules;
@@ -79,7 +83,7 @@ export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
   const appointmentData = props.navigation.state.params!.data;
-  console.log('appointmentData', appointmentData);
+  // console.log('appointmentData', appointmentData);
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
@@ -649,7 +653,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let rightComponent = 0;
 
   const renderChatRow = (
-    rowData: { id: string; message: string; duration: string },
+    rowData: { id: string; message: string; duration: string; transferInfo: any },
     index: number
   ) => {
     if (
@@ -868,169 +872,184 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               {rowData.message === transferConsultMsg ? (
                 <View
                   style={{
-                    backgroundColor: '#0087ba',
-                    width: 244,
-                    height: 354,
+                    backgroundColor: 'transparent',
+                    width: 282,
                     borderRadius: 10,
-                    ...theme.viewStyles.shadowStyle,
+                    marginVertical: 2,
+                    alignSelf: 'flex-start',
                   }}
                 >
-                  <Text
-                    style={{
-                      color: 'white',
-                      ...theme.fonts.IBMPlexSansMedium(15),
-                      lineHeight: 22,
-                      paddingHorizontal: 16,
-                      paddingTop: 12,
-                    }}
-                  >
-                    Your appointment has been transferred to —
-                  </Text>
-                  <View style={{ marginVertical: 12, marginHorizontal: 16 }}>
+                  {leftComponent === 1 && (
                     <View
                       style={{
-                        backgroundColor: 'white',
-                        marginTop: 24,
-                        marginHorizontal: 0,
-                        borderRadius: 5,
+                        width: 32,
+                        height: 32,
+                        bottom: 0,
+                        position: 'absolute',
+                        left: 0,
                       }}
                     >
-                      <Text
-                        style={{
-                          color: '#02475b',
-                          ...theme.fonts.IBMPlexSansMedium(18),
-                          marginLeft: 12,
-                          marginTop: 28,
-                        }}
-                      >
-                        Dr. {rowData.transferInfo.doctorName}
-                      </Text>
-                      <Text
-                        style={{
-                          color: '#0087ba',
-                          ...theme.fonts.IBMPlexSansSemiBold(12),
-                          marginLeft: 12,
-                          marginTop: 4,
-                          letterSpacing: 0.3,
-                        }}
-                      >
-                        {rowData.transferInfo.specilty} | {rowData.transferInfo.experience}
-                      </Text>
+                      {appointmentData.doctorInfo.photoUrl ? (
+                        <Image
+                          source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                          style={{
+                            width: 32,
+                            height: 32,
+                          }}
+                        />
+                      ) : (
+                        <DoctorImage
+                          style={{
+                            width: 32,
+                            height: 32,
+                            bottom: 0,
+                            position: 'absolute',
+                            left: 0,
+                          }}
+                        />
+                      )}
+                    </View>
+                  )}
+                  <View
+                    style={{
+                      backgroundColor: '#0087ba',
+                      width: 244,
+                      height: 354,
+                      borderRadius: 10,
+                      marginLeft: 38,
+                      ...theme.viewStyles.shadowStyle,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: 'white',
+                        ...theme.fonts.IBMPlexSansMedium(15),
+                        lineHeight: 22,
+                        paddingHorizontal: 16,
+                        paddingTop: 12,
+                      }}
+                    >
+                      Your appointment has been transferred to —
+                    </Text>
+                    <View style={{ marginVertical: 12, marginHorizontal: 16 }}>
                       <View
                         style={{
-                          marginHorizontal: 12,
-                          marginTop: 12,
-                          backgroundColor: '#02475b',
-                          opacity: 0.3,
-                          height: 1,
-                        }}
-                      />
-                      <Text
-                        style={{
-                          marginHorizontal: 12,
-                          marginTop: 11,
-                          ...theme.fonts.IBMPlexSansMedium(14),
-                          lineHeight: 20,
-                          color: '#02475b',
-                        }}
-                      >
-                        {moment
-                          .utc(rowData.transferInfo.transferDateTime)
-                          .local()
-                          .format('Do MMMM, dddd \nhh:mm a')}
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => {
-                          props.navigation.navigate(AppRoutes.ChooseDoctor);
+                          backgroundColor: 'white',
+                          marginTop: 24,
+                          marginHorizontal: 0,
+                          borderRadius: 5,
                         }}
                       >
                         <Text
                           style={{
-                            textAlign: 'right',
-                            color: '#fc9916',
-                            ...theme.fonts.IBMPlexSansBold(13),
-                            lineHeight: 24,
-                            marginHorizontal: 12,
-                            marginTop: 16,
-                            marginBottom: 12,
+                            color: '#02475b',
+                            ...theme.fonts.IBMPlexSansMedium(18),
+                            marginLeft: 12,
+                            marginTop: 28,
                           }}
                         >
-                          CHOOSE ANOTHER DOCTOR
+                          Dr. {rowData.transferInfo.doctorName}
                         </Text>
-                      </TouchableOpacity>
-                    </View>
-                    {rowData.transferInfo.photoUrl &&
-                    rowData.transferInfo.photoUrl.match(
-                      /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/
-                    ) ? (
-                      <Image
-                        source={{ uri: rowData.transferInfo.photoUrl }}
-                        style={{ position: 'absolute', width: 48, height: 48, top: 0, right: 12 }}
-                      />
-                    ) : (
-                      <DoctorImage
-                        style={{ position: 'absolute', width: 48, height: 48, top: 0, right: 12 }}
-                      />
-                    )}
-                  </View>
-                  <StickyBottomComponent
-                    style={{
-                      paddingHorizontal: 0,
-                      backgroundColor: 'transparent',
-                      shadowColor: 'transparent',
-                    }}
-                  >
-                    <Button
-                      title={'RESCHEDULE'}
-                      style={{
-                        flex: 0.5,
-                        marginLeft: 16,
-                        marginRight: 5,
-                        backgroundColor: 'transparent',
-                        borderWidth: 2,
-                        borderColor: '#fcb715',
-                      }}
-                      titleTextStyle={{ color: 'white' }}
-                      onPress={() => {}}
-                    />
-                    <Mutation<bookAppointment> mutation={BOOK_APPOINTMENT}>
-                      {(mutate, { loading, data, error }) => (
-                        <Button
-                          title={'ACCEPT'}
-                          style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
+                        <Text
+                          style={{
+                            color: '#0087ba',
+                            ...theme.fonts.IBMPlexSansSemiBold(12),
+                            marginLeft: 12,
+                            marginTop: 4,
+                            letterSpacing: 0.3,
+                          }}
+                        >
+                          {rowData.transferInfo.specilty} | {rowData.transferInfo.experience}
+                        </Text>
+                        <View
+                          style={{
+                            marginHorizontal: 12,
+                            marginTop: 12,
+                            backgroundColor: '#02475b',
+                            opacity: 0.3,
+                            height: 1,
+                          }}
+                        />
+                        <Text
+                          style={{
+                            marginHorizontal: 12,
+                            marginTop: 11,
+                            ...theme.fonts.IBMPlexSansMedium(14),
+                            lineHeight: 20,
+                            color: '#02475b',
+                          }}
+                        >
+                          {moment
+                            .utc(rowData.transferInfo.transferDateTime)
+                            .local()
+                            .format('Do MMMM, dddd \nhh:mm a')}
+                        </Text>
+                        <TouchableOpacity
                           onPress={() => {
-                            const appointmentInput: BookAppointmentInput = {
-                              patientId: patientId,
-                              doctorId: rowData.transferInfo.doctorId,
-                              appointmentDateTime: rowData.transferInfo.transferDateTime, //appointmentDate,
-                              appointmentType:
-                                appointmentData.appointmentType === 'ONLINE'
-                                  ? APPOINTMENT_TYPE.ONLINE
-                                  : APPOINTMENT_TYPE.PHYSICAL,
-                              hospitalId: rowData.transferInfo.hospitalDoctorId,
-                            };
-                            console.log(appointmentInput, 'appointmentInput');
-                            mutate({
-                              variables: {
-                                bookAppointment: appointmentInput,
-                              },
+                            props.navigation.navigate(AppRoutes.ChooseDoctor, {
+                              data: rowData.transferInfo,
                             });
                           }}
                         >
-                          {data
-                            ? (console.log('bookAppointment data', data),
-                              setTransferAccept(true),
-                              setTransferDcotorName(rowData.transferInfo.doctorName),
-                              setTimeout(() => {
-                                setTransferAccept(false);
-                              }, 1000))
-                            : null}
-                          {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
-                          {error ? console.log('bookAppointment error', error) : null}
-                        </Button>
+                          <Text
+                            style={{
+                              textAlign: 'right',
+                              color: '#fc9916',
+                              ...theme.fonts.IBMPlexSansBold(13),
+                              lineHeight: 24,
+                              marginHorizontal: 12,
+                              marginTop: 16,
+                              marginBottom: 12,
+                            }}
+                          >
+                            CHOOSE ANOTHER DOCTOR
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                      {rowData.transferInfo.photoUrl &&
+                      rowData.transferInfo.photoUrl.match(
+                        /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/
+                      ) ? (
+                        <Image
+                          source={{ uri: rowData.transferInfo.photoUrl }}
+                          style={{ position: 'absolute', width: 48, height: 48, top: 0, right: 12 }}
+                        />
+                      ) : (
+                        <DoctorImage
+                          style={{ position: 'absolute', width: 48, height: 48, top: 0, right: 12 }}
+                        />
                       )}
-                    </Mutation>
-                  </StickyBottomComponent>
+                    </View>
+                    <StickyBottomComponent
+                      style={{
+                        paddingHorizontal: 0,
+                        backgroundColor: 'transparent',
+                        shadowColor: 'transparent',
+                      }}
+                    >
+                      <Button
+                        title={'RESCHEDULE'}
+                        style={{
+                          flex: 0.5,
+                          marginLeft: 16,
+                          marginRight: 5,
+                          backgroundColor: 'transparent',
+                          borderWidth: 2,
+                          borderColor: '#fcb715',
+                        }}
+                        titleTextStyle={{ color: 'white' }}
+                        onPress={() => {}}
+                      />
+
+                      <Button
+                        title={'ACCEPT'}
+                        style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
+                        onPress={() => {
+                          transferAppointmentAPI(rowData);
+                        }}
+                      />
+                    </StickyBottomComponent>
+                  </View>
                 </View>
               ) : (
                 <View
@@ -1171,6 +1190,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         </View>
       );
     }
+  };
+
+  const transferAppointmentAPI = (rowData) => {
+    Keyboard.dismiss();
+    const appointmentTransferInput: BookTransferAppointmentInput = {
+      patientId: patientId,
+      doctorId: rowData.transferInfo.doctorId,
+      appointmentDateTime: rowData.transferInfo.transferDateTime, //appointmentDate,
+      existingAppointmentId: channel,
+      transferId: rowData.transferInfo.transferId,
+    };
+    console.log(appointmentTransferInput, 'appointmentTransferInput');
+
+    client
+      .mutate<bookTransferAppointment, bookTransferAppointmentVariables>({
+        mutation: BOOK_APPOINTMENT_TRANSFER,
+        variables: {
+          BookTransferAppointmentInput: appointmentTransferInput,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        setTransferAccept(true),
+          setTransferDcotorName(rowData.transferInfo.doctorName),
+          setTimeout(() => {
+            setTransferAccept(false);
+          }, 1000);
+      })
+      .catch((e: string) => {
+        console.log('Error occured while adding Doctor', e);
+      });
   };
 
   const renderChatView = () => {

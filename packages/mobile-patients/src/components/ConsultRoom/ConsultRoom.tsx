@@ -257,6 +257,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 variables: {
                   SaveDeviceTokenInput: input,
                 },
+                fetchPolicy: 'no-cache',
               })
               .then((data: any) => {
                 console.log('APICALLED', data.data.saveDeviceToken.deviceToken);

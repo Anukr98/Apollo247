@@ -1,25 +1,26 @@
+import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
+import { ReschedulePopUp } from '@aph/mobile-patients/src/components/Consult/ReschedulePopUp';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Location, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { More } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
 import {
+  AsyncStorage,
+  Dimensions,
   Image,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Dimensions,
-  AsyncStorage,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
-import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { ReschedulePopUp } from '@aph/mobile-patients/src/components/Consult/ReschedulePopUp';
 
 const { width, height } = Dimensions.get('window');
 
@@ -74,7 +75,7 @@ export interface AppointmentOnlineDetailsProps extends NavigationScreenProps {}
 export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> = (props) => {
   const data = props.navigation.state.params!.data;
   const doctorDetails = data.doctorInfo;
-  console.log('doctorDetails', doctorDetails);
+  console.log('doctorDetails', data);
 
   // console.log(
   //   props.navigation.state.params!.data,
@@ -84,8 +85,30 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [resheduleoverlay, setResheduleoverlay] = useState<boolean>(false);
+  const [appointmentTime, setAppointmentTime] = useState<string>('');
 
   const { currentPatient } = useAllCurrentPatients();
+
+  useEffect(() => {
+    const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
+      moment(data.appointmentDateTime).format('YYYY-MM-DD')
+    );
+    console.log('dateValidate', dateValidate);
+
+    if (dateValidate == 0) {
+      const time = `Today, ${moment
+        .utc(data.appointmentDateTime)
+        .local()
+        .format('hh:mm a')}`;
+      setAppointmentTime(time);
+    } else {
+      const time = `${moment
+        .utc(data.appointmentDateTime)
+        .local()
+        .format('DD MMM h:mm A')}`;
+      setAppointmentTime(time);
+    }
+  }, []);
 
   const acceptChange = () => {
     console.log('acceptChange');
@@ -145,7 +168,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 </Text>
                 <View style={styles.separatorStyle} />
                 <Text style={styles.doctorNameStyle}>Dr. {data.doctorInfo.firstName}</Text>
-                <Text style={styles.timeStyle}>Today, 6:30 pm</Text>
+                <Text style={styles.timeStyle}>{appointmentTime}</Text>
 
                 <View style={styles.labelViewStyle}>
                   <Text style={styles.labelStyle}>Payment</Text>

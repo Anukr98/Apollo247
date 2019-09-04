@@ -603,7 +603,7 @@ export const PhysicalConsult: React.FC<IconProps> = (props) => (
 
 export const Loader: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ height: 76, width: 26 }}
+    style={{ height: 26, width: 76 }}
     {...props}
     source={require('./icons/ic_loader.png')}
   />

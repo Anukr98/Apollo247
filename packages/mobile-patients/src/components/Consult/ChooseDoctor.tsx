@@ -1,36 +1,32 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  Dimensions,
+  RadioButtonIcon,
+  RadioButtonUnselectedIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { CHOOSE_DOCTOR } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getAvailableDoctors,
+  getAvailableDoctorsVariables,
+  getAvailableDoctors_getAvailableDoctors_availalbeDoctors,
+} from '@aph/mobile-patients/src/graphql/types/getAvailableDoctors';
+import { ChooseDoctorInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { string } from '@aph/mobile-patients/src/strings/string';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
   FlatList,
-  Keyboard,
+  Image,
   SafeAreaView,
-  StatusBar,
+  StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
-  Alert,
-  Platform,
-  KeyboardAvoidingView,
-  KeyboardEvent,
-  AsyncStorage,
-  Image,
-  NativeModules,
-  StyleSheet,
-  ImageSourcePropType,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { string } from '@aph/mobile-patients/src/strings/string';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import {
-  RadioButtonUnselectedIcon,
-  RadioButtonIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-
-const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   headerText: {
@@ -78,47 +74,55 @@ const styles = StyleSheet.create({
   },
 });
 
-type ArrayDoctor = {
-  id: number;
-  name: string;
-  qualification: string;
-  experience: string;
-  appointmentTime: string;
-  image: ImageSourcePropType;
-};
-
-const ArrayDoctor: ArrayDoctor[] = [
-  {
-    id: 1,
-    name: 'Dr. Jayanth Reddy',
-    qualification: 'GENERAL PHYSICIAN',
-    experience: '5 YRS',
-    appointmentTime: '18th May, Monday, 9:00 am',
-    image: require('@aph/mobile-patients/src/components/ui/icons/narayanRao.png'),
-  },
-  {
-    id: 2,
-    name: 'Dr. Jayanth Reddy',
-    qualification: 'GENERAL PHYSICIAN',
-    experience: '5 YRS',
-    appointmentTime: '18th May, Monday, 9:00 am',
-    image: require('@aph/mobile-patients/src/components/ui/icons/narayanRao.png'),
-  },
-  {
-    id: 3,
-    name: 'Dr. Jayanth Reddy',
-    qualification: 'GENERAL PHYSICIAN',
-    experience: '5 YRS',
-    appointmentTime: '18th May, Monday, 9:00 am',
-    image: require('@aph/mobile-patients/src/components/ui/icons/narayanRao.png'),
-  },
-];
-
 export interface ChooseDoctorProps extends NavigationScreenProps {}
 export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
   const [rowSelected, setRowSelected] = useState<number>(0);
+  const [chooseDoctorResult, setChooseDoctorResult] = useState([]);
+  const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
 
-  const renderRow = (rowData: ArrayDoctor, index: number) => {
+  const appointmentData = props.navigation.state.params!.data;
+
+  useEffect(() => {
+    chooseDoctor();
+  });
+
+  const client = useApolloClient();
+
+  const chooseDoctor = () => {
+    const appointmentTransferInput: ChooseDoctorInput = {
+      slotDateTime: appointmentData.transferDateTime,
+      specialityId: appointmentData.specialtyId,
+    };
+    console.log(appointmentTransferInput, 'appointmentTransferInput');
+    if (!deviceTokenApICalled) {
+      setDeviceTokenApICalled(true);
+
+      client
+        .query<getAvailableDoctors, getAvailableDoctorsVariables>({
+          query: CHOOSE_DOCTOR,
+          variables: {
+            ChooseDoctorInput: appointmentTransferInput,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data: any) => {
+          console.log('data', data);
+          data &&
+            data.data &&
+            data.data.getAvailableDoctors &&
+            data.data.getAvailableDoctors.availalbeDoctors &&
+            setChooseDoctorResult(data.data.getAvailableDoctors.availalbeDoctors);
+        })
+        .catch((e: string) => {
+          console.log('Error occured while adding Doctor', e);
+        });
+    }
+  };
+
+  const renderRow = (
+    rowData: getAvailableDoctors_getAvailableDoctors_availalbeDoctors,
+    index: number
+  ) => {
     return (
       <>
         <TouchableOpacity
@@ -137,22 +141,32 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
                   style={{ marginHorizontal: 18, marginTop: 18, width: 20, height: 20 }}
                 />
               )}
-
               <View>
-                <Text style={styles.nameStyles}>{rowData.name}</Text>
-                <Text style={styles.qualificationStyles}>
-                  {rowData.qualification} | {rowData.experience}
-                </Text>
+                <Text style={styles.nameStyles}>{rowData.doctorFirstName}</Text>
+                <Text style={styles.qualificationStyles}>Physician | 7 Yrs</Text>
               </View>
-              <Image
-                style={{ height: 40, width: 40, marginTop: 16, marginLeft: 35 }}
-                source={rowData.image}
-              />
+              {rowData.doctorPhoto &&
+              rowData.doctorPhoto.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) ? (
+                <Image
+                  style={{ height: 40, width: 40, marginTop: 16, marginLeft: 35 }}
+                  source={{ uri: rowData.doctorPhoto }}
+                />
+              ) : (
+                <View
+                  style={{ height: 40, width: 40, marginTop: 16, marginLeft: 35, borderRadius: 20 }}
+                />
+              )}
             </View>
             <View style={styles.seperatorStyles} />
-            <Text style={styles.appointmentStyles}>{rowData.appointmentTime}</Text>
+            <Text style={styles.appointmentStyles}>
+              {moment
+                .utc(rowData.availableSlot)
+                .local()
+                .format('Do MMMM, dddd, hh:mm a')}
+            </Text>
           </View>
         </TouchableOpacity>
+        {index === chooseDoctorResult.length - 1 && <View style={{ height: 30, marginTop: 0 }} />}
       </>
     );
   };
@@ -161,15 +175,13 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
     return (
       <View>
         <FlatList
-          keyboardShouldPersistTaps="always"
-          keyboardDismissMode="on-drag"
           removeClippedSubviews={false}
-          contentContainerStyle={{
+          style={{
             marginTop: 16,
-            marginBottom: 20,
+            marginBottom: 180,
           }}
           bounces={false}
-          data={ArrayDoctor}
+          data={chooseDoctorResult}
           onEndReachedThreshold={0.1}
           renderItem={({ item, index }) => renderRow(item, index)}
           keyExtractor={(_, index) => index.toString()}
