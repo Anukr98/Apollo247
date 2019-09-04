@@ -169,6 +169,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
               shadowRadius: 20,
               backgroundColor: theme.colors.WHITE,
             }}
+            headingTextStyle={{ paddingBottom: 20 }}
             heading={string.login.welcome_text}
             description={string.login.welcome_desc}
             descriptionTextStyle={{ paddingBottom: 45 }}
@@ -202,7 +203,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             <TextInputComponent label={'Date Of Birth'} noInput={true} />
             <View style={{ marginTop: -5 }}>
               <View style={{ paddingTop: 0, paddingBottom: 10 }}>
-                <TouchableOpacity activeOpacity={1}
+                <TouchableOpacity
+                  activeOpacity={1}
                   style={styles.placeholderViewStyle}
                   onPress={() => {
                     Keyboard.dismiss();
