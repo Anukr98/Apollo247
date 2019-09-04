@@ -78,6 +78,7 @@ const uploadFile: Resolver<
       throw error;
     });
   console.log('file saved!', readmeBlob.url);
+  fs.unlinkSync(localFilePath);
   return { filePath: readmeBlob.url };
 };
 
