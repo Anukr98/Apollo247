@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, STATUS, DoctorType } from "./globalTypes";
+import { Gender, Relation, STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCaseSheet

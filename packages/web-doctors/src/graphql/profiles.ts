@@ -591,3 +591,11 @@ export const SEARCH_DIAGNOSIS = gql`
     }
   }
 `;
+export const SEARCH_DIAGNOSTIC = gql`
+ query SearchDiagnostic($searchString: String!) {
+ searchDiagnostic(searchString: $searchString) {
+ itemid
+ itemname
+ }
+ }
+`;
