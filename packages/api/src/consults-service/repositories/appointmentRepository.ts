@@ -333,4 +333,13 @@ export class AppointmentRepository extends Repository<Appointment> {
   checkDoctorAppointmentByDate(doctorId: string, appointmentDateTime: Date) {
     return this.count({ where: { doctorId, appointmentDateTime } });
   }
+
+  rescheduleAppointment(
+    id: string,
+    appointmentDateTime: Date,
+    rescheduleCount: number,
+    appointmentState: APPOINTMENT_STATE
+  ) {
+    return this.update(id, { appointmentDateTime, rescheduleCount, appointmentState });
+  }
 }

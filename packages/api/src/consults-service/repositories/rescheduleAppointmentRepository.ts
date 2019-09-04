@@ -1,7 +1,7 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { RescheduleAppointmentDetails } from 'consults-service/entities';
+import { RescheduleAppointmentDetails, TRANSFER_STATUS } from 'consults-service/entities';
 
 @EntityRepository(RescheduleAppointmentDetails)
 export class RescheduleAppointmentRepository extends Repository<RescheduleAppointmentDetails> {
@@ -17,5 +17,9 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
 
   checkTransfer(appointment: string, transferedDocotrId: string) {
     return this.count({ where: { appointment, transferedDocotrId } });
+  }
+
+  updateReschedule(id: string, rescheduleStatus: TRANSFER_STATUS) {
+    return this.update(id, { rescheduleStatus });
   }
 }
