@@ -28,8 +28,10 @@ interface OptionType {
 }
 
 let suggestions: OptionType[] = [
-  { instruction: 'Sore Throat', __typename: 'OtherInstructions' },
-  { instruction: 'Sorosis', __typename: 'OtherInstructions' },
+  { instruction: 'Drink more water in a day', __typename: 'OtherInstructions' },
+  { instruction: 'Eat 1 apple every morning', __typename: 'OtherInstructions' },
+  { instruction: 'Eat more fruits', __typename: 'OtherInstructions' },
+  { instruction: 'Do some exercise in morning', __typename: 'OtherInstructions' },
 ];
 
 // const suggestions: OptionType[] = [];
