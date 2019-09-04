@@ -4,7 +4,6 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { Doctor } from 'doctors-service/entities';
-import { rejects } from 'assert';
 
 export const chooseDoctorTypeDefs = gql`
   input ChooseDoctorInput {

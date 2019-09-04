@@ -1,16 +1,10 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import {
-  Appointment,
-  APPOINTMENT_STATE,
-  TRANSFER_INITIATED_TYPE,
-  STATUS,
-} from 'consults-service/entities';
+import { TRANSFER_INITIATED_TYPE, STATUS } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 
 export const cancelAppointmentTypeDefs = gql`
   input CancelAppointmentInput {

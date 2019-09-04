@@ -53,6 +53,10 @@ import {
   cancelAppointmentTypeDefs,
   cancelAppointmentResolvers,
 } from 'consults-service/resolvers/cancelAppointment';
+import {
+  bookFollowUpAppointmentTypeDefs,
+  bookFollowUpAppointmentResolvers,
+} from 'consults-service/resolvers/bookFollowUpAppointment';
 import { GraphQLDate, GraphQLDateTime, GraphQLTime } from 'graphql-iso-date';
 import gql from 'graphql-tag';
 import 'reflect-metadata';
@@ -142,6 +146,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: cancelAppointmentTypeDefs,
         resolvers: cancelAppointmentResolvers,
+      },
+      {
+        typeDefs: bookFollowUpAppointmentTypeDefs,
+        resolvers: bookFollowUpAppointmentResolvers,
       },
     ]),
   });

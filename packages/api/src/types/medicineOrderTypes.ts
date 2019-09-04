@@ -16,3 +16,7 @@ export interface PharmaLineItem {
   Price: number;
   Status: boolean;
 }
+
+export interface PrescriptionUrl {
+  url: string;
+}
