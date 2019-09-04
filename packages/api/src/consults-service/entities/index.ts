@@ -81,6 +81,12 @@ export class Appointment extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   bookingDate: Date;
 
+  @Column({ nullable: true })
+  cancelledBy: TRANSFER_INITIATED_TYPE;
+
+  @Column({ nullable: true })
+  cancelledById: string;
+
   @OneToMany((type) => CaseSheet, (caseSheet) => caseSheet.appointment)
   caseSheet: CaseSheet[];
 
@@ -110,6 +116,9 @@ export class Appointment extends BaseEntity {
 
   @Column({ nullable: true })
   parentId: string;
+
+  @Column({ default: 0 })
+  rescheduleCount: number;
 
   @Column()
   status: STATUS;

@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme: Theme) => {
     headerSticky: {
       position: 'fixed',
       width: '100%',
-      zIndex: 99,
+      zIndex: 9999,
       top: 0,
     },
     container: {
@@ -164,7 +164,7 @@ const useStyles = makeStyles((theme: Theme) => {
     navLeftIcon: {
       position: 'relative',
       top: 5,
-      height: 20,
+      width: 'auto',
       marginRight: 19,
       marginLeft: 9,
     },

@@ -29,6 +29,7 @@ export enum ConsultType {
 
 export enum DoctorType {
   APOLLO = "APOLLO",
+  JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   STAR_APOLLO = "STAR_APOLLO",
 }
@@ -132,6 +133,15 @@ export interface CreateAppointmentSessionInput {
 export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;
+}
+
+export interface RescheduleAppointmentInput {
+  appointmentId: string;
+  rescheduleReason: string;
+  rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE;
+  rescheduleInitiatedId: string;
+  rescheduledDateTime?: any | null;
+  autoSelectSlot?: number | null;
 }
 
 export interface TransferAppointmentInput {

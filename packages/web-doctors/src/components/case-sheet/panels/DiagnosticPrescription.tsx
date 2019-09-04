@@ -8,6 +8,9 @@ import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
+import { useApolloClient } from 'react-apollo-hooks';
+import { SEARCH_DIAGNOSTIC } from 'graphql/profiles';
+import { SearchDiagnostic } from 'graphql/types/SearchDiagnostic';
 // import {
 //   GetJuniorDoctorCaseSheet,
 //   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
@@ -19,14 +22,11 @@ import {
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
 interface OptionType {
-  name: string;
+  itemname: string;
   __typename: 'DiagnosticPrescription';
 }
 
-let suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [
-  { name: 'Ultrasound', __typename: 'DiagnosticPrescription' },
-  { name: 'Ultra-something else', __typename: 'DiagnosticPrescription' },
-];
+let suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [];
 
 function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -52,8 +52,8 @@ function renderSuggestion(
   suggestion: OptionType | null,
   { query, isHighlighted }: Autosuggest.RenderSuggestionParams
 ) {
-  const matches = match(suggestion!.name, query);
-  const parts = parse(suggestion!.name, matches);
+  const matches = match(suggestion!.itemname, query);
+  const parts = parse(suggestion!.itemname, matches);
 
   return (
     <MenuItem selected={isHighlighted} component="div">
@@ -66,31 +66,6 @@ function renderSuggestion(
       </div>
     </MenuItem>
   );
-}
-
-function getSuggestions(value: string) {
-  const inputValue = deburr(value.trim()).toLowerCase();
-  const inputLength = inputValue.length;
-  let count = 0;
-
-  return inputLength === 0
-    ? []
-    : suggestions.filter((suggestion) => {
-        const keep =
-          count < 5 &&
-          suggestion !== null &&
-          suggestion.name!.slice(0, inputLength).toLowerCase() === inputValue;
-
-        if (keep) {
-          count += 1;
-        }
-
-        return keep;
-      });
-}
-
-function getSuggestionValue(suggestion: OptionType | null) {
-  return suggestion!.name;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -226,18 +201,65 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export const DiagnosticPrescription: React.FC = () => {
   const classes = useStyles();
+  const [searchInput, setSearchInput] = useState('');
   const {
     diagnosticPrescription: selectedValues,
     setDiagnosticPrescription: setSelectedValues,
   } = useContext(CaseSheetContext);
   const [idx, setIdx] = React.useState();
+  const client = useApolloClient();
+
+  const fetchDignostic = async (value: string) => {
+    client
+      .query<SearchDiagnostic, any>({
+        query: SEARCH_DIAGNOSTIC,
+        variables: { searchString: value },
+      })
+      .then((_data: any) => {
+        console.log(_data!.data!.searchDiagnostic!);
+        suggestions = _data!.data!.searchDiagnostic!;
+        setSearchInput(value);
+      })
+      .catch((e) => {
+        console.log('Error occured while searching for Doctors', e);
+      });
+  };
+  const getSuggestions = (value: string) => {
+    const inputValue = deburr(value.trim()).toLowerCase();
+    const inputLength = inputValue.length;
+    let count = 0;
+
+    return inputLength === 0
+      ? []
+      : suggestions.filter((suggestion) => {
+          const keep =
+            count < 5 &&
+            suggestion !== null &&
+            suggestion.itemname!.slice(0, inputLength).toLowerCase() === inputValue;
+
+          if (keep) {
+            count += 1;
+          }
+
+          return keep;
+        });
+  };
+
+  function getSuggestionValue(suggestion: OptionType | null) {
+    return suggestion!.itemname;
+  }
+  useEffect(() => {
+    if (searchInput.length > 2) {
+      setSuggestions(getSuggestions(searchInput));
+    }
+  }, [searchInput]);
 
   useEffect(() => {
     if (idx >= 0) {
       setSelectedValues(selectedValues);
       suggestions!.map((item, idx) => {
         selectedValues!.map((val) => {
-          if (item!.name === val.name) {
+          if (item!.itemname === val.itemname) {
             const indexDelete = suggestions.indexOf(item);
             suggestions!.splice(indexDelete, 1);
           }
@@ -262,13 +284,14 @@ export const DiagnosticPrescription: React.FC = () => {
     setSuggestions([]);
   };
 
-  const handleChange = (name: keyof typeof state) => (
+  const handleChange = (itemname: keyof typeof state) => (
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
+    if (newValue.length > 2) fetchDignostic(newValue);
     setState({
       ...state,
-      [name]: newValue,
+      [itemname]: newValue,
     });
   };
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
@@ -302,7 +325,7 @@ export const DiagnosticPrescription: React.FC = () => {
               <Chip
                 className={classes.othersBtn}
                 key={idx}
-                label={item!.name}
+                label={item!.itemname}
                 onDelete={() => handleDelete(item, idx)}
                 deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
               />

@@ -9,7 +9,7 @@ import { MedicineOrdersRepository } from 'profiles-service/repositories/Medicine
 export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
   enum MEDICINE_DELIVERY_TYPE {
     HOME_DELIVERY
-    STORE_PICK_UP
+    STORE_PICKUP
   }
 
   enum MEDICINE_ORDER_TYPE {
@@ -67,12 +67,14 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
 
   type MedicineOrderRecord {
     id: ID!
+    orderAutoId: Int
     orderDateTime: DateTime
     quoteDateTime: DateTime
     deliveryType: MEDICINE_DELIVERY_TYPE
     currentStatus: MEDICINE_ORDER_STATUS
     orderType: MEDICINE_ORDER_TYPE
-    estimatedAmount: Int
+    estimatedAmount: Float
+    deliveryCharges: Float
     prescriptionImageUrl: String
     shopId: String
     medicineOrderLineItems: [Medicine]
@@ -130,12 +132,8 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
 
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const patientAppointments = await appts.getPatientPastAppointments(patient, offset, limit);
-  console.log(patientAppointments);
-
   const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
   const patientMedicineOrders = await medicineOrdersRepo.findByPatientId(patient, offset, limit);
-  console.log(patientMedicineOrders);
-
   return { consults: patientAppointments, medicineOrders: patientMedicineOrders };
 };
 

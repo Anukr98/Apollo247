@@ -6,6 +6,7 @@ export const clientRoutes = {
   DoctorsProfile: () => '/profile',
   MyAccount: () => '/myaccount',
   PatientLog: () => '/patientlog',
+  PatientLogDetailsPage: (appointmentId: string) => `/patientlogdetailspage/${appointmentId}`,
   testsAndMedicine: () => '#',
   healthRecords: () => '#',
   calendar: () => '/calendar',

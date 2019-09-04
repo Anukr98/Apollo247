@@ -61,7 +61,7 @@ export enum UPLOAD_FILE_TYPES {
 
 export enum MEDICINE_DELIVERY_TYPE {
   HOME_DELIVERY = 'HOME_DELIVERY',
-  STORE_PICK_UP = 'STORE_PICK_UP',
+  STORE_PICKUP = 'STORE_PICKUP',
 }
 
 export enum MEDICINE_ORDER_TYPE {
@@ -71,8 +71,8 @@ export enum MEDICINE_ORDER_TYPE {
 
 export enum MEDICINE_ORDER_PAYMENT_TYPE {
   COD = 'COD',
-  ONLINE = 'ONLINE',
   NO_PAYMENT = 'NO_PAYMENT',
+  CASHLESS = 'CASHLESS',
 }
 
 export enum DEVICE_TYPE {
@@ -382,6 +382,9 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => MedicineOrders, (medicineOrders) => medicineOrders.patient)
   medicineOrders: MedicineOrders[];
 
+  @OneToMany((type) => MedicalRecords, (medicalRecords) => medicalRecords.patient)
+  medicalRecords: MedicalRecords[];
+
   @Column()
   @Validate(MobileNumberValidator)
   mobileNumber: string;
@@ -640,3 +643,102 @@ export class PatientNotificationSettings extends BaseEntity {
   }
 }
 //patient notification settings ends
+
+//MedicalRecords starts
+@Entity()
+export class MedicalRecords extends BaseEntity {
+  @Column({ nullable: true, type: 'text' })
+  additionalNotes: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true, type: 'text' })
+  documentURLs: string;
+
+  @OneToMany(
+    (type) => MedicalRecordParameters,
+    (medicalRecordParameters) => medicalRecordParameters.medicalRecords
+  )
+  medicalRecordParameters: MedicalRecordParameters[];
+
+  @Column({ nullable: true, type: 'text' })
+  observations: string;
+
+  @ManyToOne((type) => Patient, (patient) => patient.medicalRecords)
+  patient: Patient;
+
+  @Column()
+  recordType: string;
+
+  @Column({ nullable: true })
+  referringDoctor: string;
+
+  @Column({ nullable: true })
+  sourceName: string;
+
+  @Column()
+  testName: string;
+
+  @Column()
+  testDate: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//MedicalRecords ends
+
+//MedicalRecordParameters starts
+@Entity()
+export class MedicalRecordParameters extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column('decimal', { precision: 5, scale: 2 })
+  maximum: number;
+
+  @ManyToOne((type) => MedicalRecords, (medicalRecords) => medicalRecords.medicalRecordParameters)
+  medicalRecords: MedicalRecords;
+
+  @Column('decimal', { precision: 5, scale: 2 })
+  minimum: number;
+
+  @Column()
+  parameterName: string;
+
+  @Column('decimal', { precision: 5, scale: 2 })
+  result: number;
+
+  @Column()
+  unit: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//MedicalRecordParameters ends

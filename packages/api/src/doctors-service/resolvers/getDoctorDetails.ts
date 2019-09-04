@@ -25,6 +25,7 @@ export const getDoctorDetailsTypeDefs = gql`
     APOLLO
     PAYROLL
     STAR_APOLLO
+    JUNIOR
   }
 
   enum LoggedInUserType {

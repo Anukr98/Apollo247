@@ -9,8 +9,44 @@ import { AphError } from 'AphError';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { Patient } from 'profiles-service/entities';
+import { DiagnosisData } from 'consults-service/data/diagnosis';
+import { DiagnosticData } from 'consults-service/data/diagnostics';
+
+export type DiagnosisJson = {
+  name: string;
+  id: string;
+};
+
+export type DiagnosticJson = {
+  itemid: string;
+  itemname: string;
+  itemcode: string;
+  ItemAliasName: string;
+  FromAgeInDays: number;
+  ToAgeInDays: number;
+  Gender: string;
+  LabName: string;
+  LabCode: string;
+  LabID: number;
+  Rate: number;
+  ScheduleRate: number;
+  FromDate: string;
+  ToDate: string;
+  ItemType: string;
+  TestInPackage: number;
+  NABL_CAP: string;
+  ItemRemarks: string;
+  Discounted: string;
+};
 
 export const caseSheetTypeDefs = gql`
+  enum DoctorType {
+    APOLLO
+    PAYROLL
+    STAR_APOLLO
+    JUNIOR
+  }
+
   enum Gender {
     MALE
     FEMALE
@@ -72,6 +108,7 @@ export const caseSheetTypeDefs = gql`
     diagnosis: [Diagnosis]
     diagnosticPrescription: [DiagnosticPrescription]
     doctorId: String
+    doctorType: DoctorType
     followUp: Boolean
     followUpAfterInDays: String
     followUpDate: String
@@ -88,7 +125,7 @@ export const caseSheetTypeDefs = gql`
   }
 
   type DiagnosticPrescription {
-    name: String
+    itemname: String
   }
 
   type MedicinePrescription {
@@ -169,6 +206,34 @@ export const caseSheetTypeDefs = gql`
     medicinePrescription: String
     id: String
   }
+
+  type DiagnosisJson {
+    name: String
+    id: String
+  }
+
+  type DiagnosticJson {
+    itemid: String
+    itemname: String
+    itemcode: String
+    ItemAliasName: String
+    FromAgeInDays: Int
+    ToAgeInDays: Int
+    Gender: String
+    LabName: String
+    LabCode: String
+    LabID: Int
+    Rate: Int
+    ScheduleRate: Int
+    FromDate: String
+    ToDate: String
+    ItemType: String
+    TestInPackage: String
+    NABL_CAP: String
+    ItemRemarks: String
+    Discounted: String
+  }
+
   extend type Mutation {
     createCaseSheet(CaseSheetInput: CaseSheetInput): CaseSheet
     updateCaseSheet(UpdateCaseSheetInput: UpdateCaseSheetInput): CaseSheet
@@ -177,6 +242,8 @@ export const caseSheetTypeDefs = gql`
   extend type Query {
     getJuniorDoctorCaseSheet(appointmentId: String): CaseSheetFullDetails
     getCaseSheet(appointmentId: String): CaseSheetFullDetails
+    searchDiagnosis(searchString: String): [DiagnosisJson]
+    searchDiagnostic(searchString: String): [DiagnosticJson]
   }
 `;
 
@@ -346,11 +413,35 @@ const updateCaseSheet: Resolver<
   return getUpdatedCaseSheet;
 };
 
+const searchDiagnosis: Resolver<
+  null,
+  { searchString: string },
+  ConsultServiceContext,
+  DiagnosisJson[]
+> = async (parent, args, { consultsDb }) => {
+  const result = DiagnosisData.filter((obj) =>
+    obj.name.toLowerCase().startsWith(args.searchString.toLowerCase())
+  );
+  return result;
+};
+
+const searchDiagnostic: Resolver<
+  null,
+  { searchString: string },
+  ConsultServiceContext,
+  DiagnosticJson[]
+> = async (parent, args, { consultsDb }) => {
+  const result = DiagnosticData.filter((obj) =>
+    obj.itemname.toLowerCase().startsWith(args.searchString.toLowerCase())
+  );
+  return result;
+};
+
 export const caseSheetResolvers = {
   Mutation: {
     createCaseSheet,
     updateCaseSheet,
   },
 
-  Query: { getJuniorDoctorCaseSheet, getCaseSheet },
+  Query: { getJuniorDoctorCaseSheet, getCaseSheet, searchDiagnosis, searchDiagnostic },
 };

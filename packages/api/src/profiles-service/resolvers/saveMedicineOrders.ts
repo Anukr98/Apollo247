@@ -33,7 +33,7 @@ export const saveMedicineOrderTypeDefs = gql`
 
   enum MEDICINE_DELIVERY_TYPE {
     HOME_DELIVERY
-    STORE_PICK_UP
+    STORE_PICKUP
   }
 
   enum MEDICINE_ORDER_TYPE {
@@ -47,7 +47,7 @@ export const saveMedicineOrderTypeDefs = gql`
     estimatedAmount: Float
     patientId: ID!
     medicineDeliveryType: MEDICINE_DELIVERY_TYPE!
-    patientAddressId: ID
+    patientAddressId: ID!
     devliveryCharges: Float
     prescriptionImageUrl: String
     items: [MedicineCartItem]
@@ -116,7 +116,6 @@ const SaveMedicineOrder: Resolver<
   ProfilesServiceContext,
   SaveMedicineOrderResult
 > = async (parent, { MedicineCartInput }, { profilesDb }) => {
-  console.log(MedicineCartInput, 'input');
   const errorCode = 0,
     errorMessage = '';
 
@@ -128,6 +127,7 @@ const SaveMedicineOrder: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+  //if (MedicineCartInput.medicineDeliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY) {
   const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
   const patientAddressDetails = await patientAddressRepo.findById(
     MedicineCartInput.patientAddressId
@@ -135,6 +135,8 @@ const SaveMedicineOrder: Resolver<
   if (!patientAddressDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
   }
+  //}
+
   const medicineOrderattrs: Partial<MedicineOrders> = {
     patient: patientDetails,
     estimatedAmount: MedicineCartInput.estimatedAmount,
@@ -172,7 +174,6 @@ const SaveMedicineOrder: Resolver<
       saveOrder.orderAutoId
     );
   }
-  //console.log(saveOrder, 'save order');
 
   return {
     errorCode,
