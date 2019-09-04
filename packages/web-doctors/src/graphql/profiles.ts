@@ -579,3 +579,11 @@ export const INITIATE_RESCHDULE_APPONITMENT = gql`
     }
   }
 `;
+export const SEARCH_DIAGNOSIS = gql`
+  query SearchDiagnosis($searchString: String!) {
+    searchDiagnosis(searchString: $searchString) {
+      name
+      id
+    }
+  }
+`;

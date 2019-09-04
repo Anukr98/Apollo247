@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Button, Modal, MenuItem, InputBase, Popover, Paper } from '@material-ui/core';
+import {
+  Theme,
+  Button,
+  Modal,
+  MenuItem,
+  InputBase,
+  Popover,
+  Paper,
+  FormHelperText,
+} from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Pubnub from 'pubnub';
 import moment from 'moment';
+import { isEmpty, debounce, trim } from 'lodash';
 import { AphSelect, AphTextField } from '@aph/web-ui-components';
 import { useAuth } from 'hooks/authHooks';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
@@ -42,6 +52,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     helpWrap: {
       paddingBottom: 0,
+    },
+    helpText: {
+      paddingLeft: 0,
+      paddingRight: 20,
     },
     breadcrumbs: {
       marginLeft: 20,
@@ -410,6 +424,10 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+interface errorObject {
+  reasonError: boolean;
+  searchError: boolean;
+}
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
@@ -454,6 +472,24 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
 
   const [anchorElThreeDots, setAnchorElThreeDots] = React.useState(null);
+  const [selectedDoctor, setSelectedDoctor] = useState<any>('');
+  const [errorState, setErrorState] = React.useState<errorObject>({
+    reasonError: false,
+    searchError: false,
+  });
+  const clearError = () => {
+    setErrorState({
+      ...errorState,
+      searchError: false,
+      reasonError: false,
+    });
+  };
+  const clearTransferField = () => {
+    setSelectedDoctor('');
+    setSearchKeyword('');
+    setReason('');
+    clearError();
+  };
   const startInterval = (timer: number) => {
     const current = new Date();
     const consult = new Date(props.appointmentDateTime);
@@ -553,6 +589,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const handleSpecialityClick = (value: any) => {
     setIsDoctorOrSpeciality(false);
     setSearchKeyword(value.name);
+    setSelectedDoctor(value.name);
     transferObject = {
       appointmentId: props.appointmentId,
       transferDateTime: '',
@@ -569,6 +606,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const handleDoctorClick = (value: any) => {
     setIsDoctorOrSpeciality(false);
     setSearchKeyword(value.firstName + ' ' + value.lastName);
+    setSelectedDoctor(value.firstName + ' ' + value.lastName);
     transferObject = {
       appointmentId: props.appointmentId,
       transferDateTime: '',
@@ -665,42 +703,62 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     );
   };
   const transferConsultAction = () => {
-    client
-      .mutate<InitiateTransferAppointment, InitiateTransferAppointmentVariables>({
-        mutation: INITIATE_TRANSFER_APPONITMENT,
-        variables: {
-          TransferAppointmentInput: {
-            appointmentId: props.appointmentId,
-            transferInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
-            transferInitiatedId: props.doctorId,
-            transferredDoctorId: transferObject.doctorId,
-            transferredSpecialtyId: transferObject.specialtyId,
-            transferReason: reason,
-            transferNotes: noteKeyword,
-          },
-        },
-      })
-      .then((_data: any) => {
-        transferObject.transferDateTime = _data!.data!.initiateTransferAppointment!.doctorNextSlot;
-        transferObject.transferId = _data!.data!.initiateTransferAppointment!.transferAppointment!.id;
-        console.log(transferObject);
-        pubnub.publish(
-          {
-            message: {
-              id: props.doctorId,
-              message: transferconsult,
-              transferInfo: transferObject,
-            },
-            channel: channel,
-            storeInHistory: true,
-          },
-          (status, response) => {}
-        );
-        //setIsTransferPopoverOpen(false);
-      })
-      .catch((e: any) => {
-        console.log('Error occured while searching for Initiate transfera apppointment', e);
+    if (isEmpty(reason)) {
+      setErrorState({
+        ...errorState,
+        reasonError: true,
+        searchError: false,
       });
+    } else if (isEmpty(selectedDoctor)) {
+      setErrorState({
+        ...errorState,
+        reasonError: false,
+        searchError: true,
+      });
+    } else {
+      setErrorState({
+        ...errorState,
+        reasonError: false,
+        searchError: false,
+      });
+      client
+        .mutate<InitiateTransferAppointment, InitiateTransferAppointmentVariables>({
+          mutation: INITIATE_TRANSFER_APPONITMENT,
+          variables: {
+            TransferAppointmentInput: {
+              appointmentId: props.appointmentId,
+              transferInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+              transferInitiatedId: props.doctorId,
+              transferredDoctorId: transferObject.doctorId,
+              transferredSpecialtyId: transferObject.specialtyId,
+              transferReason: reason,
+              transferNotes: noteKeyword,
+            },
+          },
+        })
+        .then((_data: any) => {
+          transferObject.transferDateTime = _data!.data!.initiateTransferAppointment!.doctorNextSlot;
+          transferObject.transferId = _data!.data!.initiateTransferAppointment!.transferAppointment!.id;
+          console.log(transferObject);
+          pubnub.publish(
+            {
+              message: {
+                id: props.doctorId,
+                message: transferconsult,
+                transferInfo: transferObject,
+              },
+              channel: channel,
+              storeInHistory: true,
+            },
+            (status, response) => {}
+          );
+          clearTransferField();
+          setIsTransferPopoverOpen(false);
+        })
+        .catch((e: any) => {
+          console.log('Error occured while searching for Initiate transfera apppointment', e);
+        });
+    }
   };
   const rescheduleConsultAction = () => {
     // do api call
@@ -1006,7 +1064,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <img
                 src={require('images/ic_cross.svg')}
                 alt=""
-                onClick={() => setIsTransferPopoverOpen(false)}
+                onClick={() => {
+                  clearTransferField();
+                  setIsTransferPopoverOpen(false);
+                }}
               />
             </Button>
           </div>
@@ -1029,6 +1090,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               onChange={(e: any) => {
                 setReason(e.target.value as string);
               }}
+              error={errorState.reasonError}
             >
               <MenuItem value="Reason 01" classes={{ selected: classes.menuSelected }}>
                 Reason 01
@@ -1043,6 +1105,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 Other
               </MenuItem>
             </AphSelect>
+            {errorState.reasonError && (
+              <FormHelperText
+                className={classes.helpText}
+                component="div"
+                error={errorState.reasonError}
+              >
+                Please select reason
+              </FormHelperText>
+            )}
           </div>
           <div className={classes.tabBody}>
             <p>Whom do you want to transfer this consult to?</p>
@@ -1056,7 +1127,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 }
               }}
               value={searchKeyWord}
+              error={errorState.searchError}
             />
+            {errorState.searchError && (
+              <FormHelperText
+                className={classes.helpText}
+                component="div"
+                error={errorState.searchError}
+              >
+                Please select doctor or speciality
+              </FormHelperText>
+            )}
             {isDoctorOrSpeciality && searchKeyWord.length > 2 && (
               <span className={classes.doctorSearch}>
                 <p>Doctor(s)</p>
@@ -1108,13 +1189,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               value={noteKeyword}
             />
           </div>
-          <div
-            className={classes.tabFooter}
-            onClick={() => {
-              setIsTransferPopoverOpen(false);
-            }}
-          >
-            <Button className={classes.cancelConsult}>Cancel</Button>
+          <div className={classes.tabFooter}>
+            <Button
+              className={classes.cancelConsult}
+              onClick={() => {
+                setIsTransferPopoverOpen(false);
+                clearTransferField();
+              }}
+            >
+              Cancel
+            </Button>
             <Button
               className={classes.ResheduleCosultButton}
               onClick={() => {
