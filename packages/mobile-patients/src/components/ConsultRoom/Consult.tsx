@@ -190,6 +190,29 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       });
   };
 
+  const locationPermission = () => {
+    console.log('123456789');
+    Permissions.checkMultiple([
+      'camera',
+      'photo',
+      'location',
+      'microphone',
+      'readSms',
+      'receiveSms',
+    ])
+      .then((response) => {
+        console.log(response, 'permission response');
+        //response is an object mapping type to permission
+        // this.setState({
+        //   cameraPermission: response.camera,
+        //   photoPermission: response.photo,
+        // });
+      })
+      .catch((error) => {
+        console.log(error, 'error permission');
+      });
+  };
+
   useEffect(() => {
     let userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';

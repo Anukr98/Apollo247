@@ -545,8 +545,9 @@ export const SAVE_MEDICINE_ORDER = gql`
 export const GET_NOTIFICATION_SETTINGS = gql`
   query getPatientNotificationSettings($patient: ID!) {
     getPatientNotificationSettings(patient: $patient) {
-      notificationSettings {
+      PatientNotificationSettings {
         id
+        patient
         commissionNotification
         messageFromDoctorNotification
         playNotificationSound
