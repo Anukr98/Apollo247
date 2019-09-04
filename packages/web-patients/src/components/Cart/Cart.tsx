@@ -11,12 +11,17 @@ import { UploadPrescription } from 'components/Prescriptions/UploadPrescription'
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
-import { SAVE_MEDICINE_ORDER } from 'graphql/medicines';
+import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT_RESULT } from 'graphql/medicines';
 import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
+import {
+  SaveMedicineOrderPayment,
+  SaveMedicineOrderPaymentVariables,
+} from 'graphql/types/SaveMedicineOrderPayment';
 import { Mutation } from 'react-apollo';
 import { MEDICINE_DELIVERY_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
+import { useMutation } from 'react-apollo-hooks';
 
 // import { MedicineCard } from 'components/Medicine/MedicineCard';
 // import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
@@ -322,6 +327,20 @@ export const Cart: React.FC = (props) => {
     defPresObject
   );
   const [prescriptions, setPrescriptions] = React.useState<PrescriptionFormat[]>([]);
+  const [orderAutoId, setOrderAutoId] = React.useState<number>(0);
+  const [amountPaid, setAmountPaid] = React.useState<number>(0);
+
+  const codPaymentMutation = useMutation<
+    SaveMedicineOrderPayment,
+    SaveMedicineOrderPaymentVariables
+  >(SAVE_MEDICINE_ORDER_PAYMENT_RESULT, {
+    variables: {
+      medicinePaymentInput: {
+        orderAutoId: orderAutoId,
+        amountPaid: amountPaid,
+      },
+    },
+  });
 
   // console.log(prescriptions, '..........');
 
@@ -623,6 +642,16 @@ export const Cart: React.FC = (props) => {
                 if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
                   const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&orderAutoId=${orderAutoId}&token=${authToken}`;
                   window.location.href = pgUrl;
+                } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
+                  setOrderAutoId(orderAutoId);
+                  setAmountPaid(amountPaid);
+                  // codPaymentMutation()
+                  //   .then((data) => {
+                  //     console.log(data, 'in mutation.......');
+                  //   })
+                  //   .catch(() => {
+                  //     window.alert('An error occurred while saving your order :(');
+                  //   });
                 }
               }}
               onError={(errorResponse) => {
