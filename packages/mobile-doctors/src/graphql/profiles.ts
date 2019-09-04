@@ -671,6 +671,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         lastName
         specialty {
           name
+          id
         }
         specialization
         photoUrl
@@ -688,6 +689,15 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         name
         image
       }
+    }
+  }
+`;
+
+export const SEARCH_DIAGNOSIS = gql`
+  query searchDiagnosis($searchString: String!) {
+    searchDiagnosis(searchString: $searchString) {
+      name
+      id
     }
   }
 `;

@@ -330,7 +330,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                 const dataeval = moment(_doctor.appointmentdatetime).format('DD/MM/YYYY');
                 return (
                   <PatientCard
-                    doctorname={_doctor.patientInfo.firstName}
+                    doctorname={_doctor.patientInfo!.firstName}
                     icon={
                       <View style={{ marginRight: 12 }}>
                         <Chat />
@@ -340,7 +340,9 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                     lastconsult={dataeval}
                     onPress={() =>
                       props.navigation.push(AppRoutes.PatientDetailsPage, {
-                        Appointments: _doctor.appointmentids[0],
+                        Appointments: _doctor.appointmentids![0],
+                        PatientInfo: _doctor.patientInfo,
+                        ConsultsCount: _doctor.consultscount,
                       })
                     }
                   />
@@ -367,7 +369,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                     const dataeval = moment(_doctor.appointmentdatetime).format('DD/MM/YYYY');
                     return (
                       <PatientCard
-                        doctorname={_doctor.patientInfo.firstName}
+                        doctorname={_doctor.patientInfo!.firstName}
                         icon={
                           <View style={{ marginRight: 12 }}>
                             <Chat />
@@ -378,7 +380,9 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                         //typeValue={_doctor.type}
                         onPress={() =>
                           props.navigation.push(AppRoutes.PatientDetailsPage, {
-                            Appointments: _doctor.appointmentids[0],
+                            Appointments: _doctor.appointmentids![0],
+                            PatientInfo: _doctor.patientInfo,
+                            ConsultsCount: _doctor.consultscount,
                           })
                         }
                       />
@@ -406,7 +410,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                           const dataeval = moment(_doctor.appointmentdatetime).format('DD/MM/YYYY');
                           return (
                             <PatientCard
-                              doctorname={_doctor.patientInfo.firstName}
+                              doctorname={_doctor.patientInfo!.firstName}
                               icon={
                                 <View style={{ marginRight: 12 }}>
                                   <Chat />
@@ -417,7 +421,9 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                               //typeValue={_doctor.type}
                               onPress={() =>
                                 props.navigation.push(AppRoutes.PatientDetailsPage, {
-                                  Appointments: _doctor.appointmentids[0],
+                                  Appointments: _doctor.appointmentids![0],
+                                  PatientInfo: _doctor.patientInfo,
+                                  ConsultsCount: _doctor.consultscount,
                                 })
                               }
                             />

@@ -122,7 +122,7 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
           borderRadius: 10,
         }}
       >
-        <Text style={styles.medicineText}>Sympton</Text>
+        <Text style={styles.medicineText}>Symptom</Text>
         <TextInput
           style={{
             marginLeft: 16,
@@ -159,7 +159,7 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
           />
         </View>
         <View style={{ marginLeft: 40 }}>
-          <Text style={styles.medicineText}>How Often?</Text>
+          <Text style={styles.medicineText}>How often?</Text>
           <TextInput
             style={{
               marginLeft: 16,

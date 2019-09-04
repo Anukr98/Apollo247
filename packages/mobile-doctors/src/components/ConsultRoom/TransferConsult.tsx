@@ -1,51 +1,42 @@
-import { MedicineProduct } from '@aph/mobile-doctors/src/components/ApiCall';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow, Cancel, Down, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
-import React, { useState, useEffect } from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Platform,
-  TextInput,
-  Alert,
-} from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import Highlighter from 'react-native-highlight-words';
-import Pubnub from 'pubnub';
 import {
-  SEARCH_DOCTOR_AND_SPECIALITY,
   INITIATE_TRANSFER_APPONITMENT,
   SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
 } from '@aph/mobile-doctors/src/graphql/profiles';
-import {
-  SearchDoctorAndSpecialty,
-  SearchDoctorAndSpecialtyVariables,
-  SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_doctors,
-  SearchDoctorAndSpecialty_SearchDoctorAndSpecialty_specialties,
-} from '@aph/mobile-doctors/src/graphql/types/SearchDoctorAndSpecialty';
-import { useApolloClient } from 'react-apollo-hooks';
-
+import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   initiateTransferAppointment,
   initiateTransferAppointmentVariables,
 } from '@aph/mobile-doctors/src/graphql/types/initiateTransferAppointment';
-import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
-import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import {
   SearchDoctorAndSpecialtyByName,
   SearchDoctorAndSpecialtyByNameVariables,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties,
 } from '@aph/mobile-doctors/src/graphql/types/SearchDoctorAndSpecialtyByName';
+import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import Pubnub from 'pubnub';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  Alert,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import Highlighter from 'react-native-highlight-words';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
+
 //import { doctorDetails } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
@@ -185,7 +176,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
   const isEnabled = selectreason != 'Select a reason' && value.length > 0 && doctorvalue.length > 0;
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const transferconsult = '^^#transferconsult';
-  const rescheduleconsult = '^^#rescheduleconsult';
+
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
     publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
@@ -252,7 +243,8 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
     specilty: string,
     ex: string | null,
     photo: string | null,
-    hospitalId: string
+    hospitalId: string,
+    specilityId: string
   ) => {
     console.log('hospitalId', hospitalId);
     setDoctorsCard(false);
@@ -262,6 +254,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
     setPhotourl(photo);
     setDoctorId(id);
     setHospitalId(hospitalId);
+    setSpecialityId(specilityId);
   };
 
   const onPressDoctorSearchListItemSpeciality = (text: string, id: string, imageurl: string) => {
@@ -334,6 +327,11 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
       setDoctorsCard(doctorsCard);
       return;
     }
+    if (!(searchText && searchText.length > 2)) {
+      setFilteredStarDoctors([]);
+      setfilterSpeciality([]);
+      return;
+    }
     // do api call
     client
       .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
@@ -391,7 +389,8 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
                       _doctor!.specialty.name,
                       _doctor!.experience,
                       _doctor!.photoUrl,
-                      _doctor!.doctorHospital[0].facility.id
+                      _doctor!.doctorHospital[0].facility.id,
+                      _doctor!.specialty.id
                     )
                   }
                   style={{ marginHorizontal: 16 }}

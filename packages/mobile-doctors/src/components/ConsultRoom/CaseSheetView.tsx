@@ -10,9 +10,6 @@ import {
   setDiagonsisList,
   setMedicineList,
   setSysmptonsList,
-  addOtherList,
-  getOtherList,
-  setOtherList,
 } from '@aph/mobile-doctors/src/components/ApiCall';
 import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
 import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
@@ -27,6 +24,7 @@ import {
   CalendarIcon,
   DiagonisisRemove,
   End,
+  Green,
   GreenRemove,
   InpersonIcon,
   PatientPlaceHolderImage,
@@ -35,8 +33,6 @@ import {
   Start,
   ToogleOff,
   ToogleOn,
-  UnSelected,
-  Green,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
@@ -58,9 +54,8 @@ import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
-  GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-  GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { REQUEST_ROLES, STATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
@@ -84,19 +79,16 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  AsyncStorage,
 } from 'react-native';
 import { Slider } from 'react-native-elements';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
   NavigationParams,
   NavigationRoute,
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-
-import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
 
 const styles = StyleSheet.create({
   casesheetView: {
@@ -828,13 +820,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       <View>
         <Text style={styles.familyText}>Family History</Text>
         <View style={styles.familyInputView}>
-          {/* <TextInput
-            style={styles.symptomsText}
-            multiline={true}
-            onChangeText={(familyValues) => setFamilyValues(familyValues)}
-          >
-            {familyValues}
-          </TextInput> */}
           {familyValues.length == 0 ? (
             <Text style={styles.symptomsText}>No Data</Text>
           ) : (
@@ -857,14 +842,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       <View>
         <Text style={styles.familyText}>Allergies</Text>
         <View style={styles.AllergiesInputView}>
-          {/* <TextInput
-            style={styles.symptomsText}
-            multiline={true}
-            editable={false}
-            onChangeText={(allergiesData) => setAllergiesData(allergiesData)}
-          >
-            {allergiesData}
-          </TextInput> */}
           {allergiesData == null || [] ? (
             <Text style={styles.symptomsText}>No Data</Text>
           ) : (
@@ -879,13 +856,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       <View>
         <Text style={styles.familyText}>Lifestyle & Habits</Text>
         <View style={styles.familyInputView}>
-          {/* <TextInput
-            style={styles.symptomsText}
-            multiline={true}
-            onChangeText={(lifeStyleData) => setLifeStyleData(lifeStyleData)}
-          >
-            {lifeStyleData}
-          </TextInput> */}
           {lifeStyleData.length == 0 ? (
             <Text style={styles.symptomsText}>No Data</Text>
           ) : (

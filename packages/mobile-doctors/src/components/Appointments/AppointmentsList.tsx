@@ -112,12 +112,14 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       return 'up-next';
     } else if (appointment.status == STATUS.CANCELLED) {
       return 'missed';
+    } else if (appointment.status == STATUS.COMPLETED) {
+      return 'past';
     } else {
       const appointemntTime = moment
         .utc(appointment.appointmentDateTime)
         .local()
         .format('YYYY-MM-DD HH:mm:ss'); //getDateFormat(appointment.appointmentDateTime);
-      if (moment(appointemntTime).isBefore()) return 'past';
+      if (moment(appointemntTime).isBefore()) return 'next';
       else return 'next';
     }
   };

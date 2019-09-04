@@ -5,6 +5,7 @@ import {
   PatientPlaceHolderImage,
   UpComingIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { PastConsultCard } from '@aph/mobile-doctors/src/components/ui/PastConsultCard';
 import { GET_CASESHEET } from '@aph/mobile-doctors/src/graphql/profiles';
 import { GetCaseSheet } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
@@ -12,15 +13,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
@@ -92,6 +85,8 @@ const styles = StyleSheet.create({
 export interface PatientsProps
   extends NavigationScreenProps<{
     Appointments: string;
+    ConsultsCount: string;
+    PatientInfo: any;
   }> {}
 
 export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
@@ -103,11 +98,9 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   const [lifeStyleData, setLifeStyleData] = useState<any>([]);
   const [allergiesData, setAllergiesData] = useState<string>('');
   const [pastList, setPastList] = useState<any>([]);
-  const _data = [
-    { id: 'missed', name: 'Dr. Sanjeev Shah', speciality: '2 Consults', type: true },
-    { id: 'missed', name: 'Dr. Sheetal Sharma', speciality: '2 Consults', type: false },
-    { id: 'missed', name: 'Dr. Alok Mehta', speciality: '3 Consults', type: false },
-  ];
+
+  const dateOfBirth = moment(props.navigation.getParam('PatientInfo').dateOfBirth).format('YYYY');
+  const todayYear = moment(new Date()).format('YYYY');
 
   useEffect(() => {
     client
@@ -118,6 +111,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
       })
       .then((_data) => {
         const result = _data.data.getCaseSheet;
+
         setFamilyValues(_data.data.getCaseSheet!.patientDetails!.familyHistory!);
         setAllergiesData(_data.data.getCaseSheet!.patientDetails!.allergies!);
         setLifeStyleData(_data.data.getCaseSheet!.patientDetails!.lifeStyle);
@@ -133,14 +127,18 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
       <View>
         <Text style={styles.familyText}>Family History</Text>
         <View style={styles.familyInputView}>
-          <TextInput
-            style={styles.symptomsText}
-            multiline={true}
-            editable={false}
-            onChangeText={(familyValues) => setFamilyValues(familyValues)}
-          >
-            {familyValues}
-          </TextInput>
+          {familyValues.length == 0 ? (
+            <Text style={styles.symptomsText}>No Data</Text>
+          ) : (
+            familyValues.map((showdata: any) => {
+              return (
+                <View style={{ flexDirection: 'row' }}>
+                  <Text style={styles.symptomsText}>{showdata.relation}: </Text>
+                  <Text style={styles.symptomsText}>{showdata.description}</Text>
+                </View>
+              );
+            })
+          )}
         </View>
       </View>
     );
@@ -151,14 +149,11 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
       <View>
         <Text style={styles.familyText}>Allergies</Text>
         <View style={styles.AllergiesInputView}>
-          <TextInput
-            style={styles.symptomsText}
-            multiline={true}
-            editable={false}
-            onChangeText={(allergiesData) => setAllergiesData(allergiesData)}
-          >
-            {allergiesData}
-          </TextInput>
+          {allergiesData == null || [] ? (
+            <Text style={styles.symptomsText}>No Data</Text>
+          ) : (
+            <Text style={styles.symptomsText}>{allergiesData}</Text>
+          )}
         </View>
       </View>
     );
@@ -168,14 +163,17 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
       <View>
         <Text style={styles.familyText}>Lifestyle & Habits</Text>
         <View style={styles.familyInputView}>
-          <TextInput
-            style={styles.symptomsText}
-            multiline={true}
-            editable={false}
-            onChangeText={(lifeStyleData) => setLifeStyleData(lifeStyleData)}
-          >
-            {lifeStyleData}
-          </TextInput>
+          {lifeStyleData.length == 0 ? (
+            <Text style={styles.symptomsText}>No Data</Text>
+          ) : (
+            lifeStyleData.map((showdata: any) => {
+              return (
+                <View>
+                  <Text style={styles.symptomsText}>{showdata.description}</Text>
+                </View>
+              );
+            })
+          )}
         </View>
       </View>
     );
@@ -254,59 +252,86 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
         {apmnt == [] ? (
           <Text style={styles.symptomsText}>No Data</Text>
         ) : (
-          apmnt.caseSheet.map((_caseSheet: any, i) => {
+          apmnt.caseSheet.map((_caseSheet: any, i: any) => {
             return (
               <View style={{ marginLeft: 16 }}>
                 {_caseSheet.symptoms == null || [] ? (
                   <Text style={styles.symptomsText}>No Data</Text>
                 ) : (
-                  _caseSheet.symptoms.map((symptoms: any, i) => {
+                  _caseSheet.symptoms.map((symptoms: any, i: any, array: any) => {
                     return (
                       <View
                         style={{
-                          backgroundColor: '#ffffff',
-                          borderRadius: 5,
-                          borderStyle: 'solid',
-                          borderWidth: 1,
-                          borderColor: 'rgba(2, 71, 91, 0.15)',
-                          marginBottom: 16,
+                          flex: 1,
+                          flexDirection: 'row',
+                          justifyContent: 'center',
+                          alignItems: 'center',
                         }}
                       >
-                        <View style={{ backgroundColor: 'white', flexDirection: 'row' }}>
-                          <Text
-                            style={{
-                              color: '#0087ba',
-                              ...theme.fonts.IBMPlexSansMedium(14),
-                              marginLeft: 14,
-                              marginBottom: 8,
-                              marginTop: 12,
-                              marginRight: 14,
-                            }}
-                          >
-                            {symptoms.symptom}
-                            {symptoms.howOften} {symptoms.since} {symptoms.severity}
-                          </Text>
-                        </View>
-                        <View>
-                          <Text
-                            style={{
-                              fontFamily: 'IBMPlexSans',
-                              fontSize: 10,
-                              fontWeight: '500',
-                              fontStyle: 'normal',
-                              lineHeight: 12,
-                              letterSpacing: 0,
-                              color: 'rgba(2, 71, 91, 0.6)',
-                              marginLeft: 14,
-                              marginBottom: 8,
-                            }}
-                          >
-                            {moment
-                              .unix(apmnt.appointmentDateTime / 1000)
-                              .format('DD MMM  hh:mm a')}
-                          </Text>
-                        </View>
+                        {renderLeftTimeLineView(
+                          symptoms.symptom,
+                          i == 0 ? true : true,
+                          i == array.length - 1 ? false : true
+                        )}
+
+                        <PastConsultCard
+                          doctorname={
+                            symptoms.symptom +
+                            symptoms.howOften +
+                            symptoms.since +
+                            symptoms.severity
+                          }
+                          timing={moment
+                            .unix(apmnt.appointmentDateTime / 1000)
+                            .format('DD MMM  hh:mm a')}
+                        />
                       </View>
+
+                      // <View
+                      //   style={{
+                      //     backgroundColor: '#ffffff',
+                      //     borderRadius: 5,
+                      //     borderStyle: 'solid',
+                      //     borderWidth: 1,
+                      //     borderColor: 'rgba(2, 71, 91, 0.15)',
+                      //     marginBottom: 16,
+                      //   }}
+                      // >
+                      //   <View style={{ backgroundColor: 'white', flexDirection: 'row' }}>
+                      //     <Text
+                      //       style={{
+                      //         color: '#0087ba',
+                      //         ...theme.fonts.IBMPlexSansMedium(14),
+                      //         marginLeft: 14,
+                      //         marginBottom: 8,
+                      //         marginTop: 12,
+                      //         marginRight: 14,
+                      //       }}
+                      //     >
+                      //       {symptoms.symptom}
+                      //       {symptoms.howOften} {symptoms.since} {symptoms.severity}
+                      //     </Text>
+                      //   </View>
+                      //   <View>
+                      //     <Text
+                      //       style={{
+                      //         fontFamily: 'IBMPlexSans',
+                      //         fontSize: 10,
+                      //         fontWeight: '500',
+                      //         fontStyle: 'normal',
+                      //         lineHeight: 12,
+                      //         letterSpacing: 0,
+                      //         color: 'rgba(2, 71, 91, 0.6)',
+                      //         marginLeft: 14,
+                      //         marginBottom: 8,
+                      //       }}
+                      //     >
+                      //       {moment
+                      //         .unix(apmnt.appointmentDateTime / 1000)
+                      //         .format('DD MMM  hh:mm a')}
+                      //     </Text>
+                      //   </View>
+                      // </View>
                     );
                   })
                 )}
@@ -338,8 +363,16 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                 marginRight: 15,
               }}
             >
-              Seema Singh
+              {props.navigation.getParam('PatientInfo').firstName}
             </Text>
+            <View
+              style={{
+                height: 16,
+                borderWidth: 0.5,
+                borderColor: 'rgba(2, 71, 91, 0.6)',
+                marginTop: 5,
+              }}
+            ></View>
             <Text
               style={{
                 ...theme.fonts.IBMPlexSansMedium(16),
@@ -348,7 +381,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                 marginBottom: 8,
               }}
             >
-              56, F, Mumbai
+              {todayYear - dateOfBirth}, {props.navigation.getParam('PatientInfo').gender}
             </Text>
           </View>
           <View
@@ -363,7 +396,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
               justifyContent: 'space-between',
             }}
           >
-            <View style={{ marginTop: 15, marginLeft: 5, marginRight: 5, marginBottom: 15 }}>
+            <View style={{ marginTop: 15, marginLeft: 10, marginRight: 5, marginBottom: 15 }}>
               <Text
                 style={{
                   ...theme.fonts.IBMPlexSansSemiBold(20),
@@ -381,10 +414,49 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                   textAlign: 'center',
                 }}
               >
-                Revenue
+                REVENUE
               </Text>
             </View>
+            <View
+              style={{
+                height: 44,
+                borderStyle: 'solid',
+                borderWidth: 1,
+                borderColor: 'rgba(2, 71, 91, 0.15)',
+                marginTop: 20,
+              }}
+            ></View>
             <View style={{ marginTop: 15, marginLeft: 5, marginRight: 5, marginBottom: 15 }}>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansSemiBold(20),
+                  color: '#0087ba',
+                  letterSpacing: 0.09,
+                  textAlign: 'center',
+                }}
+              >
+                {props.navigation.getParam('ConsultsCount')}
+              </Text>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansMedium(12),
+                  color: '#02475b',
+                  letterSpacing: 0.02,
+                }}
+              >
+                CONSULTS
+              </Text>
+            </View>
+            <View
+              style={{
+                height: 44,
+                borderStyle: 'solid',
+                borderWidth: 1,
+                borderColor: 'rgba(2, 71, 91, 0.15)',
+                marginTop: 20,
+              }}
+            ></View>
+            <View style={{ marginTop: 15, marginLeft: 5, marginRight: 12, marginBottom: 15 }}>
               <Text
                 style={{
                   ...theme.fonts.IBMPlexSansSemiBold(20),
@@ -402,28 +474,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                   letterSpacing: 0.02,
                 }}
               >
-                Consults
-              </Text>
-            </View>
-            <View style={{ marginTop: 15, marginLeft: 5, marginRight: 5, marginBottom: 15 }}>
-              <Text
-                style={{
-                  ...theme.fonts.IBMPlexSansSemiBold(20),
-                  color: '#0087ba',
-                  letterSpacing: 0.09,
-                  textAlign: 'center',
-                }}
-              >
-                2
-              </Text>
-              <Text
-                style={{
-                  ...theme.fonts.IBMPlexSansMedium(12),
-                  color: '#02475b',
-                  letterSpacing: 0.02,
-                }}
-              >
-                Prescriptions
+                PRESCRIPTIONS
               </Text>
             </View>
           </View>
@@ -440,7 +491,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
             Past Consultations
           </Text>
           <ScrollView bounces={false}>
-            {pastList.map((apmnt: any, i) => {
+            {pastList.map((apmnt: any, i: any) => {
               return (
                 <View style={{ marginLeft: 16, marginRight: 20, marginBottom: 0 }}>
                   {renderPastAppData(apmnt)}
