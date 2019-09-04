@@ -7,11 +7,12 @@ import { GetCaseSheet_getCaseSheet_patientDetails } from 'graphql/types/GetCaseS
 
 interface PatientDetailsProps {
   patientDetails: GetCaseSheet_getCaseSheet_patientDetails | null;
+  consultscount: String;
 }
 export const PatientDetailsUserCard: React.FC<PatientDetailsProps> = (props) => {
   const { loading } = useContext(CaseSheetContext);
   const userCardStrip = [];
-  const patientDetails = props.patientDetails;
+  const { patientDetails, consultscount } = props;
   if (
     patientDetails! &&
     patientDetails!.dateOfBirth &&
@@ -71,6 +72,8 @@ export const PatientDetailsUserCard: React.FC<PatientDetailsProps> = (props) => 
         <Typography variant="h5" color="textSecondary" component="h5">
           {userCardStrip.join(', ')}
         </Typography>
+        <div>{consultscount}</div>
+        <div>consult</div>
       </CardContent>
     </Card>
   );
