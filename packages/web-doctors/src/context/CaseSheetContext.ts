@@ -5,6 +5,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_appointment,
   GetCaseSheet_getCaseSheet_pastAppointments,
   GetCaseSheet_getCaseSheet_patientDetails_healthVault,
 } from 'graphql/types/GetCaseSheet';
@@ -13,6 +14,7 @@ import { createContext } from 'react';
 export interface CaseSheetContextProps {
   loading: boolean;
   patientDetails: GetCaseSheet_getCaseSheet_patientDetails | null;
+  appointmentInfo: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment | null,
   caseSheetId: string | null;
   symptoms: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null;
   setSymptoms:
@@ -67,6 +69,7 @@ export interface CaseSheetContextProps {
 export const CaseSheetContext = createContext<CaseSheetContextProps>({
   loading: true,
   patientDetails: null,
+  appointmentInfo: null,
   caseSheetId: null,
   symptoms: null,
   setSymptoms: () => {},
