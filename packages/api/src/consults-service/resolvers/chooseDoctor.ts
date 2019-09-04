@@ -22,6 +22,9 @@ export const chooseDoctorTypeDefs = gql`
     doctorFirstName: String!
     doctorLastName: String!
     doctorPhoto: String!
+    specialityId: ID!
+    specialityName: String!
+    experience: Int!
   }
 
   extend type Query {
@@ -35,6 +38,9 @@ type AvailableDoctor = {
   doctorFirstName: string;
   doctorLastName: string;
   doctorPhoto: string;
+  specialityId: string;
+  specialityName: string;
+  experience: Number;
 };
 
 type ChooseDoctorResult = {
@@ -73,6 +79,9 @@ const getAvailableDoctors: Resolver<
         doctorId: doctor.id,
         doctorPhoto: doctor.photoUrl,
         availableSlot: ChooseDoctorInput.slotDateTime,
+        specialityId: doctor.specialty.id,
+        specialityName: doctor.specialty.name,
+        experience: doctor.experience,
       };
       if (apptCount === 0) {
         console.log(availableDoctor, 'doctor');
