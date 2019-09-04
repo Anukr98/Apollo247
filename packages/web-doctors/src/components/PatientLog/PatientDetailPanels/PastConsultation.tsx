@@ -1,21 +1,16 @@
-import React, { Fragment, useContext } from 'react';
+import React from 'react';
 import {
   Typography,
   List,
   ListItem,
-  ListItemAvatar,
-  Avatar,
-  ListItemText,
   createMuiTheme,
   Grid,
   IconButton,
   Card,
   CardContent,
 } from '@material-ui/core';
-import { Link } from 'react-router-dom';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
-import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GetCaseSheet_getCaseSheet_pastAppointments } from 'graphql/types/GetCaseSheet';
 
 const useStyles = makeStyles(() => ({
@@ -173,6 +168,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
                 </div>
               </Grid>
             </Grid>
+
             {data &&
             data.caseSheet &&
             (data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType == 'JUNIOR')
@@ -256,98 +252,18 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
     </Card>
   );
 };
-export const HealthVault: React.FC = () => {
+interface pastConsultationProps {
+  pastAppointments: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
+}
+export const PastConsultation: React.FC<pastConsultationProps> = (props) => {
+  const pastAppointments = props.pastAppointments;
   const classes = useStyles();
   const ischild: boolean = false;
-  const { healthVault, pastAppointments } = useContext(CaseSheetContext);
 
-  console.log(pastAppointments);
   return (
     <ThemeProvider theme={theme}>
       <Typography component="div" className={classes.vaultContainer}>
         <Typography component="div">
-          <Typography component="h5" variant="h5">
-            Photos uploaded by Patient
-          </Typography>
-          <List className={classes.listContainer}>
-            {/*patientDetails
-              patientDetails.healthVault &&
-              patientDetails.healthVault.length > 0 &&
-              patientDetails!.healthVault.map( */
-
-            healthVault!.map((item, index) => (
-              <ListItem key={index} className={classes.listItem}>
-                <ListItemAvatar>
-                  <Avatar
-                    alt={(item.imageUrls as unknown) as string}
-                    src={(item.imageUrls as unknown) as string}
-                    className={classes.bigAvatar}
-                  />
-                </ListItemAvatar>
-                <ListItemText
-                  primary={
-                    <Fragment>
-                      <Typography component="h4" variant="h4" color="primary">
-                        {item.imageUrls!.substr(item.imageUrls!.lastIndexOf('/') + 1)}
-                      </Typography>
-                    </Fragment>
-                  }
-                  secondary={
-                    <Fragment>
-                      <Typography component="h6" variant="h6">
-                        {/* {'5MB'} | {'2019-01-01T11:30'} */}
-                      </Typography>
-                    </Fragment>
-                  }
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Typography>
-        <Typography component="div">
-          <Typography component="h5" variant="h5">
-            Reports
-          </Typography>
-          <List className={classes.listContainer}>
-            {/*patientDetails
-              patientDetails.healthVault &&
-              patientDetails.healthVault.length > 0 &&
-              patientDetails!.healthVault.map( */
-            healthVault!.map((item, index) => (
-              <ListItem key={index} className={classes.listItem}>
-                <ListItemAvatar>
-                  <Link to={(item.reportUrls as unknown) as string} target="_blank">
-                    <Avatar
-                      alt={(item.reportUrls as unknown) as string}
-                      src={(item.reportUrls as unknown) as string}
-                      className={classes.bigAvatar}
-                    />
-                  </Link>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={
-                    <Fragment>
-                      <Typography component="h4" variant="h4" color="primary">
-                        {item.reportUrls!.substr(item.reportUrls!.lastIndexOf('/') + 1)}
-                      </Typography>
-                    </Fragment>
-                  }
-                  // secondary={
-                  //   <Fragment>
-                  //     <Typography component="h6" variant="h6">
-                  //       {'5mb'} | {'2019-01-01T11:30'}
-                  //     </Typography>
-                  //   </Fragment>
-                  // }
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Typography>
-        <Typography component="div">
-          <Typography component="h5" variant="h5">
-            Past Consultations
-          </Typography>
           <PastAppointment data={pastAppointments} isChild={ischild} />
         </Typography>
       </Typography>

@@ -10,6 +10,7 @@ import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
 import { DoctorsProfile } from 'components/DoctorsProfile';
 import { MyAccount } from 'components/profileDetails';
+import { PatientLogDetailsPage } from 'components/PatientLog/PatientLogDetailsPage';
 import { Calendar } from 'components/Calendar';
 import { PatientLog } from 'components/PatientLog/PatientLog';
 import { ConsultTabs } from 'components/ConsultTabs';
@@ -40,6 +41,11 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.PatientLog()} component={PatientLog} />
       <AuthRouted
         exact
+        path={clientRoutes.PatientLogDetailsPage(':appointmentId')}
+        component={PatientLogDetailsPage}
+      />
+      <AuthRouted
+        exact
         path={clientRoutes.ConsultTabs(':id', ':patientId')}
         component={ConsultTabs}
       />
@@ -49,6 +55,11 @@ const App: React.FC = () => {
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
       <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
       <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
+      <AuthRouted
+        exact
+        path={clientRoutes.PatientLogDetailsPage(':appointmentId')}
+        component={PatientLogDetailsPage}
+      />
       <AuthRouted
         exact
         path={clientRoutes.ConsultTabs(':id', ':patientId')}

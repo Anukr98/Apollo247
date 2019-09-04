@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation, STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS } from "./globalTypes";
+import { Gender, Relation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, STATUS, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCaseSheet
@@ -140,6 +140,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstr
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
   __typename: "CaseSheet";
   consultType: string | null;
+  doctorType: DoctorType | null;
   diagnosis: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis | null)[] | null;
   diagnosticPrescription: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] | null;
   symptoms: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_symptoms | null)[] | null;

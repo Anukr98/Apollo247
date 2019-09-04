@@ -7,6 +7,7 @@ import {
   CardContent,
   IconButton,
 } from '@material-ui/core';
+import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import MessageIcon from '@material-ui/icons/Message';
@@ -163,9 +164,11 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                         Chat
                       </span>
                       <div className={classes.section2}>
-                        <IconButton aria-label="Navigate next">
-                          <NavigateNextIcon />
-                        </IconButton>
+                        <Link to={`/patientlogdetailspage/${patient.appointmentids[0]}`}>
+                          <IconButton aria-label="Navigate next">
+                            <NavigateNextIcon />
+                          </IconButton>
+                        </Link>
                       </div>
                     </Grid>
                   </Grid>

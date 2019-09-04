@@ -411,6 +411,7 @@ export const GET_CASESHEET = gql`
         status
         caseSheet {
           consultType
+          doctorType
           diagnosis {
             name
           }
