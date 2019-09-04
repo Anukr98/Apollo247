@@ -11,6 +11,7 @@ import {
 } from '@material-ui/core';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
+import { GetCaseSheet_getCaseSheet_pastAppointments } from 'graphql/types/GetCaseSheet';
 
 const useStyles = makeStyles(() => ({
   vaultContainer: {
@@ -164,7 +165,7 @@ interface PastAppointmentData {
 }
 
 interface PastAppointmentProps {
-  data: PastAppointmentData[];
+  data: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
   isChild: boolean;
 }
 
@@ -173,29 +174,27 @@ const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
   const ischild: boolean = true;
   return (
     <List className={isChild ? classes.childListStyle : classes.listStyle}>
-      {data.map((item, idx) => (
-        <ListItem
-          key={idx}
-          style={{
-            display: 'flex',
-            flexFlow: 'column',
-            paddingRight: 0,
-            paddingLeft: 0,
-            alignItems: 'start',
-          }}
-        >
-          <AppointmentCard data={item} />
-          {!!item.child && !!item.child.length && (
-            <PastAppointment data={item.child} isChild={ischild} />
-          )}
-        </ListItem>
-      ))}
+      {data &&
+        data.map((item, idx) => (
+          <ListItem
+            key={idx}
+            style={{
+              display: 'flex',
+              flexFlow: 'column',
+              paddingRight: 0,
+              paddingLeft: 0,
+              alignItems: 'start',
+            }}
+          >
+            <AppointmentCard data={item} />
+          </ListItem>
+        ))}
     </List>
   );
 };
 
 interface AppointmentCardProps {
-  data: PastAppointmentData;
+  data: GetCaseSheet_getCaseSheet_pastAppointments;
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
@@ -210,14 +209,15 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
                 <div>
                   <Typography gutterBottom variant="body2">
                     <div className={classes.circleDot}></div>
-                    {`${format(new Date(data.timestamp), 'dd  MMMMMMMMMMMM yyyy, h:mm a')} ${
-                      data.isFollowup ? `| Follow Up(${data.isFree ? 'Free' : 'Paid'})` : ''
-                    }`}
+                    {`${format(
+                      new Date(data.appointmentDateTime),
+                      'dd  MMMMMMMMMMMM yyyy, h:mm a'
+                    )}`}
                   </Typography>
                 </div>
               </Grid>
             </Grid>
-            {!!data.symptoms && !!data.symptoms.length && (
+            {/*   {!!data.symptoms && !!data.symptoms.length && (
               <Grid lg={6} sm={6} xs={5} key={2} item>
                 <div className={classes.stepperHeading}>
                   {(data.symptoms.length > 3 ? data.symptoms.slice(0, 2) : data.symptoms).join(
@@ -230,7 +230,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
                   )}
                 </div>
               </Grid>
-            )}
+            )} */}
             <Grid lg={1} sm={1} xs={3} key={3} item>
               <div>
                 <IconButton aria-label="Video call" className={classes.videoIcon}>
@@ -244,14 +244,21 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
     </Card>
   );
 };
-export const PastConsultation: React.FC = () => {
+interface pastConsultationProps {
+  pastAppointments: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
+}
+export const PastConsultation: React.FC<pastConsultationProps> = (props) => {
+  const pastAppointments = props.pastAppointments;
   const classes = useStyles();
   const ischild: boolean = false;
+  console.log('PastConsultation');
+  console.log(pastAppointments);
+
   return (
     <ThemeProvider theme={theme}>
       <Typography component="div" className={classes.vaultContainer}>
         <Typography component="div">
-          <PastAppointment data={pastConsultationData} isChild={ischild} />
+          <PastAppointment data={pastAppointments} isChild={ischild} />
         </Typography>
       </Typography>
     </ThemeProvider>

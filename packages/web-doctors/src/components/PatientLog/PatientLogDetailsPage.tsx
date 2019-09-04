@@ -14,6 +14,7 @@ import { GET_CASESHEET } from 'graphql/profiles';
 import {
   GetCaseSheet_getCaseSheet_patientDetails,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
+  GetCaseSheet_getCaseSheet_pastAppointments,
 } from 'graphql/types/GetCaseSheet';
 import { PatientDetailLifeStyle } from 'components/PatientLog/PatientDetailPanels/PatientDetailLifeStyle';
 import { PastConsultation } from 'components/PatientLog/PatientDetailPanels/PastConsultation';
@@ -144,12 +145,13 @@ export const PatientLogDetailsPage: React.FC = () => {
   const params = useParams<Params>();
   const appointmentId = params.appointmentId;
   const [expanded, setExpanded] = useState<string | boolean>('');
+  const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
   const [
     patientDetails,
     setPatientDetails,
   ] = useState<GetCaseSheet_getCaseSheet_patientDetails | null>(null);
-  const [diagnosis, setDiagnosis] = useState<
-    GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null
+  const [pastAppointments, setPastAppointments] = useState<
+    GetCaseSheet_getCaseSheet_pastAppointments[] | null
   >(null);
   const handlePanelExpansion = (panelName: string) => (
     e: React.ChangeEvent<{}>,
@@ -165,16 +167,22 @@ export const PatientLogDetailsPage: React.FC = () => {
         variables: { appointmentId: appointmentId },
       })
       .then((_data) => {
+        setCasesheetInfo(_data.data);
         _data!.data!.getCaseSheet!.patientDetails
           ? setPatientDetails((_data!.data!.getCaseSheet!
               .patientDetails! as unknown) as GetCaseSheet_getCaseSheet_patientDetails)
           : setPatientDetails(null);
         _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
-          ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
-              .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
-          : setDiagnosis([]);
+          ? setPastAppointments((_data!.data!.getCaseSheet!
+              .pastAppointments as unknown) as GetCaseSheet_getCaseSheet_pastAppointments[])
+          : setPastAppointments([]);
       });
   }, [appointmentId]);
+
+  console.log(
+    casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.pastAppointments
+  );
+  console.log(pastAppointments);
 
   return (
     <div className={classes.container}>
@@ -189,7 +197,17 @@ export const PatientLogDetailsPage: React.FC = () => {
               <Typography variant="h3">Past Consultations</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-              <PastConsultation />
+              {casesheetInfo &&
+                casesheetInfo.getCaseSheet &&
+                casesheetInfo.getCaseSheet.pastAppointments && (
+                  <PastConsultation
+                    pastAppointments={
+                      casesheetInfo &&
+                      casesheetInfo.getCaseSheet &&
+                      casesheetInfo.getCaseSheet.pastAppointments
+                    }
+                  />
+                )}
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
