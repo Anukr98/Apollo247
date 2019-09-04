@@ -605,6 +605,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     clearError();
   };
   const handleDoctorClick = (value: any) => {
+    console.log(value);
     setIsDoctorOrSpeciality(false);
     setSearchKeyword(value.firstName + ' ' + value.lastName);
     setSelectedDoctor(value.firstName + ' ' + value.lastName);
@@ -613,10 +614,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       transferDateTime: '',
       photoUrl: value.photoUrl,
       doctorId: value.id,
-      specialtyId: '',
+      specialtyId: value.speciality.id,
       doctorName: value.firstName + ' ' + value.lastName,
       experience: value.experience,
-      specilty: value.speciality,
+      specilty: value.speciality.name,
       facilityId: value!.doctorHospital[0]!.facility.id,
       transferId: '',
     };
@@ -758,7 +759,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           setIsTransferPopoverOpen(false);
         })
         .catch((e: any) => {
-          console.log('Error occured while searching for Initiate transfera apppointment', e);
+          console.log('Error occured while searching for Initiate transfer apppointment', e);
+          const error = JSON.parse(JSON.stringify(e));
+          const errorMessage = error && error.message;
+          console.log(
+            'Error occured while searching for Initiate transfer apppointment',
+            errorMessage,
+            error
+          );
+          alert(errorMessage);
         });
     }
   };
@@ -782,7 +791,28 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       .then((_data) => {
         //setIsLoading(false);
         console.log('data', _data);
-        //Alert.alert('Success', 'Reschdule Successfully');
+        const reschduleObject: any = {
+          appointmentId: props.appointmentId,
+          transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
+            .rescheduledDateTime,
+          doctorId: props.doctorId,
+          reschduleCount: _data!.data!.initiateRescheduleAppointment!.rescheduleCount,
+          reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
+        };
+        console.log('reschduleObject', reschduleObject);
+        pubnub.publish(
+          {
+            message: {
+              id: props.doctorId,
+              message: rescheduleconsult,
+              transferInfo: reschduleObject,
+            },
+            channel: channel, //chanel
+            storeInHistory: true,
+          },
+          (status, response) => {}
+        );
+        setIsPopoverOpen(false);
       })
       .catch((e) => {
         //setIsLoading(false);
@@ -794,7 +824,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           errorMessage,
           error
         );
-        //Alert.alert('Error', errorMessage);
+        alert(errorMessage);
       });
   };
   const getTimerText = () => {
@@ -961,7 +991,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           >
             <Paper className={classes.dotPaper}>
               <ul className={classes.popOverUL}>
-                <li>Share Case Sheet</li>
+                {/* <li>Share Case Sheet</li> */}
                 <li
                   onClick={() => {
                     handleCloseThreeDots();
@@ -1034,18 +1064,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </MenuItem>
             </AphSelect>
           </div>
-          <div
-            className={classes.tabFooter}
-            onClick={() => {
-              setIsPopoverOpen(false);
-            }}
-          >
+          <div className={classes.tabFooter}>
             <Button className={classes.cancelConsult}>Cancel</Button>
             <Button
               className={classes.ResheduleCosultButton}
               onClick={() => {
-                setIsPopoverOpen(false);
-                rescheduleConsultAction;
+                rescheduleConsultAction();
               }}
             >
               Reshedule Consult

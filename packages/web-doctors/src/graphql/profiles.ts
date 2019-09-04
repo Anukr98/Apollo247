@@ -533,6 +533,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         lastName
         specialty {
           name
+          id
         }
         specialization
         photoUrl
@@ -576,6 +577,7 @@ export const INITIATE_RESCHDULE_APPONITMENT = gql`
         rescheduleReason
         rescheduledDateTime
       }
+      rescheduleCount
     }
   }
 `;
