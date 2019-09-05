@@ -44,6 +44,7 @@ import { ConsultDetails } from '@aph/mobile-patients/src/components/HealthRecord
 import { RecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/RecordDetails';
 import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomChecker';
 import { CheckoutScene } from '@aph/mobile-patients/src/components/CheckoutScene';
+import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -73,6 +74,7 @@ export enum AppRoutes {
   OrderDetailsScene = 'OrderDetailsScene',
   YourCart = 'YourCart',
   CheckoutScene = 'CheckoutScene',
+  PaymentScene = 'PaymentScene',
   AddAddress = 'AddAddress',
   SelectPrescription = 'SelectPrescription',
   UploadPrescription = 'UploadPrescription',
@@ -182,6 +184,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CheckoutScene]: {
     screen: CheckoutScene,
+  },
+  [AppRoutes.PaymentScene]: {
+    screen: PaymentScene,
   },
   [AppRoutes.OrderDetailsScene]: {
     screen: OrderDetailsScene,

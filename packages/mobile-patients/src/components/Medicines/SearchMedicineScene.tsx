@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     paddingBottom: 3,
     paddingLeft: Platform.OS === 'ios' ? 0 : -3,
     paddingTop: 0,
-    width: 51,
+    width: Platform.OS === 'ios' ? 51 : 54,
   },
   sorryTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(12),
@@ -111,13 +111,6 @@ const styles = StyleSheet.create({
   },
 });
 
-/*type MedicineCardState = {
-  // subscriptionStatus: 'already-subscribed' | 'subscribed-now' | 'unsubscribed';
-  isCardExpanded: boolean;
-  isAddedToCart: boolean;
-  unit: number;
-};*/
-
 export interface SearchMedicineSceneProps extends NavigationScreenProps {}
 
 export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) => {
@@ -125,9 +118,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const [searchText, setSearchText] = useState<string>('');
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
   const [pinCode, setPinCode] = useState<string>('');
-  /* const [medicineCardStatus, setMedicineCardStatus] = useState<{
-     [sku: string]: MedicineCardState;
-   }>({});*/
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [pastSearches, setPastSearches] = useState<
     (getPatientPastMedicineSearches_getPatientPastMedicineSearches | null)[]
@@ -398,7 +388,14 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   /**
    * @description returns true if empty string or starts with number other than zero else false
    */
-  const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
+  const isValidPinCode = (text: string): boolean => text == '' || /^([1-9][0-9]*)$/.test(text);
+
+  const checkServicability = (text: string) => {
+    isValidPinCode(text) && setPinCode(text);
+    if (text.length == 6) {
+      // call api here
+    }
+  };
 
   const renderDeliveryPinCode = () => {
     return (
@@ -409,9 +406,10 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         <TextInput
           maxLength={6}
           value={pinCode}
-          onChange={({ nativeEvent: { text } }) => isValidPinCode(text) && setPinCode(text)}
+          onChange={({ nativeEvent: { text } }) => checkServicability(text)}
           underlineColorAndroid="transparent"
           style={styles.pinCodeTextInput}
+          selectionColor={theme.colors.INPUT_BORDER_SUCCESS}
         />
       </View>
     );
@@ -529,6 +527,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           />
         ) : (
           <FlatList
+            keyboardDismissMode="on-drag"
             data={medicineList}
             renderItem={({ item, index }) => renderMedicineCard(item, index, medicineList)}
             keyExtractor={(_, index) => `${index}`}

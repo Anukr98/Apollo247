@@ -6,10 +6,13 @@ import {
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { More, CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { Overlay } from 'react-native-elements';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -63,6 +66,7 @@ export interface OrderDetailsSceneProps extends NavigationScreenProps {
 
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [selectedTab, setSelectedTab] = useState<string>(string.orders.trackOrder);
+  const [isReturnVisible, setReturnVisible] = useState(false);
 
   const renderOrderHistory = () => {
     return (
@@ -85,9 +89,87 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
+  const renderReturnOrderOverlay = () => {
+    const heading = (
+      <View
+        style={{
+          ...theme.viewStyles.cardContainer,
+          backgroundColor: theme.colors.WHITE,
+          padding: 18,
+          marginBottom: 24,
+          borderTopLeftRadius: 10,
+          borderTopRightRadius: 10,
+        }}
+      >
+        <Text
+          style={{
+            ...theme.fonts.IBMPlexSansMedium(16),
+            color: theme.colors.SHERPA_BLUE,
+            textAlign: 'center',
+          }}
+        >
+          Cancel Order
+        </Text>
+      </View>
+    );
+
+    const content = (
+      <View style={{ paddingHorizontal: 16 }}>
+        <TextInputComponent
+          label={'Why are you cancelling this order?'}
+          placeholder={'Select reason for cancelling'}
+        />
+        <TextInputComponent
+          label={'Add Comments (Optional)'}
+          placeholder={'Enter your comments here…'}
+        />
+      </View>
+    );
+
+    const bottomButton = <Button title={'SUBMIT REQUEST'} />;
+
+    return (
+      <Overlay
+        windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
+        containerStyle={{ alignSelf: 'flex-start' }}
+        overlayStyle={{
+          padding: 0,
+          margin: 0,
+          width: '88.88%',
+          height: 'auto',
+          borderRadius: 10,
+        }}
+        isVisible={isReturnVisible}
+      >
+        <View>
+          <TouchableOpacity
+            style={{ marginTop: -42, alignSelf: 'flex-end' }}
+            onPress={() => setReturnVisible(!isReturnVisible)}
+          >
+            <CrossPopup />
+          </TouchableOpacity>
+          <View style={{ height: 16 }} />
+          <View
+            style={{
+              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+              borderTopLeftRadius: 10,
+              borderTopRightRadius: 10,
+              borderBottomRightRadius: 10,
+              borderBottomLeftRadius: 10,
+            }}
+          >
+            {heading}
+            {content}
+          </View>
+        </View>
+      </Overlay>
+    );
+  };
+
   const orderId = props.navigation.getParam('orderId') || '';
   return (
     <SafeAreaView style={theme.viewStyles.container}>
+      {renderReturnOrderOverlay()}
       <View style={styles.headerShadowContainer}>
         <Header
           leftIcon="backArrow"
