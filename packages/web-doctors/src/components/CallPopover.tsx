@@ -454,7 +454,7 @@ let transferObject: any = {
 };
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
-  const { loading, appointmentInfo, caseSheetId } = useContext(CaseSheetContext);
+  const { loading, appointmentInfo, caseSheetId, followUpDate } = useContext(CaseSheetContext);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -472,7 +472,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
-  console.log(appointmentInfo!.status);
   const [anchorElThreeDots, setAnchorElThreeDots] = React.useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState<any>('');
   const [errorState, setErrorState] = React.useState<errorObject>({
@@ -653,6 +652,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const stopConsult = '^^#stopconsult';
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
+  const followupconsult = '^^#followupconsult';
   const channel = props.appointmentId;
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
@@ -706,6 +706,31 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       },
       (status, response) => {}
     );
+    if (
+      followUpDate &&
+      followUpDate.length > 0 &&
+      followUpDate[0] !== null &&
+      followUpDate[0] !== ''
+    ) {
+      const folloupDateTime = followUpDate[0] ? new Date(followUpDate[0]).toISOString() : '';
+      const followupObj: any = {
+        appointmentId: props.appointmentId,
+        folloupDateTime: folloupDateTime,
+        doctorId: props.doctorId,
+      };
+      pubnub.publish(
+        {
+          message: {
+            id: props.doctorId,
+            message: followupconsult,
+            transferInfo: followupObj,
+          },
+          channel: channel,
+          storeInHistory: true,
+        },
+        (status, response) => {}
+      );
+    }
   };
   const transferConsultAction = () => {
     if (isEmpty(reason)) {
@@ -900,11 +925,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           ) : (
             <Button
               className={classes.consultButton}
-              disabled={
-                startAppointmentButton ||
-                (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                  appointmentInfo!.status !== STATUS.PENDING)
-              }
+              // disabled={
+              //   startAppointmentButton ||
+              //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+              //     appointmentInfo!.status !== STATUS.PENDING)
+              // }
               onClick={() => {
                 !startAppointment ? onStartConsult() : onStopConsult();
                 !startAppointment ? startInterval(900) : stopInterval();
