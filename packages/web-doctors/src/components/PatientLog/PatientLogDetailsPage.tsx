@@ -276,6 +276,9 @@ export const PatientLogDetailsPage: React.FC = () => {
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography variant="h3">Patient Health Vault</Typography>
                 </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                  <span>No data Found</span>
+                </ExpansionPanelDetails>
               </ExpansionPanel>
             </section>
           </Grid>
