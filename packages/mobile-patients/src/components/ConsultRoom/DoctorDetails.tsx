@@ -320,7 +320,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   <Text style={styles.onlineConsultAmount}>
                     Rs. {doctorDetails.onlineConsultationFees}
                   </Text>
-                  {availableInMin && (
+                  {availableInMin && !!availableTime && (
                     <CapsuleView
                       title={
                         availableInMin < 0
@@ -341,7 +341,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       <Text style={styles.onlineConsultAmount}>
                         Rs. {doctorDetails.physicalConsultationFees}
                       </Text>
-                      {availableInMin && (
+                      {availableInMin && !!availableTime && (
                         <CapsuleView
                           title={
                             availableInMin < 0
