@@ -182,6 +182,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const stopConsult = '^^#stopconsult';
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
+  const followupconsult = '^^#followupconsult';
   const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
   const publishKey = 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3';
   const doctorId = props.doctorId;
@@ -270,7 +271,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== startConsult &&
           message.message.message !== stopConsult &&
           message.message.message !== transferconsult &&
-          message.message.message !== rescheduleconsult
+          message.message.message !== rescheduleconsult &&
+          message.message.message !== followupconsult
         ) {
           setIsNewMsg(true);
         }
@@ -379,7 +381,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== startConsult &&
       rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
-      rowData.message !== rescheduleconsult
+      rowData.message !== rescheduleconsult &&
+      rowData.message !== followupconsult
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -424,7 +427,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== startConsult &&
       rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
-      rowData.message !== rescheduleconsult
+      rowData.message !== rescheduleconsult &&
+      rowData.message !== followupconsult
     ) {
       leftComponent = 0;
       rightComponent++;
