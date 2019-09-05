@@ -986,7 +986,7 @@
             "description": null,
             "args": [
               {
-                "name": "PushNotificationInput",
+                "name": "pushNotificationInput",
                 "description": null,
                 "type": {
                   "kind": "INPUT_OBJECT",

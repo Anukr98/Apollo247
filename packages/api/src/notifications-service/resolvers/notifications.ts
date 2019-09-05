@@ -31,7 +31,7 @@ export const getNotificationsTypeDefs = gql`
 
   extend type Query {
     sendPushNotification(
-      PushNotificationInput: PushNotificationInput
+      pushNotificationInput: PushNotificationInput
     ): PushNotificationSuccessMessaage
   }
 `;
@@ -41,7 +41,7 @@ type PushNotificationMessage = {
 };
 
 type PushNotificationSuccessMessaage = {
-  results: [PushNotificationMessage];
+  results: PushNotificationMessage[];
   canonicalRegistrationTokenCount: number;
   failureCount: number;
   successCount: number;
@@ -60,14 +60,14 @@ type PushNotificationInput = {
   registrationToken: string;
 };
 
-type PushNotificationInputArgs = { PushNotificationInput: PushNotificationInput };
+type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput };
 
 const sendPushNotification: Resolver<
   null,
   PushNotificationInputArgs,
   {},
   PushNotificationMessage | undefined
-> = async (parent, { PushNotificationInput }, {}) => {
+> = async (parent, { pushNotificationInput }, {}) => {
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
     databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
@@ -77,17 +77,17 @@ const sendPushNotification: Resolver<
 
   const payload = {
     notification: {
-      title: PushNotificationInput.title,
-      body: PushNotificationInput.body,
+      title: pushNotificationInput.title,
+      body: pushNotificationInput.body,
     },
   };
 
   const options = {
-    priority: PushNotificationInput.priority,
+    priority: pushNotificationInput.priority,
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
   };
   let notificationResponse;
-  const registrationToken = PushNotificationInput.registrationToken;
+  const registrationToken = pushNotificationInput.registrationToken;
   await admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
