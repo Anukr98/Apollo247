@@ -191,11 +191,10 @@ export const Calendar: React.FC = () => {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
 
-  const setStartOfMonthDate = ({ start }: { start: string | Date; end: string | Date }) => {
-    console.log(start);
+  const setStartOfMonthDate = ({ start, end }: { start: string | Date; end: string | Date }) => {
+    //setMonthSelected(moment(selectedDate).format('MMMM'));
     setSelectedDate(startOfMonth(start as Date));
   };
-
   const { data, loading } = useQuery(GET_DOCTOR_APPOINTMENTS, {
     variables: {
       startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
@@ -243,6 +242,7 @@ export const Calendar: React.FC = () => {
                 onClick={() => {
                   setViewSelection('month');
                   setRange({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
+                  setMonthSelected(moment(selectedDate).format('MMMM'));
                 }}
               >
                 Month
@@ -268,6 +268,7 @@ export const Calendar: React.FC = () => {
                 setMonthSelected(month);
               }}
               onMonthChange={(range) => {
+                //console.log(range);
                 setStartOfMonthDate(range as { start: string; end: string });
                 setRange(getMonthRange(range as { start: string; end: string }));
               }}
