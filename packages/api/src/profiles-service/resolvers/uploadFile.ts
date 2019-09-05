@@ -33,8 +33,7 @@ const uploadFile: Resolver<
   UploadFileResult
 > = async (parent, args, { profilesDb }) => {
   const fileName = format(new Date(), 'ddmmyyyy-HHmmss') + '.' + args.fileType.toLowerCase();
-  const filePath = 'uploads/' + fileName;
-  fs.writeFile(filePath, args.base64FileInput, { encoding: 'base64' }, (err) => {
+  fs.writeFile(fileName, args.base64FileInput, { encoding: 'base64' }, (err) => {
     console.log('file created');
     console.log(err);
   });
@@ -69,7 +68,7 @@ const uploadFile: Resolver<
     .then((res) => console.log(res))
     .catch((error) => console.log('error testing', error));
 
-  const localFilePath = '/apollo-hospitals/packages/api/uploads/' + fileName;
+  const localFilePath = '/apollo-hospitals/packages/api/' + fileName;
   console.log(`uploading ${localFilePath}`);
   const readmeBlob = await client
     .uploadFile({ name: fileName, filePath: localFilePath })

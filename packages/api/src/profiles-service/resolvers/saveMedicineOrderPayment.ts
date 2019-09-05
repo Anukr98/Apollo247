@@ -6,6 +6,7 @@ import {
   MedicineOrderPayments,
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
+  PHARMA_CART_TYPE,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -21,6 +22,11 @@ export const saveMedicineOrderPaymentTypeDefs = gql`
     COD
     CASHLESS
     NO_PAYMENT
+  }
+
+  enum PHARMA_CART_TYPE {
+    CART
+    NONCART
   }
 
   input MedicinePaymentInput {
@@ -131,8 +137,9 @@ const SaveMedicineOrderPayment: Resolver<
     const lineItem = {
       ItemID: item.medicineSKU,
       ItemName: item.medicineName,
-      Qty: item.quantity,
-      PackSize: item.mou,
+      Qty: item.quantity * item.mou,
+      PackSize: item.quantity,
+      MOU: item.mou,
       Price: item.price,
       Status: true,
     };
@@ -152,7 +159,7 @@ const SaveMedicineOrderPayment: Resolver<
       OrderId: orderDetails.orderAutoId,
       ShopId: orderDetails.shopId,
       ShippingMethod: orderDetails.deliveryType.replace('_', ' '),
-      RequestType: 'CART',
+      RequestType: PHARMA_CART_TYPE.CART,
       PaymentMethod: medicinePaymentInput.paymentType,
       VendorName: '*****',
       DotorName: 'Apollo',

@@ -9,13 +9,15 @@ import {
   MEDICINE_ORDER_STATUS,
   MEDICINE_ORDER_PAYMENT_TYPE,
   MedicineOrdersStatus,
+  PHARMA_CART_TYPE,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
-import { PharmaResponse } from 'types/medicineOrderTypes';
+import { PharmaResponse, PrescriptionUrl } from 'types/medicineOrderTypes';
 import fetch from 'node-fetch';
+import { differenceInYears } from 'date-fns';
 
 export const savePrescriptionMedicineOrderTypeDefs = gql`
   input PrescriptionMedicineInput {
@@ -124,13 +126,23 @@ const SavePrescriptionMedicineOrder: Resolver<
     if (!patientAddressDetails) {
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
     }
+    const orderPrescriptionUrl: PrescriptionUrl[] = [];
+    const prescriptionImages = saveOrder.prescriptionImageUrl.split(',');
+    if (prescriptionImages.length > 0) {
+      prescriptionImages.map((imageUrl) => {
+        const url = {
+          url: imageUrl,
+        };
+        orderPrescriptionUrl.push(url);
+      });
+    }
     const medicineOrderPharma = {
       tpdetails: {
-        OrderId: '123456226',
-        ShopId: 91905,
-        ShippingMethod: 'Home Delivery',
-        RequestType: 'NONCART',
-        PaymentMethod: 'CASHLESS',
+        OrderId: saveOrder.orderAutoId,
+        ShopId: saveOrder.shopId,
+        ShippingMethod: saveOrder.deliveryType.replace('_', ' '),
+        RequestType: PHARMA_CART_TYPE.NONCART,
+        PaymentMethod: MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS,
         VendorName: '*****',
         DotorName: 'Apollo',
         OrderType: 'Pharma',
@@ -147,20 +159,13 @@ const SavePrescriptionMedicineOrder: Resolver<
           City: patientAddressDetails.city,
           PostCode: patientAddressDetails.zipcode,
           MailId: patientDetails.emailAddress,
-          Age: 30,
+          Age: Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth)),
           CardNo: null,
           PatientName: patientDetails.firstName,
         },
         PaymentDetails: {},
         ItemDetails: [],
-        PrescUrl: [
-          {
-            url: 'http://13.126.95.18/pub/media/medicine_prescription/beauty.png',
-          },
-          {
-            url: 'http://13.126.95.19/pub/media/medicine_prescription/beauty.png',
-          },
-        ],
+        PrescUrl: orderPrescriptionUrl,
       },
     };
 
@@ -182,7 +187,6 @@ const SavePrescriptionMedicineOrder: Resolver<
       errorCode = -1;
       errorMessage = orderResp.ordersResult.Message;
       orderStatus = MEDICINE_ORDER_STATUS.ORDER_FAILED;
-      console.log(orderStatus, 'order status inside');
     } else {
       const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
         orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
@@ -200,8 +204,6 @@ const SavePrescriptionMedicineOrder: Resolver<
       errorMessage = orderResp.ordersResult.Message;
       orderStatus = MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED;
     }
-
-    console.log(orderStatus, 'order status');
   }
   return {
     status: orderStatus,
