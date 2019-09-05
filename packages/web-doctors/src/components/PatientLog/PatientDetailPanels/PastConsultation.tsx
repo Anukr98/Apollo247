@@ -125,7 +125,7 @@ const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
   const ischild: boolean = true;
   return (
     <List className={isChild ? classes.childListStyle : classes.listStyle}>
-      {data &&
+      {data && data.length > 0 ? (
         data.map((item, idx) => (
           <ListItem
             key={idx}
@@ -139,7 +139,10 @@ const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
           >
             <AppointmentCard data={item} />
           </ListItem>
-        ))}
+        ))
+      ) : (
+        <span>No data Found</span>
+      )}
     </List>
   );
 };

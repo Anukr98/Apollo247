@@ -18,4 +18,8 @@ export class PatientDeviceTokenRepository extends Repository<PatientDeviceTokens
   findDeviceToken(patient: string, deviceToken: string) {
     return this.findOne({ where: { patient, deviceToken } });
   }
+
+  getDeviceToken(patient: string) {
+    return this.find({ select: ['deviceToken'], where: { patient } });
+  }
 }
